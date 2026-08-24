@@ -83,3 +83,47 @@ src/
 - Mỗi feature có store riêng trong `src/store/`.
 - Tên store: `useXxxStore` (ví dụ: `useGraphStore`, `useAuthStore`).
 - Không lưu server state vào Zustand — server state thuộc về React Query.
+
+## Quy trình kiểm tra bắt buộc (Verification)
+**Sau mỗi lần thay đổi code, PHẢI chạy đủ 2 lệnh theo thứ tự:**
+
+```bash
+npm run lint    # Kiểm tra lỗi ESLint — phải pass 0 error
+npm run build   # Build production — phải thành công không lỗi
+```
+
+- Nếu lint báo **error** → phải fix trước khi tiếp tục, không được bỏ qua.
+- Nếu lint báo **warning** → ghi nhận, cố gắng fix nếu có thể.
+- Nếu build **fail** → bắt buộc fix trước khi commit.
+- Chỉ commit khi cả lint + build đều pass.
+
+## Cấu trúc thư mục (thực tế)
+```
+src/
+├── app/
+│   ├── (auth)/           # Route group auth (không có header/sidebar)
+│   │   └── login/        # Trang đăng nhập
+│   ├── (marketing)/      # Route group landing/marketing
+│   │   └── page.tsx      # Landing page (route "/")
+│   └── layout.tsx        # Root layout — font, QueryProvider
+├── components/
+│   ├── ui/               # shadcn/ui components (KHÔNG sửa)
+│   └── landing/          # Shared UI components theo trang/nhóm
+├── features/             # Business logic theo domain (cùng cấp với components/)
+│   ├── assessment/       # Tính năng đánh giá
+│   ├── auth/             # Tính năng xác thực
+│   ├── dashboard/        # Tính năng dashboard
+│   ├── graph/            # Tính năng đồ thị
+│   └── integrations/     # Tích hợp bên ngoài
+├── providers/            # React context providers
+├── hooks/                # Custom hooks dùng chung
+├── lib/                  # Utilities, helpers
+├── store/                # Zustand stores
+└── types/                # TypeScript types
+```
+
+> **Phân biệt `components/` vs `features/`**:
+> - `components/` → UI thuần, không có business logic, có thể tái sử dụng nhiều nơi.
+> - `features/` → Mỗi folder là một domain nghiệp vụ, chứa components, hooks, store, types riêng của feature đó.
+> - Feature component chỉ dùng trong feature đó → để trong `features/[domain]/components/`.
+> - Component dùng lại ở nhiều feature → để trong `components/`.
