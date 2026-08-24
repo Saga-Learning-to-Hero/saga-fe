@@ -1,26 +1,431 @@
+/* ============================================================
+   SAGA Design System — globals.css
+   Mọi giá trị thiết kế đều là CSS variable.
+   KHÔNG được hardcode màu/font/shadow ở page hay component.
+   ============================================================ */
+
 @import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
 
+/* ---------- Dark variant: class .dark HOẶC system preference ---------- */
+@custom-variant dark (&:is(.dark *), @media (prefers-color-scheme: dark));
+
+/* ============================================================
+   THEME BRIDGE — ánh xạ CSS vars → Tailwind utilities
+   ============================================================ */
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  /* Core */
+  --color-background:           var(--background);
+  --color-foreground:           var(--foreground);
+
+  /* Components */
+  --color-card:                 var(--card);
+  --color-card-foreground:      var(--card-foreground);
+  --color-popover:              var(--popover);
+  --color-popover-foreground:   var(--popover-foreground);
+  --color-primary:              var(--primary);
+  --color-primary-foreground:   var(--primary-foreground);
+  --color-secondary:            var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted:                var(--muted);
+  --color-muted-foreground:     var(--muted-foreground);
+  --color-accent:               var(--accent);
+  --color-accent-foreground:    var(--accent-foreground);
+  --color-destructive:          var(--destructive);
+  --color-border:               var(--border);
+  --color-input:                var(--input);
+  --color-ring:                 var(--ring);
+
+  /* Chart palette */
+  --color-chart-1:              var(--chart-1);
+  --color-chart-2:              var(--chart-2);
+  --color-chart-3:              var(--chart-3);
+  --color-chart-4:              var(--chart-4);
+  --color-chart-5:              var(--chart-5);
+
+  /* Sidebar */
+  --color-sidebar:                      var(--sidebar);
+  --color-sidebar-foreground:           var(--sidebar-foreground);
+  --color-sidebar-primary:              var(--sidebar-primary);
+  --color-sidebar-primary-foreground:   var(--sidebar-primary-foreground);
+  --color-sidebar-accent:               var(--sidebar-accent);
+  --color-sidebar-accent-foreground:    var(--sidebar-accent-foreground);
+  --color-sidebar-border:               var(--sidebar-border);
+  --color-sidebar-ring:                 var(--sidebar-ring);
+
+  /* SAGA brand */
+  --color-saga-primary:         var(--saga-primary);
+  --color-saga-primary-dim:     var(--saga-primary-dim);
+  --color-saga-accent:          var(--saga-accent);
+  --color-saga-success:         var(--saga-success);
+  --color-saga-warning:         var(--saga-warning);
+  --color-saga-danger:          var(--saga-danger);
+  --color-saga-info:            var(--saga-info);
+  --color-saga-surface:         var(--saga-surface);
+  --color-saga-surface-raised:  var(--saga-surface-raised);
+  --color-saga-overlay:         var(--saga-overlay);
+
+  /* Graph node colors */
+  --color-node-student:         var(--node-student);
+  --color-node-activity:        var(--node-activity);
+  --color-node-criterion:       var(--node-criterion);
+  --color-node-group:           var(--node-group);
+  --color-node-outcome:         var(--node-outcome);
+  --color-edge-default:         var(--edge-default);
+  --color-edge-active:          var(--edge-active);
+
+  /* Typography */
+  --font-sans:    var(--font-inter);
+  --font-mono:    var(--font-jetbrains-mono);
+  --font-heading: var(--font-inter);
+
+  /* Border radius */
+  --radius-xs:  calc(var(--radius) * 0.5);
+  --radius-sm:  calc(var(--radius) * 0.75);
+  --radius-md:  var(--radius);
+  --radius-lg:  calc(var(--radius) * 1.5);
+  --radius-xl:  calc(var(--radius) * 2);
+  --radius-2xl: calc(var(--radius) * 3);
+  --radius-full: 9999px;
+
+  /* Transitions */
+  --transition-fast:   var(--duration-fast) var(--ease-default);
+  --transition-normal: var(--duration-normal) var(--ease-default);
+  --transition-slow:   var(--duration-slow) var(--ease-default);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+/* ============================================================
+   :root — Light mode tokens (SAGA brand)
+   ============================================================ */
+:root {
+  /* --- Shadcn core tokens (light) --- */
+  --background:              oklch(0.97 0.004 265);
+  --foreground:              oklch(0.15 0.025 265);
+
+  --card:                    oklch(1 0 0);
+  --card-foreground:         oklch(0.15 0.025 265);
+
+  --popover:                 oklch(1 0 0);
+  --popover-foreground:      oklch(0.15 0.025 265);
+
+  --primary:                 oklch(0.52 0.22 265);
+  --primary-foreground:      oklch(0.98 0.005 265);
+
+  --secondary:               oklch(0.93 0.02 265);
+  --secondary-foreground:    oklch(0.3 0.06 265);
+
+  --muted:                   oklch(0.94 0.01 265);
+  --muted-foreground:        oklch(0.52 0.04 265);
+
+  --accent:                  oklch(0.88 0.08 200);
+  --accent-foreground:       oklch(0.18 0.05 200);
+
+  --destructive:             oklch(0.58 0.22 28);
+
+  --border:                  oklch(0.88 0.02 265);
+  --input:                   oklch(0.9 0.02 265);
+  --ring:                    oklch(0.52 0.22 265);
+
+  --radius: 0.5rem;
+
+  /* --- Chart palette (light) --- */
+  --chart-1:  oklch(0.52 0.22 265);   /* indigo  */
+  --chart-2:  oklch(0.65 0.18 200);   /* cyan    */
+  --chart-3:  oklch(0.62 0.18 150);   /* green   */
+  --chart-4:  oklch(0.7  0.18 55);    /* amber   */
+  --chart-5:  oklch(0.6  0.22 30);    /* orange  */
+
+  /* --- Sidebar (light) --- */
+  --sidebar:                     oklch(0.99 0.003 265);
+  --sidebar-foreground:          oklch(0.15 0.025 265);
+  --sidebar-primary:             oklch(0.52 0.22 265);
+  --sidebar-primary-foreground:  oklch(0.98 0.005 265);
+  --sidebar-accent:              oklch(0.93 0.02 265);
+  --sidebar-accent-foreground:   oklch(0.3 0.06 265);
+  --sidebar-border:              oklch(0.88 0.02 265);
+  --sidebar-ring:                oklch(0.52 0.22 265);
+
+  /* --- SAGA brand tokens (light) --- */
+  --saga-primary:         oklch(0.52 0.22 265);
+  --saga-primary-dim:     oklch(0.52 0.22 265 / 15%);
+  --saga-accent:          oklch(0.65 0.18 200);
+  --saga-success:         oklch(0.58 0.18 145);
+  --saga-warning:         oklch(0.72 0.18 75);
+  --saga-danger:          oklch(0.58 0.22 28);
+  --saga-info:            oklch(0.62 0.18 230);
+  --saga-surface:         oklch(0.97 0.004 265);
+  --saga-surface-raised:  oklch(1 0 0);
+  --saga-overlay:         oklch(0 0 0 / 40%);
+
+  /* --- Graph node colors (light) --- */
+  --node-student:   oklch(0.52 0.22 265);   /* indigo */
+  --node-activity:  oklch(0.65 0.18 200);   /* cyan   */
+  --node-criterion: oklch(0.62 0.18 150);   /* green  */
+  --node-group:     oklch(0.7  0.18 55);    /* amber  */
+  --node-outcome:   oklch(0.55 0.2  310);   /* purple */
+  --edge-default:   oklch(0.7  0.02 265);
+  --edge-active:    oklch(0.52 0.22 265);
+
+  /* --- Typography --- */
+  --font-inter:            "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-jetbrains-mono:   "JetBrains Mono", ui-monospace, monospace;
+
+  /* --- Font sizes (fluid scale) --- */
+  --text-xs:   0.75rem;
+  --text-sm:   0.875rem;
+  --text-base: 1rem;
+  --text-md:   1.125rem;
+  --text-lg:   1.25rem;
+  --text-xl:   1.5rem;
+  --text-2xl:  1.875rem;
+  --text-3xl:  2.25rem;
+  --text-4xl:  3rem;
+
+  /* --- Font weights --- */
+  --weight-light:    300;
+  --weight-regular:  400;
+  --weight-medium:   500;
+  --weight-semibold: 600;
+  --weight-bold:     700;
+  --weight-extrabold:800;
+
+  /* --- Line heights --- */
+  --leading-tight:  1.25;
+  --leading-snug:   1.375;
+  --leading-normal: 1.5;
+  --leading-relaxed:1.625;
+
+  /* --- Shadows --- */
+  --shadow-xs:  0 1px 2px oklch(0 0 0 / 5%);
+  --shadow-sm:  0 2px 4px oklch(0 0 0 / 8%), 0 1px 2px oklch(0 0 0 / 5%);
+  --shadow-md:  0 4px 12px oklch(0 0 0 / 10%), 0 2px 4px oklch(0 0 0 / 6%);
+  --shadow-lg:  0 8px 24px oklch(0 0 0 / 12%), 0 4px 8px oklch(0 0 0 / 7%);
+  --shadow-xl:  0 16px 40px oklch(0 0 0 / 15%), 0 8px 16px oklch(0 0 0 / 8%);
+  --shadow-glow:0 0 20px var(--saga-primary-dim);
+
+  /* --- Spacing scale --- */
+  --space-1:  0.25rem;
+  --space-2:  0.5rem;
+  --space-3:  0.75rem;
+  --space-4:  1rem;
+  --space-5:  1.25rem;
+  --space-6:  1.5rem;
+  --space-8:  2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+  --space-20: 5rem;
+  --space-24: 6rem;
+
+  /* --- Transitions --- */
+  --duration-fast:   150ms;
+  --duration-normal: 250ms;
+  --duration-slow:   400ms;
+  --ease-default:    cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-spring:     cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-out:        cubic-bezier(0, 0, 0.2, 1);
+
+  /* --- Z-index scale --- */
+  --z-base:    0;
+  --z-raised:  10;
+  --z-dropdown:100;
+  --z-sticky:  200;
+  --z-overlay: 300;
+  --z-modal:   400;
+  --z-toast:   500;
+  --z-tooltip: 600;
+}
+
+/* ============================================================
+   .dark — Dark mode tokens (SAGA dark theme)
+   ============================================================ */
+.dark {
+  /* --- Shadcn core tokens (dark) --- */
+  --background:              oklch(0.1 0.02 265);
+  --foreground:              oklch(0.93 0.01 265);
+
+  --card:                    oklch(0.14 0.025 265);
+  --card-foreground:         oklch(0.93 0.01 265);
+
+  --popover:                 oklch(0.16 0.025 265);
+  --popover-foreground:      oklch(0.93 0.01 265);
+
+  --primary:                 oklch(0.62 0.22 265);
+  --primary-foreground:      oklch(0.06 0.02 265);
+
+  --secondary:               oklch(0.2 0.03 265);
+  --secondary-foreground:    oklch(0.82 0.02 265);
+
+  --muted:                   oklch(0.18 0.025 265);
+  --muted-foreground:        oklch(0.58 0.04 265);
+
+  --accent:                  oklch(0.22 0.06 200);
+  --accent-foreground:       oklch(0.78 0.12 200);
+
+  --destructive:             oklch(0.65 0.2 28);
+
+  --border:                  oklch(1 0 0 / 8%);
+  --input:                   oklch(1 0 0 / 10%);
+  --ring:                    oklch(0.62 0.22 265);
+
+  /* --- Chart palette (dark) --- */
+  --chart-1:  oklch(0.62 0.22 265);
+  --chart-2:  oklch(0.68 0.18 200);
+  --chart-3:  oklch(0.65 0.18 150);
+  --chart-4:  oklch(0.72 0.18 55);
+  --chart-5:  oklch(0.65 0.22 30);
+
+  /* --- Sidebar (dark) --- */
+  --sidebar:                     oklch(0.12 0.025 265);
+  --sidebar-foreground:          oklch(0.93 0.01 265);
+  --sidebar-primary:             oklch(0.62 0.22 265);
+  --sidebar-primary-foreground:  oklch(0.06 0.02 265);
+  --sidebar-accent:              oklch(0.2 0.03 265);
+  --sidebar-accent-foreground:   oklch(0.82 0.02 265);
+  --sidebar-border:              oklch(1 0 0 / 8%);
+  --sidebar-ring:                oklch(0.62 0.22 265);
+
+  /* --- SAGA brand tokens (dark) --- */
+  --saga-primary:         oklch(0.62 0.22 265);
+  --saga-primary-dim:     oklch(0.62 0.22 265 / 20%);
+  --saga-accent:          oklch(0.68 0.18 200);
+  --saga-success:         oklch(0.65 0.18 145);
+  --saga-warning:         oklch(0.75 0.18 75);
+  --saga-danger:          oklch(0.65 0.2 28);
+  --saga-info:            oklch(0.67 0.18 230);
+  --saga-surface:         oklch(0.14 0.025 265);
+  --saga-surface-raised:  oklch(0.18 0.025 265);
+  --saga-overlay:         oklch(0 0 0 / 60%);
+
+  /* --- Graph node colors (dark — sáng hơn để nổi trên nền tối) --- */
+  --node-student:   oklch(0.62 0.22 265);
+  --node-activity:  oklch(0.68 0.18 200);
+  --node-criterion: oklch(0.65 0.18 150);
+  --node-group:     oklch(0.72 0.18 55);
+  --node-outcome:   oklch(0.62 0.2  310);
+  --edge-default:   oklch(0.35 0.03 265);
+  --edge-active:    oklch(0.62 0.22 265);
+
+  /* --- Shadows (dark — glow-based) --- */
+  --shadow-xs:  0 1px 2px oklch(0 0 0 / 30%);
+  --shadow-sm:  0 2px 4px oklch(0 0 0 / 40%);
+  --shadow-md:  0 4px 12px oklch(0 0 0 / 50%);
+  --shadow-lg:  0 8px 24px oklch(0 0 0 / 60%);
+  --shadow-xl:  0 16px 40px oklch(0 0 0 / 70%);
+  --shadow-glow:0 0 24px var(--saga-primary-dim);
+}
+
+/* ============================================================
+   BASE LAYER — Reset và defaults toàn cục
+   ============================================================ */
+@layer base {
+  *,
+  *::before,
+  *::after {
+    @apply border-border outline-ring/50;
+    box-sizing: border-box;
   }
+
+  html {
+    font-family:              var(--font-inter);
+    font-size:                var(--text-base);
+    line-height:              var(--leading-normal);
+    -webkit-font-smoothing:   antialiased;
+    -moz-osx-font-smoothing:  grayscale;
+    text-rendering:           optimizeLegibility;
+    scroll-behavior:          smooth;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    min-height:   100dvh;
+    font-weight:  var(--weight-regular);
+  }
+
+  /* --- Headings --- */
+  h1, h2, h3, h4, h5, h6 {
+    font-family:  var(--font-inter);
+    font-weight:  var(--weight-bold);
+    line-height:  var(--leading-tight);
+    color:        var(--foreground);
+  }
+
+  h1 { font-size: var(--text-3xl); }
+  h2 { font-size: var(--text-2xl); }
+  h3 { font-size: var(--text-xl);  }
+  h4 { font-size: var(--text-lg);  }
+  h5 { font-size: var(--text-md);  }
+  h6 { font-size: var(--text-base);}
+
+  /* --- Code --- */
+  code, kbd, samp, pre {
+    font-family: var(--font-jetbrains-mono);
+    font-size:   0.9em;
+  }
+
+  /* --- Focus visible --- */
+  :focus-visible {
+    outline:        2px solid var(--saga-primary);
+    outline-offset: 2px;
+    border-radius:  var(--radius-sm);
+  }
+
+  /* --- Selection --- */
+  ::selection {
+    background-color: var(--saga-primary-dim);
+    color:            var(--foreground);
+  }
+
+  /* --- Scrollbar (Webkit) --- */
+  ::-webkit-scrollbar       { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb {
+    background:    var(--border);
+    border-radius: var(--radius-full);
+  }
+  ::-webkit-scrollbar-thumb:hover { background: var(--muted-foreground); }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* ============================================================
+   UTILITIES — Các class tiện ích SAGA dùng toàn app
+   ============================================================ */
+@layer utilities {
+  /* --- Transitions shorthand --- */
+  .transition-fast   { transition: all var(--duration-fast)   var(--ease-default); }
+  .transition-normal { transition: all var(--duration-normal) var(--ease-default); }
+  .transition-slow   { transition: all var(--duration-slow)   var(--ease-default); }
+  .transition-spring { transition: all var(--duration-normal) var(--ease-spring); }
+
+  /* --- SAGA surface levels (Modern Dashboard) --- */
+  .surface-base   { background: var(--background); }
+  .surface-card   { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-md); }
+  .surface-raised { background: var(--card); box-shadow: var(--shadow-sm); border: 1px solid var(--border); border-radius: var(--radius-md); }
+
+  /* --- Shadows --- */
+  .shadow-saga-xs { box-shadow: var(--shadow-xs); }
+  .shadow-saga-sm { box-shadow: var(--shadow-sm); }
+  .shadow-saga-md { box-shadow: var(--shadow-md); }
+  .shadow-saga-lg { box-shadow: var(--shadow-lg); }
+  .shadow-saga-xl { box-shadow: var(--shadow-xl); }
+
+  /* --- Status text colors --- */
+  .text-success { color: var(--saga-success); }
+  .text-warning { color: var(--saga-warning); }
+  .text-danger  { color: var(--saga-danger);  }
+  .text-info    { color: var(--saga-info);    }
+
+  /* --- Status background (muted, dùng cho badge/tag) --- */
+  .bg-success-muted { background: oklch(from var(--saga-success) l c h / 12%); color: var(--saga-success); }
+  .bg-warning-muted { background: oklch(from var(--saga-warning) l c h / 12%); color: var(--saga-warning); }
+  .bg-danger-muted  { background: oklch(from var(--saga-danger)  l c h / 12%); color: var(--saga-danger);  }
+  .bg-info-muted    { background: oklch(from var(--saga-info)    l c h / 12%); color: var(--saga-info);    }
+
+  /* --- Graph node color indicators --- */
+  .node-student   { color: var(--node-student);   }
+  .node-activity  { color: var(--node-activity);  }
+  .node-criterion { color: var(--node-criterion); }
+  .node-group     { color: var(--node-group);     }
+  .node-outcome   { color: var(--node-outcome);   }
 }
