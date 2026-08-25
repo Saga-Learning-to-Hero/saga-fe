@@ -137,7 +137,7 @@ export function Header() {
               {user.name}
             </span>
             <span
-            className={`text-[11px] font-semibold px-1.5 py-0 rounded-sm leading-tight ${ROLE_COLORS[user.role]}`}
+              className={`text-[11px] font-semibold px-1.5 py-0 rounded-sm leading-tight ${ROLE_COLORS[user.role]}`}
             >
               {ROLE_LABELS[user.role]}
             </span>
