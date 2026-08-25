@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { EyeIcon, EyeOffIcon, GitGraphIcon, LoaderCircleIcon, ArrowLeftIcon } from "lucide-react";
@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
+import { useAuthStore } from "@/features/auth/store/useAuthStore";
 
 function GoogleIcon() {
   return (
@@ -22,15 +23,29 @@ function GoogleIcon() {
 
 export default function LoginPage() {
   const router = useRouter();
-  const [hienMatKhau, setHienMatKhau] = useState(false);
-  const [dangTai, setDangTai] = useState(false);
-  const [form, setForm] = useState({ email: "", matKhau: "" });
+  const { isAuthenticated, login } = useAuthStore();
+  const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [form, setForm] = useState({ email: "", password: "" });
 
-  const handleDangNhap = async (e: React.FormEvent) => {
+  useEffect(() => {
+    if (isAuthenticated) {
+      router.replace("/dashboard");
+    }
+  }, [isAuthenticated, router]);
+
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    setDangTai(true);
-    await new Promise((r) => setTimeout(r, 1200));
-    setDangTai(false);
+    setIsLoading(true);
+    await new Promise((r) => setTimeout(r, 1000));
+    login();
+    router.push("/dashboard");
+  };
+
+  const handleGoogleLogin = async () => {
+    setIsLoading(true);
+    await new Promise((r) => setTimeout(r, 800));
+    login();
     router.push("/dashboard");
   };
 
@@ -127,7 +142,7 @@ export default function LoginPage() {
           </div>
 
           {/* Form */}
-          <form onSubmit={handleDangNhap} className="space-y-5">
+          <form onSubmit={handleLogin} className="space-y-5">
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input
@@ -153,22 +168,22 @@ export default function LoginPage() {
               </div>
               <div className="relative">
                 <Input
-                  id="mat-khau"
-                  type={hienMatKhau ? "text" : "password"}
+                  id="password"
+                  type={showPassword ? "text" : "password"}
                   placeholder="••••••••"
                   autoComplete="current-password"
                   required
                   className="pr-10"
-                  value={form.matKhau}
-                  onChange={(e) => setForm((f) => ({ ...f, matKhau: e.target.value }))}
+                  value={form.password}
+                  onChange={(e) => setForm((f) => ({ ...f, password: e.target.value }))}
                 />
                 <button
                   type="button"
-                  onClick={() => setHienMatKhau((v) => !v)}
+                  onClick={() => setShowPassword((v) => !v)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-fast"
-                  aria-label={hienMatKhau ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
+                  aria-label={showPassword ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
                 >
-                  {hienMatKhau ? (
+                  {showPassword ? (
                     <EyeOffIcon className="w-4 h-4" />
                   ) : (
                     <EyeIcon className="w-4 h-4" />
@@ -180,9 +195,9 @@ export default function LoginPage() {
             <Button
               type="submit"
               className="w-full font-semibold"
-              disabled={dangTai}
+              disabled={isLoading}
             >
-              {dangTai ? (
+              {isLoading ? (
                 <>
                   <LoaderCircleIcon className="w-4 h-4 mr-2 animate-spin" />
                   Đang đăng nhập...
@@ -205,7 +220,8 @@ export default function LoginPage() {
             type="button"
             variant="outline"
             className="w-full font-medium gap-2.5"
-            onClick={() => alert("Google OAuth chưa được tích hợp")}
+            disabled={isLoading}
+            onClick={handleGoogleLogin}
           >
             <GoogleIcon />
             Tiếp tục với Google
