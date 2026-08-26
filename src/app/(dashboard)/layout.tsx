@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { MenuIcon } from "lucide-react";
 import { Sidebar } from "@/components/layout/sidebar";
-import { Header } from "@/components/layout/header";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
@@ -25,9 +24,7 @@ export default function DashboardLayout({
     }
   }, [isAuthenticated, router]);
 
-  if (!isAuthenticated) {
-    return null;
-  }
+  if (!isAuthenticated) return null;
 
   return (
     <div className="flex h-screen overflow-hidden bg-background">
@@ -38,31 +35,25 @@ export default function DashboardLayout({
 
       {/* Sidebar — mobile (Sheet) */}
       <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
-        <SheetContent side="left" className="p-0 w-60">
+        <SheetContent side="left" className="p-0 w-64">
           <Sidebar collapsed={false} onToggle={() => setMobileOpen(false)} />
         </SheetContent>
       </Sheet>
 
       {/* Main area */}
       <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
-        {/* Mobile hamburger + Header */}
-        <div className="flex items-center md:hidden px-4 h-16 border-b border-border gap-3 bg-background/80 backdrop-blur-sm shrink-0">
+        {/* Mobile top bar */}
+        <div className="flex items-center md:hidden px-4 h-14 border-b border-border gap-3 bg-background shrink-0">
           <Button
             variant="ghost"
             size="icon"
-            className="h-9 w-9 rounded-lg"
+            className="h-8 w-8 rounded-lg"
             onClick={() => setMobileOpen(true)}
             aria-label="Mở menu"
           >
-            <MenuIcon className="w-5 h-5" />
+            <MenuIcon className="w-4 h-4" />
           </Button>
-          <span className="font-bold text-foreground tracking-tight">SAGA</span>
-          <div className="flex-1" />
-        </div>
-
-        {/* Header — desktop */}
-        <div className="hidden md:block">
-          <Header />
+          <span className="font-bold text-foreground tracking-tight text-sm">SAGA</span>
         </div>
 
         {/* Page content */}

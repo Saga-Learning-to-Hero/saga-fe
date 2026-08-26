@@ -12,9 +12,17 @@
 - **Data Fetching**: TanStack React Query + Axios
 - **Graph**: Cytoscape.js
 - **Icons**: lucide-react
-- **Font**: Inter (UI) + JetBrains Mono (code/số liệu) — load qua `next/font/google`
+- **Font**: **Plus Jakarta Sans** (UI & Heading) + **JetBrains Mono** (Code & Số liệu/Metrics) — load qua `next/font/google` hỗ trợ tiếng Việt hoàn chỉnh.
 
-## Design System — SAGA globals.css
+## Design System — Academic Tech (globals.css)
+
+### Triết lý thiết kế (Theme: Academic Tech)
+- Phong cách giao diện lấy cảm hứng từ **Linear / Vercel / GitHub Next**: Trí tuệ, Hiện đại, Chuẩn Đại học & Phân tích Đồ thị.
+- **Primary Color**: Deep Indigo (`#4F46E5` / `oklch(0.52 0.22 265)`) — màu của trí tuệ và sự chuẩn mực.
+- **Accent Color**: Teal Cyan (`#06B6D4` / `oklch(0.65 0.18 200)`) — màu điểm nhấn dữ liệu, node đồ thị.
+- **Background**:
+  - **Light Mode**: Slate siêu nhạt `#F8FAFC` (`oklch(0.985 0.005 250)`), Sidebar nền `#FAFCFF` sáng sạch.
+  - **Dark Mode**: Deep Obsidian Slate `#0F172A` (`oklch(0.12 0.03 260)`), Sidebar `#131D31`.
 
 ### Nguyên tắc bất di bất dịch
 - **KHÔNG bao giờ hardcode màu, font, shadow, spacing** ở component hay page.
@@ -28,11 +36,12 @@ Surface:      var(--background), var(--card), var(--popover)
 Text:         var(--foreground), var(--muted-foreground)
 Border:       var(--border)
 Graph nodes:  var(--node-student), var(--node-activity), var(--node-criterion), var(--node-group), var(--node-outcome)
+Typography:   var(--font-sans) (Plus Jakarta Sans), var(--font-mono) (JetBrains Mono)
 ```
 
 ### Tailwind utilities tương ứng
 ```
-bg-primary, text-primary          → màu brand chính
+bg-primary, text-primary          → màu brand chính (Deep Indigo)
 bg-muted, text-muted-foreground   → màu phụ/mờ
 bg-card, border-border            → card surface
 text-success/warning/danger/info  → trạng thái (custom utility)
@@ -45,7 +54,7 @@ node-student/activity/criterion   → graph node color
 
 ### Dark mode
 - Tự động theo system preference (`prefers-color-scheme: dark`).
-- Cũng hỗ trợ toggle qua class `.dark` trên `<html>`.
+- Hỗ trợ toggle trực tiếp qua class `.dark` trên `<html>` và lưu `localStorage` key `saga-theme`.
 - Không cần viết variant `dark:` thủ công nếu đã dùng CSS variable.
 
 ## shadcn/ui
@@ -57,63 +66,23 @@ node-student/activity/criterion   → graph node color
 ## Cấu trúc thư mục
 ```
 src/
-├── app/              # Next.js App Router (pages, layouts)
-├── components/
-│   ├── ui/           # shadcn/ui components (KHÔNG sửa)
-│   └── [feature]/    # Component theo feature
-├── providers/        # React context providers
-├── hooks/            # Custom hooks
-├── lib/              # Utilities, helpers
-├── store/            # Zustand stores
-└── types/            # TypeScript types
-```
-
-## Component
-- Dùng `"use client"` chỉ khi thực sự cần (event handler, useState, useEffect).
-- Server Component là mặc định — ưu tiên fetch data ở Server Component.
-- Mỗi component nằm trong file riêng, tên file = tên component dạng kebab-case.
-- Export default cho page/layout, export named cho component tái sử dụng.
-
-## React Query
-- Mọi API call đều qua React Query (`useQuery`, `useMutation`).
-- Query key là mảng string mô tả rõ: `["students", id]`, `["graph", courseId]`.
-- Không dùng `useEffect` để fetch data.
-
-## Zustand
-- Mỗi feature có store riêng trong `src/store/`.
-- Tên store: `useXxxStore` (ví dụ: `useGraphStore`, `useAuthStore`).
-- Không lưu server state vào Zustand — server state thuộc về React Query.
-
-## Quy trình kiểm tra bắt buộc (Verification)
-**Sau mỗi lần thay đổi code, PHẢI chạy đủ 2 lệnh theo thứ tự:**
-
-```bash
-npm run lint    # Kiểm tra lỗi ESLint — phải pass 0 error
-npm run build   # Build production — phải thành công không lỗi
-```
-
-- Nếu lint báo **error** → phải fix trước khi tiếp tục, không được bỏ qua.
-- Nếu lint báo **warning** → ghi nhận, cố gắng fix nếu có thể.
-- Nếu build **fail** → bắt buộc fix trước khi commit.
-- Chỉ commit khi cả lint + build đều pass.
-
-## Cấu trúc thư mục (thực tế)
-```
-src/
 ├── app/
 │   ├── (auth)/           # Route group auth (không có header/sidebar)
 │   │   └── login/        # Trang đăng nhập
+│   ├── (dashboard)/      # Route group dashboard (App Shell Layout với Sidebar)
 │   ├── (marketing)/      # Route group landing/marketing
 │   │   └── page.tsx      # Landing page (route "/")
-│   └── layout.tsx        # Root layout — font, QueryProvider
+│   └── layout.tsx        # Root layout — Plus Jakarta Sans + JetBrains Mono, QueryProvider
 ├── components/
 │   ├── ui/               # shadcn/ui components (KHÔNG sửa)
-│   └── landing/          # Shared UI components theo trang/nhóm
+│   ├── landing/          # UI components cho trang landing
+│   └── layout/           # App Shell Layout: Sidebar, Header
+│       └── sidebar/      # Sidebar modular (index, sidebar-nav, sidebar-user-profile, nav-config)
 ├── features/             # Business logic theo domain (cùng cấp với components/)
 │   ├── assessment/       # Tính năng đánh giá
-│   ├── auth/             # Tính năng xác thực
+│   ├── auth/             # Tính năng xác thực & Auth store
 │   ├── dashboard/        # Tính năng dashboard
-│   ├── graph/            # Tính năng đồ thị
+│   ├── graph/            # Tính năng đồ thị Cytoscape
 │   └── integrations/     # Tích hợp bên ngoài
 ├── providers/            # React context providers
 ├── hooks/                # Custom hooks dùng chung
@@ -125,5 +94,15 @@ src/
 > **Phân biệt `components/` vs `features/`**:
 > - `components/` → UI thuần, không có business logic, có thể tái sử dụng nhiều nơi.
 > - `features/` → Mỗi folder là một domain nghiệp vụ, chứa components, hooks, store, types riêng của feature đó.
-> - Feature component chỉ dùng trong feature đó → để trong `features/[domain]/components/`.
-> - Component dùng lại ở nhiều feature → để trong `components/`.
+
+## Quy trình kiểm tra bắt buộc (Verification)
+**Sau mỗi lần thay đổi code, PHẢI chạy đủ 2 lệnh theo thứ tự:**
+
+```bash
+npm run lint    # Kiểm tra lỗi ESLint — phải pass 0 error
+npm run build   # Build production — phải thành công không lỗi
+```
+
+- Nếu lint báo **error** → phải fix trước khi tiếp tục, không được bỏ qua.
+- Nếu build **fail** → bắt buộc fix trước khi commit.
+- Chỉ commit khi cả lint + build đều pass.
