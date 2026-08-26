@@ -1,0 +1,16 @@
+import type { LecturerCourse } from "../types/course";
+
+export const SEMESTERS = [
+  { value: "FA26", label: "Fall 2026 (FA26)", subLabel: "Đang diễn ra" },
+  { value: "SU26", label: "Summer 2026 (SU26)", subLabel: "Đã hoàn thành" },
+  { value: "SP27", label: "Spring 2027 (SP27)", subLabel: "Sắp diễn ra" },
+];
+
+export const MOCK_LECTURER_COURSES: LecturerCourse[] = [
+  { id: "prn212-01", code: "PRN212", name: "Lập trình ứng dụng với .NET", semesterId: "FA26", schedule: "Thứ 2, 07:30 – 09:30", room: "BE-204", studentCount: 42, groupCount: 8, progress: 68, nextSession: "01/09", status: "ACTIVE", tone: "indigo" },
+  { id: "swd392-02", code: "SWD392", name: "Kiến trúc & Thiết kế phần mềm", semesterId: "FA26", schedule: "Thứ 3, 09:45 – 11:45", room: "DE-308", studentCount: 36, groupCount: 7, progress: 52, nextSession: "02/09", status: "ACTIVE", tone: "cyan" },
+  { id: "swp391-03", code: "SWP391", name: "Dự án phát triển phần mềm", semesterId: "FA26", schedule: "Thứ 5, 13:00 – 16:00", room: "AI Lab", studentCount: 28, groupCount: 6, progress: 81, nextSession: "04/09", status: "ACTIVE", tone: "emerald" },
+  { id: "swt301-04", code: "SWT301", name: "Kiểm thử phần mềm", semesterId: "FA26", schedule: "Thứ 6, 07:30 – 09:30", room: "BE-105", studentCount: 45, groupCount: 9, progress: 35, nextSession: "05/09", status: "ACTIVE", tone: "amber" },
+  { id: "prm392-05", code: "PRM392", name: "Phát triển ứng dụng di động", semesterId: "SU26", schedule: "Thứ 4, 13:00 – 15:00", room: "DE-206", studentCount: 39, groupCount: 8, progress: 100, nextSession: "Đã kết thúc", status: "COMPLETED", tone: "indigo" },
+  { id: "mln122-06", code: "MLN122", name: "Nhập môn Machine Learning", semesterId: "SP27", schedule: "Thứ 2, 09:45 – 11:45", room: "AI Lab", studentCount: 40, groupCount: 8, progress: 0, nextSession: "06/01", status: "UPCOMING", tone: "cyan" },
+];

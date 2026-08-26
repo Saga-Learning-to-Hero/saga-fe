@@ -10,6 +10,14 @@ const MOCK_USER: User = {
   role: 'STUDENT',
 };
 
+const MOCK_USER_2: User = {
+  id:'mock-002',
+  name:'Nguyễn Mạnh Cường',
+  email:'lecturer@fe.edu.vn',
+  avatar:'https://api.dicebear.com/9.x/avataaars/svg?seed=saga-user',
+  role:'LECTURER',
+};
+
 interface AuthState {
   isAuthenticated: boolean;
   user: User | null;
