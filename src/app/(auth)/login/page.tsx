@@ -30,7 +30,7 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (isAuthenticated) {
-      router.replace("/dashboard");
+      router.replace("/courses");
     }
   }, [isAuthenticated, router]);
 
@@ -39,14 +39,14 @@ export default function LoginPage() {
     setIsLoading(true);
     await new Promise((r) => setTimeout(r, 1000));
     login();
-    router.push("/dashboard");
+    router.push("/courses");
   };
 
   const handleGoogleLogin = async () => {
     setIsLoading(true);
     await new Promise((r) => setTimeout(r, 800));
     login();
-    router.push("/dashboard");
+    router.push("/courses");
   };
 
   return (
