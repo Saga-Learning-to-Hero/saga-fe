@@ -306,6 +306,12 @@
     box-sizing: border-box;
   }
 
+  /* Đảm bảo element ẩn trong Tabs / Modals luôn ẩn dứt khoát */
+  [hidden],
+  [data-hidden] {
+    display: none !important;
+  }
+
   html, body {
     @apply bg-background text-foreground;
     margin: 0;
