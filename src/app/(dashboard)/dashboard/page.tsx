@@ -1,38 +1,95 @@
-import { LayoutDashboardIcon } from "lucide-react";
+"use client";
+
+import { useState } from "react";
+import { LayoutDashboardIcon, RefreshCwIcon } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { CustomSelect } from "@/components/common/custom-select";
+import { DashboardKPIsSection } from "@/features/admin/dashboard/components/dashboard-kpis";
+import { DashboardChartsSection } from "@/features/admin/dashboard/components/dashboard-charts";
+import { WebhookIntegrationSection } from "@/features/admin/dashboard/components/webhook-integration-card";
+import { RecentAuditAndQuickActionsSection } from "@/features/admin/dashboard/components/recent-audit-stream";
+import { MOCK_DASHBOARD_DATA } from "@/features/admin/dashboard/data/mock-dashboard";
 
 export default function DashboardPage() {
+  const [selectedSemester, setSelectedSemester] = useState<string>("FA26");
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const currentData = MOCK_DASHBOARD_DATA[selectedSemester] || MOCK_DASHBOARD_DATA.FA26;
+
+  const handleRefresh = () => {
+    setIsRefreshing(true);
+    setTimeout(() => {
+      setIsRefreshing(false);
+    }, 400);
+  };
+
   return (
-    <div className="space-y-6">
-      <div className="flex items-center gap-3">
-        <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
-          <LayoutDashboardIcon className="w-5 h-5 text-primary" />
-        </div>
+    <div className="p-6 space-y-6 max-w-[1600px] mx-auto">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Dashboard</h1>
-          <p className="text-sm text-muted-foreground">
-            Tổng quan hệ thống đánh giá học tập
-          </p>
+          <div className="flex items-center gap-2.5">
+            <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0">
+              <LayoutDashboardIcon className="w-5 h-5" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h1 className="text-xl font-bold text-foreground tracking-tight">
+                  Trung tâm điều hành SAGA
+                </h1>
+                <Badge className="bg-success-muted text-success border-0 text-[10px] font-semibold">
+                  Hệ thống sẵn sàng
+                </Badge>
+              </div>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Giám sát thời gian thực tiến độ đồ án, chỉ số Traceability và trạng thái tích hợp Webhook Jira / GitHub.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Top Controls: Semester Selector & Refresh Button */}
+        <div className="flex items-center gap-2.5">
+          <div className="w-48">
+            <CustomSelect
+              value={selectedSemester}
+              onChange={(val) => setSelectedSemester(val)}
+              options={[
+                { value: "FA26", label: "Fall 2026 (FA26)", subLabel: "Đang diễn ra" },
+                { value: "SU26", label: "Summer 2026 (SU26)", subLabel: "Đã hoàn thành" },
+                { value: "SP27", label: "Spring 2027 (SP27)", subLabel: "Sắp diễn ra" },
+              ]}
+            />
+          </div>
+
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleRefresh}
+            disabled={isRefreshing}
+            className="h-9 gap-1.5 text-xs font-semibold rounded-xl cursor-pointer shrink-0"
+          >
+            <RefreshCwIcon className={`w-3.5 h-3.5 ${isRefreshing ? "animate-spin" : ""}`} />
+            Làm mới
+          </Button>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {[
-          { label: "Sinh viên", value: "128", color: "text-primary" },
-          { label: "Hoạt động", value: "342", color: "text-saga-accent" },
-          { label: "Đánh giá", value: "56", color: "text-saga-success" },
-        ].map((stat) => (
-          <div key={stat.label} className="surface-raised p-5 space-y-1">
-            <p className="text-sm text-muted-foreground">{stat.label}</p>
-            <p className={`text-3xl font-bold ${stat.color}`}>{stat.value}</p>
-          </div>
-        ))}
-      </div>
+      {/* 1. KPIs Section */}
+      <DashboardKPIsSection kpis={currentData.kpis} />
 
-      <div className="surface-raised p-8 text-center text-muted-foreground">
-        <p className="text-sm">
-          Nội dung dashboard sẽ được xây dựng trong các sprint tiếp theo.
-        </p>
-      </div>
+      {/* 2. Charts Section */}
+      <DashboardChartsSection />
+
+      {/* 3. Webhook & Integration Section */}
+      <WebhookIntegrationSection
+        integrations={currentData.integrations}
+        unconnectedGroups={currentData.unconnectedGroups}
+      />
+
+      {/* 3. Recent Audit Logs & Quick Actions */}
+      <RecentAuditAndQuickActionsSection />
     </div>
   );
 }
