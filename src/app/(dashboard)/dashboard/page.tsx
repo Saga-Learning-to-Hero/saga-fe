@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   LayoutDashboardIcon,
@@ -10,12 +10,9 @@ import {
   BookOpenIcon,
   ArrowLeftRightIcon,
   GitGraphIcon,
-  CheckCircle2Icon,
-  ClockIcon,
-  UsersIcon,
-  SparklesIcon,
   CheckSquareIcon,
   GraduationCapIcon,
+  SparklesIcon,
 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -28,6 +25,7 @@ import { RecentAuditAndQuickActionsSection } from "@/features/admin/dashboard/co
 import { MOCK_DASHBOARD_DATA } from "@/features/admin/dashboard/data/mock-dashboard";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
 import { MOCK_STUDENT_COURSES } from "@/features/student/courses/data/mock-student-courses";
+import { StudentDashboardAnalytics } from "@/features/student/dashboard/components/student-dashboard-analytics";
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -47,10 +45,10 @@ export default function DashboardPage() {
     }, 400);
   };
 
-  // ── Render Dashboard Sinh viên theo Khóa học đã chọn ──────────────
+  // ── Render Dashboard Sinh viên với Hệ thống Chart & Analytics ──────────────
   if (isStudent) {
     return (
-      <div className="p-4 sm:p-6 space-y-6 max-w-[1600px] mx-auto">
+      <div className="p-4 sm:p-6 space-y-6 max-w-[1600px] mx-auto pb-12">
         {/* ── Active Course Header Bar ───────────────────────────────── */}
         <div className="bg-card border border-border/80 rounded-2xl p-5 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex items-start md:items-center gap-3.5">
@@ -74,11 +72,11 @@ export default function DashboardPage() {
                   </Badge>
                 )}
               </div>
-              <h1 className="text-xl font-extrabold text-foreground tracking-tight">
+              <h1 className="text-xl sm:text-2xl font-extrabold text-foreground tracking-tight">
                 {activeCourse.subjectName}
               </h1>
               <p className="text-xs text-muted-foreground flex items-center gap-2">
-                <span>GV: <strong>{activeCourse.lecturer.fullName}</strong> ({activeCourse.lecturer.email})</span>
+                <span>Giảng viên hướng dẫn: <strong>{activeCourse.lecturer.fullName}</strong> ({activeCourse.lecturer.email})</span>
               </p>
             </div>
           </div>
@@ -107,64 +105,13 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* ── Student Dashboard Overview Grid ────────────────────────── */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-          {/* Card 1: Thông tin nhóm đồ án */}
-          <div className="bg-card border border-border/80 rounded-2xl p-5 space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                Nhóm đồ án
-              </span>
-              <SparklesIcon className="w-4 h-4 text-amber-500" />
-            </div>
-            <h3 className="text-lg font-bold text-foreground">
-              {activeCourse.myGroup?.name || "Chưa phân nhóm"}
-            </h3>
-            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              <Badge className="bg-amber-500/15 text-amber-700 dark:text-amber-300 border-0">
-                {activeCourse.myGroup?.role === "LEADER" ? "Trưởng nhóm (Leader)" : "Thành viên"}
-              </Badge>
-              <span>{activeCourse.myGroup?.membersCount || 1} thành viên</span>
-            </div>
-          </div>
+        {/* ── Student Analytics Dashboard (KPIs, Charts & Role Controls) ──── */}
+        <StudentDashboardAnalytics initialRole="LEADER" />
 
-          {/* Card 2: Tiến độ SAGA Graph */}
-          <div className="bg-card border border-border/80 rounded-2xl p-5 space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                SAGA Graph Traceability
-              </span>
-              <GitGraphIcon className="w-4 h-4 text-primary" />
-            </div>
-            <h3 className="text-lg font-bold text-foreground">
-              92.4% Độ phủ truy xuất
-            </h3>
-            <p className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">
-              ✓ Đạt chuẩn đầu ra đồ án tốt nghiệp
-            </p>
-          </div>
-
-          {/* Card 3: Nhiệm vụ cá nhân */}
-          <div className="bg-card border border-border/80 rounded-2xl p-5 space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                Nhiệm vụ cá nhân
-              </span>
-              <CheckSquareIcon className="w-4 h-4 text-blue-500" />
-            </div>
-            <h3 className="text-lg font-bold text-foreground">
-              4/5 Nhiệm vụ hoàn thành
-            </h3>
-            <p className="text-xs text-muted-foreground">
-              1 nhiệm vụ đang thực hiện Sprint 3
-            </p>
-          </div>
-        </div>
-
-        {/* ── Quick Links to Feature Sections ─────────────────────────── */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* ── Quick Links ─────────────────────────────────────────────── */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-2">
           <Link href="/graph">
-            <div className="p-4 rounded-2xl bg-primary/5 hover:bg-primary/10 border border-primary/20 transition-all cursor-pointer space-y-2 group">
+            <div className="p-4 rounded-2xl bg-card border border-border/70 hover:border-primary/40 transition-all cursor-pointer space-y-2 group shadow-xs">
               <GitGraphIcon className="w-6 h-6 text-primary group-hover:scale-110 transition-transform" />
               <h4 className="font-bold text-sm text-foreground">Đồ thị truy xuất SAGA</h4>
               <p className="text-xs text-muted-foreground">Xem cây truy xuất công việc, commit và yêu cầu.</p>
@@ -172,7 +119,7 @@ export default function DashboardPage() {
           </Link>
 
           <Link href="/tasks">
-            <div className="p-4 rounded-2xl bg-blue-500/5 hover:bg-blue-500/10 border border-blue-500/20 transition-all cursor-pointer space-y-2 group">
+            <div className="p-4 rounded-2xl bg-card border border-border/70 hover:border-blue-500/40 transition-all cursor-pointer space-y-2 group shadow-xs">
               <CheckSquareIcon className="w-6 h-6 text-blue-500 group-hover:scale-110 transition-transform" />
               <h4 className="font-bold text-sm text-foreground">Nhiệm vụ của tôi</h4>
               <p className="text-xs text-muted-foreground">Quản lý danh sách task đồng bộ từ Jira.</p>
@@ -180,7 +127,7 @@ export default function DashboardPage() {
           </Link>
 
           <Link href="/assessment">
-            <div className="p-4 rounded-2xl bg-emerald-500/5 hover:bg-emerald-500/10 border border-emerald-500/20 transition-all cursor-pointer space-y-2 group">
+            <div className="p-4 rounded-2xl bg-card border border-border/70 hover:border-emerald-500/40 transition-all cursor-pointer space-y-2 group shadow-xs">
               <GraduationCapIcon className="w-6 h-6 text-emerald-500 group-hover:scale-110 transition-transform" />
               <h4 className="font-bold text-sm text-foreground">Đánh giá của tôi</h4>
               <p className="text-xs text-muted-foreground">Xem kết quả đánh giá thành viên và giảng viên.</p>
@@ -188,7 +135,7 @@ export default function DashboardPage() {
           </Link>
 
           <Link href="/contribution">
-            <div className="p-4 rounded-2xl bg-amber-500/5 hover:bg-amber-500/10 border border-amber-500/20 transition-all cursor-pointer space-y-2 group">
+            <div className="p-4 rounded-2xl bg-card border border-border/70 hover:border-amber-500/40 transition-all cursor-pointer space-y-2 group shadow-xs">
               <SparklesIcon className="w-6 h-6 text-amber-500 group-hover:scale-110 transition-transform" />
               <h4 className="font-bold text-sm text-foreground">Mức đóng góp</h4>
               <p className="text-xs text-muted-foreground">Biểu đồ đo lường mức độ đóng góp cá nhân.</p>
