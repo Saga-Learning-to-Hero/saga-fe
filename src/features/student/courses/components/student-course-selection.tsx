@@ -134,9 +134,6 @@ export function StudentCourseSelection({ onSelectCourse }: StudentCourseSelectio
                 {currentSemester.name} ({currentSemester.code})
               </Badge>
             </div>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              Hiển thị 5 kỳ mới nhất trên thanh Tab, các kỳ cũ hơn nằm trong Menu Dropdown.
-            </p>
           </div>
 
           {/* Controls tìm kiếm & lọc */}
@@ -175,31 +172,28 @@ export function StudentCourseSelection({ onSelectCourse }: StudentCourseSelectio
         <div className="flex items-center gap-1 bg-muted/60 p-1 rounded-xl text-xs">
           <button
             onClick={() => setStatusFilter("ALL")}
-            className={`px-3 py-1 rounded-lg font-medium transition-colors cursor-pointer ${
-              statusFilter === "ALL"
+            className={`px-3 py-1 rounded-lg font-medium transition-colors cursor-pointer ${statusFilter === "ALL"
                 ? "bg-card text-foreground shadow-xs font-semibold"
                 : "text-muted-foreground hover:text-foreground"
-            }`}
+              }`}
           >
             Tất cả
           </button>
           <button
             onClick={() => setStatusFilter("IN_PROGRESS")}
-            className={`px-3 py-1 rounded-lg font-medium transition-colors cursor-pointer ${
-              statusFilter === "IN_PROGRESS"
+            className={`px-3 py-1 rounded-lg font-medium transition-colors cursor-pointer ${statusFilter === "IN_PROGRESS"
                 ? "bg-card text-blue-600 dark:text-blue-400 shadow-xs font-semibold"
                 : "text-muted-foreground hover:text-foreground"
-            }`}
+              }`}
           >
             Đang học
           </button>
           <button
             onClick={() => setStatusFilter("COMPLETED")}
-            className={`px-3 py-1 rounded-lg font-medium transition-colors cursor-pointer ${
-              statusFilter === "COMPLETED"
+            className={`px-3 py-1 rounded-lg font-medium transition-colors cursor-pointer ${statusFilter === "COMPLETED"
                 ? "bg-card text-emerald-600 dark:text-emerald-400 shadow-xs font-semibold"
                 : "text-muted-foreground hover:text-foreground"
-            }`}
+              }`}
           >
             Đã kết thúc
           </button>

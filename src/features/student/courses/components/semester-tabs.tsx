@@ -90,7 +90,7 @@ export function SemesterTabs({
             >
               <HistoryIcon className="w-3.5 h-3.5 opacity-80" />
               <span>
-                {isOlderActive ? `Kỳ khác: ${activeOlderSemester?.name}` : "Kỳ học cũ hơn"}
+                {isOlderActive ? `Kỳ khác: ${activeOlderSemester?.name}` : "Học kỳ cũ"}
               </span>
               {isOlderActive && (
                 <Badge className="bg-primary/20 text-primary border-0 text-[10px] px-1.5 py-0 font-mono">
@@ -103,7 +103,7 @@ export function SemesterTabs({
             <DropdownMenuContent align="end" className="w-56 p-1.5 rounded-xl">
               <DropdownMenuLabel className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider px-2 py-1.5 flex items-center gap-1.5">
                 <HistoryIcon className="w-3 h-3" />
-                Các học kỳ cũ hơn
+                Các học kỳ cũ
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
 
