@@ -1,8 +1,9 @@
 import { LandingNavbar } from "@/components/landing/landing-navbar";
 import { HeroSection } from "@/components/landing/hero-section";
-import { WhySagaSection } from "@/components/landing/why-saga-section";
-import { FeaturesSection } from "@/components/landing/features-section";
-import { TechStackSection } from "@/components/landing/tech-stack-section";
+import { BentoGridSection } from "@/components/landing/bento-grid-section";
+import { RoleShowcaseSection } from "@/components/landing/role-showcase-section";
+import { WorkflowSection } from "@/components/landing/workflow-section";
+import { FaqSection } from "@/components/landing/faq-section";
 import { CtaFooterSection } from "@/components/landing/cta-footer-section";
 
 export default function LandingPage() {
@@ -11,9 +12,10 @@ export default function LandingPage() {
       <LandingNavbar />
       <main className="flex-1">
         <HeroSection />
-        <WhySagaSection />
-        <FeaturesSection />
-        <TechStackSection />
+        <BentoGridSection />
+        <RoleShowcaseSection />
+        <WorkflowSection />
+        <FaqSection />
       </main>
       <CtaFooterSection />
     </div>

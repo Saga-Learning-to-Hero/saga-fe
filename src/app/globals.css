@@ -12,6 +12,10 @@
 /* ---------- Dark variant: class .dark HOẶC system preference ---------- */
 @custom-variant dark (&:is(.dark *), @media (prefers-color-scheme: dark));
 
+html {
+  scroll-behavior: smooth;
+}
+
 /* ============================================================
    THEME BRIDGE — ánh xạ CSS vars → Tailwind utilities
    ============================================================ */
@@ -414,4 +418,19 @@
   .node-criterion { color: var(--node-criterion); }
   .node-group     { color: var(--node-group);     }
   .node-outcome   { color: var(--node-outcome);   }
+
+  /* --- Marquee Animation --- */
+  .animate-marquee {
+    display: flex;
+    width: max-content;
+    animation: marquee-scroll 32s linear infinite;
+  }
+  .animate-marquee:hover {
+    animation-play-state: paused;
+  }
+}
+
+@keyframes marquee-scroll {
+  0% { transform: translateX(0%); }
+  100% { transform: translateX(-50%); }
 }

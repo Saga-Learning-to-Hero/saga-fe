@@ -7,6 +7,7 @@ import { LogOutIcon, ShieldCheckIcon, UserIcon } from "lucide-react";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
 import { StudentCourseSelection } from "@/features/student/courses/components/student-course-selection";
 import { SagaLogo } from "@/components/common/saga-logo";
+import { ThemeToggle } from "@/components/common/theme-toggle";
 import type { StudentCourse } from "@/features/student/courses/types/student-course";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -78,7 +79,8 @@ export default function CoursesSelectionPage() {
             </div>
           </div>
 
-          {/* Logout Button */}
+          <ThemeToggle />
+
           <Button
             variant="ghost"
             size="icon"

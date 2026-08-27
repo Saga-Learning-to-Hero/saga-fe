@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { SagaLogo } from "@/components/common/saga-logo";
+import { ThemeToggle } from "@/components/common/theme-toggle";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
 
 function GoogleIcon() {
@@ -24,30 +25,44 @@ function GoogleIcon() {
 
 export default function LoginPage() {
   const router = useRouter();
-  const { isAuthenticated, login } = useAuthStore();
+  const { isAuthenticated, user, login } = useAuthStore();
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [form, setForm] = useState({ email: "", password: "" });
 
   useEffect(() => {
-    if (isAuthenticated) {
-      router.replace("/courses");
+    if (isAuthenticated && user) {
+      if (user.role === "STUDENT") {
+        router.replace("/courses");
+      } else {
+        router.replace("/dashboard");
+      }
     }
-  }, [isAuthenticated, router]);
+  }, [isAuthenticated, user, router]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     await new Promise((r) => setTimeout(r, 1000));
     login();
-    router.push("/courses");
+    const currentUser = useAuthStore.getState().user;
+    if (currentUser?.role === "STUDENT") {
+      router.push("/courses");
+    } else {
+      router.push("/dashboard");
+    }
   };
 
   const handleGoogleLogin = async () => {
     setIsLoading(true);
     await new Promise((r) => setTimeout(r, 800));
     login();
-    router.push("/courses");
+    const currentUser = useAuthStore.getState().user;
+    if (currentUser?.role === "STUDENT") {
+      router.push("/courses");
+    } else {
+      router.push("/dashboard");
+    }
   };
 
   return (
@@ -114,14 +129,17 @@ export default function LoginPage() {
       {/* Form panel — phải */}
       <div className="flex flex-col justify-center items-center px-6 py-12 lg:px-16 bg-background">
         <div className="w-full max-w-sm space-y-7">
-          {/* Back link */}
-          <Link
-            href="/"
-            className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-fast"
-          >
-            <ArrowLeftIcon className="w-4 h-4" />
-            Quay lại trang chủ
-          </Link>
+          <div className="flex items-center justify-between">
+            <Link
+              href="/"
+              className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-fast"
+            >
+              <ArrowLeftIcon className="w-4 h-4" />
+              Quay lại trang chủ
+            </Link>
+
+            <ThemeToggle />
+          </div>
 
           {/* Mobile logo */}
           <div className="flex md:hidden items-center mb-2">
