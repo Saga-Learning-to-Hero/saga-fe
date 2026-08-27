@@ -69,6 +69,7 @@ export function CourseDialog({
       const matchedLecturer = MOCK_LECTURERS.find(
         (l) => l.email === editingCourse.lecturer.email || l.fullName === editingCourse.lecturer.fullName
       );
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setFormData({
         code: editingCourse.code,
         name: editingCourse.name,

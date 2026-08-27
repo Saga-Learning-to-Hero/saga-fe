@@ -44,6 +44,7 @@ export function SemesterDialog({
 
   useEffect(() => {
     if (editingSemester) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setFormData({
         code: editingSemester.code,
         name: editingSemester.name,

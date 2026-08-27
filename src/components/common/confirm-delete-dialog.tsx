@@ -49,7 +49,7 @@ export function ConfirmDeleteDialog({
               ) : (
                 <>
                   Bạn có chắc chắn muốn xóa {itemType}{" "}
-                  {itemName && <strong className="text-foreground font-semibold">"{itemName}"</strong>}?
+                  {itemName && <strong className="text-foreground font-semibold">&quot;{itemName}&quot;</strong>}?
                   Hành động này không thể hoàn tác và dữ liệu liên quan sẽ bị ảnh hưởng.
                 </>
               )}

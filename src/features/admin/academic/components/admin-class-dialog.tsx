@@ -36,6 +36,7 @@ export function AdminClassDialog({
 
   useEffect(() => {
     if (editingClass) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setFormData({
         code: editingClass.code,
         name: editingClass.name,

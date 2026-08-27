@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { DatabaseIcon, GraduationCapIcon, BookOpenIcon, CalendarIcon, UsersIcon, SchoolIcon } from "lucide-react";
+import { DatabaseIcon, GraduationCapIcon, BookOpenIcon, CalendarIcon, SchoolIcon } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { CourseManagement } from "@/features/admin/academic/components/course-management";
@@ -27,8 +27,6 @@ export default function AdminAcademicPage() {
   const [subjects, setSubjects] = useState<Subject[]>(MOCK_SUBJECTS);
   const [semesters, setSemesters] = useState<Semester[]>(MOCK_SEMESTERS);
 
-  // Stats calculation
-  const totalStudents = courses.reduce((acc, c) => acc + c.studentsCount, 0);
 
   // Course CRUD (TRUNG TÂM)
   const handleAddCourse = (

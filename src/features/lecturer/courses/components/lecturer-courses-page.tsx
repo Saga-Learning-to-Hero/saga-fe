@@ -1,15 +1,25 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { BellIcon, BookOpenIcon, PlusIcon, SearchIcon, SparklesIcon, UsersIcon } from "lucide-react";
+import { BellIcon, BookOpenIcon, SearchIcon, SparklesIcon, UsersIcon } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { CustomSelect } from "@/components/common/custom-select";
+import { useAuthStore } from "@/features/auth/store/useAuthStore";
 import { CourseCard } from "./course-card";
 import { MOCK_LECTURER_COURSES, SEMESTERS } from "../data/mock-courses";
 
 export function LecturerCoursesPage() {
+  const { user } = useAuthStore();
+  const displayName = user?.name ?? 'Giảng viên';
+  const initials = displayName
+    .split(' ')
+    .slice(-2)
+    .map((w) => w[0])
+    .join('')
+    .toUpperCase();
+
   const [semester, setSemester] = useState("FA26");
   const [search, setSearch] = useState("");
 
@@ -26,14 +36,13 @@ export function LecturerCoursesPage() {
         <div className="flex items-center gap-2">
           <Button variant="ghost" size="icon" className="relative size-9 rounded-full" aria-label="Thông báo"><BellIcon className="size-4" /><span className="absolute right-2 top-2 size-1.5 rounded-full bg-destructive" /></Button>
           <div className="hidden h-7 w-px bg-border sm:block" />
-          <Avatar size="sm"><AvatarFallback className="bg-primary/10 text-[10px] font-bold text-primary">LH</AvatarFallback></Avatar>
-          <div className="hidden sm:block"><p className="text-[11px] font-bold">Lê Hoàng Hải</p><p className="text-[9px] text-muted-foreground">Giảng viên</p></div>
+          <Avatar size="sm"><AvatarFallback className="bg-primary/10 text-[10px] font-bold text-primary">{initials}</AvatarFallback></Avatar>
+          <div className="hidden sm:block"><p className="text-[11px] font-bold">{displayName}</p><p className="text-[9px] text-muted-foreground">Giảng viên</p></div>
         </div>
       </header>
 
       <section className="flex flex-col justify-between gap-4 lg:flex-row lg:items-end">
         <div><div className="mb-2 flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.16em] text-primary"><SparklesIcon className="size-3" />Học kỳ {semester}</div><h1 className="text-2xl font-extrabold tracking-tight sm:text-3xl">Lớp học của tôi</h1><p className="mt-1.5 max-w-xl text-xs leading-5 text-muted-foreground">Theo dõi tiến độ, nhóm dự án và mức độ đóng góp của sinh viên trong từng lớp học.</p></div>
-        <Button className="h-10 gap-2 rounded-xl text-xs font-semibold shadow-saga-sm"><PlusIcon className="size-4" />Tạo lớp học</Button>
       </section>
 
       <section className="grid grid-cols-1 gap-3 sm:grid-cols-3">

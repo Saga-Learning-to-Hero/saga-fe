@@ -1,6 +1,7 @@
+import Link from "next/link";
 import { ArrowRightIcon, CalendarDaysIcon, MapPinIcon, MoreHorizontalIcon, UsersIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import type { LecturerCourse } from "../types/course";
@@ -46,9 +47,12 @@ export function CourseCard({ course }: { course: LecturerCourse }) {
       </CardContent>
 
       <CardFooter className="mt-5 border-t bg-muted/30 px-5 py-3">
-        <Button variant="ghost" className="h-8 w-full justify-between px-2 text-xs font-semibold text-foreground hover:text-primary">
+        <Link
+          href={`/lecturer/courses/${course.id}`}
+          className={buttonVariants({ variant: "ghost", className: "h-8 w-full justify-between px-2 text-xs font-semibold text-foreground hover:text-primary" })}
+        >
           <span className="flex items-center gap-2"><UsersIcon className="size-3.5" />Vào không gian lớp học</span><ArrowRightIcon className="size-3.5" />
-        </Button>
+        </Link>
       </CardFooter>
     </Card>
   );

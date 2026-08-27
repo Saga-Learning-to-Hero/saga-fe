@@ -3,19 +3,11 @@ import { persist } from 'zustand/middleware';
 import type { Role, User } from '@/types/auth';
 
 const MOCK_USER: User = {
-  id: 'mock-001',
-  name: 'Lê Hoàng Hải',
-  email: 'hai.lh@university.edu.vn',
+  id: 'mock-002',
+  name: 'Nguyễn Mạnh Cường',
+  email: 'lecturer@fe.edu.vn',
   avatar: 'https://api.dicebear.com/9.x/avataaars/svg?seed=saga-user',
-  role: 'STUDENT',
-};
-
-const MOCK_USER_2: User = {
-  id:'mock-002',
-  name:'Nguyễn Mạnh Cường',
-  email:'lecturer@fe.edu.vn',
-  avatar:'https://api.dicebear.com/9.x/avataaars/svg?seed=saga-user',
-  role:'LECTURER',
+  role: 'LECTURER',
 };
 
 interface AuthState {
