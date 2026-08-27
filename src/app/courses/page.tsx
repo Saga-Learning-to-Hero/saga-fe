@@ -3,13 +3,13 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { GitGraphIcon, LogOutIcon, ShieldCheckIcon, UserIcon } from "lucide-react";
+import { LogOutIcon, ShieldCheckIcon, UserIcon } from "lucide-react";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
 import { StudentCourseSelection } from "@/features/student/courses/components/student-course-selection";
+import { SagaLogo } from "@/components/common/saga-logo";
 import type { StudentCourse } from "@/features/student/courses/types/student-course";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
 
 export default function CoursesSelectionPage() {
   const router = useRouter();
@@ -38,19 +38,9 @@ export default function CoursesSelectionPage() {
       {/* ── Standalone Top Navigation Header (Không dùng Sidebar) ──────── */}
       <header className="sticky top-0 z-40 bg-card/80 backdrop-blur-md border-b border-border/80 px-4 sm:px-8 h-16 flex items-center justify-between shadow-xs">
         {/* Logo SAGA */}
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-primary flex items-center justify-center text-primary-foreground shadow-xs">
-            <GitGraphIcon className="w-5 h-5" />
-          </div>
-          <div className="flex flex-col">
-            <span className="font-extrabold text-foreground text-lg tracking-tight leading-tight">
-              SAGA
-            </span>
-            <span className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider">
-              Student Portal
-            </span>
-          </div>
-        </div>
+        <Link href="/courses" className="hover:opacity-95 transition-opacity">
+          <SagaLogo size="sm" showText={true} showSubtitle={true} subtitleText="Student Portal" />
+        </Link>
 
         {/* User Info & Actions */}
         <div className="flex items-center gap-3">

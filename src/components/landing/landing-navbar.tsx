@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { GitGraphIcon } from "lucide-react";
+import { SagaLogo } from "@/components/common/saga-logo";
 import { buttonVariants } from "@/components/ui/button";
 
 const navLinks = [
@@ -12,11 +12,8 @@ export function LandingNavbar() {
   return (
     <header className="sticky top-0 z-[var(--z-sticky)] border-b border-border bg-background/80 backdrop-blur-md">
       <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between gap-6">
-        <Link href="/" className="flex items-center gap-2.5 shrink-0">
-          <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
-            <GitGraphIcon className="w-4 h-4 text-primary-foreground" />
-          </div>
-          <span className="font-bold text-foreground text-lg tracking-tight">SAGA</span>
+        <Link href="/" className="flex items-center shrink-0 hover:opacity-90 transition-opacity">
+          <SagaLogo size="sm" showText={true} showSubtitle={false} />
         </Link>
 
         <nav className="hidden md:flex items-center gap-1">

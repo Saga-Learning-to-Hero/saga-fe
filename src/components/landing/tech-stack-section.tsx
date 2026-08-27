@@ -6,7 +6,7 @@ const congNghe = [
   { ten: "Cytoscape.js", nhom: "Graph" },
   { ten: "Spring Boot 3", nhom: "Backend" },
   { ten: "Neo4j", nhom: "Graph DB" },
-  { ten: "PostgreSQL", nhom: "Database" },
+  { ten: "MySQL", nhom: "Database" },
   { ten: "Docker", nhom: "DevOps" },
   { ten: "OpenAI / Gemini", nhom: "AI" },
   { ten: "GitHub Actions", nhom: "CI/CD" },

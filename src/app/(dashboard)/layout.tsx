@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { MenuIcon } from "lucide-react";
 import { Sidebar } from "@/components/layout/sidebar";
+import { SagaLogo } from "@/components/common/saga-logo";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
@@ -53,7 +54,7 @@ export default function DashboardLayout({
           >
             <MenuIcon className="w-4 h-4" />
           </Button>
-          <span className="font-bold text-foreground tracking-tight text-sm">SAGA</span>
+          <SagaLogo size="xs" showText={true} showSubtitle={false} />
         </div>
 
         {/* Page content */}

@@ -1,7 +1,9 @@
 "use client";
 
-import { GitGraphIcon, PanelLeftCloseIcon } from "lucide-react";
+import Link from "next/link";
+import { PanelLeftCloseIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { SagaLogo } from "@/components/common/saga-logo";
 import { SidebarNav } from "./sidebar-nav";
 import { SidebarUserProfile } from "./sidebar-user-profile";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -35,9 +37,7 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
               className="w-9 h-9 rounded-lg flex items-center justify-center hover:bg-sidebar-accent transition-colors cursor-pointer"
               aria-label="Mở rộng thanh điều hướng"
             >
-              <div className="w-7 h-7 rounded-lg bg-primary flex items-center justify-center shrink-0 shadow-xs">
-                <GitGraphIcon className="w-3.5 h-3.5 text-primary-foreground" />
-              </div>
+              <SagaLogo size="xs" showText={false} />
             </TooltipTrigger>
             <TooltipContent side="right" sideOffset={10}>
               Mở rộng thanh điều hướng
@@ -45,19 +45,9 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
           </Tooltip>
         ) : (
           <>
-            <div className="flex items-center gap-2.5 min-w-0">
-              <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center shrink-0 shadow-xs">
-                <GitGraphIcon className="w-4 h-4 text-primary-foreground" />
-              </div>
-              <div className="flex flex-col min-w-0">
-                <span className="font-bold text-sidebar-foreground text-base tracking-tight leading-tight select-none">
-                  SAGA
-                </span>
-                <span className="text-[10px] font-medium text-muted-foreground tracking-wider uppercase leading-tight select-none">
-                  v0.1.0 · Beta
-                </span>
-              </div>
-            </div>
+            <Link href="/dashboard" className="flex items-center min-w-0 hover:opacity-95 transition-opacity">
+              <SagaLogo size="sm" showText={true} showSubtitle={true} subtitleText="v0.1.0 · Beta" />
+            </Link>
 
             <Tooltip>
               <TooltipTrigger

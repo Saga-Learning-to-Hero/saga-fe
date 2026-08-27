@@ -3,11 +3,12 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { EyeIcon, EyeOffIcon, GitGraphIcon, LoaderCircleIcon, ArrowLeftIcon } from "lucide-react";
+import { EyeIcon, EyeOffIcon, LoaderCircleIcon, ArrowLeftIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
+import { SagaLogo } from "@/components/common/saga-logo";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
 
 function GoogleIcon() {
@@ -70,11 +71,8 @@ export default function LoginPage() {
         />
 
         {/* Logo */}
-        <div className="flex items-center gap-3 relative">
-          <div className="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
-            <GitGraphIcon className="w-5 h-5 text-white" />
-          </div>
-          <span className="text-white font-bold text-xl tracking-tight">SAGA</span>
+        <div className="relative">
+          <SagaLogo size="md" variant="on-dark" showText={true} showSubtitle={true} subtitleText="Academic Graph Analytics" />
         </div>
 
         {/* Quote giữa */}
@@ -114,23 +112,20 @@ export default function LoginPage() {
       </div>
 
       {/* Form panel — phải */}
-      <div className="flex items-center justify-center p-6 md:p-10 bg-background">
-        <div className="w-full max-w-sm space-y-8">
-          {/* Nút quay lại trang chủ */}
+      <div className="flex flex-col justify-center items-center px-6 py-12 lg:px-16 bg-background">
+        <div className="w-full max-w-sm space-y-7">
+          {/* Back link */}
           <Link
             href="/"
-            className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-fast group"
+            className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-fast"
           >
-            <ArrowLeftIcon className="w-4 h-4 transition-fast group-hover:-translate-x-0.5" />
+            <ArrowLeftIcon className="w-4 h-4" />
             Quay lại trang chủ
           </Link>
 
           {/* Mobile logo */}
-          <div className="flex md:hidden items-center gap-2.5 mb-2">
-            <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
-              <GitGraphIcon className="w-4 h-4 text-primary-foreground" />
-            </div>
-            <span className="font-bold text-foreground text-lg">SAGA</span>
+          <div className="flex md:hidden items-center mb-2">
+            <SagaLogo size="sm" showText={true} showSubtitle={false} />
           </div>
 
           {/* Heading */}
