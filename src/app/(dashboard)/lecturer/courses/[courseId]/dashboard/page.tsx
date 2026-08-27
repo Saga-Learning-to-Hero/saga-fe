@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
-import { MOCK_LECTURER_COURSES } from "@/features/lecturer/courses/data/mock-courses";
-import { CourseSpacePage } from "@/features/lecturer/courses/components/course-space-page";
+import { MOCK_PRN212_DASHBOARD } from "@/features/lecturer/class-dashboard/data/mock-course-dashboard";
+import { LecturerCourseDashboardPage } from "@/features/lecturer/class-dashboard/components/lecturer-course-dashboard-page";
 
 interface Props {
   params: Promise<{ courseId: string }>;
@@ -8,9 +8,8 @@ interface Props {
 
 export default async function CourseDashboardRoute({ params }: Props) {
   const { courseId } = await params;
-  const course = MOCK_LECTURER_COURSES.find((c) => c.id === courseId);
+  // MOCK: only allow prn212-01 for now
+  if (courseId !== "prn212-01") notFound();
 
-  if (!course) notFound();
-
-  return <CourseSpacePage course={course} />;
+  return <LecturerCourseDashboardPage initialData={MOCK_PRN212_DASHBOARD} />;
 }

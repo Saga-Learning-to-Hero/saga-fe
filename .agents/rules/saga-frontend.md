@@ -1,3 +1,7 @@
+---
+trigger: always_on
+---
+
 # SAGA Frontend — Quy tắc phát triển giao diện
 
 ## Ngôn ngữ
