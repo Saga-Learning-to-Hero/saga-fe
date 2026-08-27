@@ -13,53 +13,12 @@ export interface NavGroup {
 }
 
 export const NAV_GROUPS: NavGroup[] = [
-  // ── Chung ──────────────────────────────────────────────────────────
+  // ── Admin ──────────────────────────────────────────────────────────
   {
     label: "",
-    roles: ["ADMIN", "LECTURER", "STUDENT"],
+    roles: ["ADMIN"],
     items: [
-      { title: "Tổng quan", href: "/dashboard", icon: "LayoutDashboard" },
-    ],
-  },
-
-  // ── Giảng viên: Giảng dạy ─────────────────────────────────────────
-  {
-    label: "Giảng dạy",
-    roles: ["LECTURER"],
-    items: [
-      { title: "Khóa học của tôi", href: "/lecturer/courses", icon: "BookOpen" },
-      { title: "Danh sách nhóm", href: "/lecturer/groups", icon: "Users" },
-    ],
-  },
-
-  // ── Giảng viên: Phân tích ─────────────────────────────────────────
-  {
-    label: "Phân tích",
-    roles: ["LECTURER"],
-    items: [
-      { title: "Đồ thị truy xuất", href: "/graph", icon: "GitGraph" },
-      { title: "Đánh giá nhóm", href: "/lecturer/assessment", icon: "ClipboardCheck" },
-      { title: "Bảng đóng góp", href: "/lecturer/contribution", icon: "PieChart" },
-    ],
-  },
-
-  // ── Sinh viên: Học tập ────────────────────────────────────────────
-  {
-    label: "Học tập",
-    roles: ["STUDENT"],
-    items: [
-      { title: "Đồ thị truy xuất", href: "/graph", icon: "GitGraph" },
-      { title: "Nhiệm vụ của tôi", href: "/tasks", icon: "ClipboardList" },
-    ],
-  },
-
-  // ── Sinh viên: Kết quả ────────────────────────────────────────────
-  {
-    label: "Kết quả",
-    roles: ["STUDENT"],
-    items: [
-      { title: "Đánh giá của tôi", href: "/assessment", icon: "GraduationCap" },
-      { title: "Mức đóng góp", href: "/contribution", icon: "PieChart" },
+      { title: "Tổng quan", href: "/admin/dashboard", icon: "LayoutDashboard" },
     ],
   },
 
@@ -80,6 +39,55 @@ export const NAV_GROUPS: NavGroup[] = [
     roles: ["ADMIN"],
     items: [
       { title: "Nhật ký hoạt động", href: "/admin/audit-log", icon: "ScrollText" },
+    ],
+  },
+
+  // ── Giảng viên: Giảng dạy ─────────────────────────────────────────
+  {
+    label: "Lớp học",
+    roles: ["LECTURER"],
+    items: [
+      { title: "Lớp học của tôi", href: "/lecturer/courses", icon: "BookOpen" },
+    ],
+  },
+
+  // ── Giảng viên: Phân tích ─────────────────────────────────────────
+  {
+    label: "Phân tích",
+    roles: ["LECTURER"],
+    items: [
+      { title: "Đồ thị truy xuất", href: "/graph", icon: "GitGraph" },
+      { title: "Đánh giá nhóm", href: "/lecturer/assessment", icon: "ClipboardCheck" },
+      { title: "Bảng đóng góp", href: "/lecturer/contribution", icon: "PieChart" },
+    ],
+  },
+
+  // ── Sinh viên ─────────────────────────────────────────────────────
+  {
+    label: "",
+    roles: ["STUDENT"],
+    items: [
+      { title: "Tổng quan", href: "/student/dashboard", icon: "LayoutDashboard" },
+    ],
+  },
+
+  // ── Sinh viên: Học tập ────────────────────────────────────────────
+  {
+    label: "Học tập",
+    roles: ["STUDENT"],
+    items: [
+      { title: "Đồ thị truy xuất", href: "/graph", icon: "GitGraph" },
+      { title: "Nhiệm vụ của tôi", href: "/tasks", icon: "ClipboardList" },
+    ],
+  },
+
+  // ── Sinh viên: Kết quả ────────────────────────────────────────────
+  {
+    label: "Kết quả",
+    roles: ["STUDENT"],
+    items: [
+      { title: "Đánh giá của tôi", href: "/assessment", icon: "GraduationCap" },
+      { title: "Mức đóng góp", href: "/contribution", icon: "PieChart" },
     ],
   },
 ];

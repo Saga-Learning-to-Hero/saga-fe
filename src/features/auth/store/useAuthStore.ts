@@ -1,20 +1,15 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { Role, User } from '@/types/auth';
-
-const MOCK_USER: User = {
-  id: 'mock-002',
-  name: 'Nguyễn Mạnh Cường',
-  email: 'lecturer@fe.edu.vn',
-  avatar: 'https://api.dicebear.com/9.x/avataaars/svg?seed=saga-user',
-  role: 'LECTURER',
-};
+import { MOCK_USERS } from '../data/mock-users';
 
 interface AuthState {
   isAuthenticated: boolean;
   user: User | null;
-  login: () => void;
+  /** Login as the mock user for `role`. In production this would accept credentials and call an API. */
+  login: (role: Role) => void;
   logout: () => void;
+  /** Dev-only: switch role without re-authenticating (keeps the matching mock user data). */
   switchRole: (role: Role) => void;
 }
 
@@ -24,10 +19,10 @@ export const useAuthStore = create<AuthState>()(
       isAuthenticated: false,
       user: null,
 
-      login: () =>
+      login: (role: Role) =>
         set({
           isAuthenticated: true,
-          user: MOCK_USER,
+          user: MOCK_USERS[role],
         }),
 
       logout: () =>
@@ -37,9 +32,9 @@ export const useAuthStore = create<AuthState>()(
         }),
 
       switchRole: (role: Role) =>
-        set((state) => ({
-          user: state.user ? { ...state.user, role } : null,
-        })),
+        set({
+          user: MOCK_USERS[role],
+        }),
     }),
     {
       name: 'saga-auth',
