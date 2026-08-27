@@ -49,6 +49,7 @@ export const NAV_GROUPS: NavGroup[] = [
     roles: ["STUDENT"],
     items: [
       { title: "Thông tin dự án", href: "/project-info", icon: "FolderKanban" },
+      { title: "Tiến độ công việc", href: "/sprint-progress", icon: "Kanban" },
       { title: "Đồ thị truy xuất", href: "/graph", icon: "GitGraph" },
       { title: "Nhiệm vụ của tôi", href: "/tasks", icon: "ClipboardList" },
     ],
