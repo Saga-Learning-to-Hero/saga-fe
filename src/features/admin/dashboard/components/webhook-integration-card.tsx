@@ -1,6 +1,6 @@
 "use client";
 
-import { CheckCircle2Icon, AlertTriangleIcon, ActivityIcon, ExternalLinkIcon } from "lucide-react";
+import { CheckCircle2Icon, AlertTriangleIcon, ActivityIcon } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from "@/components/ui/table";

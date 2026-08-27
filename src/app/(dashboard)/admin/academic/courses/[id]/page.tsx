@@ -21,7 +21,7 @@ import {
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button, buttonVariants } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -61,19 +61,6 @@ export default function AdminCourseDetailPage({ params }: PageProps) {
   const [groupFilter, setGroupFilter] = useState<"ALL" | "ASSIGNED" | "UNASSIGNED">("ALL");
   const [isImportOpen, setIsImportOpen] = useState(false);
 
-  if (!course) {
-    return notFound();
-  }
-
-  const getInitials = (name: string) => {
-    return name
-      .split(" ")
-      .slice(-2)
-      .map((n) => n[0])
-      .join("")
-      .toUpperCase();
-  };
-
   const filteredStudents = useMemo(() => {
     return students.filter((s) => {
       const matchSearch =
@@ -95,6 +82,19 @@ export default function AdminCourseDetailPage({ params }: PageProps) {
       return matchSearch && matchStatus && matchGroup;
     });
   }, [students, search, statusFilter, groupFilter]);
+
+  if (!course) {
+    return notFound();
+  }
+
+  const getInitials = (name: string) => {
+    return name
+      .split(" ")
+      .slice(-2)
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase();
+  };
 
   const handleConfirmImport = (
     _courseId: string,

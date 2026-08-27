@@ -38,6 +38,7 @@ export function SubjectDialog({
 
   useEffect(() => {
     if (editingSubject) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setFormData({
         code: editingSubject.code,
         name: editingSubject.name,
