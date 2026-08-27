@@ -180,7 +180,15 @@ export function SidebarUserProfile({ collapsed }: Props) {
 
           <DropdownMenuSeparator />
 
-          <div className="p-1">
+          <div className="p-1 space-y-0.5">
+            <DropdownMenuItem
+              onClick={() => router.push("/profile")}
+              className="text-sm cursor-pointer py-2 px-3 rounded-lg flex items-center gap-2 hover:bg-primary/10 hover:text-primary font-medium"
+            >
+              <UserIcon className="w-4 h-4 text-primary" />
+              <span>Hồ sơ & Cài đặt tích hợp</span>
+            </DropdownMenuItem>
+
             <DropdownMenuItem
               onClick={handleLogout}
               className="text-destructive focus:text-destructive cursor-pointer py-2 px-3 rounded-lg"

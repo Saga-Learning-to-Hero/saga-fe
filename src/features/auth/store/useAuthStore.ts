@@ -1,16 +1,18 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { Role, User } from '@/types/auth';
+import type { StudentCourse } from '@/features/student/courses/types/student-course';
 import { MOCK_USERS } from '../data/mock-users';
 
 interface AuthState {
   isAuthenticated: boolean;
   user: User | null;
-  /** Login as the mock user for `role`. In production this would accept credentials and call an API. */
+  selectedCourse: StudentCourse | null;
   login: (role: Role) => void;
   logout: () => void;
-  /** Dev-only: switch role without re-authenticating (keeps the matching mock user data). */
   switchRole: (role: Role) => void;
+  setSelectedCourse: (course: StudentCourse | null) => void;
+  updateUserProfile: (updatedFields: Partial<User>) => void;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -18,29 +20,20 @@ export const useAuthStore = create<AuthState>()(
     (set) => ({
       isAuthenticated: false,
       user: null,
-
-      login: (role: Role) =>
-        set({
-          isAuthenticated: true,
-          user: MOCK_USERS[role],
-        }),
-
-      logout: () =>
-        set({
-          isAuthenticated: false,
-          user: null,
-        }),
-
-      switchRole: (role: Role) =>
-        set({
-          user: MOCK_USERS[role],
-        }),
+      selectedCourse: null,
+      login: (role) => set({ isAuthenticated: true, user: MOCK_USERS[role] }),
+      logout: () => set({ isAuthenticated: false, user: null, selectedCourse: null }),
+      switchRole: (role) => set({ user: MOCK_USERS[role], selectedCourse: null }),
+      setSelectedCourse: (course) => set({ selectedCourse: course }),
+      updateUserProfile: (updatedFields) =>
+        set((state) => ({ user: state.user ? { ...state.user, ...updatedFields } : null })),
     }),
     {
       name: 'saga-auth',
       partialize: (state) => ({
         isAuthenticated: state.isAuthenticated,
         user: state.user,
+        selectedCourse: state.selectedCourse,
       }),
     }
   )

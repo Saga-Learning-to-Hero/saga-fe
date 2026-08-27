@@ -4,13 +4,15 @@ import { useState, useEffect, useId } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
-  EyeIcon, EyeOffIcon, GitGraphIcon, LoaderCircleIcon, ArrowLeftIcon,
+  EyeIcon, EyeOffIcon, LoaderCircleIcon, ArrowLeftIcon,
   ShieldCheckIcon, PresentationIcon, GraduationCapIcon, CheckIcon, AlertCircleIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
+import { SagaLogo } from "@/components/common/saga-logo";
+import { ThemeToggle } from "@/components/common/theme-toggle";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
 import { getRoleHomePath } from "@/features/auth/lib/role-routes";
 import type { Role } from "@/types/auth";
@@ -53,7 +55,6 @@ const ROLES: { value: Role; label: string; description: string; Icon: React.Elem
 export default function LoginPage() {
   const router = useRouter();
   const { isAuthenticated, user, login } = useAuthStore();
-
   const [selectedRole, setSelectedRole] = useState<Role | null>(null);
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -120,11 +121,8 @@ export default function LoginPage() {
         <div className="absolute -bottom-20 -left-20 w-72 h-72 rounded-full opacity-10" style={{ background: "oklch(1 0 0 / 20%)" }} />
 
         {/* Logo */}
-        <div className="flex items-center gap-3 relative">
-          <div className="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
-            <GitGraphIcon className="w-5 h-5 text-white" />
-          </div>
-          <span className="text-white font-bold text-xl tracking-tight">SAGA</span>
+        <div className="relative">
+          <SagaLogo size="md" variant="on-dark" showText={true} showSubtitle={true} subtitleText="Academic Graph Analytics" />
         </div>
 
         {/* Hero quote */}
@@ -159,23 +157,19 @@ export default function LoginPage() {
       </div>
 
       {/* ── Form panel (right) ─────────────────────────────────────────── */}
-      <div className="flex items-center justify-center p-6 md:p-10 bg-background">
+      <div className="flex flex-col justify-center items-center px-6 py-12 lg:px-16 bg-background">
         <div className="w-full max-w-sm space-y-7">
-          {/* Back */}
-          <Link
-            href="/"
-            className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors group"
-          >
-            <ArrowLeftIcon className="w-4 h-4 transition-transform group-hover:-translate-x-0.5" />
-            Quay lại trang chủ
-          </Link>
+          <div className="flex items-center justify-between">
+            <Link href="/" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors group">
+              <ArrowLeftIcon className="w-4 h-4 transition-transform group-hover:-translate-x-0.5" />
+              Quay lại trang chủ
+            </Link>
+            <ThemeToggle />
+          </div>
 
           {/* Mobile logo */}
-          <div className="flex md:hidden items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
-              <GitGraphIcon className="w-4 h-4 text-primary-foreground" />
-            </div>
-            <span className="font-bold text-foreground text-lg">SAGA</span>
+          <div className="flex md:hidden items-center mb-2">
+            <SagaLogo size="sm" showText={true} showSubtitle={false} />
           </div>
 
           {/* Heading */}

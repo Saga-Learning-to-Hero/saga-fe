@@ -5,6 +5,7 @@ import { useRouter, usePathname } from "next/navigation";
 import { BellIcon, GitGraphIcon, MenuIcon } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Sidebar } from "@/components/layout/sidebar";
+import { SagaLogo } from "@/components/common/saga-logo";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
 import { getRoleHomePath } from "@/features/auth/lib/role-routes";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
@@ -128,7 +129,7 @@ export default function DashboardLayout({
           >
             <MenuIcon className="w-4 h-4" />
           </Button>
-          <span className="font-bold text-foreground tracking-tight text-sm">SAGA</span>
+          <SagaLogo size="xs" showText={true} showSubtitle={false} />
         </div>
 
         <main className="flex-1 overflow-y-auto p-6">{children}</main>

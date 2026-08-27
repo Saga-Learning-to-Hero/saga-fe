@@ -13,16 +13,11 @@ export interface NavGroup {
 }
 
 export const NAV_GROUPS: NavGroup[] = [
-  // ── Admin ──────────────────────────────────────────────────────────
   {
     label: "",
     roles: ["ADMIN"],
-    items: [
-      { title: "Tổng quan", href: "/admin/dashboard", icon: "LayoutDashboard" },
-    ],
+    items: [{ title: "Tổng quan", href: "/admin/dashboard", icon: "LayoutDashboard" }],
   },
-
-  // ── Admin: Quản lý ────────────────────────────────────────────────
   {
     label: "Quản lý",
     roles: ["ADMIN"],
@@ -32,26 +27,16 @@ export const NAV_GROUPS: NavGroup[] = [
       { title: "Dữ liệu học thuật", href: "/admin/academic", icon: "Database" },
     ],
   },
-
-  // ── Admin: Hệ thống ───────────────────────────────────────────────
   {
     label: "Hệ thống",
     roles: ["ADMIN"],
-    items: [
-      { title: "Nhật ký hoạt động", href: "/admin/audit-log", icon: "ScrollText" },
-    ],
+    items: [{ title: "Nhật ký hoạt động", href: "/admin/audit-log", icon: "ScrollText" }],
   },
-
-  // ── Giảng viên: Giảng dạy ─────────────────────────────────────────
   {
     label: "Lớp học",
     roles: ["LECTURER"],
-    items: [
-      { title: "Lớp học của tôi", href: "/lecturer/courses", icon: "BookOpen" },
-    ],
+    items: [{ title: "Lớp học của tôi", href: "/lecturer/courses", icon: "BookOpen" }],
   },
-
-  // ── Giảng viên: Phân tích ─────────────────────────────────────────
   {
     label: "Phân tích",
     roles: ["LECTURER"],
@@ -61,27 +46,20 @@ export const NAV_GROUPS: NavGroup[] = [
       { title: "Bảng đóng góp", href: "/lecturer/contribution", icon: "PieChart" },
     ],
   },
-
-  // ── Sinh viên ─────────────────────────────────────────────────────
   {
     label: "",
     roles: ["STUDENT"],
-    items: [
-      { title: "Tổng quan", href: "/student/dashboard", icon: "LayoutDashboard" },
-    ],
+    items: [{ title: "Tổng quan", href: "/student/dashboard", icon: "LayoutDashboard" }],
   },
-
-  // ── Sinh viên: Học tập ────────────────────────────────────────────
   {
     label: "Học tập",
     roles: ["STUDENT"],
     items: [
+      { title: "Thông tin dự án", href: "/project-info", icon: "FolderKanban" },
       { title: "Đồ thị truy xuất", href: "/graph", icon: "GitGraph" },
       { title: "Nhiệm vụ của tôi", href: "/tasks", icon: "ClipboardList" },
     ],
   },
-
-  // ── Sinh viên: Kết quả ────────────────────────────────────────────
   {
     label: "Kết quả",
     roles: ["STUDENT"],
@@ -105,5 +83,5 @@ export const ROLE_COLORS: Record<Role, string> = {
 };
 
 export function getInitials(name: string) {
-  return name.split(" ").slice(-2).map((n) => n[0]).join("").toUpperCase();
+  return name.split(" ").slice(-2).map((part) => part[0]).join("").toUpperCase();
 }
