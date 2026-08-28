@@ -15,6 +15,7 @@ import {
   PieChartIcon,
   UserCogIcon,
   BookOpenIcon,
+  KanbanSquareIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -29,6 +30,7 @@ const ICON_MAP: Record<string, React.ElementType> = {
   GraduationCap: GraduationCapIcon,
   Users: UsersIcon,
   FolderKanban: FolderKanbanIcon,
+  Kanban: KanbanSquareIcon,
   Database: DatabaseIcon,
   ScrollText: ScrollTextIcon,
   ClipboardCheck: ClipboardCheckIcon,
