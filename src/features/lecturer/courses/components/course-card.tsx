@@ -48,7 +48,7 @@ export function CourseCard({ course }: { course: LecturerCourse }) {
 
       <CardFooter className="mt-5 border-t bg-muted/30 px-5 py-3">
         <Link
-          href={`/lecturer/courses/${course.id}`}
+          href={`/lecturer/courses/${course.id}/dashboard`}
           className={buttonVariants({ variant: "ghost", className: "h-8 w-full justify-between px-2 text-xs font-semibold text-foreground hover:text-primary" })}
         >
           <span className="flex items-center gap-2"><UsersIcon className="size-3.5" />Vào không gian lớp học</span><ArrowRightIcon className="size-3.5" />
