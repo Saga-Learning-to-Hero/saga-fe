@@ -18,51 +18,6 @@ export const NAV_GROUPS: NavGroup[] = [
     roles: ["ADMIN"],
     items: [{ title: "Tổng quan", href: "/admin/dashboard", icon: "LayoutDashboard" }],
   },
-
-  // ── Giảng viên: Giảng dạy ─────────────────────────────────────────
-  {
-    label: "Giảng dạy",
-    roles: ["LECTURER"],
-    items: [
-      { title: "Khóa học của tôi", href: "/lecturer/courses", icon: "BookOpen" },
-      { title: "Danh sách nhóm", href: "/lecturer/groups", icon: "Users" },
-    ],
-  },
-
-  // ── Giảng viên: Phân tích ─────────────────────────────────────────
-  {
-    label: "Phân tích",
-    roles: ["LECTURER"],
-    items: [
-      { title: "Đồ thị truy xuất", href: "/graph", icon: "GitGraph" },
-      { title: "Đánh giá nhóm", href: "/lecturer/assessment", icon: "ClipboardCheck" },
-      { title: "Bảng đóng góp", href: "/lecturer/contribution", icon: "PieChart" },
-    ],
-  },
-
-  // ── Sinh viên: Học tập ────────────────────────────────────────────
-  {
-    label: "Học tập",
-    roles: ["STUDENT"],
-    items: [
-      { title: "Thông tin dự án", href: "/project-info", icon: "FolderKanban" },
-      { title: "Tiến độ công việc", href: "/sprint-progress", icon: "Kanban" },
-      { title: "Đồ thị truy xuất", href: "/graph", icon: "GitGraph" },
-      { title: "Nhiệm vụ của tôi", href: "/tasks", icon: "ClipboardList" },
-    ],
-  },
-
-  // ── Sinh viên: Kết quả ────────────────────────────────────────────
-  {
-    label: "Kết quả",
-    roles: ["STUDENT"],
-    items: [
-      { title: "Đánh giá của tôi", href: "/assessment", icon: "GraduationCap" },
-      { title: "Mức đóng góp", href: "/contribution", icon: "PieChart" },
-    ],
-  },
-
-  // ── Admin: Quản lý ────────────────────────────────────────────────
   {
     label: "Quản lý",
     roles: ["ADMIN"],
@@ -78,9 +33,12 @@ export const NAV_GROUPS: NavGroup[] = [
     items: [{ title: "Nhật ký hoạt động", href: "/admin/audit-log", icon: "ScrollText" }],
   },
   {
-    label: "Lớp học",
+    label: "Giảng dạy",
     roles: ["LECTURER"],
-    items: [{ title: "Lớp học của tôi", href: "/lecturer/courses", icon: "BookOpen" }],
+    items: [
+      { title: "Khóa học của tôi", href: "/lecturer/courses", icon: "BookOpen" },
+      { title: "Danh sách nhóm", href: "/lecturer/groups", icon: "Users" },
+    ],
   },
   {
     label: "Phân tích",
@@ -101,6 +59,7 @@ export const NAV_GROUPS: NavGroup[] = [
     roles: ["STUDENT"],
     items: [
       { title: "Thông tin dự án", href: "/project-info", icon: "FolderKanban" },
+      { title: "Tiến độ công việc", href: "/sprint-progress", icon: "Kanban" },
       { title: "Đồ thị truy xuất", href: "/graph", icon: "GitGraph" },
       { title: "Nhiệm vụ của tôi", href: "/tasks", icon: "ClipboardList" },
     ],

@@ -246,7 +246,7 @@ export function SprintBacklogView({
               <CardContent className="p-0 divide-y divide-border/60 min-h-[60px]">
                 {sprintIssues.length === 0 ? (
                   <div className="p-6 text-center text-xs text-muted-foreground italic">
-                    Chưa có công việc nào trong Sprint này. Kéo thả thẻ task vào đây hoặc bấm "+ Tạo Task mới" để thêm.
+                    Chưa có công việc nào trong Sprint này. Kéo thả thẻ task vào đây hoặc bấm &quot;+ Tạo Task mới&quot; để thêm.
                   </div>
                 ) : (
                   sprintIssues.map((issue) => {

@@ -54,7 +54,7 @@ export function IssueDetailsModal({
   const canEdit = isTeamLeader || isOwner;
 
   const [form, setForm] = useState({
-    key: issue?.key || `SAGA-${Math.floor(100 + Math.random() * 900)}`,
+    key: issue?.key || "SAGA-NEW",
     summary: issue?.summary || "",
     description: issue?.description || "",
     type: issue?.type || ("STORY" as IssueType),

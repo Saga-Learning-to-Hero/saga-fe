@@ -31,7 +31,7 @@ export function SprintModal({
   const isEditing = Boolean(sprint);
 
   const [form, setForm] = useState({
-    name: sprint?.name || `Sprint ${Math.floor(Date.now() / 100000000)}`,
+    name: sprint?.name || "Sprint Mới",
     goal: sprint?.goal || "",
     startDate: sprint?.startDate || "2026-09-01",
     endDate: sprint?.endDate || "2026-09-15",

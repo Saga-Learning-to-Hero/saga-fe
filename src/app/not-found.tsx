@@ -2,20 +2,25 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeftIcon, LayoutDashboardIcon, CompassIcon, FileQuestionIcon } from "lucide-react";
+import { ArrowLeftIcon, LayoutDashboardIcon, CompassIcon, FileQuestionIcon, LogInIcon, HomeIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useAuthStore } from "@/features/auth/store/useAuthStore";
+import { getRoleHomePath } from "@/features/auth/lib/role-routes";
 
 export default function NotFound() {
   const router = useRouter();
+  const { isAuthenticated, user } = useAuthStore();
+
+  const redirectHref = isAuthenticated && user ? getRoleHomePath(user.role) : "/login";
+  const redirectLabel = isAuthenticated ? "Về trang tổng quan" : "Đăng nhập hệ thống";
+  const RedirectIcon = isAuthenticated ? LayoutDashboardIcon : LogInIcon;
 
   return (
     <div className="min-h-screen w-full flex flex-col items-center justify-center p-6 bg-background text-foreground relative overflow-hidden">
-      {/* Background Glow Decorations */}
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-primary/10 rounded-full blur-[120px] pointer-events-none -z-10" />
       <div className="absolute bottom-1/4 right-1/4 w-[350px] h-[350px] bg-primary/5 rounded-full blur-[100px] pointer-events-none -z-10" />
 
       <div className="max-w-md w-full text-center space-y-6">
-        {/* Floating Icon Illustration */}
         <div className="relative inline-flex items-center justify-center">
           <div className="w-24 h-24 rounded-3xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shadow-xl shadow-primary/5 animate-pulse">
             <CompassIcon className="w-12 h-12" />
@@ -25,7 +30,6 @@ export default function NotFound() {
           </div>
         </div>
 
-        {/* 404 Big Heading */}
         <div className="space-y-2">
           <p className="text-7xl sm:text-8xl font-extrabold tracking-tight bg-gradient-to-b from-primary via-primary/80 to-primary/30 bg-clip-text text-transparent select-none font-mono">
             404
@@ -38,7 +42,6 @@ export default function NotFound() {
           </p>
         </div>
 
-        {/* Action Buttons */}
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
           <Button
             type="button"
@@ -51,16 +54,25 @@ export default function NotFound() {
           </Button>
 
           <Link
-            href="/dashboard"
+            href={redirectHref}
             className="w-full sm:w-auto h-10 px-5 inline-flex items-center justify-center gap-2 text-xs font-semibold rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 shadow-md shadow-primary/20 transition-colors cursor-pointer"
           >
-            <LayoutDashboardIcon className="w-4 h-4" />
-            Về trang tổng quan
+            <RedirectIcon className="w-4 h-4" />
+            {redirectLabel}
           </Link>
         </div>
 
-        {/* Footer subtle text */}
-        <p className="text-[11px] text-muted-foreground/60 pt-4 font-mono">
+        <div className="pt-2">
+          <Link
+            href="/"
+            className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <HomeIcon className="w-3.5 h-3.5" />
+            Về trang chủ giới thiệu
+          </Link>
+        </div>
+
+        <p className="text-[11px] text-muted-foreground/60 pt-2 font-mono">
           Mã lỗi: HTTP_404_PAGE_NOT_FOUND · SAGA Platform
         </p>
       </div>
