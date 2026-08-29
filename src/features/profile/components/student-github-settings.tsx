@@ -6,7 +6,6 @@ import {
   UserIcon,
   FolderGit2Icon,
   CheckCircle2Icon,
-  XCircleIcon,
   PlusIcon,
   Edit3Icon,
   LoaderCircleIcon,
@@ -101,11 +100,10 @@ export function StudentGitHubSettings({ user }: StudentGitHubSettingsProps) {
 
   return (
     <Card
-      className={`rounded-2xl transition-all duration-300 ${
-        isConnected && !isFormOpen
+      className={`rounded-2xl transition-all duration-300 ${isConnected && !isFormOpen
           ? "bg-emerald-500/5 dark:bg-emerald-950/20 border-emerald-500/40 shadow-sm"
           : "bg-card border-border/80 shadow-xs"
-      }`}
+        }`}
     >
       <CardHeader className="p-5 border-b border-border/60">
         <div className="flex items-start justify-between gap-3">

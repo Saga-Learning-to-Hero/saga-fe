@@ -4,14 +4,9 @@ import Link from "next/link";
 import {
   ArrowRightIcon,
   CheckCircle2Icon,
-  DatabaseIcon,
-  GitCommitIcon,
-  LayersIcon,
   NetworkIcon,
-  PieChartIcon,
   ShieldCheckIcon,
   SparklesIcon,
-  UserCheckIcon,
 } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";

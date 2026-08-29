@@ -5,12 +5,11 @@ import {
   GitBranchIcon,
   SearchIcon,
   UserIcon,
-  ChevronDownIcon,
-  FilterIcon,
 } from "lucide-react";
 import type { Repository, Branch } from "../types/commits";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { CustomSelect } from "@/components/common/custom-select";
 
 interface CommitFilterBarProps {
   repositories: Repository[];
@@ -43,47 +42,38 @@ export function CommitFilterBar({
         {/* Dropdowns Group: Repo & Branch */}
         <div className="flex flex-wrap items-center gap-3">
           {/* Dropdown 1: Select Repository */}
-          <div className="space-y-1 min-w-[220px]">
+          <div className="space-y-1 min-w-[240px]">
             <label className="text-[11px] font-semibold text-muted-foreground flex items-center gap-1">
               <FolderGit2Icon className="w-3.5 h-3.5 text-blue-500" />
               Repository (Kho chứa):
             </label>
-            <div className="relative">
-              <select
-                value={selectedRepoId}
-                onChange={(e) => onSelectRepo(e.target.value)}
-                className="w-full h-9 pl-3 pr-8 text-xs font-bold rounded-xl bg-card border border-border/80 focus:outline-hidden focus:ring-2 focus:ring-primary appearance-none cursor-pointer"
-              >
-                {repositories.map((repo) => (
-                  <option key={repo.id} value={repo.id}>
-                    {repo.fullPath}
-                  </option>
-                ))}
-              </select>
-              <ChevronDownIcon className="w-4 h-4 absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
-            </div>
+            <CustomSelect
+              value={selectedRepoId}
+              onChange={onSelectRepo}
+              options={repositories.map((repo) => ({
+                value: repo.id,
+                label: repo.fullPath,
+                icon: <FolderGit2Icon className="w-3.5 h-3.5 text-blue-500" />,
+              }))}
+            />
           </div>
 
           {/* Dropdown 2: Select Branch */}
-          <div className="space-y-1 min-w-[200px]">
+          <div className="space-y-1 min-w-[220px]">
             <label className="text-[11px] font-semibold text-muted-foreground flex items-center gap-1">
               <GitBranchIcon className="w-3.5 h-3.5 text-purple-500" />
               Nhánh (Branch):
             </label>
-            <div className="relative">
-              <select
-                value={selectedBranchName}
-                onChange={(e) => onSelectBranch(e.target.value)}
-                className="w-full h-9 pl-3 pr-8 text-xs font-bold rounded-xl bg-card border border-border/80 focus:outline-hidden focus:ring-2 focus:ring-primary appearance-none cursor-pointer"
-              >
-                {branches.map((b) => (
-                  <option key={b.name} value={b.name}>
-                    {b.name} {b.isDefault ? "(default)" : ""}
-                  </option>
-                ))}
-              </select>
-              <ChevronDownIcon className="w-4 h-4 absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
-            </div>
+            <CustomSelect
+              value={selectedBranchName}
+              onChange={onSelectBranch}
+              options={branches.map((b) => ({
+                value: b.name,
+                label: b.name,
+                subLabel: b.isDefault ? "(default)" : undefined,
+                icon: <GitBranchIcon className="w-3.5 h-3.5 text-purple-500" />,
+              }))}
+            />
           </div>
         </div>
 
@@ -107,11 +97,10 @@ export function CommitFilterBar({
             variant="outline"
             size="sm"
             onClick={onToggleOnlyMyCommits}
-            className={`h-9 text-xs font-bold rounded-xl gap-1.5 cursor-pointer shadow-2xs border transition-all ${
-              onlyMyCommits
-                ? "bg-primary text-primary-foreground border-primary"
-                : "bg-muted text-muted-foreground border-border hover:bg-muted/80"
-            }`}
+            className={`h-9 text-xs font-bold rounded-xl gap-1.5 cursor-pointer shadow-2xs border transition-all ${onlyMyCommits
+              ? "bg-primary text-primary-foreground border-primary"
+              : "bg-muted text-muted-foreground border-border hover:bg-muted/80"
+              }`}
           >
             <UserIcon className="w-3.5 h-3.5" />
             <span>Chỉ commit của tôi</span>

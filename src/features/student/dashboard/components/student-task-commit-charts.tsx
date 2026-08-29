@@ -8,12 +8,9 @@ import {
   CheckSquareIcon,
   LayersIcon,
   TrendingUpIcon,
-  Code2Icon,
-  CheckCircle2Icon,
 } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import type { MemberAnalytics, WeeklyActivity } from "../types/student-analytics";
 
 interface StudentTaskCommitChartsProps {
@@ -56,25 +53,22 @@ export function StudentTaskCommitCharts({
             <div className="flex items-center gap-1 bg-muted/60 p-1 rounded-xl border border-border/60">
               <button
                 onClick={() => setFilterType("ALL")}
-                className={`px-2.5 py-1 text-[11px] font-medium rounded-lg transition-colors cursor-pointer ${
-                  filterType === "ALL" ? "bg-card text-foreground font-semibold shadow-xs" : "text-muted-foreground"
-                }`}
+                className={`px-2.5 py-1 text-[11px] font-medium rounded-lg transition-colors cursor-pointer ${filterType === "ALL" ? "bg-card text-foreground font-semibold shadow-xs" : "text-muted-foreground"
+                  }`}
               >
                 Tất cả
               </button>
               <button
                 onClick={() => setFilterType("COMMITS")}
-                className={`px-2.5 py-1 text-[11px] font-medium rounded-lg transition-colors cursor-pointer ${
-                  filterType === "COMMITS" ? "bg-card text-primary font-semibold shadow-xs" : "text-muted-foreground"
-                }`}
+                className={`px-2.5 py-1 text-[11px] font-medium rounded-lg transition-colors cursor-pointer ${filterType === "COMMITS" ? "bg-card text-primary font-semibold shadow-xs" : "text-muted-foreground"
+                  }`}
               >
                 Chỉ Commits
               </button>
               <button
                 onClick={() => setFilterType("TASKS")}
-                className={`px-2.5 py-1 text-[11px] font-medium rounded-lg transition-colors cursor-pointer ${
-                  filterType === "TASKS" ? "bg-card text-blue-600 font-semibold shadow-xs" : "text-muted-foreground"
-                }`}
+                className={`px-2.5 py-1 text-[11px] font-medium rounded-lg transition-colors cursor-pointer ${filterType === "TASKS" ? "bg-card text-blue-600 font-semibold shadow-xs" : "text-muted-foreground"
+                  }`}
               >
                 Chỉ Tasks
               </button>
@@ -149,29 +143,26 @@ export function StudentTaskCommitCharts({
                       {(filterType === "ALL" || filterType === "COMMITS") && (
                         <div
                           style={{ height: `${commitHeight}px` }}
-                          className={`w-4 sm:w-7 rounded-t-md transition-all duration-300 ${
-                            isHovered
+                          className={`w-4 sm:w-7 rounded-t-md transition-all duration-300 ${isHovered
                               ? "bg-primary shadow-md shadow-primary/30"
                               : "bg-primary/80 group-hover:bg-primary"
-                          }`}
+                            }`}
                         />
                       )}
                       {(filterType === "ALL" || filterType === "TASKS") && (
                         <div
                           style={{ height: `${taskHeight}px` }}
-                          className={`w-4 sm:w-7 rounded-t-md transition-all duration-300 ${
-                            isHovered
+                          className={`w-4 sm:w-7 rounded-t-md transition-all duration-300 ${isHovered
                               ? "bg-blue-500 shadow-md shadow-blue-500/30"
                               : "bg-blue-500/80 group-hover:bg-blue-500"
-                          }`}
+                            }`}
                         />
                       )}
                     </div>
 
                     <span
-                      className={`text-[11px] font-mono mt-2 font-semibold transition-colors ${
-                        isHovered ? "text-primary" : "text-muted-foreground"
-                      }`}
+                      className={`text-[11px] font-mono mt-2 font-semibold transition-colors ${isHovered ? "text-primary" : "text-muted-foreground"
+                        }`}
                     >
                       {item.week}
                     </span>

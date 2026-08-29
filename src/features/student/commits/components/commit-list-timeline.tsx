@@ -9,7 +9,6 @@ import {
   CheckCircle2Icon,
   GitBranchIcon,
   CalendarIcon,
-  FileCode2Icon,
 } from "lucide-react";
 import type { CommitItem } from "../types/commits";
 import { Card } from "@/components/ui/card";
@@ -57,8 +56,8 @@ export function CommitListTimeline({
     const groupKey = commit.relativeTime.includes("Hôm qua")
       ? "Hôm qua"
       : commit.relativeTime.includes("trước")
-      ? "Hôm nay"
-      : "Trước đó";
+        ? "Hôm nay"
+        : "Trước đó";
     if (!groups[groupKey]) groups[groupKey] = [];
     groups[groupKey].push(commit);
   });

@@ -5,7 +5,6 @@ import {
   ListTodoIcon,
   GanttChartSquareIcon,
   SearchIcon,
-  ChevronDownIcon,
   CrownIcon,
   UserIcon,
 } from "lucide-react";
@@ -14,6 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { CustomSelect } from "@/components/common/custom-select";
 
 interface SprintHeaderProps {
   sprints: Sprint[];
@@ -77,11 +77,10 @@ export function SprintHeader({
             variant="outline"
             size="sm"
             onClick={onToggleTeamLeader}
-            className={`h-9 text-xs font-bold rounded-xl gap-1.5 cursor-pointer shadow-2xs border transition-all ${
-              isTeamLeader
+            className={`h-9 text-xs font-bold rounded-xl gap-1.5 cursor-pointer shadow-2xs border transition-all ${isTeamLeader
                 ? "bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/40 hover:bg-amber-500/20"
                 : "bg-muted text-muted-foreground border-border hover:bg-muted/80"
-            }`}
+              }`}
           >
             {isTeamLeader ? (
               <>
@@ -104,11 +103,10 @@ export function SprintHeader({
         <div className="flex items-center gap-1.5 bg-muted/60 p-1 rounded-xl border border-border/60 w-fit">
           <button
             onClick={() => onSelectView("BOARD")}
-            className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer select-none ${
-              activeView === "BOARD"
+            className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer select-none ${activeView === "BOARD"
                 ? "bg-card text-foreground shadow-xs"
                 : "text-muted-foreground hover:text-foreground"
-            }`}
+              }`}
           >
             <KanbanSquareIcon className="w-4 h-4 text-blue-500" />
             <span>Board (Kanban)</span>
@@ -116,11 +114,10 @@ export function SprintHeader({
 
           <button
             onClick={() => onSelectView("BACKLOG")}
-            className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer select-none ${
-              activeView === "BACKLOG"
+            className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer select-none ${activeView === "BACKLOG"
                 ? "bg-card text-foreground shadow-xs"
                 : "text-muted-foreground hover:text-foreground"
-            }`}
+              }`}
           >
             <ListTodoIcon className="w-4 h-4 text-purple-500" />
             <span>Backlog</span>
@@ -128,11 +125,10 @@ export function SprintHeader({
 
           <button
             onClick={() => onSelectView("TIMELINE")}
-            className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer select-none ${
-              activeView === "TIMELINE"
+            className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer select-none ${activeView === "TIMELINE"
                 ? "bg-card text-foreground shadow-xs"
                 : "text-muted-foreground hover:text-foreground"
-            }`}
+              }`}
           >
             <GanttChartSquareIcon className="w-4 h-4 text-emerald-500" />
             <span>Timeline (Roadmap)</span>
@@ -142,19 +138,16 @@ export function SprintHeader({
         {/* Filters: Search & Member Avatar Selectors */}
         <div className="flex flex-wrap items-center gap-3">
           {/* Sprint Selector Dropdown */}
-          <div className="relative">
-            <select
+          <div className="min-w-[190px]">
+            <CustomSelect
               value={selectedSprintId}
-              onChange={(e) => onSelectSprint(e.target.value)}
-              className="h-9 pl-3 pr-8 text-xs font-bold rounded-xl bg-card border border-border/80 focus:outline-hidden focus:ring-2 focus:ring-primary appearance-none cursor-pointer"
-            >
-              {sprints.map((s) => (
-                <option key={s.id} value={s.id}>
-                  {s.name} ({s.status})
-                </option>
-              ))}
-            </select>
-            <ChevronDownIcon className="w-4 h-4 absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+              onChange={onSelectSprint}
+              options={sprints.map((s) => ({
+                value: s.id,
+                label: s.name,
+                subLabel: `Trạng thái: ${s.status}`,
+              }))}
+            />
           </div>
 
           {/* Search Box */}
@@ -176,11 +169,10 @@ export function SprintHeader({
             </span>
             <button
               onClick={() => onSelectAssignee(null)}
-              className={`text-[11px] font-bold px-2 py-1 rounded-lg transition-all cursor-pointer ${
-                selectedAssigneeId === null
+              className={`text-[11px] font-bold px-2 py-1 rounded-lg transition-all cursor-pointer ${selectedAssigneeId === null
                   ? "bg-primary text-primary-foreground"
                   : "bg-muted text-muted-foreground hover:text-foreground"
-              }`}
+                }`}
             >
               Tất cả
             </button>
@@ -192,9 +184,8 @@ export function SprintHeader({
                   key={m.id}
                   onClick={() => onSelectAssignee(isSelected ? null : m.id)}
                   title={`${m.name} (${m.studentCode})`}
-                  className={`relative rounded-full transition-transform cursor-pointer ${
-                    isSelected ? "ring-2 ring-primary ring-offset-2 scale-110" : "opacity-80 hover:opacity-100"
-                  }`}
+                  className={`relative rounded-full transition-transform cursor-pointer ${isSelected ? "ring-2 ring-primary ring-offset-2 scale-110" : "opacity-80 hover:opacity-100"
+                    }`}
                 >
                   <Avatar className="w-7 h-7 border border-background">
                     <AvatarImage src={m.avatar} alt={m.name} />

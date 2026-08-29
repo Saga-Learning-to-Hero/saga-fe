@@ -1,9 +1,7 @@
 "use client";
 
 import {
-  UserIcon,
   ShieldCheckIcon,
-  SparklesIcon,
   CheckCircle2Icon,
   XCircleIcon,
   MailIcon,
@@ -15,7 +13,7 @@ import {
 import type { User } from "@/types/auth";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { ROLE_LABELS, ROLE_COLORS, getInitials } from "@/components/layout/sidebar/nav-config";
+import { ROLE_LABELS, getInitials } from "@/components/layout/sidebar/nav-config";
 
 interface ProfileHeaderProps {
   user: User;

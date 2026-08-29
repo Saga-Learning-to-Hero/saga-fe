@@ -3,11 +3,8 @@
 import {
   UsersIcon,
   CrownIcon,
-  MailIcon,
   CheckSquareIcon,
   GitGraphIcon,
-  GraduationCapIcon,
-  SparklesIcon,
 } from "lucide-react";
 import type { StudentProjectDetails } from "../types/student-project";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";

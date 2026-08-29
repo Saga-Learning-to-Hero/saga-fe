@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { LogOutIcon, ShieldCheckIcon, UserIcon } from "lucide-react";
+import { LogOutIcon, ShieldCheckIcon } from "lucide-react";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
 import { StudentCourseSelection } from "@/features/student/courses/components/student-course-selection";
 import { SagaLogo } from "@/components/common/saga-logo";

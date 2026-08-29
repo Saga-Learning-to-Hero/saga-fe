@@ -5,8 +5,6 @@ import {
   Code2Icon,
   GitBranchIcon,
   CheckCircle2Icon,
-  PlusIcon,
-  MinusIcon,
   RefreshCwIcon,
 } from "lucide-react";
 import type { CommitStats } from "../types/commits";
