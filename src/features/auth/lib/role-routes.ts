@@ -12,6 +12,6 @@ export function getRoleHomePath(role: Role): string {
     case 'LECTURER':
       return '/lecturer/courses';
     case 'STUDENT':
-      return '/student/dashboard';
+      return '/student/courses';
   }
 }

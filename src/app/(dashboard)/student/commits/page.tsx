@@ -6,6 +6,6 @@ export const metadata: Metadata = {
   description: "Theo dõi nhật ký commit mã nguồn GitHub phân loại theo Repository và Branch.",
 };
 
-export default function CommitsPage() {
+export default function StudentCommitsPage() {
   return <CommitsView />;
 }
