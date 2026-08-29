@@ -1,59 +1,145 @@
+"use client";
+
 import Link from "next/link";
-import { ArrowRightIcon, CalendarDaysIcon, MapPinIcon, MoreHorizontalIcon, UsersIcon } from "lucide-react";
+import {
+  ArrowRightIcon,
+  CalendarDaysIcon,
+  MapPinIcon,
+  GitGraphIcon,
+} from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Button, buttonVariants } from "@/components/ui/button";
-import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { LecturerCourse } from "../types/course";
 
-const toneStyles = {
-  indigo: { bar: "bg-primary", badge: "bg-primary/10 text-primary", progress: "bg-primary" },
-  cyan: { bar: "bg-saga-accent", badge: "bg-info-muted text-info", progress: "bg-saga-accent" },
-  emerald: { bar: "bg-saga-success", badge: "bg-success-muted text-success", progress: "bg-saga-success" },
-  amber: { bar: "bg-saga-warning", badge: "bg-warning-muted text-warning", progress: "bg-saga-warning" },
-};
+interface CourseCardProps {
+  course: LecturerCourse;
+}
 
-export function CourseCard({ course }: { course: LecturerCourse }) {
-  const tone = toneStyles[course.tone];
+export function CourseCard({ course }: CourseCardProps) {
+  const isCompleted = course.status === "COMPLETED";
+  const isUpcoming = course.status === "UPCOMING";
 
   return (
-    <Card className="relative gap-0 py-0 overflow-hidden transition-all duration-200 hover:-translate-y-1 hover:shadow-saga-md">
-      <div className={cn("absolute inset-y-0 left-0 w-1", tone.bar)} />
-      <CardHeader className="px-5 pt-5 pb-0">
-        <div className="flex items-center justify-between">
-          <Badge className={cn("border-0 font-mono text-[10px] font-bold tracking-wider", tone.badge)}>{course.code}</Badge>
-          <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg text-muted-foreground" aria-label={`Tùy chọn lớp ${course.code}`}><MoreHorizontalIcon className="size-4" /></Button>
-        </div>
-        <h2 className="mt-3 line-clamp-1 text-base font-bold tracking-tight">{course.name}</h2>
-        <p className="text-[11px] font-medium text-muted-foreground">Học kỳ {course.semesterId}</p>
-      </CardHeader>
+    <div
+      className={cn(
+        "group relative flex flex-col justify-between rounded-3xl p-5 sm:p-6 transition-all duration-300",
+        "bg-card/90 backdrop-blur-sm border border-border/80 shadow-xs hover:shadow-lg hover:-translate-y-1",
+        "hover:border-primary/40 hover:bg-card"
+      )}
+    >
+      {/* ── Top Header: Mã Học kỳ, Mã lớp & Trạng thái ── */}
+      <div className="space-y-3.5">
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <Badge
+              variant="outline"
+              className="bg-primary/10 text-primary border-primary/20 font-mono text-xs px-2.5 py-0.5 font-bold"
+            >
+              Kỳ: {course.semesterId}
+            </Badge>
 
-      <CardContent className="px-5 pt-4">
-        <div className="flex flex-wrap gap-x-5 gap-y-2 border-t border-border pt-3.5 text-[11px] text-muted-foreground">
-          <span className="flex items-center gap-1.5"><CalendarDaysIcon className="size-3.5" />{course.schedule}</span>
-          <span className="flex items-center gap-1.5"><MapPinIcon className="size-3.5" />{course.room}</span>
+            <Badge
+              variant="secondary"
+              className="bg-secondary/70 text-secondary-foreground font-mono text-xs px-2.5 py-0.5 font-semibold"
+            >
+              Mã môn: {course.code}
+            </Badge>
+          </div>
+
+          <Badge
+            className={cn(
+              "text-xs px-2.5 py-0.5 font-semibold border-0",
+              isCompleted
+                ? "bg-muted text-muted-foreground"
+                : isUpcoming
+                  ? "bg-blue-500/10 text-blue-600 dark:text-blue-400"
+                  : "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 font-bold"
+            )}
+          >
+            {isCompleted ? "Đã kết thúc" : isUpcoming ? "Sắp diễn ra" : "Đang giảng dạy"}
+          </Badge>
         </div>
 
-        <div className="mt-4 grid grid-cols-3 rounded-xl bg-muted/60 px-4 py-3">
-          <div><strong className="block text-sm text-foreground">{course.studentCount}</strong><span className="text-[10px] text-muted-foreground">Sinh viên</span></div>
-          <div className="border-x border-border px-4"><strong className="block text-sm text-foreground">{course.groupCount}</strong><span className="text-[10px] text-muted-foreground">Nhóm</span></div>
-          <div className="text-right"><strong className="block text-sm text-foreground">{course.nextSession}</strong><span className="text-[10px] text-muted-foreground">Buổi tiếp theo</span></div>
+        {/* Course Title */}
+        <div>
+          <h3 className="text-lg font-extrabold text-foreground group-hover:text-primary transition-colors line-clamp-1">
+            {course.name}
+          </h3>
+          <p className="text-xs text-muted-foreground mt-0.5 flex items-center gap-1.5">
+            <span>Mã lớp hệ thống: <strong className="font-mono text-foreground">{course.id.toUpperCase()}</strong></span>
+          </p>
         </div>
 
-        <div className="mt-4">
-          <div className="mb-2 flex justify-between text-[10px] font-medium text-muted-foreground"><span>Tiến độ học kỳ</span><span>{course.progress}%</span></div>
-          <div className="h-1.5 overflow-hidden rounded-full bg-muted"><div className={cn("h-full rounded-full transition-all", tone.progress)} style={{ width: `${course.progress}%` }} /></div>
+        {/* Schedule & Room info */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-muted-foreground pt-1 border-t border-border/50">
+          <div className="flex items-center gap-2">
+            <CalendarDaysIcon className="w-3.5 h-3.5 text-primary shrink-0" />
+            <span className="truncate">{course.schedule}</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <MapPinIcon className="w-3.5 h-3.5 text-primary shrink-0" />
+            <span className="font-mono font-medium text-foreground">{course.room}</span>
+          </div>
         </div>
-      </CardContent>
 
-      <CardFooter className="mt-5 border-t bg-muted/30 px-5 py-3">
-        <Link
-          href={`/lecturer/courses/${course.id}/dashboard`}
-          className={buttonVariants({ variant: "ghost", className: "h-8 w-full justify-between px-2 text-xs font-semibold text-foreground hover:text-primary" })}
-        >
-          <span className="flex items-center gap-2"><UsersIcon className="size-3.5" />Vào không gian lớp học</span><ArrowRightIcon className="size-3.5" />
+        {/* Class Metrics Strip */}
+        <div className="grid grid-cols-3 gap-2 p-3 rounded-2xl bg-muted/40 border border-border/50 text-center">
+          <div>
+            <span className="text-[10px] text-muted-foreground font-semibold block uppercase">Sinh viên</span>
+            <span className="text-base font-black text-foreground font-mono">{course.studentCount} SV</span>
+          </div>
+          <div className="border-x border-border/50">
+            <span className="text-[10px] text-muted-foreground font-semibold block uppercase">Nhóm đồ án</span>
+            <span className="text-base font-black text-primary font-mono">{course.groupCount} Nhóm</span>
+          </div>
+          <div>
+            <span className="text-[10px] text-muted-foreground font-semibold block uppercase">Buổi kế tiếp</span>
+            <span className="text-xs font-bold text-foreground truncate block mt-0.5">{course.nextSession}</span>
+          </div>
+        </div>
+
+        {/* Progress Bar */}
+        <div className="space-y-1.5">
+          <div className="flex items-center justify-between text-[11px] font-semibold text-muted-foreground">
+            <span>Tiến độ giảng dạy học kỳ</span>
+            <span className="font-mono font-bold text-foreground">{course.progress}%</span>
+          </div>
+          <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
+            <div
+              className={cn(
+                "h-full rounded-full transition-all duration-500",
+                course.progress === 100 ? "bg-muted-foreground" : "bg-primary"
+              )}
+              style={{ width: `${course.progress}%` }}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* ── Footer Actions ── */}
+      <div className="pt-4 mt-4 border-t border-border/60 flex items-center justify-between gap-2">
+        <Link href="/lecturer/graph">
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-8.5 text-xs font-medium rounded-xl gap-1.5 hover:bg-primary/10 hover:text-primary hover:border-primary/30 cursor-pointer"
+          >
+            <GitGraphIcon className="w-3.5 h-3.5 text-primary" />
+            Đồ thị SAGA
+          </Button>
         </Link>
-      </CardFooter>
-    </Card>
+
+        <Link href={`/lecturer/courses/${course.id}/dashboard`}>
+          <Button
+            size="sm"
+            className="h-8.5 text-xs font-bold rounded-xl gap-1.5 shadow-xs cursor-pointer bg-primary text-primary-foreground hover:bg-primary/90"
+          >
+            Vào không gian lớp
+            <ArrowRightIcon className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" />
+          </Button>
+        </Link>
+      </div>
+    </div>
   );
 }
