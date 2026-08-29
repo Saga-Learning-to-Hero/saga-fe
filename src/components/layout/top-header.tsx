@@ -26,6 +26,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
+import { getRoleHomePath } from "@/features/auth/lib/role-routes";
 import { ROLE_COLORS, ROLE_LABELS, getInitials } from "@/components/layout/sidebar/nav-config";
 import type { Role } from "@/types/auth";
 import { cn } from "@/lib/utils";
@@ -58,6 +59,8 @@ export function TopHeader() {
 
   if (!user) return null;
 
+  const homePath = getRoleHomePath(user.role);
+
   const displayName = user.name ?? (user.role === "STUDENT" ? "Sinh viên" : "Giảng viên");
 
   const roleSubtitle =
@@ -69,14 +72,19 @@ export function TopHeader() {
 
   const handleLogout = () => {
     logout();
-    router.push("/login");
+    router.replace("/login");
+  };
+
+  const handleSwitchRole = (r: Role) => {
+    switchRole(r);
+    router.replace(getRoleHomePath(r));
   };
 
   return (
     <header className="flex h-15 shrink-0 items-center justify-between border-b border-border bg-card/95 backdrop-blur-md px-5 sm:px-6 shadow-saga-xs z-20">
       {/* ── Left: Logo + App Context Badge ── */}
       <div className="flex items-center gap-3">
-        <Link href="/dashboard" className="flex items-center hover:opacity-90 transition-opacity">
+        <Link href={homePath} className="flex items-center hover:opacity-90 transition-opacity">
           <SagaLogo size="sm" showText={true} showSubtitle={false} />
         </Link>
 
@@ -173,7 +181,7 @@ export function TopHeader() {
               {(["STUDENT", "LECTURER", "ADMIN"] as Role[]).map((r) => (
                 <DropdownMenuItem
                   key={r}
-                  onClick={() => switchRole(r)}
+                  onClick={() => handleSwitchRole(r)}
                   className={cn(
                     "text-xs cursor-pointer py-2 px-2.5 rounded-lg flex items-center justify-between",
                     user.role === r ? "font-bold text-primary bg-primary/10" : "text-foreground hover:bg-muted"

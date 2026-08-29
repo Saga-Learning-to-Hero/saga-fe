@@ -2,11 +2,11 @@
 
 import { useState, useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
-import { MenuIcon } from "lucide-react";
+import { MenuIcon, LoaderCircleIcon } from "lucide-react";
 import { Sidebar } from "@/components/layout/sidebar";
 import { SagaLogo } from "@/components/common/saga-logo";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
-import { getRoleHomePath } from "@/features/auth/lib/role-routes";
+import { getRoleHomePath, isPathAllowedForRole } from "@/features/auth/lib/role-routes";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 
@@ -21,30 +21,37 @@ export default function DashboardLayout({
 }) {
   const router = useRouter();
   const pathname = usePathname();
-  const { isAuthenticated, user } = useAuthStore();
+  const { isAuthenticated, user, hasHydrated } = useAuthStore();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
 
   useEffect(() => {
+    // Chờ Zustand đọc xong localStorage trước khi quyết định
+    if (!hasHydrated) return;
+
     if (!isAuthenticated || !user) {
-      router.replace("/login");
+      // Giữ lại URL hiện tại để quay lại sau khi đăng nhập
+      router.replace(`/login?next=${encodeURIComponent(pathname)}`);
       return;
     }
 
-    const homePath = getRoleHomePath(user.role);
-    const isAdminRoute = pathname.startsWith("/admin");
-    const isLecturerRoute = pathname.startsWith("/lecturer");
-    const isStudentRoute = pathname.startsWith("/student");
-
-    const wrongRoute =
-      (user.role === "STUDENT" && (isAdminRoute || isLecturerRoute)) ||
-      (user.role === "LECTURER" && (isAdminRoute || isStudentRoute)) ||
-      (user.role === "ADMIN" && (isLecturerRoute || isStudentRoute));
-
-    if (wrongRoute) {
-      router.replace(homePath);
+    // Role guard — chặn truy cập route sai role
+    if (!isPathAllowedForRole(pathname, user.role) && pathname !== "/profile" && pathname !== "/dashboard") {
+      router.replace(getRoleHomePath(user.role));
     }
-  }, [isAuthenticated, user, router, pathname]);
+  }, [hasHydrated, isAuthenticated, user, router, pathname]);
+
+  // Hiển thị loading shell trong lúc hydrate
+  if (!hasHydrated) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-background">
+        <div className="flex flex-col items-center gap-4">
+          <SagaLogo size="md" showText={true} showSubtitle={false} />
+          <LoaderCircleIcon className="w-6 h-6 animate-spin text-primary" />
+        </div>
+      </div>
+    );
+  }
 
   if (!isAuthenticated || !user) return null;
 

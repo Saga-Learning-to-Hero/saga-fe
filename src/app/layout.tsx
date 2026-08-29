@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Plus_Jakarta_Sans, JetBrains_Mono, Outfit } from "next/font/google";
 import { QueryProvider } from "@/providers/query-provider";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { Toaster } from "sonner";
 import "./globals.css";
 
 const plusJakartaSans = Plus_Jakarta_Sans({
@@ -46,6 +47,7 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col font-sans">
         <QueryProvider>
           <TooltipProvider>{children}</TooltipProvider>
+          <Toaster richColors position="top-right" />
         </QueryProvider>
       </body>
     </html>
