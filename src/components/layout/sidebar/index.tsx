@@ -7,6 +7,8 @@ import { SagaLogo } from "@/components/common/saga-logo";
 import { SidebarNav } from "./sidebar-nav";
 import { SidebarUserProfile } from "./sidebar-user-profile";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { useAuthStore } from "@/features/auth/store/useAuthStore";
+import { getRoleHomePath } from "@/features/auth/lib/role-routes";
 
 interface SidebarProps {
   collapsed: boolean;
@@ -14,6 +16,8 @@ interface SidebarProps {
 }
 
 export function Sidebar({ collapsed, onToggle }: SidebarProps) {
+  const { user } = useAuthStore();
+  const homePath = user ? getRoleHomePath(user.role) : "/";
   return (
     <aside
       className={cn(
@@ -45,7 +49,7 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
           </Tooltip>
         ) : (
           <>
-            <Link href="/dashboard" className="flex items-center min-w-0 hover:opacity-95 transition-opacity">
+            <Link href={homePath} className="flex items-center min-w-0 hover:opacity-95 transition-opacity">
               <SagaLogo size="sm" showText={true} showSubtitle={true} subtitleText="v0.1.0 · Beta" />
             </Link>
 

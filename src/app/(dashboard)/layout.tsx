@@ -3,15 +3,15 @@
 import { useState, useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { BellIcon, GitGraphIcon, MenuIcon } from "lucide-react";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Sidebar } from "@/components/layout/sidebar";
 import { SagaLogo } from "@/components/common/saga-logo";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
 import { getRoleHomePath } from "@/features/auth/lib/role-routes";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
+import { AccountMenu } from "@/components/layout/account/account-menu";
 
-const NO_SIDEBAR_PATHS = ["/lecturer/courses", "/student/courses"];
+const CLASS_SELECTION_PATHS = ["/lecturer/courses", "/student/courses"];
 
 export default function DashboardLayout({
   children,
@@ -20,13 +20,15 @@ export default function DashboardLayout({
 }) {
   const router = useRouter();
   const pathname = usePathname();
-  const { isAuthenticated, user } = useAuthStore();
+  const { isAuthenticated, user, hasHydrated } = useAuthStore();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
 
   useEffect(() => {
+    if (!hasHydrated) return;
+
     if (!isAuthenticated || !user) {
-      router.replace("/login");
+      router.replace(`/login?next=${encodeURIComponent(pathname)}`);
       return;
     }
 
@@ -43,21 +45,21 @@ export default function DashboardLayout({
     if (wrongRoute) {
       router.replace(homePath);
     }
-  }, [isAuthenticated, user, router, pathname]);
+  }, [hasHydrated, isAuthenticated, user, router, pathname]);
+
+  if (!hasHydrated) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-background">
+        <GitGraphIcon className="size-8 animate-pulse text-primary" />
+      </div>
+    );
+  }
 
   if (!isAuthenticated || !user) return null;
 
-  const hideSidebar = NO_SIDEBAR_PATHS.includes(pathname);
+  const isClassSelectionPage = CLASS_SELECTION_PATHS.includes(pathname);
 
   // ── No-sidebar shell (class selector, etc.) ─────────────────────────
-  const displayName = user.name ?? (user.role === "STUDENT" ? "Sinh viên" : "Giảng viên");
-  const initials = displayName
-    .split(" ")
-    .slice(-2)
-    .map((w) => w[0])
-    .join("")
-    .toUpperCase();
-
   const roleSubtitle =
     user.role === "LECTURER"
       ? "Không gian giảng dạy"
@@ -65,14 +67,7 @@ export default function DashboardLayout({
         ? "Không gian học tập"
         : "Quản trị hệ thống";
 
-  const roleLabel =
-    user.role === "LECTURER"
-      ? "Giảng viên"
-      : user.role === "STUDENT"
-        ? "Sinh viên"
-        : "Quản trị viên";
-
-  if (hideSidebar) {
+  if (isClassSelectionPage) {
     return (
       <div className="flex h-screen flex-col overflow-hidden bg-background">
         {/* Top bar: branding left, user info right */}
@@ -95,13 +90,7 @@ export default function DashboardLayout({
               <span className="absolute right-2 top-2 size-1.5 rounded-full bg-destructive" />
             </Button>
             <div className="hidden h-6 w-px bg-border sm:block" />
-            <Avatar size="sm">
-              <AvatarFallback className="bg-primary/10 text-[10px] font-bold text-primary">{initials}</AvatarFallback>
-            </Avatar>
-            <div className="hidden sm:block">
-              <p className="text-xs font-bold leading-tight">{displayName}</p>
-              <p className="text-[10px] text-muted-foreground">{roleLabel}</p>
-            </div>
+            <AccountMenu variant="header" dropdownSide="bottom" dropdownAlign="end" />
           </div>
         </header>
 

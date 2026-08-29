@@ -8,6 +8,8 @@ interface AuthState {
   isAuthenticated: boolean;
   user: User | null;
   selectedCourse: StudentCourse | null;
+  hasHydrated: boolean;
+  setHasHydrated: (state: boolean) => void;
   login: (role: Role) => void;
   logout: () => void;
   switchRole: (role: Role) => void;
@@ -21,6 +23,8 @@ export const useAuthStore = create<AuthState>()(
       isAuthenticated: false,
       user: null,
       selectedCourse: null,
+      hasHydrated: false,
+      setHasHydrated: (value) => set({ hasHydrated: value }),
       login: (role) => set({ isAuthenticated: true, user: MOCK_USERS[role] }),
       logout: () => set({ isAuthenticated: false, user: null, selectedCourse: null }),
       switchRole: (role) => set({ user: MOCK_USERS[role], selectedCourse: null }),
@@ -35,6 +39,9 @@ export const useAuthStore = create<AuthState>()(
         user: state.user,
         selectedCourse: state.selectedCourse,
       }),
+      onRehydrateStorage: () => (state) => {
+        state?.setHasHydrated(true);
+      },
     }
   )
 );
