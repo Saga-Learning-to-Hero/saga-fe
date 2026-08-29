@@ -2,6 +2,6 @@
 
 import { SprintProgressView } from "@/features/student/sprint-progress/components/sprint-progress-view";
 
-export default function SprintProgressPage() {
+export default function StudentSprintProgressPage() {
   return <SprintProgressView />;
 }

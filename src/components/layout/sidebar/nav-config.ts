@@ -52,24 +52,27 @@ export const NAV_GROUPS: NavGroup[] = [
   {
     label: "",
     roles: ["STUDENT"],
-    items: [{ title: "Tổng quan", href: "/student/dashboard", icon: "LayoutDashboard" }],
+    items: [
+      { title: "Khóa học của tôi", href: "/student/courses", icon: "BookOpen" },
+      { title: "Tổng quan", href: "/student/dashboard", icon: "LayoutDashboard" },
+    ],
   },
   {
     label: "Học tập",
     roles: ["STUDENT"],
     items: [
-      { title: "Thông tin dự án", href: "/project-info", icon: "FolderKanban" },
-      { title: "Tiến độ công việc", href: "/sprint-progress", icon: "Kanban" },
-      { title: "Đồ thị truy xuất", href: "/graph", icon: "GitGraph" },
-      { title: "Commit", href: "/commits", icon: "GitCommit" },
+      { title: "Thông tin dự án", href: "/student/project-info", icon: "FolderKanban" },
+      { title: "Tiến độ công việc", href: "/student/sprint-progress", icon: "Kanban" },
+      { title: "Đồ thị truy xuất", href: "/student/graph", icon: "GitGraph" },
+      { title: "Commit", href: "/student/commits", icon: "GitCommit" },
     ],
   },
   {
     label: "Kết quả",
     roles: ["STUDENT"],
     items: [
-      { title: "Đánh giá của tôi", href: "/assessment", icon: "GraduationCap" },
-      { title: "Mức đóng góp", href: "/contribution", icon: "PieChart" },
+      { title: "Đánh giá của tôi", href: "/student/assessment", icon: "GraduationCap" },
+      { title: "Mức đóng góp", href: "/student/contribution", icon: "PieChart" },
     ],
   },
 ];

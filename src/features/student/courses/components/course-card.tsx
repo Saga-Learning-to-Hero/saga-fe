@@ -162,7 +162,7 @@ export function CourseCard({ course, onSelectCourse }: CourseCardProps) {
 
       {/* ── Footer Actions ────────────────────────────────────────────── */}
       <div className="pt-4 mt-4 border-t border-border/60 flex items-center justify-between gap-2">
-        <Link href="/graph">
+        <Link href="/student/graph">
           <Button
             variant="outline"
             size="sm"
@@ -183,7 +183,7 @@ export function CourseCard({ course, onSelectCourse }: CourseCardProps) {
             <ArrowRightIcon className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" />
           </Button>
         ) : (
-          <Link href="/dashboard">
+          <Link href="/student/dashboard">
             <Button
               size="sm"
               className="h-8 text-xs font-semibold rounded-lg gap-1 shadow-xs cursor-pointer"

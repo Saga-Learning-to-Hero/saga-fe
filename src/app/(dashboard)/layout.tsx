@@ -11,12 +11,7 @@ import { getRoleHomePath } from "@/features/auth/lib/role-routes";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 
-/**
- * Paths that should render WITHOUT the sidebar.
- * The lecturer class-selector page is a focused "pick your class" screen
- * that doesn't need (and shouldn't have) the full app shell.
- */
-const NO_SIDEBAR_PATHS = ["/lecturer/courses"];
+const NO_SIDEBAR_PATHS = ["/lecturer/courses", "/student/courses"];
 
 export default function DashboardLayout({
   children,
@@ -55,13 +50,27 @@ export default function DashboardLayout({
   const hideSidebar = NO_SIDEBAR_PATHS.includes(pathname);
 
   // ── No-sidebar shell (class selector, etc.) ─────────────────────────
-  const displayName = user.name ?? "Giảng viên";
+  const displayName = user.name ?? (user.role === "STUDENT" ? "Sinh viên" : "Giảng viên");
   const initials = displayName
     .split(" ")
     .slice(-2)
     .map((w) => w[0])
     .join("")
     .toUpperCase();
+
+  const roleSubtitle =
+    user.role === "LECTURER"
+      ? "Không gian giảng dạy"
+      : user.role === "STUDENT"
+        ? "Không gian học tập"
+        : "Quản trị hệ thống";
+
+  const roleLabel =
+    user.role === "LECTURER"
+      ? "Giảng viên"
+      : user.role === "STUDENT"
+        ? "Sinh viên"
+        : "Quản trị viên";
 
   if (hideSidebar) {
     return (
@@ -75,7 +84,7 @@ export default function DashboardLayout({
             </div>
             <div>
               <span className="font-bold tracking-tight text-foreground">SAGA</span>
-              <span className="ml-2 hidden text-[10px] text-muted-foreground sm:inline">Không gian giảng dạy</span>
+              <span className="ml-2 hidden text-[10px] text-muted-foreground sm:inline">{roleSubtitle}</span>
             </div>
           </div>
 
@@ -91,7 +100,7 @@ export default function DashboardLayout({
             </Avatar>
             <div className="hidden sm:block">
               <p className="text-xs font-bold leading-tight">{displayName}</p>
-              <p className="text-[10px] text-muted-foreground">Giảng viên</p>
+              <p className="text-[10px] text-muted-foreground">{roleLabel}</p>
             </div>
           </div>
         </header>
