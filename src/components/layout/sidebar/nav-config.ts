@@ -62,8 +62,8 @@ export const NAV_GROUPS: NavGroup[] = [
     roles: ["STUDENT"],
     items: [
       { title: "Thông tin dự án", href: "/student/project-info", icon: "FolderKanban" },
-      { title: "Tiến độ công việc", href: "/student/sprint-progress", icon: "Kanban" },
       { title: "Đồ thị truy xuất", href: "/student/graph", icon: "GitGraph" },
+      { title: "Tiến độ công việc", href: "/student/sprint-progress", icon: "Kanban" },
       { title: "Commit", href: "/student/commits", icon: "GitCommit" },
     ],
   },
@@ -71,7 +71,7 @@ export const NAV_GROUPS: NavGroup[] = [
     label: "Kết quả",
     roles: ["STUDENT"],
     items: [
-      { title: "Đánh giá của tôi", href: "/student/assessment", icon: "GraduationCap" },
+      { title: "Đánh giá chéo", href: "/student/peer-assessment", icon: "UserCheck" },
       { title: "Mức đóng góp", href: "/student/contribution", icon: "PieChart" },
     ],
   },

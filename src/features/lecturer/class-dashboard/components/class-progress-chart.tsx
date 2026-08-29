@@ -51,7 +51,7 @@ export function ClassProgressChart({ data }: { data: WeeklyProgress[] }) {
               tick={{ fontSize: 12, fill: "var(--muted-foreground)" }}
               dx={-10}
               domain={[0, 100]}
-              tickFormatter={(value) => `${value}%`}
+              tickFormatter={(value: number | string) => `${value}%`}
             />
             <YAxis
               yAxisId="right"
