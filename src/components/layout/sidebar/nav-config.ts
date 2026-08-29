@@ -4,6 +4,7 @@ import {
   lecturerCourseGradesPath,
   lecturerCourseGraphPath,
   lecturerCourseWeightSettingsPath,
+  lecturerCourseTeamsPath,
 } from "@/features/lecturer/courses/lib/course-routes";
 
 // ── Types ──────────────────────────────────────────────────────────────
@@ -103,6 +104,7 @@ function buildLecturerCourseNav(courseId: string, courseCode?: string): NavGroup
       roles: ["LECTURER"],
       items: [
         { id: "course-dashboard", title: "Dashboard", href: lecturerCourseDashboardPath(courseId), icon: "LayoutDashboard", match: "exact" },
+        { id: "course-teams", title: "Hoạt động nhóm", href: lecturerCourseTeamsPath(courseId), icon: "Users", match: "prefix" },
         { id: "course-grades", title: "Bảng điểm", href: lecturerCourseGradesPath(courseId), icon: "ScrollText", match: "exact" },
         { id: "course-graph", title: "Đồ thị truy xuất", href: lecturerCourseGraphPath(courseId), icon: "GitGraph", match: "exact" },
         { id: "course-weights", title: "Cấu hình trọng số", href: lecturerCourseWeightSettingsPath(courseId), icon: "SlidersHorizontal", match: "prefix" },
