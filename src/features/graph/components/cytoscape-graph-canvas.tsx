@@ -164,7 +164,7 @@ export function CytoscapeGraphCanvas({
             "text-background-color": "#f8fafc",
             "text-background-padding": "3px",
             "text-background-shape": "roundrectangle",
-            "transition-property": "background-color, border-color, width, height, opacity, transform",
+            "transition-property": "background-color, border-color, width, height, opacity",
             "transition-duration": 0.25,
           },
         },

@@ -28,7 +28,7 @@ export function GroupTaskChart({ groups }: { groups: GroupHealth[] }) {
               axisLine={false}
               tickLine={false}
               tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }}
-              tickFormatter={(value) => `${value}%`}
+              tickFormatter={(value: number | string) => `${value}%`}
             />
             <YAxis
               dataKey="name"
@@ -55,7 +55,7 @@ export function GroupTaskChart({ groups }: { groups: GroupHealth[] }) {
               }}
             />
             <Bar 
-              dataKey={(data) => (data.tasksCompleted / data.totalTasks) * 100}
+              dataKey={(data: GroupHealth) => (data.tasksCompleted / data.totalTasks) * 100}
               fill="hsl(var(--primary))" 
               radius={[0, 4, 4, 0]}
               barSize={16}

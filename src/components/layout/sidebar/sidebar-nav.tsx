@@ -17,6 +17,7 @@ import {
   BookOpenIcon,
   KanbanSquareIcon,
   GitCommitIcon,
+  UserCheckIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -39,6 +40,7 @@ const ICON_MAP: Record<string, React.ElementType> = {
   UserCog: UserCogIcon,
   BookOpen: BookOpenIcon,
   GitCommit: GitCommitIcon,
+  UserCheck: UserCheckIcon,
 };
 
 interface SidebarNavProps {
