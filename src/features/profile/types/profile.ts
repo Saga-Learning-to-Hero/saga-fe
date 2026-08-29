@@ -1,5 +1,3 @@
-import type { JiraIntegration, GitHubIntegration } from "@/types/auth";
-
 export interface ProfileFormValues {
   name: string;
   email: string;

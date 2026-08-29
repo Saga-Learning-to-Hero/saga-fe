@@ -5,12 +5,8 @@ import {
   UsersIcon,
   CrownIcon,
   LockIcon,
-  CalendarIcon,
   FilterIcon,
-  ShieldCheckIcon,
   UserCheckIcon,
-  SparklesIcon,
-  BarChart3Icon,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -41,7 +37,6 @@ export function StudentDashboardAnalytics({
   // ID của thành viên được chọn để xem biểu đồ (Default: Lê Hoàng Hải - sv-01)
   const [selectedMemberId, setSelectedMemberId] = useState<string>("sv-01");
   const [isAllTeam, setIsAllTeam] = useState<boolean>(false);
-  const [selectedSprint, setSelectedSprint] = useState<string>("ALL");
 
   const isLeader = currentRole === "LEADER";
 
@@ -68,9 +63,8 @@ export function StudentDashboardAnalytics({
       <div className="bg-card/90 backdrop-blur-md border border-border/80 rounded-2xl p-4 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         {/* Left: Leader / Member Indicator */}
         <div className="flex items-center gap-3">
-          <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
-            isLeader ? "bg-amber-500/10 text-amber-600 dark:text-amber-400" : "bg-blue-500/10 text-blue-600 dark:text-blue-400"
-          }`}>
+          <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${isLeader ? "bg-amber-500/10 text-amber-600 dark:text-amber-400" : "bg-blue-500/10 text-blue-600 dark:text-blue-400"
+            }`}>
             {isLeader ? <CrownIcon className="w-5 h-5" /> : <UserCheckIcon className="w-5 h-5" />}
           </div>
           <div>
@@ -78,9 +72,8 @@ export function StudentDashboardAnalytics({
               <h2 className="text-base font-bold text-foreground tracking-tight">
                 Bảng Phân tích Đồ thị & Tiến độ Công việc
               </h2>
-              <Badge className={`border-0 text-[10px] font-semibold ${
-                isLeader ? "bg-amber-500/15 text-amber-700 dark:text-amber-300" : "bg-blue-500/15 text-blue-700 dark:text-blue-300"
-              }`}>
+              <Badge className={`border-0 text-[10px] font-semibold ${isLeader ? "bg-amber-500/15 text-amber-700 dark:text-amber-300" : "bg-blue-500/15 text-blue-700 dark:text-blue-300"
+                }`}>
                 {isLeader ? "Vai trò: Trưởng nhóm (Leader)" : "Vai trò: Thành viên (Member)"}
               </Badge>
             </div>
@@ -119,9 +112,8 @@ export function StudentDashboardAnalytics({
 
                   <DropdownMenuItem
                     onClick={handleSelectAllTeam}
-                    className={`flex items-center gap-2 text-xs py-2 px-2.5 rounded-lg cursor-pointer ${
-                      isAllTeam ? "bg-primary/10 text-primary font-bold" : ""
-                    }`}
+                    className={`flex items-center gap-2 text-xs py-2 px-2.5 rounded-lg cursor-pointer ${isAllTeam ? "bg-primary/10 text-primary font-bold" : ""
+                      }`}
                   >
                     <UsersIcon className="w-4 h-4 text-primary" />
                     <span>Tổng quan Cả nhóm SAGA</span>
@@ -136,9 +128,8 @@ export function StudentDashboardAnalytics({
                     <DropdownMenuItem
                       key={m.id}
                       onClick={() => handleSelectMember(m.id)}
-                      className={`flex items-center justify-between text-xs py-2 px-2.5 rounded-lg cursor-pointer ${
-                        !isAllTeam && selectedMemberId === m.id ? "bg-primary/10 text-primary font-bold" : ""
-                      }`}
+                      className={`flex items-center justify-between text-xs py-2 px-2.5 rounded-lg cursor-pointer ${!isAllTeam && selectedMemberId === m.id ? "bg-primary/10 text-primary font-bold" : ""
+                        }`}
                     >
                       <div className="flex items-center gap-2 truncate">
                         <span className="font-mono text-[10px] font-bold px-1.5 py-0.5 rounded bg-muted text-muted-foreground">

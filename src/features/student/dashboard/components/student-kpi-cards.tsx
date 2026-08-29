@@ -7,7 +7,6 @@ import {
   PieChartIcon,
   TrendingUpIcon,
   SparklesIcon,
-  AlertCircleIcon,
 } from "lucide-react";
 import type { MemberAnalytics } from "../types/student-analytics";
 import { Badge } from "@/components/ui/badge";
@@ -76,7 +75,7 @@ export function StudentKPICards({
         <div className="my-2">
           <div className="flex items-baseline gap-2">
             <span className="text-2xl sm:text-3xl font-black text-foreground tracking-tight font-mono">
-              {analytics.totalCommits}
+              {isAllTeamSelected ? totalTeamCommits : analytics.totalCommits}
             </span>
             <span className="text-xs text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-0.5">
               <TrendingUpIcon className="w-3 h-3" />

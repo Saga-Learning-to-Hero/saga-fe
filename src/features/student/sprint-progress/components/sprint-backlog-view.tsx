@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import type { Sprint, SprintIssue } from "../types/sprint-progress";
 import { renderTypeIcon, renderPriorityIcon } from "./sprint-board-view";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -258,9 +258,8 @@ export function SprintBacklogView({
                         draggable={canDrag}
                         onDragStart={(e) => handleDragStart(e, issue)}
                         onClick={() => onIssueClick(issue)}
-                        className={`p-3 sm:px-5 hover:bg-muted/40 transition-colors flex items-center justify-between gap-4 group ${
-                          canDrag ? "cursor-grab active:cursor-grabbing" : "cursor-pointer opacity-90"
-                        }`}
+                        className={`p-3 sm:px-5 hover:bg-muted/40 transition-colors flex items-center justify-between gap-4 group ${canDrag ? "cursor-grab active:cursor-grabbing" : "cursor-pointer opacity-90"
+                          }`}
                       >
                         {/* Left: Issue Key, Type, Summary & Labels */}
                         <div className="flex items-center gap-3 min-w-0 flex-1">
@@ -315,8 +314,8 @@ export function SprintBacklogView({
                               issue.status === "DONE"
                                 ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/30 font-bold text-[10px]"
                                 : issue.status === "IN_PROGRESS"
-                                ? "bg-blue-500/10 text-blue-600 border-blue-500/30 font-bold text-[10px]"
-                                : "text-[10px] font-medium"
+                                  ? "bg-blue-500/10 text-blue-600 border-blue-500/30 font-bold text-[10px]"
+                                  : "text-[10px] font-medium"
                             }
                           >
                             {issue.status}

@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { CustomSelect } from "@/components/common/custom-select";
 
 interface ProjectEditModalProps {
   isOpen: boolean;
@@ -78,9 +79,9 @@ export function ProjectEditModal({
 
   return (
     <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in-0 duration-200">
-      <div className="bg-card border border-border/80 rounded-3xl w-full max-w-2xl shadow-xl overflow-hidden animate-in zoom-in-95 duration-200">
+      <div className="bg-card border border-border/80 rounded-3xl w-full max-w-2xl shadow-xl max-h-[92vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
         {/* Header */}
-        <div className="p-5 border-b border-border/60 flex items-center justify-between bg-muted/30">
+        <div className="p-5 border-b border-border/60 flex items-center justify-between bg-muted/30 shrink-0">
           <div className="flex items-center gap-2.5">
             <div className="w-9 h-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
               <FolderKanbanIcon className="w-5 h-5" />
@@ -104,7 +105,7 @@ export function ProjectEditModal({
         </div>
 
         {/* Content Form */}
-        <form onSubmit={handleSubmit} className="p-5 sm:p-6 space-y-4">
+        <form onSubmit={handleSubmit} className="p-5 sm:p-6 space-y-4 overflow-y-auto flex-1 scrollbar-thin">
           {/* Success Feedback Alert */}
           {successMsg && (
             <div className="p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 text-xs font-semibold flex items-center gap-2 animate-in fade-in-0">
@@ -134,18 +135,15 @@ export function ProjectEditModal({
             <Label htmlFor="proj-category" className="text-xs font-semibold">
               Loại dự án (Phân loại) <span className="text-destructive">*</span>
             </Label>
-            <select
+            <CustomSelect
               id="proj-category"
               value={form.category}
-              onChange={(e) => setForm((f) => ({ ...f, category: e.target.value as ProjectCategory }))}
-              className="w-full h-9 px-3 text-xs rounded-xl bg-card border border-input focus:outline-hidden focus:ring-2 focus:ring-ring font-medium"
-            >
-              {CATEGORIES.map((cat) => (
-                <option key={cat} value={cat}>
-                  {cat}
-                </option>
-              ))}
-            </select>
+              onChange={(val) => setForm((f) => ({ ...f, category: val as ProjectCategory }))}
+              options={CATEGORIES.map((cat) => ({
+                value: cat,
+                label: cat,
+              }))}
+            />
           </div>
 
           {/* Mô tả dự án */}

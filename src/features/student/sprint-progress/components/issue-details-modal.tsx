@@ -23,6 +23,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { CustomSelect } from "@/components/common/custom-select";
 
 interface IssueDetailsModalProps {
   isOpen: boolean;
@@ -112,9 +113,9 @@ export function IssueDetailsModal({
 
   return (
     <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in-0 duration-200">
-      <div className="bg-card border border-border/80 rounded-3xl w-full max-w-2xl shadow-xl overflow-hidden animate-in zoom-in-95 duration-200">
+      <div className="bg-card border border-border/80 rounded-3xl w-full max-w-2xl shadow-xl max-h-[92vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
         {/* Modal Header */}
-        <div className="p-5 border-b border-border/60 flex items-center justify-between bg-muted/30">
+        <div className="p-5 border-b border-border/60 flex items-center justify-between bg-muted/30 shrink-0">
           <div className="flex items-center gap-2.5">
             <div className="w-9 h-9 rounded-xl bg-blue-600 text-white flex items-center justify-center font-bold text-sm shrink-0">
               {renderTypeIcon(form.type as IssueType)}
@@ -126,8 +127,8 @@ export function IssueDetailsModal({
                   {!canEdit
                     ? "Chi tiết Công việc (Chỉ đọc)"
                     : isEditing
-                    ? "Chi tiết & Cập nhật Công việc"
-                    : "Tạo Task mới"}
+                      ? "Chi tiết & Cập nhật Công việc"
+                      : "Tạo Task mới"}
                 </h3>
               </div>
               <p className="text-xs text-muted-foreground">
@@ -145,7 +146,7 @@ export function IssueDetailsModal({
         </div>
 
         {/* Form Body */}
-        <form onSubmit={handleSubmit} className="p-5 sm:p-6 space-y-4">
+        <form onSubmit={handleSubmit} className="p-5 sm:p-6 space-y-4 overflow-y-auto flex-1 scrollbar-thin">
           {/* Read-Only Warning Banner if viewing another member's task */}
           {!canEdit && (
             <div className="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-700 dark:text-amber-300 text-xs font-semibold flex items-center gap-2 animate-in fade-in-0">
@@ -188,18 +189,18 @@ export function IssueDetailsModal({
               <Label htmlFor="issue-type" className="text-xs font-semibold">
                 Loại thẻ (Issue Type)
               </Label>
-              <select
+              <CustomSelect
                 id="issue-type"
                 disabled={!canEdit}
                 value={form.type}
-                onChange={(e) => setForm((f) => ({ ...f, type: e.target.value as IssueType }))}
-                className="w-full h-9 px-3 text-xs rounded-xl bg-card border border-input focus:outline-hidden font-medium disabled:opacity-80 cursor-pointer"
-              >
-                <option value="STORY">User Story</option>
-                <option value="TASK">Task</option>
-                <option value="BUG">Bug</option>
-                <option value="SUBTASK">Sub-task</option>
-              </select>
+                onChange={(val) => setForm((f) => ({ ...f, type: val as IssueType }))}
+                options={[
+                  { value: "STORY", label: "User Story", icon: renderTypeIcon("STORY") },
+                  { value: "TASK", label: "Task", icon: renderTypeIcon("TASK") },
+                  { value: "BUG", label: "Bug", icon: renderTypeIcon("BUG") },
+                  { value: "SUBTASK", label: "Sub-task", icon: renderTypeIcon("SUBTASK") },
+                ]}
+              />
             </div>
 
             {/* Status */}
@@ -207,18 +208,18 @@ export function IssueDetailsModal({
               <Label htmlFor="issue-status" className="text-xs font-semibold">
                 Trạng thái (Status)
               </Label>
-              <select
+              <CustomSelect
                 id="issue-status"
                 disabled={!canEdit}
                 value={form.status}
-                onChange={(e) => setForm((f) => ({ ...f, status: e.target.value as IssueStatus }))}
-                className="w-full h-9 px-3 text-xs rounded-xl bg-card border border-input focus:outline-hidden font-medium disabled:opacity-80 cursor-pointer"
-              >
-                <option value="TODO">TO DO (Cần làm)</option>
-                <option value="IN_PROGRESS">IN PROGRESS (Đang làm)</option>
-                <option value="IN_REVIEW">IN REVIEW (Đang kiểm thử)</option>
-                <option value="DONE">DONE (Hoàn thành)</option>
-              </select>
+                onChange={(val) => setForm((f) => ({ ...f, status: val as IssueStatus }))}
+                options={[
+                  { value: "TODO", label: "TO DO (Cần làm)" },
+                  { value: "IN_PROGRESS", label: "IN PROGRESS (Đang làm)" },
+                  { value: "IN_REVIEW", label: "IN REVIEW (Đang kiểm thử)" },
+                  { value: "DONE", label: "DONE (Hoàn thành)" },
+                ]}
+              />
             </div>
 
             {/* Priority */}
@@ -226,18 +227,18 @@ export function IssueDetailsModal({
               <Label htmlFor="issue-priority" className="text-xs font-semibold">
                 Mức ưu tiên (Priority)
               </Label>
-              <select
+              <CustomSelect
                 id="issue-priority"
                 disabled={!canEdit}
                 value={form.priority}
-                onChange={(e) => setForm((f) => ({ ...f, priority: e.target.value as IssuePriority }))}
-                className="w-full h-9 px-3 text-xs rounded-xl bg-card border border-input focus:outline-hidden font-medium disabled:opacity-80 cursor-pointer"
-              >
-                <option value="HIGHEST">HIGHEST (Rất cao)</option>
-                <option value="HIGH">HIGH (Cao)</option>
-                <option value="MEDIUM">MEDIUM (Trung bình)</option>
-                <option value="LOW">LOW (Thấp)</option>
-              </select>
+                onChange={(val) => setForm((f) => ({ ...f, priority: val as IssuePriority }))}
+                options={[
+                  { value: "HIGHEST", label: "HIGHEST (Rất cao)" },
+                  { value: "HIGH", label: "HIGH (Cao)" },
+                  { value: "MEDIUM", label: "MEDIUM (Trung bình)" },
+                  { value: "LOW", label: "LOW (Thấp)" },
+                ]}
+              />
             </div>
 
             {/* Story Points */}
@@ -262,22 +263,21 @@ export function IssueDetailsModal({
               <Label htmlFor="issue-assignee" className="text-xs font-semibold">
                 Người thực hiện (Assignee)
               </Label>
-              <select
+              <CustomSelect
                 id="issue-assignee"
                 disabled={!canEdit}
-                value={form.assignee?.id}
-                onChange={(e) => {
-                  const m = teamMembers.find((member) => member.id === e.target.value);
+                value={form.assignee?.id || ""}
+                onChange={(val) => {
+                  const m = teamMembers.find((member) => member.id === val);
                   if (m) setForm((f) => ({ ...f, assignee: m }));
                 }}
-                className="w-full h-9 px-3 text-xs rounded-xl bg-card border border-input focus:outline-hidden font-medium disabled:opacity-80 cursor-pointer"
-              >
-                {teamMembers.map((m) => (
-                  <option key={m.id} value={m.id}>
-                    {m.name} ({m.studentCode})
-                  </option>
-                ))}
-              </select>
+                placeholder="Chọn thành viên..."
+                options={teamMembers.map((m) => ({
+                  value: m.id,
+                  label: m.name,
+                  subLabel: m.studentCode,
+                }))}
+              />
             </div>
 
             {/* Sprint */}
@@ -285,19 +285,17 @@ export function IssueDetailsModal({
               <Label htmlFor="issue-sprint" className="text-xs font-semibold">
                 Sprint thuộc về
               </Label>
-              <select
+              <CustomSelect
                 id="issue-sprint"
                 disabled={!canEdit}
                 value={form.sprintId}
-                onChange={(e) => setForm((f) => ({ ...f, sprintId: e.target.value }))}
-                className="w-full h-9 px-3 text-xs rounded-xl bg-card border border-input focus:outline-hidden font-medium disabled:opacity-80 cursor-pointer"
-              >
-                {sprints.map((s) => (
-                  <option key={s.id} value={s.id}>
-                    {s.name}
-                  </option>
-                ))}
-              </select>
+                onChange={(val) => setForm((f) => ({ ...f, sprintId: val }))}
+                options={sprints.map((s) => ({
+                  value: s.id,
+                  label: s.name,
+                  subLabel: `Trạng thái: ${s.status}`,
+                }))}
+              />
             </div>
           </div>
 

@@ -4,7 +4,6 @@ import { useState, useMemo } from "react";
 import {
   GitCommitIcon,
   FolderGit2Icon,
-  RefreshCwIcon,
   ExternalLinkIcon,
 } from "lucide-react";
 import {
@@ -17,7 +16,6 @@ import { CommitStatsCards } from "./commit-stats-cards";
 import { CommitFilterBar } from "./commit-filter-bar";
 import { CommitListTimeline } from "./commit-list-timeline";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
 export function CommitsView() {

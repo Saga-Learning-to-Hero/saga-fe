@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  BookOpenIcon,
   GraduationCapIcon,
   UsersIcon,
   MapPinIcon,
