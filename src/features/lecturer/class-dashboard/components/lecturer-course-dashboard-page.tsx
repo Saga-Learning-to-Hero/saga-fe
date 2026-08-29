@@ -46,7 +46,7 @@ export function LecturerCourseDashboardPage({ initialData }: { initialData: Cour
             </div>
           </div>
 
-          <GroupHealthTable groups={data.groups} />
+          <GroupHealthTable groups={data.groups} courseId={data.course.id} />
         </div>
 
         {/* R/H Col: Side Panels (4/12) */}

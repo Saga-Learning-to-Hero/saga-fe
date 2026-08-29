@@ -39,46 +39,46 @@ export function CourseCard({ course }: { course: LecturerCourse }) {
       {/* accent stripe */}
       <div className={cn("h-1 w-full rounded-t-2xl", bar, isCompleted && "opacity-30")} />
 
-      <div className="flex flex-1 flex-col gap-5 p-5">
+      <div className="flex flex-1 flex-col gap-6 p-6">
         {/* header */}
-        <div className="flex items-start justify-between gap-2">
-          <div className="space-y-1.5 min-w-0">
-            <div className="flex items-center gap-1.5 text-xs font-mono text-muted-foreground">
+        <div className="flex items-start justify-between gap-3">
+          <div className="space-y-2 min-w-0">
+            <div className="flex items-center gap-2 text-sm font-mono text-muted-foreground">
               <span className="font-bold">{course.code}</span>
               <span className="opacity-40">·</span>
               <span className="opacity-60">{course.semesterId}</span>
             </div>
-            <h3 className="line-clamp-2 text-base font-extrabold leading-snug text-foreground group-hover:text-primary transition-colors">
+            <h3 className="line-clamp-2 text-xl font-extrabold leading-snug text-foreground group-hover:text-primary transition-colors">
               {course.name}
             </h3>
           </div>
-          <Badge className={cn("shrink-0 border-0 text-[10px] font-bold", statusConfig.cls)}>
+          <Badge className={cn("shrink-0 border-0 text-xs px-2.5 py-1 font-bold", statusConfig.cls)}>
             {statusConfig.label}
           </Badge>
         </div>
 
         {/* stats */}
-        <div className="flex items-center gap-5 rounded-xl bg-muted/50 px-4 py-3.5 text-sm">
-          <div className="flex items-center gap-2">
-            <UsersIcon className="size-4 text-muted-foreground" />
-            <span className="font-extrabold text-base">{course.studentCount}</span>
-            <span className="text-muted-foreground">sinh viên</span>
+        <div className="flex items-center gap-6 rounded-2xl bg-muted/50 px-5 py-4 text-base">
+          <div className="flex items-center gap-2.5">
+            <UsersIcon className="size-5 text-muted-foreground" />
+            <span className="font-extrabold text-xl">{course.studentCount}</span>
+            <span className="text-muted-foreground font-medium">sinh viên</span>
           </div>
-          <div className="h-4 w-px bg-border" />
-          <div className="flex items-center gap-2">
-            <FolderKanbanIcon className="size-4 text-muted-foreground" />
-            <span className="font-extrabold text-base">{course.groupCount}</span>
-            <span className="text-muted-foreground">nhóm</span>
+          <div className="h-5 w-px bg-border" />
+          <div className="flex items-center gap-2.5">
+            <FolderKanbanIcon className="size-5 text-muted-foreground" />
+            <span className="font-extrabold text-xl">{course.groupCount}</span>
+            <span className="text-muted-foreground font-medium">nhóm</span>
           </div>
         </div>
 
         {/* progress */}
-        <div className="space-y-2">
-          <div className="flex items-center justify-between text-xs">
+        <div className="space-y-2.5">
+          <div className="flex items-center justify-between text-sm">
             <span className="text-muted-foreground font-medium">Tiến độ học kỳ</span>
-            <span className="font-mono font-bold text-sm">{course.progress}%</span>
+            <span className="font-mono font-bold text-base">{course.progress}%</span>
           </div>
-          <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
+          <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
             <div
               className={cn("h-full rounded-full transition-all duration-500", isCompleted ? "bg-muted-foreground/40" : bar)}
               style={{ width: `${course.progress}%` }}
@@ -88,11 +88,11 @@ export function CourseCard({ course }: { course: LecturerCourse }) {
       </div>
 
       {/* CTA */}
-      <div className="border-t border-border/60 px-5 py-3.5">
+      <div className="border-t border-border/60 px-6 py-4">
         <Link
           href={`/lecturer/courses/${course.id}/dashboard`}
           className={cn(
-            "flex w-full items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-bold transition-all",
+            "flex w-full items-center justify-center gap-2.5 rounded-xl py-3 text-base font-bold transition-all",
             isUpcoming
               ? "bg-muted text-muted-foreground cursor-not-allowed pointer-events-none"
               : isCompleted
@@ -101,7 +101,7 @@ export function CourseCard({ course }: { course: LecturerCourse }) {
           )}
         >
           {isUpcoming ? "Chưa mở" : isCompleted ? "Xem lại lớp" : "Vào lớp học"}
-          <ArrowRightIcon className="size-4 transition-transform group-hover:translate-x-0.5" />
+          <ArrowRightIcon className="size-5 transition-transform group-hover:translate-x-1" />
         </Link>
       </div>
     </div>

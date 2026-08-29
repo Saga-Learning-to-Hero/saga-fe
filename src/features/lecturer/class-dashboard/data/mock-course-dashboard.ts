@@ -1,8 +1,10 @@
 import type { CourseDashboardData } from "../types/course-dashboard";
-import { MOCK_LECTURER_COURSES } from "../../courses/data/mock-courses";
 
-export const MOCK_PRN212_DASHBOARD: CourseDashboardData = {
-  course: MOCK_LECTURER_COURSES.find(c => c.id === "prn212-01")!,
+import type { LecturerCourse } from "../../courses/types/course";
+
+export function createMockCourseDashboard(course: LecturerCourse): CourseDashboardData {
+  return {
+    course,
   summary: {
     studentCount: 42,
     activeStudentCount: 40,
@@ -62,6 +64,7 @@ export const MOCK_PRN212_DASHBOARD: CourseDashboardData = {
     { id: "ra2", source: "JIRA", actor: "SWP-124", action: "chuyển từ", target: "In Progress → Done", timestamp: "18 phút trước" },
     { id: "ra3", source: "SAGA", actor: "Hệ thống", action: "đồng bộ dữ liệu", target: "Nhóm 03 hoàn tất", timestamp: "1 giờ trước" },
     { id: "ra4", source: "GITHUB", actor: "Nhóm 02", action: "push 4 commits", target: "tới branch `feature/payment`", timestamp: "2 giờ trước" },
-    { id: "ra5", source: "JIRA", actor: "Nhóm 06", action: "tạo mới 5 task", target: "cho Sprint 4", timestamp: "4 giờ trước" },
-  ]
-};
+      { id: "ra5", source: "JIRA", actor: "Nhóm 06", action: "tạo mới 5 task", target: "cho Sprint 4", timestamp: "4 giờ trước" },
+    ]
+  };
+}
