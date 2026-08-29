@@ -5,7 +5,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Progress } from "@/components/ui/progress";
 import type { GroupHealth, GroupHealthStatus } from "../types/course-dashboard";
 
-export function GroupHealthTable({ groups }: { groups: GroupHealth[] }) {
+export function GroupHealthTable({ groups, courseId }: { groups: GroupHealth[], courseId: string }) {
   const getStatusBadge = (status: GroupHealthStatus) => {
     switch (status) {
       case "HEALTHY":
@@ -66,7 +66,7 @@ export function GroupHealthTable({ groups }: { groups: GroupHealth[] }) {
                   </TableCell>
                   <TableCell>
                     <Link
-                      href={`/lecturer/courses/prn212-01/groups/${group.id}`}
+                      href={`/lecturer/courses/${courseId}/groups/${group.id}`}
                       className="inline-flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground opacity-0 group-hover:opacity-100 transition-all"
                     >
                       <ChevronRightIcon className="size-4" />

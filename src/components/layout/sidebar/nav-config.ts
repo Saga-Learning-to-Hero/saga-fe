@@ -45,8 +45,7 @@ export const NAV_GROUPS: NavGroup[] = [
     roles: ["LECTURER"],
     items: [
       { title: "Đồ thị truy xuất", href: "/lecturer/graph", icon: "GitGraph" },
-      { title: "Đánh giá nhóm", href: "/lecturer/assessment", icon: "ClipboardCheck" },
-      { title: "Bảng đóng góp", href: "/lecturer/contribution", icon: "PieChart" },
+      { title: "Bảng điểm lớp", href: "/lecturer/courses", icon: "GraduationCap" },
     ],
   },
   {

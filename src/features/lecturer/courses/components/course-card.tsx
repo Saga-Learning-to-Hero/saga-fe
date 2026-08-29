@@ -1,143 +1,107 @@
 "use client";
 
 import Link from "next/link";
-import {
-  ArrowRightIcon,
-  CalendarDaysIcon,
-  MapPinIcon,
-  GitGraphIcon,
-} from "lucide-react";
+import { ArrowRightIcon, FolderKanbanIcon, UsersIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { LecturerCourse } from "../types/course";
 
-interface CourseCardProps {
-  course: LecturerCourse;
-}
-
-export function CourseCard({ course }: CourseCardProps) {
+export function CourseCard({ course }: { course: LecturerCourse }) {
   const isCompleted = course.status === "COMPLETED";
-  const isUpcoming = course.status === "UPCOMING";
+  const isUpcoming  = course.status === "UPCOMING";
+
+  const statusConfig = {
+    ACTIVE:    { label: "Đang dạy",    cls: "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400" },
+    COMPLETED: { label: "Đã kết thúc", cls: "bg-muted text-muted-foreground" },
+    UPCOMING:  { label: "Sắp diễn ra", cls: "bg-blue-500/10 text-blue-600 dark:text-blue-400" },
+  }[course.status];
+
+  const toneRing: Record<string, string> = {
+    indigo:  "hover:border-indigo-500/40",
+    cyan:    "hover:border-cyan-500/40",
+    emerald: "hover:border-emerald-500/40",
+    amber:   "hover:border-amber-500/40",
+  };
+  const accentBar: Record<string, string> = {
+    indigo: "bg-indigo-500", cyan: "bg-cyan-500", emerald: "bg-emerald-500", amber: "bg-amber-500",
+  };
+
+  const tone = course.tone ?? "indigo";
+  const ring = toneRing[tone];
+  const bar  = accentBar[tone];
 
   return (
-    <div
-      className={cn(
-        "group relative flex flex-col justify-between rounded-3xl p-5 sm:p-6 transition-all duration-300",
-        "bg-card/90 backdrop-blur-sm border border-border/80 shadow-xs hover:shadow-lg hover:-translate-y-1",
-        "hover:border-primary/40 hover:bg-card"
-      )}
-    >
-      {/* ── Top Header: Mã Học kỳ, Mã lớp & Trạng thái ── */}
-      <div className="space-y-3.5">
-        <div className="flex items-center justify-between gap-2">
-          <div className="flex items-center gap-2">
-            <Badge
-              variant="outline"
-              className="bg-primary/10 text-primary border-primary/20 font-mono text-xs px-2.5 py-0.5 font-bold"
-            >
-              Kỳ: {course.semesterId}
-            </Badge>
+    <div className={cn(
+      "group relative flex flex-col rounded-2xl border border-border bg-card shadow-xs",
+      "transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md",
+      ring
+    )}>
+      {/* accent stripe */}
+      <div className={cn("h-1 w-full rounded-t-2xl", bar, isCompleted && "opacity-30")} />
 
-            <Badge
-              variant="secondary"
-              className="bg-secondary/70 text-secondary-foreground font-mono text-xs px-2.5 py-0.5 font-semibold"
-            >
-              Mã môn: {course.code}
-            </Badge>
+      <div className="flex flex-1 flex-col gap-6 p-6">
+        {/* header */}
+        <div className="flex items-start justify-between gap-3">
+          <div className="space-y-2 min-w-0">
+            <div className="flex items-center gap-2 text-sm font-mono text-muted-foreground">
+              <span className="font-bold">{course.code}</span>
+              <span className="opacity-40">·</span>
+              <span className="opacity-60">{course.semesterId}</span>
+            </div>
+            <h3 className="line-clamp-2 text-xl font-extrabold leading-snug text-foreground group-hover:text-primary transition-colors">
+              {course.name}
+            </h3>
           </div>
-
-          <Badge
-            className={cn(
-              "text-xs px-2.5 py-0.5 font-semibold border-0",
-              isCompleted
-                ? "bg-muted text-muted-foreground"
-                : isUpcoming
-                  ? "bg-blue-500/10 text-blue-600 dark:text-blue-400"
-                  : "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 font-bold"
-            )}
-          >
-            {isCompleted ? "Đã kết thúc" : isUpcoming ? "Sắp diễn ra" : "Đang giảng dạy"}
+          <Badge className={cn("shrink-0 border-0 text-xs px-2.5 py-1 font-bold", statusConfig.cls)}>
+            {statusConfig.label}
           </Badge>
         </div>
 
-        {/* Course Title */}
-        <div>
-          <h3 className="text-lg font-extrabold text-foreground group-hover:text-primary transition-colors line-clamp-1">
-            {course.name}
-          </h3>
-          <p className="text-xs text-muted-foreground mt-0.5 flex items-center gap-1.5">
-            <span>Mã lớp hệ thống: <strong className="font-mono text-foreground">{course.id.toUpperCase()}</strong></span>
-          </p>
-        </div>
-
-        {/* Schedule & Room info */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-muted-foreground pt-1 border-t border-border/50">
-          <div className="flex items-center gap-2">
-            <CalendarDaysIcon className="w-3.5 h-3.5 text-primary shrink-0" />
-            <span className="truncate">{course.schedule}</span>
+        {/* stats */}
+        <div className="flex items-center gap-6 rounded-2xl bg-muted/50 px-5 py-4 text-base">
+          <div className="flex items-center gap-2.5">
+            <UsersIcon className="size-5 text-muted-foreground" />
+            <span className="font-extrabold text-xl">{course.studentCount}</span>
+            <span className="text-muted-foreground font-medium">sinh viên</span>
           </div>
-          <div className="flex items-center gap-2">
-            <MapPinIcon className="w-3.5 h-3.5 text-primary shrink-0" />
-            <span className="font-mono font-medium text-foreground">{course.room}</span>
+          <div className="h-5 w-px bg-border" />
+          <div className="flex items-center gap-2.5">
+            <FolderKanbanIcon className="size-5 text-muted-foreground" />
+            <span className="font-extrabold text-xl">{course.groupCount}</span>
+            <span className="text-muted-foreground font-medium">nhóm</span>
           </div>
         </div>
 
-        {/* Class Metrics Strip */}
-        <div className="grid grid-cols-3 gap-2 p-3 rounded-2xl bg-muted/40 border border-border/50 text-center">
-          <div>
-            <span className="text-[10px] text-muted-foreground font-semibold block uppercase">Sinh viên</span>
-            <span className="text-base font-black text-foreground font-mono">{course.studentCount} SV</span>
+        {/* progress */}
+        <div className="space-y-2.5">
+          <div className="flex items-center justify-between text-sm">
+            <span className="text-muted-foreground font-medium">Tiến độ học kỳ</span>
+            <span className="font-mono font-bold text-base">{course.progress}%</span>
           </div>
-          <div className="border-x border-border/50">
-            <span className="text-[10px] text-muted-foreground font-semibold block uppercase">Nhóm đồ án</span>
-            <span className="text-base font-black text-primary font-mono">{course.groupCount} Nhóm</span>
-          </div>
-          <div>
-            <span className="text-[10px] text-muted-foreground font-semibold block uppercase">Buổi kế tiếp</span>
-            <span className="text-xs font-bold text-foreground truncate block mt-0.5">{course.nextSession}</span>
-          </div>
-        </div>
-
-        {/* Progress Bar */}
-        <div className="space-y-1.5">
-          <div className="flex items-center justify-between text-[11px] font-semibold text-muted-foreground">
-            <span>Tiến độ giảng dạy học kỳ</span>
-            <span className="font-mono font-bold text-foreground">{course.progress}%</span>
-          </div>
-          <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
+          <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
             <div
-              className={cn(
-                "h-full rounded-full transition-all duration-500",
-                course.progress === 100 ? "bg-muted-foreground" : "bg-primary"
-              )}
+              className={cn("h-full rounded-full transition-all duration-500", isCompleted ? "bg-muted-foreground/40" : bar)}
               style={{ width: `${course.progress}%` }}
             />
           </div>
         </div>
       </div>
 
-      {/* ── Footer Actions ── */}
-      <div className="pt-4 mt-4 border-t border-border/60 flex items-center justify-between gap-2">
-        <Link href="/lecturer/graph">
-          <Button
-            variant="outline"
-            size="sm"
-            className="h-8.5 text-xs font-medium rounded-xl gap-1.5 hover:bg-primary/10 hover:text-primary hover:border-primary/30 cursor-pointer"
-          >
-            <GitGraphIcon className="w-3.5 h-3.5 text-primary" />
-            Đồ thị SAGA
-          </Button>
-        </Link>
-
-        <Link href={`/lecturer/courses/${course.id}/dashboard`}>
-          <Button
-            size="sm"
-            className="h-8.5 text-xs font-bold rounded-xl gap-1.5 shadow-xs cursor-pointer bg-primary text-primary-foreground hover:bg-primary/90"
-          >
-            Vào không gian lớp
-            <ArrowRightIcon className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" />
-          </Button>
+      {/* CTA */}
+      <div className="border-t border-border/60 px-6 py-4">
+        <Link
+          href={`/lecturer/courses/${course.id}/dashboard`}
+          className={cn(
+            "flex w-full items-center justify-center gap-2.5 rounded-xl py-3 text-base font-bold transition-all",
+            isUpcoming
+              ? "bg-muted text-muted-foreground cursor-not-allowed pointer-events-none"
+              : isCompleted
+              ? "bg-muted text-muted-foreground hover:bg-muted/80"
+              : "bg-primary text-primary-foreground hover:bg-primary/90"
+          )}
+        >
+          {isUpcoming ? "Chưa mở" : isCompleted ? "Xem lại lớp" : "Vào lớp học"}
+          <ArrowRightIcon className="size-5 transition-transform group-hover:translate-x-1" />
         </Link>
       </div>
     </div>

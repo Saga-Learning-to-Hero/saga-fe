@@ -1,6 +1,6 @@
-import { redirect } from "next/navigation";
-import { MOCK_LECTURER_COURSES } from "@/features/lecturer/courses/data/mock-courses";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
+import { getLecturerCourseById } from "@/features/lecturer/courses/lib/course-repository";
+import { lecturerCourseDashboardPath } from "@/features/lecturer/courses/lib/course-routes";
 
 interface Props {
   params: Promise<{ courseId: string }>;
@@ -12,9 +12,9 @@ interface Props {
  */
 export default async function CourseRootRoute({ params }: Props) {
   const { courseId } = await params;
-  const course = MOCK_LECTURER_COURSES.find((c) => c.id === courseId);
+  const course = getLecturerCourseById(courseId);
 
   if (!course) notFound();
 
-  redirect(`/lecturer/courses/${courseId}/dashboard`);
+  redirect(lecturerCourseDashboardPath(courseId));
 }
