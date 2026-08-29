@@ -2,17 +2,16 @@
 
 import { useState, useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
-import { MenuIcon } from "lucide-react";
+import { GitGraphIcon, MenuIcon } from "lucide-react";
 import { Sidebar } from "@/components/layout/sidebar";
 import { SagaLogo } from "@/components/common/saga-logo";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
 import { getRoleHomePath } from "@/features/auth/lib/role-routes";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-
 import { TopHeader } from "@/components/layout/top-header";
 
-const NO_SIDEBAR_PATHS = ["/lecturer/courses", "/student/courses"];
+const CLASS_SELECTION_PATHS = ["/lecturer/courses", "/student/courses"];
 
 export default function DashboardLayout({
   children,
@@ -21,13 +20,15 @@ export default function DashboardLayout({
 }) {
   const router = useRouter();
   const pathname = usePathname();
-  const { isAuthenticated, user } = useAuthStore();
+  const { isAuthenticated, user, hasHydrated } = useAuthStore();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
 
   useEffect(() => {
+    if (!hasHydrated) return;
+
     if (!isAuthenticated || !user) {
-      router.replace("/login");
+      router.replace(`/login?next=${encodeURIComponent(pathname)}`);
       return;
     }
 
@@ -44,13 +45,21 @@ export default function DashboardLayout({
     if (wrongRoute) {
       router.replace(homePath);
     }
-  }, [isAuthenticated, user, router, pathname]);
+  }, [hasHydrated, isAuthenticated, user, router, pathname]);
+
+  if (!hasHydrated) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-background">
+        <GitGraphIcon className="size-8 animate-pulse text-primary" />
+      </div>
+    );
+  }
 
   if (!isAuthenticated || !user) return null;
 
-  const hideSidebar = NO_SIDEBAR_PATHS.includes(pathname);
+  const isClassSelectionPage = CLASS_SELECTION_PATHS.includes(pathname);
 
-  if (hideSidebar) {
+  if (isClassSelectionPage) {
     return (
       <div className="flex h-screen flex-col overflow-hidden bg-background">
         <TopHeader />

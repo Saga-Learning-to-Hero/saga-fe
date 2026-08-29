@@ -15,3 +15,9 @@ export function getRoleHomePath(role: Role): string {
       return '/student/courses';
   }
 }
+
+export function isPathAllowedForRole(pathname: string, role: Role): boolean {
+  const rolePrefix = `/${role.toLowerCase()}`;
+
+  return pathname === rolePrefix || pathname.startsWith(`${rolePrefix}/`);
+}
