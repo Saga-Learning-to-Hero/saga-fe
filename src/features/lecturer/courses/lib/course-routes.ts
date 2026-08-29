@@ -14,6 +14,10 @@ export function lecturerCourseGradesPath(courseId: string) {
   return `/lecturer/courses/${courseId}/grades`;
 }
 
+export function lecturerCourseWeightSettingsPath(courseId: string) {
+  return `/lecturer/courses/${courseId}/settings/weights`;
+}
+
 export function lecturerCourseGraphPath(courseId: string) {
   return `/lecturer/courses/${courseId}/graph`;
 }

@@ -8,6 +8,11 @@ interface AuthState {
   isAuthenticated: boolean;
   user: User | null;
   selectedCourse: StudentCourse | null;
+
+  // Trạng thái hydration — true khi Zustand đã đọc xong localStorage
+  hasHydrated: boolean;
+  setHasHydrated: (value: boolean) => void;
+
   login: (role: Role) => void;
   logout: () => void;
   switchRole: (role: Role) => void;
@@ -21,6 +26,12 @@ export const useAuthStore = create<AuthState>()(
       isAuthenticated: false,
       user: null,
       selectedCourse: null,
+      hasHydrated: false,
+
+      setHasHydrated: (value) => {
+        set({ hasHydrated: value });
+      },
+
       login: (role) => set({ isAuthenticated: true, user: MOCK_USERS[role] }),
       logout: () => set({ isAuthenticated: false, user: null, selectedCourse: null }),
       switchRole: (role) => set({ user: MOCK_USERS[role], selectedCourse: null }),
@@ -34,7 +45,11 @@ export const useAuthStore = create<AuthState>()(
         isAuthenticated: state.isAuthenticated,
         user: state.user,
         selectedCourse: state.selectedCourse,
+        // Không persist hasHydrated
       }),
+      onRehydrateStorage: () => (state) => {
+        state?.setHasHydrated(true);
+      },
     }
   )
 );

@@ -18,11 +18,13 @@ import {
   KanbanSquareIcon,
   GitCommitIcon,
   UserCheckIcon,
+  SlidersHorizontalIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
-import { NAV_GROUPS } from "./nav-config";
+import { getLecturerCourseById } from "@/features/lecturer/courses/lib/course-repository";
+import { getNavGroups, isNavItemActive } from "./nav-config";
 import type { NavItem } from "./nav-config";
 
 const ICON_MAP: Record<string, React.ElementType> = {
@@ -41,6 +43,7 @@ const ICON_MAP: Record<string, React.ElementType> = {
   BookOpen: BookOpenIcon,
   GitCommit: GitCommitIcon,
   UserCheck: UserCheckIcon,
+  SlidersHorizontal: SlidersHorizontalIcon,
 };
 
 interface SidebarNavProps {
@@ -55,9 +58,7 @@ function NavLink({
   collapsed: boolean;
 }) {
   const pathname = usePathname();
-  const isActive =
-    pathname === item.href ||
-    (item.href !== "/dashboard" && pathname.startsWith(item.href));
+  const isActive = isNavItemActive(pathname, item);
 
   const Icon = ICON_MAP[item.icon] ?? LayoutDashboardIcon;
 
@@ -107,13 +108,23 @@ function NavLink({
 export function SidebarNav({ collapsed }: SidebarNavProps) {
   const { user } = useAuthStore();
   const role = user?.role ?? "STUDENT";
+  const pathname = usePathname();
 
-  const visibleGroups = NAV_GROUPS.filter((g) => g.roles.includes(role));
+  // Trích xuất courseId từ pathname (chỉ cho Lecturer)
+  const courseMatch = pathname.match(/^\/lecturer\/courses\/([^/]+)(?:\/|$)/);
+  const courseId = courseMatch ? decodeURIComponent(courseMatch[1]) : null;
+
+  // Lấy courseCode từ mock data (nếu đang trong context lớp)
+  const course = courseId ? getLecturerCourseById(courseId) : null;
+  const courseCode = course?.code;
+
+  // Xây dựng navigation theo context — không trộn global + course
+  const navGroups = getNavGroups(role, courseId, courseCode);
 
   return (
     <nav className="flex-1 overflow-y-auto py-3 px-3 space-y-2">
-      {visibleGroups.map((group, gi) => (
-        <div key={gi} className="space-y-1">
+      {navGroups.map((group, gi) => (
+        <div key={group.id} className="space-y-1">
           {/* Section label */}
           {!collapsed && group.label && (
             <p className="px-3 pt-2 pb-1 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/60 select-none">
@@ -128,7 +139,7 @@ export function SidebarNav({ collapsed }: SidebarNavProps) {
 
           <ul className="space-y-0.5">
             {group.items.map((item) => (
-              <li key={item.href}>
+              <li key={item.id}>
                 <NavLink item={item} collapsed={collapsed} />
               </li>
             ))}
