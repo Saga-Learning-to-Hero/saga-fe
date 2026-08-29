@@ -1,121 +1,255 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { BookOpenIcon, SearchIcon, SparklesIcon, UsersIcon } from "lucide-react";
+import {
+  BookOpenIcon,
+  SearchIcon,
+  SparklesIcon,
+  UsersIcon,
+  FolderKanbanIcon,
+  FilterXIcon,
+} from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { CustomSelect } from "@/components/common/custom-select";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { SemesterTabs } from "./semester-tabs";
 import { CourseCard } from "./course-card";
-import { MOCK_LECTURER_COURSES, SEMESTERS } from "../data/mock-courses";
+import {
+  MOCK_LECTURER_COURSES,
+  MOCK_LECTURER_SEMESTERS,
+} from "../data/mock-courses";
+import { useAuthStore } from "@/features/auth/store/useAuthStore";
 
 export function LecturerCoursesPage() {
-  const [semester, setSemester] = useState("FA26");
-  const [search, setSearch] = useState("");
+  const { user } = useAuthStore();
+  const [selectedSemesterCode, setSelectedSemesterCode] = useState<string>("FA26");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState<"ALL" | "ACTIVE" | "COMPLETED">("ALL");
 
-  const courses = useMemo(
+  // Current Semester info
+  const currentSemester = useMemo(
     () =>
-      MOCK_LECTURER_COURSES.filter(
-        (course) =>
-          course.semesterId === semester &&
-          `${course.code} ${course.name}`
-            .toLocaleLowerCase("vi")
-            .includes(search.trim().toLocaleLowerCase("vi"))
-      ),
-    [semester, search]
+      MOCK_LECTURER_SEMESTERS.find((s) => s.code === selectedSemesterCode) ||
+      MOCK_LECTURER_SEMESTERS[0],
+    [selectedSemesterCode]
   );
 
-  const students = courses.reduce((total, c) => total + c.studentCount, 0);
-  const groups = courses.reduce((total, c) => total + c.groupCount, 0);
+  // Filtered courses
+  const filteredCourses = useMemo(() => {
+    return MOCK_LECTURER_COURSES.filter((course) => {
+      // 1. Semester code match
+      const matchSemester = course.semesterId === selectedSemesterCode;
+
+      // 2. Search query match
+      const query = searchQuery.toLowerCase().trim();
+      const matchQuery =
+        !query ||
+        course.name.toLowerCase().includes(query) ||
+        course.code.toLowerCase().includes(query) ||
+        course.room.toLowerCase().includes(query) ||
+        course.schedule.toLowerCase().includes(query);
+
+      // 3. Status filter match
+      const matchStatus =
+        statusFilter === "ALL" ||
+        (statusFilter === "ACTIVE" && course.status === "ACTIVE") ||
+        (statusFilter === "COMPLETED" && course.status === "COMPLETED");
+
+      return matchSemester && matchQuery && matchStatus;
+    });
+  }, [selectedSemesterCode, searchQuery, statusFilter]);
+
+  // Overall Statistics for current semester
+  const totalCoursesInSemester = useMemo(() => {
+    return MOCK_LECTURER_COURSES.filter((c) => c.semesterId === selectedSemesterCode).length;
+  }, [selectedSemesterCode]);
+
+  const totalStudents = useMemo(() => {
+    return filteredCourses.reduce((sum, c) => sum + c.studentCount, 0);
+  }, [filteredCourses]);
+
+  const totalGroups = useMemo(() => {
+    return filteredCourses.reduce((sum, c) => sum + c.groupCount, 0);
+  }, [filteredCourses]);
 
   return (
-    <div className="mx-auto max-w-5xl space-y-8">
-      {/* Page heading */}
-      <section className="space-y-1.5">
-        <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.16em] text-primary">
-          <SparklesIcon className="size-3" />
-          Học kỳ {semester}
-        </div>
-        <h1 className="text-2xl font-extrabold tracking-tight sm:text-3xl">Lớp học của tôi</h1>
-        <p className="max-w-xl text-sm leading-6 text-muted-foreground">
-          Chọn một lớp để vào không gian giảng dạy. Theo dõi tiến độ, nhóm dự án và mức đóng góp của sinh viên.
-        </p>
-      </section>
+    <div className="space-y-6 max-w-[1600px] mx-auto pb-10">
+      {/* ── Top Hero Banner (Matching Student Style) ────────────────── */}
+      <div
+        className="relative overflow-hidden rounded-3xl p-6 sm:p-8 border border-border/80 shadow-md text-white"
+        style={{
+          background:
+            "linear-gradient(135deg, oklch(from var(--saga-primary) calc(l + 0.05) c h), oklch(from var(--saga-accent) calc(l - 0.05) c h))",
+        }}
+      >
+        {/* Ambient background blur elements */}
+        <div
+          className="absolute -top-24 -right-24 w-80 h-80 rounded-full opacity-15"
+          style={{ background: "oklch(1 0 0 / 20%)" }}
+        />
+        <div
+          className="absolute -bottom-20 -left-20 w-64 h-64 rounded-full opacity-10"
+          style={{ background: "oklch(1 0 0 / 20%)" }}
+        />
 
-      {/* KPI strip */}
-      <section className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-        <div className="flex items-center gap-3 rounded-xl border border-border bg-card p-4 shadow-saga-xs">
-          <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary">
-            <BookOpenIcon className="size-4" />
-          </span>
-          <div>
-            <strong className="text-lg">{courses.length}</strong>
-            <p className="text-xs text-muted-foreground">Lớp đang giảng dạy</p>
-          </div>
-        </div>
-        <div className="flex items-center gap-3 rounded-xl border border-border bg-card p-4 shadow-saga-xs">
-          <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-success-muted text-success">
-            <UsersIcon className="size-4" />
-          </span>
-          <div>
-            <strong className="text-lg">{students}</strong>
-            <p className="text-xs text-muted-foreground">Sinh viên</p>
-          </div>
-        </div>
-        <div className="flex items-center gap-3 rounded-xl border border-border bg-card p-4 shadow-saga-xs">
-          <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-info-muted text-info">
-            <UsersIcon className="size-4" />
-          </span>
-          <div>
-            <strong className="text-lg">{groups}</strong>
-            <p className="text-xs text-muted-foreground">Nhóm dự án</p>
-          </div>
-        </div>
-      </section>
+        <div className="relative flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div className="space-y-2 max-w-2xl">
+            <div className="flex items-center gap-2">
+              <Badge className="bg-white/20 hover:bg-white/25 text-white border-0 text-xs px-3 py-1 font-semibold backdrop-blur-sm">
+                <SparklesIcon className="w-3.5 h-3.5 mr-1" />
+                Không Gian Giảng Dạy & Điều Phối Đồ Án SAGA
+              </Badge>
+              <Badge className="bg-emerald-500/30 text-white border-0 text-xs font-mono">
+                GV: {user?.name || "TS. Nguyễn Văn A"}
+              </Badge>
+            </div>
 
-      {/* Course list */}
-      <section>
-        <div className="mb-5 flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
-          <div>
-            <h2 className="text-base font-bold">Danh sách lớp</h2>
-            <p className="mt-0.5 text-xs text-muted-foreground">
-              {courses.length} lớp trong học kỳ đã chọn
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight text-white">
+              Chào mừng Thầy/Cô trở lại SAGA Capstone
+            </h1>
+
+            <p className="text-white/85 text-xs sm:text-sm font-medium leading-relaxed">
+              Quản lý các lớp học phần, theo dõi tiến độ sprint của các nhóm đồ án, kiểm tra đối soát ma trận đóng góp và chất lượng code của sinh viên trong kỳ <strong>{currentSemester.name} ({currentSemester.code})</strong>.
             </p>
           </div>
-          <div className="flex flex-col gap-2 sm:flex-row">
-            <div className="relative sm:w-56">
-              <SearchIcon className="absolute left-3 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Tìm mã hoặc tên lớp..."
-                className="h-9 rounded-xl pl-9 text-xs"
-              />
+
+          {/* Quick Metrics Badge in Hero */}
+          <div className="flex flex-wrap items-center gap-3 shrink-0">
+            <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-3.5 flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center text-white">
+                <BookOpenIcon className="w-5 h-5" />
+              </div>
+              <div>
+                <span className="text-[10px] uppercase font-bold text-white/80 block">Lớp Đang Dạy</span>
+                <span className="text-xl sm:text-2xl font-black text-white font-mono">{filteredCourses.length} Lớp</span>
+              </div>
             </div>
-            <div className="sm:w-52">
-              <CustomSelect value={semester} onChange={setSemester} options={SEMESTERS} />
+
+            <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-3.5 flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center text-white">
+                <UsersIcon className="w-5 h-5" />
+              </div>
+              <div>
+                <span className="text-[10px] uppercase font-bold text-white/80 block">Tổng Sinh Viên</span>
+                <span className="text-xl sm:text-2xl font-black text-white font-mono">{totalStudents} SV</span>
+              </div>
+            </div>
+
+            <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-3.5 flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center text-white">
+                <FolderKanbanIcon className="w-5 h-5" />
+              </div>
+              <div>
+                <span className="text-[10px] uppercase font-bold text-white/80 block">Nhóm Đồ Án</span>
+                <span className="text-xl sm:text-2xl font-black text-white font-mono">{totalGroups} Nhóm</span>
+              </div>
             </div>
           </div>
         </div>
+      </div>
 
-        {courses.length ? (
-          <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
-            {courses.map((course) => (
-              <CourseCard key={course.id} course={course} />
-            ))}
+      {/* ── Semester Tabs Filter ────────────────────────────────────── */}
+      <div className="space-y-2">
+        <div className="flex items-center justify-between">
+          <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
+            Chọn Học Kỳ Giảng Dạy:
+          </label>
+          <span className="text-xs text-muted-foreground">
+            Hiển thị <strong>{totalCoursesInSemester}</strong> lớp học phần
+          </span>
+        </div>
+        <SemesterTabs
+          semesters={MOCK_LECTURER_SEMESTERS}
+          selectedSemesterCode={selectedSemesterCode}
+          onSelectSemester={setSelectedSemesterCode}
+        />
+      </div>
+
+      {/* ── Search Bar & Status Filter Pills ────────────────────────── */}
+      <div className="p-4 rounded-3xl bg-card border border-border/80 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+        {/* Search Input */}
+        <div className="relative flex-1 max-w-md">
+          <SearchIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <Input
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Tìm kiếm theo tên môn, mã môn, phòng học, lịch dạy..."
+            className="pl-10 h-10 rounded-2xl text-xs bg-muted/30 border-border/60 focus-visible:ring-primary"
+          />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery("")}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground hover:text-foreground cursor-pointer"
+            >
+              Xóa
+            </button>
+          )}
+        </div>
+
+        {/* Status Filter Buttons */}
+        <div className="flex items-center gap-1.5 p-1 bg-muted/60 rounded-2xl border border-border/60 text-xs">
+          <button
+            onClick={() => setStatusFilter("ALL")}
+            className={`px-3 py-1.5 rounded-xl font-bold transition-all cursor-pointer ${statusFilter === "ALL"
+              ? "bg-card text-foreground shadow-2xs"
+              : "text-muted-foreground hover:text-foreground"
+              }`}
+          >
+            Tất cả ({totalCoursesInSemester})
+          </button>
+          <button
+            onClick={() => setStatusFilter("ACTIVE")}
+            className={`px-3 py-1.5 rounded-xl font-bold transition-all cursor-pointer ${statusFilter === "ACTIVE"
+              ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30 shadow-2xs"
+              : "text-muted-foreground hover:text-foreground"
+              }`}
+          >
+            Đang giảng dạy
+          </button>
+          <button
+            onClick={() => setStatusFilter("COMPLETED")}
+            className={`px-3 py-1.5 rounded-xl font-bold transition-all cursor-pointer ${statusFilter === "COMPLETED"
+              ? "bg-muted text-foreground border border-border shadow-2xs"
+              : "text-muted-foreground hover:text-foreground"
+              }`}
+          >
+            Đã kết thúc
+          </button>
+        </div>
+      </div>
+
+      {/* ── Courses Grid ────────────────────────────────────────────── */}
+      {filteredCourses.length > 0 ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+          {filteredCourses.map((course) => (
+            <CourseCard key={course.id} course={course} />
+          ))}
+        </div>
+      ) : (
+        /* ── Empty State ── */
+        <div className="p-12 rounded-3xl bg-card border border-dashed border-border text-center space-y-4">
+          <div className="w-12 h-12 rounded-2xl bg-muted flex items-center justify-center mx-auto text-muted-foreground">
+            <FilterXIcon className="w-6 h-6" />
           </div>
-        ) : (
-          <div className="grid min-h-64 place-items-center rounded-2xl border border-dashed border-border bg-card">
-            <div className="text-center px-4">
-              <span className="mx-auto mb-3 grid size-11 place-items-center rounded-full bg-muted text-muted-foreground">
-                <SearchIcon className="size-5" />
-              </span>
-              <h3 className="text-sm font-bold">Không tìm thấy lớp học</h3>
-              <p className="mt-1 text-xs text-muted-foreground">
-                Thử đổi từ khóa hoặc chọn một học kỳ khác.
-              </p>
-            </div>
+          <div className="space-y-1">
+            <h3 className="text-base font-bold text-foreground">Không tìm thấy lớp học phần phù hợp</h3>
+            <p className="text-xs text-muted-foreground max-w-sm mx-auto">
+              Không có kết quả nào khớp với từ khóa tìm kiếm hoặc bộ lọc trạng thái trong học kỳ này.
+            </p>
           </div>
-        )}
-      </section>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              setSearchQuery("");
+              setStatusFilter("ALL");
+            }}
+            className="rounded-xl text-xs cursor-pointer"
+          >
+            Đặt lại bộ lọc
+          </Button>
+        </div>
+      )}
     </div>
   );
 }
