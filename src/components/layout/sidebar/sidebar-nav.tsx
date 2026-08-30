@@ -19,6 +19,7 @@ import {
   GitCommitIcon,
   UserCheckIcon,
   SlidersHorizontalIcon,
+  ArrowLeftIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -44,6 +45,7 @@ const ICON_MAP: Record<string, React.ElementType> = {
   GitCommit: GitCommitIcon,
   UserCheck: UserCheckIcon,
   SlidersHorizontal: SlidersHorizontalIcon,
+  ArrowLeft: ArrowLeftIcon,
 };
 
 interface SidebarNavProps {
@@ -59,6 +61,7 @@ function NavLink({
 }) {
   const pathname = usePathname();
   const isActive = isNavItemActive(pathname, item);
+  const isBackButton = item.icon === "ArrowLeft";
 
   const Icon = ICON_MAP[item.icon] ?? LayoutDashboardIcon;
 
@@ -66,9 +69,11 @@ function NavLink({
     "group flex items-center gap-3 rounded-lg text-sm font-medium",
     "transition-all duration-150 select-none",
     collapsed ? "justify-center p-2.5 w-full" : "px-3 py-2.5 w-full",
-    isActive
-      ? "bg-primary/10 text-primary font-semibold shadow-2xs"
-      : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
+    isBackButton
+      ? "text-muted-foreground hover:text-foreground hover:bg-muted/70 border border-dashed border-border/80 mb-1.5"
+      : isActive
+        ? "bg-primary/10 text-primary font-semibold shadow-2xs"
+        : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
   );
 
   if (collapsed) {
@@ -81,7 +86,7 @@ function NavLink({
           <Icon
             className={cn(
               "w-4 h-4 shrink-0 transition-colors",
-              isActive ? "text-primary" : "text-muted-foreground group-hover:text-foreground"
+              isBackButton ? "text-muted-foreground group-hover:text-foreground" : isActive ? "text-primary" : "text-muted-foreground group-hover:text-foreground"
             )}
           />
         </TooltipTrigger>
@@ -97,7 +102,7 @@ function NavLink({
       <Icon
         className={cn(
           "w-[18px] h-[18px] shrink-0 transition-colors",
-          isActive ? "text-primary" : "text-muted-foreground group-hover:text-foreground"
+          isBackButton ? "text-muted-foreground group-hover:text-foreground" : isActive ? "text-primary" : "text-muted-foreground group-hover:text-foreground"
         )}
       />
       <span className="truncate">{item.title}</span>
@@ -106,7 +111,7 @@ function NavLink({
 }
 
 export function SidebarNav({ collapsed }: SidebarNavProps) {
-  const { user } = useAuthStore();
+  const { user, selectedCourse } = useAuthStore();
   const role = user?.role ?? "STUDENT";
   const pathname = usePathname();
 
@@ -119,7 +124,7 @@ export function SidebarNav({ collapsed }: SidebarNavProps) {
   const courseCode = course?.code;
 
   // Xây dựng navigation theo context — không trộn global + course
-  const navGroups = getNavGroups(role, courseId, courseCode);
+  const navGroups = getNavGroups(role, courseId, courseCode, pathname, selectedCourse);
 
   return (
     <nav className="flex-1 overflow-y-auto py-3 px-3 space-y-2">

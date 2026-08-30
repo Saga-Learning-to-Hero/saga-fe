@@ -40,7 +40,7 @@ export function MemberTable({ members, onAssignLeader }: MemberTableProps) {
               <td className="px-4 py-3 text-center">
                 <Checkbox />
               </td>
-              <td className="px-4 py-3 font-mono text-xs">{member.studentId}</td>
+              <td className="px-4 py-3 font-mono text-xs">{member.studentCode || member.studentId}</td>
               <td className="px-4 py-3 font-medium">
                 <div className="flex items-center gap-2">
                   <div className="w-6 h-6 rounded-full bg-primary/10 text-primary flex items-center justify-center text-[10px] font-bold">
@@ -58,30 +58,30 @@ export function MemberTable({ members, onAssignLeader }: MemberTableProps) {
                 )}
               </td>
               <td className="px-4 py-3">
-                {member.role === "Leader" ? (
-                  <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-amber-500/10 text-amber-600 border border-amber-500/20">
-                    Leader
+                {member.role === "LEADER" || member.role === "Leader" ? (
+                  <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
+                    Trưởng nhóm
                   </span>
                 ) : (
-                  <span className="text-muted-foreground text-xs">Member</span>
+                  <span className="text-muted-foreground text-xs">Thành viên</span>
                 )}
               </td>
               <td className="px-4 py-3">
-                <Badge variant={member.status === "Active" ? "outline" : "secondary"} className="font-normal">
-                  {member.status === "Active" ? "Đang học" : "Đã nghỉ"}
+                <Badge variant={member.status === "ACTIVE" || member.status === "Active" ? "outline" : "secondary"} className="font-normal">
+                  {member.status === "ACTIVE" || member.status === "Active" ? "Đang học" : "Đã nghỉ"}
                 </Badge>
               </td>
               <td className="px-4 py-3 text-right">
                 <DropdownMenu>
-                  <DropdownMenuTrigger 
+                  <DropdownMenuTrigger
                     className={buttonVariants({ variant: "ghost", size: "icon-sm", className: "h-8 w-8" })}
                   >
                     <MoreHorizontalIcon className="w-4 h-4" />
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    <DropdownMenuItem 
+                    <DropdownMenuItem
                       onClick={() => onAssignLeader(member)}
-                      disabled={member.role === "Leader" || !member.groupId}
+                      disabled={member.role === "LEADER" || member.role === "Leader" || !member.groupId}
                     >
                       Đặt làm trưởng nhóm
                     </DropdownMenuItem>

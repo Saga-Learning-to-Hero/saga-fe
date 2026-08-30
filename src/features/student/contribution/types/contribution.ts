@@ -1,3 +1,5 @@
+import type { RoleInTeam } from "@/types/auth";
+
 export type MemberStatusTag = "EXCEEDED" | "BALANCED" | "BEHIND" | "GHOSTING_RISK";
 
 export interface ContributionMetrics {
@@ -14,8 +16,10 @@ export interface MemberContribution {
   id: string;
   studentCode: string;
   name: string;
+  fullName?: string;
   avatar: string;
-  role: "LEADER" | "MEMBER";
+  role: RoleInTeam;
+  email?: string;
   contributionPercentage: number; // e.g. 28.5%
   weightedScore: number; // e.g. 9.2 / 10
   statusTag: MemberStatusTag;

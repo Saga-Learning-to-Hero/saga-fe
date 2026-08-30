@@ -3,7 +3,6 @@
 import { useState, useMemo } from "react";
 import {
   CalendarIcon,
-  ChevronDownIcon,
   ShieldAlertIcon,
   LockIcon,
   CheckCircle2Icon,
@@ -23,6 +22,7 @@ import { PeerMemberCard } from "./peer-member-card";
 import { PeerReviewModal } from "./peer-review-modal";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
 import { Badge } from "@/components/ui/badge";
+import { CustomSelect, type CustomSelectOption } from "@/components/common/custom-select";
 
 export function PeerAssessmentView() {
   const authUser = useAuthStore((state) => state.user);
@@ -39,6 +39,14 @@ export function PeerAssessmentView() {
 
   const isSprintLocked = selectedSprint.status !== "COMPLETED";
 
+  const sprintOptions: CustomSelectOption[] = useMemo(() => {
+    return MOCK_ASSESSMENT_SPRINTS.map((s) => ({
+      value: s.id,
+      label: `${s.name} (${s.status === "COMPLETED" ? "Đã đóng ✓" : "Đang mở ⏳"})`,
+      subLabel: s.status === "COMPLETED" ? "Đã hoàn thành · Mở Form đánh giá chéo" : "Đang diễn ra · Chưa đóng sprint",
+    }));
+  }, []);
+
   // Records state
   const [records, setRecords] = useState<PeerReviewRecord[]>(INITIAL_MOCK_RECORDS);
 
@@ -48,18 +56,29 @@ export function PeerAssessmentView() {
 
   // Other team members to review (excluding self)
   const membersToReview = useMemo(() => {
-    return MOCK_TEAM_MEMBERS_ASSESSMENT.filter((m) => m.studentCode !== currentUserStudentCode);
+    return MOCK_TEAM_MEMBERS_ASSESSMENT.filter(
+      (m) => m.studentCode !== currentUserStudentCode
+    );
   }, [currentUserStudentCode]);
 
-  // Count completed reviews for selected sprint
+  // Overall evaluation progress
   const completedReviewsCount = useMemo(() => {
-    return records.filter(
-      (r) =>
-        r.sprintId === selectedSprintId &&
-        r.evaluatorStudentCode === currentUserStudentCode &&
-        r.isCompleted
-    ).length;
-  }, [records, selectedSprintId, currentUserStudentCode]);
+    return membersToReview.filter((member) => {
+      const rec = records.find(
+        (r) =>
+          r.sprintId === selectedSprintId &&
+          r.targetStudentCode === member.studentCode
+      );
+      return rec?.isCompleted;
+    }).length;
+  }, [membersToReview, records, selectedSprintId]);
+
+  // Handler open modal
+  const handleOpenReviewModal = (member: PeerReviewMember) => {
+    if (isSprintLocked) return;
+    setTargetMemberForModal(member);
+    setIsModalOpen(true);
+  };
 
   const handleSaveRecord = (savedRecord: PeerReviewRecord) => {
     setRecords((prev) => {
@@ -72,8 +91,8 @@ export function PeerAssessmentView() {
       if (exists) {
         return prev.map((r) =>
           r.sprintId === savedRecord.sprintId &&
-          r.targetStudentCode === savedRecord.targetStudentCode &&
-          r.evaluatorStudentCode === savedRecord.evaluatorStudentCode
+            r.targetStudentCode === savedRecord.targetStudentCode &&
+            r.evaluatorStudentCode === savedRecord.evaluatorStudentCode
             ? savedRecord
             : r
         );
@@ -94,36 +113,28 @@ export function PeerAssessmentView() {
       {/* Toolbar: Sprint Selector & Info */}
       <div className="p-4 rounded-2xl bg-card border border-border/80 shadow-2xs space-y-3">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <div className="space-y-1">
+          <div className="flex items-center gap-3 flex-wrap">
+            <div className="space-y-1.5 min-w-[280px] sm:min-w-[380px] md:min-w-[440px]">
               <label className="text-[11px] font-semibold text-muted-foreground flex items-center gap-1">
                 <CalendarIcon className="w-3.5 h-3.5 text-primary" />
                 Chọn Sprint để đánh giá chéo:
               </label>
 
-              <div className="relative min-w-[280px]">
-                <select
-                  value={selectedSprintId}
-                  onChange={(e) => setSelectedSprintId(e.target.value)}
-                  className="w-full h-9 pl-3 pr-8 text-xs font-bold rounded-xl bg-card border border-border/80 focus:outline-hidden focus:ring-2 focus:ring-primary appearance-none cursor-pointer"
-                >
-                  {MOCK_ASSESSMENT_SPRINTS.map((s) => (
-                    <option key={s.id} value={s.id}>
-                      {s.name} ({s.status === "COMPLETED" ? "Đã đóng ✓" : "Đang mở ⏳"})
-                    </option>
-                  ))}
-                </select>
-                <ChevronDownIcon className="w-4 h-4 absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
-              </div>
+              <CustomSelect
+                value={selectedSprintId}
+                onChange={(val) => setSelectedSprintId(val)}
+                options={sprintOptions}
+                placeholder="Chọn Sprint..."
+              />
             </div>
 
             {selectedSprint.status === "COMPLETED" ? (
-              <Badge className="bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 font-bold text-xs gap-1 hidden md:flex mt-4">
+              <Badge className="bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 font-bold text-xs gap-1 hidden md:flex self-end mb-0.5">
                 <CheckCircle2Icon className="w-3.5 h-3.5" />
                 Sprint đã hoàn thành (Mở Form Đánh giá)
               </Badge>
             ) : (
-              <Badge variant="outline" className="bg-amber-500/10 text-amber-600 border-amber-500/30 font-bold text-xs gap-1 hidden md:flex mt-4">
+              <Badge variant="outline" className="bg-amber-500/10 text-amber-600 border-amber-500/30 font-bold text-xs gap-1 hidden md:flex self-end mb-0.5">
                 <LockIcon className="w-3.5 h-3.5" />
                 Sprint đang mở (Chưa đóng)
               </Badge>
@@ -177,10 +188,7 @@ export function PeerAssessmentView() {
                 record={record}
                 isSelf={false}
                 isSprintLocked={isSprintLocked}
-                onOpenReviewModal={(m) => {
-                  setTargetMemberForModal(m);
-                  setIsModalOpen(true);
-                }}
+                onOpenReviewModal={handleOpenReviewModal}
               />
             );
           })}

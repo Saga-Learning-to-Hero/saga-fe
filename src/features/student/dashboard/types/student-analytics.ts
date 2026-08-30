@@ -1,3 +1,5 @@
+import type { RoleInTeam } from "@/types/auth";
+
 export interface WeeklyActivity {
   week: string; // VD: Tuần 01, Tuần 02...
   commits: number;
@@ -27,13 +29,15 @@ export interface MemberAnalytics {
   id: string;
   studentCode: string;
   name: string;
-  role: "LEADER" | "MEMBER";
+  fullName?: string;
+  role: RoleInTeam;
   avatar?: string;
   email: string;
   tasksStatus: TaskStatusBreakdown;
   weeklyActivities: WeeklyActivity[];
   workloadCategories: SkillWorkloadBreakdown[];
   totalCommits: number;
+  commitsCount?: number; // Tương thích ngược
   traceabilityScore: number; // %
   contributionPercentage: number; // %
 }

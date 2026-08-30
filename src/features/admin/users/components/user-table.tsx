@@ -168,11 +168,15 @@ export function UserTable({ users, onToggleStatus }: UserTableProps) {
                   </div>
                 </TableCell>
 
-                {/* Student Code (MSSV) */}
+                {/* Student Code / Lecturer Code */}
                 <TableCell className="py-3 px-4">
                   {user.studentCode ? (
-                    <span className="font-mono text-xs font-semibold px-2 py-0.5 rounded-md bg-muted text-foreground/90">
+                    <span className="font-mono text-xs font-semibold px-2 py-0.5 rounded-md bg-muted text-foreground/90" title="Mã số sinh viên (MSSV)">
                       {user.studentCode}
+                    </span>
+                  ) : user.lecturerCode ? (
+                    <span className="font-mono text-xs font-semibold px-2 py-0.5 rounded-md bg-amber-500/10 text-amber-700 dark:text-amber-300" title="Mã cán bộ/giảng viên">
+                      {user.lecturerCode}
                     </span>
                   ) : (
                     <span className="text-muted-foreground/60">—</span>
@@ -186,7 +190,11 @@ export function UserTable({ users, onToggleStatus }: UserTableProps) {
 
                 {/* Role Badge */}
                 <TableCell className="py-3 px-4">
-                  {user.role === "LECTURER" ? (
+                  {user.role === "ADMIN" ? (
+                    <Badge className="bg-danger-muted text-danger border-0 font-semibold px-2 py-0.5 text-[11px]">
+                      Quản trị viên
+                    </Badge>
+                  ) : user.role === "LECTURER" ? (
                     <Badge className="bg-warning-muted text-warning border-0 font-semibold px-2 py-0.5 text-[11px]">
                       Giảng viên
                     </Badge>
@@ -212,8 +220,8 @@ export function UserTable({ users, onToggleStatus }: UserTableProps) {
                     size="sm"
                     onClick={() => onToggleStatus(user)}
                     className={`h-8 px-3 text-xs font-semibold rounded-lg cursor-pointer transition-colors ${isBanned
-                        ? "bg-primary text-primary-foreground hover:bg-primary/90"
-                        : "border-destructive/40 text-destructive hover:bg-destructive/10 hover:border-destructive"
+                      ? "bg-primary text-primary-foreground hover:bg-primary/90"
+                      : "border-destructive/40 text-destructive hover:bg-destructive/10 hover:border-destructive"
                       }`}
                   >
                     {isBanned ? (

@@ -19,29 +19,39 @@ interface JiraKanbanTabProps {
 }
 
 const KANBAN_COLUMNS = [
-  { id: "TO DO", label: "TO DO", color: "bg-slate-500" },
-  { id: "IN PROGRESS", label: "IN PROGRESS", color: "bg-blue-500" },
-  { id: "IN REVIEW", label: "IN REVIEW", color: "bg-amber-500" },
-  { id: "BLOCKED", label: "BLOCKED", color: "bg-danger" },
-  { id: "DONE", label: "DONE", color: "bg-success" },
+  { id: "TODO", matchIds: ["TODO", "TO DO"], label: "CẦN LÀM (TO DO)", color: "bg-slate-500" },
+  { id: "IN_PROGRESS", matchIds: ["IN_PROGRESS", "IN PROGRESS"], label: "ĐANG LÀM (IN PROGRESS)", color: "bg-blue-500" },
+  { id: "IN_REVIEW", matchIds: ["IN_REVIEW", "IN REVIEW"], label: "ĐANG DUYỆT (IN REVIEW)", color: "bg-amber-500" },
+  { id: "BLOCKED", matchIds: ["BLOCKED"], label: "BỊ NGHẼN (BLOCKED)", color: "bg-danger" },
+  { id: "DONE", matchIds: ["DONE"], label: "HOÀN THÀNH (DONE)", color: "bg-success" },
 ];
 
 export function JiraKanbanTab({ project }: JiraKanbanTabProps) {
   const getIssueIcon = (type: JiraIssue["type"]) => {
     switch (type) {
+      case "STORY":
       case "Story": return <div className="w-4 h-4 bg-success rounded-sm flex items-center justify-center text-white text-[10px] font-bold">S</div>;
+      case "TASK":
       case "Task": return <div className="w-4 h-4 bg-blue-500 rounded-sm flex items-center justify-center text-white text-[10px] font-bold">T</div>;
+      case "BUG":
       case "Bug": return <div className="w-4 h-4 bg-danger rounded-sm flex items-center justify-center text-white text-[10px] font-bold">B</div>;
+      default: return <div className="w-4 h-4 bg-primary rounded-sm flex items-center justify-center text-white text-[10px] font-bold">T</div>;
     }
   };
 
   const getPriorityColor = (priority: JiraIssue["priority"]) => {
     switch (priority) {
+      case "HIGHEST":
       case "Highest": return "text-danger";
+      case "HIGH":
       case "High": return "text-amber-500";
+      case "MEDIUM":
       case "Medium": return "text-blue-500";
-      case "Low": 
+      case "LOW":
+      case "LOWEST":
+      case "Low":
       case "Lowest": return "text-muted-foreground";
+      default: return "text-muted-foreground";
     }
   };
 
@@ -55,7 +65,7 @@ export function JiraKanbanTab({ project }: JiraKanbanTabProps) {
             <SelectValue placeholder="Sprint" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="sprint-3">Sprint 3 (Current)</SelectItem>
+            <SelectItem value="sprint-3">Sprint 3 (Hiện tại)</SelectItem>
             <SelectItem value="sprint-2">Sprint 2</SelectItem>
             <SelectItem value="sprint-1">Sprint 1</SelectItem>
           </SelectContent>
@@ -65,18 +75,18 @@ export function JiraKanbanTab({ project }: JiraKanbanTabProps) {
           <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input placeholder="Tìm kiếm issue..." className="pl-9 bg-card" />
         </div>
-        
+
         <Select defaultValue="all">
-          <SelectTrigger className="w-[150px] bg-card">
+          <SelectTrigger className="w-[170px] bg-card">
             <FilterIcon className="w-3.5 h-3.5 mr-2" />
-            <SelectValue placeholder="Assignee" />
+            <SelectValue placeholder="Người thực hiện" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">Tất cả Assignee</SelectItem>
+            <SelectItem value="all">Tất cả người thực hiện</SelectItem>
             {project.members.map(m => (
               <SelectItem key={m.id} value={m.id}>{m.fullName}</SelectItem>
             ))}
-            <SelectItem value="unassigned">Unassigned</SelectItem>
+            <SelectItem value="unassigned">Chưa phân công</SelectItem>
           </SelectContent>
         </Select>
 
@@ -89,8 +99,8 @@ export function JiraKanbanTab({ project }: JiraKanbanTabProps) {
       <div className="flex-1 overflow-x-auto overflow-y-hidden">
         <div className="flex gap-4 h-full min-w-max pb-4">
           {KANBAN_COLUMNS.map(column => {
-            const issues = MOCK_JIRA_ISSUES.filter(i => i.status === column.id);
-            
+            const issues = MOCK_JIRA_ISSUES.filter(i => column.matchIds.includes(i.status));
+
             return (
               <div key={column.id} className="w-[300px] flex flex-col bg-muted/30 rounded-xl border h-full">
                 {/* Column Header */}
@@ -101,7 +111,7 @@ export function JiraKanbanTab({ project }: JiraKanbanTabProps) {
                   </div>
                   <Badge variant="secondary" className="font-mono">{issues.length}</Badge>
                 </div>
-                
+
                 {/* Column Content */}
                 <div className="flex-1 overflow-y-auto p-3 space-y-3">
                   {issues.map(issue => {
@@ -118,11 +128,11 @@ export function JiraKanbanTab({ project }: JiraKanbanTabProps) {
                             {getIssueIcon(issue.type)}
                           </div>
                         </div>
-                        
+
                         <p className="font-medium text-sm text-foreground mb-3 line-clamp-3 leading-snug">
                           {issue.summary}
                         </p>
-                        
+
                         {/* Labels */}
                         {issue.labels.length > 0 && (
                           <div className="flex flex-wrap gap-1 mb-3">
@@ -133,7 +143,7 @@ export function JiraKanbanTab({ project }: JiraKanbanTabProps) {
                             ))}
                           </div>
                         )}
-                        
+
                         <div className="flex items-end justify-between mt-auto">
                           <div className="flex items-center gap-2">
                             {/* Assignee Avatar */}
@@ -146,12 +156,12 @@ export function JiraKanbanTab({ project }: JiraKanbanTabProps) {
                                 ?
                               </div>
                             )}
-                            
+
                             {/* Priority */}
                             <span title={`Priority: ${issue.priority}`}>
                               <AlertCircleIcon className={cn("w-3.5 h-3.5", getPriorityColor(issue.priority))} />
                             </span>
-                            
+
                             {/* Due date */}
                             {issue.dueDate && (
                               <div className={cn(
@@ -163,7 +173,7 @@ export function JiraKanbanTab({ project }: JiraKanbanTabProps) {
                               </div>
                             )}
                           </div>
-                          
+
                           <div className="flex items-center justify-center w-5 h-5 rounded-full bg-muted text-[10px] font-bold font-mono text-muted-foreground" title={`${issue.storyPoint} Story Points`}>
                             {issue.storyPoint}
                           </div>

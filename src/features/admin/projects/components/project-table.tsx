@@ -23,39 +23,38 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import type { ManagedProject } from "../types/project-management";
+import type { ManagedProject, ProjectStatus } from "../types/project-management";
 
 interface ProjectTableProps {
   projects: ManagedProject[];
 }
 
-const PAGE_SIZE = 8;
+const ITEMS_PER_PAGE = 5;
 
 export function ProjectTable({ projects }: ProjectTableProps) {
   const [currentPage, setCurrentPage] = useState(1);
 
-  const totalPages = Math.ceil(projects.length / PAGE_SIZE) || 1;
-  const startIndex = (currentPage - 1) * PAGE_SIZE;
-  const paginatedProjects = projects.slice(startIndex, startIndex + PAGE_SIZE);
+  const totalPages = Math.ceil(projects.length / ITEMS_PER_PAGE) || 1;
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const paginatedProjects = projects.slice(startIndex, startIndex + ITEMS_PER_PAGE);
 
   const getInitials = (name: string) => {
     return name
       .split(" ")
-      .slice(-2)
-      .map((n) => n[0])
+      .map((part) => part[0])
       .join("")
       .toUpperCase();
   };
 
   const renderIntegrationBadge = (p: ManagedProject) => {
-    const isBothOk = p.jira.status === "CONNECTED" && p.github.status === "CONNECTED";
-    const isDisconnected = p.jira.status === "DISCONNECTED" || p.github.status === "DISCONNECTED";
+    const isFullConnected = p.github.status === "CONNECTED" && p.jira.status === "CONNECTED";
+    const isDisconnected = p.github.status === "DISCONNECTED" || p.jira.status === "DISCONNECTED";
 
-    if (isBothOk) {
+    if (isFullConnected) {
       return (
         <Badge className="bg-success-muted text-success border-0 font-medium text-xs gap-1.5 px-2.5 py-1 whitespace-nowrap">
           <CheckCircle2Icon className="w-3.5 h-3.5" />
-          Jira & Git đã kết nối
+          Đã liên kết (Jira & GitHub)
         </Badge>
       );
     }
@@ -75,7 +74,7 @@ export function ProjectTable({ projects }: ProjectTableProps) {
     );
   };
 
-  const renderProjectStatusBadge = (status: "ACTIVE" | "COMPLETED" | "AT_RISK") => {
+  const renderProjectStatusBadge = (status: ProjectStatus) => {
     switch (status) {
       case "ACTIVE":
         return (
@@ -95,6 +94,12 @@ export function ProjectTable({ projects }: ProjectTableProps) {
           <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-danger-muted text-danger whitespace-nowrap">
             <span className="w-1.5 h-1.5 rounded-full bg-danger shrink-0" />
             Cảnh báo trễ
+          </span>
+        );
+      case "PLANNED":
+        return (
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-muted text-muted-foreground whitespace-nowrap">
+            Chưa bắt đầu
           </span>
         );
     }

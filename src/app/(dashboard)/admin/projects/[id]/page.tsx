@@ -27,6 +27,7 @@ import {
   TableCell,
 } from "@/components/ui/table";
 import { MOCK_PROJECTS } from "@/features/admin/projects/data/mock-projects";
+import type { ProjectStatus } from "@/features/admin/projects/types/project-management";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -92,7 +93,7 @@ export default function AdminProjectDetailPage({ params }: PageProps) {
     }
   };
 
-  const renderProjectStatusBadge = (status: "ACTIVE" | "COMPLETED" | "AT_RISK") => {
+  const renderProjectStatusBadge = (status: ProjectStatus) => {
     switch (status) {
       case "ACTIVE":
         return (
@@ -112,6 +113,12 @@ export default function AdminProjectDetailPage({ params }: PageProps) {
           <Badge className="bg-danger-muted text-danger border-0 text-xs font-semibold gap-1.5 px-3 py-1">
             <span className="w-1.5 h-1.5 rounded-full bg-danger" />
             Cảnh báo trễ tiến độ
+          </Badge>
+        );
+      case "PLANNED":
+        return (
+          <Badge variant="secondary" className="text-xs font-semibold px-3 py-1">
+            Chưa bắt đầu
           </Badge>
         );
     }

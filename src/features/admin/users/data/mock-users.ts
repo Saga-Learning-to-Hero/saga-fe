@@ -1,11 +1,27 @@
 import type { ManagedUser } from "../types/user-management";
 
 export const MOCK_MANAGED_USERS: ManagedUser[] = [
-  // --- Giảng viên (Không có MSSV) ---
+  // --- Quản trị viên (ADMIN) ---
+  {
+    id: "usr-adm-001",
+    email: "admin@saga.edu.vn",
+    fullName: "Trần Minh Khoa",
+    name: "Trần Minh Khoa",
+    role: "ADMIN",
+    status: "ACTIVE",
+    department: "Phòng Khảo thí & ĐBCL",
+    avatar: "https://api.dicebear.com/9.x/avataaars/svg?seed=saga-admin",
+    createdAt: "2023-01-01T08:00:00Z",
+    lastActiveAt: "2026-08-30T08:00:00Z",
+  },
+
+  // --- Giảng viên (Có mã giảng viên) ---
   {
     id: "usr-gv-001",
     email: "thuantm@fpt.edu.vn",
     fullName: "TS. Trần Minh Thuận",
+    name: "Trần Minh Thuận",
+    lecturerCode: "GV0012",
     role: "LECTURER",
     status: "ACTIVE",
     department: "Kỹ thuật phần mềm",

@@ -1,3 +1,5 @@
+import type { RoleInTeam } from "@/types/auth";
+
 export type SemesterStatus = "ACTIVE" | "COMPLETED" | "UPCOMING";
 
 export interface StudentSemester {
@@ -8,14 +10,16 @@ export interface StudentSemester {
   totalCourses: number;
 }
 
-export type CourseStatus = "IN_PROGRESS" | "COMPLETED" | "UPCOMING";
+export type CourseStatus = "IN_PROGRESS" | "COMPLETED" | "UPCOMING" | "ACTIVE";
 
 export interface LecturerInfo {
   id: string;
   fullName: string;
+  name?: string;
   email: string;
   avatar?: string;
   title?: string; // VD: TS., ThS.
+  lecturerCode?: string;
 }
 
 export interface StudentCourse {
@@ -32,10 +36,11 @@ export interface StudentCourse {
   status: CourseStatus;
   lecturer: LecturerInfo;
   studentsCount: number;
+  studentCount?: number; // Tương thích ngược
   myGroup?: {
     id: string;
     name: string; // VD: Nhóm 01 - SAGA Team
-    role: "LEADER" | "MEMBER";
+    role: RoleInTeam;
     membersCount: number;
   };
   description?: string;

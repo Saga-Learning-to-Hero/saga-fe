@@ -8,19 +8,20 @@ import type { LecturerCourse } from "../types/course";
 
 export function CourseCard({ course }: { course: LecturerCourse }) {
   const isCompleted = course.status === "COMPLETED";
-  const isUpcoming  = course.status === "UPCOMING";
+  const isUpcoming = course.status === "UPCOMING";
 
   const statusConfig = {
-    ACTIVE:    { label: "Đang dạy",    cls: "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400" },
+    IN_PROGRESS: { label: "Đang dạy", cls: "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400" },
+    ACTIVE: { label: "Đang dạy", cls: "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400" },
     COMPLETED: { label: "Đã kết thúc", cls: "bg-muted text-muted-foreground" },
-    UPCOMING:  { label: "Sắp diễn ra", cls: "bg-blue-500/10 text-blue-600 dark:text-blue-400" },
-  }[course.status];
+    UPCOMING: { label: "Sắp diễn ra", cls: "bg-blue-500/10 text-blue-600 dark:text-blue-400" },
+  }[course.status] || { label: "Đang dạy", cls: "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400" };
 
   const toneRing: Record<string, string> = {
-    indigo:  "hover:border-indigo-500/40",
-    cyan:    "hover:border-cyan-500/40",
+    indigo: "hover:border-indigo-500/40",
+    cyan: "hover:border-cyan-500/40",
     emerald: "hover:border-emerald-500/40",
-    amber:   "hover:border-amber-500/40",
+    amber: "hover:border-amber-500/40",
   };
   const accentBar: Record<string, string> = {
     indigo: "bg-indigo-500", cyan: "bg-cyan-500", emerald: "bg-emerald-500", amber: "bg-amber-500",
@@ -28,7 +29,7 @@ export function CourseCard({ course }: { course: LecturerCourse }) {
 
   const tone = course.tone ?? "indigo";
   const ring = toneRing[tone];
-  const bar  = accentBar[tone];
+  const bar = accentBar[tone];
 
   return (
     <div className={cn(
@@ -46,7 +47,7 @@ export function CourseCard({ course }: { course: LecturerCourse }) {
             <div className="flex items-center gap-2 text-sm font-mono text-muted-foreground">
               <span className="font-bold">{course.code}</span>
               <span className="opacity-40">·</span>
-              <span className="opacity-60">{course.semesterId}</span>
+              <span className="opacity-60">{course.semesterName || course.semesterCode || course.semesterId}</span>
             </div>
             <h3 className="line-clamp-2 text-xl font-extrabold leading-snug text-foreground group-hover:text-primary transition-colors">
               {course.name}
@@ -61,13 +62,13 @@ export function CourseCard({ course }: { course: LecturerCourse }) {
         <div className="flex items-center gap-6 rounded-2xl bg-muted/50 px-5 py-4 text-base">
           <div className="flex items-center gap-2.5">
             <UsersIcon className="size-5 text-muted-foreground" />
-            <span className="font-extrabold text-xl">{course.studentCount}</span>
+            <span className="font-extrabold text-xl font-mono">{course.studentsCount || course.studentCount}</span>
             <span className="text-muted-foreground font-medium">sinh viên</span>
           </div>
           <div className="h-5 w-px bg-border" />
           <div className="flex items-center gap-2.5">
             <FolderKanbanIcon className="size-5 text-muted-foreground" />
-            <span className="font-extrabold text-xl">{course.groupCount}</span>
+            <span className="font-extrabold text-xl font-mono">{course.groupsCount || course.groupCount}</span>
             <span className="text-muted-foreground font-medium">nhóm</span>
           </div>
         </div>
@@ -96,8 +97,8 @@ export function CourseCard({ course }: { course: LecturerCourse }) {
             isUpcoming
               ? "bg-muted text-muted-foreground cursor-not-allowed pointer-events-none"
               : isCompleted
-              ? "bg-muted text-muted-foreground hover:bg-muted/80"
-              : "bg-primary text-primary-foreground hover:bg-primary/90"
+                ? "bg-muted text-muted-foreground hover:bg-muted/80"
+                : "bg-primary text-primary-foreground hover:bg-primary/90"
           )}
         >
           {isUpcoming ? "Chưa mở" : isCompleted ? "Xem lại lớp" : "Vào lớp học"}

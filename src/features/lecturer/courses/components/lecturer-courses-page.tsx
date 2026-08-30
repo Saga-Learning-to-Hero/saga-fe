@@ -19,7 +19,7 @@ export function LecturerCoursesPage() {
     return MOCK_LECTURER_COURSES.filter((c) => {
       if (c.semesterId !== selectedSemesterCode) return false;
       if (q && !`${c.code} ${c.name} ${c.room}`.toLowerCase().includes(q)) return false;
-      if (statusFilter === "ACTIVE" && c.status !== "ACTIVE") return false;
+      if (statusFilter === "ACTIVE" && c.status !== "ACTIVE" && c.status !== "IN_PROGRESS") return false;
       if (statusFilter === "COMPLETED" && c.status !== "COMPLETED") return false;
       return true;
     });
@@ -29,8 +29,8 @@ export function LecturerCoursesPage() {
     () => MOCK_LECTURER_COURSES.filter((c) => c.semesterId === selectedSemesterCode).length,
     [selectedSemesterCode]
   );
-  const totalStudents = filteredCourses.reduce((s, c) => s + c.studentCount, 0);
-  const totalGroups  = filteredCourses.reduce((s, c) => s + c.groupCount, 0);
+  const totalStudents = filteredCourses.reduce((s, c) => s + (c.studentsCount || c.studentCount || 0), 0);
+  const totalGroups = filteredCourses.reduce((s, c) => s + (c.groupsCount || c.groupCount || 0), 0);
 
   return (
     <div className="mx-auto max-w-[1400px] space-y-8 pb-12">
@@ -59,7 +59,7 @@ export function LecturerCoursesPage() {
           <div className="flex shrink-0 flex-wrap gap-3">
             {[
               { icon: <BookOpenIcon className="size-4" />, label: "Lớp học", value: filteredCourses.length },
-              { icon: <UsersIcon className="size-4" />,    label: "Sinh viên", value: totalStudents },
+              { icon: <UsersIcon className="size-4" />, label: "Sinh viên", value: totalStudents },
               { icon: <FolderKanbanIcon className="size-4" />, label: "Nhóm dự án", value: totalGroups },
             ].map(({ icon, label, value }) => (
               <div key={label} className="flex items-center gap-3 rounded-xl border border-white/20 bg-white/10 px-4 py-3 backdrop-blur-sm">

@@ -1,3 +1,5 @@
+import type { RoleInTeam } from "@/types/auth";
+
 export type SprintStatus = "COMPLETED" | "ACTIVE" | "PLANNED";
 
 export interface SprintItem {
@@ -19,8 +21,10 @@ export interface PeerReviewMember {
   id: string;
   studentCode: string;
   name: string;
+  fullName?: string;
   avatar: string;
-  role: "LEADER" | "MEMBER";
+  role: RoleInTeam;
+  email?: string;
   sprintStats: {
     tasksDone: number;
     storyPoints: number;

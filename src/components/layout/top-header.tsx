@@ -26,6 +26,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
+import { useProfileModalStore } from "@/features/profile/store/useProfileModalStore";
 import { getRoleHomePath } from "@/features/auth/lib/role-routes";
 import { ROLE_COLORS, ROLE_LABELS, getInitials } from "@/components/layout/sidebar/nav-config";
 import type { Role } from "@/types/auth";
@@ -34,6 +35,7 @@ import { cn } from "@/lib/utils";
 export function TopHeader() {
   const router = useRouter();
   const { user, logout, switchRole } = useAuthStore();
+  const { openProfileModal } = useProfileModalStore();
   const [isDark, setIsDark] = useState(false);
 
   useEffect(() => {
@@ -198,7 +200,7 @@ export function TopHeader() {
             {/* Profile & Cài đặt */}
             <div className="p-1 space-y-0.5">
               <DropdownMenuItem
-                onClick={() => router.push("/profile")}
+                onClick={openProfileModal}
                 className="text-xs cursor-pointer py-2 px-2.5 rounded-lg flex items-center gap-2 hover:bg-primary/10 hover:text-primary font-medium"
               >
                 <UserIcon className="size-3.5 text-primary" />

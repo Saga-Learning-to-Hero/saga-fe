@@ -28,24 +28,29 @@ export function TeamMemberCard({ courseId, project, onAssignLeader }: TeamMember
             <Badge variant="outline" className="font-normal bg-background">
               {project.members.length} thành viên
             </Badge>
-            {project.status === "Đang thực hiện" && (
+            {(project.status === "ACTIVE" || project.status === "Đang thực hiện") && (
               <Badge className="bg-primary/10 text-primary border-primary/20 hover:bg-primary/10">
                 Đang thực hiện
               </Badge>
             )}
-            {project.status === "Chưa bắt đầu" && (
+            {(project.status === "PLANNED" || project.status === "Chưa bắt đầu") && (
               <Badge variant="secondary" className="text-muted-foreground">
                 Chưa bắt đầu
               </Badge>
             )}
+            {(project.status === "COMPLETED" || project.status === "Hoàn thành") && (
+              <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20">
+                Hoàn thành
+              </Badge>
+            )}
           </div>
           <p className="text-sm font-medium text-muted-foreground">
-            Project: <span className="text-foreground">{project.projectName}</span>
+            Đề tài: <span className="text-foreground">{project.projectName}</span>
           </p>
           <div className="flex items-center gap-2 text-xs text-muted-foreground pt-1">
             <span className="flex items-center">
               <CrownIcon className="w-3.5 h-3.5 mr-1 text-amber-500" />
-              Leader: {project.members.find(m => m.id === project.leaderId)?.fullName || "Chưa có"}
+              Trưởng nhóm: {project.members.find(m => m.id === project.leaderId)?.fullName || "Chưa có"}
             </span>
             <span>•</span>
             <span className="flex items-center">
@@ -54,9 +59,9 @@ export function TeamMemberCard({ courseId, project, onAssignLeader }: TeamMember
             </span>
           </div>
         </div>
-        
+
         <div className="flex items-center gap-2 shrink-0">
-          <Link 
+          <Link
             href={lecturerCourseTeamPath(courseId, project.id)}
             className={buttonVariants({ variant: "outline", size: "sm" })}
           >
@@ -65,7 +70,7 @@ export function TeamMemberCard({ courseId, project, onAssignLeader }: TeamMember
           </Link>
         </div>
       </div>
-      
+
       <div className="p-0 overflow-x-auto">
         <table className="w-full text-sm text-left whitespace-nowrap">
           <thead className="bg-muted/5 text-muted-foreground border-b">
@@ -80,7 +85,7 @@ export function TeamMemberCard({ courseId, project, onAssignLeader }: TeamMember
           <tbody className="divide-y">
             {project.members.map((member) => (
               <tr key={member.id} className="hover:bg-muted/5 transition-colors">
-                <td className="px-4 py-3 font-mono text-xs">{member.studentId}</td>
+                <td className="px-4 py-3 font-mono text-xs">{member.studentCode || member.studentId}</td>
                 <td className="px-4 py-3 font-medium">
                   <div className="flex items-center gap-2">
                     <div className="w-6 h-6 rounded-full bg-primary/10 text-primary flex items-center justify-center text-[10px] font-bold">
@@ -91,25 +96,25 @@ export function TeamMemberCard({ courseId, project, onAssignLeader }: TeamMember
                 </td>
                 <td className="px-4 py-3 text-muted-foreground text-xs">{member.email}</td>
                 <td className="px-4 py-3">
-                  {member.role === "Leader" ? (
-                    <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-amber-500/10 text-amber-600 border border-amber-500/20">
-                      Leader
+                  {member.role === "LEADER" || member.role === "Leader" ? (
+                    <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
+                      Trưởng nhóm
                     </span>
                   ) : (
-                    <span className="text-muted-foreground text-xs">Member</span>
+                    <span className="text-muted-foreground text-xs">Thành viên</span>
                   )}
                 </td>
                 <td className="px-4 py-3 text-right">
                   <DropdownMenu>
-                    <DropdownMenuTrigger 
+                    <DropdownMenuTrigger
                       className={buttonVariants({ variant: "ghost", size: "icon-sm", className: "h-8 w-8" })}
                     >
                       <MoreHorizontalIcon className="w-4 h-4" />
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuItem 
+                      <DropdownMenuItem
                         onClick={() => onAssignLeader(member)}
-                        disabled={member.role === "Leader"}
+                        disabled={member.role === "LEADER" || member.role === "Leader"}
                       >
                         Đặt làm trưởng nhóm
                       </DropdownMenuItem>

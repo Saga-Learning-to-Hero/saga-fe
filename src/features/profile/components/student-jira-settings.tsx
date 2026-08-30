@@ -97,17 +97,14 @@ export function StudentJiraSettings({ user }: StudentJiraSettingsProps) {
 
   return (
     <Card
-      className={`rounded-2xl transition-all duration-300 ${isConnected && !isFormOpen
-          ? "bg-emerald-500/5 dark:bg-emerald-950/20 border-emerald-500/40 shadow-sm"
-          : "bg-card border-border/80 shadow-xs"
-        }`}
+      className="rounded-2xl border border-border/80 bg-card shadow-xs overflow-hidden"
     >
-      <CardHeader className="p-5 border-b border-border/60">
+      <CardHeader className="p-4 sm:p-5 border-b border-border/60 bg-card">
         <div className="flex items-start justify-between gap-3">
           {/* Logo Jira & Title */}
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center shrink-0 shadow-xs">
-              <CheckSquareIcon className="w-6 h-6" />
+              <CheckSquareIcon className="w-5 h-5" />
             </div>
             <div>
               <CardTitle className="text-base font-bold text-foreground tracking-tight">
@@ -132,7 +129,7 @@ export function StudentJiraSettings({ user }: StudentJiraSettingsProps) {
         </div>
       </CardHeader>
 
-      <CardContent className="p-5 sm:p-6 space-y-5">
+      <CardContent className="p-4 sm:p-5 space-y-4 bg-card">
         {/* Feedback Alert */}
         {feedbackMsg && (
           <div className="p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 text-xs font-semibold flex items-center gap-2 animate-in fade-in-0">
@@ -149,7 +146,7 @@ export function StudentJiraSettings({ user }: StudentJiraSettingsProps) {
             </p>
 
             {/* Account Details Box */}
-            <div className="p-4 rounded-xl bg-card border border-border/70 space-y-2.5 text-xs">
+            <div className="p-3.5 rounded-xl bg-muted/40 border border-border/80 space-y-2.5 text-xs">
               <div className="flex items-center justify-between">
                 <span className="text-muted-foreground font-medium">Jira Email:</span>
                 <strong className="text-foreground">{form.email || user.email}</strong>
@@ -161,7 +158,7 @@ export function StudentJiraSettings({ user }: StudentJiraSettingsProps) {
                   href={form.serverUrl || "https://saga-capstone.atlassian.net"}
                   target="_blank"
                   rel="noreferrer"
-                  className="font-mono font-bold text-blue-600 hover:underline flex items-center gap-1"
+                  className="font-mono font-bold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1"
                 >
                   {form.serverUrl || "https://saga-capstone.atlassian.net"}
                   <ExternalLinkIcon className="w-3 h-3" />
@@ -170,7 +167,7 @@ export function StudentJiraSettings({ user }: StudentJiraSettingsProps) {
 
               <div className="flex items-center justify-between">
                 <span className="text-muted-foreground font-medium">Project Key:</span>
-                <Badge variant="outline" className="font-mono text-[11px]">
+                <Badge variant="outline" className="font-mono text-[11px] bg-background">
                   {form.projectKey || "SWP490_SAGA"}
                 </Badge>
               </div>
@@ -180,7 +177,7 @@ export function StudentJiraSettings({ user }: StudentJiraSettingsProps) {
                   <ClockIcon className="w-3 h-3 text-emerald-500" />
                   Ngày xác thực: <strong className="text-foreground font-mono">27/08/2026 14:30</strong>
                 </span>
-                <span className="text-emerald-600 font-semibold flex items-center gap-1">
+                <span className="text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1">
                   <ShieldCheckIcon className="w-3.5 h-3.5" /> Webhook Active
                 </span>
               </div>
@@ -188,24 +185,20 @@ export function StudentJiraSettings({ user }: StudentJiraSettingsProps) {
 
             {/* Action Buttons */}
             <div className="pt-1 flex items-center justify-between gap-3">
-              <Button
+              <button
                 type="button"
-                variant="outline"
-                size="sm"
                 onClick={() => setIsFormOpen(true)}
-                className="h-9 text-xs font-semibold rounded-xl gap-1.5 cursor-pointer"
+                className="h-8.5 px-3.5 text-xs font-semibold rounded-xl gap-1.5 cursor-pointer bg-background hover:bg-muted text-foreground border border-border/80 shadow-2xs flex items-center transition-colors"
               >
-                <Edit3Icon className="w-3.5 h-3.5" />
+                <Edit3Icon className="w-3.5 h-3.5 text-muted-foreground" />
                 Sửa thông tin
-              </Button>
+              </button>
 
-              <Button
+              <button
                 type="button"
-                variant="destructive"
-                size="sm"
                 onClick={handleDisconnect}
                 disabled={isSubmitting}
-                className="h-9 text-xs font-semibold rounded-xl gap-1.5 cursor-pointer bg-rose-600 hover:bg-rose-700 text-white shadow-xs"
+                className="h-8.5 px-3.5 text-xs font-semibold rounded-xl gap-1.5 cursor-pointer bg-rose-600 hover:bg-rose-700 text-white shadow-2xs flex items-center transition-colors disabled:opacity-50"
               >
                 {isSubmitting ? (
                   <LoaderCircleIcon className="w-3.5 h-3.5 animate-spin" />
@@ -213,7 +206,7 @@ export function StudentJiraSettings({ user }: StudentJiraSettingsProps) {
                   <UnlinkIcon className="w-3.5 h-3.5" />
                 )}
                 Ngắt kết nối
-              </Button>
+              </button>
             </div>
           </div>
         ) : !isFormOpen ? (

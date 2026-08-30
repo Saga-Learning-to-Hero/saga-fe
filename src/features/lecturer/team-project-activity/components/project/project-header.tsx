@@ -14,6 +14,25 @@ interface ProjectHeaderProps {
 
 export function ProjectHeader({ courseId, project }: ProjectHeaderProps) {
   const leader = project.members.find(m => m.id === project.leaderId);
+  const getStatusLabel = (st: string) => {
+    switch (st) {
+      case "ACTIVE":
+      case "Đang thực hiện":
+        return "Đang thực hiện";
+      case "PLANNED":
+      case "Chưa bắt đầu":
+        return "Chưa bắt đầu";
+      case "COMPLETED":
+      case "Hoàn thành":
+        return "Hoàn thành";
+      case "AT_RISK":
+        return "Có rủi ro";
+      default:
+        return st;
+    }
+  };
+
+  const isPerforming = project.status === "ACTIVE" || project.status === "Đang thực hiện";
   const [isExpanded, setIsExpanded] = useState(false);
 
   return (
@@ -22,12 +41,12 @@ export function ProjectHeader({ courseId, project }: ProjectHeaderProps) {
         <div className="space-y-1 flex-1">
           <div className="flex items-center gap-2">
             <h2 className="text-xl font-bold truncate max-w-[400px]">{project.projectName}</h2>
-            <Badge variant={project.status === "Đang thực hiện" ? "default" : "secondary"} className="h-5 text-[10px] hidden sm:inline-flex">
-              {project.status}
+            <Badge variant={isPerforming ? "default" : "secondary"} className="h-5 text-[10px] hidden sm:inline-flex">
+              {getStatusLabel(project.status)}
             </Badge>
-            <Button 
-              variant="ghost" 
-              size="icon-sm" 
+            <Button
+              variant="ghost"
+              size="icon-sm"
               className="h-6 w-6 ml-1 text-muted-foreground hover:text-foreground hover:bg-muted"
               onClick={() => setIsExpanded(!isExpanded)}
               title={isExpanded ? "Thu gọn" : "Mở rộng"}
@@ -39,7 +58,7 @@ export function ProjectHeader({ courseId, project }: ProjectHeaderProps) {
             <p className="text-sm text-muted-foreground mt-1 max-w-2xl">{project.description}</p>
           ) : (
             <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground mt-1">
-              <span className="flex items-center gap-1 font-medium text-foreground"><UsersIcon className="w-3 h-3 text-muted-foreground" /> {project.teamName}</span>
+              <span className="flex items-center gap-1 font-medium text-foreground"><UsersIcon className="w-3 h-3 text-muted-foreground" /> {project.teamName || project.groupName}</span>
               <span className="flex items-center gap-1"><CrownIcon className="w-3 h-3 text-amber-500" /> {leader?.fullName || "Chưa có"}</span>
               <span className="flex items-center gap-1"><CalendarIcon className="w-3 h-3" /> {new Date(project.deadline).toLocaleDateString("vi-VN")}</span>
             </div>
@@ -69,13 +88,13 @@ export function ProjectHeader({ courseId, project }: ProjectHeaderProps) {
           <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
             <div className="flex items-center gap-2 text-sm">
               <UsersIcon className="w-4 h-4 text-muted-foreground" />
-              <span className="font-semibold">{project.teamName}</span>
+              <span className="font-semibold">{project.teamName || project.groupName}</span>
               <span className="text-muted-foreground">· {project.members.length} thành viên</span>
             </div>
-            
+
             <div className="flex items-center gap-2 text-sm">
               <CrownIcon className="w-4 h-4 text-amber-500" />
-              <span className="text-muted-foreground">Leader:</span>
+              <span className="text-muted-foreground">Trưởng nhóm:</span>
               <span className="font-semibold">{leader?.fullName || "Chưa có"}</span>
             </div>
 
@@ -88,16 +107,16 @@ export function ProjectHeader({ courseId, project }: ProjectHeaderProps) {
           </div>
 
           <div className="flex flex-wrap items-center gap-4 pt-4 mt-4 border-t">
-            <Badge variant={project.status === "Đang thực hiện" ? "default" : "secondary"}>
-              {project.status}
+            <Badge variant={isPerforming ? "default" : "secondary"}>
+              {getStatusLabel(project.status)}
             </Badge>
-            
+
             {project.currentSprint && (
               <Badge variant="outline" className="bg-muted/30">
                 {project.currentSprint}
               </Badge>
             )}
-            
+
             <div className="flex items-center gap-3 ml-auto">
               {project.githubRepo ? (
                 <Button variant="outline" size="sm" className="h-8">

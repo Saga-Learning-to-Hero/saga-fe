@@ -11,6 +11,7 @@ import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 
 import { TopHeader } from "@/components/layout/top-header";
+import { ProfileModal } from "@/features/profile/components/profile-modal";
 
 const NO_SIDEBAR_PATHS = ["/lecturer/courses", "/student/courses"];
 
@@ -62,6 +63,7 @@ export default function DashboardLayout({
       <div className="flex h-screen flex-col overflow-hidden bg-background">
         <TopHeader />
         <main className="flex-1 overflow-y-auto p-6">{children}</main>
+        <ProfileModal />
       </div>
     );
   }
@@ -99,6 +101,9 @@ export default function DashboardLayout({
 
         <main className="flex-1 overflow-y-auto p-6">{children}</main>
       </div>
+
+      <ProfileModal />
     </div>
   );
 }
+

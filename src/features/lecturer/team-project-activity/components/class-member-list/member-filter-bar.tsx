@@ -35,14 +35,14 @@ export function MemberFilterBar({
         <div className="flex items-center gap-3 w-full sm:w-auto">
           <div className="relative w-full sm:w-64">
             <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <Input 
-              placeholder="Tìm tên, email, MSSV..." 
+            <Input
+              placeholder="Tìm tên, email, MSSV..."
               className="pl-9"
               value={searchQuery}
               onChange={(e) => onSearchChange(e.target.value)}
             />
           </div>
-          
+
           <Select value={roleFilter} onValueChange={(v) => v && onRoleFilterChange(v)}>
             <SelectTrigger className="w-[140px] hidden md:flex">
               <FilterIcon className="w-3.5 h-3.5 mr-2" />
@@ -50,11 +50,11 @@ export function MemberFilterBar({
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Tất cả vai trò</SelectItem>
-              <SelectItem value="Leader">Leader</SelectItem>
-              <SelectItem value="Member">Member</SelectItem>
+              <SelectItem value="LEADER">Trưởng nhóm</SelectItem>
+              <SelectItem value="MEMBER">Thành viên</SelectItem>
             </SelectContent>
           </Select>
-          
+
           <Select value={statusFilter} onValueChange={(v) => v && onStatusFilterChange(v)}>
             <SelectTrigger className="w-[150px] hidden md:flex">
               <SelectValue placeholder="Trạng thái nhóm" />
@@ -66,7 +66,7 @@ export function MemberFilterBar({
             </SelectContent>
           </Select>
         </div>
-        
+
         {/* Right side actions */}
         <div className="flex items-center gap-2 w-full sm:w-auto overflow-x-auto pb-1 sm:pb-0">
           <div className="flex bg-muted p-1 rounded-md mr-2">
@@ -87,12 +87,12 @@ export function MemberFilterBar({
               Danh sách
             </Button>
           </div>
-          
+
           <Button variant="outline" size="sm" onClick={onImportClick}>
             <UploadIcon className="w-4 h-4 mr-2" />
             Nhập Excel
           </Button>
-          
+
           <Button variant="outline" size="sm" onClick={onExportClick}>
             <DownloadIcon className="w-4 h-4 mr-2" />
             Tải Excel

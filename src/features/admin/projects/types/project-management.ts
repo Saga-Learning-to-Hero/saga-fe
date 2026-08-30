@@ -1,12 +1,16 @@
-export type ProjectStatus = "ACTIVE" | "COMPLETED" | "AT_RISK";
+import type { RoleInTeam } from "@/types/auth";
+
+export type ProjectStatus = "ACTIVE" | "COMPLETED" | "AT_RISK" | "PLANNED";
 export type IntegrationStatus = "CONNECTED" | "DISCONNECTED" | "WARNING";
 
 export interface ProjectMember {
   id: string;
   fullName: string;
+  name?: string;
   studentCode: string;
   email: string;
   avatar?: string;
+  role?: RoleInTeam;
   isLeader?: boolean;
   commitsCount: number;
   tasksCount: number;
@@ -17,7 +21,9 @@ export interface ManagedProject {
   groupName: string; // Tên nhóm (VD: Nhóm 01 - SAGA)
   topicCode: string; // Mã đề tài (VD: CAPSTONE_FA26_01)
   topicName: string; // Tên đề tài (VD: Hệ thống đánh giá đóng góp sinh viên theo đồ thị)
+  projectName?: string; // Tương thích với các feature khác
   semester: string; // Học kỳ (VD: Fall 2026, Summer 2026)
+  semesterCode?: string;
   courseCode: string; // Mã học phần (VD: SWP490_G1, PRM392)
   status: ProjectStatus;
 
@@ -25,6 +31,7 @@ export interface ManagedProject {
   mentor: {
     id: string;
     fullName: string;
+    name?: string;
     email: string;
     avatar?: string;
   };
@@ -33,8 +40,10 @@ export interface ManagedProject {
   leader: {
     id: string;
     fullName: string;
+    name?: string;
     studentCode: string;
     email: string;
+    avatar?: string;
   };
 
   // Danh sách thành viên

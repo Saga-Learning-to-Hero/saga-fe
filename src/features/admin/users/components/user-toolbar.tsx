@@ -68,6 +68,7 @@ export function UserToolbar({
               {(
                 [
                   { value: "ALL", label: "Tất cả vai trò" },
+                  { value: "ADMIN", label: "Quản trị viên" },
                   { value: "LECTURER", label: "Giảng viên" },
                   { value: "STUDENT", label: "Sinh viên" },
                 ] as const
@@ -78,8 +79,8 @@ export function UserToolbar({
                   size="sm"
                   onClick={() => onRoleFilterChange(tab.value)}
                   className={`h-7 px-2.5 text-xs font-medium rounded-md ${roleFilter === tab.value
-                      ? "shadow-2xs"
-                      : "text-muted-foreground hover:text-foreground"
+                    ? "shadow-2xs"
+                    : "text-muted-foreground hover:text-foreground"
                     }`}
                 >
                   {tab.label}
@@ -104,8 +105,8 @@ export function UserToolbar({
                   size="sm"
                   onClick={() => onStatusFilterChange(tab.value)}
                   className={`h-7 px-2.5 text-xs font-medium rounded-md ${statusFilter === tab.value
-                      ? "shadow-2xs"
-                      : "text-muted-foreground hover:text-foreground"
+                    ? "shadow-2xs"
+                    : "text-muted-foreground hover:text-foreground"
                     }`}
                 >
                   {tab.label}

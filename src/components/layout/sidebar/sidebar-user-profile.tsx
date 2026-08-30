@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { LogOutIcon, ChevronRightIcon, UserIcon, SunIcon, MoonIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
+import { useProfileModalStore } from "@/features/profile/store/useProfileModalStore";
 import { getRoleHomePath } from "@/features/auth/lib/role-routes";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -27,6 +28,7 @@ interface Props {
 export function SidebarUserProfile({ collapsed }: Props) {
   const router = useRouter();
   const { user, logout, switchRole } = useAuthStore();
+  const { openProfileModal } = useProfileModalStore();
   const [isDark, setIsDark] = useState(false);
 
   useEffect(() => {
@@ -189,7 +191,7 @@ export function SidebarUserProfile({ collapsed }: Props) {
 
           <div className="p-1 space-y-0.5">
             <DropdownMenuItem
-              onClick={() => router.push("/profile")}
+              onClick={openProfileModal}
               className="text-sm cursor-pointer py-2 px-3 rounded-lg flex items-center gap-2 hover:bg-primary/10 hover:text-primary font-medium"
             >
               <UserIcon className="w-4 h-4 text-primary" />
