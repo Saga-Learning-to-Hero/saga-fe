@@ -15,3 +15,12 @@ export function getRoleHomePath(role: Role): string {
       return '/student/courses';
   }
 }
+
+/**
+ * Kiểm tra xem pathname có thuộc quyền truy cập của role không.
+ * Dùng khi redirect sau login với `?next=` parameter.
+ */
+export function isPathAllowedForRole(pathname: string, role: Role): boolean {
+  const prefix = `/${role.toLowerCase()}`;
+  return pathname === prefix || pathname.startsWith(`${prefix}/`);
+}

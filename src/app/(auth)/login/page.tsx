@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect, useId } from "react";
+import { useState, useEffect, useId, Suspense } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   EyeIcon, EyeOffIcon, LoaderCircleIcon, ArrowLeftIcon,
   ShieldCheckIcon, PresentationIcon, GraduationCapIcon, CheckIcon, AlertCircleIcon,
@@ -14,7 +14,7 @@ import { Separator } from "@/components/ui/separator";
 import { SagaLogo } from "@/components/common/saga-logo";
 import { ThemeToggle } from "@/components/common/theme-toggle";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
-import { getRoleHomePath } from "@/features/auth/lib/role-routes";
+import { getRoleHomePath, isPathAllowedForRole } from "@/features/auth/lib/role-routes";
 import type { Role } from "@/types/auth";
 
 /* ─── Google Icon ─────────────────────────────────────────────────────── */
@@ -53,7 +53,16 @@ const ROLES: { value: Role; label: string; description: string; Icon: React.Elem
 
 /* ─── Component ────────────────────────────────────────────────────────── */
 export default function LoginPage() {
+  return (
+    <Suspense>
+      <LoginPageContent />
+    </Suspense>
+  );
+}
+
+function LoginPageContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { isAuthenticated, user, login } = useAuthStore();
   const [selectedRole, setSelectedRole] = useState<Role | null>(null);
   const [showPassword, setShowPassword] = useState(false);
@@ -64,11 +73,21 @@ export default function LoginPage() {
 
   const groupId = useId();
 
+  // Hàm tính URL đích sau khi đăng nhập
+  const getRedirectUrl = (role: Role): string => {
+    const nextUrl = searchParams.get("next");
+    if (nextUrl && isPathAllowedForRole(nextUrl, role)) {
+      return nextUrl;
+    }
+    return getRoleHomePath(role);
+  };
+
   // Already-logged-in guard — redirect to correct home
   useEffect(() => {
     if (isAuthenticated && user) {
-      router.replace(getRoleHomePath(user.role));
+      router.replace(getRedirectUrl(user.role));
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAuthenticated, user, router]);
 
   const doLogin = async (role: Role) => {
@@ -77,7 +96,7 @@ export default function LoginPage() {
     try {
       await new Promise((r) => setTimeout(r, 900)); // simulate network
       login(role);
-      router.replace(getRoleHomePath(role));
+      router.replace(getRedirectUrl(role));
     } catch {
       setError("Đăng nhập thất bại. Vui lòng thử lại.");
       setIsLoading(false);

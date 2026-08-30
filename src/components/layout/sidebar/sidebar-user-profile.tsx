@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { LogOutIcon, ChevronRightIcon, UserIcon, SunIcon, MoonIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
+import { getRoleHomePath } from "@/features/auth/lib/role-routes";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -53,7 +54,13 @@ export function SidebarUserProfile({ collapsed }: Props) {
 
   const handleLogout = () => {
     logout();
-    router.push("/login");
+    router.replace("/login");
+  };
+
+  const handleSwitchRole = (r: Role) => {
+    switchRole(r);
+    // Điều hướng tới home của role mới để tránh lạc ở route sai role
+    router.replace(getRoleHomePath(r));
   };
 
   return (
@@ -164,7 +171,7 @@ export function SidebarUserProfile({ collapsed }: Props) {
             {(["STUDENT", "LECTURER", "ADMIN"] as Role[]).map((r) => (
               <DropdownMenuItem
                 key={r}
-                onClick={() => switchRole(r)}
+                onClick={() => handleSwitchRole(r)}
                 className={cn(
                   "text-sm cursor-pointer py-2 px-3 rounded-lg",
                   user.role === r && "font-semibold text-primary bg-primary/10"

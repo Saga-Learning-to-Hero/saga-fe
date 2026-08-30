@@ -14,12 +14,24 @@ export function lecturerCourseGradesPath(courseId: string) {
   return `/lecturer/courses/${courseId}/grades`;
 }
 
+export function lecturerCourseWeightSettingsPath(courseId: string) {
+  return `/lecturer/courses/${courseId}/settings/weights`;
+}
+
 export function lecturerCourseGraphPath(courseId: string) {
   return `/lecturer/courses/${courseId}/graph`;
 }
 
 export function lecturerCourseGroupsPath(courseId: string) {
   return `/lecturer/courses/${courseId}/groups`;
+}
+
+export function lecturerCourseTeamsPath(courseId: string) {
+  return `/lecturer/courses/${courseId}/teams`;
+}
+
+export function lecturerCourseTeamPath(courseId: string, teamId: string) {
+  return `/lecturer/courses/${courseId}/teams/${teamId}`;
 }
 
 export function lecturerCourseGroupPath(courseId: string, groupId: string) {
