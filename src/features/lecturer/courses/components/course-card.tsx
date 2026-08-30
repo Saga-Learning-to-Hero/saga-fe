@@ -1,108 +1,146 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRightIcon, FolderKanbanIcon, UsersIcon } from "lucide-react";
+import {
+  ArrowRightIcon,
+  CheckCircle2Icon,
+  ClockIcon,
+} from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { LecturerCourse } from "../types/course";
 
-export function CourseCard({ course }: { course: LecturerCourse }) {
+interface CourseCardProps {
+  course: LecturerCourse;
+}
+
+export function CourseCard({ course }: CourseCardProps) {
   const isCompleted = course.status === "COMPLETED";
   const isUpcoming = course.status === "UPCOMING";
-
-  const statusConfig = {
-    IN_PROGRESS: { label: "Đang dạy", cls: "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400" },
-    ACTIVE: { label: "Đang dạy", cls: "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400" },
-    COMPLETED: { label: "Đã kết thúc", cls: "bg-muted text-muted-foreground" },
-    UPCOMING: { label: "Sắp diễn ra", cls: "bg-blue-500/10 text-blue-600 dark:text-blue-400" },
-  }[course.status] || { label: "Đang dạy", cls: "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400" };
-
-  const toneRing: Record<string, string> = {
-    indigo: "hover:border-indigo-500/40",
-    cyan: "hover:border-cyan-500/40",
-    emerald: "hover:border-emerald-500/40",
-    amber: "hover:border-amber-500/40",
-  };
-  const accentBar: Record<string, string> = {
-    indigo: "bg-indigo-500", cyan: "bg-cyan-500", emerald: "bg-emerald-500", amber: "bg-amber-500",
-  };
-
-  const tone = course.tone ?? "indigo";
-  const ring = toneRing[tone];
-  const bar = accentBar[tone];
+  const studentCount = course.studentsCount || course.studentCount || 0;
+  const groupCount = course.groupsCount || course.groupCount || 0;
 
   return (
-    <div className={cn(
-      "group relative flex flex-col rounded-2xl border border-border bg-card shadow-xs",
-      "transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md",
-      ring
-    )}>
-      {/* accent stripe */}
-      <div className={cn("h-1 w-full rounded-t-2xl", bar, isCompleted && "opacity-30")} />
+    <div
+      className={cn(
+        "group relative flex flex-col justify-between rounded-2xl p-5 sm:p-6 transition-all duration-300",
+        "bg-card/90 backdrop-blur-sm border border-border/80 shadow-xs hover:shadow-lg hover:-translate-y-1",
+        "hover:border-primary/40 hover:bg-card"
+      )}
+    >
+      {/* ── Top Header: Mã Học kỳ & Trạng thái ────────────────────── */}
+      <div className="space-y-3.5">
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <Badge
+              variant="outline"
+              className="bg-primary/10 text-primary border-primary/20 font-mono text-xs px-2.5 py-0.5 font-bold"
+            >
+              Kỳ: {course.semesterName || course.semesterCode || course.semesterId}
+            </Badge>
 
-      <div className="flex flex-1 flex-col gap-6 p-6">
-        {/* header */}
-        <div className="flex items-start justify-between gap-3">
-          <div className="space-y-2 min-w-0">
-            <div className="flex items-center gap-2 text-sm font-mono text-muted-foreground">
-              <span className="font-bold">{course.code}</span>
-              <span className="opacity-40">·</span>
-              <span className="opacity-60">{course.semesterName || course.semesterCode || course.semesterId}</span>
-            </div>
-            <h3 className="line-clamp-2 text-xl font-extrabold leading-snug text-foreground group-hover:text-primary transition-colors">
-              {course.name}
-            </h3>
+            <Badge
+              variant="secondary"
+              className="bg-secondary/70 text-secondary-foreground font-mono text-xs px-2.5 py-0.5 font-semibold"
+            >
+              Mã môn: {course.code}
+            </Badge>
           </div>
-          <Badge className={cn("shrink-0 border-0 text-xs px-2.5 py-1 font-bold", statusConfig.cls)}>
-            {statusConfig.label}
+
+          <Badge
+            className={cn(
+              "text-[11px] font-semibold px-2.5 py-0.5 border-0",
+              isCompleted
+                ? "bg-muted text-muted-foreground"
+                : isUpcoming
+                  ? "bg-blue-500/10 text-blue-600 dark:text-blue-400"
+                  : "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 font-bold"
+            )}
+          >
+            {isCompleted ? (
+              <span className="flex items-center gap-1">
+                <CheckCircle2Icon className="w-3 h-3" />
+                Đã kết thúc
+              </span>
+            ) : isUpcoming ? (
+              <span className="flex items-center gap-1">
+                <ClockIcon className="w-3 h-3" />
+                Sắp diễn ra
+              </span>
+            ) : (
+              <span className="flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                Đang dạy
+              </span>
+            )}
           </Badge>
         </div>
 
-        {/* stats */}
-        <div className="flex items-center gap-6 rounded-2xl bg-muted/50 px-5 py-4 text-base">
-          <div className="flex items-center gap-2.5">
-            <UsersIcon className="size-5 text-muted-foreground" />
-            <span className="font-extrabold text-xl font-mono">{course.studentsCount || course.studentCount}</span>
-            <span className="text-muted-foreground font-medium">sinh viên</span>
+        {/* ── Course Name & ID ─────────────────────────────────────── */}
+        <div>
+          <h3 className="text-lg font-extrabold text-foreground group-hover:text-primary transition-colors line-clamp-2 leading-snug">
+            {course.name}
+          </h3>
+          <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1.5 font-mono">
+            <span>Mã lớp hệ thống: <strong className="text-foreground font-bold">{course.id.toUpperCase()}</strong></span>
+          </p>
+        </div>
+
+        {/* ── Class Metrics Strip: Sinh viên & Nhóm đồ án ─────────── */}
+        <div className="grid grid-cols-2 gap-3 p-3.5 rounded-2xl bg-muted/40 border border-border/50 text-center">
+          <div>
+            <span className="text-[10px] text-muted-foreground font-semibold block uppercase tracking-wider">
+              Tổng số sinh viên
+            </span>
+            <span className="text-lg font-black text-foreground font-mono mt-0.5 block">
+              {studentCount} SV
+            </span>
           </div>
-          <div className="h-5 w-px bg-border" />
-          <div className="flex items-center gap-2.5">
-            <FolderKanbanIcon className="size-5 text-muted-foreground" />
-            <span className="font-extrabold text-xl font-mono">{course.groupsCount || course.groupCount}</span>
-            <span className="text-muted-foreground font-medium">nhóm</span>
+          <div className="border-l border-border/50">
+            <span className="text-[10px] text-muted-foreground font-semibold block uppercase tracking-wider">
+              Nhóm đồ án
+            </span>
+            <span className="text-lg font-black text-primary font-mono mt-0.5 block">
+              {groupCount} Nhóm
+            </span>
           </div>
         </div>
 
-        {/* progress */}
-        <div className="space-y-2.5">
-          <div className="flex items-center justify-between text-sm">
-            <span className="text-muted-foreground font-medium">Tiến độ học kỳ</span>
-            <span className="font-mono font-bold text-base">{course.progress}%</span>
+        {/* ── Progress Bar ─────────────────────────────────────────── */}
+        <div className="space-y-1.5">
+          <div className="flex items-center justify-between text-[11px] font-semibold text-muted-foreground">
+            <span>Tiến độ học kỳ</span>
+            <span className="font-mono font-bold text-foreground">{course.progress || 0}%</span>
           </div>
-          <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
+          <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
             <div
-              className={cn("h-full rounded-full transition-all duration-500", isCompleted ? "bg-muted-foreground/40" : bar)}
-              style={{ width: `${course.progress}%` }}
+              className={cn(
+                "h-full rounded-full transition-all duration-500",
+                isCompleted ? "bg-muted-foreground/40" : "bg-primary"
+              )}
+              style={{ width: `${course.progress || 0}%` }}
             />
           </div>
         </div>
       </div>
 
-      {/* CTA */}
-      <div className="border-t border-border/60 px-6 py-4">
-        <Link
-          href={`/lecturer/courses/${course.id}/dashboard`}
-          className={cn(
-            "flex w-full items-center justify-center gap-2.5 rounded-xl py-3 text-base font-bold transition-all",
-            isUpcoming
-              ? "bg-muted text-muted-foreground cursor-not-allowed pointer-events-none"
-              : isCompleted
-                ? "bg-muted text-muted-foreground hover:bg-muted/80"
-                : "bg-primary text-primary-foreground hover:bg-primary/90"
-          )}
-        >
-          {isUpcoming ? "Chưa mở" : isCompleted ? "Xem lại lớp" : "Vào lớp học"}
-          <ArrowRightIcon className="size-5 transition-transform group-hover:translate-x-1" />
+      {/* ── Footer Action ────────────────────────────────────────────── */}
+      <div className="pt-4 mt-4 border-t border-border/60">
+        <Link href={`/lecturer/courses/${course.id}/dashboard`} className="block">
+          <Button
+            className={cn(
+              "w-full h-9.5 text-xs font-bold rounded-xl gap-2 shadow-xs cursor-pointer transition-all",
+              isUpcoming
+                ? "bg-muted text-muted-foreground cursor-not-allowed pointer-events-none"
+                : isCompleted
+                  ? "bg-muted text-muted-foreground hover:bg-muted/80"
+                  : "bg-primary text-primary-foreground hover:bg-primary/90"
+            )}
+          >
+            {isCompleted ? "Xem lại lớp học" : isUpcoming ? "Lớp học chưa mở" : "Vào không gian lớp học"}
+            <ArrowRightIcon className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+          </Button>
         </Link>
       </div>
     </div>

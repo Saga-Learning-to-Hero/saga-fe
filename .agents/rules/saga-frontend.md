@@ -1,112 +1,93 @@
 ---
 trigger: always_on
+description: Master frontend architecture, tech stack guidelines, and core engineering standards for SAGA Capstone.
 ---
 
-# SAGA Frontend — Quy tắc phát triển giao diện
+# SAGA Frontend — Quy Chuẩn Kiến Trúc & Phát Triển Giao Diện (Master Rule)
 
-## Ngôn ngữ
-- Toàn bộ UI, label, placeholder, tooltip, thông báo lỗi, nội dung tĩnh đều phải bằng **tiếng Việt**.
-- Comment trong code bằng tiếng Việt.
-- Tên biến, hàm, component vẫn dùng tiếng Anh theo chuẩn camelCase/PascalCase.
+## 1. Triết Lý & Ngôn Ngữ (Language & Philosophy)
+- **100% Tiếng Việt trên giao diện**: Toàn bộ UI, văn bản, tiêu đề, nhãn (label), placeholder, tooltip, thông báo trạng thái, toast alert và modal đều phải dùng **tiếng Việt chuẩn mực, rõ ràng, giàu tính học thuật**.
+- **Code & Comment**: Tên biến, interface, type, hàm, component và tên file viết bằng **tiếng Anh** chuẩn `camelCase` / `PascalCase`. Comment giải thích logic bằng **tiếng Việt**.
+- **Tính Minh Bạch Dựa Trên Dữ Liệu (Data-Driven Transparency)**: Mọi biểu đồ, bảng đối soát, ma trận đóng góp đều phải hiển thị minh chứng thực tế (Empirical Evidence) từ Jira và GitHub.
 
-## Tech Stack
-- **Framework**: Next.js 16 (App Router)
+---
+
+## 2. Ngăn Xếp Công Nghệ (Tech Stack)
+- **Framework**: Next.js 16 (App Router, Turbopack, React 19)
 - **Styling**: Tailwind CSS v4 + shadcn/ui
-- **State**: Zustand
-- **Data Fetching**: TanStack React Query + Axios
-- **Graph**: Cytoscape.js
-- **Icons**: lucide-react
-- **Font**: **Plus Jakarta Sans** (UI & Heading) + **JetBrains Mono** (Code & Số liệu/Metrics) — load qua `next/font/google` hỗ trợ tiếng Việt hoàn chỉnh.
+- **State Management**: Zustand (kết hợp `persist` middleware lưu session an toàn)
+- **Data Fetching & Caching**: TanStack React Query v5 + Axios
+- **Graph Visualization**: Cytoscape.js (`^3.34.1`)
+- **Charts & Metrics**: Recharts (`^3.10.1`)
+- **Iconography**: `lucide-react`
+- **Typography**: 
+  - **Plus Jakarta Sans**: Font giao diện chính, tiêu đề, bảng biểu (`var(--font-sans)`).
+  - **JetBrains Mono**: Font mã nguồn, commit hash, story points, mã số sinh viên, công thức toán học (`var(--font-mono)`).
 
-## Design System — Academic Tech (globals.css)
+---
 
-### Triết lý thiết kế (Theme: Academic Tech)
-- Phong cách giao diện lấy cảm hứng từ **Linear / Vercel / GitHub Next**: Trí tuệ, Hiện đại, Chuẩn Đại học & Phân tích Đồ thị.
-- **Primary Color**: Deep Indigo (`#4F46E5` / `oklch(0.52 0.22 265)`) — màu của trí tuệ và sự chuẩn mực.
-- **Accent Color**: Teal Cyan (`#06B6D4` / `oklch(0.65 0.18 200)`) — màu điểm nhấn dữ liệu, node đồ thị.
-- **Background**:
-  - **Light Mode**: Slate siêu nhạt `#F8FAFC` (`oklch(0.985 0.005 250)`), Sidebar nền `#FAFCFF` sáng sạch.
-  - **Dark Mode**: Deep Obsidian Slate `#0F172A` (`oklch(0.12 0.03 260)`), Sidebar `#131D31`.
+## 3. Cấu Trúc Thư Mục Chuẩn (Role-Based Directory Structure)
 
-### Nguyên tắc bất di bất dịch
-- **KHÔNG bao giờ hardcode màu, font, shadow, spacing** ở component hay page.
-- Luôn dùng CSS variable hoặc Tailwind utility tương ứng.
-
-### CSS Variables chính (dùng trực tiếp)
-```
-Màu brand:    var(--saga-primary), var(--saga-accent)
-Trạng thái:   var(--saga-success), var(--saga-warning), var(--saga-danger), var(--saga-info)
-Surface:      var(--background), var(--card), var(--popover)
-Text:         var(--foreground), var(--muted-foreground)
-Border:       var(--border)
-Graph nodes:  var(--node-student), var(--node-activity), var(--node-criterion), var(--node-group), var(--node-outcome)
-Typography:   var(--font-sans) (Plus Jakarta Sans), var(--font-mono) (JetBrains Mono)
-```
-
-### Tailwind utilities tương ứng
-```
-bg-primary, text-primary          → màu brand chính (Deep Indigo)
-bg-muted, text-muted-foreground   → màu phụ/mờ
-bg-card, border-border            → card surface
-text-success/warning/danger/info  → trạng thái (custom utility)
-bg-success-muted, bg-danger-muted → badge/tag status
-surface-card, surface-raised      → card có border + shadow
-shadow-saga-sm/md/lg              → shadow levels
-transition-fast/normal/slow       → animation
-node-student/activity/criterion   → graph node color
-```
-
-### Dark mode
-- Tự động theo system preference (`prefers-color-scheme: dark`).
-- Hỗ trợ toggle trực tiếp qua class `.dark` trên `<html>` và lưu `localStorage` key `saga-theme`.
-- Không cần viết variant `dark:` thủ công nếu đã dùng CSS variable.
-
-## shadcn/ui
-- Thêm component mới bằng lệnh: `npx shadcn@latest add <component>`
-- Không sửa trực tiếp file trong `src/components/ui/` — đây là file do shadcn generate.
-- Khi dùng shadcn component, ưu tiên truyền `variant` và `size` prop thay vì override className.
-- Nếu cần style tuỳ chỉnh, tạo wrapper component riêng thay vì sửa file gốc.
-
-## Cấu trúc thư mục
-```
+```text
 src/
 ├── app/
-│   ├── (auth)/           # Route group auth (không có header/sidebar)
-│   │   └── login/        # Trang đăng nhập
-│   ├── (dashboard)/      # Route group dashboard (App Shell Layout với Sidebar)
-│   ├── (marketing)/      # Route group landing/marketing
-│   │   └── page.tsx      # Landing page (route "/")
-│   └── layout.tsx        # Root layout — Plus Jakarta Sans + JetBrains Mono, QueryProvider
+│   ├── (auth)/                    # Tuyến không kèm Sidebar/App Shell (Login)
+│   │   └── login/                 # Trang Đăng nhập phân quyền 3 Role
+│   ├── (dashboard)/               # Tuyến có App Shell Layout bảo vệ
+│   │   ├── admin/                 # Không gian Quản trị viên (/admin/*)
+│   │   │   ├── dashboard/
+│   │   │   ├── users/
+│   │   │   ├── projects/
+│   │   │   ├── academic/
+│   │   │   └── audit-log/
+│   │   ├── lecturer/              # Không gian Giảng viên (/lecturer/*)
+│   │   │   ├── courses/           # Chọn lớp giảng dạy (No Sidebar Shell)
+│   │   │   │   └── [courseId]/    # Dashboard chi tiết lớp học
+│   │   │   ├── graph/             # Trung tâm Giám sát Đa nhóm & Đồ thị SNA
+│   │   │   ├── assessment/        # Đánh giá & Master Gradebook
+│   │   │   └── contribution/      # Ma trận đóng góp Slicing Pie
+│   │   ├── student/               # Không gian Sinh viên (/student/*)
+│   │   │   ├── courses/           # Chọn môn học kỳ này (No Sidebar Shell)
+│   │   │   ├── dashboard/         # Dashboard chỉ số KPI & Cổ phần cá nhân
+│   │   │   ├── project-info/      # Thông tin dự án nhóm & Workspace
+│   │   │   ├── sprint-progress/   # Tiến độ Jira Kanban & Sprint Backlog
+│   │   │   ├── commits/           # Nhật ký mã nguồn Git theo repo/branch
+│   │   │   ├── graph/             # Đồ thị Truy xuất Nguồn gốc Traceability
+│   │   │   ├── assessment/        # Đánh giá đồng đẳng (Peer Review)
+│   │   │   └── contribution/      # Tỷ lệ đóng góp Slicing Pie
+│   │   ├── profile/               # Trang quản lý hồ sơ tài khoản
+│   │   ├── dashboard/             # Role Redirect Router tự động
+│   │   └── layout.tsx             # Dashboard Shell Layout (Sidebar, No-sidebar rules, Role Protection)
+│   ├── (marketing)/               # Tuyến Landing Page
+│   │   └── page.tsx               # Landing Page giới thiệu giải pháp SAGA
+│   └── layout.tsx                 # Root Layout nạp Google Fonts & Providers
 ├── components/
-│   ├── ui/               # shadcn/ui components (KHÔNG sửa)
-│   ├── landing/          # UI components cho trang landing
-│   └── layout/           # App Shell Layout: Sidebar, Header
-│       └── sidebar/      # Sidebar modular (index, sidebar-nav, sidebar-user-profile, nav-config)
-├── features/             # Business logic theo domain (cùng cấp với components/)
-│   ├── assessment/       # Tính năng đánh giá
-│   ├── auth/             # Tính năng xác thực & Auth store
-│   ├── dashboard/        # Tính năng dashboard
-│   ├── graph/            # Tính năng đồ thị Cytoscape
-│   └── integrations/     # Tích hợp bên ngoài
-├── providers/            # React context providers
-├── hooks/                # Custom hooks dùng chung
-├── lib/                  # Utilities, helpers
-├── store/                # Zustand stores
-└── types/                # TypeScript types
+│   ├── common/                    # Component dùng chung toàn app (SagaLogo, CustomSelect, ThemeToggle...)
+│   ├── layout/                    # Layout components (Sidebar, Header, NavConfig)
+│   └── ui/                        # shadcn/ui components nguyên bản
+├── features/                      # Business logic phân rã theo Domain & Role
+│   ├── admin/                     # Modules nghiệp vụ Quản trị viên
+│   ├── lecturer/                  # Modules nghiệp vụ Giảng viên
+│   ├── student/                   # Modules nghiệp vụ Sinh viên
+│   ├── auth/                      # Xác thực, Role routes, Auth Store
+│   ├── graph/                     # Cytoscape Graph Engine, Traceability, SNA
+│   └── profile/                   # Quản lý hồ sơ & liên kết Jira/GitHub
+├── lib/                           # Utility functions, helpers, formatters
+├── providers/                     # React Context Providers (QueryClient, Tooltip)
+├── store/                         # Zustand Global Stores
+└── types/                         # TypeScript interfaces & enums dùng chung
 ```
 
-> **Phân biệt `components/` vs `features/`**:
-> - `components/` → UI thuần, không có business logic, có thể tái sử dụng nhiều nơi.
-> - `features/` → Mỗi folder là một domain nghiệp vụ, chứa components, hooks, store, types riêng của feature đó.
+> **Nguyên tắc phân biệt `components/` và `features/`:**
+> - `components/` chứa UI thuần, không phụ thuộc vào nghiệp vụ cụ thể, có tính tái sử dụng cao.
+> - `features/` chứa toàn bộ UI + State + Mock Data + Types chuyên biệt theo từng Domain chức năng.
 
-## Quy trình kiểm tra bắt buộc (Verification)
-**Sau mỗi lần thay đổi code, PHẢI chạy đủ 2 lệnh theo thứ tự:**
+---
+
+## 4. Quy Trình Kiểm Thử Bắt Buộc (Verification Pipeline)
+Trước khi commit bất kỳ thay đổi nào, **BẮT BUỘC** phải chạy kiểm tra và đảm bảo không có lỗi:
 
 ```bash
-npm run lint    # Kiểm tra lỗi ESLint — phải pass 0 error
-npm run build   # Build production — phải thành công không lỗi
+npm run lint    # Kiểm tra ESLint & TypeScript lints — BẮT BUỘC 0 ERROR, 0 WARNING
+npm run build   # Build production tối ưu hóa tĩnh — BẮT BUỘC PASS 100% (21/21 trang)
 ```
-
-- Nếu lint báo **error** → phải fix trước khi tiếp tục, không được bỏ qua.
-- Nếu build **fail** → bắt buộc fix trước khi commit.
-- Chỉ commit khi cả lint + build đều pass.

@@ -3,10 +3,7 @@
 import {
   GraduationCapIcon,
   UsersIcon,
-  MapPinIcon,
-  ClockIcon,
   ArrowRightIcon,
-  GitGraphIcon,
   CheckCircle2Icon,
   SparklesIcon,
 } from "lucide-react";
@@ -118,25 +115,10 @@ export function CourseCard({ course, onSelectCourse }: CourseCardProps) {
           <GraduationCapIcon className="w-4 h-4 text-muted-foreground/60 shrink-0" />
         </div>
 
-        {/* ── Chi tiết bổ sung: Phòng học & Nhóm đồ án ────────────── */}
-        <div className="grid grid-cols-2 gap-2 text-[11px] text-muted-foreground pt-1">
-          {course.room && (
-            <div className="flex items-center gap-1.5">
-              <MapPinIcon className="w-3.5 h-3.5 text-primary/70 shrink-0" />
-              <span className="truncate">Phòng: <strong className="text-foreground">{course.room}</strong></span>
-            </div>
-          )}
-          <div className="flex items-center gap-1.5">
-            <UsersIcon className="w-3.5 h-3.5 text-primary/70 shrink-0" />
-            <span>Sĩ số: <strong className="text-foreground">{course.studentsCount} SV</strong></span>
-          </div>
-
-          {course.schedule && (
-            <div className="flex items-center gap-1.5 col-span-2 text-[11px]">
-              <ClockIcon className="w-3.5 h-3.5 text-primary/70 shrink-0" />
-              <span className="truncate">{course.schedule}</span>
-            </div>
-          )}
+        {/* ── Sĩ số lớp học ────────────────────────────────────────── */}
+        <div className="flex items-center gap-1.5 text-xs text-muted-foreground pt-0.5">
+          <UsersIcon className="w-3.5 h-3.5 text-primary/70 shrink-0" />
+          <span>Sĩ số lớp: <strong className="font-mono text-foreground">{course.studentsCount} sinh viên</strong></span>
         </div>
 
         {/* Badge Nhóm đồ án của sinh viên (nếu có) */}
@@ -160,36 +142,23 @@ export function CourseCard({ course, onSelectCourse }: CourseCardProps) {
         )}
       </div>
 
-      {/* ── Footer Actions ────────────────────────────────────────────── */}
-      <div className="pt-4 mt-4 border-t border-border/60 flex items-center justify-between gap-2">
-        <Link href="/student/graph">
-          <Button
-            variant="outline"
-            size="sm"
-            className="h-8 text-xs font-medium rounded-lg gap-1.5 hover:bg-primary/10 hover:text-primary hover:border-primary/30 cursor-pointer"
-          >
-            <GitGraphIcon className="w-3.5 h-3.5 text-primary" />
-            Xem đồ thị SAGA
-          </Button>
-        </Link>
-
+      {/* ── Footer Action ────────────────────────────────────────────── */}
+      <div className="pt-4 mt-4 border-t border-border/60">
         {onSelectCourse ? (
           <Button
-            size="sm"
             onClick={handleSelect}
-            className="h-8 text-xs font-semibold rounded-lg gap-1 shadow-xs cursor-pointer bg-primary text-primary-foreground hover:bg-primary/90"
+            className="w-full h-9.5 text-xs font-bold rounded-xl gap-2 shadow-xs cursor-pointer bg-primary text-primary-foreground hover:bg-primary/90 transition-all"
           >
-            Vào khóa học
-            <ArrowRightIcon className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" />
+            {isCompleted ? "Xem lại khóa học" : "Vào khóa học"}
+            <ArrowRightIcon className="w-4 h-4 transition-transform group-hover:translate-x-1" />
           </Button>
         ) : (
-          <Link href="/student/dashboard">
+          <Link href="/student/dashboard" className="block">
             <Button
-              size="sm"
-              className="h-8 text-xs font-semibold rounded-lg gap-1 shadow-xs cursor-pointer"
+              className="w-full h-9.5 text-xs font-bold rounded-xl gap-2 shadow-xs cursor-pointer bg-primary text-primary-foreground hover:bg-primary/90 transition-all"
             >
-              Vào khóa học
-              <ArrowRightIcon className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" />
+              {isCompleted ? "Xem lại khóa học" : "Vào khóa học"}
+              <ArrowRightIcon className="w-4 h-4 transition-transform group-hover:translate-x-1" />
             </Button>
           </Link>
         )}

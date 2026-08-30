@@ -18,7 +18,7 @@ export function LecturerCoursesPage() {
     const q = searchQuery.toLowerCase().trim();
     return MOCK_LECTURER_COURSES.filter((c) => {
       if (c.semesterId !== selectedSemesterCode) return false;
-      if (q && !`${c.code} ${c.name} ${c.room}`.toLowerCase().includes(q)) return false;
+      if (q && !`${c.code} ${c.name}`.toLowerCase().includes(q)) return false;
       if (statusFilter === "ACTIVE" && c.status !== "ACTIVE" && c.status !== "IN_PROGRESS") return false;
       if (statusFilter === "COMPLETED" && c.status !== "COMPLETED") return false;
       return true;
@@ -94,7 +94,7 @@ export function LecturerCoursesPage() {
           <Input
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Tìm mã môn, tên lớp, phòng..."
+            placeholder="Tìm mã môn, tên lớp học phần..."
             className="h-9 rounded-xl pl-9 text-xs"
           />
         </div>
