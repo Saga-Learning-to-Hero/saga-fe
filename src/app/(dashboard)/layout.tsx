@@ -10,10 +10,8 @@ import { getRoleHomePath, isPathAllowedForRole } from "@/features/auth/lib/role-
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 
-import { TopHeader } from "@/components/layout/top-header";
+import { TopNavHeader } from "@/components/layout/header/top-nav-header";
 import { ProfileModal } from "@/features/profile/components/profile-modal";
-
-const NO_SIDEBAR_PATHS = ["/lecturer/courses", "/student/courses"];
 
 export default function DashboardLayout({
   children,
@@ -56,19 +54,24 @@ export default function DashboardLayout({
 
   if (!isAuthenticated || !user) return null;
 
-  const hideSidebar = NO_SIDEBAR_PATHS.includes(pathname);
-
-  if (hideSidebar) {
+  // ── 1. GIAO DIỆN GIẢNG VIÊN & SINH VIÊN: TOP HEADER NAVIGATION (NO SIDEBAR) ──
+  if (user.role === "LECTURER" || user.role === "STUDENT") {
     return (
-      <div className="flex h-screen flex-col overflow-hidden bg-background">
-        <TopHeader />
-        <main className="flex-1 overflow-y-auto p-6">{children}</main>
+      <div className="flex min-h-screen flex-col bg-background text-foreground">
+        {/* Header điều hướng 2 tầng chuẩn Academic Tech */}
+        <TopNavHeader />
+
+        {/* Khung nội dung chiếm trọn 100% chiều ngang màn hình */}
+        <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
+          {children}
+        </main>
+
         <ProfileModal />
       </div>
     );
   }
 
-  // ── Full shell with sidebar ──────────────────────────────────────────
+  // ── 2. GIAO DIỆN QUẢN TRỊ VIÊN (ADMIN): SIDEBAR DỌC CỔ ĐIỂN ──────────────
   return (
     <div className="flex h-screen overflow-hidden bg-background">
       {/* Sidebar — desktop */}
@@ -106,4 +109,5 @@ export default function DashboardLayout({
     </div>
   );
 }
+
 

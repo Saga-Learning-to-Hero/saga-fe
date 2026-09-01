@@ -123,19 +123,29 @@ export function CourseCard({ course, onSelectCourse }: CourseCardProps) {
 
         {/* Badge Nhóm đồ án của sinh viên (nếu có) */}
         {course.myGroup && (
-          <div className="flex items-center justify-between p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-900 dark:text-amber-200">
-            <div className="flex items-center gap-2 min-w-0">
-              <SparklesIcon className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0" />
+          <div className="flex items-center justify-between p-2.5 rounded-xl bg-primary/5 border border-primary/15 text-foreground">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div className="size-7 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                <SparklesIcon className="size-3.5 text-primary" />
+              </div>
               <div className="flex flex-col min-w-0">
-                <span className="text-[10px] font-semibold uppercase tracking-wider text-amber-700 dark:text-amber-300">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
                   Nhóm học tập
                 </span>
-                <span className="text-xs font-bold truncate">
+                <span className="text-xs font-bold text-foreground truncate">
                   {course.myGroup.name}
                 </span>
               </div>
             </div>
-            <Badge className="bg-amber-500/20 text-amber-800 dark:text-amber-300 border-0 text-[10px] shrink-0 font-semibold">
+            <Badge
+              variant="outline"
+              className={cn(
+                "text-[10px] shrink-0 font-semibold px-2 py-0.5 rounded-md",
+                course.myGroup.role === "LEADER"
+                  ? "bg-primary/10 text-primary border-primary/25"
+                  : "bg-muted text-muted-foreground border-border"
+              )}
+            >
               {course.myGroup.role === "LEADER" ? "Trưởng nhóm" : "Thành viên"}
             </Badge>
           </div>

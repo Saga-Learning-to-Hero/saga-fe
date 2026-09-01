@@ -56,16 +56,14 @@ export function getRoleHomePath(role: Role): string {
 
 ---
 
-## 3. Quy Tắc Layout Shell & Tuyến Không Sidebar (`NO_SIDEBAR_PATHS`)
+## 3. Quy Tắc Phân Bổ Layout Shell (Admin Sidebar vs Lecturer/Student Top Header)
 Trong `src/app/(dashboard)/layout.tsx`:
-- Các màn hình chọn môn học/lớp học của Giảng viên và Sinh viên là các màn hình tập trung (focused selector screens), **KHÔNG sử dụng Sidebar** mà dùng Top Navigation Bar tinh gọn:
-  ```typescript
-  const NO_SIDEBAR_PATHS = ["/lecturer/courses", "/student/courses"];
-  ```
-- Top Header trong chế độ No-Sidebar tự động điều chỉnh theo Role:
-  - Giảng viên: *"Không gian giảng dạy"* · Badge: *"Giảng viên"*
-  - Sinh viên: *"Không gian học tập"* · Badge: *"Sinh viên"*
-  - Quản trị viên: *"Quản trị hệ thống"* · Badge: *"Quản trị viên"*
+- **👑 Quản trị viên (Admin)**: Sử dụng **Sidebar dọc bên trái** (`Sidebar` component) hỗ trợ thu gọn/mở rộng, phù hợp với các tác vụ quản trị hệ thống, dữ liệu học thuật, dự án và nhật ký kiểm toán.
+- **👨‍🏫 Giảng viên (Lecturer) & 🎓 Sinh viên (Student)**: Chuyển đổi hoàn toàn sang **Top Header Navigation 2 tầng** (`TopNavHeader` component), **HOÀN TOÀN KHÔNG DÙNG SIDEBAR**.
+  - Giải phóng 100% không gian hiển thị (Full-width canvas) cho các bảng dữ liệu lớn, bảng tiến độ Kanban Jira, đồ thị tương tác Cytoscape.js (Traceability & SNA), nhật ký Git Commit và bảng điểm/đóng góp Slicing Pie.
+  - **Tầng 1 (Primary Header - 56px)**: Logo SAGA, Course Context Pill kèm bộ chọn nhanh khóa học (Quick Course Switcher), Badge học kỳ, Theme toggle Sáng/Tối, Chuông thông báo, User Profile Dropdown (đổi vai trò demo, mở hồ sơ cá nhân, đăng xuất).
+  - **Tầng 2 (Subnav Tabs - 46px)**: Thanh Tabs điều hướng ngang dạng pill/card mượt mà theo từng môn/lớp học.
+  - **Mobile Drawer**: Tích hợp Mobile Sheet drawer khi duyệt trên thiết bị di động.
 
 ---
 

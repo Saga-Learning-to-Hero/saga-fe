@@ -29,7 +29,7 @@ export function TeamMembersCard({ project }: TeamMembersCardProps) {
                 <CardTitle className="text-base font-bold text-foreground">
                   Thông tin Nhóm & Các Thành viên
                 </CardTitle>
-                <Badge variant="outline" className="font-mono text-xs bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20 font-bold">
+                <Badge variant="outline" className="font-mono text-xs bg-primary/10 text-primary border-primary/25 font-bold">
                   {project.groupName}
                 </Badge>
               </div>
@@ -86,10 +86,11 @@ export function TeamMembersCard({ project }: TeamMembersCardProps) {
                 <div className="flex items-center gap-4 text-xs shrink-0">
                   {/* Role Badge */}
                   <Badge
+                    variant="outline"
                     className={
                       isLeader
-                        ? "bg-amber-500/15 text-amber-700 dark:text-amber-300 border-0 text-[10px] font-semibold"
-                        : "bg-muted text-muted-foreground border-0 text-[10px] font-medium"
+                        ? "bg-primary/10 text-primary border-primary/25 text-[10px] font-semibold"
+                        : "bg-muted text-muted-foreground border-border text-[10px] font-medium"
                     }
                   >
                     {isLeader ? "Trưởng nhóm (Leader)" : "Thành viên"}

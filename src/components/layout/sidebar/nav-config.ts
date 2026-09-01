@@ -18,6 +18,7 @@ export interface NavItem {
   href: string;
   icon: string;
   match: NavMatchMode;
+  badge?: string | number;
 }
 
 export interface NavGroup {
@@ -41,9 +42,9 @@ export function isNavItemActive(pathname: string, item: NavItem): boolean {
   return pathname === item.href;
 }
 
-// ── Admin nav ──────────────────────────────────────────────────────────
+// ── Admin nav (Dành riêng cho Admin Sidebar) ───────────────────────────
 
-const ADMIN_NAV: NavGroup[] = [
+export const ADMIN_NAV: NavGroup[] = [
   {
     id: "admin-overview",
     label: "",
@@ -72,66 +73,164 @@ const ADMIN_NAV: NavGroup[] = [
   },
 ];
 
-// ── Lecturer nav ───────────────────────────────────────────────────────
+// ── Lecturer Nav Items (Dành cho Top Header Navigation) ────────────────
 
-/** Lecturer global nav (khi ở trang chọn khóa học /lecturer/courses) */
-const LECTURER_GLOBAL_NAV: NavGroup[] = [
-  {
-    id: "lecturer-root",
-    label: "Giảng dạy",
-    roles: ["LECTURER"],
-    items: [
-      { id: "lecturer-courses", title: "Khóa học của tôi", href: "/lecturer/courses", icon: "BookOpen", match: "exact" },
-    ],
-  },
-];
-
-/** Lecturer course context nav (khi đã vào 1 lớp học cụ thể) */
-function buildLecturerCourseNav(courseId: string, courseCode?: string): NavGroup[] {
-  const courseLabel = courseCode ? `Lớp học · ${courseCode.toUpperCase()}` : "Lớp học";
-
+export function getLecturerNavItems(courseId: string): NavItem[] {
   return [
     {
-      id: "lecturer-back",
-      label: "",
-      roles: ["LECTURER"],
-      items: [
-        { id: "lecturer-back-courses", title: "Đổi khóa học", href: "/lecturer/courses", icon: "ArrowLeft", match: "exact" },
-      ],
+      id: "course-dashboard",
+      title: "Tổng quan",
+      href: lecturerCourseDashboardPath(courseId),
+      icon: "LayoutDashboard",
+      match: "exact",
     },
     {
-      id: "course-context",
-      label: courseLabel,
-      roles: ["LECTURER"],
-      items: [
-        { id: "course-dashboard", title: "Dashboard", href: lecturerCourseDashboardPath(courseId), icon: "LayoutDashboard", match: "exact" },
-        { id: "course-teams", title: "Hoạt động nhóm", href: lecturerCourseTeamsPath(courseId), icon: "Users", match: "prefix" },
-        { id: "course-grades", title: "Bảng điểm", href: lecturerCourseGradesPath(courseId), icon: "ScrollText", match: "exact" },
-        { id: "course-graph", title: "Đồ thị truy xuất", href: lecturerCourseGraphPath(courseId), icon: "GitGraph", match: "exact" },
-        { id: "course-weights", title: "Cấu hình trọng số", href: lecturerCourseWeightSettingsPath(courseId), icon: "SlidersHorizontal", match: "prefix" },
-      ],
+      id: "course-teams",
+      title: "Hoạt động nhóm",
+      href: lecturerCourseTeamsPath(courseId),
+      icon: "Users",
+      match: "prefix",
+    },
+    {
+      id: "course-grades",
+      title: "Bảng điểm",
+      href: lecturerCourseGradesPath(courseId),
+      icon: "ScrollText",
+      match: "exact",
+    },
+    {
+      id: "course-graph",
+      title: "Đồ thị truy xuất",
+      href: lecturerCourseGraphPath(courseId),
+      icon: "GitGraph",
+      match: "exact",
+    },
+    {
+      id: "course-weights",
+      title: "Cấu hình trọng số",
+      href: lecturerCourseWeightSettingsPath(courseId),
+      icon: "SlidersHorizontal",
+      match: "prefix",
     },
   ];
 }
 
-// ── Student nav ────────────────────────────────────────────────────────
+// ── Student Nav Items (Dành cho Top Header Navigation) ─────────────────
 
-/** Student global nav (khi ở trang chọn khóa học /student/courses) */
-const STUDENT_GLOBAL_NAV: NavGroup[] = [
-  {
-    id: "student-root",
-    label: "Học tập",
-    roles: ["STUDENT"],
-    items: [
-      { id: "student-courses", title: "Khóa học của tôi", href: "/student/courses", icon: "BookOpen", match: "exact" },
-    ],
-  },
-];
+export function getStudentNavItems(): NavItem[] {
+  return [
+    {
+      id: "student-dashboard",
+      title: "Tổng quan",
+      href: "/student/dashboard",
+      icon: "LayoutDashboard",
+      match: "exact",
+    },
+    {
+      id: "student-project",
+      title: "Thông tin dự án",
+      href: "/student/project-info",
+      icon: "FolderKanban",
+      match: "exact",
+    },
+    {
+      id: "student-graph",
+      title: "Đồ thị truy xuất",
+      href: "/student/graph",
+      icon: "GitGraph",
+      match: "exact",
+    },
+    {
+      id: "student-sprint",
+      title: "Tiến độ công việc",
+      href: "/student/sprint-progress",
+      icon: "Kanban",
+      match: "exact",
+    },
+    {
+      id: "student-commits",
+      title: "Lịch sử Commit",
+      href: "/student/commits",
+      icon: "GitCommit",
+      match: "exact",
+    },
+    {
+      id: "student-peer",
+      title: "Đánh giá chéo",
+      href: "/student/peer-assessment",
+      icon: "UserCheck",
+      match: "exact",
+    },
+    {
+      id: "student-contribution",
+      title: "Mức đóng góp",
+      href: "/student/contribution",
+      icon: "PieChart",
+      match: "exact",
+    },
+  ];
+}
 
-/** Student course context nav (khi đang ở trong các trang của môn học đã chọn) */
-function buildStudentCourseNav(course?: StudentCourse | null): NavGroup[] {
-  const courseLabel = course?.subjectCode
-    ? `Môn học · ${course.subjectCode.toUpperCase()}`
+// ── Legacy / Generic getNavGroups (Tương thích Sidebar) ────────────────
+
+export function getNavGroups(
+  role: Role,
+  courseId: string | null,
+  courseCode?: string,
+  pathname?: string,
+  selectedStudentCourse?: StudentCourse | null,
+): NavGroup[] {
+  if (role === "ADMIN") {
+    return ADMIN_NAV;
+  }
+  if (role === "LECTURER") {
+    if (!courseId) {
+      return [
+        {
+          id: "lecturer-root",
+          label: "Giảng dạy",
+          roles: ["LECTURER"],
+          items: [
+            { id: "lecturer-courses", title: "Khóa học của tôi", href: "/lecturer/courses", icon: "BookOpen", match: "exact" },
+          ],
+        },
+      ];
+    }
+    const courseLabel = courseCode ? `Lớp học · ${courseCode.toUpperCase()}` : "Lớp học";
+    return [
+      {
+        id: "lecturer-back",
+        label: "",
+        roles: ["LECTURER"],
+        items: [
+          { id: "lecturer-back-courses", title: "Đổi khóa học", href: "/lecturer/courses", icon: "ArrowLeft", match: "exact" },
+        ],
+      },
+      {
+        id: "course-context",
+        label: courseLabel,
+        roles: ["LECTURER"],
+        items: getLecturerNavItems(courseId),
+      },
+    ];
+  }
+
+  // Student
+  if (pathname === "/student/courses") {
+    return [
+      {
+        id: "student-root",
+        label: "Học tập",
+        roles: ["STUDENT"],
+        items: [
+          { id: "student-courses", title: "Khóa học của tôi", href: "/student/courses", icon: "BookOpen", match: "exact" },
+        ],
+      },
+    ];
+  }
+
+  const courseLabel = selectedStudentCourse?.subjectCode
+    ? `Môn học · ${selectedStudentCourse.subjectCode.toUpperCase()}`
     : "Học tập";
 
   return [
@@ -147,54 +246,9 @@ function buildStudentCourseNav(course?: StudentCourse | null): NavGroup[] {
       id: "student-study",
       label: courseLabel,
       roles: ["STUDENT"],
-      items: [
-        { id: "student-dashboard", title: "Tổng quan", href: "/student/dashboard", icon: "LayoutDashboard", match: "exact" },
-        { id: "student-project", title: "Thông tin dự án", href: "/student/project-info", icon: "FolderKanban", match: "exact" },
-        { id: "student-graph", title: "Đồ thị truy xuất", href: "/student/graph", icon: "GitGraph", match: "exact" },
-        { id: "student-sprint", title: "Tiến độ công việc", href: "/student/sprint-progress", icon: "Kanban", match: "exact" },
-        { id: "student-commits", title: "Lịch sử Commit", href: "/student/commits", icon: "GitCommit", match: "exact" },
-      ],
-    },
-    {
-      id: "student-results",
-      label: "Kết quả",
-      roles: ["STUDENT"],
-      items: [
-        { id: "student-peer", title: "Đánh giá chéo", href: "/student/peer-assessment", icon: "UserCheck", match: "exact" },
-        { id: "student-contribution", title: "Mức đóng góp", href: "/student/contribution", icon: "PieChart", match: "exact" },
-      ],
+      items: getStudentNavItems(),
     },
   ];
-}
-
-// ── Public API ─────────────────────────────────────────────────────────
-
-/**
- * Trả về navigation groups dựa trên role và course context.
- * Không trộn menu global với course-context — loại bỏ triệt để item trùng.
- */
-export function getNavGroups(
-  role: Role,
-  courseId: string | null,
-  courseCode?: string,
-  pathname?: string,
-  selectedStudentCourse?: StudentCourse | null,
-): NavGroup[] {
-  switch (role) {
-    case "ADMIN":
-      return ADMIN_NAV;
-    case "LECTURER":
-      return courseId
-        ? buildLecturerCourseNav(courseId, courseCode)
-        : LECTURER_GLOBAL_NAV;
-    case "STUDENT": {
-      // Nếu đang ở trang danh sách chọn khóa học (/student/courses)
-      const isCourseSelectionPage = pathname === "/student/courses";
-      return isCourseSelectionPage
-        ? STUDENT_GLOBAL_NAV
-        : buildStudentCourseNav(selectedStudentCourse);
-    }
-  }
 }
 
 // ── Shared utilities ───────────────────────────────────────────────────
@@ -214,4 +268,5 @@ export const ROLE_COLORS: Record<Role, string> = {
 export function getInitials(name: string) {
   return name.split(" ").slice(-2).map((part) => part[0]).join("").toUpperCase();
 }
+
 
