@@ -34,8 +34,15 @@ export default function DashboardLayout({
       return;
     }
 
-    // Role guard — chặn truy cập route sai role
-    if (!isPathAllowedForRole(pathname, user.role) && pathname !== "/profile" && pathname !== "/dashboard") {
+    // Role guard — chặn truy cập route sai role (cho phép các tuyến chung như /profile, /settings, /dashboard)
+    const isSharedRoute =
+      pathname === "/profile" ||
+      pathname.startsWith("/profile/") ||
+      pathname === "/settings" ||
+      pathname.startsWith("/settings/") ||
+      pathname === "/dashboard";
+
+    if (!isPathAllowedForRole(pathname, user.role) && !isSharedRoute) {
       router.replace(getRoleHomePath(user.role));
     }
   }, [hasHydrated, isAuthenticated, user, router, pathname]);

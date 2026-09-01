@@ -17,6 +17,7 @@ import {
   LogOutIcon,
   SunIcon,
   LayersIcon,
+  Link2Icon,
 } from "lucide-react";
 import {
   CommandDialog,
@@ -28,7 +29,6 @@ import {
   CommandSeparator,
 } from "@/components/ui/command";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
-import { useProfileModalStore } from "@/features/profile/store/useProfileModalStore";
 import { getRoleHomePath } from "@/features/auth/lib/role-routes";
 import { lecturerCourseDashboardPath } from "@/features/lecturer/courses/lib/course-routes";
 import { MOCK_LECTURER_COURSES } from "@/features/lecturer/courses/data/mock-courses";
@@ -39,7 +39,6 @@ export function GlobalCommandSearch() {
   const [open, setOpen] = useState(false);
   const router = useRouter();
   const { user, logout, switchRole, setSelectedCourse } = useAuthStore();
-  const { openProfileModal } = useProfileModalStore();
 
   // Lắng nghe phím tắt Ctrl + K hoặc Cmd + K
   useEffect(() => {
@@ -203,11 +202,18 @@ export function GlobalCommandSearch() {
           {/* Tác vụ nhanh & Cài đặt */}
           <CommandGroup heading="Tác vụ nhanh">
             <CommandItem
-              onSelect={() => runCommand(openProfileModal)}
+              onSelect={() => runCommand(() => router.push("/profile"))}
               className="flex items-center gap-2.5 cursor-pointer py-2 px-3 text-xs"
             >
               <UserIcon className="size-4 text-primary" />
-              <span>Hồ sơ cá nhân & Cài đặt tích hợp Jira/GitHub</span>
+              <span>Hồ sơ cá nhân</span>
+            </CommandItem>
+            <CommandItem
+              onSelect={() => runCommand(() => router.push("/profile/integrations"))}
+              className="flex items-center gap-2.5 cursor-pointer py-2 px-3 text-xs"
+            >
+              <Link2Icon className="size-4 text-accent" />
+              <span>Cài đặt Tích hợp Jira & GitHub</span>
             </CommandItem>
             <CommandItem
               onSelect={() => runCommand(toggleTheme)}

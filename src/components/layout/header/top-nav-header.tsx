@@ -11,6 +11,7 @@ import {
   SunIcon,
   UserIcon,
   MenuIcon,
+  Link2Icon,
 } from "lucide-react";
 import { SagaLogo } from "@/components/common/saga-logo";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -28,7 +29,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
-import { useProfileModalStore } from "@/features/profile/store/useProfileModalStore";
 import { getRoleHomePath } from "@/features/auth/lib/role-routes";
 import {
   ROLE_COLORS,
@@ -49,7 +49,6 @@ export function TopNavHeader() {
   const router = useRouter();
   const pathname = usePathname();
   const { user, logout, switchRole } = useAuthStore();
-  const { openProfileModal } = useProfileModalStore();
   const [isDark, setIsDark] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -236,15 +235,25 @@ export function TopNavHeader() {
 
               <DropdownMenuSeparator />
 
-              {/* Profile & Cài đặt */}
+              {/* Profile & Cài đặt riêng biệt */}
               <div className="p-1 space-y-0.5">
                 <DropdownMenuItem
-                  onClick={openProfileModal}
+                  onClick={() => router.push("/profile")}
                   className="text-xs cursor-pointer py-2 px-2.5 rounded-lg flex items-center gap-2 hover:bg-primary/10 hover:text-primary font-medium"
                 >
                   <UserIcon className="size-3.5 text-primary" />
-                  <span>Hồ sơ & Cài đặt tích hợp</span>
+                  <span>Hồ sơ cá nhân</span>
                 </DropdownMenuItem>
+
+                {user.role === "STUDENT" && (
+                  <DropdownMenuItem
+                    onClick={() => router.push("/profile/integrations")}
+                    className="text-xs cursor-pointer py-2 px-2.5 rounded-lg flex items-center gap-2 hover:bg-primary/10 hover:text-primary font-medium"
+                  >
+                    <Link2Icon className="size-3.5 text-accent" />
+                    <span>Tích hợp Jira & GitHub</span>
+                  </DropdownMenuItem>
+                )}
 
                 {/* Nút Đăng xuất */}
                 <DropdownMenuItem
@@ -306,13 +315,27 @@ export function TopNavHeader() {
               size="sm"
               onClick={() => {
                 setMobileOpen(false);
-                openProfileModal();
+                router.push("/profile");
               }}
               className="w-full justify-start text-xs rounded-xl"
             >
               <UserIcon className="size-3.5 mr-2 text-primary" />
-              Hồ sơ & Cài đặt
+              Hồ sơ cá nhân
             </Button>
+            {user.role === "STUDENT" && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setMobileOpen(false);
+                  router.push("/profile/integrations");
+                }}
+                className="w-full justify-start text-xs rounded-xl"
+              >
+                <Link2Icon className="size-3.5 mr-2 text-accent" />
+                Tích hợp Jira & GitHub
+              </Button>
+            )}
             <Button
               variant="destructive"
               size="sm"
