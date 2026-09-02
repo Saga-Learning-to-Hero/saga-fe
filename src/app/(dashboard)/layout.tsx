@@ -6,6 +6,7 @@ import { MenuIcon, LoaderCircleIcon } from "lucide-react";
 import { Sidebar } from "@/components/layout/sidebar";
 import { SagaLogo } from "@/components/common/saga-logo";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
+import { useSession } from "@/features/auth/hooks/useAuth";
 import { getRoleHomePath, isPathAllowedForRole } from "@/features/auth/lib/role-routes";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
@@ -20,7 +21,8 @@ export default function DashboardLayout({
 }) {
   const router = useRouter();
   const pathname = usePathname();
-  const { isAuthenticated, user, hasHydrated } = useAuthStore();
+  const { isAuthenticated, user, passwordSetupRequired, hasHydrated } = useAuthStore();
+  useSession(); // Tự động đồng bộ và làm mới phiên từ cookie backend
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -34,18 +36,18 @@ export default function DashboardLayout({
       return;
     }
 
-    // Role guard — chặn truy cập route sai role (cho phép các tuyến chung như /profile, /settings, /dashboard)
-    const isSharedRoute =
-      pathname === "/profile" ||
-      pathname.startsWith("/profile/") ||
-      pathname === "/settings" ||
-      pathname.startsWith("/settings/") ||
-      pathname === "/dashboard";
+    // Nếu tài khoản Google yêu cầu đặt mật khẩu lần đầu, bắt buộc sang trang thiết lập mật khẩu
+    if (passwordSetupRequired) {
+      router.replace("/auth/setup-password");
+      return;
+    }
 
-    if (!isPathAllowedForRole(pathname, user.role) && !isSharedRoute) {
+    // Role guard — chặn truy cập route sai role (isPathAllowedForRole đã tự động bao gồm các tuyến dùng chung)
+    if (!isPathAllowedForRole(pathname, user.role)) {
       router.replace(getRoleHomePath(user.role));
     }
-  }, [hasHydrated, isAuthenticated, user, router, pathname]);
+  }, [hasHydrated, isAuthenticated, user, passwordSetupRequired, router, pathname]);
+
 
   // Hiển thị loading shell trong lúc hydrate
   if (!hasHydrated) {

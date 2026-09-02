@@ -5,20 +5,18 @@ import { useRouter } from "next/navigation";
 import { LogOutIcon, ChevronRightIcon, UserIcon, SunIcon, MoonIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
-import { getRoleHomePath } from "@/features/auth/lib/role-routes";
+import { useLogout } from "@/features/auth/hooks/useAuth";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ROLE_LABELS, ROLE_COLORS, getInitials } from "./nav-config";
-import type { Role } from "@/types/auth";
 
 interface Props {
   collapsed: boolean;
@@ -26,7 +24,8 @@ interface Props {
 
 export function SidebarUserProfile({ collapsed }: Props) {
   const router = useRouter();
-  const { user, logout, switchRole } = useAuthStore();
+  const { user } = useAuthStore();
+  const { mutate: logout } = useLogout();
   const [isDark, setIsDark] = useState(false);
 
   useEffect(() => {
@@ -54,14 +53,9 @@ export function SidebarUserProfile({ collapsed }: Props) {
 
   const handleLogout = () => {
     logout();
-    router.replace("/login");
   };
 
-  const handleSwitchRole = (r: Role) => {
-    switchRole(r);
-    // Điều hướng tới home của role mới để tránh lạc ở route sai role
-    router.replace(getRoleHomePath(r));
-  };
+  const displayName = user.fullName || user.name || "Quản trị viên";
 
   return (
     <div className="border-t border-sidebar-border p-3 space-y-2 shrink-0">
@@ -113,9 +107,9 @@ export function SidebarUserProfile({ collapsed }: Props) {
           )}
         >
           <Avatar className="w-9 h-9 shrink-0 rounded-lg">
-            <AvatarImage src={user.avatar} alt={user.name} />
+            <AvatarImage src={user.avatar} alt={displayName} />
             <AvatarFallback className="text-xs font-bold bg-primary text-primary-foreground rounded-lg">
-              {getInitials(user.name)}
+              {getInitials(displayName)}
             </AvatarFallback>
           </Avatar>
 
@@ -123,7 +117,7 @@ export function SidebarUserProfile({ collapsed }: Props) {
             <>
               <div className="flex flex-col items-start min-w-0 flex-1 text-left">
                 <span className="text-sm font-semibold text-sidebar-foreground leading-tight truncate w-full">
-                  {user.name}
+                  {displayName}
                 </span>
                 <span
                   className={cn(
@@ -148,44 +142,19 @@ export function SidebarUserProfile({ collapsed }: Props) {
           {/* User info header */}
           <div className="flex items-center gap-3 px-3.5 py-3.5 border-b border-border">
             <Avatar className="w-10 h-10 shrink-0 rounded-lg">
-              <AvatarImage src={user.avatar} alt={user.name} />
+              <AvatarImage src={user.avatar} alt={displayName} />
               <AvatarFallback className="text-xs font-bold bg-primary text-primary-foreground rounded-lg">
-                {getInitials(user.name)}
+                {getInitials(displayName)}
               </AvatarFallback>
             </Avatar>
             <div className="flex flex-col min-w-0">
-              <p className="text-sm font-semibold truncate">{user.name}</p>
+              <p className="text-sm font-semibold truncate">{displayName}</p>
               <p className="text-xs text-muted-foreground truncate mt-0.5">{user.email}</p>
               <Badge className={cn("w-fit text-[10px] px-2 py-0.5 mt-1.5 border-0", ROLE_COLORS[user.role])}>
                 {ROLE_LABELS[user.role]}
               </Badge>
             </div>
           </div>
-
-          {/* Chuyển vai trò (thử nghiệm) */}
-          <DropdownMenuGroup className="p-1">
-            <p className="flex items-center gap-1.5 px-3 pt-2 pb-1 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground/60">
-              <UserIcon className="w-3.5 h-3.5" />
-              Vai trò thử nghiệm
-            </p>
-            {(["STUDENT", "LECTURER", "ADMIN"] as Role[]).map((r) => (
-              <DropdownMenuItem
-                key={r}
-                onClick={() => handleSwitchRole(r)}
-                className={cn(
-                  "text-sm cursor-pointer py-2 px-3 rounded-lg",
-                  user.role === r && "font-semibold text-primary bg-primary/10"
-                )}
-              >
-                {ROLE_LABELS[r]}
-                {user.role === r && (
-                  <span className="ml-auto text-primary text-xs font-bold">✓</span>
-                )}
-              </DropdownMenuItem>
-            ))}
-          </DropdownMenuGroup>
-
-          <DropdownMenuSeparator />
 
           <div className="p-1 space-y-0.5">
             <DropdownMenuItem
@@ -195,6 +164,8 @@ export function SidebarUserProfile({ collapsed }: Props) {
               <UserIcon className="w-4 h-4 text-primary" />
               <span>Hồ sơ cá nhân</span>
             </DropdownMenuItem>
+
+            <DropdownMenuSeparator />
 
             <DropdownMenuItem
               onClick={handleLogout}

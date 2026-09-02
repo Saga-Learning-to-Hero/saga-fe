@@ -12,7 +12,6 @@ import {
   KanbanSquareIcon,
   GitCommitIcon,
   UserCheckIcon,
-  SlidersHorizontalIcon,
   UserIcon,
   LogOutIcon,
   SunIcon,
@@ -29,16 +28,16 @@ import {
   CommandSeparator,
 } from "@/components/ui/command";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
-import { getRoleHomePath } from "@/features/auth/lib/role-routes";
+import { useLogout } from "@/features/auth/hooks/useAuth";
 import { lecturerCourseDashboardPath } from "@/features/lecturer/courses/lib/course-routes";
 import { MOCK_LECTURER_COURSES } from "@/features/lecturer/courses/data/mock-courses";
 import { MOCK_STUDENT_COURSES } from "@/features/student/courses/data/mock-student-courses";
-import type { Role } from "@/types/auth";
 
 export function GlobalCommandSearch() {
   const [open, setOpen] = useState(false);
   const router = useRouter();
-  const { user, logout, switchRole, setSelectedCourse } = useAuthStore();
+  const { user, setSelectedCourse } = useAuthStore();
+  const { mutate: logout } = useLogout();
 
   // Lắng nghe phím tắt Ctrl + K hoặc Cmd + K
   useEffect(() => {
@@ -225,26 +224,7 @@ export function GlobalCommandSearch() {
             <CommandItem
               onSelect={() =>
                 runCommand(() => {
-                  const nextRole: Role =
-                    user.role === "STUDENT"
-                      ? "LECTURER"
-                      : user.role === "LECTURER"
-                        ? "ADMIN"
-                        : "STUDENT";
-                  switchRole(nextRole);
-                  router.replace(getRoleHomePath(nextRole));
-                })
-              }
-              className="flex items-center gap-2.5 cursor-pointer py-2 px-3 text-xs"
-            >
-              <SlidersHorizontalIcon className="size-4 text-accent" />
-              <span>Đổi vai trò thử nghiệm</span>
-            </CommandItem>
-            <CommandItem
-              onSelect={() =>
-                runCommand(() => {
                   logout();
-                  router.replace("/login");
                 })
               }
               className="flex items-center gap-2.5 cursor-pointer py-2 px-3 text-xs text-destructive focus:text-destructive"

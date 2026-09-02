@@ -61,6 +61,7 @@ export const ADMIN_NAV: NavGroup[] = [
       { id: "admin-users", title: "Người dùng", href: "/admin/users", icon: "UserCog", match: "exact" },
       { id: "admin-projects", title: "Dự án & Nhóm", href: "/admin/projects", icon: "FolderKanban", match: "prefix" },
       { id: "admin-academic", title: "Dữ liệu học thuật", href: "/admin/academic", icon: "Database", match: "prefix" },
+      { id: "admin-subjects", title: "Môn học (FLM)", href: "/admin/subjects", icon: "BookOpen", match: "prefix" },
     ],
   },
   {

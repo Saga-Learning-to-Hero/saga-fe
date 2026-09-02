@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { PlusIcon, EditIcon, Trash2Icon, SearchIcon, MoreHorizontalIcon } from "lucide-react";
+import { PlusIcon, EditIcon, Trash2Icon, SearchIcon, MoreHorizontalIcon, BookOpenIcon } from "lucide-react";
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from "@/components/ui/table";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -14,6 +14,7 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
+import Link from "next/link";
 import { SubjectDialog } from "./subject-dialog";
 import { ConfirmDeleteDialog } from "@/components/common/confirm-delete-dialog";
 import type { Subject } from "../types/academic-management";
@@ -100,9 +101,10 @@ export function SubjectManagement({
               <TableRow>
                 <TableHead className="py-3 px-4 text-xs font-semibold whitespace-nowrap w-[110px]">Mã môn</TableHead>
                 <TableHead className="py-3 px-4 text-xs font-semibold min-w-[280px]">Tên môn học</TableHead>
-                <TableHead className="py-3 px-4 text-xs font-semibold whitespace-nowrap w-[100px]">Tín chỉ</TableHead>
-                <TableHead className="py-3 px-4 text-xs font-semibold whitespace-nowrap w-[220px]">Bộ môn / Khoa</TableHead>
-                <TableHead className="py-3 px-4 text-xs font-semibold whitespace-nowrap w-[140px]">Số khóa học</TableHead>
+                <TableHead className="py-3 px-4 text-xs font-semibold whitespace-nowrap w-[130px]">TC / Thời lượng</TableHead>
+                <TableHead className="py-3 px-4 text-xs font-semibold whitespace-nowrap w-[200px]">Bộ môn / Khoa</TableHead>
+                <TableHead className="py-3 px-4 text-xs font-semibold whitespace-nowrap text-center w-[120px]">Trạng thái FLM</TableHead>
+                <TableHead className="py-3 px-4 text-xs font-semibold whitespace-nowrap w-[130px]">Số khóa học</TableHead>
                 <TableHead className="py-3 px-4 text-xs font-semibold whitespace-nowrap text-right w-[100px]">Thao tác</TableHead>
               </TableRow>
             </TableHeader>
@@ -118,9 +120,11 @@ export function SubjectManagement({
                 filteredSubjects.map((sub) => (
                   <TableRow key={sub.id} className="hover:bg-muted/30 transition-colors">
                     <TableCell className="py-3 px-4 whitespace-nowrap font-mono font-bold text-foreground">
-                      <Badge variant="outline" className="font-mono text-xs font-bold text-primary border-primary/30">
-                        {sub.code}
-                      </Badge>
+                      <Link href={`/admin/subjects/${sub.id}`}>
+                        <Badge variant="outline" className="font-mono text-xs font-bold text-primary border-primary/30 hover:bg-primary hover:text-primary-foreground transition-colors cursor-pointer">
+                          {sub.code}
+                        </Badge>
+                      </Link>
                     </TableCell>
                     <TableCell className="py-3 px-4">
                       <div className="flex flex-col">
@@ -132,13 +136,29 @@ export function SubjectManagement({
                         )}
                       </div>
                     </TableCell>
-                    <TableCell className="py-3 px-4 whitespace-nowrap font-semibold text-foreground">
-                      {sub.credits} TC
+                    <TableCell className="py-3 px-4 whitespace-nowrap">
+                      <div className="flex flex-col">
+                        <span className="font-semibold text-foreground text-xs">{sub.credits} TC</span>
+                        {sub.timeAllocation && (
+                          <span className="text-[11px] text-muted-foreground">{sub.timeAllocation}</span>
+                        )}
+                      </div>
                     </TableCell>
-                    <TableCell className="py-3 px-4 whitespace-nowrap text-muted-foreground font-medium">
+                    <TableCell className="py-3 px-4 whitespace-nowrap text-muted-foreground font-medium text-[11px]">
                       {sub.department}
                     </TableCell>
-                    <TableCell className="py-3 px-4 whitespace-nowrap font-semibold text-foreground">
+                    <TableCell className="py-3 px-4 whitespace-nowrap text-center">
+                      {sub.isApproved ? (
+                        <Badge variant="secondary" className="bg-success-muted text-success border-success/20 text-[10px]">
+                          Approved
+                        </Badge>
+                      ) : (
+                        <Badge variant="outline" className="text-warning border-warning/50 text-[10px]">
+                          Draft
+                        </Badge>
+                      )}
+                    </TableCell>
+                    <TableCell className="py-3 px-4 whitespace-nowrap font-semibold text-foreground text-xs">
                       {sub.totalCourses} khóa học
                     </TableCell>
                     <TableCell className="py-3 px-4 text-right whitespace-nowrap">
@@ -150,6 +170,15 @@ export function SubjectManagement({
                           <MoreHorizontalIcon className="w-4 h-4" />
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="w-44 p-1">
+                          <Link href={`/admin/subjects/${sub.id}`}>
+                            <DropdownMenuItem className="flex items-center gap-2 px-2.5 py-1.5 text-xs font-medium cursor-pointer">
+                              <BookOpenIcon className="w-3.5 h-3.5 text-muted-foreground" />
+                              <span>Xem chi tiết môn học</span>
+                            </DropdownMenuItem>
+                          </Link>
+
+                          <DropdownMenuSeparator />
+
                           <DropdownMenuItem
                             onClick={() => handleOpenEdit(sub)}
                             className="flex items-center gap-2 px-2.5 py-1.5 text-xs font-medium cursor-pointer"

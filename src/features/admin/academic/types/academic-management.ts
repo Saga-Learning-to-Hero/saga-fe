@@ -1,3 +1,11 @@
+export interface AssessmentItem {
+  id: string;
+  category: "PE" | "FE" | "Assignment" | "Quiz" | "Project" | "Presentation" | "Other";
+  name: string;
+  weight: number; // e.g. 20 for 20%
+  description?: string;
+}
+
 export interface Subject {
   id: string;
   code: string; // VD: SWP490, PRM392
@@ -6,6 +14,16 @@ export interface Subject {
   department: string; // VD: Kỹ thuật phần mềm, Trí tuệ nhân tạo
   description?: string;
   totalCourses: number;
+  // FLM Specific Fields
+  degreeLevel?: "University" | "College" | "Master";
+  timeAllocation?: string; // VD: "30 slots (45h)"
+  preRequisites?: string; // VD: "PRJ301, DBI202"
+  studentTasks?: string;
+  tools?: string;
+  scoringScale?: number; // Mặc định 10
+  isApproved?: boolean;
+  note?: string;
+  assessmentScheme?: AssessmentItem[];
 }
 
 export type SemesterStatus = "ACTIVE" | "UPCOMING" | "CLOSED";

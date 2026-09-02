@@ -21,14 +21,13 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sh
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuGroup,
   DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
+import { useLogout } from "@/features/auth/hooks/useAuth";
 import { getRoleHomePath } from "@/features/auth/lib/role-routes";
 import {
   ROLE_COLORS,
@@ -39,7 +38,6 @@ import {
   isNavItemActive,
 } from "@/components/layout/sidebar/nav-config";
 import type { NavItem } from "@/components/layout/sidebar/nav-config";
-import type { Role } from "@/types/auth";
 import { cn } from "@/lib/utils";
 import { CourseContextSwitcher } from "./course-context-switcher";
 import { TopNavTabs } from "./top-nav-tabs";
@@ -48,7 +46,8 @@ import { GlobalCommandSearch } from "./global-command-search";
 export function TopNavHeader() {
   const router = useRouter();
   const pathname = usePathname();
-  const { user, logout, switchRole } = useAuthStore();
+  const { user } = useAuthStore();
+  const { mutate: logout } = useLogout();
   const [isDark, setIsDark] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -76,7 +75,7 @@ export function TopNavHeader() {
   if (!user) return null;
 
   const homePath = getRoleHomePath(user.role);
-  const displayName = user.name ?? (user.role === "STUDENT" ? "Sinh viên" : "Giảng viên");
+  const displayName = user.fullName || user.name || (user.role === "STUDENT" ? "Sinh viên" : "Giảng viên");
 
   // Trích xuất courseId đối với Giảng viên
   const courseMatch = pathname.match(/^\/lecturer\/courses\/([^/]+)(?:\/|$)/);
@@ -94,12 +93,6 @@ export function TopNavHeader() {
 
   const handleLogout = () => {
     logout();
-    router.replace("/login");
-  };
-
-  const handleSwitchRole = (r: Role) => {
-    switchRole(r);
-    router.replace(getRoleHomePath(r));
   };
 
   return (
@@ -212,29 +205,6 @@ export function TopNavHeader() {
                 </div>
               </div>
 
-              {/* Chuyển vai trò thử nghiệm */}
-              <DropdownMenuGroup className="p-1">
-                <DropdownMenuLabel className="flex items-center gap-1.5 px-2 pt-1 pb-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground/70">
-                  <UserIcon className="size-3" />
-                  Chuyển vai trò thử nghiệm
-                </DropdownMenuLabel>
-                {(["STUDENT", "LECTURER", "ADMIN"] as Role[]).map((r) => (
-                  <DropdownMenuItem
-                    key={r}
-                    onClick={() => handleSwitchRole(r)}
-                    className={cn(
-                      "text-xs cursor-pointer py-2 px-2.5 rounded-lg flex items-center justify-between",
-                      user.role === r ? "font-bold text-primary bg-primary/10" : "text-foreground hover:bg-muted"
-                    )}
-                  >
-                    <span>{ROLE_LABELS[r]}</span>
-                    {user.role === r && <span className="text-primary font-bold">✓</span>}
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuGroup>
-
-              <DropdownMenuSeparator />
-
               {/* Profile & Cài đặt riêng biệt */}
               <div className="p-1 space-y-0.5">
                 <DropdownMenuItem
@@ -254,6 +224,8 @@ export function TopNavHeader() {
                     <span>Tích hợp Jira & GitHub</span>
                   </DropdownMenuItem>
                 )}
+
+                <DropdownMenuSeparator />
 
                 {/* Nút Đăng xuất */}
                 <DropdownMenuItem

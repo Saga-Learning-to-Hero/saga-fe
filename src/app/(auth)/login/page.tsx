@@ -1,11 +1,16 @@
 "use client";
 
-import { useState, useEffect, useId, Suspense } from "react";
+import { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
-  EyeIcon, EyeOffIcon, LoaderCircleIcon, ArrowLeftIcon,
-  ShieldCheckIcon, PresentationIcon, GraduationCapIcon, CheckIcon, AlertCircleIcon,
+  EyeIcon,
+  EyeOffIcon,
+  LoaderCircleIcon,
+  ArrowLeftIcon,
+  AlertCircleIcon,
+  UserPlusIcon,
+  BugPlayIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,44 +19,34 @@ import { Separator } from "@/components/ui/separator";
 import { SagaLogo } from "@/components/common/saga-logo";
 import { ThemeToggle } from "@/components/common/theme-toggle";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
-import { getRoleHomePath, isPathAllowedForRole } from "@/features/auth/lib/role-routes";
+import { getSafeRedirectUrl } from "@/features/auth/lib/role-routes";
+import { useLogin, useSession, useGoogleLogin } from "@/features/auth/hooks/useAuth";
+import { validateLogin } from "@/features/auth/lib/auth-validation";
 import type { Role } from "@/types/auth";
 
-/* ─── Google Icon ─────────────────────────────────────────────────────── */
 function GoogleIcon() {
   return (
     <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
-      <path d="M17.64 9.205c0-.639-.057-1.252-.164-1.841H9v3.481h4.844a4.14 4.14 0 01-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.615z" fill="#4285F4" />
-      <path d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 009 18z" fill="#34A853" />
-      <path d="M3.964 10.71A5.41 5.41 0 013.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 000 9c0 1.452.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05" />
-      <path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 00.957 4.958L3.964 6.29C4.672 4.163 6.656 3.58 9 3.58z" fill="#EA4335" />
+      <path
+        d="M17.64 9.205c0-.639-.057-1.252-.164-1.841H9v3.481h4.844a4.14 4.14 0 01-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.615z"
+        fill="#4285F4"
+      />
+      <path
+        d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 009 18z"
+        fill="#34A853"
+      />
+      <path
+        d="M3.964 10.71A5.41 5.41 0 013.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 000 9c0 1.452.348 2.827.957 4.042l3.007-2.332z"
+        fill="#FBBC05"
+      />
+      <path
+        d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 00.957 4.958L3.964 6.29C4.672 4.163 6.656 3.58 9 3.58z"
+        fill="#EA4335"
+      />
     </svg>
   );
 }
 
-/* ─── Role definitions ─────────────────────────────────────────────────── */
-const ROLES: { value: Role; label: string; description: string; Icon: React.ElementType }[] = [
-  {
-    value: "ADMIN",
-    label: "Quản trị viên",
-    description: "Quản lý hệ thống và dữ liệu học thuật",
-    Icon: ShieldCheckIcon,
-  },
-  {
-    value: "LECTURER",
-    label: "Giảng viên",
-    description: "Quản lý lớp học và theo dõi sinh viên",
-    Icon: PresentationIcon,
-  },
-  {
-    value: "STUDENT",
-    label: "Sinh viên",
-    description: "Theo dõi nhiệm vụ và mức đóng góp",
-    Icon: GraduationCapIcon,
-  },
-];
-
-/* ─── Component ────────────────────────────────────────────────────────── */
 export default function LoginPage() {
   return (
     <Suspense>
@@ -63,72 +58,92 @@ export default function LoginPage() {
 function LoginPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { isAuthenticated, user, login } = useAuthStore();
-  const [selectedRole, setSelectedRole] = useState<Role | null>(null);
-  const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [form, setForm] = useState({ email: "", password: "" });
-  const [error, setError] = useState<string | null>(null);
-  const [roleError, setRoleError] = useState(false);
+  const { isAuthenticated, user, passwordSetupRequired } = useAuthStore();
+  const { mutateAsync: loginWithCredentials, isPending: isLoading } = useLogin();
+  const { loginWithGoogle } = useGoogleLogin();
+  useSession();
 
-  const groupId = useId();
-
-  // Hàm tính URL đích sau khi đăng nhập
-  const getRedirectUrl = (role: Role): string => {
-    const nextUrl = searchParams.get("next");
-    if (nextUrl && isPathAllowedForRole(nextUrl, role)) {
-      return nextUrl;
+  const googleError = searchParams.get("error");
+  const getGoogleErrorMessage = (errCode: string): string => {
+    switch (errCode) {
+      case "GOOGLE_ACCOUNT_NOT_ELIGIBLE":
+        return "Tài khoản Google này không đủ điều kiện truy cập SAGA. Yêu cầu tài khoản Google trường FPT/FE (@fpt.edu.vn hoặc @fe.edu.vn). Sinh viên dùng email cá nhân (@gmail.com) vui lòng dùng chức năng Đăng ký bên dưới.";
+      case "GOOGLE_DOMAIN_NOT_ALLOWED":
+        return "Tên miền Google không thuộc tổ chức FPT/FE (@fpt.edu.vn / @fe.edu.vn). Vui lòng đăng ký tài khoản nội bộ nếu dùng email cá nhân.";
+      case "GOOGLE_EMAIL_NOT_VERIFIED":
+        return "Email Google của bạn chưa được xác thực.";
+      case "GOOGLE_IDENTITY_CONFLICT":
+        return "Tài khoản Google này đã được liên kết với một tài khoản khác trong hệ thống.";
+      case "INSTITUTIONAL_EMAIL_USE_GOOGLE":
+        return "Tài khoản FPT/FE bắt buộc phải đăng nhập bằng nút Tiếp tục với Google.";
+      case "ACCOUNT_DISABLED":
+        return "Tài khoản của bạn hiện đang bị vô hiệu hóa.";
+      default:
+        return `Đăng nhập Google thất bại (${errCode}). Vui lòng thử lại.`;
     }
-    return getRoleHomePath(role);
+  };
+  const initialError = googleError ? getGoogleErrorMessage(googleError) : null;
+
+  const [showPassword, setShowPassword] = useState(false);
+  const [form, setForm] = useState({ identifier: "", password: "" });
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [error, setError] = useState<string | null>(initialError);
+
+  const getRedirectUrl = (role: Role): string => {
+    return getSafeRedirectUrl(searchParams.get("next"), role);
   };
 
-  // Already-logged-in guard — redirect to correct home
   useEffect(() => {
     if (isAuthenticated && user) {
-      router.replace(getRedirectUrl(user.role));
+      if (passwordSetupRequired) {
+        router.replace("/auth/setup-password");
+      } else {
+        router.replace(getRedirectUrl(user.role));
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isAuthenticated, user, router]);
+  }, [isAuthenticated, user, passwordSetupRequired, router]);
 
-  const doLogin = async (role: Role) => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      await new Promise((r) => setTimeout(r, 900)); // simulate network
-      login(role);
-      router.replace(getRedirectUrl(role));
-    } catch {
-      setError("Đăng nhập thất bại. Vui lòng thử lại.");
-      setIsLoading(false);
-    }
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedRole) {
-      setRoleError(true);
-      document.getElementById("role-selector")?.focus();
+    setError(null);
+
+    const validation = validateLogin(form.identifier, form.password);
+    if (!validation.isValid) {
+      setFieldErrors(validation.errors);
       return;
     }
-    setRoleError(false);
-    await doLogin(selectedRole);
-  };
+    setFieldErrors({});
 
-  const handleGoogleLogin = async () => {
-    if (!selectedRole) {
-      setRoleError(true);
-      document.getElementById("role-selector")?.focus();
-      return;
+    try {
+      const res = await loginWithCredentials({
+        identifier: form.identifier.trim(),
+        password: form.password,
+      });
+      if (res.user) {
+        router.replace(getRedirectUrl(res.user.role));
+      }
+    } catch (err: unknown) {
+      const e = err as Error & { code?: string };
+      if (e.code === "INVALID_CREDENTIALS" || e.message?.includes("INVALID_CREDENTIALS")) {
+        setError("Tên đăng nhập hoặc mật khẩu không chính xác.");
+      } else if (e.code === "ACCOUNT_DISABLED") {
+        setError("Tài khoản này đã bị khóa hoặc chưa được kích hoạt.");
+      } else {
+        setError(e.message || "Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin.");
+      }
     }
-    setRoleError(false);
-    await doLogin(selectedRole);
   };
 
-  const canSubmit = !isLoading && selectedRole !== null && form.email.trim() !== "" && form.password !== "";
+  const handleGoogleLogin = () => {
+    loginWithGoogle();
+  };
+
+  const canSubmit = !isLoading && form.identifier.trim() !== "" && form.password !== "";
 
   return (
     <div className="min-h-screen grid md:grid-cols-[3fr_2fr] lg:grid-cols-[7fr_5fr]">
-      {/* ── Branding panel (left) ──────────────────────────────────────── */}
       <div
         className="hidden md:flex flex-col justify-between p-10 lg:p-14 relative overflow-hidden"
         style={{
@@ -136,29 +151,38 @@ function LoginPageContent() {
             "linear-gradient(145deg, oklch(from var(--saga-primary) calc(l - 0.15) c h), oklch(from var(--saga-accent) calc(l - 0.1) c h))",
         }}
       >
-        <div className="absolute -top-32 -right-32 w-96 h-96 rounded-full opacity-20" style={{ background: "oklch(1 0 0 / 15%)" }} />
-        <div className="absolute -bottom-20 -left-20 w-72 h-72 rounded-full opacity-10" style={{ background: "oklch(1 0 0 / 20%)" }} />
+        <div
+          className="absolute -top-32 -right-32 w-96 h-96 rounded-full opacity-20"
+          style={{ background: "oklch(1 0 0 / 15%)" }}
+        />
+        <div
+          className="absolute -bottom-20 -left-20 w-72 h-72 rounded-full opacity-10"
+          style={{ background: "oklch(1 0 0 / 20%)" }}
+        />
 
-        {/* Logo */}
         <div className="relative">
-          <SagaLogo size="md" variant="on-dark" showText={true} showSubtitle={true} subtitleText="Academic Graph Analytics" />
+          <SagaLogo
+            size="md"
+            variant="on-dark"
+            showText={true}
+            showSubtitle={true}
+            subtitleText="Academic Graph Analytics"
+          />
         </div>
 
-        {/* Hero quote */}
         <div className="relative space-y-6">
           <p className="text-4xl lg:text-5xl font-extrabold text-white leading-tight">
-            Hiểu sinh viên{" "}
-            <span className="text-white/70">qua từng hoạt động</span>
+            Hiểu sinh viên <span className="text-white/70">qua từng hoạt động</span>
           </p>
           <p className="text-white/70 text-lg leading-relaxed max-w-md">
-            Đồ thị học tập giúp bạn nhìn thấy toàn bộ hành trình học tập, không chỉ điểm số cuối kỳ.
+            Hệ thống đánh giá năng lực liên tục dựa trên Đồ thị hoạt động học tập (SNA) và ma trận minh chứng thực tế.
           </p>
 
           <div className="flex flex-wrap gap-3 pt-2">
             {[
               { so: "100%", nhan: "Minh bạch" },
-              { so: "Real-time", nhan: "Cập nhật" },
-              { so: "Đa chiều", nhan: "Đánh giá" },
+              { so: "Real-time", nhan: "Đồ thị SNA" },
+              { so: "Slicing Pie", nhan: "Cổ phần đóng góp" },
             ].map((s) => (
               <div
                 key={s.nhan}
@@ -172,129 +196,82 @@ function LoginPageContent() {
           </div>
         </div>
 
-        <p className="text-white/40 text-sm relative">© 2025 SAGA — Capstone Project</p>
+        <p className="text-white/40 text-sm relative">© 2026 SAGA — FPT Capstone Project</p>
       </div>
 
-      {/* ── Form panel (right) ─────────────────────────────────────────── */}
       <div className="flex flex-col justify-center items-center px-6 py-12 lg:px-16 bg-background">
-        <div className="w-full max-w-sm space-y-7">
+        <div className="w-full max-w-sm space-y-6">
           <div className="flex items-center justify-between">
-            <Link href="/" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors group">
-              <ArrowLeftIcon className="w-4 h-4 transition-transform group-hover:-translate-x-0.5" />
+            <Link
+              href="/"
+              className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors group"
+            >
+              <ArrowLeftIcon className="w-3.5 h-3.5 transition-transform group-hover:-translate-x-0.5" />
               Quay lại trang chủ
             </Link>
             <ThemeToggle />
           </div>
 
-          {/* Mobile logo */}
           <div className="flex md:hidden items-center mb-2">
             <SagaLogo size="sm" showText={true} showSubtitle={false} />
           </div>
 
-          {/* Heading */}
           <div className="space-y-1">
-            <h1 className="text-2xl font-bold text-foreground">Đăng nhập</h1>
-            <p className="text-sm text-muted-foreground">Chọn vai trò và nhập thông tin tài khoản.</p>
-          </div>
-
-          {/* ── Role selector (radio group) ─────────────────────────────── */}
-          <div
-            id="role-selector"
-            role="radiogroup"
-            aria-labelledby="role-selector-label"
-            aria-required="true"
-            tabIndex={-1}
-            className="space-y-2 outline-none"
-          >
-            <p id="role-selector-label" className="text-sm font-medium text-foreground">
-              Vai trò <span className="text-destructive" aria-hidden="true">*</span>
+            <h1 className="text-2xl font-bold text-foreground">Đăng nhập hệ thống</h1>
+            <p className="text-xs text-muted-foreground">
+              Sử dụng tài khoản Google FPT/FE hoặc Email/Username và Mật khẩu.
             </p>
-
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-              {ROLES.map(({ value, label, description, Icon }) => {
-                const isSelected = selectedRole === value;
-                const inputId = `${groupId}-${value}`;
-                return (
-                  <label
-                    key={value}
-                    htmlFor={inputId}
-                    className={[
-                      "relative flex flex-col gap-1.5 rounded-xl border p-3.5 cursor-pointer transition-all duration-150",
-                      "hover:bg-muted/50 focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-1",
-                      isSelected
-                        ? "border-primary bg-primary/5 shadow-sm"
-                        : "border-border bg-card",
-                      roleError && !selectedRole ? "border-destructive" : "",
-                    ].join(" ")}
-                  >
-                    {/* Hidden native radio for a11y */}
-                    <input
-                      id={inputId}
-                      type="radio"
-                      name={`${groupId}-role`}
-                      value={value}
-                      checked={isSelected}
-                      onChange={() => { setSelectedRole(value); setRoleError(false); }}
-                      className="sr-only"
-                    />
-
-                    {/* Check badge */}
-                    {isSelected && (
-                      <span className="absolute top-2 right-2 w-4 h-4 rounded-full bg-primary flex items-center justify-center">
-                        <CheckIcon className="w-2.5 h-2.5 text-primary-foreground" aria-hidden />
-                      </span>
-                    )}
-
-                    {/* Icon */}
-                    <span
-                      className={[
-                        "w-9 h-9 rounded-lg flex items-center justify-center shrink-0",
-                        isSelected ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground",
-                      ].join(" ")}
-                    >
-                      <Icon className="w-4.5 h-4.5" aria-hidden />
-                    </span>
-
-                    {/* Text */}
-                    <span className={["text-xs font-semibold leading-tight", isSelected ? "text-primary" : "text-foreground"].join(" ")}>
-                      {label}
-                    </span>
-                    <span className="text-[11px] text-muted-foreground leading-snug">{description}</span>
-                  </label>
-                );
-              })}
-            </div>
-
-            {roleError && (
-              <p role="alert" className="flex items-center gap-1.5 text-xs text-destructive mt-1">
-                <AlertCircleIcon className="w-3.5 h-3.5 shrink-0" />
-                Vui lòng chọn vai trò trước khi đăng nhập.
-              </p>
-            )}
           </div>
 
-          {/* ── Credentials form ─────────────────────────────────────────── */}
-          <form onSubmit={handleSubmit} className="space-y-4" noValidate>
-            {/* Email */}
-            <div className="space-y-1.5">
-              <Label htmlFor="email">Email</Label>
+          <Button
+            type="button"
+            variant="outline"
+            className="w-full font-semibold gap-2.5 h-11 rounded-xl shadow-xs border-border hover:bg-muted cursor-pointer"
+            disabled={isLoading}
+            onClick={handleGoogleLogin}
+          >
+            <GoogleIcon />
+            <span>Tiếp tục với Google (FPT / FE)</span>
+          </Button>
+
+          <div className="flex items-center gap-3">
+            <Separator className="flex-1" />
+            <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider whitespace-nowrap">
+              hoặc đăng nhập nội bộ
+            </span>
+            <Separator className="flex-1" />
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-3.5" noValidate>
+            <div className="space-y-1">
+              <Label htmlFor="identifier" className="text-xs font-semibold">
+                Email hoặc Tên đăng nhập
+              </Label>
               <Input
-                id="email"
-                type="email"
-                placeholder="name@university.edu.vn"
-                autoComplete="email"
+                id="identifier"
+                type="text"
+                placeholder="anvse170102@fpt.edu.vn hoặc admin"
+                autoComplete="username"
                 required
                 disabled={isLoading}
-                value={form.email}
-                onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
+                value={form.identifier}
+                onChange={(e) => {
+                  setForm((f) => ({ ...f, identifier: e.target.value }));
+                  if (fieldErrors.identifier) setFieldErrors((prev) => ({ ...prev, identifier: "" }));
+                }}
+                className="text-xs h-10 rounded-xl"
               />
+              {fieldErrors.identifier && (
+                <p className="text-[11px] text-destructive font-medium">{fieldErrors.identifier}</p>
+              )}
             </div>
 
-            {/* Password */}
-            <div className="space-y-1.5">
+            <div className="space-y-1">
               <div className="flex items-center justify-between">
-                <Label htmlFor="password">Mật khẩu</Label>
-                <Link href="#" className="text-xs text-primary hover:underline">
+                <Label htmlFor="password" className="text-xs font-semibold">
+                  Mật khẩu
+                </Label>
+                <Link href="#" className="text-[11px] text-primary hover:underline font-medium">
                   Quên mật khẩu?
                 </Link>
               </div>
@@ -302,39 +279,47 @@ function LoginPageContent() {
                 <Input
                   id="password"
                   type={showPassword ? "text" : "password"}
-                  placeholder="••••••••"
+                  placeholder="••••••••••"
                   autoComplete="current-password"
                   required
                   disabled={isLoading}
-                  className="pr-10"
+                  className="pr-10 text-xs h-10 rounded-xl"
                   value={form.password}
-                  onChange={(e) => setForm((f) => ({ ...f, password: e.target.value }))}
+                  onChange={(e) => {
+                    setForm((f) => ({ ...f, password: e.target.value }));
+                    if (fieldErrors.password) setFieldErrors((prev) => ({ ...prev, password: "" }));
+                  }}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword((v) => !v)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
                   aria-label={showPassword ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
                 >
                   {showPassword ? <EyeOffIcon className="w-4 h-4" /> : <EyeIcon className="w-4 h-4" />}
                 </button>
               </div>
+              {fieldErrors.password && (
+                <p className="text-[11px] text-destructive font-medium">{fieldErrors.password}</p>
+              )}
             </div>
 
-            {/* Login error */}
             {error && (
-              <p role="alert" className="flex items-center gap-1.5 text-xs text-destructive">
-                <AlertCircleIcon className="w-3.5 h-3.5 shrink-0" />
-                {error}
-              </p>
+              <div className="flex items-start gap-2 p-3 rounded-xl bg-destructive/10 text-destructive text-xs animate-in fade-in-0">
+                <AlertCircleIcon className="w-4 h-4 shrink-0 mt-0.5" />
+                <span>{error}</span>
+              </div>
             )}
 
-            {/* Submit */}
-            <Button type="submit" className="w-full font-semibold" disabled={!canSubmit}>
+            <Button
+              type="submit"
+              className="w-full font-bold h-10.5 rounded-xl shadow-sm text-xs cursor-pointer"
+              disabled={!canSubmit}
+            >
               {isLoading ? (
                 <>
-                  <LoaderCircleIcon className="w-4 h-4 animate-spin" aria-hidden />
-                  <span>Đang đăng nhập...</span>
+                  <LoaderCircleIcon className="w-4 h-4 animate-spin mr-2" aria-hidden />
+                  <span>Đang xác thực...</span>
                 </>
               ) : (
                 "Đăng nhập"
@@ -342,30 +327,44 @@ function LoginPageContent() {
             </Button>
           </form>
 
-          {/* ── Google ─────────────────────────────────────────────────── */}
-          <div className="flex items-center gap-3">
-            <Separator className="flex-1" />
-            <span className="text-xs text-muted-foreground whitespace-nowrap">hoặc tiếp tục với</span>
-            <Separator className="flex-1" />
+          <div className="text-center pt-1">
+            <Link
+              href="/register"
+              className="inline-flex items-center gap-1.5 text-xs text-primary hover:underline font-semibold"
+            >
+              <UserPlusIcon className="size-3.5" />
+              <span>Chưa có tài khoản? Đăng ký cho Sinh viên (Email cá nhân)</span>
+            </Link>
           </div>
 
-          <Button
-            type="button"
-            variant="outline"
-            className="w-full font-medium gap-2.5"
-            disabled={isLoading}
-            onClick={handleGoogleLogin}
-          >
-            <GoogleIcon />
-            Tiếp tục với Google
-          </Button>
-
-          {/* Footer note */}
-          <p className="text-center text-xs text-muted-foreground">
-            Bằng cách đăng nhập, bạn đồng ý với{" "}
-            <Link href="#" className="text-primary hover:underline">điều khoản sử dụng</Link>{" "}
-            của SAGA.
-          </p>
+          {process.env.NODE_ENV === "development" && (
+            <div className="mt-6 p-4 rounded-xl border border-dashed border-primary/30 bg-primary/5">
+              <div className="flex items-center gap-2 mb-3 text-primary">
+                <BugPlayIcon className="size-4" />
+                <span className="text-xs font-bold uppercase tracking-wider">Dev Mock Login Bypass</span>
+              </div>
+              <div className="grid grid-cols-3 gap-2">
+                {["Admin", "Lecturer", "Student"].map((role) => (
+                  <Button
+                    key={role}
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="text-[10px] h-8 cursor-pointer border-primary/20 hover:bg-primary/10"
+                    onClick={() => {
+                      setForm({ identifier: role.toLowerCase(), password: "mock" });
+                      setTimeout(() => {
+                        const formEvent = new Event("submit", { cancelable: true, bubbles: true }) as unknown as React.FormEvent;
+                        handleSubmit(formEvent);
+                      }, 0);
+                    }}
+                  >
+                    {role}
+                  </Button>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

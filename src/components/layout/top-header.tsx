@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import {
   BellIcon,
   ChevronDownIcon,
@@ -18,23 +17,21 @@ import { Badge } from "@/components/ui/badge";
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuGroup,
   DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
+import { useLogout } from "@/features/auth/hooks/useAuth";
 import { useProfileModalStore } from "@/features/profile/store/useProfileModalStore";
 import { getRoleHomePath } from "@/features/auth/lib/role-routes";
 import { ROLE_COLORS, ROLE_LABELS, getInitials } from "@/components/layout/sidebar/nav-config";
-import type { Role } from "@/types/auth";
 import { cn } from "@/lib/utils";
 
 export function TopHeader() {
-  const router = useRouter();
-  const { user, logout, switchRole } = useAuthStore();
+  const { user } = useAuthStore();
+  const { mutate: logout } = useLogout();
   const { openProfileModal } = useProfileModalStore();
   const [isDark, setIsDark] = useState(false);
 
@@ -63,7 +60,7 @@ export function TopHeader() {
 
   const homePath = getRoleHomePath(user.role);
 
-  const displayName = user.name ?? (user.role === "STUDENT" ? "Sinh viên" : "Giảng viên");
+  const displayName = user.fullName || user.name || (user.role === "STUDENT" ? "Sinh viên" : "Giảng viên");
 
   const roleSubtitle =
     user.role === "LECTURER"
@@ -74,12 +71,6 @@ export function TopHeader() {
 
   const handleLogout = () => {
     logout();
-    router.replace("/login");
-  };
-
-  const handleSwitchRole = (r: Role) => {
-    switchRole(r);
-    router.replace(getRoleHomePath(r));
   };
 
   return (
@@ -174,29 +165,6 @@ export function TopHeader() {
               </div>
             </div>
 
-            {/* Chuyển vai trò thử nghiệm */}
-            <DropdownMenuGroup className="p-1">
-              <DropdownMenuLabel className="flex items-center gap-1.5 px-2 pt-1 pb-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground/70">
-                <UserIcon className="size-3" />
-                Chuyển vai trò thử nghiệm
-              </DropdownMenuLabel>
-              {(["STUDENT", "LECTURER", "ADMIN"] as Role[]).map((r) => (
-                <DropdownMenuItem
-                  key={r}
-                  onClick={() => handleSwitchRole(r)}
-                  className={cn(
-                    "text-xs cursor-pointer py-2 px-2.5 rounded-lg flex items-center justify-between",
-                    user.role === r ? "font-bold text-primary bg-primary/10" : "text-foreground hover:bg-muted"
-                  )}
-                >
-                  <span>{ROLE_LABELS[r]}</span>
-                  {user.role === r && <span className="text-primary font-bold">✓</span>}
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuGroup>
-
-            <DropdownMenuSeparator />
-
             {/* Profile & Cài đặt */}
             <div className="p-1 space-y-0.5">
               <DropdownMenuItem
@@ -206,6 +174,8 @@ export function TopHeader() {
                 <UserIcon className="size-3.5 text-primary" />
                 <span>Hồ sơ & Cài đặt tích hợp</span>
               </DropdownMenuItem>
+
+              <DropdownMenuSeparator />
 
               {/* Nút Đăng xuất */}
               <DropdownMenuItem

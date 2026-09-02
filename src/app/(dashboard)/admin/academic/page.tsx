@@ -1,12 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { DatabaseIcon, GraduationCapIcon, BookOpenIcon, CalendarIcon, SchoolIcon } from "lucide-react";
+import { DatabaseIcon, GraduationCapIcon, CalendarIcon, SchoolIcon } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { CourseManagement } from "@/features/admin/academic/components/course-management";
 import { AdminClassManagement } from "@/features/admin/academic/components/admin-class-management";
-import { SubjectManagement } from "@/features/admin/academic/components/subject-management";
 import { SemesterManagement } from "@/features/admin/academic/components/semester-management";
 import {
   MOCK_COURSES,
@@ -14,7 +13,7 @@ import {
   MOCK_SUBJECTS,
   MOCK_SEMESTERS,
 } from "@/features/admin/academic/data/mock-academic";
-import type {
+import {
   Course,
   AdminClass,
   Subject,
@@ -24,7 +23,7 @@ import type {
 export default function AdminAcademicPage() {
   const [courses, setCourses] = useState<Course[]>(MOCK_COURSES);
   const [adminClasses, setAdminClasses] = useState<AdminClass[]>(MOCK_ADMIN_CLASSES);
-  const [subjects, setSubjects] = useState<Subject[]>(MOCK_SUBJECTS);
+  const [subjects] = useState<Subject[]>(MOCK_SUBJECTS);
   const [semesters, setSemesters] = useState<Semester[]>(MOCK_SEMESTERS);
 
 
@@ -72,25 +71,6 @@ export default function AdminAcademicPage() {
     setAdminClasses((prev) => prev.filter((c) => c.id !== id));
   };
 
-  // Subject CRUD
-  const handleAddSubject = (newSub: Omit<Subject, "id" | "totalCourses">) => {
-    const created: Subject = {
-      ...newSub,
-      id: `sub-${Date.now()}`,
-      totalCourses: 0,
-    };
-    setSubjects((prev) => [created, ...prev]);
-  };
-
-  const handleEditSubject = (id: string, updated: Partial<Subject>) => {
-    setSubjects((prev) =>
-      prev.map((s) => (s.id === id ? { ...s, ...updated } : s))
-    );
-  };
-
-  const handleDeleteSubject = (id: string) => {
-    setSubjects((prev) => prev.filter((s) => s.id !== id));
-  };
 
   // Semester CRUD
   const handleAddSemester = (newSem: Omit<Semester, "id" | "totalCourses">) => {
@@ -159,18 +139,6 @@ export default function AdminAcademicPage() {
           </CardContent>
         </Card>
 
-        <Card className="rounded-2xl border border-border shadow-xs">
-          <CardContent className="p-4 flex items-center justify-between">
-            <div className="space-y-0.5">
-              <p className="text-xs font-medium text-muted-foreground">Môn học đào tạo</p>
-              <p className="text-2xl font-bold text-foreground">{subjects.length}</p>
-              <p className="text-[11px] text-muted-foreground">Môn chuyên ngành & Capstone</p>
-            </div>
-            <div className="w-10 h-10 rounded-xl bg-warning-muted flex items-center justify-center text-warning">
-              <BookOpenIcon className="w-5 h-5" />
-            </div>
-          </CardContent>
-        </Card>
 
         <Card className="rounded-2xl border border-border shadow-xs">
           <CardContent className="p-4 flex items-center justify-between">
@@ -188,7 +156,7 @@ export default function AdminAcademicPage() {
         </Card>
       </div>
 
-      {/* ── Main Tabs: Courses (Trung tâm) / Admin Classes / Subjects / Semesters ── */}
+      {/* ── Main Tabs: Courses (Trung tâm) / Admin Classes / Semesters ── */}
       <Tabs defaultValue="courses" className="space-y-4">
         <TabsList className="bg-muted p-1 rounded-xl">
           <TabsTrigger value="courses" className="text-xs font-semibold gap-1.5 px-3.5 py-1.5">
@@ -198,10 +166,6 @@ export default function AdminAcademicPage() {
           <TabsTrigger value="admin-classes" className="text-xs font-semibold gap-1.5 px-3.5 py-1.5">
             <SchoolIcon className="w-3.5 h-3.5" />
             Lớp hành chính ({adminClasses.length})
-          </TabsTrigger>
-          <TabsTrigger value="subjects" className="text-xs font-semibold gap-1.5 px-3.5 py-1.5">
-            <BookOpenIcon className="w-3.5 h-3.5" />
-            Môn học ({subjects.length})
           </TabsTrigger>
           <TabsTrigger value="semesters" className="text-xs font-semibold gap-1.5 px-3.5 py-1.5">
             <CalendarIcon className="w-3.5 h-3.5" />
@@ -232,15 +196,6 @@ export default function AdminAcademicPage() {
           />
         </TabsContent>
 
-        {/* Tab 3: Môn học */}
-        <TabsContent value="subjects">
-          <SubjectManagement
-            subjects={subjects}
-            onAddSubject={handleAddSubject}
-            onEditSubject={handleEditSubject}
-            onDeleteSubject={handleDeleteSubject}
-          />
-        </TabsContent>
 
         {/* Tab 4: Học kỳ */}
         <TabsContent value="semesters">

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Plus_Jakarta_Sans, JetBrains_Mono, Outfit } from "next/font/google";
 import { QueryProvider } from "@/providers/query-provider";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { Toaster } from "sonner";
+import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
 
 const plusJakartaSans = Plus_Jakarta_Sans({
