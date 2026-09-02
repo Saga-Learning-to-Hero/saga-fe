@@ -88,28 +88,26 @@ export function SemesterManagement({
 
   return (
     <div className="space-y-4">
-      {/* Action Header */}
       <div className="flex items-center justify-between">
         <p className="text-xs text-muted-foreground">
-          Quản lý các học kỳ đào tạo và thời gian biểu làm đồ án tốt nghiệp.
+          Quản trị các học kỳ đào tạo và mốc thời gian thực hiện đồ án tốt nghiệp Capstone.
         </p>
         <Button onClick={handleOpenAdd} size="sm" className="h-9 gap-1.5 text-xs font-semibold cursor-pointer">
           <PlusIcon className="w-4 h-4" />
-          Thêm học kỳ mới
+          Thêm học kỳ đào tạo
         </Button>
       </div>
 
-      {/* Table */}
       <Card className="rounded-2xl border border-border overflow-hidden shadow-xs">
         <div className="overflow-x-auto">
           <Table className="w-full text-left text-xs border-collapse">
             <TableHeader className="bg-muted/40 border-b border-border">
               <TableRow>
-                <TableHead className="py-3 px-4 text-xs font-semibold whitespace-nowrap w-[110px]">Mã học kỳ</TableHead>
-                <TableHead className="py-3 px-4 text-xs font-semibold min-w-[200px]">Tên học kỳ</TableHead>
-                <TableHead className="py-3 px-4 text-xs font-semibold whitespace-nowrap w-[220px]">Thời gian</TableHead>
-                <TableHead className="py-3 px-4 text-xs font-semibold whitespace-nowrap w-[160px]">Trạng thái</TableHead>
-                <TableHead className="py-3 px-4 text-xs font-semibold whitespace-nowrap w-[150px]">Khóa học mở</TableHead>
+                <TableHead className="py-3 px-4 text-xs font-semibold whitespace-nowrap w-[110px]">Mã học kỳ (Semester Code)</TableHead>
+                <TableHead className="py-3 px-4 text-xs font-semibold min-w-[200px]">Tên học kỳ (Semester Name)</TableHead>
+                <TableHead className="py-3 px-4 text-xs font-semibold whitespace-nowrap w-[220px]">Thời gian (Duration)</TableHead>
+                <TableHead className="py-3 px-4 text-xs font-semibold whitespace-nowrap w-[160px]">Trạng thái (Status)</TableHead>
+                <TableHead className="py-3 px-4 text-xs font-semibold whitespace-nowrap w-[150px]">Lớp mở (Active Sections)</TableHead>
                 <TableHead className="py-3 px-4 text-xs font-semibold whitespace-nowrap text-right w-[100px]">Thao tác</TableHead>
               </TableRow>
             </TableHeader>

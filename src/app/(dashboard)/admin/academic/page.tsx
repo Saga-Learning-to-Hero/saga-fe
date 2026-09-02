@@ -94,7 +94,6 @@ export default function AdminAcademicPage() {
 
   return (
     <div className="max-w-7xl mx-auto space-y-6 animate-in fade-in-0 duration-200">
-      {/* ── Page Header ── */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-border">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0 shadow-2xs">
@@ -102,23 +101,22 @@ export default function AdminAcademicPage() {
           </div>
           <div>
             <h1 className="text-xl font-bold text-foreground tracking-tight">
-              Quản lý Dữ liệu học thuật
+              Cấu trúc Học thuật & Danh sách Lớp (Academic Structure & Roster)
             </h1>
             <p className="text-xs text-muted-foreground">
-              Quản lý Khóa học đồ án, Lớp hành chính niên khóa, danh mục Môn học và Học kỳ đào tạo.
+              Quản trị Lớp học phần (Course Sections), Lớp hành chính niên khóa (Cohort Classes) và Học kỳ đào tạo (Semesters).
             </p>
           </div>
         </div>
       </div>
 
-      {/* ── Stats Summary ── */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         <Card className="rounded-2xl border border-border shadow-xs">
           <CardContent className="p-4 flex items-center justify-between">
             <div className="space-y-0.5">
-              <p className="text-xs font-medium text-muted-foreground">Khóa học / Học phần</p>
+              <p className="text-xs font-medium text-muted-foreground">Lớp học phần (Course Sections)</p>
               <p className="text-2xl font-bold text-foreground">{courses.length}</p>
-              <p className="text-[11px] text-muted-foreground">Học phần đồ án đang mở</p>
+              <p className="text-[11px] text-muted-foreground">Lớp học phần đồ án đang mở</p>
             </div>
             <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
               <GraduationCapIcon className="w-5 h-5" />
@@ -129,7 +127,7 @@ export default function AdminAcademicPage() {
         <Card className="rounded-2xl border border-border shadow-xs">
           <CardContent className="p-4 flex items-center justify-between">
             <div className="space-y-0.5">
-              <p className="text-xs font-medium text-muted-foreground">Lớp hành chính</p>
+              <p className="text-xs font-medium text-muted-foreground">Lớp hành chính (Cohort Classes)</p>
               <p className="text-2xl font-bold text-foreground">{adminClasses.length}</p>
               <p className="text-[11px] text-muted-foreground">Lớp sinh viên niên khóa</p>
             </div>
@@ -139,11 +137,10 @@ export default function AdminAcademicPage() {
           </CardContent>
         </Card>
 
-
         <Card className="rounded-2xl border border-border shadow-xs">
           <CardContent className="p-4 flex items-center justify-between">
             <div className="space-y-0.5">
-              <p className="text-xs font-medium text-muted-foreground">Học kỳ đào tạo</p>
+              <p className="text-xs font-medium text-muted-foreground">Học kỳ đào tạo (Semesters)</p>
               <p className="text-2xl font-bold text-foreground">{semesters.length}</p>
               <p className="text-[11px] text-muted-foreground">
                 {semesters.filter((s) => s.status === "ACTIVE").length} kỳ đang diễn ra
@@ -156,12 +153,11 @@ export default function AdminAcademicPage() {
         </Card>
       </div>
 
-      {/* ── Main Tabs: Courses (Trung tâm) / Admin Classes / Semesters ── */}
       <Tabs defaultValue="courses" className="space-y-4">
         <TabsList className="bg-muted p-1 rounded-xl">
           <TabsTrigger value="courses" className="text-xs font-semibold gap-1.5 px-3.5 py-1.5">
             <GraduationCapIcon className="w-3.5 h-3.5" />
-            Khóa học / Học phần ({courses.length})
+            Lớp học phần ({courses.length})
           </TabsTrigger>
           <TabsTrigger value="admin-classes" className="text-xs font-semibold gap-1.5 px-3.5 py-1.5">
             <SchoolIcon className="w-3.5 h-3.5" />
@@ -169,7 +165,7 @@ export default function AdminAcademicPage() {
           </TabsTrigger>
           <TabsTrigger value="semesters" className="text-xs font-semibold gap-1.5 px-3.5 py-1.5">
             <CalendarIcon className="w-3.5 h-3.5" />
-            Học kỳ ({semesters.length})
+            Học kỳ đào tạo ({semesters.length})
           </TabsTrigger>
         </TabsList>
 

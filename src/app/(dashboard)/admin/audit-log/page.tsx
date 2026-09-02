@@ -80,7 +80,6 @@ export default function AdminAuditLogPage() {
 
   return (
     <div className="p-6 space-y-6 max-w-[1600px] mx-auto">
-      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2.5">
@@ -89,10 +88,10 @@ export default function AdminAuditLogPage() {
             </div>
             <div>
               <h1 className="text-xl font-bold text-foreground tracking-tight">
-                Nhật ký hoạt động hệ thống
+                Nhật ký kiểm toán hệ thống (System Audit Logs)
               </h1>
               <p className="text-xs text-muted-foreground mt-0.5">
-                Kiểm toán an ninh, truy vết thao tác quản trị và thay đổi dữ liệu trên nền tảng SAGA.
+                Kiểm toán an ninh, truy vết thao tác quản trị và thay đổi phân quyền hệ thống lưu trữ tại MongoDB.
               </p>
             </div>
           </div>

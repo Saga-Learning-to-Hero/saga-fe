@@ -93,16 +93,15 @@ export function AdminClassManagement({
         </Button>
       </div>
 
-      {/* Table */}
       <Card className="rounded-2xl border border-border overflow-hidden shadow-xs">
         <div className="overflow-x-auto">
           <Table className="w-full text-left text-xs border-collapse">
             <TableHeader className="bg-muted/40 border-b border-border">
               <TableRow>
-                <TableHead className="py-3 px-4 text-xs font-semibold whitespace-nowrap w-[120px]">Mã lớp</TableHead>
-                <TableHead className="py-3 px-4 text-xs font-semibold min-w-[280px]">Tên lớp hành chính</TableHead>
-                <TableHead className="py-3 px-4 text-xs font-semibold whitespace-nowrap w-[220px]">Chuyên ngành / Khoa</TableHead>
-                <TableHead className="py-3 px-4 text-xs font-semibold whitespace-nowrap w-[180px]">Niên khóa</TableHead>
+                <TableHead className="py-3 px-4 text-xs font-semibold whitespace-nowrap w-[120px]">Mã lớp (Cohort Code)</TableHead>
+                <TableHead className="py-3 px-4 text-xs font-semibold min-w-[280px]">Tên lớp hành chính (Class Name)</TableHead>
+                <TableHead className="py-3 px-4 text-xs font-semibold whitespace-nowrap w-[220px]">Khoa / Chuyên ngành (Department)</TableHead>
+                <TableHead className="py-3 px-4 text-xs font-semibold whitespace-nowrap w-[180px]">Niên khóa (Academic Year)</TableHead>
                 <TableHead className="py-3 px-4 text-xs font-semibold whitespace-nowrap text-right w-[80px]">Thao tác</TableHead>
               </TableRow>
             </TableHeader>

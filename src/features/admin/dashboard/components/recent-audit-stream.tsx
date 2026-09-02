@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ScrollTextIcon, ArrowRightIcon, UserCogIcon, FolderKanbanIcon, DatabaseIcon, ShieldCheckIcon } from "lucide-react";
+import { ScrollTextIcon, ArrowRightIcon, UserCogIcon, BookOpenIcon, DatabaseIcon, ShieldCheckIcon } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { MOCK_AUDIT_LOGS } from "@/features/admin/audit-log/data/mock-audit-logs";
@@ -11,7 +11,6 @@ export function RecentAuditAndQuickActionsSection() {
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-      {/* Cột 1 & 2: Dòng sự kiện kiểm toán gần nhất từ MongoDB */}
       <Card className="rounded-2xl border border-border shadow-xs bg-card lg:col-span-2">
         <CardHeader className="p-4 pb-3 border-b border-border/60 flex flex-row items-center justify-between">
           <div className="flex items-center gap-2">
@@ -20,10 +19,10 @@ export function RecentAuditAndQuickActionsSection() {
             </div>
             <div>
               <CardTitle className="text-sm font-bold text-foreground">
-                Nhật ký kiểm toán gần đây
+                Nhật ký kiểm toán gần đây (Audit Stream)
               </CardTitle>
               <CardDescription className="text-[11px] text-muted-foreground">
-                Lịch sử thao tác quản trị và an ninh ghi nhận từ MongoDB Audit Log
+                Lịch sử thao tác quản trị, sự kiện an ninh và phân quyền ghi nhận từ MongoDB
               </CardDescription>
             </div>
           </div>
@@ -88,7 +87,6 @@ export function RecentAuditAndQuickActionsSection() {
         </CardContent>
       </Card>
 
-      {/* Cột 3: Lối tắt điều hành nhanh (Quick Actions) */}
       <Card className="rounded-2xl border border-border shadow-xs bg-card flex flex-col justify-between">
         <CardHeader className="p-4 pb-3 border-b border-border/60">
           <div className="flex items-center gap-2">
@@ -97,10 +95,10 @@ export function RecentAuditAndQuickActionsSection() {
             </div>
             <div>
               <CardTitle className="text-sm font-bold text-foreground">
-                Lối tắt điều hành
+                Lối tắt điều hành (Quick Actions)
               </CardTitle>
               <CardDescription className="text-[11px] text-muted-foreground">
-                Truy cập nhanh các khu vực quản trị
+                Truy cập nhanh các phân hệ quản trị
               </CardDescription>
             </div>
           </div>
@@ -116,24 +114,8 @@ export function RecentAuditAndQuickActionsSection() {
                 <UserCogIcon className="w-4 h-4" />
               </div>
               <div>
-                <p className="text-xs font-semibold text-foreground">Quản lý người dùng</p>
-                <p className="text-[11px] text-muted-foreground">Phân quyền, khóa/mở tài khoản</p>
-              </div>
-            </div>
-            <ArrowRightIcon className="w-4 h-4 text-muted-foreground group-hover:text-foreground transition-transform group-hover:translate-x-0.5" />
-          </Link>
-
-          <Link
-            href="/admin/projects"
-            className="flex items-center justify-between p-3 rounded-xl bg-muted/40 hover:bg-muted/70 transition-colors border border-border/60 group cursor-pointer"
-          >
-            <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-lg bg-info-muted text-info flex items-center justify-center">
-                <FolderKanbanIcon className="w-4 h-4" />
-              </div>
-              <div>
-                <p className="text-xs font-semibold text-foreground">Dự án & Nhóm đồ án</p>
-                <p className="text-[11px] text-muted-foreground">Danh sách đề tài, thành viên</p>
+                <p className="text-xs font-semibold text-foreground">Tài khoản & Phân quyền</p>
+                <p className="text-[11px] text-muted-foreground">User Accounts & IAM Policy</p>
               </div>
             </div>
             <ArrowRightIcon className="w-4 h-4 text-muted-foreground group-hover:text-foreground transition-transform group-hover:translate-x-0.5" />
@@ -148,8 +130,24 @@ export function RecentAuditAndQuickActionsSection() {
                 <DatabaseIcon className="w-4 h-4" />
               </div>
               <div>
-                <p className="text-xs font-semibold text-foreground">Dữ liệu học thuật</p>
-                <p className="text-[11px] text-muted-foreground">Khóa học, Lớp, Import Excel</p>
+                <p className="text-xs font-semibold text-foreground">Cấu trúc học thuật & Lớp</p>
+                <p className="text-[11px] text-muted-foreground">Học phần, Lớp hành chính, Học kỳ</p>
+              </div>
+            </div>
+            <ArrowRightIcon className="w-4 h-4 text-muted-foreground group-hover:text-foreground transition-transform group-hover:translate-x-0.5" />
+          </Link>
+
+          <Link
+            href="/admin/subjects"
+            className="flex items-center justify-between p-3 rounded-xl bg-muted/40 hover:bg-muted/70 transition-colors border border-border/60 group cursor-pointer"
+          >
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-lg bg-info-muted text-info flex items-center justify-center">
+                <BookOpenIcon className="w-4 h-4" />
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-foreground">Chương trình đào tạo (FLM)</p>
+                <p className="text-[11px] text-muted-foreground">Syllabus, Tín chỉ, Cơ cấu điểm</p>
               </div>
             </div>
             <ArrowRightIcon className="w-4 h-4 text-muted-foreground group-hover:text-foreground transition-transform group-hover:translate-x-0.5" />
@@ -165,7 +163,7 @@ export function RecentAuditAndQuickActionsSection() {
               </div>
               <div>
                 <p className="text-xs font-semibold text-foreground">Nhật ký kiểm toán</p>
-                <p className="text-[11px] text-muted-foreground">Tra cứu vết hoạt động an ninh</p>
+                <p className="text-[11px] text-muted-foreground">Audit Trail & Security Logs</p>
               </div>
             </div>
             <ArrowRightIcon className="w-4 h-4 text-muted-foreground group-hover:text-foreground transition-transform group-hover:translate-x-0.5" />

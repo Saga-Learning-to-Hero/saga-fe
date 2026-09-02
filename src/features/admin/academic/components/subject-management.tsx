@@ -93,26 +93,25 @@ export function SubjectManagement({
         </Button>
       </div>
 
-      {/* Table */}
       <Card className="rounded-2xl border border-border overflow-hidden shadow-xs">
         <div className="overflow-x-auto">
-          <Table className="w-full text-left text-xs border-collapse">
+          <Table className="w-full text-left text-xs border-collapse table-auto">
             <TableHeader className="bg-muted/40 border-b border-border">
               <TableRow>
-                <TableHead className="py-3 px-4 text-xs font-semibold whitespace-nowrap w-[110px]">Mã môn</TableHead>
-                <TableHead className="py-3 px-4 text-xs font-semibold min-w-[280px]">Tên môn học</TableHead>
-                <TableHead className="py-3 px-4 text-xs font-semibold whitespace-nowrap w-[130px]">TC / Thời lượng</TableHead>
-                <TableHead className="py-3 px-4 text-xs font-semibold whitespace-nowrap w-[200px]">Bộ môn / Khoa</TableHead>
-                <TableHead className="py-3 px-4 text-xs font-semibold whitespace-nowrap text-center w-[120px]">Trạng thái FLM</TableHead>
-                <TableHead className="py-3 px-4 text-xs font-semibold whitespace-nowrap w-[130px]">Số khóa học</TableHead>
-                <TableHead className="py-3 px-4 text-xs font-semibold whitespace-nowrap text-right w-[100px]">Thao tác</TableHead>
+                <TableHead className="py-3 px-4 text-xs font-semibold whitespace-nowrap w-[100px]">Mã môn</TableHead>
+                <TableHead className="py-3 px-4 text-xs font-semibold">Tên môn học (Subject Name)</TableHead>
+                <TableHead className="py-3 px-4 text-xs font-semibold whitespace-nowrap text-center w-[90px]">Tín chỉ</TableHead>
+                <TableHead className="py-3 px-4 text-xs font-semibold whitespace-nowrap w-[170px]">Khoa / Bộ môn</TableHead>
+                <TableHead className="py-3 px-4 text-xs font-semibold whitespace-nowrap text-center w-[130px]">Trạng thái FLM</TableHead>
+                <TableHead className="py-3 px-4 text-xs font-semibold whitespace-nowrap text-center w-[90px]">Lớp mở</TableHead>
+                <TableHead className="py-3 px-4 text-xs font-semibold whitespace-nowrap text-right w-[70px]">Thao tác</TableHead>
               </TableRow>
             </TableHeader>
 
             <TableBody className="divide-y divide-border/60">
               {filteredSubjects.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                  <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
                     Không tìm thấy môn học nào.
                   </TableCell>
                 </TableRow>
@@ -126,7 +125,7 @@ export function SubjectManagement({
                         </Badge>
                       </Link>
                     </TableCell>
-                    <TableCell className="py-3 px-4">
+                    <TableCell className="py-3 px-4 min-w-0">
                       <div className="flex flex-col">
                         <span className="font-semibold text-foreground text-xs">{sub.name}</span>
                         {sub.description && (
@@ -136,13 +135,8 @@ export function SubjectManagement({
                         )}
                       </div>
                     </TableCell>
-                    <TableCell className="py-3 px-4 whitespace-nowrap">
-                      <div className="flex flex-col">
-                        <span className="font-semibold text-foreground text-xs">{sub.credits} TC</span>
-                        {sub.timeAllocation && (
-                          <span className="text-[11px] text-muted-foreground">{sub.timeAllocation}</span>
-                        )}
-                      </div>
+                    <TableCell className="py-3 px-4 text-center whitespace-nowrap">
+                      <span className="font-semibold text-foreground text-xs">{sub.credits} TC</span>
                     </TableCell>
                     <TableCell className="py-3 px-4 whitespace-nowrap text-muted-foreground font-medium text-[11px]">
                       {sub.department}
@@ -150,16 +144,16 @@ export function SubjectManagement({
                     <TableCell className="py-3 px-4 whitespace-nowrap text-center">
                       {sub.isApproved ? (
                         <Badge variant="secondary" className="bg-success-muted text-success border-success/20 text-[10px]">
-                          Approved
+                          Đã phê duyệt
                         </Badge>
                       ) : (
                         <Badge variant="outline" className="text-warning border-warning/50 text-[10px]">
-                          Draft
+                          Bản nháp
                         </Badge>
                       )}
                     </TableCell>
-                    <TableCell className="py-3 px-4 whitespace-nowrap font-semibold text-foreground text-xs">
-                      {sub.totalCourses} khóa học
+                    <TableCell className="py-3 px-4 text-center whitespace-nowrap font-semibold text-foreground text-xs">
+                      {sub.totalCourses}
                     </TableCell>
                     <TableCell className="py-3 px-4 text-right whitespace-nowrap">
                       <DropdownMenu>

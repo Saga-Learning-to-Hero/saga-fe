@@ -54,7 +54,7 @@ export function SubjectDialog({
         credits: editingSubject.credits,
         department: editingSubject.department,
         description: editingSubject.description || "",
-        degreeLevel: editingSubject.degreeLevel || "University",
+        degreeLevel: (editingSubject.degreeLevel as "University" | "College" | "Master") || "University",
         timeAllocation: editingSubject.timeAllocation || "30 slots (45 hours)",
         preRequisites: editingSubject.preRequisites || "",
         studentTasks: editingSubject.studentTasks || "",

@@ -37,8 +37,8 @@ src/
 │   │   ├── admin/                 # Không gian Quản trị viên (/admin/*)
 │   │   │   ├── dashboard/
 │   │   │   ├── users/
-│   │   │   ├── projects/
 │   │   │   ├── academic/
+│   │   │   ├── subjects/
 │   │   │   └── audit-log/
 │   │   ├── lecturer/              # Không gian Giảng viên (/lecturer/*)
 │   │   │   ├── courses/           # Chọn lớp giảng dạy (No Sidebar Shell)

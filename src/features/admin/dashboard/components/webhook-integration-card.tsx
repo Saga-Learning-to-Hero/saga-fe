@@ -17,7 +17,6 @@ export function WebhookIntegrationSection({
 }: WebhookIntegrationSectionProps) {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-      {/* Cột 1: Trạng thái kết nối Webhook Jira & GitHub */}
       <Card className="rounded-2xl border border-border shadow-xs bg-card lg:col-span-1 flex flex-col justify-between">
         <CardHeader className="p-4 pb-3 border-b border-border/60">
           <div className="flex items-center justify-between">
@@ -30,7 +29,7 @@ export function WebhookIntegrationSection({
                   Trạng thái Webhook & APIs
                 </CardTitle>
                 <CardDescription className="text-[11px] text-muted-foreground">
-                  Kết nối Jira Cloud & GitHub OAuth2
+                  Kết nối Jira Cloud & GitHub Webhooks
                 </CardDescription>
               </div>
             </div>
@@ -53,17 +52,17 @@ export function WebhookIntegrationSection({
                 </div>
                 <Badge className="bg-success-muted text-success border-0 text-[10px] font-semibold flex items-center gap-1">
                   <CheckCircle2Icon className="w-3 h-3" />
-                  Hoạt động tốt
+                  Sẵn sàng (Operational)
                 </Badge>
               </div>
 
               <div className="grid grid-cols-3 gap-2 pt-1 text-[11px]">
                 <div>
-                  <p className="text-muted-foreground text-[10px]">Độ trễ</p>
+                  <p className="text-muted-foreground text-[10px]">Độ trễ (Latency)</p>
                   <p className="font-mono font-bold text-foreground">{svc.latencyMs} ms</p>
                 </div>
                 <div>
-                  <p className="text-muted-foreground text-[10px]">Sự kiện (24h)</p>
+                  <p className="text-muted-foreground text-[10px]">Events (24h)</p>
                   <p className="font-mono font-bold text-foreground">{svc.eventsProcessed24h}</p>
                 </div>
                 <div>
@@ -81,7 +80,6 @@ export function WebhookIntegrationSection({
         </CardContent>
       </Card>
 
-      {/* Cột 2: Cảnh báo Nhóm đồ án chưa kết nối Repository / Jira */}
       <Card className="rounded-2xl border border-border shadow-xs bg-card lg:col-span-2">
         <CardHeader className="p-4 pb-3 border-b border-border/60">
           <div className="flex items-center justify-between">
@@ -91,15 +89,15 @@ export function WebhookIntegrationSection({
               </div>
               <div>
                 <CardTitle className="text-sm font-bold text-foreground">
-                  Nhóm đồ án chưa kết nối Workspace
+                  Cảnh báo tích hợp Workspace (Integration Alerts)
                 </CardTitle>
                 <CardDescription className="text-[11px] text-muted-foreground">
-                  Các nhóm chưa hoàn tất thiết lập OAuth2 Jira hoặc GitHub Repository
+                  Danh sách lớp học phần / nhóm chưa hoàn tất liên kết Jira hoặc GitHub
                 </CardDescription>
               </div>
             </div>
             <Badge variant="outline" className="text-xs text-warning border-warning/40">
-              {unconnectedGroups.length} nhóm cần nhắc nhở
+              {unconnectedGroups.length} nhóm cần rà soát
             </Badge>
           </div>
         </CardHeader>

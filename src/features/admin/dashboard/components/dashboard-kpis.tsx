@@ -1,6 +1,6 @@
 "use client";
 
-import { UsersIcon, FolderKanbanIcon, GitCommitIcon, RadioIcon, ArrowUpRightIcon } from "lucide-react";
+import { UsersIcon, GraduationCapIcon, GitCommitIcon, RadioIcon, ArrowUpRightIcon } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import type { DashboardKPIs } from "../types/dashboard";
 
@@ -11,12 +11,11 @@ interface DashboardKPIsProps {
 export function DashboardKPIsSection({ kpis }: DashboardKPIsProps) {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-      {/* KPI 1: Sinh viên */}
       <Card className="rounded-2xl border border-border/80 shadow-xs bg-card hover:border-primary/40 hover:shadow-md transition-all duration-200 relative overflow-hidden group">
         <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary to-primary/40 opacity-0 group-hover:opacity-100 transition-opacity" />
         <CardContent className="p-4 flex items-center justify-between">
           <div className="space-y-1">
-            <p className="text-xs font-medium text-muted-foreground">Sinh viên làm đồ án</p>
+            <p className="text-xs font-medium text-muted-foreground">Sinh viên ghi danh (Enrolled)</p>
             <div className="flex items-baseline gap-2">
               <span className="text-2xl font-extrabold text-foreground font-mono tracking-tight">
                 {kpis.totalStudents}
@@ -26,7 +25,7 @@ export function DashboardKPIsSection({ kpis }: DashboardKPIsProps) {
                 +{kpis.studentsGrowth}%
               </span>
             </div>
-            <p className="text-[11px] text-muted-foreground">Tổng sinh viên ghi danh kỳ này</p>
+            <p className="text-[11px] text-muted-foreground">Tổng sinh viên trong hệ thống kỳ này</p>
           </div>
           <div className="w-11 h-11 rounded-2xl bg-primary/10 flex items-center justify-center text-primary shrink-0 group-hover:scale-105 transition-transform">
             <UsersIcon className="w-5 h-5" />
@@ -34,26 +33,25 @@ export function DashboardKPIsSection({ kpis }: DashboardKPIsProps) {
         </CardContent>
       </Card>
 
-      {/* KPI 2: Nhóm đồ án */}
       <Card className="rounded-2xl border border-border/80 shadow-xs bg-card hover:border-info/40 hover:shadow-md transition-all duration-200 relative overflow-hidden group">
         <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-info to-info/40 opacity-0 group-hover:opacity-100 transition-opacity" />
         <CardContent className="p-4 flex items-center justify-between">
           <div className="space-y-1">
-            <p className="text-xs font-medium text-muted-foreground">Nhóm đồ án Capstone</p>
+            <p className="text-xs font-medium text-muted-foreground">Lớp học phần (Course Sections)</p>
             <div className="flex items-baseline gap-2">
               <span className="text-2xl font-extrabold text-foreground font-mono tracking-tight">
                 {kpis.totalGroups}
               </span>
               <span className="text-[11px] text-info font-semibold">
-                {kpis.connectedGroupsRate}% kết nối
+                {kpis.connectedGroupsRate}% đồng bộ
               </span>
             </div>
             <p className="text-[11px] text-muted-foreground">
-              Đã liên kết Jira & GitHub Workspace
+              Đã cấu hình Workspace Jira & GitHub
             </p>
           </div>
           <div className="w-11 h-11 rounded-2xl bg-info-muted flex items-center justify-center text-info shrink-0 group-hover:scale-105 transition-transform">
-            <FolderKanbanIcon className="w-5 h-5" />
+            <GraduationCapIcon className="w-5 h-5" />
           </div>
         </CardContent>
       </Card>
