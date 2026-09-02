@@ -42,34 +42,31 @@ export function isNavItemActive(pathname: string, item: NavItem): boolean {
   return pathname === item.href;
 }
 
-// ── Admin nav (Dành riêng cho Admin Sidebar) ───────────────────────────
-
 export const ADMIN_NAV: NavGroup[] = [
   {
     id: "admin-overview",
     label: "",
     roles: ["ADMIN"],
     items: [
-      { id: "admin-dashboard", title: "Tổng quan", href: "/admin/dashboard", icon: "LayoutDashboard", match: "exact" },
+      { id: "admin-dashboard", title: "Tổng quan hệ thống", href: "/admin/dashboard", icon: "LayoutDashboard", match: "exact" },
     ],
   },
   {
     id: "admin-management",
-    label: "Quản lý",
+    label: "Quản trị học thuật",
     roles: ["ADMIN"],
     items: [
-      { id: "admin-users", title: "Người dùng", href: "/admin/users", icon: "UserCog", match: "exact" },
-      { id: "admin-projects", title: "Dự án & Nhóm", href: "/admin/projects", icon: "FolderKanban", match: "prefix" },
-      { id: "admin-academic", title: "Dữ liệu học thuật", href: "/admin/academic", icon: "Database", match: "prefix" },
-      { id: "admin-subjects", title: "Môn học (FLM)", href: "/admin/subjects", icon: "BookOpen", match: "prefix" },
+      { id: "admin-users", title: "Quản lý Người dùng (GV & SV)", href: "/admin/users", icon: "Users", match: "exact" },
+      { id: "admin-academic", title: "Cấu trúc học thuật & Lớp", href: "/admin/academic", icon: "Database", match: "prefix" },
+      { id: "admin-subjects", title: "Chương trình đào tạo (FLM)", href: "/admin/subjects", icon: "BookOpen", match: "prefix" },
     ],
   },
   {
     id: "admin-system",
-    label: "Hệ thống",
+    label: "Hạ tầng & An ninh",
     roles: ["ADMIN"],
     items: [
-      { id: "admin-audit", title: "Nhật ký hoạt động", href: "/admin/audit-log", icon: "ScrollText", match: "exact" },
+      { id: "admin-audit", title: "Nhật ký kiểm toán (Audit Log)", href: "/admin/audit-log", icon: "ScrollText", match: "exact" },
     ],
   },
 ];

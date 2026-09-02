@@ -1,29 +1,84 @@
-export interface AssessmentItem {
-  id: string;
-  category: "PE" | "FE" | "Assignment" | "Quiz" | "Project" | "Presentation" | "Other";
+export interface FlmMaterial {
+  no: number;
+  description: string;
+  author: string;
+  publisher: string;
+  publishedDate?: string;
+  edition?: string;
+  isbn?: string;
+  isMain: boolean;
+  isHardCopy: boolean;
+  isOnline: boolean;
+  note?: string;
+  url?: string;
+}
+
+export interface FlmClo {
+  no: number;
   name: string;
-  weight: number; // e.g. 20 for 20%
-  description?: string;
+  details: string;
+}
+
+export interface FlmSession {
+  session: number;
+  topic: string;
+  type: "Offline" | "Online";
+  clo: string;
+  itu?: string;
+  studentMaterials?: string;
+  studentTasks?: string;
+  urls?: string;
+}
+
+export interface FlmAssessment {
+  no: number;
+  category: string;
+  type: string;
+  part: number;
+  weight: number;
+  completionCriteria: string;
+  duration: string;
+  clo: string;
+  questionType?: string;
+  noQuestion?: string;
+  knowledgeAndSkill?: string;
+  gradingGuide?: string;
+  note?: string;
 }
 
 export interface Subject {
   id: string;
-  code: string; // VD: SWP490, PRM392
-  name: string; // VD: Đồ án Kỹ thuật phần mềm (Capstone)
-  credits: number; // VD: 3, 4, 10
-  department: string; // VD: Kỹ thuật phần mềm, Trí tuệ nhân tạo
+  syllabusId?: string | number;
+  syllabusName?: string;
+  courseNameEnglish?: string;
+  code: string;
+  name: string;
+  vietnameseName?: string;
+  englishName?: string;
+  credits: number;
+  noCredit?: number;
+  department: string;
   description?: string;
   totalCourses: number;
-  // FLM Specific Fields
-  degreeLevel?: "University" | "College" | "Master";
-  timeAllocation?: string; // VD: "30 slots (45h)"
-  preRequisites?: string; // VD: "PRJ301, DBI202"
+  learningTeachingMethod?: string;
+  decisionNo?: string;
+  approvedDate?: string;
+  degreeLevel?: string;
+  timeAllocation?: string;
+  preRequisites?: string;
+  coRequisites?: string;
   studentTasks?: string;
   tools?: string;
-  scoringScale?: number; // Mặc định 10
+  scoringScale?: number;
+  minAvgScore?: number;
+  minAvgMarkToPass?: number;
+  minFinalScore?: number;
   isApproved?: boolean;
   note?: string;
-  assessmentScheme?: AssessmentItem[];
+  materials?: FlmMaterial[];
+  clos?: FlmClo[];
+  sessions?: FlmSession[];
+  assessments?: FlmAssessment[];
 }
 
 export type SemesterStatus = "ACTIVE" | "UPCOMING" | "CLOSED";

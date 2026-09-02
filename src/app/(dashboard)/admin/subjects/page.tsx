@@ -37,10 +37,10 @@ export default function AdminSubjectsPage() {
           </div>
           <div>
             <h1 className="text-xl font-bold text-foreground tracking-tight">
-              Quản lý Môn học (FLM)
+              Chương trình đào tạo (FLM Curriculum & Syllabus)
             </h1>
             <p className="text-xs text-muted-foreground">
-              Quản lý danh sách môn học, Syllabus, tín chỉ và tài nguyên chuẩn theo cấu trúc FPT Learning Material.
+              Quản lý danh mục môn học, đề cương chi tiết (Syllabus), số tín chỉ và cơ cấu đánh giá theo chuẩn FPT Learning Material.
             </p>
           </div>
         </div>

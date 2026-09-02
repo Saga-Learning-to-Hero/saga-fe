@@ -63,12 +63,10 @@ export function UserToolbar({
 
           {/* Filters */}
           <div className="flex flex-wrap items-center gap-2">
-            {/* Role filter tabs */}
             <div className="flex items-center gap-1 bg-muted/50 border border-border rounded-lg p-1">
               {(
                 [
                   { value: "ALL", label: "Tất cả vai trò" },
-                  { value: "ADMIN", label: "Quản trị viên" },
                   { value: "LECTURER", label: "Giảng viên" },
                   { value: "STUDENT", label: "Sinh viên" },
                 ] as const

@@ -64,7 +64,6 @@ export default function AdminUsersPage() {
 
   return (
     <div className="max-w-7xl mx-auto space-y-6 animate-in fade-in-0 duration-200">
-      {/* ── Page Header ── */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-border">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0 shadow-2xs">
@@ -72,16 +71,15 @@ export default function AdminUsersPage() {
           </div>
           <div>
             <h1 className="text-xl font-bold text-foreground tracking-tight">
-              Quản lý người dùng
+              Quản lý Tài khoản (Giảng viên & Sinh viên)
             </h1>
             <p className="text-xs text-muted-foreground">
-              Quản lý danh sách tài khoản, vai trò và trạng thái hoạt động của Giảng viên & Sinh viên.
+              Quản trị danh sách tài khoản Giảng viên & Sinh viên chuyên ngành Kỹ thuật phần mềm (SE) và kiểm soát trạng thái truy cập.
             </p>
           </div>
         </div>
       </div>
 
-      {/* ── Stats Bar ── */}
       <UserStats users={users} />
 
       {/* ── Search & Filter Toolbar ── */}

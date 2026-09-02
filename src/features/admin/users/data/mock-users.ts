@@ -1,21 +1,6 @@
 import type { ManagedUser } from "../types/user-management";
 
 export const MOCK_MANAGED_USERS: ManagedUser[] = [
-  // --- Quản trị viên (ADMIN) ---
-  {
-    id: "usr-adm-001",
-    email: "admin@saga.edu.vn",
-    fullName: "Trần Minh Khoa",
-    name: "Trần Minh Khoa",
-    role: "ADMIN",
-    status: "ACTIVE",
-    department: "Phòng Khảo thí & ĐBCL",
-    avatar: "https://api.dicebear.com/9.x/avataaars/svg?seed=saga-admin",
-    createdAt: "2023-01-01T08:00:00Z",
-    lastActiveAt: "2026-08-30T08:00:00Z",
-  },
-
-  // --- Giảng viên (Có mã giảng viên) ---
   {
     id: "usr-gv-001",
     email: "thuantm@fpt.edu.vn",
@@ -46,7 +31,7 @@ export const MOCK_MANAGED_USERS: ManagedUser[] = [
     fullName: "TS. Nguyễn Lê Trúc Quỳnh",
     role: "LECTURER",
     status: "PENDING",
-    department: "Trí tuệ nhân tạo",
+    department: "Kỹ thuật phần mềm",
     avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=quynhnlt",
     createdAt: "2026-08-20T10:00:00Z",
   },
@@ -56,7 +41,7 @@ export const MOCK_MANAGED_USERS: ManagedUser[] = [
     fullName: "ThS. Hoàng Hải Nam",
     role: "LECTURER",
     status: "BANNED",
-    department: "An toàn thông tin",
+    department: "Kỹ thuật phần mềm",
     avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=namhh",
     createdAt: "2024-05-12T14:15:00Z",
     lastActiveAt: "2026-07-15T11:00:00Z",

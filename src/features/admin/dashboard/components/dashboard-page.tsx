@@ -24,7 +24,6 @@ export function DashboardPage() {
 
   return (
     <div className="p-6 space-y-6 max-w-[1600px] mx-auto">
-      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-2.5">
           <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0">
@@ -32,11 +31,11 @@ export function DashboardPage() {
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-xl font-bold text-foreground tracking-tight">Trung tâm điều hành SAGA</h1>
-              <Badge className="bg-success-muted text-success border-0 text-[10px] font-semibold">Hệ thống sẵn sàng</Badge>
+              <h1 className="text-xl font-bold text-foreground tracking-tight">Tổng quan Quản trị Hệ thống (SAGA Admin Portal)</h1>
+              <Badge className="bg-success-muted text-success border-0 text-[10px] font-semibold">Hệ thống sẵn sàng (Operational)</Badge>
             </div>
             <p className="text-xs text-muted-foreground mt-0.5">
-              Giám sát thời gian thực tiến độ đồ án, chỉ số Traceability và trạng thái tích hợp Webhook Jira / GitHub.
+              Giám sát thời gian thực hoạt động học thuật, chỉ số Traceability và trạng thái đồng bộ Webhook Jira / GitHub.
             </p>
           </div>
         </div>

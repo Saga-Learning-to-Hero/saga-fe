@@ -88,12 +88,12 @@ export function AuditTable({ logs, onSelectLog }: AuditTableProps) {
         <Table className="w-full text-left text-xs border-collapse">
           <TableHeader className="bg-muted/40 border-b border-border">
             <TableRow>
-              <TableHead className="py-3 px-4 text-xs font-semibold whitespace-nowrap w-[150px]">Thời gian</TableHead>
-              <TableHead className="py-3 px-4 text-xs font-semibold min-w-[220px]">Người thực hiện (Actor)</TableHead>
-              <TableHead className="py-3 px-4 text-xs font-semibold whitespace-nowrap w-[140px]">Hành động</TableHead>
-              <TableHead className="py-3 px-4 text-xs font-semibold min-w-[220px]">Đối tượng tác động</TableHead>
-              <TableHead className="py-3 px-4 text-xs font-semibold whitespace-nowrap w-[130px]">Mức độ</TableHead>
-              <TableHead className="py-3 px-4 text-xs font-semibold whitespace-nowrap w-[90px]">Trạng thái</TableHead>
+              <TableHead className="py-3 px-4 text-xs font-semibold whitespace-nowrap w-[150px]">Thời gian (Timestamp)</TableHead>
+              <TableHead className="py-3 px-4 text-xs font-semibold min-w-[220px]">Tài khoản thực hiện (Actor & IP)</TableHead>
+              <TableHead className="py-3 px-4 text-xs font-semibold whitespace-nowrap w-[140px]">Hành động (Action)</TableHead>
+              <TableHead className="py-3 px-4 text-xs font-semibold min-w-[220px]">Đối tượng tác động (Target)</TableHead>
+              <TableHead className="py-3 px-4 text-xs font-semibold whitespace-nowrap w-[130px]">Mức độ (Severity)</TableHead>
+              <TableHead className="py-3 px-4 text-xs font-semibold whitespace-nowrap w-[90px]">Trạng thái (Status)</TableHead>
               <TableHead className="py-3 px-4 text-xs font-semibold whitespace-nowrap text-right w-[80px]">Chi tiết</TableHead>
             </TableRow>
           </TableHeader>

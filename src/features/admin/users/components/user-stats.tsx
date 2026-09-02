@@ -15,7 +15,7 @@ export function UserStats({ users }: UserStatsProps) {
 
   const stats = [
     {
-      label: "Tổng người dùng",
+      label: "Tổng tài khoản (Total Users)",
       value: totalUsers,
       sub: `${users.filter((u) => u.role === "LECTURER").length} Giảng viên · ${users.filter((u) => u.role === "STUDENT").length
         } Sinh viên`,
@@ -24,23 +24,23 @@ export function UserStats({ users }: UserStatsProps) {
       bg: "bg-primary/10",
     },
     {
-      label: "Đang hoạt động",
+      label: "Đang hoạt động (Active)",
       value: activeCount,
-      sub: "Đã đăng nhập & tương tác",
+      sub: "Đã xác thực & phiên hợp lệ",
       icon: UserCheckIcon,
       color: "text-success",
       bg: "bg-success-muted",
     },
     {
-      label: "Chờ kích hoạt",
+      label: "Chờ kích hoạt (Pending)",
       value: pendingCount,
-      sub: "Đã thêm vào lớp, chưa đăng nhập",
+      sub: "Ghi danh từ Roster, chưa đăng nhập",
       icon: ClockIcon,
       color: "text-warning",
       bg: "bg-warning-muted",
     },
     {
-      label: "Bị khóa / Tạm ngưng",
+      label: "Đã khóa / Tạm ngưng",
       value: bannedCount + inactiveCount,
       sub: `${bannedCount} bị khóa · ${inactiveCount} không hoạt động`,
       icon: ShieldAlertIcon,

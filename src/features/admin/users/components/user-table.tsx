@@ -129,11 +129,11 @@ export function UserTable({ users, onToggleStatus }: UserTableProps) {
       <Table>
         <TableHeader className="bg-muted/40">
           <TableRow className="border-b border-border">
-            <TableHead className="py-3 px-4 text-xs font-semibold">Người dùng</TableHead>
-            <TableHead className="py-3 px-4 text-xs font-semibold">Mã số sinh viên (MSSV)</TableHead>
-            <TableHead className="py-3 px-4 text-xs font-semibold">Khoa / Ngành</TableHead>
-            <TableHead className="py-3 px-4 text-xs font-semibold">Vai trò</TableHead>
-            <TableHead className="py-3 px-4 text-xs font-semibold">Trạng thái</TableHead>
+            <TableHead className="py-3 px-4 text-xs font-semibold">Người dùng (User)</TableHead>
+            <TableHead className="py-3 px-4 text-xs font-semibold">Mã định danh (MSSV / Staff ID)</TableHead>
+            <TableHead className="py-3 px-4 text-xs font-semibold">Khoa / Bộ môn (Department)</TableHead>
+            <TableHead className="py-3 px-4 text-xs font-semibold">Vai trò (Role)</TableHead>
+            <TableHead className="py-3 px-4 text-xs font-semibold">Trạng thái (Status)</TableHead>
             <TableHead className="py-3 px-4 text-xs font-semibold">Hoạt động gần nhất</TableHead>
             <TableHead className="py-3 px-4 text-xs font-semibold text-right">Thao tác</TableHead>
           </TableRow>
@@ -188,13 +188,8 @@ export function UserTable({ users, onToggleStatus }: UserTableProps) {
                   {user.department || "—"}
                 </TableCell>
 
-                {/* Role Badge */}
                 <TableCell className="py-3 px-4">
-                  {user.role === "ADMIN" ? (
-                    <Badge className="bg-danger-muted text-danger border-0 font-semibold px-2 py-0.5 text-[11px]">
-                      Quản trị viên
-                    </Badge>
-                  ) : user.role === "LECTURER" ? (
+                  {user.role === "LECTURER" ? (
                     <Badge className="bg-warning-muted text-warning border-0 font-semibold px-2 py-0.5 text-[11px]">
                       Giảng viên
                     </Badge>

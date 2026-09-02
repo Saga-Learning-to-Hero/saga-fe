@@ -124,13 +124,12 @@ export function CourseManagement({
 
   return (
     <div className="space-y-4">
-      {/* Toolbar */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
         <div className="relative flex-1 max-w-sm">
           <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input
             type="text"
-            placeholder="Tìm theo mã khóa học (SWP490_FA26), giảng viên..."
+            placeholder="Tìm theo mã học phần (SWP490_FA26), tên lớp, giảng viên..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="pl-9 h-9 text-xs"
@@ -138,22 +137,21 @@ export function CourseManagement({
         </div>
         <Button onClick={handleOpenAdd} size="sm" className="h-9 gap-1.5 text-xs font-semibold cursor-pointer">
           <PlusIcon className="w-4 h-4" />
-          Mở Khóa học / Học phần mới
+          Mở lớp học phần mới
         </Button>
       </div>
 
-      {/* Table */}
       <Card className="rounded-2xl border border-border overflow-hidden shadow-xs">
         <div className="overflow-x-auto">
           <Table className="w-full text-left text-xs border-collapse">
             <TableHeader className="bg-muted/40 border-b border-border">
               <TableRow>
-                <TableHead className="py-3 px-4 text-xs font-semibold whitespace-nowrap w-[130px]">Mã khóa học</TableHead>
-                <TableHead className="py-3 px-4 text-xs font-semibold min-w-[260px]">Khóa học / Học phần</TableHead>
-                <TableHead className="py-3 px-4 text-xs font-semibold whitespace-nowrap w-[120px]">Học kỳ</TableHead>
-                <TableHead className="py-3 px-4 text-xs font-semibold whitespace-nowrap min-w-[220px]">Giảng viên phụ trách</TableHead>
-                <TableHead className="py-3 px-4 text-xs font-semibold whitespace-nowrap w-[180px]">Sĩ số sinh viên</TableHead>
-                <TableHead className="py-3 px-4 text-xs font-semibold whitespace-nowrap text-center w-[160px]">Trạng thái</TableHead>
+                <TableHead className="py-3 px-4 text-xs font-semibold whitespace-nowrap w-[130px]">Mã học phần (Course Code)</TableHead>
+                <TableHead className="py-3 px-4 text-xs font-semibold min-w-[260px]">Lớp học phần (Course Section)</TableHead>
+                <TableHead className="py-3 px-4 text-xs font-semibold whitespace-nowrap w-[120px]">Học kỳ (Semester)</TableHead>
+                <TableHead className="py-3 px-4 text-xs font-semibold whitespace-nowrap min-w-[220px]">Giảng viên phụ trách (Instructor)</TableHead>
+                <TableHead className="py-3 px-4 text-xs font-semibold whitespace-nowrap w-[180px]">Sĩ số (Roster Size)</TableHead>
+                <TableHead className="py-3 px-4 text-xs font-semibold whitespace-nowrap text-center w-[160px]">Trạng thái (Status)</TableHead>
                 <TableHead className="py-3 px-4 text-xs font-semibold whitespace-nowrap text-right w-[80px]">Thao tác</TableHead>
               </TableRow>
             </TableHeader>
