@@ -78,8 +78,8 @@ export function SprintBurndownChart() {
         <YAxis tick={axisStyle} tickLine={false} axisLine={false} />
         <Tooltip />
         <Legend />
-        <Line name="Lý tưởng" dataKey="ideal" stroke="#94a3b8" strokeDasharray="6 4" dot={false} />
-        <Line name="Thực tế" dataKey="actual" stroke="#6366f1" strokeWidth={3} activeDot={{ r: 5 }} />
+        <Line name="Lý tưởng" dataKey="ideal" stroke="hsl(var(--muted-foreground))" strokeDasharray="6 4" dot={false} />
+        <Line name="Thực tế" dataKey="actual" stroke="hsl(var(--primary))" strokeWidth={3} activeDot={{ r: 5 }} />
       </LineChart>
     </ResponsiveContainer>
   );
@@ -94,11 +94,11 @@ export function WorkDistributionChart() {
         <YAxis type="category" dataKey="label" hide />
         <Tooltip />
         <Legend />
-        <Bar name="Chờ xử lý" dataKey="todo" stackId="work" fill="#94a3b8" radius={[4, 0, 0, 4]} />
-        <Bar name="Đang làm" dataKey="progress" stackId="work" fill="#3b82f6" />
-        <Bar name="Đang review" dataKey="review" stackId="work" fill="#f59e0b" />
-        <Bar name="Bị chặn" dataKey="blocked" stackId="work" fill="#ef4444" />
-        <Bar name="Hoàn thành" dataKey="done" stackId="work" fill="#22c55e" radius={[0, 4, 4, 0]} />
+        <Bar name="Chờ xử lý" dataKey="todo" stackId="work" fill="hsl(var(--muted-foreground))" radius={[4, 0, 0, 4]} />
+        <Bar name="Đang làm" dataKey="progress" stackId="work" fill="hsl(var(--chart-1))" />
+        <Bar name="Đang review" dataKey="review" stackId="work" fill="hsl(var(--chart-3))" />
+        <Bar name="Bị chặn" dataKey="blocked" stackId="work" fill="hsl(var(--destructive))" />
+        <Bar name="Hoàn thành" dataKey="done" stackId="work" fill="hsl(var(--chart-2))" radius={[0, 4, 4, 0]} />
       </BarChart>
     </ResponsiveContainer>
   );
@@ -112,10 +112,10 @@ export function CumulativeFlowChart() {
         <XAxis dataKey="day" tick={axisStyle} tickLine={false} axisLine={false} />
         <YAxis tick={axisStyle} tickLine={false} axisLine={false} />
         <Tooltip /><Legend />
-        <Area name="Chờ xử lý" dataKey="todo" stackId="flow" fill="#94a3b8" stroke="#64748b" />
-        <Area name="Đang làm" dataKey="progress" stackId="flow" fill="#60a5fa" stroke="#3b82f6" />
-        <Area name="Review" dataKey="review" stackId="flow" fill="#fbbf24" stroke="#f59e0b" />
-        <Area name="Hoàn thành" dataKey="done" stackId="flow" fill="#4ade80" stroke="#22c55e" />
+        <Area name="Chờ xử lý" dataKey="todo" stackId="flow" fill="hsl(var(--muted-foreground))" stroke="hsl(var(--muted-foreground))" />
+        <Area name="Đang làm" dataKey="progress" stackId="flow" fill="hsl(var(--chart-1))" stroke="hsl(var(--chart-1))" />
+        <Area name="Review" dataKey="review" stackId="flow" fill="hsl(var(--chart-3))" stroke="hsl(var(--chart-3))" />
+        <Area name="Hoàn thành" dataKey="done" stackId="flow" fill="hsl(var(--chart-2))" stroke="hsl(var(--chart-2))" />
       </AreaChart>
     </ResponsiveContainer>
   );
@@ -129,8 +129,8 @@ export function VelocityChart() {
         <XAxis dataKey="sprint" tick={axisStyle} tickLine={false} axisLine={false} />
         <YAxis tick={axisStyle} tickLine={false} axisLine={false} />
         <Tooltip /><Legend />
-        <Bar name="Cam kết" dataKey="committed" fill="#a5b4fc" radius={[4, 4, 0, 0]} />
-        <Bar name="Hoàn thành" dataKey="completed" fill="#4f46e5" radius={[4, 4, 0, 0]} />
+        <Bar name="Cam kết" dataKey="committed" fill="hsl(var(--chart-4))" radius={[4, 4, 0, 0]} />
+        <Bar name="Hoàn thành" dataKey="completed" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
       </BarChart>
     </ResponsiveContainer>
   );
@@ -144,8 +144,8 @@ export function CommitIssueChart() {
         <XAxis dataKey="day" tick={axisStyle} tickLine={false} axisLine={false} />
         <YAxis tick={axisStyle} tickLine={false} axisLine={false} />
         <Tooltip /><Legend />
-        <Bar name="Commit" dataKey="commits" fill="#818cf8" radius={[4, 4, 0, 0]} />
-        <Line name="Issue hoàn thành" dataKey="issues" stroke="#16a34a" strokeWidth={3} />
+        <Bar name="Commit" dataKey="commits" fill="hsl(var(--chart-1))" radius={[4, 4, 0, 0]} />
+        <Line name="Issue hoàn thành" dataKey="issues" stroke="hsl(var(--chart-2))" strokeWidth={3} />
       </ComposedChart>
     </ResponsiveContainer>
   );
@@ -158,7 +158,7 @@ export function CycleTimeChart() {
         <CartesianGrid stroke={gridColor} strokeDasharray="3 3" horizontal={false} />
         <XAxis type="number" unit="h" tick={axisStyle} tickLine={false} axisLine={false} />
         <YAxis type="category" dataKey="type" width={48} tick={axisStyle} tickLine={false} axisLine={false} />
-        <Tooltip /><Bar name="Giờ trung bình" dataKey="hours" fill="#0ea5e9" radius={[0, 4, 4, 0]} />
+        <Tooltip /><Bar name="Giờ trung bình" dataKey="hours" fill="hsl(var(--chart-5))" radius={[0, 4, 4, 0]} />
       </BarChart>
     </ResponsiveContainer>
   );
@@ -172,10 +172,10 @@ export function MemberContributionChart() {
         <XAxis type="number" tick={axisStyle} tickLine={false} axisLine={false} />
         <YAxis type="category" dataKey="member" width={100} tick={axisStyle} tickLine={false} axisLine={false} />
         <Tooltip /><Legend />
-        <Bar name="Commit" dataKey="commit" stackId="member" fill="#6366f1" />
-        <Bar name="Pull request" dataKey="pullRequest" stackId="member" fill="#0ea5e9" />
-        <Bar name="Review" dataKey="review" stackId="member" fill="#f59e0b" />
-        <Bar name="Jira" dataKey="jira" stackId="member" fill="#22c55e" radius={[0, 4, 4, 0]} />
+        <Bar name="Commit" dataKey="commit" stackId="member" fill="hsl(var(--chart-1))" />
+        <Bar name="Pull request" dataKey="pullRequest" stackId="member" fill="hsl(var(--chart-5))" />
+        <Bar name="Review" dataKey="review" stackId="member" fill="hsl(var(--chart-3))" />
+        <Bar name="Jira" dataKey="jira" stackId="member" fill="hsl(var(--chart-2))" radius={[0, 4, 4, 0]} />
       </BarChart>
     </ResponsiveContainer>
   );

@@ -1,7 +1,7 @@
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { SearchIcon, DownloadIcon, UploadIcon, FilterIcon } from "lucide-react";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { SearchIcon, DownloadIcon, UploadIcon } from "lucide-react";
+import { CustomSelect } from "@/components/common/custom-select";
 
 interface MemberFilterBarProps {
   searchQuery: string;
@@ -43,28 +43,29 @@ export function MemberFilterBar({
             />
           </div>
 
-          <Select value={roleFilter} onValueChange={(v) => v && onRoleFilterChange(v)}>
-            <SelectTrigger className="w-[140px] hidden md:flex">
-              <FilterIcon className="w-3.5 h-3.5 mr-2" />
-              <SelectValue placeholder="Vai trò" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Tất cả vai trò</SelectItem>
-              <SelectItem value="LEADER">Trưởng nhóm</SelectItem>
-              <SelectItem value="MEMBER">Thành viên</SelectItem>
-            </SelectContent>
-          </Select>
+          <div className="w-[140px] hidden md:block">
+            <CustomSelect
+              value={roleFilter}
+              onChange={onRoleFilterChange}
+              options={[
+                { value: "all", label: "Tất cả vai trò" },
+                { value: "LEADER", label: "Trưởng nhóm" },
+                { value: "MEMBER", label: "Thành viên" },
+              ]}
+            />
+          </div>
 
-          <Select value={statusFilter} onValueChange={(v) => v && onStatusFilterChange(v)}>
-            <SelectTrigger className="w-[150px] hidden md:flex">
-              <SelectValue placeholder="Trạng thái nhóm" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Tất cả trạng thái</SelectItem>
-              <SelectItem value="has-team">Đã có nhóm</SelectItem>
-              <SelectItem value="no-team">Chưa có nhóm</SelectItem>
-            </SelectContent>
-          </Select>
+          <div className="w-[150px] hidden md:block">
+            <CustomSelect
+              value={statusFilter}
+              onChange={onStatusFilterChange}
+              options={[
+                { value: "all", label: "Tất cả trạng thái" },
+                { value: "has-team", label: "Đã có nhóm" },
+                { value: "no-team", label: "Chưa có nhóm" },
+              ]}
+            />
+          </div>
         </div>
 
         {/* Right side actions */}
