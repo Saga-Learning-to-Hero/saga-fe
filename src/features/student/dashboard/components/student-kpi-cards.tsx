@@ -6,10 +6,8 @@ import {
   GitGraphIcon,
   PieChartIcon,
   TrendingUpIcon,
-  SparklesIcon,
 } from "lucide-react";
 import type { MemberAnalytics } from "../types/student-analytics";
-import { Badge } from "@/components/ui/badge";
 
 interface StudentKPICardsProps {
   analytics: MemberAnalytics;
@@ -86,13 +84,6 @@ export function StudentKPICards({
             GitHub repo: <span className="font-mono text-foreground font-medium">main/branch</span>
           </p>
         </div>
-
-        <div className="flex items-center justify-between text-[11px] text-muted-foreground pt-1 border-t border-border/50">
-          <span>Đẩy mã định kỳ: <strong className="text-foreground font-mono">Đạt</strong></span>
-          <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-0 text-[10px] py-0">
-            Active
-          </Badge>
-        </div>
       </div>
 
       {/* KPI Card 3: Chỉ số SAGA Traceability Score */}
@@ -111,18 +102,10 @@ export function StudentKPICards({
             <span className="text-2xl sm:text-3xl font-black text-primary tracking-tight font-mono">
               {analytics.traceabilityScore}%
             </span>
-            <Badge className="bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-0 text-[10px] font-semibold">
-              Xuất sắc
-            </Badge>
           </div>
           <p className="text-xs text-muted-foreground mt-0.5">
             Liên kết 1-1 giữa Task Jira & GitHub Commits
           </p>
-        </div>
-
-        <div className="flex items-center gap-1.5 text-[11px] text-emerald-600 dark:text-emerald-400 font-medium pt-1 border-t border-border/50">
-          <SparklesIcon className="w-3 h-3" />
-          <span>Đủ điều kiện bảo vệ đồ án tốt nghiệp.</span>
         </div>
       </div>
 
@@ -142,13 +125,7 @@ export function StudentKPICards({
             <span className="text-2xl sm:text-3xl font-black text-foreground tracking-tight font-mono">
               {analytics.contributionPercentage}%
             </span>
-            <span className="text-xs text-muted-foreground font-medium">
-              (Khối lượng nhóm)
-            </span>
           </div>
-          <p className="text-xs text-muted-foreground mt-0.5">
-            Xếp hạng: <strong className="text-foreground font-semibold">Top 1 trong nhóm</strong>
-          </p>
         </div>
 
         <div className="w-full bg-muted h-1.5 rounded-full overflow-hidden">

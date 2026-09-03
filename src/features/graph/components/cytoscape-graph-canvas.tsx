@@ -431,7 +431,7 @@ export function CytoscapeGraphCanvas({
       <div className="absolute bottom-4 left-4 flex flex-wrap items-center gap-1.5 p-1.5 rounded-2xl bg-card/95 backdrop-blur-md border border-border/80 shadow-lg text-xs pointer-events-auto">
         <span className="px-2 text-[11px] font-bold text-muted-foreground flex items-center gap-1">
           <LayersIcon className="w-3.5 h-3.5 text-primary" />
-          Thuật toán Bố cục:
+          Bố cục:
         </span>
         {(["breadthfirst", "cose", "concentric", "circle"] as const).map((l) => (
           <button
@@ -443,12 +443,12 @@ export function CytoscapeGraphCanvas({
               }`}
           >
             {l === "breadthfirst"
-              ? "Phân cấp Trực giao (Tree)"
+              ? "Tree"
               : l === "cose"
-                ? "Lực đàn hồi (Force-directed)"
+                ? "Force-directed"
                 : l === "concentric"
-                  ? "Đồng tâm (Concentric)"
-                  : "Vòng tròn (Circular)"}
+                  ? "Concentric"
+                  : "Circular"}
           </button>
         ))}
       </div>

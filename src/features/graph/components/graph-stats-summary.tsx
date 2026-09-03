@@ -38,9 +38,6 @@ export function GraphStatsSummary({
             <span className="text-3xl sm:text-4xl font-black text-foreground tracking-tight font-mono">
               {traceabilityRate}%
             </span>
-            <Badge className="bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 text-[10px] font-bold py-0.5">
-              Chuẩn XAI
-            </Badge>
           </div>
           <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
             Tỷ lệ đầu việc Jira có mã nguồn Git đối soát hợp lệ
@@ -114,8 +111,8 @@ export function GraphStatsSummary({
           </span>
           <div
             className={`w-9 h-9 rounded-2xl flex items-center justify-center shadow-xs ${msrCount > 0
-                ? "bg-red-500/15 text-red-600 dark:text-red-400"
-                : "bg-emerald-500/10 text-emerald-600"
+              ? "bg-red-500/15 text-red-600 dark:text-red-400"
+              : "bg-emerald-500/10 text-emerald-600"
               }`}
           >
             <AlertTriangleIcon className="w-5 h-5" />

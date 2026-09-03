@@ -50,7 +50,7 @@ export function TraceabilityMatrixTable() {
                 <th className="p-4 text-center">Trọng Số (Weight)</th>
                 <th className="p-4">Dấu Vết Git Commit Đối Soát</th>
                 <th className="p-4 text-center">Biến Động Mã Nguồn</th>
-                <th className="p-4 text-right">Trạng Thái XAI</th>
+                <th className="p-4 text-right">Trạng Thái</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border/50">
