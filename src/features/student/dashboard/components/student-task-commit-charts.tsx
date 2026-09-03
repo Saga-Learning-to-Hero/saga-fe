@@ -7,7 +7,6 @@ import {
   GitCommitIcon,
   CheckSquareIcon,
   LayersIcon,
-  TrendingUpIcon,
 } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -22,7 +21,11 @@ export function StudentTaskCommitCharts({
   analytics,
   weeklyData,
 }: StudentTaskCommitChartsProps) {
-  const [hoveredWeek, setHoveredWeek] = useState<WeeklyActivity | null>(null);
+  const [hoveredBar, setHoveredBar] = useState<{
+    week: string;
+    type: "COMMITS" | "TASKS";
+    activity: WeeklyActivity;
+  } | null>(null);
   const [filterType, setFilterType] = useState<"ALL" | "COMMITS" | "TASKS">("ALL");
 
   const maxVal = Math.max(...weeklyData.map((d) => d.commits), 40);
@@ -49,29 +52,50 @@ export function StudentTaskCommitCharts({
               </div>
             </div>
 
-            {/* Filter Toggle */}
-            <div className="flex items-center gap-1 bg-muted/60 p-1 rounded-xl border border-border/60">
-              <button
-                onClick={() => setFilterType("ALL")}
-                className={`px-2.5 py-1 text-[11px] font-medium rounded-lg transition-colors cursor-pointer ${filterType === "ALL" ? "bg-card text-foreground font-semibold shadow-xs" : "text-muted-foreground"
-                  }`}
-              >
-                Tất cả
-              </button>
-              <button
-                onClick={() => setFilterType("COMMITS")}
-                className={`px-2.5 py-1 text-[11px] font-medium rounded-lg transition-colors cursor-pointer ${filterType === "COMMITS" ? "bg-card text-primary font-semibold shadow-xs" : "text-muted-foreground"
-                  }`}
-              >
-                Chỉ Commits
-              </button>
-              <button
-                onClick={() => setFilterType("TASKS")}
-                className={`px-2.5 py-1 text-[11px] font-medium rounded-lg transition-colors cursor-pointer ${filterType === "TASKS" ? "bg-card text-blue-600 font-semibold shadow-xs" : "text-muted-foreground"
-                  }`}
-              >
-                Chỉ Tasks
-              </button>
+            <div className="flex flex-wrap items-center gap-3">
+              {/* Chú thích riêng cho từng cột (Chart Column Legend) */}
+              <div className="flex items-center gap-3 bg-muted/40 px-3 py-1.5 rounded-xl border border-border/60 text-xs">
+                <div className="flex items-center gap-1.5">
+                  <span className="w-2.5 h-2.5 rounded-xs bg-primary shadow-xs" />
+                  <span className="text-foreground font-semibold flex items-center gap-1 text-[11px]">
+                    <GitCommitIcon className="w-3.5 h-3.5 text-primary" />
+                    GitHub Commits
+                  </span>
+                </div>
+                <div className="h-3 w-px bg-border/80" />
+                <div className="flex items-center gap-1.5">
+                  <span className="w-2.5 h-2.5 rounded-xs bg-cyan-500 shadow-xs" />
+                  <span className="text-foreground font-semibold flex items-center gap-1 text-[11px]">
+                    <CheckSquareIcon className="w-3.5 h-3.5 text-cyan-500" />
+                    Task Jira Hoàn thành
+                  </span>
+                </div>
+              </div>
+
+              {/* Filter Toggle */}
+              <div className="flex items-center gap-1 bg-muted/60 p-1 rounded-xl border border-border/60">
+                <button
+                  onClick={() => setFilterType("ALL")}
+                  className={`px-2.5 py-1 text-[11px] font-medium rounded-lg transition-colors cursor-pointer ${filterType === "ALL" ? "bg-card text-foreground font-semibold shadow-xs" : "text-muted-foreground"
+                    }`}
+                >
+                  Tất cả
+                </button>
+                <button
+                  onClick={() => setFilterType("COMMITS")}
+                  className={`px-2.5 py-1 text-[11px] font-medium rounded-lg transition-colors cursor-pointer ${filterType === "COMMITS" ? "bg-card text-primary font-semibold shadow-xs" : "text-muted-foreground"
+                    }`}
+                >
+                  Chỉ Commits
+                </button>
+                <button
+                  onClick={() => setFilterType("TASKS")}
+                  className={`px-2.5 py-1 text-[11px] font-medium rounded-lg transition-colors cursor-pointer ${filterType === "TASKS" ? "bg-card text-cyan-500 font-semibold shadow-xs" : "text-muted-foreground"
+                    }`}
+                >
+                  Chỉ Tasks
+                </button>
+              </div>
             </div>
           </div>
         </CardHeader>
@@ -104,37 +128,58 @@ export function StudentTaskCommitCharts({
               {weeklyData.map((item, idx) => {
                 const commitHeight = Math.round((item.commits / maxVal) * 190);
                 const taskHeight = Math.round(((item.tasksDone * 6) / maxVal) * 190);
-                const isHovered = hoveredWeek?.week === item.week;
+                const isCommitHovered = hoveredBar?.week === item.week && hoveredBar?.type === "COMMITS";
+                const isTaskHovered = hoveredBar?.week === item.week && hoveredBar?.type === "TASKS";
+                const isWeekActive = hoveredBar?.week === item.week;
 
                 return (
                   <div
                     key={idx}
-                    onMouseEnter={() => setHoveredWeek(item)}
-                    onMouseLeave={() => setHoveredWeek(null)}
-                    className="flex-1 flex flex-col items-center justify-end h-full group relative cursor-pointer"
+                    onMouseLeave={() => setHoveredBar(null)}
+                    className="flex-1 flex flex-col items-center justify-end h-full group relative"
                   >
                     {/* Hover Highlight */}
-                    {isHovered && (
+                    {isWeekActive && (
                       <div className="absolute inset-x-0 bottom-0 top-0 bg-primary/5 rounded-xl pointer-events-none -z-10 animate-in fade-in-0" />
                     )}
 
-                    {/* Tooltip */}
-                    {isHovered && (
-                      <div className="absolute -top-20 left-1/2 -translate-x-1/2 bg-popover/95 backdrop-blur-md text-popover-foreground border border-border shadow-xl rounded-xl p-3 text-xs whitespace-nowrap z-40 pointer-events-none space-y-1">
-                        <p className="font-bold text-foreground">{item.week}</p>
-                        <div className="flex items-center gap-3">
-                          <span className="text-primary font-semibold flex items-center gap-1">
-                            <GitCommitIcon className="w-3.5 h-3.5" />
-                            {item.commits} Commits (+{item.linesAdded} lines)
-                          </span>
-                          <span className="text-blue-600 font-semibold flex items-center gap-1">
-                            <CheckSquareIcon className="w-3.5 h-3.5" />
-                            {item.tasksDone} Tasks Done
-                          </span>
+                    {/* Tooltip riêng biệt cho cột GitHub Commits */}
+                    {isCommitHovered && (
+                      <div className="absolute -top-24 left-1/2 -translate-x-1/2 bg-popover/95 backdrop-blur-md text-popover-foreground border border-primary/40 shadow-xl rounded-xl p-3 text-xs whitespace-nowrap z-40 pointer-events-none space-y-1.5 animate-in fade-in-0 zoom-in-95 ring-1 ring-primary/20">
+                        <div className="flex items-center justify-between gap-3 border-b border-border/60 pb-1">
+                          <span className="font-bold text-foreground">{item.week}</span>
+                          <Badge className="bg-primary/15 text-primary border-primary/30 text-[10px] font-bold py-0 px-1.5">
+                            GitHub Commits
+                          </Badge>
                         </div>
-                        <p className="text-[10px] text-muted-foreground">
-                          Traceability rate: <strong className="text-emerald-600 font-mono">{item.traceabilityRate}%</strong>
-                        </p>
+                        <div className="flex items-center gap-1.5 text-primary font-bold text-sm">
+                          <GitCommitIcon className="w-4 h-4" />
+                          <span>{item.commits} Commits</span>
+                        </div>
+                        <div className="flex items-center justify-between gap-3 text-[10px] text-muted-foreground pt-0.5">
+                          <span>Mã nguồn: <strong className="text-emerald-500 font-mono">+{item.linesAdded} lines</strong></span>
+                          <span>Traceability: <strong className="text-foreground font-mono">{item.traceabilityRate}%</strong></span>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Tooltip riêng biệt cho cột Task Jira */}
+                    {isTaskHovered && (
+                      <div className="absolute -top-24 left-1/2 -translate-x-1/2 bg-popover/95 backdrop-blur-md text-popover-foreground border border-cyan-500/40 shadow-xl rounded-xl p-3 text-xs whitespace-nowrap z-40 pointer-events-none space-y-1.5 animate-in fade-in-0 zoom-in-95 ring-1 ring-cyan-500/20">
+                        <div className="flex items-center justify-between gap-3 border-b border-border/60 pb-1">
+                          <span className="font-bold text-foreground">{item.week}</span>
+                          <Badge className="bg-cyan-500/15 text-cyan-600 dark:text-cyan-400 border-cyan-500/30 text-[10px] font-bold py-0 px-1.5">
+                            Task Jira
+                          </Badge>
+                        </div>
+                        <div className="flex items-center gap-1.5 text-cyan-600 dark:text-cyan-400 font-bold text-sm">
+                          <CheckSquareIcon className="w-4 h-4" />
+                          <span>{item.tasksDone} Tasks Hoàn thành</span>
+                        </div>
+                        <div className="flex items-center justify-between gap-3 text-[10px] text-muted-foreground pt-0.5">
+                          <span>Trạng thái: <strong className="text-emerald-500 font-medium">Đã nghiệm thu (Done)</strong></span>
+                          <span>Ước tính: <strong className="text-foreground font-mono">{item.tasksDone * 3} SP</strong></span>
+                        </div>
                       </div>
                     )}
 
@@ -142,27 +187,36 @@ export function StudentTaskCommitCharts({
                     <div className="w-full flex items-end justify-center gap-1.5 pb-0.5">
                       {(filterType === "ALL" || filterType === "COMMITS") && (
                         <div
+                          onMouseEnter={() => setHoveredBar({ week: item.week, type: "COMMITS", activity: item })}
                           style={{ height: `${commitHeight}px` }}
-                          className={`w-4 sm:w-7 rounded-t-md transition-all duration-300 ${isHovered
-                              ? "bg-primary shadow-md shadow-primary/30"
-                              : "bg-primary/80 group-hover:bg-primary"
-                            }`}
+                          className={`w-4 sm:w-7 rounded-t-md transition-all duration-200 cursor-pointer ${
+                            isCommitHovered
+                              ? "bg-primary shadow-lg shadow-primary/40 ring-2 ring-primary ring-offset-2 ring-offset-background scale-y-105 origin-bottom"
+                              : isTaskHovered
+                              ? "bg-primary/40"
+                              : "bg-primary/85 hover:bg-primary"
+                          }`}
                         />
                       )}
                       {(filterType === "ALL" || filterType === "TASKS") && (
                         <div
+                          onMouseEnter={() => setHoveredBar({ week: item.week, type: "TASKS", activity: item })}
                           style={{ height: `${taskHeight}px` }}
-                          className={`w-4 sm:w-7 rounded-t-md transition-all duration-300 ${isHovered
-                              ? "bg-blue-500 shadow-md shadow-blue-500/30"
-                              : "bg-blue-500/80 group-hover:bg-blue-500"
-                            }`}
+                          className={`w-4 sm:w-7 rounded-t-md transition-all duration-200 cursor-pointer ${
+                            isTaskHovered
+                              ? "bg-cyan-500 shadow-lg shadow-cyan-500/40 ring-2 ring-cyan-500 ring-offset-2 ring-offset-background scale-y-105 origin-bottom"
+                              : isCommitHovered
+                              ? "bg-cyan-500/40"
+                              : "bg-cyan-500/85 hover:bg-cyan-500"
+                          }`}
                         />
                       )}
                     </div>
 
                     <span
-                      className={`text-[11px] font-mono mt-2 font-semibold transition-colors ${isHovered ? "text-primary" : "text-muted-foreground"
-                        }`}
+                      className={`text-[11px] font-mono mt-2 font-semibold transition-colors ${
+                        isWeekActive ? "text-primary" : "text-muted-foreground"
+                      }`}
                     >
                       {item.week}
                     </span>
@@ -172,13 +226,18 @@ export function StudentTaskCommitCharts({
             </div>
           </div>
 
-          {/* Footer note */}
-          <div className="flex items-center justify-between text-xs text-muted-foreground pt-2 border-t border-border/60">
-            <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-medium">
-              <TrendingUpIcon className="w-3.5 h-3.5" />
-              Tiến độ duy trì đều đặn 4 tuần liên tiếp
-            </span>
-            <Badge variant="outline" className="font-mono text-[10px]">
+          {/* Footer note & Column Indicator */}
+          <div className="relative flex flex-col sm:flex-row items-center justify-center pt-2 border-t border-border/60 gap-2 text-xs text-muted-foreground">
+            <div className="flex items-center gap-4 text-[11px]">
+              <span className="inline-flex items-center gap-1.5 text-foreground font-medium">
+                <span className="w-2.5 h-2.5 rounded-xs bg-primary shadow-xs" /> GitHub Commits
+              </span>
+              <span className="inline-flex items-center gap-1.5 text-foreground font-medium">
+                <span className="w-2.5 h-2.5 rounded-xs bg-cyan-500 shadow-xs" /> Tasks Jira
+              </span>
+            </div>
+
+            <Badge variant="outline" className="font-mono text-[10px] sm:absolute sm:right-0">
               Tỷ lệ Traceability TB: 90%
             </Badge>
           </div>
@@ -276,11 +335,14 @@ export function StudentTaskCommitCharts({
               </span>
             </div>
 
-            <div className="space-y-2 text-xs">
+            <div className="space-y-2.5 text-xs">
               {analytics.workloadCategories.map((cat, idx) => (
                 <div key={idx} className="space-y-1">
                   <div className="flex items-center justify-between text-[11px]">
-                    <span className="text-muted-foreground font-medium">{cat.category}</span>
+                    <span className="text-foreground font-semibold flex items-center gap-1.5">
+                      <span className={`w-2 h-2 rounded-full ${cat.color} shrink-0`} />
+                      {cat.category}
+                    </span>
                     <span className="font-mono font-bold text-foreground">{cat.storyPoints} SP ({cat.percentage}%)</span>
                   </div>
                   <div className="h-1.5 rounded-full bg-muted overflow-hidden">

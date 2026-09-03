@@ -20,7 +20,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { StudentKPICards } from "./student-kpi-cards";
 import { StudentTaskCommitCharts } from "./student-task-commit-charts";
-import { StudentTraceabilityGraphCard } from "./student-traceability-graph-card";
 import { TeamWorkloadComparisonChart } from "./team-workload-comparison-chart";
 import { MOCK_TEAM_SUMMARY, MOCK_TEAM_MEMBERS } from "../data/mock-student-analytics";
 import type { MemberAnalytics } from "../types/student-analytics";
@@ -203,8 +202,6 @@ export function StudentDashboardAnalytics({
         weeklyData={isAllTeam ? MOCK_TEAM_SUMMARY.teamWeeklyActivities : activeMember.weeklyActivities}
       />
 
-      {/* ── Section 3: Interactive Cytoscape Traceability Graph Preview ── */}
-      <StudentTraceabilityGraphCard />
 
       {/* ── Section 4: Special Leader View (So sánh đóng góp giữa các thành viên) ─ */}
       {isLeader && (

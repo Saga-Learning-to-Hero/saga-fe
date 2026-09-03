@@ -16,6 +16,7 @@ import {
   SlidersHorizontalIcon,
   DatabaseIcon,
   UserCogIcon,
+  Link2Icon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { isNavItemActive } from "@/components/layout/sidebar/nav-config";
@@ -35,6 +36,7 @@ const ICON_MAP: Record<string, React.ElementType> = {
   SlidersHorizontal: SlidersHorizontalIcon,
   Database: DatabaseIcon,
   UserCog: UserCogIcon,
+  Link2: Link2Icon,
 };
 
 interface TopNavTabsProps {

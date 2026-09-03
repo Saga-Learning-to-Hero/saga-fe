@@ -20,6 +20,7 @@ import {
   UserCheckIcon,
   SlidersHorizontalIcon,
   ArrowLeftIcon,
+  Link2Icon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -46,6 +47,7 @@ const ICON_MAP: Record<string, React.ElementType> = {
   UserCheck: UserCheckIcon,
   SlidersHorizontal: SlidersHorizontalIcon,
   ArrowLeft: ArrowLeftIcon,
+  Link2: Link2Icon,
 };
 
 interface SidebarNavProps {

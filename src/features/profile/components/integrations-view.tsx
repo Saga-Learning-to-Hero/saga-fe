@@ -1,10 +1,8 @@
 "use client";
 
-import Link from "next/link";
 import {
   Link2Icon,
   CheckCircle2Icon,
-  ArrowLeftIcon,
   ShieldCheckIcon,
 } from "lucide-react";
 import type { User } from "@/types/auth";
@@ -22,32 +20,22 @@ export function IntegrationsView({ user }: IntegrationsViewProps) {
 
   return (
     <div className="space-y-6 max-w-[1600px] mx-auto pb-12">
-      {/* ── Breadcrumb & Back Link ── */}
-      <div className="flex items-center justify-between gap-3">
-        <Link
-          href="/profile"
-          className="inline-flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors"
+      {/* ── Status Bar ── */}
+      <div className="flex items-center justify-end gap-2">
+        <span className="text-xs text-muted-foreground hidden sm:inline">Trạng thái kết nối:</span>
+        <Badge
+          variant="outline"
+          className={
+            isJiraConnected && isGitHubConnected
+              ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 font-semibold text-[11px]"
+              : "bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/30 font-semibold text-[11px]"
+          }
         >
-          <ArrowLeftIcon className="size-3.5" />
-          <span>Quay lại Hồ sơ cá nhân</span>
-        </Link>
-
-        <div className="flex items-center gap-2">
-          <span className="text-xs text-muted-foreground hidden sm:inline">Trạng thái kết nối:</span>
-          <Badge
-            variant="outline"
-            className={
-              isJiraConnected && isGitHubConnected
-                ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 font-semibold text-[11px]"
-                : "bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/30 font-semibold text-[11px]"
-            }
-          >
-            <CheckCircle2Icon className="size-3 mr-1" />
-            {isJiraConnected && isGitHubConnected
-              ? "Đã kết nối 2/2 công cụ"
-              : `Đã kết nối ${Number(isJiraConnected) + Number(isGitHubConnected)}/2 công cụ`}
-          </Badge>
-        </div>
+          <CheckCircle2Icon className="size-3 mr-1" />
+          {isJiraConnected && isGitHubConnected
+            ? "Đã kết nối 2/2 công cụ"
+            : `Đã kết nối ${Number(isJiraConnected) + Number(isGitHubConnected)}/2 công cụ`}
+        </Badge>
       </div>
 
       {/* ── Banner Trung tâm Tích hợp ── */}

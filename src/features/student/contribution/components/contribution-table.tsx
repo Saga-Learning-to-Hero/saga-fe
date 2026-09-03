@@ -3,9 +3,8 @@
 import {
   CrownIcon,
   StarIcon,
-  AlertTriangleIcon,
 } from "lucide-react";
-import type { MemberContribution, MemberStatusTag } from "../types/contribution";
+import type { MemberContribution } from "../types/contribution";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -16,35 +15,6 @@ interface ContributionTableProps {
 }
 
 export function ContributionTable({ members, currentStudentCode }: ContributionTableProps) {
-  const getStatusBadge = (tag: MemberStatusTag) => {
-    switch (tag) {
-      case "EXCEEDED":
-        return (
-          <Badge className="bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 text-[10px] font-bold">
-            Vượt chỉ tiêu
-          </Badge>
-        );
-      case "BALANCED":
-        return (
-          <Badge className="bg-blue-500/15 text-blue-600 dark:text-blue-400 border-blue-500/30 text-[10px] font-bold">
-            Đạt chuẩn
-          </Badge>
-        );
-      case "BEHIND":
-        return (
-          <Badge className="bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/30 text-[10px] font-bold">
-            Cần tăng tốc
-          </Badge>
-        );
-      case "GHOSTING_RISK":
-        return (
-          <Badge className="bg-rose-500/15 text-rose-600 dark:text-rose-400 border-rose-500/30 text-[10px] font-bold gap-1">
-            <AlertTriangleIcon className="w-3 h-3" />
-            Cảnh báo thiếu hụt
-          </Badge>
-        );
-    }
-  };
 
   return (
     <Card className="rounded-2xl border border-border/80 shadow-2xs bg-card overflow-hidden">
@@ -74,8 +44,7 @@ export function ContributionTable({ members, currentStudentCode }: ContributionT
               <th className="py-3 px-3">Commit &amp; Code Diff</th>
               <th className="py-3 px-3 text-center">Đánh giá Chéo</th>
               <th className="py-3 px-3 text-center">Ma vết (%)</th>
-              <th className="py-3 px-4 min-w-[140px]">Tỷ lệ Đóng góp (%)</th>
-              <th className="py-3 px-4 text-right">Trạng thái</th>
+              <th className="py-3 px-4 min-w-[160px] text-right">Tỷ lệ Đóng góp (%)</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-border/60">
@@ -194,11 +163,6 @@ export function ContributionTable({ members, currentStudentCode }: ContributionT
                         />
                       </div>
                     </div>
-                  </td>
-
-                  {/* Status Badge */}
-                  <td className="py-3.5 px-4 text-right">
-                    {getStatusBadge(m.statusTag)}
                   </td>
                 </tr>
               );
