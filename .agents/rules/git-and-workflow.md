@@ -23,8 +23,8 @@ description: Git branching strategy, Vietnamese commit message conventions, auth
 Mọi commit trong repository **BẮT BUỘC** phải được cấu hình chính xác danh tính tác giả cá nhân:
 
 ```bash
-git config --local user.name "lehai170504"
-git config --local user.email "hoanghaile175@gmail.com"
+git config --local user.name "buiminh20"
+git config --local user.email "nhatminh2083@gmail.com"
 ```
 
 ---
