@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import {
-  NetworkIcon,
-} from "lucide-react";
+import { NetworkIcon } from "lucide-react";
 import { CytoscapeGraphCanvas } from "./cytoscape-graph-canvas";
+import { TraceabilityFlowCanvas } from "./traceability-flow-canvas";
 import { GraphFilterBar } from "./graph-filter-bar";
 import { GraphStatsSummary } from "./graph-stats-summary";
 import { GraphNodeDetailsModal } from "./graph-node-details-modal";
@@ -15,19 +14,15 @@ import type { GraphNodeData } from "../types/graph";
 export function TraceabilityGraphView() {
   const initialData = useMemo(() => getMockTraceabilityGraphData(), []);
 
-  // Filters State
   const [selectedStudentId, setSelectedStudentId] = useState<string>("ALL");
   const [selectedSprint, setSelectedSprint] = useState<string>("ALL");
   const [filterType, setFilterType] = useState<"ALL" | "ANOMALIES_ONLY" | "TASKS_COMMITS">("ALL");
-
-  // Selected Node for Modal
+  const [viewMode, setViewMode] = useState<"FLOW" | "GRAPH">("FLOW");
   const [selectedNode, setSelectedNode] = useState<GraphNodeData | null>(null);
 
-  // Dynamic Graph Filter logic
   const filteredGraphData = useMemo(() => {
     let filteredNodes = [...initialData.nodes];
 
-    // 1. Filter theo sinh viên
     if (selectedStudentId !== "ALL") {
       filteredNodes = filteredNodes.filter((n) => {
         if (n.type === "STUDENT") return n.id === selectedStudentId;
@@ -37,7 +32,6 @@ export function TraceabilityGraphView() {
       });
     }
 
-    // 2. Filter theo Sprint
     if (selectedSprint !== "ALL") {
       filteredNodes = filteredNodes.filter((n) => {
         if (n.type === "TASK" && "sprintId" in n.data) return n.data.sprintId === selectedSprint;
@@ -45,7 +39,6 @@ export function TraceabilityGraphView() {
       });
     }
 
-    // 3. Filter theo Loại bất thường
     if (filterType === "ANOMALIES_ONLY") {
       filteredNodes = filteredNodes.filter((n) => {
         return (
@@ -78,7 +71,6 @@ export function TraceabilityGraphView() {
 
   return (
     <div className="space-y-6">
-      {/* ── Header & Academic Metadata ── */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2 text-primary font-bold text-xs">
@@ -89,22 +81,12 @@ export function TraceabilityGraphView() {
             Đồ Thị Truy Xuất Nguồn Gốc (Traceability Graph)
           </h1>
           <p className="text-xs text-muted-foreground mt-0.5 max-w-3xl leading-relaxed">
-            Hệ thống trực quan hóa minh chứng kỹ thuật thực nghiệm (Empirical Evidence) từ đầu việc Jira đến từng commit Git theo thời gian thực nhằm chứng minh công sức đóng góp của sinh viên
+            Hệ thống trực quan hóa minh chứng kỹ thuật thực nghiệm từ đầu việc Jira đến từng commit Git theo thời gian thực nhằm chứng minh công sức đóng góp của sinh viên
           </p>
         </div>
       </div>
 
-      {/* ── Traceability Graph View ── */}
       <div className="space-y-6 animate-in fade-in-0 duration-200">
-        {/* Summary Metric Cards */}
-        <GraphStatsSummary
-          totalNodes={filteredGraphData.nodes.length}
-          totalEdges={filteredGraphData.edges.length}
-          traceabilityRate={initialData.summary.traceabilityRate}
-          msrCount={initialData.summary.msrAnomaliesCount}
-        />
-
-        {/* Filter Bar */}
         <GraphFilterBar
           selectedStudentId={selectedStudentId}
           onSelectStudent={setSelectedStudentId}
@@ -115,21 +97,36 @@ export function TraceabilityGraphView() {
           onExport={handleExport}
           onReset={handleResetFilters}
           anomaliesCount={initialData.summary.msrAnomaliesCount}
+          viewMode={viewMode}
+          onSelectViewMode={setViewMode}
         />
 
-        {/* Cytoscape Canvas */}
-        <CytoscapeGraphCanvas
-          nodes={filteredGraphData.nodes}
-          edges={filteredGraphData.edges}
-          onSelectNode={(node) => setSelectedNode(node)}
-          layoutName="breadthfirst"
+        {viewMode === "FLOW" ? (
+          <TraceabilityFlowCanvas
+            nodes={filteredGraphData.nodes}
+            edges={filteredGraphData.edges}
+            onSelectNode={(node) => setSelectedNode(node)}
+            highlightMSRAnomaly={true}
+          />
+        ) : (
+          <CytoscapeGraphCanvas
+            nodes={filteredGraphData.nodes}
+            edges={filteredGraphData.edges}
+            onSelectNode={(node) => setSelectedNode(node)}
+            layoutName="breadthfirst"
+          />
+        )}
+
+        <GraphStatsSummary
+          totalNodes={filteredGraphData.nodes.length}
+          totalEdges={filteredGraphData.edges.length}
+          traceabilityRate={initialData.summary.traceabilityRate}
+          msrCount={initialData.summary.msrAnomaliesCount}
         />
 
-        {/* Academic Traceability Matrix Audit Table */}
         <TraceabilityMatrixTable />
       </div>
 
-      {/* Node Inspector Modal */}
       <GraphNodeDetailsModal nodeData={selectedNode} onClose={() => setSelectedNode(null)} />
     </div>
   );

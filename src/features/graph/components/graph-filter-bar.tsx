@@ -6,6 +6,8 @@ import {
   AlertTriangleIcon,
   DownloadIcon,
   RefreshCwIcon,
+  SparklesIcon,
+  NetworkIcon,
 } from "lucide-react";
 import { CustomSelect } from "@/components/common/custom-select";
 import { Button } from "@/components/ui/button";
@@ -21,6 +23,8 @@ interface GraphFilterBarProps {
   onExport: () => void;
   onReset: () => void;
   anomaliesCount: number;
+  viewMode?: "FLOW" | "GRAPH";
+  onSelectViewMode?: (mode: "FLOW" | "GRAPH") => void;
 }
 
 export function GraphFilterBar({
@@ -33,6 +37,8 @@ export function GraphFilterBar({
   onExport,
   onReset,
   anomaliesCount,
+  viewMode = "FLOW",
+  onSelectViewMode,
 }: GraphFilterBarProps) {
   const studentOptions = [
     { value: "ALL", label: "Tất cả thành viên nhóm (5 người)" },
@@ -52,9 +58,7 @@ export function GraphFilterBar({
   return (
     <div className="p-4 rounded-3xl bg-card border border-border/80 shadow-xs space-y-3.5">
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
-        {/* Left Side: Selectors */}
         <div className="flex flex-wrap items-center gap-3">
-          {/* Filter Member */}
           <div className="space-y-1 min-w-[240px]">
             <label className="text-[11px] font-semibold text-muted-foreground flex items-center gap-1.5">
               <UserIcon className="w-3.5 h-3.5 text-blue-500" />
@@ -67,7 +71,6 @@ export function GraphFilterBar({
             />
           </div>
 
-          {/* Filter Sprint */}
           <div className="space-y-1 min-w-[220px]">
             <label className="text-[11px] font-semibold text-muted-foreground flex items-center gap-1.5">
               <LayersIcon className="w-3.5 h-3.5 text-purple-500" />
@@ -81,9 +84,32 @@ export function GraphFilterBar({
           </div>
         </div>
 
-        {/* Right Side: Quick Filters & Actions */}
         <div className="flex flex-wrap items-center gap-2">
-          {/* Quick Filter Tags */}
+          {onSelectViewMode && (
+            <div className="flex items-center gap-1 p-1 bg-primary/10 rounded-2xl border border-primary/20 text-xs">
+              <button
+                onClick={() => onSelectViewMode("FLOW")}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-extrabold transition-all cursor-pointer ${viewMode === "FLOW"
+                  ? "bg-primary text-primary-foreground shadow-xs"
+                  : "text-primary hover:bg-primary/10"
+                  }`}
+              >
+                <SparklesIcon className="w-3.5 h-3.5" />
+                <span>Pipeline Flow</span>
+              </button>
+              <button
+                onClick={() => onSelectViewMode("GRAPH")}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-extrabold transition-all cursor-pointer ${viewMode === "GRAPH"
+                  ? "bg-primary text-primary-foreground shadow-xs"
+                  : "text-primary hover:bg-primary/10"
+                  }`}
+              >
+                <NetworkIcon className="w-3.5 h-3.5" />
+                <span>Neo4j Graph</span>
+              </button>
+            </div>
+          )}
+
           <div className="flex items-center gap-1 p-1 bg-muted/60 rounded-2xl border border-border/60 text-xs">
             <button
               onClick={() => onSelectFilterType("ALL")}
@@ -92,17 +118,17 @@ export function GraphFilterBar({
                 : "text-muted-foreground hover:text-foreground"
                 }`}
             >
-              Toàn bộ đồ thị
+              Toàn bộ
             </button>
             <button
               onClick={() => onSelectFilterType("ANOMALIES_ONLY")}
               className={`px-3 py-1.5 rounded-xl font-bold transition-colors cursor-pointer flex items-center gap-1.5 ${filterType === "ANOMALIES_ONLY"
-                ? "bg-amber-500/20 text-amber-700 dark:text-amber-300 border border-amber-500/40 shadow-2xs"
+                ? "bg-red-500/20 text-red-700 dark:text-red-300 border border-red-500/40 shadow-2xs"
                 : "text-muted-foreground hover:text-foreground"
                 }`}
             >
-              <AlertTriangleIcon className="w-3.5 h-3.5 text-amber-500" />
-              Chỉ cảnh báo ({anomaliesCount})
+              <AlertTriangleIcon className="w-3.5 h-3.5 text-red-500" />
+              Cảnh báo ({anomaliesCount})
             </button>
           </div>
 

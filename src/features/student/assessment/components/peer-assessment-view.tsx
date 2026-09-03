@@ -134,8 +134,8 @@ export function PeerAssessmentView() {
                 Sprint đã hoàn thành (Mở Form Đánh giá)
               </Badge>
             ) : (
-              <Badge variant="outline" className="bg-amber-500/10 text-amber-600 border-amber-500/30 font-bold text-xs gap-1 hidden md:flex self-end mb-0.5">
-                <LockIcon className="w-3.5 h-3.5" />
+              <Badge variant="outline" className="bg-amber-500/15 text-amber-900 dark:text-amber-300 border-amber-500/30 font-bold text-xs gap-1 hidden md:flex self-end mb-0.5">
+                <LockIcon className="w-3.5 h-3.5 text-amber-700 dark:text-amber-400" />
                 Sprint đang mở (Chưa đóng)
               </Badge>
             )}
@@ -149,8 +149,8 @@ export function PeerAssessmentView() {
 
       {/* Warning Notice if selecting ACTIVE or PLANNED sprint */}
       {isSprintLocked && (
-        <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-700 dark:text-amber-300 text-xs font-semibold flex items-center gap-3 animate-in fade-in-0 shadow-2xs">
-          <ShieldAlertIcon className="w-5 h-5 shrink-0 text-amber-500" />
+        <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-950 dark:text-amber-200 text-xs font-semibold flex items-center gap-3 animate-in fade-in-0 shadow-2xs">
+          <ShieldAlertIcon className="w-5 h-5 shrink-0 text-amber-600 dark:text-amber-400" />
           <div>
             <strong className="block text-sm font-bold">Sprint này đang diễn ra / Chưa kết thúc!</strong>
             <span>

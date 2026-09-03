@@ -98,7 +98,7 @@ export function getLecturerNavItems(courseId: string): NavItem[] {
     },
     {
       id: "course-graph",
-      title: "Đồ thị truy xuất",
+      title: "Đồ thị",
       href: lecturerCourseGraphPath(courseId),
       icon: "GitGraph",
       match: "exact",
