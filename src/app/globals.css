@@ -9,8 +9,8 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
-/* ---------- Dark variant: class .dark HOẶC system preference ---------- */
-@custom-variant dark (&:is(.dark *), @media (prefers-color-scheme: dark));
+/* ---------- Dark variant: class .dark ---------- */
+@custom-variant dark (&:where(.dark, .dark *));
 
 html {
   scroll-behavior: smooth;

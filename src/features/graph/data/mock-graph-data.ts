@@ -308,7 +308,7 @@ export function getMockTraceabilityGraphData(): TraceabilityGraphData {
       source: t.assigneeId,
       target: t.id,
       type: "ASSIGNED_TO",
-      label: "Được phân công",
+      label: "[:ASSIGNED_TO]",
     });
   });
 
@@ -329,7 +329,7 @@ export function getMockTraceabilityGraphData(): TraceabilityGraphData {
       source: c.authorId,
       target: c.id,
       type: "AUTHORED",
-      label: "Tác giả commit",
+      label: "[:AUTHORED]",
     });
 
     // Cạnh: Commit IMPLEMENTS Task (nếu có task key)
@@ -341,7 +341,7 @@ export function getMockTraceabilityGraphData(): TraceabilityGraphData {
           source: c.id,
           target: matchedTask.id,
           type: "IMPLEMENTS",
-          label: "Thực thi (Regex)",
+          label: "[:IMPLEMENTS]",
         });
       }
     }
@@ -374,13 +374,13 @@ export function getMockSNAGraphData(): SNAGraphData {
 
   const edges: GraphEdge[] = [
     // Lê Hoàng Hải (Leader) review code cho mọi người
-    { id: "sna-1-2", source: "stu-01", target: "stu-02", type: "REVIEWED", label: "Review 12 PRs", weight: 12 },
-    { id: "sna-1-3", source: "stu-01", target: "stu-03", type: "REVIEWED", label: "Review 8 PRs", weight: 8 },
-    { id: "sna-1-4", source: "stu-01", target: "stu-04", type: "REVIEWED", label: "Review 6 PRs", weight: 6 },
-    { id: "sna-2-1", source: "stu-02", target: "stu-01", type: "REVIEWED", label: "Review 7 PRs", weight: 7 },
-    { id: "sna-2-3", source: "stu-02", target: "stu-03", type: "COMMENTED_ON", label: "5 Bình luận Jira", weight: 5 },
-    { id: "sna-3-1", source: "stu-03", target: "stu-01", type: "COMMENTED_ON", label: "4 Bình luận", weight: 4 },
-    { id: "sna-4-1", source: "stu-04", target: "stu-01", type: "REVIEWED", label: "Review 3 PRs", weight: 3 },
+    { id: "sna-1-2", source: "stu-01", target: "stu-02", type: "REVIEWED", label: "[:REVIEWED] 12 PRs", weight: 12 },
+    { id: "sna-1-3", source: "stu-01", target: "stu-03", type: "REVIEWED", label: "[:REVIEWED] 8 PRs", weight: 8 },
+    { id: "sna-1-4", source: "stu-01", target: "stu-04", type: "REVIEWED", label: "[:REVIEWED] 6 PRs", weight: 6 },
+    { id: "sna-2-1", source: "stu-02", target: "stu-01", type: "REVIEWED", label: "[:REVIEWED] 7 PRs", weight: 7 },
+    { id: "sna-2-3", source: "stu-02", target: "stu-03", type: "COMMENTED_ON", label: "[:COMMENTED_ON] 5 Comments", weight: 5 },
+    { id: "sna-3-1", source: "stu-03", target: "stu-01", type: "COMMENTED_ON", label: "[:COMMENTED_ON] 4 Comments", weight: 4 },
+    { id: "sna-4-1", source: "stu-04", target: "stu-01", type: "REVIEWED", label: "[:REVIEWED] 3 PRs", weight: 3 },
     // stu-05 (Đỗ Thùy Linh) bị cô lập không có tương tác review -> Ghosting
   ];
 

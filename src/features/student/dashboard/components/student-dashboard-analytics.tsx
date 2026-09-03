@@ -63,7 +63,7 @@ export function StudentDashboardAnalytics({
       <div className="bg-card/90 backdrop-blur-md border border-border/80 rounded-2xl p-4 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         {/* Left: Leader / Member Indicator */}
         <div className="flex items-center gap-3">
-          <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${isLeader ? "bg-amber-500/10 text-amber-600 dark:text-amber-400" : "bg-blue-500/10 text-blue-600 dark:text-blue-400"
+          <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${isLeader ? "bg-amber-500/15 text-amber-800 dark:text-amber-400" : "bg-blue-500/10 text-blue-600 dark:text-blue-400"
             }`}>
             {isLeader ? <CrownIcon className="w-5 h-5" /> : <UserCheckIcon className="w-5 h-5" />}
           </div>
@@ -72,7 +72,7 @@ export function StudentDashboardAnalytics({
               <h2 className="text-base font-bold text-foreground tracking-tight">
                 Bảng Phân tích Đồ thị & Tiến độ Công việc
               </h2>
-              <Badge className={`border-0 text-[10px] font-semibold ${isLeader ? "bg-amber-500/15 text-amber-700 dark:text-amber-300" : "bg-blue-500/15 text-blue-700 dark:text-blue-300"
+              <Badge className={`border-0 text-[10px] font-semibold ${isLeader ? "bg-amber-500/15 text-amber-900 dark:text-amber-300" : "bg-blue-500/15 text-blue-700 dark:text-blue-300"
                 }`}>
                 {isLeader ? "Vai trò: Trưởng nhóm (Leader)" : "Vai trò: Thành viên (Member)"}
               </Badge>
