@@ -4,7 +4,6 @@ import { useMemo } from "react";
 import { MOCK_PROJECTS } from "../../data/mock-team-projects";
 import { ProjectHeader } from "./project-header";
 import { ProjectTabs } from "./project-tabs";
-import { OverviewTab } from "./overview-tab";
 import { GithubCommitsTab } from "./github-commits-tab";
 import { JiraKanbanTab } from "./jira-kanban-tab";
 import { AnalyticsTab } from "./analytics-tab";
@@ -39,16 +38,18 @@ export function TeamProjectPage({ courseId, teamId, activeTab }: TeamProjectPage
     );
   }
 
+  // Treat 'overview' or undefined/empty as 'analytics'
+  const currentTab = !activeTab || activeTab === "overview" ? "analytics" : activeTab;
+
   return (
     <div className="flex flex-col h-full">
       <ProjectHeader courseId={courseId} project={project} />
-      <ProjectTabs courseId={courseId} teamId={teamId} activeTab={activeTab} />
+      <ProjectTabs courseId={courseId} teamId={teamId} activeTab={currentTab} />
       
       <div className="flex-1 overflow-auto bg-background/50">
-        {activeTab === "overview" && <OverviewTab project={project} />}
-        {activeTab === "github" && <GithubCommitsTab project={project} />}
-        {activeTab === "kanban" && <JiraKanbanTab project={project} />}
-        {activeTab === "analytics" && <AnalyticsTab project={project} />}
+        {currentTab === "analytics" && <AnalyticsTab project={project} />}
+        {currentTab === "github" && <GithubCommitsTab project={project} />}
+        {currentTab === "kanban" && <JiraKanbanTab project={project} />}
       </div>
     </div>
   );

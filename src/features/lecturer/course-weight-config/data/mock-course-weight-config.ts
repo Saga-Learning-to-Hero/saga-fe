@@ -36,14 +36,13 @@ export function getMockTeamsByCourseId(courseId: string): TeamMock[] {
 
 export const MOCK_COURSE_WEIGHT_CONFIG: CourseWeightConfiguration = {
   courseId: "prn212-01",
-  applicationMode: "PER_TEAM",
   classWeights: {
     CODE: 40,
     TEST: 20,
     DOCUMENT: 20,
     RESEARCH: 20,
   },
-  teamWeights: {
+  teamOverrides: {
     g2: {
       teamId: "g2",
       weights: {
@@ -75,14 +74,13 @@ export function createMockCourseWeightConfig(courseId: string): CourseWeightConf
   if (courseId !== "prn212-01") {
     return {
       courseId,
-      applicationMode: "CLASS_WIDE",
       classWeights: {
         CODE: 25,
         TEST: 25,
         DOCUMENT: 25,
         RESEARCH: 25,
       },
-      teamWeights: {},
+      teamOverrides: {},
       updatedAt: new Date().toISOString(),
       updatedBy: "Hệ thống",
     };

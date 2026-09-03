@@ -1,9 +1,8 @@
 "use client";
 
-import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
-import type { FinalGradebook, StudentFinalGrade } from "../types/final-grades";
+import type { FinalGradebook } from "../types/final-grades";
 import { LockIcon } from "lucide-react";
+import { StatusBadge } from "./status-badge";
 
 export function GradebookTable({ gradebook }: { gradebook: FinalGradebook }) {
   const { components, students } = gradebook;
@@ -100,22 +99,5 @@ export function GradebookTable({ gradebook }: { gradebook: FinalGradebook }) {
         </table>
       </div>
     </div>
-  );
-}
-
-function StatusBadge({ status }: { status: StudentFinalGrade["status"] }) {
-  const config = {
-    COMPLETE: { label: "Hoàn chỉnh", cls: "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400" },
-    INCOMPLETE: { label: "Thiếu điểm", cls: "bg-amber-500/15 text-amber-600 dark:text-amber-500" },
-    NOT_GRADED: { label: "Chưa chấm", cls: "bg-muted text-muted-foreground" },
-    FAILED: { label: "Dưới chuẩn", cls: "bg-rose-500/15 text-rose-600 dark:text-rose-400" },
-    MANUALLY_ADJUSTED: { label: "Đã chỉnh sửa", cls: "bg-indigo-500/15 text-indigo-600 dark:text-indigo-400" },
-    LOCKED: { label: "Đã khóa", cls: "bg-muted text-muted-foreground" },
-  }[status];
-
-  return (
-    <Badge className={cn("border-0 text-[11px] font-bold shadow-none", config.cls)}>
-      {config.label}
-    </Badge>
   );
 }

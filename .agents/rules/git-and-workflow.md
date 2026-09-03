@@ -20,12 +20,25 @@ description: Git branching strategy, Vietnamese commit message conventions, auth
 ---
 
 ## 2. Định Danh Tác Giả Commit (Author Identity Standard)
-Mọi commit trong repository **BẮT BUỘC** phải được cấu hình chính xác danh tính tác giả cá nhân:
+Mỗi thành viên **BẮT BUỘC** phải dùng danh tính Git cá nhân của chính mình và email đã được xác minh trên tài khoản GitHub tương ứng. Không hard-code tên hoặc email của bất kỳ thành viên nào trong rule dùng chung.
+
+Mỗi thành viên chỉ cần cấu hình một lần cho bản clone trên máy của mình:
 
 ```bash
-git config --local user.name "lehai170504"
-git config --local user.email "hoanghaile175@gmail.com"
+git config --local user.name "<ten-ca-nhan-hoac-github-username>"
+git config --local user.email "<email-da-xac-minh-tren-github>"
 ```
+
+### Kiểm Tra Lại Sau Khi Đồng Bộ Nhánh `dev`
+
+Sau mỗi lần `pull`, merge hoặc rebase từ nhánh `dev`, lập trình viên và AI Agent **BẮT BUỘC** phải:
+
+1. Xác nhận danh tính thực tế bằng `git var GIT_AUTHOR_IDENT` và `git var GIT_COMMITTER_IDENT` trước khi tạo commit mới.
+2. Nếu danh tính đang thiếu hoặc không đúng với người thực hiện commit, phải dừng lại và cấu hình lại bằng thông tin của chính người đó.
+3. Không được sao chép danh tính từ commit đã pull về, từ nội dung rule, hoặc từ cấu hình của thành viên khác.
+4. Không được tự ý ghi đè Git config local đang hợp lệ của một thành viên chỉ vì vừa đồng bộ nhánh `dev`.
+
+File `.git/config` không được Git theo dõi nên thao tác pull/merge/rebase thông thường không thay đổi danh tính local. Không được sửa lại tác giả của commit đã tồn tại từ thành viên khác; quy định này chỉ áp dụng cho commit mới do người đang làm việc tạo ra.
 
 ---
 

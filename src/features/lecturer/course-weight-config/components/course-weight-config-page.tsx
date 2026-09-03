@@ -2,20 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
-import { ChevronRightIcon, SaveIcon, AlertTriangleIcon } from "lucide-react";
+import { ChevronRightIcon, SaveIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Label } from "@/components/ui/label";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 import { ClassDefaultWeightCard } from "./class-default-weight-card";
 import { TeamWeightList } from "./team-weight-list";
 import { TeamWeightDialog } from "./team-weight-dialog";
@@ -23,8 +11,7 @@ import { createMockCourseWeightConfig } from "../data/mock-course-weight-config"
 import type { 
   CourseWeightConfiguration, 
   ContributionCriterion, 
-  ContributionWeights,
-  WeightApplicationMode 
+  ContributionWeights 
 } from "../types/course-weight-config";
 import { isWeightValid } from "../lib/weight-config-utils";
 import type { LecturerCourse } from "@/features/lecturer/courses/types/course";
@@ -44,11 +31,6 @@ export function CourseWeightConfigPage({ course, teams }: CourseWeightConfigPage
     isOpen: false,
     teamId: null,
   });
-  
-  const [modeConfirmState, setModeConfirmState] = useState<{ isOpen: boolean; targetMode: WeightApplicationMode | null }>({
-    isOpen: false,
-    targetMode: null,
-  });
 
   // Mock loading data
   useEffect(() => {
@@ -56,8 +38,19 @@ export function CourseWeightConfigPage({ course, teams }: CourseWeightConfigPage
     if (stored) {
       try {
         const parsed = JSON.parse(stored);
+        
+        // Migration from old mode to new model (remove applicationMode, rename teamWeights to teamOverrides)
+        const migratedConfig = { ...parsed };
+        if (parsed.applicationMode !== undefined) {
+          delete migratedConfig.applicationMode;
+        }
+        if (parsed.teamWeights !== undefined) {
+          migratedConfig.teamOverrides = parsed.teamWeights;
+          delete migratedConfig.teamWeights;
+        }
+
         // eslint-disable-next-line react-hooks/set-state-in-effect
-        setConfig(parsed);
+        setConfig(migratedConfig);
       } catch {
         // Ignore
       }
@@ -82,48 +75,6 @@ export function CourseWeightConfigPage({ course, teams }: CourseWeightConfigPage
   if (!config) return null;
 
   // --- Handlers ---
-
-  const handleModeRequest = (newMode: WeightApplicationMode) => {
-    if (newMode === config.applicationMode) return;
-    setModeConfirmState({ isOpen: true, targetMode: newMode });
-  };
-
-  const confirmModeChange = () => {
-    if (!modeConfirmState.targetMode) return;
-    const targetMode = modeConfirmState.targetMode;
-
-    setConfig((prev) => {
-      if (!prev) return prev;
-
-      if (targetMode === "CLASS_WIDE") {
-        return {
-          ...prev,
-          applicationMode: "CLASS_WIDE",
-          teamWeights: {},
-        };
-      }
-
-      const initializedTeamWeights = Object.fromEntries(
-        teams.map((team) => [
-          team.id,
-          prev.teamWeights[team.id] ?? {
-            teamId: team.id,
-            weights: { ...prev.classWeights },
-            updatedAt: new Date().toISOString(),
-            updatedBy: "Nguyễn Mạnh Cường",
-          },
-        ]),
-      );
-
-      return {
-        ...prev,
-        applicationMode: "PER_TEAM",
-        teamWeights: initializedTeamWeights,
-      };
-    });
-    setIsDirty(true);
-    setModeConfirmState({ isOpen: false, targetMode: null });
-  };
 
   const handleClassWeightChange = (criterion: ContributionCriterion, value: number) => {
     setConfig((prev) => {
@@ -157,8 +108,8 @@ export function CourseWeightConfigPage({ course, teams }: CourseWeightConfigPage
       if (!prev) return prev;
       return {
         ...prev,
-        teamWeights: {
-          ...prev.teamWeights,
+        teamOverrides: {
+          ...prev.teamOverrides,
           [teamId]: {
             teamId,
             weights,
@@ -169,31 +120,37 @@ export function CourseWeightConfigPage({ course, teams }: CourseWeightConfigPage
       };
     });
     setIsDirty(true);
-    toast.success(`Đã áp dụng cấu hình riêng cho team.`);
+    toast.success(`Đã áp dụng cấu hình riêng cho nhóm.`);
+  };
+
+  const handleRemoveTeamOverride = (teamId: string) => {
+    setConfig((prev) => {
+      if (!prev) return prev;
+      const newOverrides = { ...prev.teamOverrides };
+      delete newOverrides[teamId];
+      return {
+        ...prev,
+        teamOverrides: newOverrides
+      };
+    });
+    setIsDirty(true);
+    toast.success(`Đã xóa cấu hình riêng, nhóm sẽ dùng chung cấu hình lớp.`);
   };
 
   const handleSave = () => {
-    if (config.applicationMode === "CLASS_WIDE" && !isWeightValid(config.classWeights)) {
+    if (!isWeightValid(config.classWeights)) {
       toast.error("Trọng số lớp không hợp lệ (tổng phải bằng 100%).");
       return;
     }
     
-    if (config.applicationMode === "PER_TEAM") {
-      const missingTeams = teams.filter((team) => !config.teamWeights[team.id]);
-      const invalidTeams = teams.filter((team) => {
-        const teamConfig = config.teamWeights[team.id];
-        return teamConfig && !isWeightValid(teamConfig.weights);
-      });
+    const invalidTeams = teams.filter((team) => {
+      const teamConfig = config.teamOverrides[team.id];
+      return teamConfig && !isWeightValid(teamConfig.weights);
+    });
 
-      if (missingTeams.length > 0) {
-        toast.error(`Còn ${missingTeams.length} team chưa được cấu hình trọng số.`);
-        return;
-      }
-
-      if (invalidTeams.length > 0) {
-        toast.error(`Có ${invalidTeams.length} team có tổng trọng số không hợp lệ.`);
-        return;
-      }
+    if (invalidTeams.length > 0) {
+      toast.error(`Có ${invalidTeams.length} nhóm có tổng trọng số không hợp lệ.`);
+      return;
     }
     
     const newConfig = {
@@ -226,7 +183,7 @@ export function CourseWeightConfigPage({ course, teams }: CourseWeightConfigPage
             Cấu hình trọng số đánh giá
           </h1>
           <p className="mt-2 text-sm text-muted-foreground max-w-2xl">
-            Thiết lập mức ảnh hưởng của Code, Test, Document và Research. Bạn có thể áp dụng chung cho toàn lớp hoặc riêng cho từng team.
+            Thiết lập mức ảnh hưởng của Code, Test, Document và Research. Lớp sẽ có cấu hình mặc định, các nhóm có thể tạo cấu hình riêng nếu cần.
           </p>
         </div>
         
@@ -241,42 +198,9 @@ export function CourseWeightConfigPage({ course, teams }: CourseWeightConfigPage
       <div className="flex-1 overflow-auto p-4 md:p-6 lg:p-8">
         <div className="max-w-5xl mx-auto space-y-8">
           
-          {/* Mode Selector */}
-          <div className="bg-card p-5 rounded-xl border border-primary/10 shadow-sm">
-            <h2 className="text-lg font-bold mb-4">Chế độ áp dụng</h2>
-            <RadioGroup 
-              value={config.applicationMode} 
-              onValueChange={(v) => handleModeRequest(v as WeightApplicationMode)} 
-              className="grid sm:grid-cols-2 gap-4"
-            >
-              <div>
-                <RadioGroupItem value="CLASS_WIDE" id="mode-class" className="peer sr-only" />
-                <Label
-                  htmlFor="mode-class"
-                  className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-transparent p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/5 cursor-pointer"
-                >
-                  <span className="font-bold text-base mb-1">Toàn lớp</span>
-                  <span className="text-xs text-muted-foreground text-center font-normal">
-                    Tất cả các nhóm sử dụng chung một bộ trọng số.
-                  </span>
-                </Label>
-              </div>
-              <div>
-                <RadioGroupItem value="PER_TEAM" id="mode-team" className="peer sr-only" />
-                <Label
-                  htmlFor="mode-team"
-                  className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-transparent p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/5 cursor-pointer"
-                >
-                  <span className="font-bold text-base mb-1">Từng Team</span>
-                  <span className="text-xs text-muted-foreground text-center font-normal">
-                    Cấu hình chi tiết trọng số riêng biệt cho từng nhóm.
-                  </span>
-                </Label>
-              </div>
-            </RadioGroup>
-          </div>
-          
-          {config.applicationMode === "CLASS_WIDE" && (
+          <div className="space-y-4">
+            <h2 className="text-xl font-bold">1. Cấu hình mặc định của lớp</h2>
+            <p className="text-sm text-muted-foreground">Tất cả nhóm sẽ sử dụng cấu hình này nếu chưa có cấu hình riêng.</p>
             <ClassDefaultWeightCard
               weights={config.classWeights}
               onChange={handleClassWeightChange}
@@ -284,18 +208,22 @@ export function CourseWeightConfigPage({ course, teams }: CourseWeightConfigPage
               isDirty={isDirty}
               totalTeams={teams.length}
             />
-          )}
-
-          {config.applicationMode === "PER_TEAM" && (
-            <div className="pt-2">
-              <h2 className="text-xl font-bold mb-4">Danh sách team</h2>
-              <TeamWeightList
-                teams={teams}
-                teamWeights={config.teamWeights}
-                onCustomizeTeam={handleCustomizeTeam}
-              />
+            <div className="text-sm text-muted-foreground italic px-2">
+              Lưu ý: Các thay đổi ở cấu hình lớp cũng cập nhật nhóm đang kế thừa. Nhóm có cấu hình riêng không bị thay đổi.
             </div>
-          )}
+          </div>
+
+          <div className="space-y-4 pt-4 border-t">
+            <h2 className="text-xl font-bold">2. Cấu hình riêng cho từng nhóm</h2>
+            <p className="text-sm text-muted-foreground">Nhóm nào không tùy chỉnh sẽ tự động dùng cấu hình lớp.</p>
+            <TeamWeightList
+              teams={teams}
+              teamOverrides={config.teamOverrides}
+              classWeights={config.classWeights}
+              onCustomizeTeam={handleCustomizeTeam}
+              onRemoveOverride={handleRemoveTeamOverride}
+            />
+          </div>
 
         </div>
       </div>
@@ -307,34 +235,11 @@ export function CourseWeightConfigPage({ course, teams }: CourseWeightConfigPage
           teamId={editingTeamId}
           teamName={editingTeamMock.name}
           projectName={editingTeamMock.projectName}
-          initialWeights={config.teamWeights[editingTeamId]?.weights}
+          initialWeights={config.teamOverrides[editingTeamId]?.weights ?? config.classWeights}
+          classWeights={config.classWeights}
           onApply={handleApplyTeamWeight}
         />
       )}
-
-      {/* Mode Change Confirmation Dialog */}
-      <AlertDialog open={modeConfirmState.isOpen} onOpenChange={(open) => !open && setModeConfirmState({ isOpen: false, targetMode: null })}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle className="flex items-center gap-2">
-              <AlertTriangleIcon className="w-5 h-5 text-amber-500" />
-              Chuyển đổi chế độ
-            </AlertDialogTitle>
-            <AlertDialogDescription>
-              Bạn đang chuyển từ chế độ <strong>{config.applicationMode === "CLASS_WIDE" ? "Toàn lớp" : "Từng Team"}</strong> sang <strong>{modeConfirmState.targetMode === "CLASS_WIDE" ? "Toàn lớp" : "Từng Team"}</strong>.
-              <br/><br/>
-              {modeConfirmState.targetMode === "CLASS_WIDE"
-                ? "Các cấu hình riêng của từng team sẽ bị xóa và toàn bộ lớp sẽ sử dụng một bộ trọng số chung."
-                : "Cấu hình lớp hiện tại sẽ được sao chép làm giá trị ban đầu cho tất cả team."}
-              {" "}Bạn có chắc chắn muốn thay đổi?
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Hủy bỏ</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmModeChange}>Xác nhận chuyển</AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </div>
   );
 }

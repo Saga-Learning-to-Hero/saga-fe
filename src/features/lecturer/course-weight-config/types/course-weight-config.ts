@@ -7,8 +7,6 @@ export interface ContributionWeights {
   RESEARCH: number;
 }
 
-export type WeightApplicationMode = "CLASS_WIDE" | "PER_TEAM";
-
 export interface TeamWeightConfiguration {
   teamId: string;
   weights: ContributionWeights;
@@ -18,9 +16,8 @@ export interface TeamWeightConfiguration {
 
 export interface CourseWeightConfiguration {
   courseId: string;
-  applicationMode: WeightApplicationMode;
   classWeights: ContributionWeights;
-  teamWeights: Record<string, TeamWeightConfiguration>;
+  teamOverrides: Record<string, TeamWeightConfiguration>;
   updatedAt: string;
   updatedBy: string;
 }
@@ -28,9 +25,7 @@ export interface CourseWeightConfiguration {
 export function getEffectiveWeights(
   config: CourseWeightConfiguration,
   teamId: string,
-): ContributionWeights | undefined {
-  if (config.applicationMode === "CLASS_WIDE") {
-    return config.classWeights;
-  }
-  return config.teamWeights[teamId]?.weights;
+): ContributionWeights {
+  return config.teamOverrides[teamId]?.weights ?? config.classWeights;
 }
+

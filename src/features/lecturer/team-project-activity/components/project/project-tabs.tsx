@@ -13,11 +13,13 @@ interface ProjectTabsProps {
 export function ProjectTabs({ courseId, teamId, activeTab }: ProjectTabsProps) {
   const basePath = lecturerCourseTeamPath(courseId, teamId);
   
+  // Default to analytics if overview is passed (legacy support)
+  const currentTab = activeTab === "overview" ? "analytics" : activeTab;
+  
   const tabs = [
-    { id: "overview", label: "Tổng quan" },
+    { id: "analytics", label: "Tổng quan & Phân tích" },
     { id: "github", label: "Commit GitHub" },
     { id: "kanban", label: "Jira Kanban" },
-    { id: "analytics", label: "Phân tích" },
   ];
 
   return (
@@ -28,7 +30,7 @@ export function ProjectTabs({ courseId, teamId, activeTab }: ProjectTabsProps) {
           href={`${basePath}?tab=${tab.id}`}
           className={cn(
             "pb-3 pt-4 text-sm font-semibold border-b-2 transition-colors whitespace-nowrap",
-            activeTab === tab.id 
+            currentTab === tab.id 
               ? "border-primary text-primary"
               : "border-transparent text-muted-foreground hover:text-foreground"
           )}

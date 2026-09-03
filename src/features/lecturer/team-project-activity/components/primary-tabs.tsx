@@ -12,35 +12,37 @@ interface PrimaryTabsProps {
 export function PrimaryTabs({ courseId }: PrimaryTabsProps) {
   const pathname = usePathname();
   const basePath = lecturerCourseTeamsPath(courseId);
-  
-  // If the path exactly matches basePath, we are in "Danh sách lớp"
-  // If the path contains basePath + "/something", we are in "Dự án nhóm"
-  const isProjectActive = pathname !== basePath && pathname.startsWith(basePath);
+
+  // Chỉ hiển thị tab dự án khi URL đã có teamId thực sự.
+  // Segment "select" là màn hình trung gian, chưa đại diện cho một nhóm đã chọn.
+  const nestedSegment = pathname.startsWith(`${basePath}/`)
+    ? pathname.slice(`${basePath}/`.length).split("/")[0]
+    : null;
+  const hasSelectedTeam = Boolean(nestedSegment && nestedSegment !== "select");
 
   return (
-    <div className="flex items-center gap-6">
+    <nav className="flex items-center gap-6" aria-label="Điều hướng hoạt động nhóm">
       <Link 
         href={basePath}
+        aria-current={!hasSelectedTeam ? "page" : undefined}
         className={cn(
           "pb-3 pt-4 text-sm font-bold border-b-2 transition-colors",
-          !isProjectActive 
+          !hasSelectedTeam
             ? "border-primary text-primary"
             : "border-transparent text-muted-foreground hover:text-foreground"
         )}
       >
         Danh sách lớp
       </Link>
-      <Link 
-        href={`${basePath}/select`}
-        className={cn(
-          "pb-3 pt-4 text-sm font-bold border-b-2 transition-colors",
-          isProjectActive 
-            ? "border-primary text-primary"
-            : "border-transparent text-muted-foreground hover:text-foreground"
-        )}
-      >
-        Dự án nhóm
-      </Link>
-    </div>
+      {hasSelectedTeam && (
+        <Link
+          href={pathname}
+          aria-current="page"
+          className="border-primary pb-3 pt-4 text-sm font-bold text-primary border-b-2 transition-colors"
+        >
+          Dự án nhóm
+        </Link>
+      )}
+    </nav>
   );
 }
