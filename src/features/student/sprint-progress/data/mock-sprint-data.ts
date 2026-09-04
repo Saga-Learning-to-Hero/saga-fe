@@ -24,7 +24,7 @@ export const MOCK_SPRINTS: Sprint[] = [
   {
     id: "sprint-03",
     name: "Sprint 3 - Core Graph Engine & Integration Link",
-    goal: "Phát triển đồ thị ma trận ma vết 1-1, kết nối tài khoản Jira/GitHub và hiển thị trang thông tin dự án.",
+    goal: "Phát triển đồ thị Traceability Graph, kết nối tài khoản Jira/GitHub và hiển thị trang thông tin dự án.",
     status: "ACTIVE",
     startDate: "2026-08-26",
     endDate: "2026-09-08",
@@ -65,7 +65,7 @@ export const MOCK_EPICS: Epic[] = [
     key: "EPIC-03",
     name: "Traceability Graph Engine",
     color: "#8B5CF6", // Purple
-    description: "Đồ thị truy xuất liên kết 1-1 giữa yêu cầu, task Jira và commit mã nguồn GitHub.",
+    description: "Đồ thị Traceability liên kết 1-1 giữa task Jira và commit GitHub.",
     progressPercent: 65,
   },
   {
@@ -198,7 +198,7 @@ export const MOCK_ISSUES: SprintIssue[] = [
   {
     id: "issue-106",
     key: "SAGA-106",
-    summary: "Tối ưu hiệu năng render đồ thị Cytoscape.js với ma trận ma vết 100+ nút",
+    summary: "Tối ưu hiệu năng render đồ thị Cytoscape.js với Traceability Graph 100+ nodes",
     description: "Xử lý đệm cache và bố cục tự động theo hướng cây phân rã bài toán.",
     type: "TASK",
     priority: "HIGH",
@@ -280,7 +280,7 @@ export const MOCK_ISSUES: SprintIssue[] = [
   {
     id: "issue-201",
     key: "SAGA-201",
-    summary: "Tích hợp mô hình AI đánh giá mức độ đóng góp cá nhân dựa trên đồ thị ma vết",
+    summary: "Tích hợp mô hình AI đánh giá mức độ đóng góp cá nhân dựa trên đồ thị Traceability",
     description: "Tính toán tự động chỉ số rủi ro trễ tiến độ đồ án và đưa ra khuyến nghị học tập.",
     type: "STORY",
     priority: "HIGHEST",
@@ -296,7 +296,7 @@ export const MOCK_ISSUES: SprintIssue[] = [
     id: "issue-202",
     key: "SAGA-202",
     summary: "Xuất báo cáo tiến độ đồ án tổng hợp dưới dạng file PDF/Excel cho Giảng viên",
-    description: "Hỗ trợ giảng viên tải báo cáo ma trận ma vết và thống kê đóng góp nhóm.",
+    description: "Hỗ trợ giảng viên tải báo cáo Traceability Matrix và thống kê đóng góp nhóm.",
     type: "STORY",
     priority: "HIGH",
     status: "TODO",

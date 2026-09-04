@@ -30,13 +30,13 @@ export function SNANetworkView() {
               <Badge className="bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/30 text-[11px] font-extrabold">
                 Social Network Analysis (SNA Graph)
               </Badge>
-              <span className="text-xs text-muted-foreground font-mono">Neo4j Centrality Matrix</span>
+              <span className="text-xs text-muted-foreground font-mono">Code Review & Interactions</span>
             </div>
             <h2 className="text-xl sm:text-2xl font-black text-foreground tracking-tight">
-              Mạng Lưới Tương Tác Xã Hội & Phân Tích Động Lực Nhóm
+              Mạng Lưới Tương Tác Nhóm & Code Review (SNA)
             </h2>
             <p className="text-xs text-muted-foreground max-w-3xl leading-relaxed">
-              Mô hình hóa cấu trúc tương tác kỹ thuật thông qua các cạnh <strong>[:REVIEWED]</strong> (Đánh giá Pull Request) và <strong>[:COMMENTED_ON]</strong> (Thảo luận Jira). Thuật toán phân tích đồ thị tự động nhận diện thành viên giữ vai trò trung tâm lan truyền (Key Contributor) hoặc thành viên gián đoạn kết nối (Ghosting Anomaly).
+              Phân tích mức độ tương tác thông qua Pull Request Reviews và trao đổi Jira Tasks. Hệ thống tự động nhận diện thành viên nòng cốt (Key Contributor) và cảnh báo thành viên ít tương tác (Ghosting).
             </p>
           </div>
 
@@ -44,13 +44,13 @@ export function SNANetworkView() {
             {keyContributors.length > 0 && (
               <div className="p-3.5 rounded-2xl bg-purple-500/15 border border-purple-500/30 text-purple-700 dark:text-purple-400 text-xs font-bold flex items-center gap-2.5">
                 <CrownIcon className="w-4 h-4 text-purple-500 shrink-0" />
-                <span>{keyContributors.length} Đóng Góp Cốt Lõi (Key Contributor)</span>
+                <span>{keyContributors.length} Thành viên nòng cốt</span>
               </div>
             )}
             {ghostingMembers.length > 0 && (
               <div className="p-3.5 rounded-2xl bg-red-500/15 border border-red-500/30 text-red-700 dark:text-red-400 text-xs font-bold flex items-center gap-2.5 animate-pulse">
                 <AlertTriangleIcon className="w-4 h-4 text-red-500 shrink-0" />
-                <span>{ghostingMembers.length} Cảnh Báo Cô Lập (Ghosting)</span>
+                <span>{ghostingMembers.length} Cảnh báo ít tương tác</span>
               </div>
             )}
           </div>
@@ -74,17 +74,17 @@ export function SNANetworkView() {
                 <Badge className="bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/30 text-[10px] font-bold">
                   Network Centrality Metrics
                 </Badge>
-                <span className="text-xs text-muted-foreground font-mono">Đo lường Mức độ Kết nối & Đóng góp</span>
+                <span className="text-xs text-muted-foreground font-mono">Mức độ tương tác & review PR</span>
               </div>
               <CardTitle className="text-base font-extrabold tracking-tight mt-1">
-                Bảng Chỉ Số Mạng Lưới & Đánh Giá Đóng Góp Đồng Đẳng (SNA Matrix)
+                Bảng Thống Kê Tương Tác Code Review (SNA Matrix)
               </CardTitle>
               <CardDescription className="text-xs text-muted-foreground">
-                Hệ số Trung tâm Bậc (Degree Centrality), số lượt Đánh giá Mã nguồn (PR Code Review) đã đóng góp và tiếp nhận
+                Thống kê số lượt review Pull Request đã gửi và nhận, cùng chỉ số mức độ kết nối (Centrality).
               </CardDescription>
             </div>
             <Badge variant="outline" className="text-xs font-mono font-bold">
-              5 Thành Viên Đồ Thị
+              5 Thành viên
             </Badge>
           </div>
         </CardHeader>
@@ -93,11 +93,11 @@ export function SNANetworkView() {
             <table className="w-full text-xs text-left">
               <thead className="bg-muted/40 text-muted-foreground font-bold border-b border-border/60 uppercase text-[10px] tracking-wider">
                 <tr>
-                  <th className="p-4">Chủ Thể (Student Actor)</th>
-                  <th className="p-4 text-center">PR Reviews Đã Đóng Góp (Out-Degree)</th>
-                  <th className="p-4 text-center">PR Reviews Được Tiếp Nhận (In-Degree)</th>
-                  <th className="p-4 text-center">Chỉ Số Trung Tâm (Degree Centrality)</th>
-                  <th className="p-4 text-right">Nhận Diện Mô Hình Hành Vi</th>
+                  <th className="p-4">Thành viên</th>
+                  <th className="p-4 text-center">PR Reviews đã gửi</th>
+                  <th className="p-4 text-center">PR Reviews được nhận</th>
+                  <th className="p-4 text-center">Mức độ kết nối (Centrality)</th>
+                  <th className="p-4 text-right">Phân loại thành viên</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border/50">
@@ -132,18 +132,18 @@ export function SNANetworkView() {
                       {m.isKeyContributor && (
                         <Badge className="bg-purple-500/15 text-purple-600 dark:text-purple-400 border border-purple-500/30 gap-1.5 font-extrabold text-[11px]">
                           <CrownIcon className="w-3.5 h-3.5 text-purple-500" />
-                          Key Contributor (Cốt Lõi)
+                          Key Contributor (Nòng cốt)
                         </Badge>
                       )}
                       {m.isGhosting && (
                         <Badge className="bg-red-500/15 text-red-600 dark:text-red-400 border border-red-500/30 gap-1.5 font-extrabold animate-pulse text-[11px]">
                           <AlertTriangleIcon className="w-3.5 h-3.5 text-red-500" />
-                          Ghosting Anomaly (Cô Lập)
+                          Cảnh báo ít tương tác (Ghosting)
                         </Badge>
                       )}
                       {!m.isKeyContributor && !m.isGhosting && (
                         <Badge variant="outline" className="text-muted-foreground font-semibold">
-                          Tương Tác Đồng Đều (Balanced)
+                          Tương tác tốt (Balanced)
                         </Badge>
                       )}
                     </td>

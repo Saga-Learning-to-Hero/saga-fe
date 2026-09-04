@@ -25,7 +25,7 @@ export const MOCK_ASSESSMENT_SPRINTS: SprintItem[] = [
     name: "Sprint 3 - Core Graph Engine & Integration Link",
     status: "ACTIVE",
     endDate: "2026-09-08",
-    goal: "Phát triển đồ thị ma trận ma vết 1-1, kết nối tài khoản Jira/GitHub và hiển thị trang thông tin dự án.",
+    goal: "Phát triển đồ thị Traceability Graph, kết nối tài khoản Jira/GitHub và hiển thị trang thông tin dự án.",
   },
 ];
 

@@ -189,34 +189,31 @@ export function StudentTaskCommitCharts({
                         <div
                           onMouseEnter={() => setHoveredBar({ week: item.week, type: "COMMITS", activity: item })}
                           style={{ height: `${commitHeight}px` }}
-                          className={`w-4 sm:w-7 rounded-t-md transition-all duration-200 cursor-pointer ${
-                            isCommitHovered
+                          className={`w-4 sm:w-7 rounded-t-md transition-all duration-200 cursor-pointer ${isCommitHovered
                               ? "bg-primary shadow-lg shadow-primary/40 ring-2 ring-primary ring-offset-2 ring-offset-background scale-y-105 origin-bottom"
                               : isTaskHovered
-                              ? "bg-primary/40"
-                              : "bg-primary/85 hover:bg-primary"
-                          }`}
+                                ? "bg-primary/40"
+                                : "bg-primary/85 hover:bg-primary"
+                            }`}
                         />
                       )}
                       {(filterType === "ALL" || filterType === "TASKS") && (
                         <div
                           onMouseEnter={() => setHoveredBar({ week: item.week, type: "TASKS", activity: item })}
                           style={{ height: `${taskHeight}px` }}
-                          className={`w-4 sm:w-7 rounded-t-md transition-all duration-200 cursor-pointer ${
-                            isTaskHovered
+                          className={`w-4 sm:w-7 rounded-t-md transition-all duration-200 cursor-pointer ${isTaskHovered
                               ? "bg-cyan-500 shadow-lg shadow-cyan-500/40 ring-2 ring-cyan-500 ring-offset-2 ring-offset-background scale-y-105 origin-bottom"
                               : isCommitHovered
-                              ? "bg-cyan-500/40"
-                              : "bg-cyan-500/85 hover:bg-cyan-500"
-                          }`}
+                                ? "bg-cyan-500/40"
+                                : "bg-cyan-500/85 hover:bg-cyan-500"
+                            }`}
                         />
                       )}
                     </div>
 
                     <span
-                      className={`text-[11px] font-mono mt-2 font-semibold transition-colors ${
-                        isWeekActive ? "text-primary" : "text-muted-foreground"
-                      }`}
+                      className={`text-[11px] font-mono mt-2 font-semibold transition-colors ${isWeekActive ? "text-primary" : "text-muted-foreground"
+                        }`}
                     >
                       {item.week}
                     </span>
@@ -256,7 +253,7 @@ export function StudentTaskCommitCharts({
                 Kết quả & Trạng thái Task
               </CardTitle>
               <CardDescription className="text-xs text-muted-foreground">
-                Phân bố tình trạng đầu việc Jira
+                Phân bố trạng thái Jira Tasks
               </CardDescription>
             </div>
           </div>

@@ -88,10 +88,10 @@ export default function AdminAuditLogPage() {
             </div>
             <div>
               <h1 className="text-xl font-bold text-foreground tracking-tight">
-                Nhật ký kiểm toán hệ thống (System Audit Logs)
+                Nhật ký hoạt động hệ thống (System Audit Logs)
               </h1>
               <p className="text-xs text-muted-foreground mt-0.5">
-                Kiểm toán an ninh, truy vết thao tác quản trị và thay đổi phân quyền hệ thống lưu trữ tại MongoDB.
+                Theo dõi lịch sử hoạt động, an ninh và thay đổi phân quyền hệ thống lưu trữ tại MongoDB.
               </p>
             </div>
           </div>

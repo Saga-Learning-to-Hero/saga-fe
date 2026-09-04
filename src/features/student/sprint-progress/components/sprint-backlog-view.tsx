@@ -235,7 +235,7 @@ export function SprintBacklogView({
                     className="h-8 text-xs font-bold rounded-xl gap-1.5 border-blue-500/40 text-blue-600 dark:text-blue-400 hover:bg-blue-500/10 cursor-pointer shadow-2xs"
                   >
                     <PlusIcon className="w-3.5 h-3.5" />
-                    + Tạo Task mới
+                    Tạo Task mới
                   </Button>
                 </div>
               </div>

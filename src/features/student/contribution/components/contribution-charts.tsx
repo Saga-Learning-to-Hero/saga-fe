@@ -139,7 +139,7 @@ export function ContributionCharts({ members }: ContributionChartsProps) {
                   Phân tích So sánh 4 Nguồn Dữ liệu Đóng góp
                 </CardTitle>
                 <CardDescription className="text-xs text-muted-foreground">
-                  Commits, Story Points Jira, Đánh giá Chéo và Tỷ lệ Ma vết
+                  Commits, Story Points Jira, Đánh giá chéo và Traceability
                 </CardDescription>
               </div>
             </div>
@@ -178,7 +178,7 @@ export function ContributionCharts({ members }: ContributionChartsProps) {
                     if (name === "Commits") return [`${val} commits`, "GitHub Commits"];
                     if (name === "StoryPoints") return [`${val} SP`, "Jira Story Points"];
                     if (name === "PeerScore") return [`${(val / 4).toFixed(1)} ★`, "Đánh giá Chéo"];
-                    if (name === "Traceability") return [`${val * 5}%`, "Tỷ lệ Ma vết"];
+                    if (name === "Traceability") return [`${val * 5}%`, "Traceability"];
                     return [val, name];
                   }}
                 />
@@ -188,7 +188,7 @@ export function ContributionCharts({ members }: ContributionChartsProps) {
                 <Bar dataKey="Commits" name="GitHub Commits" fill="#4F46E5" radius={[4, 4, 0, 0]} />
                 <Bar dataKey="StoryPoints" name="Jira Story Points" fill="#06B6D4" radius={[4, 4, 0, 0]} />
                 <Bar dataKey="PeerScore" name="Đánh giá Chéo (x4)" fill="#F59E0B" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="Traceability" name="Ma vết (/5)" fill="#10B981" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="Traceability" name="Traceability (/5)" fill="#10B981" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>

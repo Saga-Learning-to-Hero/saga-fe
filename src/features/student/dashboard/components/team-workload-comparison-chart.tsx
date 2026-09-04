@@ -108,7 +108,7 @@ const SPRINT_DETAILS: Record<string, SprintDetailInfo> = {
   "sprint-03": {
     name: "Sprint 3 - Core Graph Engine & Integration Link",
     status: "ACTIVE",
-    goal: "Phát triển đồ thị ma trận ma vết 1-1, kết nối tài khoản Jira/GitHub và hiển thị trang thông tin dự án.",
+    goal: "Phát triển đồ thị Traceability Graph, kết nối tài khoản Jira/GitHub và hiển thị trang thông tin dự án.",
     timeline: "26/08 - 08/09/2026 (Còn 5 ngày)",
     totalCommits: 98,
     totalTasksDone: 10,
@@ -123,7 +123,7 @@ const SPRINT_DETAILS: Record<string, SprintDetailInfo> = {
   "sprint-04": {
     name: "Sprint 4 - AI Progress Evaluation & Capstone Defense",
     status: "PLANNED",
-    goal: "Hệ thống AI đánh giá bất thường MSR/SNA, tổng kết điểm và chuẩn bị hội đồng bảo vệ đồ án.",
+    goal: "Hệ thống AI đánh giá tiến độ và cảnh báo thiếu commit/SNA, tổng kết điểm và chuẩn bị hội đồng bảo vệ đồ án.",
     timeline: "Dự kiến: 09/09 - 22/09/2026",
     totalCommits: 0,
     totalTasksDone: 0,
@@ -294,11 +294,10 @@ export function TeamWorkloadComparisonChart({
               <div
                 key={m.id}
                 onClick={() => onSelectMember(m.id)}
-                className={`p-3.5 rounded-2xl border transition-all duration-200 cursor-pointer flex flex-col md:flex-row md:items-center justify-between gap-4 ${
-                  isSelected
-                    ? "bg-primary/5 border-primary/40 shadow-xs ring-1 ring-primary/20"
-                    : "bg-card/60 hover:bg-muted/40 border-border/70"
-                }`}
+                className={`p-3.5 rounded-2xl border transition-all duration-200 cursor-pointer flex flex-col md:flex-row md:items-center justify-between gap-4 ${isSelected
+                  ? "bg-primary/5 border-primary/40 shadow-xs ring-1 ring-primary/20"
+                  : "bg-card/60 hover:bg-muted/40 border-border/70"
+                  }`}
               >
                 {/* Member Info */}
                 <div className="flex items-center gap-3 min-w-[220px]">

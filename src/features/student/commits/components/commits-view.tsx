@@ -108,11 +108,11 @@ export function CommitsView() {
           <div>
             <div className="flex items-center gap-2">
               <h1 className="text-xl sm:text-2xl font-extrabold text-foreground tracking-tight">
-                Nhật ký Commit GitHub (GitHub Commits)
+                Lịch Sử Git Commits (GitHub)
               </h1>
             </div>
             <p className="text-xs text-muted-foreground">
-              Theo dõi lịch sử commit mã nguồn, phân tích theo Repository & Branch đã đồng bộ Github
+              Theo dõi lịch sử commit, phân tích theo Repository & Branch đã kết nối với GitHub.
             </p>
           </div>
         </div>

@@ -142,7 +142,7 @@ export function PeerAssessmentView() {
           </div>
 
           <div className="text-xs text-muted-foreground text-right hidden lg:block">
-            <span className="font-semibold text-foreground">Hạn chót Sprint:</span> {selectedSprint.endDate}
+            <span className="font-semibold text-foreground">Thời gian kết thúc Sprint:</span> {selectedSprint.endDate}
           </div>
         </div>
       </div>
@@ -167,9 +167,6 @@ export function PeerAssessmentView() {
             <SparklesIcon className="w-4 h-4 text-purple-500" />
             Danh sách Đồng đội cần Đánh giá ({membersToReview.length} thành viên)
           </h2>
-          <span className="text-xs text-muted-foreground font-mono">
-            Tự động ẩn bản thân
-          </span>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 gap-5">

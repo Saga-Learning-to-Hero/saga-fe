@@ -60,7 +60,7 @@ export function TraceabilityGraphView() {
   }, [initialData, selectedStudentId, selectedSprint, filterType]);
 
   const handleExport = () => {
-    alert("Dữ liệu đồ thị Traceability đã được xuất thành công dưới định dạng JSON & Canvas PNG!");
+    alert("Đã xuất dữ liệu Traceability Graph (JSON & PNG) thành công!");
   };
 
   const handleResetFilters = () => {
@@ -75,13 +75,13 @@ export function TraceabilityGraphView() {
         <div>
           <div className="flex items-center gap-2 text-primary font-bold text-xs">
             <NetworkIcon className="w-4 h-4" />
-            <span>NEO4J GRAPH DATABASE & XAI TRACEABILITY SYSTEM</span>
+            <span>TRACEABILITY GRAPH & EVIDENCE ENGINE</span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-foreground mt-1">
-            Đồ Thị Truy Xuất Nguồn Gốc (Traceability Graph)
+            Đồ thị Traceability (Jira Task & Git Commits)
           </h1>
           <p className="text-xs text-muted-foreground mt-0.5 max-w-3xl leading-relaxed">
-            Hệ thống trực quan hóa minh chứng kỹ thuật thực nghiệm từ đầu việc Jira đến từng commit Git theo thời gian thực nhằm chứng minh công sức đóng góp của sinh viên
+            Theo dõi liên kết từ Jira Task đến Git Commit để minh bạch hóa đóng góp thực tế của từng thành viên.
           </p>
         </div>
       </div>

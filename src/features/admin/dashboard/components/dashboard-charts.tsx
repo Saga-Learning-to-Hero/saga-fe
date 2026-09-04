@@ -45,7 +45,7 @@ export function DashboardChartsSection() {
                   Cường độ hoạt động: Commits vs Jira Tasks
                 </CardTitle>
                 <CardDescription className="text-[11px] text-muted-foreground">
-                  Số lượng mã nguồn đẩy về GitHub và đầu việc Jira qua 8 tuần học kỳ
+                  Số lượng commit đẩy về GitHub và task Jira qua 8 tuần học kỳ
                 </CardDescription>
               </div>
             </div>
@@ -151,8 +151,8 @@ export function DashboardChartsSection() {
                         <div
                           style={{ height: `${commitHeight}px` }}
                           className={`w-3.5 sm:w-5 rounded-t-md transition-all duration-300 ${isHovered
-                              ? "bg-primary shadow-md shadow-primary/30"
-                              : "bg-primary/80 group-hover:bg-primary"
+                            ? "bg-primary shadow-md shadow-primary/30"
+                            : "bg-primary/80 group-hover:bg-primary"
                             }`}
                         />
                       )}
@@ -160,8 +160,8 @@ export function DashboardChartsSection() {
                         <div
                           style={{ height: `${taskHeight}px` }}
                           className={`w-3.5 sm:w-5 rounded-t-md transition-all duration-300 ${isHovered
-                              ? "bg-info shadow-md shadow-info/30"
-                              : "bg-info/75 group-hover:bg-info"
+                            ? "bg-info shadow-md shadow-info/30"
+                            : "bg-info/75 group-hover:bg-info"
                             }`}
                         />
                       )}

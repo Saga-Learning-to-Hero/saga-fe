@@ -66,7 +66,7 @@ export const ADMIN_NAV: NavGroup[] = [
     label: "Hạ tầng & An ninh",
     roles: ["ADMIN"],
     items: [
-      { id: "admin-audit", title: "Nhật ký kiểm toán (Audit Log)", href: "/admin/audit-log", icon: "ScrollText", match: "exact" },
+      { id: "admin-audit", title: "Nhật ký hệ thống (Audit Log)", href: "/admin/audit-log", icon: "ScrollText", match: "exact" },
     ],
   },
 ];
@@ -161,7 +161,7 @@ export function getStudentNavItems(): NavItem[] {
     },
     {
       id: "student-peer",
-      title: "Đánh giá",
+      title: "Đánh giá chéo",
       href: "/student/peer-assessment",
       icon: "UserCheck",
       match: "exact",

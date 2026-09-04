@@ -35,21 +35,21 @@ export function ContributionView() {
             <div>
               <div className="flex items-center gap-2">
                 <h1 className="text-xl sm:text-2xl font-extrabold text-foreground tracking-tight">
-                  Phân tích Mức Đóng góp Sinh viên (Contribution Analysis)
+                  Tỷ Lệ Đóng Góp Nhóm (Contribution Analysis)
                 </h1>
                 <Badge className="bg-primary/15 text-primary border-primary/30 font-bold text-xs">
                   SLICING PIE MODEL
                 </Badge>
               </div>
               <p className="text-xs text-muted-foreground">
-                Trực quan hóa khối lượng đóng góp thực tế (%) dựa trên GitHub Commits, Task Jira, Đánh giá chéo và Ma vết Traceability
+                Đánh giá tỷ lệ đóng góp (%) của từng thành viên dựa trên Git Commits, Jira Tasks, Peer Review và liên kết Traceability.
               </p>
             </div>
           </div>
 
           <Badge variant="outline" className="bg-emerald-500/10 text-emerald-600 border-emerald-500/30 font-bold text-xs gap-1.5 self-start md:self-auto py-1 px-3">
             <ShieldCheckIcon className="w-4 h-4" />
-            Hệ thống xác thực minh bạch 100%
+            Minh bạch dữ liệu 100%
           </Badge>
         </div>
       </div>

@@ -22,8 +22,12 @@ interface ProfileHeaderProps {
 
 export function ProfileHeader({ user, compact = false }: ProfileHeaderProps) {
   const isStudent = user.role === "STUDENT";
-  const jiraConnected = user.jiraIntegration?.connected;
-  const githubConnected = user.githubIntegration?.connected;
+  const jiraConnected = (user.jiraIntegrations && user.jiraIntegrations.length > 0)
+    ? user.jiraIntegrations.some((j) => j.connected)
+    : user.jiraIntegration?.connected;
+  const githubConnected = (user.githubIntegrations && user.githubIntegrations.length > 0)
+    ? user.githubIntegrations.some((g) => g.connected)
+    : user.githubIntegration?.connected;
 
   if (compact) {
     return (

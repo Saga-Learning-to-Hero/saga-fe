@@ -62,7 +62,7 @@ export function GraphFilterBar({
           <div className="space-y-1 min-w-[240px]">
             <label className="text-[11px] font-semibold text-muted-foreground flex items-center gap-1.5">
               <UserIcon className="w-3.5 h-3.5 text-blue-500" />
-              Lọc theo thành viên:
+              Thành viên:
             </label>
             <CustomSelect
               value={selectedStudentId}
@@ -74,7 +74,7 @@ export function GraphFilterBar({
           <div className="space-y-1 min-w-[220px]">
             <label className="text-[11px] font-semibold text-muted-foreground flex items-center gap-1.5">
               <LayersIcon className="w-3.5 h-3.5 text-purple-500" />
-              Chu kỳ Sprint:
+              Sprint:
             </label>
             <CustomSelect
               value={selectedSprint}
@@ -118,7 +118,7 @@ export function GraphFilterBar({
                 : "text-muted-foreground hover:text-foreground"
                 }`}
             >
-              Toàn bộ
+              Tất cả
             </button>
             <button
               onClick={() => onSelectFilterType("ANOMALIES_ONLY")}
@@ -128,7 +128,7 @@ export function GraphFilterBar({
                 }`}
             >
               <AlertTriangleIcon className="w-3.5 h-3.5 text-red-500" />
-              Cảnh báo ({anomaliesCount})
+              Chỉ cảnh báo ({anomaliesCount})
             </button>
           </div>
 
@@ -150,7 +150,7 @@ export function GraphFilterBar({
             className="h-9 text-xs rounded-xl gap-1.5 cursor-pointer font-semibold"
           >
             <DownloadIcon className="w-3.5 h-3.5 text-primary" />
-            Xuất Graph
+            Xuất dữ liệu
           </Button>
         </div>
       </div>

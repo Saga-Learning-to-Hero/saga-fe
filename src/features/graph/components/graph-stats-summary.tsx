@@ -31,7 +31,7 @@ export function GraphStatsSummary({
         <div className="space-y-0.5">
           <div className="flex items-center gap-2">
             <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
-              Tỷ Lệ Truy Xuất:
+              Độ phủ Traceability:
             </span>
             <span className="text-sm font-black text-foreground font-mono">
               {traceabilityRate}%
@@ -58,15 +58,15 @@ export function GraphStatsSummary({
         <div>
           <div className="flex items-center gap-1.5">
             <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
-              Quy Mô Đồ Thị:
+              Tổng Nodes:
             </span>
             <span className="text-sm font-black text-foreground font-mono">
               {totalNodes}
             </span>
-            <span className="text-[11px] font-semibold text-muted-foreground">Đỉnh</span>
+            <span className="text-[11px] font-semibold text-muted-foreground">Nodes</span>
           </div>
           <span className="text-[10px] text-muted-foreground block font-mono">
-            5 SV · 8 Task · 7 Commit
+            5 Thành viên · 8 Tasks · 7 Commits
           </span>
         </div>
       </div>
@@ -80,15 +80,15 @@ export function GraphStatsSummary({
         <div>
           <div className="flex items-center gap-1.5">
             <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
-              Cạnh Quan Hệ:
+              Liên kết:
             </span>
             <span className="text-sm font-black text-foreground font-mono">
               {totalEdges}
             </span>
-            <span className="text-[11px] font-semibold text-muted-foreground">Cạnh</span>
+            <span className="text-[11px] font-semibold text-muted-foreground">Edges</span>
           </div>
           <span className="text-[10px] text-muted-foreground block font-mono">
-            Neo4j AuraDB · Deterministic
+            Graph Database Engine
           </span>
         </div>
       </div>
@@ -98,8 +98,8 @@ export function GraphStatsSummary({
       <div className="flex items-center gap-3 min-w-[200px]">
         <div
           className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${msrCount > 0
-              ? "bg-red-500/15 text-red-600 dark:text-red-400"
-              : "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+            ? "bg-red-500/15 text-red-600 dark:text-red-400"
+            : "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
             }`}
         >
           {msrCount > 0 ? (
@@ -111,20 +111,20 @@ export function GraphStatsSummary({
         <div>
           <div className="flex items-center gap-2">
             <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
-              Cảnh Báo MSR:
+              Cảnh báo Task:
             </span>
             {msrCount > 0 ? (
               <Badge className="bg-red-500/15 text-red-600 dark:text-red-400 border border-red-500/30 text-[10px] font-mono font-bold animate-pulse">
-                {msrCount} Bất thường (SAGA-24)
+                {msrCount} Task thiếu Commit
               </Badge>
             ) : (
               <Badge className="bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 text-[10px] font-mono font-bold">
-                Nhất quán 100%
+                Khớp nối 100%
               </Badge>
             )}
           </div>
           <span className="text-[10px] text-muted-foreground block">
-            {msrCount > 0 ? "Task DONE thiếu commit" : "Khớp nối hợp lệ"}
+            {msrCount > 0 ? "Task DONE chưa có commit" : "Tất cả Task đã có commit"}
           </span>
         </div>
       </div>
