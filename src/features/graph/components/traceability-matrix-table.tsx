@@ -19,20 +19,20 @@ export function TraceabilityMatrixTable() {
           <div>
             <div className="flex items-center gap-2">
               <Badge className="bg-primary/10 text-primary border border-primary/20 text-[10px] font-bold">
-                Deterministic Traceability Matrix
+                Traceability Matrix
               </Badge>
-              <span className="text-xs text-muted-foreground font-mono">Jira ➔ Git Code Map</span>
+              <span className="text-xs text-muted-foreground font-mono">Jira Task ➔ Git Commit</span>
             </div>
             <CardTitle className="text-base font-extrabold tracking-tight mt-1">
-              Bảng Ma Trận Đối Soát Nguồn Gốc Đóng Góp (Traceability Audit Trail)
+              Bảng Đối Soát Jira Task & Git Commit (Traceability Matrix)
             </CardTitle>
             <CardDescription className="text-xs text-muted-foreground">
-              Minh chứng kỹ thuật thực nghiệm giữa yêu cầu nghiệp vụ (Jira Issue) và kết quả triển khai mã nguồn (Git Commit)
+              Bảng đối soát liên kết giữa các Task trên Jira và lịch sử Commit tương ứng trên GitHub.
             </CardDescription>
           </div>
 
           <div className="flex items-center gap-2 shrink-0">
-            <span className="text-xs text-muted-foreground font-semibold">Tỷ lệ Tin cậy:</span>
+            <span className="text-xs text-muted-foreground font-semibold">Độ tin cậy:</span>
             <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 text-xs font-mono font-bold">
               94.5% Verified
             </Badge>
@@ -45,12 +45,12 @@ export function TraceabilityMatrixTable() {
           <table className="w-full text-xs text-left">
             <thead className="bg-muted/40 text-muted-foreground font-bold border-b border-border/60 uppercase text-[10px] tracking-wider">
               <tr>
-                <th className="p-4">Mã Đầu Việc (Jira)</th>
-                <th className="p-4">Chủ Thể Thực Thi</th>
-                <th className="p-4 text-center">Trọng Số (Weight)</th>
-                <th className="p-4">Dấu Vết Git Commit Đối Soát</th>
-                <th className="p-4 text-center">Biến Động Mã Nguồn</th>
-                <th className="p-4 text-right">Trạng Thái</th>
+                <th className="p-4">Task Jira</th>
+                <th className="p-4">Người làm (Assignee)</th>
+                <th className="p-4 text-center">Weight & SP</th>
+                <th className="p-4">Git Commits liên kết</th>
+                <th className="p-4 text-center">Thay đổi code (+ / -)</th>
+                <th className="p-4 text-right">Trạng thái</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border/50">
@@ -121,7 +121,7 @@ export function TraceabilityMatrixTable() {
                       ) : (
                         <div className="p-2 rounded-xl bg-red-500/10 border border-red-500/30 text-red-600 dark:text-red-400 text-xs font-semibold flex items-center gap-1.5">
                           <XCircleIcon className="w-4 h-4 shrink-0" />
-                          <span>0 Commit liên kết</span>
+                          <span>Chưa có commit</span>
                         </div>
                       )}
                     </td>
@@ -138,17 +138,17 @@ export function TraceabilityMatrixTable() {
                       )}
                     </td>
 
-                    {/* XAI Audit Status */}
+                    {/* Audit Status */}
                     <td className="p-4 align-top text-right">
                       {task.isMSRAnomaly ? (
                         <Badge className="bg-red-500/15 text-red-600 dark:text-red-400 border border-red-500/30 gap-1 font-bold animate-pulse text-[11px]">
                           <AlertTriangleIcon className="w-3.5 h-3.5" />
-                          Lỗi MSR Anomaly
+                          Thiếu Commit
                         </Badge>
                       ) : (
                         <Badge className="bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 gap-1 font-bold text-[11px]">
                           <ShieldCheckIcon className="w-3.5 h-3.5" />
-                          Đã Đối Soát (Verified)
+                          Đã xác thực (Verified)
                         </Badge>
                       )}
                     </td>

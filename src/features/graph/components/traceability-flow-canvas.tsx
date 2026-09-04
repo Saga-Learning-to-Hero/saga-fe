@@ -200,10 +200,10 @@ export function TraceabilityFlowCanvas({
           </div>
           <div>
             <span className="text-xs font-extrabold text-foreground block">
-              Mô Hình Luồng Minh Chứng Công Sức (Traceability Evidence Flow)
+              Luồng liên kết Traceability (Traceability Flow)
             </span>
             <span className="text-[11px] text-muted-foreground">
-              Liên kết 3 chặng: Chủ thể (Sinh viên) ➔ Đầu việc (Jira) ➔ Dấu vết mã nguồn (GitHub Commits)
+              Quy trình liên kết: Thành viên ➔ Jira Tasks ➔ GitHub Commits
             </span>
           </div>
         </div>
@@ -306,9 +306,9 @@ export function TraceabilityFlowCanvas({
                         </Badge>
                       </div>
                       <span className="text-[11px] text-muted-foreground flex items-center gap-2 mt-0.5 font-medium">
-                        <span>Đã phân công: <strong className="text-foreground">{sortedTasks.length} task</strong></span>
+                        <span>Phân công: <strong className="text-foreground">{sortedTasks.length} tasks</strong></span>
                         <span>·</span>
-                        <span>Mã nguồn: <strong className="text-foreground font-mono">{student.commitsCount} commits</strong></span>
+                        <span>Commits: <strong className="text-foreground font-mono">{student.commitsCount}</strong></span>
                       </span>
                     </div>
                   </div>
@@ -316,7 +316,7 @@ export function TraceabilityFlowCanvas({
                   <div className="flex items-center gap-2.5 self-start md:self-auto" onClick={(e) => e.stopPropagation()}>
                     <div className="px-3 py-1.5 rounded-xl bg-card border border-border/80 text-right shadow-2xs">
                       <span className="text-[10px] text-muted-foreground font-semibold block uppercase tracking-wider">
-                        Tỷ lệ truy xuất nguồn gốc
+                        Traceability Score
                       </span>
                       <span className="text-xs font-black font-mono text-primary">
                         {student.traceabilityScore}%
@@ -326,7 +326,7 @@ export function TraceabilityFlowCanvas({
                     {hasAnomaly && highlightMSRAnomaly && (
                       <Badge className="bg-red-500/15 text-red-600 dark:text-red-400 border border-red-500/30 font-extrabold text-xs gap-1.5 animate-pulse">
                         <ShieldAlertIcon className="w-3.5 h-3.5 text-red-500" />
-                        <span>Có Task MSR Anomaly</span>
+                        <span>Có Task thiếu Commit</span>
                       </Badge>
                     )}
 
@@ -337,13 +337,13 @@ export function TraceabilityFlowCanvas({
                       className="h-8.5 rounded-xl text-xs font-bold gap-1.5 cursor-pointer hover:bg-primary/10 hover:text-primary"
                     >
                       <UserIcon className="w-3.5 h-3.5 text-primary" />
-                      <span className="hidden sm:inline">Xem hồ sơ</span>
+                      <span className="hidden sm:inline">Hồ sơ</span>
                     </Button>
 
                     <button
                       onClick={() => toggleStudentCollapse(student.id)}
                       className="w-8.5 h-8.5 rounded-xl flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-card border border-border/60 transition-all cursor-pointer"
-                      title={isCollapsed ? "Mở rộng làn" : "Thu gọn làn"}
+                      title={isCollapsed ? "Mở rộng" : "Thu gọn"}
                     >
                       {isCollapsed ? (
                         <ChevronDownIcon className="w-4 h-4 text-primary" />
@@ -358,7 +358,7 @@ export function TraceabilityFlowCanvas({
                   <div className="p-4 sm:p-5 space-y-3 animate-in fade-in-0 duration-200">
                     {sortedTasks.length === 0 ? (
                       <div className="p-6 text-center rounded-2xl bg-muted/20 border border-dashed border-border/80 text-xs text-muted-foreground">
-                        Chưa có đầu việc Jira nào được phân công cho thành viên này trong phạm vi bộ lọc.
+                        Chưa có task Jira nào được phân công cho thành viên này trong bộ lọc.
                       </div>
                     ) : (
                       <>
@@ -427,7 +427,7 @@ export function TraceabilityFlowCanvas({
                                   <div className="flex flex-col items-center gap-1">
                                     <ArrowRightIcon className="w-4 h-4 text-primary" />
                                     <span className="text-[9px] font-mono font-bold uppercase text-muted-foreground">
-                                      Chứng minh
+                                      Liên kết
                                     </span>
                                   </div>
                                 </div>
@@ -438,24 +438,24 @@ export function TraceabilityFlowCanvas({
                                       <AlertTriangleIcon className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
                                       <div className="space-y-0.5">
                                         <span className="font-black block text-[11px] uppercase tracking-wide text-red-600 dark:text-red-300">
-                                          Bất Thường MSR: Thiếu Bằng Chứng Mã Nguồn!
+                                          Cảnh báo: Task DONE nhưng chưa có Commit!
                                         </span>
                                         <p className="text-[11px] leading-relaxed">
-                                          Task đã đánh dấu <strong>DONE</strong> nhưng hệ thống không tìm thấy bất kỳ commit Git nào mang mã <strong>{task.key}</strong>. Cần đối soát lại trước khi nghiệm thu điểm số.
+                                          Task này đã xong (DONE) trên Jira nhưng chưa tìm thấy commit nào gắn mã <strong>{task.key}</strong> trên GitHub.
                                         </p>
                                       </div>
                                     </div>
                                   ) : linkedCommits.length === 0 ? (
                                     <div className="p-3 rounded-xl bg-muted/40 border border-border/60 text-xs text-muted-foreground flex items-center gap-2">
                                       <InfoIcon className="w-3.5 h-3.5 text-blue-500 shrink-0" />
-                                      <span>Task đang tiến hành, chưa liên kết commit mã nguồn.</span>
+                                      <span>Task đang làm, chưa có commit liên kết.</span>
                                     </div>
                                   ) : (
                                     <div className="space-y-1.5">
                                       <div className="flex items-center justify-between text-[11px] text-muted-foreground">
                                         <span className="font-bold flex items-center gap-1">
                                           <GitCommitIcon className="w-3.5 h-3.5 text-purple-500" />
-                                          {linkedCommits.length} Commit GitHub đối soát thành công:
+                                          {linkedCommits.length} Git Commits liên kết:
                                         </span>
                                       </div>
 
@@ -514,12 +514,12 @@ export function TraceabilityFlowCanvas({
                             {isTasksExpanded ? (
                               <>
                                 <ChevronUpIcon className="w-3.5 h-3.5" />
-                                <span>Thu gọn danh sách đầu việc của {student.name}</span>
+                                <span>Thu gọn danh sách task của {student.name}</span>
                               </>
                             ) : (
                               <>
                                 <ChevronDownIcon className="w-3.5 h-3.5" />
-                                <span>Xem thêm {remainingCount} đầu việc khác của {student.name}...</span>
+                                <span>Xem thêm {remainingCount} task khác của {student.name}...</span>
                               </>
                             )}
                           </button>
@@ -539,11 +539,11 @@ export function TraceabilityFlowCanvas({
               <div className="flex items-center gap-2">
                 <UserIcon className="w-4 h-4 text-blue-600 dark:text-blue-400" />
                 <span className="text-xs font-black text-blue-700 dark:text-blue-300 uppercase tracking-wider">
-                  1. Sinh Viên (Actors)
+                  1. Thành Viên
                 </span>
               </div>
               <Badge variant="outline" className="font-mono text-[10px] font-bold">
-                {studentNodes.length} Đỉnh
+                {studentNodes.length} Nodes
               </Badge>
             </div>
 
@@ -577,7 +577,7 @@ export function TraceabilityFlowCanvas({
                         </div>
                         <div className="flex items-center justify-between text-[11px] text-muted-foreground mt-1 font-mono">
                           <span>{s.commitsCount} Commits</span>
-                          <span className="font-bold text-primary">{s.traceabilityScore}% Truy xuất</span>
+                          <span className="font-bold text-primary">{s.traceabilityScore}% Traceability</span>
                         </div>
                       </div>
                     </div>
@@ -592,11 +592,11 @@ export function TraceabilityFlowCanvas({
               <div className="flex items-center gap-2">
                 <CheckSquareIcon className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                 <span className="text-xs font-black text-emerald-700 dark:text-emerald-300 uppercase tracking-wider">
-                  2. Đầu Việc Jira (Work Tasks)
+                  2. Jira Tasks
                 </span>
               </div>
               <Badge variant="outline" className="font-mono text-[10px] font-bold">
-                {taskNodes.length} Đỉnh
+                {taskNodes.length} Nodes
               </Badge>
             </div>
 
@@ -626,7 +626,7 @@ export function TraceabilityFlowCanvas({
                       <div className="flex items-center gap-1">
                         {isAnomaly && (
                           <span className="px-1.5 py-0.5 rounded-md bg-red-500 text-white font-bold text-[9px] animate-pulse">
-                            MSR 0 Commit
+                            Thiếu Commit
                           </span>
                         )}
                         <Badge
@@ -644,7 +644,7 @@ export function TraceabilityFlowCanvas({
                       {t.summary}
                     </p>
                     <div className="flex items-center justify-between text-[10px] text-muted-foreground pt-1 border-t border-border/40 font-mono">
-                      <span>Phụ trách: <strong className="text-foreground">{t.assigneeName}</strong></span>
+                      <span>Assignee: <strong className="text-foreground">{t.assigneeName}</strong></span>
                       <span>{t.storyPoints} SP</span>
                     </div>
                   </div>
@@ -658,11 +658,11 @@ export function TraceabilityFlowCanvas({
               <div className="flex items-center gap-2">
                 <FileCode2Icon className="w-4 h-4 text-purple-600 dark:text-purple-400" />
                 <span className="text-xs font-black text-purple-700 dark:text-purple-300 uppercase tracking-wider">
-                  3. Bằng Chứng Mã Nguồn (Git Commits)
+                  3. Git Commits
                 </span>
               </div>
               <Badge variant="outline" className="font-mono text-[10px] font-bold">
-                {commitNodes.length} Đỉnh
+                {commitNodes.length} Nodes
               </Badge>
             </div>
 

@@ -3,334 +3,284 @@
 import { useState } from "react";
 import {
   CheckSquareIcon,
-  GlobeIcon,
-  MailIcon,
-  FolderKanbanIcon,
-  CheckCircle2Icon,
-  PlusIcon,
-  Edit3Icon,
-  LoaderCircleIcon,
+  RefreshCwIcon,
   ExternalLinkIcon,
-  UnlinkIcon,
-  ClockIcon,
+  LoaderCircleIcon,
   ShieldCheckIcon,
 } from "lucide-react";
 import type { User, JiraIntegration } from "@/types/auth";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { MOCK_JIRA_INTEGRATIONS } from "../data/mock-integrations";
+import { JiraIntegrationCard } from "./jira-integration-card";
 
 interface StudentJiraSettingsProps {
   user: User;
 }
 
+const NEXT_JIRA_CANDIDATES: JiraIntegration[] = [
+  {
+    id: "jira-03",
+    name: "Jira Hệ thống Thương mại Điện tử B2C",
+    connected: true,
+    serverUrl: "https://fpt-swp391.atlassian.net",
+    email: "hailhhe170504@fpt.edu.vn",
+    apiToken: "oauth2_bearer_verified",
+    projectKey: "SWP391_ECOMMERCE",
+    isPrimary: false,
+    lastSyncedAt: "Vừa xong",
+    syncedTasksCount: 16,
+    status: "ACTIVE",
+  },
+  {
+    id: "jira-04",
+    name: "Jira Doanh nghiệp Đối tác Viettel",
+    connected: true,
+    serverUrl: "https://viettel-solutions.atlassian.net",
+    email: "hailhhe170504@fpt.edu.vn",
+    apiToken: "oauth2_bearer_verified",
+    projectKey: "VTS_CORE",
+    isPrimary: false,
+    lastSyncedAt: "Vừa xong",
+    syncedTasksCount: 22,
+    status: "ACTIVE",
+  },
+];
+
 export function StudentJiraSettings({ user }: StudentJiraSettingsProps) {
   const { updateUserProfile } = useAuthStore();
-  const currentJira = user.jiraIntegration || {
-    connected: true,
-    serverUrl: "https://saga-capstone.atlassian.net",
-    email: user.email || "hailhhe170504@fpt.edu.vn",
-    apiToken: "be-auto-configured",
-    projectKey: "SWP490_SAGA",
-    lastSyncedAt: "27/08/2026 14:30",
+
+  const initialList = user.jiraIntegrations && user.jiraIntegrations.length > 0
+    ? user.jiraIntegrations
+    : user.jiraIntegration && user.jiraIntegration.connected
+      ? [
+        {
+          id: "jira-legacy",
+          name: "Jira SAGA Capstone Project",
+          connected: true,
+          serverUrl: user.jiraIntegration.serverUrl || "https://saga-capstone.atlassian.net",
+          email: user.jiraIntegration.email || user.email,
+          apiToken: user.jiraIntegration.apiToken || "oauth2_bearer_verified",
+          projectKey: user.jiraIntegration.projectKey || "SWP490_SAGA",
+          isPrimary: true,
+          lastSyncedAt: user.jiraIntegration.lastSyncedAt || "28/08/2026 14:30",
+          syncedTasksCount: 28,
+          status: "ACTIVE" as const,
+        },
+      ]
+      : MOCK_JIRA_INTEGRATIONS;
+
+  const [integrations, setIntegrations] = useState<JiraIntegration[]>(initialList);
+  const [isConnecting, setIsConnecting] = useState(false);
+  const [feedbackMsg, setFeedbackMsg] = useState("");
+  const [isSyncingAll, setIsSyncingAll] = useState(false);
+
+  const saveToStore = (newList: JiraIntegration[]) => {
+    setIntegrations(newList);
+    const primary = newList.find((i) => i.isPrimary) || newList[0] || null;
+    updateUserProfile({
+      jiraIntegrations: newList,
+      jiraIntegration: primary ? {
+        connected: primary.connected,
+        serverUrl: primary.serverUrl,
+        email: primary.email,
+        apiToken: primary.apiToken,
+        projectKey: primary.projectKey,
+        lastSyncedAt: primary.lastSyncedAt,
+      } : undefined,
+    });
   };
 
-  const [isConnected, setIsConnected] = useState(currentJira.connected);
-  const [isFormOpen, setIsFormOpen] = useState(false);
-  const [form, setForm] = useState({
-    serverUrl: currentJira.serverUrl || "",
-    email: currentJira.email || "",
-    projectKey: currentJira.projectKey || "",
-  });
+  const handleConnectJiraOAuth = async () => {
+    setIsConnecting(true);
+    setFeedbackMsg("Đang chuyển hướng sang Atlassian để xác thực tài khoản Jira...");
 
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [feedbackMsg, setFeedbackMsg] = useState("");
+    await new Promise((r) => setTimeout(r, 1200));
 
-  const handleConnectOrUpdate = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-    setFeedbackMsg("");
-    await new Promise((r) => setTimeout(r, 600));
-
-    const newJiraConfig: JiraIntegration = {
+    const nextItem = NEXT_JIRA_CANDIDATES.find(
+      (candidate) => !integrations.some((i) => i.projectKey === candidate.projectKey)
+    ) || {
+      id: `jira-${Date.now()}`,
+      name: `Jira Workspace Dự án (${integrations.length + 1})`,
       connected: true,
-      serverUrl: form.serverUrl || "https://saga-capstone.atlassian.net",
-      email: form.email || user.email,
-      apiToken: "be-auto-webhook",
-      projectKey: form.projectKey || "SWP490_SAGA",
-      lastSyncedAt: "27/08/2026 14:30",
+      serverUrl: "https://saga-enterprise.atlassian.net",
+      email: user.email || "hailhhe170504@fpt.edu.vn",
+      apiToken: "oauth2_bearer_verified",
+      projectKey: `PRJ_${integrations.length + 1}`,
+      isPrimary: false,
+      lastSyncedAt: "Vừa xong",
+      syncedTasksCount: 18,
+      status: "ACTIVE" as const,
     };
 
-    updateUserProfile({ jiraIntegration: newJiraConfig });
+    const updated = [...integrations, nextItem];
+    if (!updated.some((i) => i.isPrimary)) {
+      updated[0].isPrimary = true;
+    }
 
-    setIsConnected(true);
-    setIsFormOpen(false);
-    setIsSubmitting(false);
-    setFeedbackMsg("Đã liên kết tài khoản Jira thành công!");
+    saveToStore(updated);
+    setIsConnecting(false);
+    setFeedbackMsg(`Đã kết nối thành công tài khoản Jira (${nextItem.projectKey}) qua Atlassian OAuth!`);
+    setTimeout(() => setFeedbackMsg(""), 4500);
+  };
+
+  const handleDelete = (id: string) => {
+    const remaining = integrations.filter((i) => i.id !== id);
+    if (remaining.length > 0 && !remaining.some((i) => i.isPrimary)) {
+      remaining[0].isPrimary = true;
+    }
+    saveToStore(remaining);
+    setFeedbackMsg("Đã ngắt kết nối Workspace Jira.");
     setTimeout(() => setFeedbackMsg(""), 4000);
   };
 
-  const handleDisconnect = async () => {
-    setIsSubmitting(true);
-    await new Promise((r) => setTimeout(r, 400));
+  const handleSetPrimary = (id: string) => {
+    const updated = integrations.map((i) => ({
+      ...i,
+      isPrimary: i.id === id,
+    }));
+    saveToStore(updated);
+    setFeedbackMsg("Đã đặt Workspace làm dự án chính mặc định.");
+    setTimeout(() => setFeedbackMsg(""), 4000);
+  };
 
-    updateUserProfile({
-      jiraIntegration: {
-        connected: false,
-        serverUrl: "",
-        email: "",
-        apiToken: "",
-        projectKey: "",
-      },
-    });
+  const handleSyncItem = async (id: string) => {
+    await new Promise((r) => setTimeout(r, 650));
+    const now = new Date().toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" });
+    const updated = integrations.map((i) =>
+      i.id === id
+        ? {
+          ...i,
+          lastSyncedAt: `Hôm nay lúc ${now}`,
+          syncedTasksCount: (i.syncedTasksCount || 0) + Math.floor(Math.random() * 2),
+        }
+        : i
+    );
+    saveToStore(updated);
+    setFeedbackMsg("Đồng bộ dữ liệu Jira Cloud thành công!");
+    setTimeout(() => setFeedbackMsg(""), 4000);
+  };
 
-    setIsConnected(false);
-    setIsFormOpen(false);
-    setIsSubmitting(false);
-    setForm({ serverUrl: "", email: "", projectKey: "" });
-    setFeedbackMsg("Đã ngắt kết nối tài khoản Jira.");
+  const handleSyncAll = async () => {
+    setIsSyncingAll(true);
+    await new Promise((r) => setTimeout(r, 900));
+    const now = new Date().toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" });
+    const updated = integrations.map((i) => ({
+      ...i,
+      lastSyncedAt: `Hôm nay lúc ${now}`,
+      syncedTasksCount: (i.syncedTasksCount || 0) + 1,
+    }));
+    saveToStore(updated);
+    setIsSyncingAll(false);
+    setFeedbackMsg("Đã đồng bộ toàn bộ các Workspace Jira!");
     setTimeout(() => setFeedbackMsg(""), 4000);
   };
 
   return (
-    <Card
-      className="rounded-2xl border border-border/80 bg-card shadow-xs overflow-hidden"
-    >
+    <Card className="rounded-2xl border border-border/80 bg-card shadow-xs overflow-hidden">
       <CardHeader className="p-4 sm:p-5 border-b border-border/60 bg-card">
-        <div className="flex items-start justify-between gap-3">
-          {/* Logo Jira & Title */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center shrink-0 shadow-xs">
               <CheckSquareIcon className="w-5 h-5" />
             </div>
             <div>
-              <CardTitle className="text-base font-bold text-foreground tracking-tight">
-                Jira Software
-              </CardTitle>
+              <div className="flex items-center gap-2">
+                <CardTitle className="text-base font-bold text-foreground tracking-tight">
+                  Jira Software Workspaces
+                </CardTitle>
+                <Badge variant="outline" className="font-mono text-[11px] px-2 py-0 border-blue-500/30 text-blue-600 dark:text-blue-400 bg-blue-500/10 font-bold">
+                  {integrations.length} kết nối
+                </Badge>
+              </div>
               <CardDescription className="text-xs text-muted-foreground mt-0.5">
-                Đồng bộ Task & Sprint từ Jira Cloud
+                Chuyển tiếp ủy quyền trực tiếp qua cổng Atlassian OAuth
               </CardDescription>
             </div>
           </div>
 
-          {/* Status Badge Top Right */}
-          {isConnected && !isFormOpen ? (
-            <Badge className="bg-emerald-500 text-white border-0 text-[11px] font-semibold gap-1 px-2.5 py-0.5 shadow-xs">
-              <CheckCircle2Icon className="w-3.5 h-3.5" /> Đã kết nối
-            </Badge>
-          ) : (
-            <Badge variant="outline" className="text-muted-foreground border-border text-[11px] font-medium px-2.5 py-0.5">
-              Chưa kết nối
-            </Badge>
-          )}
+          <div className="flex items-center gap-2 shrink-0">
+            {integrations.length > 1 && (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={handleSyncAll}
+                disabled={isSyncingAll}
+                className="h-8.5 px-3 text-xs font-semibold rounded-xl gap-1.5 cursor-pointer"
+              >
+                <RefreshCwIcon className={`w-3.5 h-3.5 ${isSyncingAll ? "animate-spin text-primary" : ""}`} />
+                <span>Đồng bộ tất cả</span>
+              </Button>
+            )}
+
+            <Button
+              type="button"
+              size="sm"
+              onClick={handleConnectJiraOAuth}
+              disabled={isConnecting}
+              className="h-8.5 px-3.5 text-xs font-bold rounded-xl gap-1.5 bg-blue-600 hover:bg-blue-700 text-white cursor-pointer shadow-2xs"
+            >
+              {isConnecting ? (
+                <>
+                  <LoaderCircleIcon className="w-3.5 h-3.5 animate-spin" />
+                  <span>Đang kết nối...</span>
+                </>
+              ) : (
+                <>
+                  <ExternalLinkIcon className="w-3.5 h-3.5" />
+                  <span>+ Kết nối qua Jira Link</span>
+                </>
+              )}
+            </Button>
+          </div>
         </div>
       </CardHeader>
 
       <CardContent className="p-4 sm:p-5 space-y-4 bg-card">
-        {/* Feedback Alert */}
         {feedbackMsg && (
-          <div className="p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 text-xs font-semibold flex items-center gap-2 animate-in fade-in-0">
-            <CheckCircle2Icon className="w-4 h-4 shrink-0" />
+          <div className="p-3.5 rounded-xl bg-blue-500/10 border border-blue-500/30 text-blue-700 dark:text-blue-300 text-xs font-semibold flex items-center gap-2 animate-in fade-in-0">
+            <ShieldCheckIcon className="w-4 h-4 shrink-0 text-blue-600 dark:text-blue-400" />
             <span>{feedbackMsg}</span>
           </div>
         )}
 
-        {/* ── STATE 1: Đã kết nối (Linked State) ────────────────────── */}
-        {isConnected && !isFormOpen ? (
-          <div className="space-y-4">
-            <p className="text-xs text-muted-foreground">
-              Tài khoản Jira bên thứ ba đã được xác thực và liên kết tự động với hệ thống SAGA:
-            </p>
-
-            {/* Account Details Box */}
-            <div className="p-3.5 rounded-xl bg-muted/40 border border-border/80 space-y-2.5 text-xs">
-              <div className="flex items-center justify-between">
-                <span className="text-muted-foreground font-medium">Jira Email:</span>
-                <strong className="text-foreground">{form.email || user.email}</strong>
-              </div>
-
-              <div className="flex items-center justify-between">
-                <span className="text-muted-foreground font-medium">Workspace URL:</span>
-                <a
-                  href={form.serverUrl || "https://saga-capstone.atlassian.net"}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="font-mono font-bold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1"
-                >
-                  {form.serverUrl || "https://saga-capstone.atlassian.net"}
-                  <ExternalLinkIcon className="w-3 h-3" />
-                </a>
-              </div>
-
-              <div className="flex items-center justify-between">
-                <span className="text-muted-foreground font-medium">Project Key:</span>
-                <Badge variant="outline" className="font-mono text-[11px] bg-background">
-                  {form.projectKey || "SWP490_SAGA"}
-                </Badge>
-              </div>
-
-              <div className="flex items-center justify-between text-[11px] text-muted-foreground pt-1 border-t border-border/50">
-                <span className="flex items-center gap-1">
-                  <ClockIcon className="w-3 h-3 text-emerald-500" />
-                  Ngày xác thực: <strong className="text-foreground font-mono">27/08/2026 14:30</strong>
-                </span>
-                <span className="text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1">
-                  <ShieldCheckIcon className="w-3.5 h-3.5" /> Webhook Active
-                </span>
-              </div>
+        {integrations.length === 0 ? (
+          <div className="p-8 text-center rounded-2xl border border-dashed border-border/80 bg-muted/20 space-y-3">
+            <div className="w-12 h-12 rounded-2xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center mx-auto">
+              <CheckSquareIcon className="w-6 h-6" />
             </div>
-
-            {/* Action Buttons */}
-            <div className="pt-1 flex items-center justify-between gap-3">
-              <button
-                type="button"
-                onClick={() => setIsFormOpen(true)}
-                className="h-8.5 px-3.5 text-xs font-semibold rounded-xl gap-1.5 cursor-pointer bg-background hover:bg-muted text-foreground border border-border/80 shadow-2xs flex items-center transition-colors"
-              >
-                <Edit3Icon className="w-3.5 h-3.5 text-muted-foreground" />
-                Sửa thông tin
-              </button>
-
-              <button
-                type="button"
-                onClick={handleDisconnect}
-                disabled={isSubmitting}
-                className="h-8.5 px-3.5 text-xs font-semibold rounded-xl gap-1.5 cursor-pointer bg-rose-600 hover:bg-rose-700 text-white shadow-2xs flex items-center transition-colors disabled:opacity-50"
-              >
-                {isSubmitting ? (
-                  <LoaderCircleIcon className="w-3.5 h-3.5 animate-spin" />
-                ) : (
-                  <UnlinkIcon className="w-3.5 h-3.5" />
-                )}
-                Ngắt kết nối
-              </button>
+            <div className="max-w-md mx-auto space-y-1">
+              <h4 className="text-sm font-bold text-foreground">Chưa có kết nối Jira Software nào</h4>
+              <p className="text-xs text-muted-foreground">
+                Bấm nút kết nối để chuyển hướng qua trang đăng nhập của Atlassian Jira và cấp quyền truy cập một chạm.
+              </p>
             </div>
-          </div>
-        ) : !isFormOpen ? (
-          /* ── STATE 2: Chưa kết nối (Unlinked State - Clean CTA Card) ─ */
-          <div className="space-y-4">
-            <p className="text-xs text-muted-foreground leading-relaxed">
-              Tích hợp tài khoản Jira để tự động đồng bộ danh sách đầu việc (Tasks, User Stories, Sprints) và đo lường độ phủ SAGA Traceability.
-            </p>
-
-            <div className="p-4 rounded-xl bg-muted/40 border border-border/50 space-y-2">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground block">
-                Lợi ích tích hợp:
-              </span>
-              <ul className="text-xs text-muted-foreground space-y-1.5">
-                <li className="flex items-center gap-1.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
-                  Đồng bộ thời gian thực các Sprint & Tasks từ Jira Cloud.
-                </li>
-                <li className="flex items-center gap-1.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
-                  Liên kết tự động mã nguồn GitHub với mã thẻ Jira.
-                </li>
-              </ul>
-            </div>
-
-            {/* CTA Button */}
             <Button
               type="button"
-              onClick={() => setIsFormOpen(true)}
-              className="w-full h-10 text-xs font-bold rounded-xl gap-2 cursor-pointer shadow-xs bg-blue-600 hover:bg-blue-700 text-white"
+              onClick={handleConnectJiraOAuth}
+              disabled={isConnecting}
+              className="text-xs font-bold rounded-xl bg-blue-600 hover:bg-blue-700 text-white gap-1.5 cursor-pointer shadow-xs"
             >
-              <PlusIcon className="w-4 h-4" />
-              + Liên kết với Jira
+              <ExternalLinkIcon className="w-3.5 h-3.5" />
+              <span>Chuyển sang Atlassian Jira để kết nối</span>
             </Button>
           </div>
         ) : (
-          /* ── STATE 3: Form Điền thông tin kết nối (Interactive Form) ─ */
-          <form onSubmit={handleConnectOrUpdate} className="space-y-4 animate-in fade-in-0">
-            <div className="space-y-3">
-              {/* Workspace URL */}
-              <div className="space-y-1.5">
-                <Label htmlFor="jira-domain" className="text-xs font-semibold">
-                  Jira Workspace / Domain URL <span className="text-destructive">*</span>
-                </Label>
-                <div className="relative">
-                  <GlobeIcon className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-                  <Input
-                    id="jira-domain"
-                    type="url"
-                    required
-                    value={form.serverUrl}
-                    onChange={(e) => setForm((f) => ({ ...f, serverUrl: e.target.value }))}
-                    placeholder="https://saga-capstone.atlassian.net"
-                    className="pl-9 h-9 text-xs rounded-xl bg-card font-mono"
-                  />
-                </div>
-              </div>
-
-              {/* Email */}
-              <div className="space-y-1.5">
-                <Label htmlFor="jira-user-email" className="text-xs font-semibold">
-                  Email tài khoản Jira <span className="text-destructive">*</span>
-                </Label>
-                <div className="relative">
-                  <MailIcon className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-                  <Input
-                    id="jira-user-email"
-                    type="email"
-                    required
-                    value={form.email}
-                    onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
-                    placeholder="hailhhe170504@fpt.edu.vn"
-                    className="pl-9 h-9 text-xs rounded-xl bg-card"
-                  />
-                </div>
-              </div>
-
-              {/* Project Key */}
-              <div className="space-y-1.5">
-                <Label htmlFor="jira-key" className="text-xs font-semibold">
-                  Mã dự án (Project Key)
-                </Label>
-                <div className="relative">
-                  <FolderKanbanIcon className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-                  <Input
-                    id="jira-key"
-                    type="text"
-                    value={form.projectKey}
-                    onChange={(e) => setForm((f) => ({ ...f, projectKey: e.target.value }))}
-                    placeholder="SWP490_SAGA"
-                    className="pl-9 h-9 text-xs rounded-xl bg-card font-mono uppercase"
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Form Actions */}
-            <div className="pt-2 flex items-center justify-end gap-2">
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={() => setIsFormOpen(false)}
-                className="h-9 text-xs rounded-xl"
-              >
-                Hủy
-              </Button>
-
-              <Button
-                type="submit"
-                disabled={isSubmitting}
-                className="h-9 text-xs font-bold rounded-xl gap-1.5 cursor-pointer shadow-xs bg-blue-600 hover:bg-blue-700 text-white px-5"
-              >
-                {isSubmitting ? (
-                  <>
-                    <LoaderCircleIcon className="w-4 h-4 animate-spin" />
-                    Đang kết nối...
-                  </>
-                ) : (
-                  "Xác nhận kết nối Jira"
-                )}
-              </Button>
-            </div>
-          </form>
+          <div className="grid grid-cols-1 gap-3.5">
+            {integrations.map((item) => (
+              <JiraIntegrationCard
+                key={item.id}
+                item={item}
+                onEdit={handleConnectJiraOAuth}
+                onDelete={handleDelete}
+                onSetPrimary={handleSetPrimary}
+                onSync={handleSyncItem}
+              />
+            ))}
+          </div>
         )}
       </CardContent>
     </Card>

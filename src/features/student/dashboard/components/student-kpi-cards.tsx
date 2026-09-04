@@ -63,7 +63,7 @@ export function StudentKPICards({
       <div className="bg-card border border-border/80 rounded-2xl p-4 shadow-xs relative overflow-hidden flex flex-col justify-between group hover:border-primary/40 transition-all">
         <div className="flex items-center justify-between">
           <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
-            {isAllTeamSelected ? "Tổng Commits Nhóm" : "Cường độ Commits"}
+            {isAllTeamSelected ? "Tổng Commits Nhóm" : "Commits Cá Nhân"}
           </span>
           <div className="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
             <GitCommitIcon className="w-4 h-4" />
@@ -86,11 +86,10 @@ export function StudentKPICards({
         </div>
       </div>
 
-      {/* KPI Card 3: Chỉ số SAGA Traceability Score */}
       <div className="bg-card border border-border/80 rounded-2xl p-4 shadow-xs relative overflow-hidden flex flex-col justify-between group hover:border-primary/40 transition-all">
         <div className="flex items-center justify-between">
           <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
-            SAGA Traceability Score
+            Traceability Score
           </span>
           <div className="w-8 h-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
             <GitGraphIcon className="w-4 h-4" />
@@ -104,16 +103,15 @@ export function StudentKPICards({
             </span>
           </div>
           <p className="text-xs text-muted-foreground mt-0.5">
-            Liên kết 1-1 giữa Task Jira & GitHub Commits
+            Độ phủ liên kết Jira Tasks & Git Commits
           </p>
         </div>
       </div>
 
-      {/* KPI Card 4: Mức độ đóng góp đồ án (Contribution Share) */}
       <div className="bg-card border border-border/80 rounded-2xl p-4 shadow-xs relative overflow-hidden flex flex-col justify-between group hover:border-primary/40 transition-all">
         <div className="flex items-center justify-between">
           <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
-            Mức đóng góp đồ án
+            Tỷ lệ đóng góp (%)
           </span>
           <div className="w-8 h-8 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center">
             <PieChartIcon className="w-4 h-4" />

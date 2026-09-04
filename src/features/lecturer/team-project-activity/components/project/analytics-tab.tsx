@@ -55,7 +55,7 @@ export function AnalyticsTab({ project }: AnalyticsTabProps) {
             ]}
           />
         </div>
-        
+
         <div className="w-[180px]">
           <CustomSelect
             value={memberFilter}
@@ -78,7 +78,7 @@ export function AnalyticsTab({ project }: AnalyticsTabProps) {
             ]}
           />
         </div>
-        
+
         <div className="ml-auto flex items-center gap-3">
           <div className="text-sm font-medium text-muted-foreground hidden lg:block">
             Dữ liệu từ <strong className="text-foreground">12/08/2026</strong> đến <strong className="text-foreground">30/08/2026</strong>
@@ -102,7 +102,7 @@ export function AnalyticsTab({ project }: AnalyticsTabProps) {
             <div className="bg-primary h-full rounded-full" style={{ width: "68%" }} />
           </div>
         </div>
-        
+
         <div className="bg-card p-4 rounded-xl border border-border/60 flex flex-col justify-center shadow-saga-xs">
           <div className="text-xs font-semibold text-muted-foreground mb-1 flex items-center gap-1.5">
             <AlertCircleIcon className="w-3.5 h-3.5" /> TRỄ HẠN
@@ -152,9 +152,9 @@ export function AnalyticsTab({ project }: AnalyticsTabProps) {
           </div>
           <div className="mt-4 pt-4 border-t border-border/50 text-sm">
             <div className="font-semibold text-destructive mb-2 flex items-center gap-2">
-              <AlertCircleIcon className="w-4 h-4" /> Có dấu hiệu báo cáo khống
+              <AlertCircleIcon className="w-4 h-4" /> Cảnh báo: Task DONE nhưng thiếu commit
             </div>
-            <div className="text-xs text-muted-foreground">1 task Done nhưng không có commit liên kết. Cần kiểm tra lại biểu đồ Traceability.</div>
+            <div className="text-xs text-muted-foreground">1 task Done nhưng không có commit liên kết. Cần kiểm tra lại đồ thị Traceability.</div>
           </div>
         </div>
       </div>
@@ -239,7 +239,7 @@ export function AnalyticsTab({ project }: AnalyticsTabProps) {
           </div>
         </div>
       </div>
-      
+
       {/* Activity Feed placeholder if any */}
       <div className="bg-card border border-border/60 rounded-xl p-6">
         <h3 className="font-bold mb-4">Hoạt động gần đây</h3>
@@ -249,7 +249,7 @@ export function AnalyticsTab({ project }: AnalyticsTabProps) {
           </div>
         </div>
       </div>
-      
+
     </div>
   );
 }

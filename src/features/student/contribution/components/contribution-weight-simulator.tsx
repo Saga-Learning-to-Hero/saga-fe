@@ -84,7 +84,7 @@ export function ContributionWeightSimulator({ onWeightChange }: ContributionWeig
           {/* 2. Jira Tasks Weight */}
           <div className="p-3.5 rounded-2xl bg-muted/30 border border-border/60 space-y-2">
             <div className="flex items-center justify-between text-xs">
-              <span className="font-bold text-foreground">2. Đầu việc Jira (Story Points)</span>
+              <span className="font-bold text-foreground">2. Jira Tasks (Story Points)</span>
               <span className="font-mono font-extrabold text-blue-600">{weights.tasksWeight}%</span>
             </div>
             <input
@@ -124,7 +124,7 @@ export function ContributionWeightSimulator({ onWeightChange }: ContributionWeig
           {/* 4. Traceability Weight */}
           <div className="p-3.5 rounded-2xl bg-muted/30 border border-border/60 space-y-2">
             <div className="flex items-center justify-between text-xs">
-              <span className="font-bold text-foreground">4. Độ Ma vết (Traceability)</span>
+              <span className="font-bold text-foreground">4. Traceability (Task & Commit)</span>
               <span className="font-mono font-extrabold text-emerald-500">{weights.traceabilityWeight}%</span>
             </div>
             <input

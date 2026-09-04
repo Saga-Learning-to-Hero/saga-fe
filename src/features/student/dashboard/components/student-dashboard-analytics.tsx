@@ -70,17 +70,17 @@ export function StudentDashboardAnalytics({
           <div>
             <div className="flex items-center gap-2">
               <h2 className="text-base font-bold text-foreground tracking-tight">
-                Bảng Phân tích Đồ thị & Tiến độ Công việc
+                Tiến độ & Hiệu suất Thành viên
               </h2>
               <Badge className={`border-0 text-[10px] font-semibold ${isLeader ? "bg-amber-500/15 text-amber-900 dark:text-amber-300" : "bg-blue-500/15 text-blue-700 dark:text-blue-300"
                 }`}>
-                {isLeader ? "Vai trò: Trưởng nhóm (Leader)" : "Vai trò: Thành viên (Member)"}
+                {isLeader ? "Leader" : "Member"}
               </Badge>
             </div>
             <p className="text-xs text-muted-foreground">
               {isLeader
-                ? "Trưởng nhóm có quyền xem tiến độ & đồ thị của tất cả thành viên trong nhóm."
-                : "Thành viên chỉ xem được biểu đồ & chỉ số đóng góp của chính bản thân."}
+                ? "Leader có quyền xem tiến độ và metrics của toàn bộ thành viên trong nhóm."
+                : "Member theo dõi tiến độ công việc và chỉ số đóng góp của chính bản thân."}
             </p>
           </div>
         </div>
@@ -106,7 +106,7 @@ export function StudentDashboardAnalytics({
 
                 <DropdownMenuContent align="end" className="w-64 p-1.5 rounded-xl">
                   <DropdownMenuLabel className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
-                    Phạm vi xem đồ thị
+                    Phạm vi theo dõi
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
 

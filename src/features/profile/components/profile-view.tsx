@@ -29,7 +29,7 @@ export function ProfileView({ user, compact = false }: ProfileViewProps) {
             <div>
               <p className="text-xs font-bold text-foreground">Tích hợp Công cụ Jira Software & GitHub</p>
               <p className="text-[11px] text-muted-foreground">
-                Quản lý kết nối tài khoản, API Token và Repository phục vụ đối soát dữ liệu đồ án.
+                Quản lý kết nối tài khoản, API Token và Repository để đồng bộ và liên kết dữ liệu đồ án.
               </p>
             </div>
           </div>

@@ -229,7 +229,7 @@ export const MOCK_COMMITS: CommitItem[] = [
     id: "c-301",
     hash: "5i7h6j9k0l1m2n3o4p5q6r7s8t9u0v1w2x3y4z5",
     shortHash: "5i7h6j9",
-    message: "feat(traceability): SAGA-106 Thuật toán tính toán ma trận ma vết 1-1 giữa Task & Commit",
+    message: "feat(traceability): SAGA-106 Thuật toán tính toán liên kết Traceability giữa Task & Commit",
     author: AUTHOR_TRUNG,
     repoName: "saga-ai",
     branchName: "feature/traceability-matrix",

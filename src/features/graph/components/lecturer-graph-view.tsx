@@ -135,7 +135,7 @@ export function LecturerGraphView() {
   const groupSelectOptions = MOCK_LECTURER_GROUPS.map((g) => ({
     value: g.id,
     label: g.name,
-    subLabel: `Độ tin cậy: ${g.traceabilityRate}% · ${g.msrCount} MSR · ${g.ghostingCount} Ghosting`,
+    subLabel: `Độ tin cậy: ${g.traceabilityRate}% · ${g.msrCount} Task thiếu commit · ${g.ghostingCount} Ghosting`,
   }));
 
   return (
@@ -144,13 +144,13 @@ export function LecturerGraphView() {
         <div>
           <div className="flex items-center gap-2 text-primary font-bold text-xs">
             <GraduationCapIcon className="w-4 h-4" />
-            <span>KHÔNG GIAN GIẢNG VIÊN · GIÁM SÁT ĐỐI SOÁT TOÀN BỘ NHÓM ĐỒ ÁN</span>
+            <span>GIÁM SÁT TIẾN ĐỘ & ĐÓNG GÓP CÁC NHÓM</span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-foreground mt-1">
-            Trung Tâm Giám Sát Đồ Thị & Ma Trận Đóng Góp Lớp Học
+            Giám sát Đồ thị Traceability & Mạng lưới SNA
           </h1>
           <p className="text-xs text-muted-foreground mt-0.5 max-w-3xl leading-relaxed">
-            Giảng viên có toàn quyền chuyển đổi qua lại giữa tất cả các nhóm trong khóa học, kiểm tra đối soát lỗi MSR Anomaly, theo dõi mạng lưới tương tác SNA và can thiệp ghi đè điểm số (Human-in-the-loop).
+            Theo dõi tiến độ, đối soát Jira Tasks & Git Commits, phân tích mức độ tương tác Code Review và hỗ trợ các nhóm kịp thời.
           </p>
         </div>
 
@@ -163,7 +163,7 @@ export function LecturerGraphView() {
               }`}
           >
             <GitGraphIcon className="w-4 h-4 text-blue-500" />
-            <span>Traceability Graph (Đối Soát Code)</span>
+            <span>Traceability Graph (Task & Commit)</span>
           </button>
           <button
             onClick={() => setActiveTab("SNA")}
@@ -173,7 +173,7 @@ export function LecturerGraphView() {
               }`}
           >
             <UsersIcon className="w-4 h-4 text-purple-500" />
-            <span>SNA Matrix (Phát Hiện Ghosting)</span>
+            <span>Mạng lưới SNA (Tương tác nhóm)</span>
           </button>
         </div>
       </div>
@@ -184,7 +184,7 @@ export function LecturerGraphView() {
             <div className="space-y-1 w-full max-w-md">
               <label className="text-[11px] font-bold text-muted-foreground flex items-center gap-1.5">
                 <FolderKanbanIcon className="w-3.5 h-3.5 text-blue-500" />
-                Chọn Nhóm Đồ Án Cần Giám Sát:
+                Chọn nhóm:
               </label>
               <CustomSelect
                 value={selectedGroupId}
@@ -196,7 +196,7 @@ export function LecturerGraphView() {
 
           <div className="flex items-center gap-3 shrink-0 p-3 rounded-2xl bg-card border border-border/80 shadow-2xs">
             <div>
-              <span className="text-[10px] text-muted-foreground font-bold uppercase block">Trạng thái Nhóm:</span>
+              <span className="text-[10px] text-muted-foreground font-bold uppercase block">Trạng thái nhóm:</span>
               <span className="font-black text-sm text-foreground">{currentGroup.name}</span>
             </div>
             <Badge
@@ -211,17 +211,17 @@ export function LecturerGraphView() {
               {currentGroup.status === "CRITICAL" ? (
                 <>
                   <ShieldAlertIcon className="w-3.5 h-3.5 text-red-600 dark:text-red-400 shrink-0" />
-                  <span>Nguy Cơ Cao</span>
+                  <span>Nguy cơ cao</span>
                 </>
               ) : currentGroup.status === "WARNING" ? (
                 <>
                   <AlertTriangleIcon className="w-3.5 h-3.5 text-amber-700 dark:text-amber-400 shrink-0" />
-                  <span>Cần Chú Ý</span>
+                  <span>Cần chú ý</span>
                 </>
               ) : (
                 <>
                   <CheckCircle2Icon className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
-                  <span>Hoạt Động Tốt</span>
+                  <span>Hoạt động tốt</span>
                 </>
               )}
             </Badge>
@@ -229,7 +229,7 @@ export function LecturerGraphView() {
         </div>
 
         <div className="pt-3 border-t border-border/60 flex items-center gap-2 overflow-x-auto pb-1 text-xs">
-          <span className="text-[11px] font-bold text-muted-foreground shrink-0">Chuyển nhanh nhóm:</span>
+          <span className="text-[11px] font-bold text-muted-foreground shrink-0">Chọn nhanh nhóm:</span>
           {MOCK_LECTURER_GROUPS.map((g) => (
             <button
               key={g.id}

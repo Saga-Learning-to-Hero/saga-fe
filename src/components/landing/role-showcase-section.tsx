@@ -49,10 +49,10 @@ const roles = [
     icon: ScaleIcon,
     badge: "Chuẩn mực Khách quan",
     headline: "Căn cứ khoa học chuẩn xác để bảo vệ điểm số công bằng",
-    description: "Triệt tiêu hoàn toàn sự tranh cãi hay khiếu nại điểm số nhờ hệ thống dữ liệu truy vết kỹ thuật không thể chỉnh sửa ngược.",
+    description: "Triệt tiêu hoàn toàn sự tranh cãi hay khiếu nại điểm số nhờ hệ thống dữ liệu liên kết Jira & Git không thể chỉnh sửa ngược.",
     highlights: [
       "Bằng chứng số liệu đối chiếu chi tiết đến từng file và task",
-      "Nhật ký kiểm toán an ninh bảo đảm tính toàn vẹn dữ liệu",
+      "Nhật ký hệ thống an ninh bảo đảm tính toàn vẹn dữ liệu",
       "Chuẩn hóa quy trình đánh giá đồ án công nghệ thông tin",
     ],
     previewTitle: "Báo cáo Kiểm định Chất lượng",
@@ -87,8 +87,8 @@ export function RoleShowcaseSection() {
                 key={role.id}
                 onClick={() => setActiveTab(idx)}
                 className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${activeTab === idx
-                    ? "bg-card text-foreground shadow-xs border border-border"
-                    : "text-muted-foreground hover:text-foreground hover:bg-card/50"
+                  ? "bg-card text-foreground shadow-xs border border-border"
+                  : "text-muted-foreground hover:text-foreground hover:bg-card/50"
                   }`}
               >
                 <role.icon className={`w-4 h-4 ${activeTab === idx ? "text-primary" : "text-muted-foreground"}`} />

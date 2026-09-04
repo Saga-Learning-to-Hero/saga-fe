@@ -22,18 +22,38 @@ export interface ProjectTeamMember {
   commitsCount?: number;
 }
 
+export interface ProjectJiraConfig {
+  serverUrl: string;
+  projectKey: string;
+  projectName?: string;
+  connected: boolean;
+  lastSyncedAt?: string;
+  tasksCount?: number;
+}
+
+export interface ProjectGitHubRepo {
+  id: string;
+  repository: string;
+  alias?: string;
+  defaultBranch: string;
+  connected: boolean;
+  lastSyncedAt?: string;
+  commitsCount?: number;
+  pullRequestsCount?: number;
+}
+
 export interface StudentProjectDetails {
   id: string;
-  name: string; // Tên dự án
-  projectName?: string; // Tương thích ngược
-  category: ProjectCategory; // Loại dự án
-  description: string; // Mô tả dự án
+  name: string;
+  projectName?: string;
+  category: ProjectCategory;
+  description: string;
   status: "ACTIVE" | "COMPLETED" | "DRAFT" | "PLANNED";
-  courseCode: string; // VD: SWP490_FA26_SE1701
-  courseName: string; // VD: Đồ án Kỹ thuật phần mềm (Capstone Project)
-  semesterCode: string; // VD: FA26
-  adminClassCode: string; // VD: SE1701
-  groupName: string; // VD: Nhóm 01 - SAGA Team
+  courseCode: string;
+  courseName: string;
+  semesterCode: string;
+  adminClassCode: string;
+  groupName: string;
   lecturer: {
     name: string;
     fullName?: string;
@@ -41,10 +61,12 @@ export interface StudentProjectDetails {
     avatar?: string;
   };
   members: ProjectTeamMember[];
-  techStack: string[]; // VD: ["Next.js", "React", "TypeScript", "TailwindCSS", "NestJS", "Cytoscape.js"]
+  techStack: string[];
+  jiraConfig?: ProjectJiraConfig;
+  githubRepositories?: ProjectGitHubRepo[];
   jiraProjectKey?: string;
   githubRepository?: string;
-  githubRepo?: string; // Tương thích ngược
+  githubRepo?: string;
   createdAt: string;
   updatedAt: string;
 }

@@ -66,7 +66,7 @@ export function AuditDetailDialog({ log, isOpen, onClose }: AuditDetailDialogPro
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
               <DialogTitle className="text-base font-bold text-foreground">
-                Chi tiết sự kiện kiểm toán
+                Chi tiết nhật ký hoạt động (Audit Detail)
               </DialogTitle>
               {renderSeverityBadge()}
             </div>

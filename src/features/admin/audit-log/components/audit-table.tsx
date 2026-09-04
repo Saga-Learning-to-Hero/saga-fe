@@ -102,7 +102,7 @@ export function AuditTable({ logs, onSelectLog }: AuditTableProps) {
             {logs.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={7} className="text-center py-12 text-muted-foreground">
-                  Không tìm thấy sự kiện kiểm toán nào phù hợp với bộ lọc.
+                  Không tìm thấy nhật ký hoạt động nào phù hợp với bộ lọc.
                 </TableCell>
               </TableRow>
             ) : (

@@ -105,12 +105,11 @@ export function ContributionKPICards({ currentMember }: ContributionKPICardsProp
         </div>
       </Card>
 
-      {/* KPI 4: Tỷ lệ Traceability ma vết */}
       <Card className="rounded-2xl border border-border/80 bg-card p-4 sm:p-5 shadow-2xs space-y-3">
         <div className="flex items-center justify-between">
           <span className="text-xs font-semibold text-muted-foreground flex items-center gap-1.5">
             <GitGraphIcon className="w-4 h-4 text-emerald-500" />
-            Tỷ lệ Ma vết (Traceability)
+            Độ phủ Traceability
           </span>
           <Badge className="bg-emerald-500/15 text-emerald-600 border-emerald-500/30 text-[10px] font-mono font-bold">
             Verified
@@ -124,7 +123,7 @@ export function ContributionKPICards({ currentMember }: ContributionKPICardsProp
             </span>
             <p className="text-[11px] text-muted-foreground mt-0.5 flex items-center gap-1">
               <CheckCircle2Icon className="w-3 h-3 text-emerald-500" />
-              98% Task có Commit đối ứng
+              98% Task có Git Commit liên kết
             </p>
           </div>
 

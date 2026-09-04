@@ -48,7 +48,7 @@ export function GraphNodeDetailsModal({ nodeData, onClose }: GraphNodeDetailsMod
             <div>
               <div className="flex items-center gap-2">
                 <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-                  {isStudent ? "Node: Sinh viên (:Student)" : isTask ? "Node: Jira Task (:JiraTask)" : "Node: Git Commit (:Commit)"}
+                  {isStudent ? "Thành viên" : isTask ? "Task Jira" : "Git Commit"}
                 </span>
               </div>
               <h3 className="text-base font-extrabold text-foreground truncate max-w-xs">
@@ -105,7 +105,7 @@ export function GraphNodeDetailsModal({ nodeData, onClose }: GraphNodeDetailsMod
                 <div className="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-700 dark:text-amber-400 text-xs font-medium flex items-start gap-2.5">
                   <AlertTriangleIcon className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
                   <div>
-                    <strong>Cảnh báo Ghosting (Ít tương tác):</strong> Thành viên này có số lượng commit và review thấp hơn ngưỡng chuẩn của Sprint.
+                    <strong>Cảnh báo ít tương tác (Ghosting):</strong> Thành viên này có số lượng commit và review thấp hơn ngưỡng hoạt động của Sprint.
                   </div>
                 </div>
               )}
@@ -125,8 +125,8 @@ export function GraphNodeDetailsModal({ nodeData, onClose }: GraphNodeDetailsMod
                 <h4 className="text-sm font-bold text-foreground leading-snug">{task.summary}</h4>
                 <div className="text-xs text-muted-foreground flex flex-wrap gap-3 pt-2 border-t border-border/40">
                   <span>Story Points: <strong className="text-foreground font-mono">{task.storyPoints}</strong></span>
-                  <span>Trọng số: <strong className="text-foreground font-mono">{task.weightType}</strong></span>
-                  <span>Phân công: <strong className="text-foreground">{task.assigneeName}</strong></span>
+                  <span>Weight: <strong className="text-foreground font-mono">{task.weightType}</strong></span>
+                  <span>Assignee: <strong className="text-foreground">{task.assigneeName}</strong></span>
                 </div>
               </div>
 
@@ -135,16 +135,16 @@ export function GraphNodeDetailsModal({ nodeData, onClose }: GraphNodeDetailsMod
                 <div className="p-4 rounded-2xl bg-red-500/10 border border-red-500/30 text-red-700 dark:text-red-400 text-xs space-y-1.5 animate-pulse">
                   <div className="flex items-center gap-2 font-bold text-sm text-red-600 dark:text-red-300">
                     <AlertTriangleIcon className="w-4 h-4" />
-                    Cảnh báo Bất thường MSR (Phát hiện bởi AI Graph)
+                    Cảnh báo: Task DONE nhưng chưa có Commit
                   </div>
                   <p>
-                    Task này đã đánh dấu <strong>DONE</strong> trên Jira nhưng hệ thống đồ thị Neo4j không tìm thấy bất kỳ commit mã nguồn GitHub nào thực thi (0 commit linked). Cần đối soát lại báo cáo công việc!
+                    Task này đã đánh dấu <strong>DONE</strong> trên Jira nhưng chưa tìm thấy commit Git nào gắn mã tương ứng trên GitHub (0 commit). Vui lòng kiểm tra lại commit trước khi chốt sprint!
                   </p>
                 </div>
               ) : (
                 <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs flex items-center gap-2">
                   <ShieldCheckIcon className="w-4 h-4 shrink-0" />
-                  <span>Task đã được đối soát thành công với <strong>{task.commitCount} Git Commits</strong>.</span>
+                  <span>Task đã liên kết hợp lệ với <strong>{task.commitCount} Git Commits</strong>.</span>
                 </div>
               )}
             </div>

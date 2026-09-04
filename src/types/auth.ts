@@ -11,21 +11,32 @@ export const TEAM_ROLE_LABELS: Record<RoleInTeam, string> = {
 export type UserStatus = 'ACTIVE' | 'INACTIVE' | 'PENDING' | 'BANNED';
 
 export interface JiraIntegration {
+  id?: string;
+  name?: string;
   connected: boolean;
-  serverUrl: string; // VD: https://saga-capstone.atlassian.net
-  email: string; // VD: hailhhe170504@fpt.edu.vn
+  serverUrl: string;
+  email: string;
   apiToken: string;
-  projectKey: string; // VD: SAGA-CAPSTONE
+  projectKey: string;
+  isPrimary?: boolean;
   lastSyncedAt?: string;
+  syncedTasksCount?: number;
+  status?: 'ACTIVE' | 'SYNCING' | 'ERROR';
 }
 
 export interface GitHubIntegration {
+  id?: string;
+  alias?: string;
   connected: boolean;
-  username: string; // VD: lehoanghai-fpt
+  username: string;
   accessToken: string;
-  repository: string; // VD: Saga-Learning-to-Hero/saga-fe
-  defaultBranch: string; // VD: main
+  repository: string;
+  defaultBranch: string;
+  isPrimary?: boolean;
   lastSyncedAt?: string;
+  syncedCommitsCount?: number;
+  syncedPRsCount?: number;
+  status?: 'ACTIVE' | 'SYNCING' | 'ERROR';
 }
 
 export interface User {
@@ -44,4 +55,6 @@ export interface User {
   status?: UserStatus;
   jiraIntegration?: JiraIntegration;
   githubIntegration?: GitHubIntegration;
+  jiraIntegrations?: JiraIntegration[];
+  githubIntegrations?: GitHubIntegration[];
 }

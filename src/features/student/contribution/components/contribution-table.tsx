@@ -22,10 +22,10 @@ export function ContributionTable({ members, currentStudentCode }: ContributionT
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
             <CardTitle className="text-sm sm:text-base font-bold text-foreground">
-              Bảng So sánh Chi tiết Chỉ số Đóng góp Nhóm SAGA
+              Bảng So Sánh Chỉ Số Đóng Góp Nhóm
             </CardTitle>
             <CardDescription className="text-xs text-muted-foreground">
-              Tổng hợp đa nguồn từ GitHub, Jira, Đánh giá chéo và Ma vết Traceability
+              Tổng hợp từ GitHub Commits, Jira Tasks, Peer Review và liên kết Traceability
             </CardDescription>
           </div>
 
@@ -43,7 +43,7 @@ export function ContributionTable({ members, currentStudentCode }: ContributionT
               <th className="py-3 px-3">Task Jira &amp; SP</th>
               <th className="py-3 px-3">Commit &amp; Code Diff</th>
               <th className="py-3 px-3 text-center">Đánh giá Chéo</th>
-              <th className="py-3 px-3 text-center">Ma vết (%)</th>
+              <th className="py-3 px-3 text-center">Traceability (%)</th>
               <th className="py-3 px-4 min-w-[160px] text-right">Tỷ lệ Đóng góp (%)</th>
             </tr>
           </thead>
@@ -54,9 +54,8 @@ export function ContributionTable({ members, currentStudentCode }: ContributionT
               return (
                 <tr
                   key={m.id}
-                  className={`transition-colors ${
-                    isSelf ? "bg-primary/5 hover:bg-primary/10" : "hover:bg-muted/30"
-                  }`}
+                  className={`transition-colors ${isSelf ? "bg-primary/5 hover:bg-primary/10" : "hover:bg-muted/30"
+                    }`}
                 >
                   {/* Member Info */}
                   <td className="py-3.5 px-4">
@@ -125,13 +124,12 @@ export function ContributionTable({ members, currentStudentCode }: ContributionT
                   {/* Traceability Rate */}
                   <td className="py-3.5 px-3 text-center">
                     <span
-                      className={`font-mono font-bold text-xs ${
-                        m.metrics.traceabilityRate >= 90
+                      className={`font-mono font-bold text-xs ${m.metrics.traceabilityRate >= 90
                           ? "text-emerald-600"
                           : m.metrics.traceabilityRate >= 75
-                          ? "text-blue-600"
-                          : "text-rose-600"
-                      }`}
+                            ? "text-blue-600"
+                            : "text-rose-600"
+                        }`}
                     >
                       {m.metrics.traceabilityRate}%
                     </span>
@@ -150,15 +148,14 @@ export function ContributionTable({ members, currentStudentCode }: ContributionT
                       </div>
                       <div className="h-2 rounded-full bg-muted overflow-hidden">
                         <div
-                          className={`h-full rounded-full transition-all duration-500 ${
-                            m.statusTag === "EXCEEDED"
+                          className={`h-full rounded-full transition-all duration-500 ${m.statusTag === "EXCEEDED"
                               ? "bg-emerald-500"
                               : m.statusTag === "BALANCED"
-                              ? "bg-blue-500"
-                              : m.statusTag === "BEHIND"
-                              ? "bg-amber-500"
-                              : "bg-rose-500"
-                          }`}
+                                ? "bg-blue-500"
+                                : m.statusTag === "BEHIND"
+                                  ? "bg-amber-500"
+                                  : "bg-rose-500"
+                            }`}
                           style={{ width: `${Math.min(m.contributionPercentage * 3, 100)}%` }}
                         />
                       </div>

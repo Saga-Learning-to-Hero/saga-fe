@@ -5,7 +5,6 @@ import {
   Code2Icon,
   CheckSquareIcon,
   GitBranchIcon,
-  ExternalLinkIcon,
   FileTextIcon,
   Edit3Icon,
 } from "lucide-react";
@@ -108,40 +107,33 @@ export function ProjectDetailsCard({
           </div>
         </div>
 
-        {/* Liên kết tích hợp bên thứ 3 (Jira & GitHub) */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-border/60">
-          {/* Jira Link */}
           <div className="p-3.5 rounded-2xl bg-blue-500/5 border border-blue-500/20 flex items-center justify-between">
             <div className="flex items-center gap-2.5">
               <CheckSquareIcon className="w-4 h-4 text-blue-500 shrink-0" />
               <div className="flex flex-col">
-                <span className="text-[11px] font-semibold text-muted-foreground">Jira Project</span>
-                <span className="text-xs font-bold font-mono text-foreground">{project.jiraProjectKey || "SWP490_SAGA"}</span>
+                <span className="text-[11px] font-semibold text-muted-foreground">Jira Project (1 Site & Key)</span>
+                <span className="text-xs font-bold font-mono text-foreground">{project.jiraConfig?.projectKey || project.jiraProjectKey || "SWP490_SAGA"}</span>
               </div>
             </div>
-            <Badge className="bg-emerald-500/15 text-emerald-600 border-0 text-[10px] font-semibold">
+            <Badge className="bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-0 text-[10px] font-semibold">
               Active
             </Badge>
           </div>
 
-          {/* GitHub Link */}
           <div className="p-3.5 rounded-2xl bg-purple-500/5 border border-purple-500/20 flex items-center justify-between">
             <div className="flex items-center gap-2.5">
               <GitBranchIcon className="w-4 h-4 text-purple-500 shrink-0" />
               <div className="flex flex-col min-w-0">
-                <span className="text-[11px] font-semibold text-muted-foreground">GitHub Repo</span>
-                <a
-                  href={`https://github.com/${project.githubRepository}`}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="text-xs font-bold font-mono text-purple-600 hover:underline truncate flex items-center gap-1"
-                >
-                  {project.githubRepository || "Saga-Learning-to-Hero/saga-fe"}
-                  <ExternalLinkIcon className="w-3 h-3 shrink-0" />
-                </a>
+                <span className="text-[11px] font-semibold text-muted-foreground">
+                  GitHub Repositories ({project.githubRepositories?.length || 1} repos)
+                </span>
+                <span className="text-xs font-bold font-mono text-purple-600 dark:text-purple-400 truncate">
+                  {project.githubRepositories?.[0]?.repository || project.githubRepository || "Saga-Learning-to-Hero/saga-fe"}
+                </span>
               </div>
             </div>
-            <Badge className="bg-emerald-500/15 text-emerald-600 border-0 text-[10px] font-semibold">
+            <Badge className="bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-0 text-[10px] font-semibold">
               Active
             </Badge>
           </div>

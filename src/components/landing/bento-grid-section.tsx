@@ -71,7 +71,7 @@ export function BentoGridSection() {
 
               <p className="text-sm text-muted-foreground max-w-xl leading-relaxed">
                 {graphMode === "traceability"
-                  ? "Ánh xạ chuỗi quan hệ kỹ thuật: Sinh viên → Commit GitHub → Task Jira → File mã nguồn. Mọi đóng góp đều có thể truy vết nguồn gốc 100%."
+                  ? "Ánh xạ chuỗi quan hệ: Sinh viên → Commit GitHub → Task Jira → File mã nguồn. Mọi đóng góp đều có thể theo dõi và chứng minh rõ ràng 100%."
                   : "Phân tích mạng lưới tương tác (SNA) giữa các thành viên qua hoạt động review mã nguồn, phân công nhiệm vụ và phát hiện nguy cơ thành viên bỏ nhóm (Ghosting)."}
               </p>
             </div>

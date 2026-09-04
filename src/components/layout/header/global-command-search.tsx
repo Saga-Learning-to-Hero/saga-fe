@@ -115,7 +115,7 @@ export function GlobalCommandSearch() {
                 className="flex items-center gap-2.5 cursor-pointer py-2 px-3 text-xs"
               >
                 <GitGraphIcon className="size-4 text-accent" />
-                <span>Đồ thị truy xuất nguồn gốc (Traceability)</span>
+                <span>Đồ thị Traceability</span>
               </CommandItem>
               <CommandItem
                 onSelect={() => runCommand(() => router.push("/student/sprint-progress"))}
@@ -143,7 +143,7 @@ export function GlobalCommandSearch() {
                 className="flex items-center gap-2.5 cursor-pointer py-2 px-3 text-xs"
               >
                 <PieChartIcon className="size-4 text-indigo-500" />
-                <span>Mức đóng góp cổ phần Slicing Pie</span>
+                <span>Tỷ lệ đóng góp Slicing Pie</span>
               </CommandItem>
             </CommandGroup>
           )}

@@ -19,7 +19,7 @@ export function RecentAuditAndQuickActionsSection() {
             </div>
             <div>
               <CardTitle className="text-sm font-bold text-foreground">
-                Nhật ký kiểm toán gần đây (Audit Stream)
+                Nhật ký hệ thống gần đây (Audit Stream)
               </CardTitle>
               <CardDescription className="text-[11px] text-muted-foreground">
                 Lịch sử thao tác quản trị, sự kiện an ninh và phân quyền ghi nhận từ MongoDB
@@ -162,7 +162,7 @@ export function RecentAuditAndQuickActionsSection() {
                 <ScrollTextIcon className="w-4 h-4" />
               </div>
               <div>
-                <p className="text-xs font-semibold text-foreground">Nhật ký kiểm toán</p>
+                <p className="text-xs font-semibold text-foreground">Nhật ký hệ thống (Audit Log)</p>
                 <p className="text-[11px] text-muted-foreground">Audit Trail & Security Logs</p>
               </div>
             </div>
