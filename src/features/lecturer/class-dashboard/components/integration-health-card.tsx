@@ -27,7 +27,7 @@ export function IntegrationHealthCard({ integrations }: { integrations: Integrat
   return (
     <div className="flex h-full flex-col">
       <div className="mb-6">
-        <h3 className="text-base font-bold text-foreground">Sức khỏe tích hợp</h3>
+        <h3 className="text-base font-bold text-foreground">Tình trạng kết nối dữ liệu</h3>
         <p className="text-xs text-muted-foreground">Tình trạng kết nối workspace các nhóm</p>
       </div>
 

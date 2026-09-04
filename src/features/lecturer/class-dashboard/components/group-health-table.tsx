@@ -11,9 +11,9 @@ export function GroupHealthTable({ groups, courseId }: { groups: GroupHealth[], 
       case "HEALTHY":
         return <Badge variant="outline" className="border-emerald-500/30 bg-emerald-500/10 text-emerald-600">Ổn định</Badge>;
       case "WARNING":
-        return <Badge variant="outline" className="border-warning/30 bg-warning/10 text-warning-foreground hover:bg-warning/20">Cảnh báo</Badge>;
+        return <Badge variant="outline" className="border-warning/30 bg-warning/10 text-warning-foreground hover:bg-warning/20">Cần chú ý</Badge>;
       case "CRITICAL":
-        return <Badge variant="outline" className="border-destructive/30 bg-destructive/10 text-destructive">Nghiêm trọng</Badge>;
+        return <Badge variant="outline" className="border-destructive/30 bg-destructive/10 text-destructive">Nguy cơ cao</Badge>;
     }
   };
 
@@ -31,9 +31,9 @@ export function GroupHealthTable({ groups, courseId }: { groups: GroupHealth[], 
               <TableRow>
                 <TableHead className="font-semibold w-[200px]">Nhóm</TableHead>
                 <TableHead className="font-semibold text-center">Thành viên</TableHead>
-                <TableHead className="font-semibold text-center">Sprint</TableHead>
-                <TableHead className="font-semibold w-[150px]">Task</TableHead>
-                <TableHead className="font-semibold text-center">Commit (7 ngày)</TableHead>
+                <TableHead className="font-semibold text-center">Đợt phát triển (Sprint)</TableHead>
+                <TableHead className="font-semibold w-[150px]">Công việc</TableHead>
+                <TableHead className="font-semibold text-center">Cập nhật mã nguồn (7 ngày)</TableHead>
                 <TableHead className="font-semibold text-center">Trạng thái</TableHead>
                 <TableHead className="w-[50px]"></TableHead>
               </TableRow>
@@ -66,7 +66,7 @@ export function GroupHealthTable({ groups, courseId }: { groups: GroupHealth[], 
                   </TableCell>
                   <TableCell>
                     <Link
-                      href={`/lecturer/courses/${courseId}/groups/${group.id}`}
+                      href={`/lecturer/courses/${courseId}/teams/${group.id}`}
                       className="inline-flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground opacity-0 group-hover:opacity-100 transition-all"
                     >
                       <ChevronRightIcon className="size-4" />
