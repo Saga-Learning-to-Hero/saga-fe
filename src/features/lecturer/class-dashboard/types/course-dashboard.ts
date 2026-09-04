@@ -34,6 +34,14 @@ export interface GroupHealth {
   commitsLast7Days: number;
   contributionBalance: number; // percentage, e.g. 92% balanced
   status: GroupHealthStatus;
+  weeklyCommits: number[];
+  metrics: {
+    taskCompletion: number;
+    codeActivity: number;
+    participation: number;
+    contributionBalance: number;
+    onTimeDelivery: number;
+  };
 }
 
 export interface WeeklyProgress {

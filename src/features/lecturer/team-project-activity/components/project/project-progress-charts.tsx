@@ -66,8 +66,27 @@ const contributionData = [
   { member: "Phạm Thị D", commit: 7, pullRequest: 2, review: 3, jira: 4 },
 ];
 
-const axisStyle = { fontSize: 11, fill: "hsl(var(--muted-foreground))" };
-const gridColor = "hsl(var(--border))";
+const chartColors = {
+  primary: "var(--chart-1)",
+  accent: "var(--chart-2)",
+  success: "var(--saga-success)",
+  warning: "var(--saga-warning)",
+  danger: "var(--saga-danger)",
+  muted: "var(--muted-foreground)",
+  border: "var(--border)",
+};
+
+const axisStyle = { fontSize: 11, fill: chartColors.muted };
+const gridColor = chartColors.border;
+const tooltipContentStyle = {
+  backgroundColor: "var(--popover)",
+  border: "1px solid var(--border)",
+  borderRadius: "var(--radius-md)",
+  color: "var(--popover-foreground)",
+  boxShadow: "var(--shadow-md)",
+};
+const tooltipLabelStyle = { color: "var(--foreground)", fontWeight: 700 };
+const tooltipItemStyle = { color: "var(--foreground)" };
 
 export function SprintBurndownChart() {
   return (
@@ -76,10 +95,10 @@ export function SprintBurndownChart() {
         <CartesianGrid stroke={gridColor} strokeDasharray="3 3" vertical={false} />
         <XAxis dataKey="day" tick={axisStyle} tickLine={false} axisLine={false} />
         <YAxis tick={axisStyle} tickLine={false} axisLine={false} />
-        <Tooltip />
+        <Tooltip contentStyle={tooltipContentStyle} labelStyle={tooltipLabelStyle} itemStyle={tooltipItemStyle} />
         <Legend />
-        <Line name="Lý tưởng" dataKey="ideal" stroke="hsl(var(--muted-foreground))" strokeDasharray="6 4" dot={false} />
-        <Line name="Thực tế" dataKey="actual" stroke="hsl(var(--primary))" strokeWidth={3} activeDot={{ r: 5 }} />
+        <Line name="Lý tưởng" dataKey="ideal" stroke={chartColors.muted} strokeWidth={2} strokeDasharray="6 4" dot={false} />
+        <Line name="Thực tế" dataKey="actual" stroke={chartColors.primary} strokeWidth={3} dot={{ r: 3, fill: chartColors.primary }} activeDot={{ r: 6 }} />
       </LineChart>
     </ResponsiveContainer>
   );
@@ -92,13 +111,13 @@ export function WorkDistributionChart() {
         <CartesianGrid stroke={gridColor} strokeDasharray="3 3" horizontal={false} />
         <XAxis type="number" tick={axisStyle} tickLine={false} axisLine={false} />
         <YAxis type="category" dataKey="label" hide />
-        <Tooltip />
+        <Tooltip contentStyle={tooltipContentStyle} labelStyle={tooltipLabelStyle} itemStyle={tooltipItemStyle} />
         <Legend />
-        <Bar name="Chờ xử lý" dataKey="todo" stackId="work" fill="hsl(var(--muted-foreground))" radius={[4, 0, 0, 4]} />
-        <Bar name="Đang làm" dataKey="progress" stackId="work" fill="hsl(var(--chart-1))" />
-        <Bar name="Đang review" dataKey="review" stackId="work" fill="hsl(var(--chart-3))" />
-        <Bar name="Bị chặn" dataKey="blocked" stackId="work" fill="hsl(var(--destructive))" />
-        <Bar name="Hoàn thành" dataKey="done" stackId="work" fill="hsl(var(--chart-2))" radius={[0, 4, 4, 0]} />
+        <Bar name="Chờ xử lý" dataKey="todo" stackId="work" fill={chartColors.muted} radius={[4, 0, 0, 4]} />
+        <Bar name="Đang làm" dataKey="progress" stackId="work" fill={chartColors.primary} />
+        <Bar name="Đang rà soát" dataKey="review" stackId="work" fill={chartColors.warning} />
+        <Bar name="Bị chặn" dataKey="blocked" stackId="work" fill={chartColors.danger} />
+        <Bar name="Hoàn thành" dataKey="done" stackId="work" fill={chartColors.success} radius={[0, 4, 4, 0]} />
       </BarChart>
     </ResponsiveContainer>
   );
@@ -111,11 +130,11 @@ export function CumulativeFlowChart() {
         <CartesianGrid stroke={gridColor} strokeDasharray="3 3" vertical={false} />
         <XAxis dataKey="day" tick={axisStyle} tickLine={false} axisLine={false} />
         <YAxis tick={axisStyle} tickLine={false} axisLine={false} />
-        <Tooltip /><Legend />
-        <Area name="Chờ xử lý" dataKey="todo" stackId="flow" fill="hsl(var(--muted-foreground))" stroke="hsl(var(--muted-foreground))" />
-        <Area name="Đang làm" dataKey="progress" stackId="flow" fill="hsl(var(--chart-1))" stroke="hsl(var(--chart-1))" />
-        <Area name="Review" dataKey="review" stackId="flow" fill="hsl(var(--chart-3))" stroke="hsl(var(--chart-3))" />
-        <Area name="Hoàn thành" dataKey="done" stackId="flow" fill="hsl(var(--chart-2))" stroke="hsl(var(--chart-2))" />
+        <Tooltip contentStyle={tooltipContentStyle} labelStyle={tooltipLabelStyle} itemStyle={tooltipItemStyle} /><Legend />
+        <Area name="Chờ xử lý" dataKey="todo" stackId="flow" fill={chartColors.muted} stroke={chartColors.muted} fillOpacity={0.55} />
+        <Area name="Đang làm" dataKey="progress" stackId="flow" fill={chartColors.primary} stroke={chartColors.primary} fillOpacity={0.7} />
+        <Area name="Đang rà soát" dataKey="review" stackId="flow" fill={chartColors.warning} stroke={chartColors.warning} fillOpacity={0.72} />
+        <Area name="Hoàn thành" dataKey="done" stackId="flow" fill={chartColors.success} stroke={chartColors.success} fillOpacity={0.75} />
       </AreaChart>
     </ResponsiveContainer>
   );
@@ -128,9 +147,9 @@ export function VelocityChart() {
         <CartesianGrid stroke={gridColor} strokeDasharray="3 3" vertical={false} />
         <XAxis dataKey="sprint" tick={axisStyle} tickLine={false} axisLine={false} />
         <YAxis tick={axisStyle} tickLine={false} axisLine={false} />
-        <Tooltip /><Legend />
-        <Bar name="Cam kết" dataKey="committed" fill="hsl(var(--chart-4))" radius={[4, 4, 0, 0]} />
-        <Bar name="Hoàn thành" dataKey="completed" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+        <Tooltip contentStyle={tooltipContentStyle} labelStyle={tooltipLabelStyle} itemStyle={tooltipItemStyle} /><Legend />
+        <Bar name="Cam kết" dataKey="committed" fill={chartColors.warning} radius={[4, 4, 0, 0]} />
+        <Bar name="Hoàn thành" dataKey="completed" fill={chartColors.success} radius={[4, 4, 0, 0]} />
       </BarChart>
     </ResponsiveContainer>
   );
@@ -143,9 +162,9 @@ export function CommitIssueChart() {
         <CartesianGrid stroke={gridColor} strokeDasharray="3 3" vertical={false} />
         <XAxis dataKey="day" tick={axisStyle} tickLine={false} axisLine={false} />
         <YAxis tick={axisStyle} tickLine={false} axisLine={false} />
-        <Tooltip /><Legend />
-        <Bar name="Commit" dataKey="commits" fill="hsl(var(--chart-1))" radius={[4, 4, 0, 0]} />
-        <Line name="Issue hoàn thành" dataKey="issues" stroke="hsl(var(--chart-2))" strokeWidth={3} />
+        <Tooltip contentStyle={tooltipContentStyle} labelStyle={tooltipLabelStyle} itemStyle={tooltipItemStyle} /><Legend />
+        <Bar name="Cập nhật mã nguồn" dataKey="commits" fill={chartColors.primary} radius={[4, 4, 0, 0]} />
+        <Line name="Công việc hoàn thành" dataKey="issues" stroke={chartColors.accent} strokeWidth={3} dot={{ r: 3, fill: chartColors.accent }} />
       </ComposedChart>
     </ResponsiveContainer>
   );
@@ -158,7 +177,8 @@ export function CycleTimeChart() {
         <CartesianGrid stroke={gridColor} strokeDasharray="3 3" horizontal={false} />
         <XAxis type="number" unit="h" tick={axisStyle} tickLine={false} axisLine={false} />
         <YAxis type="category" dataKey="type" width={48} tick={axisStyle} tickLine={false} axisLine={false} />
-        <Tooltip /><Bar name="Giờ trung bình" dataKey="hours" fill="hsl(var(--chart-5))" radius={[0, 4, 4, 0]} />
+        <Tooltip contentStyle={tooltipContentStyle} labelStyle={tooltipLabelStyle} itemStyle={tooltipItemStyle} />
+        <Bar name="Giờ trung bình" dataKey="hours" fill={chartColors.accent} radius={[0, 4, 4, 0]} />
       </BarChart>
     </ResponsiveContainer>
   );
@@ -171,11 +191,11 @@ export function MemberContributionChart() {
         <CartesianGrid stroke={gridColor} strokeDasharray="3 3" horizontal={false} />
         <XAxis type="number" tick={axisStyle} tickLine={false} axisLine={false} />
         <YAxis type="category" dataKey="member" width={100} tick={axisStyle} tickLine={false} axisLine={false} />
-        <Tooltip /><Legend />
-        <Bar name="Commit" dataKey="commit" stackId="member" fill="hsl(var(--chart-1))" />
-        <Bar name="Pull request" dataKey="pullRequest" stackId="member" fill="hsl(var(--chart-5))" />
-        <Bar name="Review" dataKey="review" stackId="member" fill="hsl(var(--chart-3))" />
-        <Bar name="Jira" dataKey="jira" stackId="member" fill="hsl(var(--chart-2))" radius={[0, 4, 4, 0]} />
+        <Tooltip contentStyle={tooltipContentStyle} labelStyle={tooltipLabelStyle} itemStyle={tooltipItemStyle} /><Legend />
+        <Bar name="Cập nhật mã nguồn" dataKey="commit" stackId="member" fill={chartColors.primary} />
+        <Bar name="Yêu cầu hợp nhất" dataKey="pullRequest" stackId="member" fill={chartColors.accent} />
+        <Bar name="Rà soát mã nguồn" dataKey="review" stackId="member" fill={chartColors.warning} />
+        <Bar name="Công việc Jira" dataKey="jira" stackId="member" fill={chartColors.success} radius={[0, 4, 4, 0]} />
       </BarChart>
     </ResponsiveContainer>
   );
