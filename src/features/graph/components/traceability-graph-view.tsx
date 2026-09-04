@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { NetworkIcon } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { CytoscapeGraphCanvas } from "./cytoscape-graph-canvas";
 import { TraceabilityFlowCanvas } from "./traceability-flow-canvas";
 import { GraphFilterBar } from "./graph-filter-bar";
@@ -17,7 +18,7 @@ export function TraceabilityGraphView() {
   const [selectedStudentId, setSelectedStudentId] = useState<string>("ALL");
   const [selectedSprint, setSelectedSprint] = useState<string>("ALL");
   const [filterType, setFilterType] = useState<"ALL" | "ANOMALIES_ONLY" | "TASKS_COMMITS">("ALL");
-  const [viewMode, setViewMode] = useState<"FLOW" | "GRAPH">("FLOW");
+  const [viewMode, setViewMode] = useState<"FLOW" | "GRAPH">("GRAPH");
   const [selectedNode, setSelectedNode] = useState<GraphNodeData | null>(null);
 
   const filteredGraphData = useMemo(() => {
@@ -69,25 +70,39 @@ export function TraceabilityGraphView() {
     setFilterType("ALL");
   };
 
+  const projectInfoNode = (
+    <div className="flex items-center gap-2">
+      <Badge variant="outline" className="px-2.5 py-1 text-xs font-bold bg-muted/40 border-border/80 text-foreground">
+        Nhóm 01 - SAGA Capstone Project
+      </Badge>
+    </div>
+  );
+
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2 text-primary font-bold text-xs">
-            <NetworkIcon className="w-4 h-4" />
-            <span>TRACEABILITY GRAPH & EVIDENCE ENGINE</span>
+    <div className="space-y-4">
+      {/* ── Tiêu đề tinh gọn ── */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-1 border-b border-border/40">
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shrink-0">
+            <NetworkIcon className="w-4.5 h-4.5" />
           </div>
-          <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-foreground mt-1">
-            Đồ thị Traceability (Jira Task & Git Commits)
-          </h1>
-          <p className="text-xs text-muted-foreground mt-0.5 max-w-3xl leading-relaxed">
-            Theo dõi liên kết từ Jira Task đến Git Commit để minh bạch hóa đóng góp thực tế của từng thành viên.
-          </p>
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] font-extrabold uppercase tracking-wider text-primary">
+                Traceability Graph & Evidence Engine
+              </span>
+            </div>
+            <h1 className="text-xl sm:text-2xl font-black tracking-tight text-foreground">
+              Đồ thị Traceability (Jira Task & Git Commits)
+            </h1>
+          </div>
         </div>
       </div>
 
-      <div className="space-y-6 animate-in fade-in-0 duration-200">
+      <div className="space-y-4 animate-in fade-in-0 duration-200">
+        {/* ── Thanh điều khiển tinh gọn 1 hàng tích hợp bộ lọc thu gọn ── */}
         <GraphFilterBar
+          groupSelector={projectInfoNode}
           selectedStudentId={selectedStudentId}
           onSelectStudent={setSelectedStudentId}
           selectedSprint={selectedSprint}
@@ -101,22 +116,24 @@ export function TraceabilityGraphView() {
           onSelectViewMode={setViewMode}
         />
 
-        {viewMode === "FLOW" ? (
-          <TraceabilityFlowCanvas
-            nodes={filteredGraphData.nodes}
-            edges={filteredGraphData.edges}
-            onSelectNode={(node) => setSelectedNode(node)}
-            highlightMSRAnomaly={true}
-          />
-        ) : (
+        {/* ── Đồ thị hiển thị ngay đầu tiên làm trung tâm ── */}
+        {viewMode === "GRAPH" ? (
           <CytoscapeGraphCanvas
             nodes={filteredGraphData.nodes}
             edges={filteredGraphData.edges}
             onSelectNode={(node) => setSelectedNode(node)}
             layoutName="breadthfirst"
           />
+        ) : (
+          <TraceabilityFlowCanvas
+            nodes={filteredGraphData.nodes}
+            edges={filteredGraphData.edges}
+            onSelectNode={(node) => setSelectedNode(node)}
+            highlightMSRAnomaly={true}
+          />
         )}
 
+        {/* ── Bảng tóm tắt & Ma trận đối soát phía dưới ── */}
         <GraphStatsSummary
           totalNodes={filteredGraphData.nodes.length}
           totalEdges={filteredGraphData.edges.length}

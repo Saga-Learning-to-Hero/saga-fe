@@ -22,35 +22,34 @@ export function SNANetworkView() {
 
   return (
     <div className="space-y-6 animate-in fade-in-0 duration-300">
-      {/* ── Heading & Academic Overview Banner ── */}
-      <div className="p-6 rounded-3xl bg-linear-to-r from-purple-500/10 via-card to-blue-500/10 border border-border/80 shadow-xs relative overflow-hidden">
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-          <div className="space-y-1.5">
+      {/* ── Heading & Academic Overview Banner: Tinh gọn ── */}
+      <div className="p-3 sm:p-4 rounded-2xl bg-linear-to-r from-purple-500/10 via-card to-blue-500/10 border border-border/80 shadow-xs">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
             <div className="flex items-center gap-2">
-              <Badge className="bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/30 text-[11px] font-extrabold">
-                Social Network Analysis (SNA Graph)
+              <Badge className="bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/30 text-[10px] font-extrabold">
+                SNA Graph
               </Badge>
-              <span className="text-xs text-muted-foreground font-mono">Code Review & Interactions</span>
+              <h2 className="text-base sm:text-lg font-black text-foreground tracking-tight">
+                Mạng Lưới Tương Tác Nhóm & Code Review (SNA)
+              </h2>
             </div>
-            <h2 className="text-xl sm:text-2xl font-black text-foreground tracking-tight">
-              Mạng Lưới Tương Tác Nhóm & Code Review (SNA)
-            </h2>
-            <p className="text-xs text-muted-foreground max-w-3xl leading-relaxed">
-              Phân tích mức độ tương tác thông qua Pull Request Reviews và trao đổi Jira Tasks. Hệ thống tự động nhận diện thành viên nòng cốt (Key Contributor) và cảnh báo thành viên ít tương tác (Ghosting).
+            <p className="text-[11px] text-muted-foreground mt-0.5 max-w-2xl leading-relaxed">
+              Phân tích mức độ tương tác qua Pull Request Reviews và Jira Tasks, nhận diện thành viên nòng cốt và cảnh báo cô lập.
             </p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-3 shrink-0">
+          <div className="flex flex-wrap items-center gap-2 shrink-0">
             {keyContributors.length > 0 && (
-              <div className="p-3.5 rounded-2xl bg-purple-500/15 border border-purple-500/30 text-purple-700 dark:text-purple-400 text-xs font-bold flex items-center gap-2.5">
-                <CrownIcon className="w-4 h-4 text-purple-500 shrink-0" />
-                <span>{keyContributors.length} Thành viên nòng cốt</span>
+              <div className="px-3 py-1.5 rounded-xl bg-purple-500/15 border border-purple-500/30 text-purple-700 dark:text-purple-400 text-xs font-bold flex items-center gap-2">
+                <CrownIcon className="w-3.5 h-3.5 text-purple-500 shrink-0" />
+                <span>{keyContributors.length} Nòng cốt</span>
               </div>
             )}
             {ghostingMembers.length > 0 && (
-              <div className="p-3.5 rounded-2xl bg-red-500/15 border border-red-500/30 text-red-700 dark:text-red-400 text-xs font-bold flex items-center gap-2.5 animate-pulse">
-                <AlertTriangleIcon className="w-4 h-4 text-red-500 shrink-0" />
-                <span>{ghostingMembers.length} Cảnh báo ít tương tác</span>
+              <div className="px-3 py-1.5 rounded-xl bg-red-500/15 border border-red-500/30 text-red-700 dark:text-red-400 text-xs font-bold flex items-center gap-2 animate-pulse">
+                <AlertTriangleIcon className="w-3.5 h-3.5 text-red-500 shrink-0" />
+                <span>{ghostingMembers.length} Ít tương tác</span>
               </div>
             )}
           </div>
