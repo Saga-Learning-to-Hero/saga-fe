@@ -2,6 +2,8 @@
 
 Tài liệu quy chuẩn ngắn gọn, chuẩn xác dành cho lập trình viên Frontend (FE) để tích hợp toàn bộ API của hệ thống SAGA từ đầu đến cuối.
 
+> 📌 **Kế hoạch phân chia công việc cho 3 Devs:** Xem chi tiết tại [02-api-integration-task-assignment.md](file:///d:/Capstone/saga%20workspace/saga-fe/docs/02-api-integration-task-assignment.md).
+
 ---
 
 ## 1. Nguyên Tắc Cốt Lõi & Quy Chuẩn Request
