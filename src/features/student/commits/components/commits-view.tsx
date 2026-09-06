@@ -20,7 +20,8 @@ import { Button } from "@/components/ui/button";
 
 export function CommitsView() {
   const authUser = useAuthStore((state) => state.user);
-  const currentUserStudentCode = authUser?.studentCode || "HE170504";
+  // Không hardcode fallback MSSV - để rỗng nếu user chưa load
+  const currentUserStudentCode = authUser?.studentCode ?? "";
 
   // Filter States
   const [selectedRepoId, setSelectedRepoId] = useState<string>("repo-01");
@@ -71,8 +72,8 @@ export function CommitsView() {
           return false;
         }
       }
-      // Filter by Only My Commits
-      if (onlyMyCommits && commit.author.studentCode !== currentUserStudentCode) {
+      // Filter by Only My Commits (bỏ qua filter nếu user chưa load được MSSV)
+      if (onlyMyCommits && currentUserStudentCode && commit.author.studentCode !== currentUserStudentCode) {
         return false;
       }
 

@@ -50,30 +50,64 @@ export function CommitListTimeline({
     );
   }
 
-  // Group commits by relativeTime or Date
+  // Group commits theo ngày thực tế (createdAt) thay vì match chuỗi relativeTime,
+  // tránh nhầm lẫn "2 ngày trước" vào nhóm "Hôm nay" hay "3 tuần trước" vào "Hôm qua".
   const groups: Record<string, CommitItem[]> = {};
   commits.forEach((commit) => {
-    const groupKey = commit.relativeTime.includes("Hôm qua")
-      ? "Hôm qua"
-      : commit.relativeTime.includes("trước")
-        ? "Hôm nay"
-        : "Trước đó";
+    const commitDate = new Date(commit.createdAt);
+    const today = new Date();
+    // Reset giờ về 0 để so sánh theo ngày
+    today.setHours(0, 0, 0, 0);
+    const commitDay = new Date(commitDate);
+    commitDay.setHours(0, 0, 0, 0);
+
+    const diffMs = today.getTime() - commitDay.getTime();
+    const diffDays = Math.floor(diffMs / (24 * 60 * 60 * 1000));
+
+    let groupKey: string;
+    if (diffDays <= 0) {
+      groupKey = "Hôm nay";
+    } else if (diffDays === 1) {
+      groupKey = "Hôm qua";
+    } else if (diffDays <= 7) {
+      groupKey = `${diffDays} ngày trước`;
+    } else if (diffDays <= 30) {
+      const weeks = Math.floor(diffDays / 7);
+      groupKey = `${weeks} tuần trước`;
+    } else {
+      groupKey = "Trước đó";
+    }
+
     if (!groups[groupKey]) groups[groupKey] = [];
     groups[groupKey].push(commit);
   });
 
+  // Sắp xếp thứ tự nhóm: Hôm nay → Hôm qua → N ngày trước → N tuần trước → Trước đó
+  const groupOrder = (key: string): number => {
+    if (key === "Hôm nay") return 0;
+    if (key === "Hôm qua") return 1;
+    if (key.endsWith("ngày trước")) return 2;
+    if (key.endsWith("tuần trước")) return 3;
+    return 4;
+  };
+  const sortedGroupKeys = Object.keys(groups).sort(
+    (a, b) => groupOrder(a) - groupOrder(b)
+  );
+
   return (
     <div className="space-y-6">
-      {Object.entries(groups).map(([groupTitle, groupCommits]) => (
-        <div key={groupTitle} className="space-y-3">
-          {/* Section Header */}
-          <div className="flex items-center gap-2 pb-1 border-b border-border/50 text-xs font-bold text-muted-foreground">
-            <CalendarIcon className="w-3.5 h-3.5 text-primary" />
-            <span>Commits vào {groupTitle}</span>
-            <Badge variant="secondary" className="font-mono text-[10px] px-1.5 py-0.2">
-              {groupCommits.length}
-            </Badge>
-          </div>
+      {sortedGroupKeys.map((groupTitle) => {
+        const groupCommits = groups[groupTitle];
+        return (
+          <div key={groupTitle} className="space-y-3">
+            {/* Section Header */}
+            <div className="flex items-center gap-2 pb-1 border-b border-border/50 text-xs font-bold text-muted-foreground">
+              <CalendarIcon className="w-3.5 h-3.5 text-primary" />
+              <span>Commits {groupTitle === "Hôm nay" || groupTitle === "Hôm qua" ? "vào " : ""}{groupTitle}</span>
+              <Badge variant="secondary" className="font-mono text-[10px] px-1.5 py-0.2">
+                {groupCommits.length}
+              </Badge>
+            </div>
 
           {/* List of Commits */}
           <Card className="rounded-2xl border border-border/80 bg-card overflow-hidden divide-y divide-border/60 shadow-xs">
@@ -199,7 +233,8 @@ export function CommitListTimeline({
             })}
           </Card>
         </div>
-      ))}
+        );
+      })}
     </div>
   );
 }

@@ -290,11 +290,18 @@ export function IssueDetailsModal({
                 disabled={!canEdit}
                 value={form.sprintId}
                 onChange={(val) => setForm((f) => ({ ...f, sprintId: val }))}
-                options={sprints.map((s) => ({
-                  value: s.id,
-                  label: s.name,
-                  subLabel: `Trạng thái: ${s.status}`,
-                }))}
+                options={[
+                  {
+                    value: "backlog",
+                    label: "Backlog (Chưa gán vào Sprint)",
+                    subLabel: "Product Backlog",
+                  },
+                  ...sprints.map((s) => ({
+                    value: s.id,
+                    label: s.name,
+                    subLabel: `Trạng thái: ${s.status}`,
+                  })),
+                ]}
               />
             </div>
           </div>

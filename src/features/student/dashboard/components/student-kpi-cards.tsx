@@ -103,7 +103,7 @@ export function StudentKPICards({
             </span>
           </div>
           <p className="text-xs text-muted-foreground mt-0.5">
-            Độ phủ liên kết Jira Tasks & Git Commits
+            Liên kết Jira Tasks & Git Commits
           </p>
         </div>
       </div>

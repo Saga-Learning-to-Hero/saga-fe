@@ -88,12 +88,12 @@ export function JiraIntegrationCard({
           <div className="flex items-center justify-between">
             <span className="text-muted-foreground font-medium">Workspace URL:</span>
             <a
-              href={item.serverUrl}
+              href={item.serverUrl || "#"}
               target="_blank"
               rel="noreferrer"
               className="font-mono text-[11px] font-bold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1 truncate max-w-[200px]"
             >
-              <span className="truncate">{item.serverUrl.replace(/^https?:\/\//, "")}</span>
+              <span className="truncate">{(item.serverUrl || "").replace(/^https?:\/\//, "")}</span>
               <ExternalLinkIcon className="w-3 h-3 shrink-0" />
             </a>
           </div>

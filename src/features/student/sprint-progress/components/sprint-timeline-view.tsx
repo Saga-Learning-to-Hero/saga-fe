@@ -27,28 +27,66 @@ const WEEKS = [
   { id: "w8", label: "Tuần 8", date: "19/09 - 25/09" },
 ];
 
+/** Ngày đầu tiên của học kỳ (Tuần 1) - dùng làm mốc để tính span. */
+const SEMESTER_START_DATE = new Date("2026-08-01T00:00:00Z");
+
+/**
+ * Tính vị trí cột (startCol, endCol) và màu của sprint trên timeline 8-tuần
+ * dựa trên startDate / endDate thực tế, không hardcode theo sprintId.
+ * Trả về fallback an toàn nếu date không hợp lệ.
+ */
+function getSprintSpan(sprint: Sprint) {
+  // Mapping màu theo trạng thái sprint
+  const colorByStatus: Record<Sprint["status"], string> = {
+    COMPLETED: "bg-emerald-500",
+    ACTIVE: "bg-blue-600 animate-pulse",
+    PLANNED: "bg-slate-400",
+  };
+
+  const labelByStatus: Record<Sprint["status"], string> = {
+    COMPLETED: "Sprint (Done)",
+    ACTIVE: "Sprint (Active)",
+    PLANNED: "Sprint (Planned)",
+  };
+
+  // Tính số tuần từ ngày đầu kỳ (1-based, làm tròn xuống)
+  const toWeekCol = (isoDate: string): number => {
+    const date = new Date(isoDate);
+    if (Number.isNaN(date.getTime())) return 1;
+    const msPerWeek = 7 * 24 * 60 * 60 * 1000;
+    const diffMs = date.getTime() - SEMESTER_START_DATE.getTime();
+    const weekIndex = Math.floor(diffMs / msPerWeek) + 1;
+    // Clamp về khoảng [1, WEEKS.length] để không tràn grid
+    return Math.max(1, Math.min(WEEKS.length, weekIndex));
+  };
+
+  let startCol = 1;
+  let endCol = 1;
+  try {
+    startCol = toWeekCol(sprint.startDate);
+    endCol = toWeekCol(sprint.endDate);
+    // Đảm bảo endCol >= startCol (nếu endDate < startDate do data lỗi)
+    if (endCol < startCol) endCol = startCol;
+  } catch {
+    // Fallback về cột 1 nếu parse date lỗi
+    startCol = 1;
+    endCol = 1;
+  }
+
+  return {
+    startCol,
+    endCol,
+    color: colorByStatus[sprint.status] ?? "bg-primary",
+    label: `${sprint.name} (${labelByStatus[sprint.status] ?? ""})`.trim(),
+  };
+}
+
 export function SprintTimelineView({
   sprints,
   epics,
   isTeamLeader,
   onCreateSprintClick,
 }: SprintTimelineViewProps) {
-  // Mapping sprint positions on week grid
-  const getSprintSpan = (sprintId: string) => {
-    switch (sprintId) {
-      case "sprint-01":
-        return { startCol: 1, endCol: 2, color: "bg-emerald-500", label: "Sprint 1 (Done)" };
-      case "sprint-02":
-        return { startCol: 3, endCol: 4, color: "bg-emerald-500", label: "Sprint 2 (Done)" };
-      case "sprint-03":
-        return { startCol: 4, endCol: 6, color: "bg-blue-600 animate-pulse", label: "Sprint 3 (Active)" };
-      case "sprint-04":
-        return { startCol: 6, endCol: 8, color: "bg-slate-400", label: "Sprint 4 (Planned)" };
-      default:
-        return { startCol: 1, endCol: 2, color: "bg-primary", label: "Sprint" };
-    }
-  };
-
   return (
     <Card className="rounded-2xl border border-border/80 shadow-xs bg-card">
       <CardHeader className="p-5 border-b border-border/60">
@@ -59,10 +97,10 @@ export function SprintTimelineView({
             </div>
             <div>
               <CardTitle className="text-base font-bold text-foreground">
-                Timeline Roadmap Tiến độ Đồ án (Gantt Chart)
+                Timeline Roadmap
               </CardTitle>
               <CardDescription className="text-xs text-muted-foreground">
-                Sơ đồ lộ trình phát triển các Sprint và Phân hệ Epic theo mốc thời gian học kỳ
+                Sơ đồ lộ trình phát triển các Sprint
               </CardDescription>
             </div>
           </div>
@@ -85,7 +123,7 @@ export function SprintTimelineView({
         <div className="min-w-[800px] space-y-4">
           {/* Header Dates Column */}
           <div className="grid grid-cols-12 gap-2 pb-2 border-b border-border/60 text-xs font-bold text-muted-foreground">
-            <div className="col-span-4">MỤC MỤC TÍCH HỢP / EPICS</div>
+            <div className="col-span-4">Time</div>
             <div className="col-span-8 grid grid-cols-8 gap-1 text-center font-mono text-[11px]">
               {WEEKS.map((w) => (
                 <div key={w.id} className="p-1 bg-muted/40 rounded-lg">
@@ -103,7 +141,7 @@ export function SprintTimelineView({
             </h4>
 
             {sprints.map((sprint) => {
-              const span = getSprintSpan(sprint.id);
+              const span = getSprintSpan(sprint);
 
               return (
                 <div key={sprint.id} className="grid grid-cols-12 gap-2 items-center text-xs">

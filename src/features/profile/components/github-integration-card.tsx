@@ -39,9 +39,10 @@ export function GitHubIntegrationCard({
     setIsSyncing(false);
   };
 
-  const repoUrl = item.repository.startsWith("http")
-    ? item.repository
-    : `https://github.com/${item.repository}`;
+  const repository = item.repository || "";
+  const repoUrl = repository.startsWith("http")
+    ? repository
+    : `https://github.com/${repository}`;
 
   return (
     <div

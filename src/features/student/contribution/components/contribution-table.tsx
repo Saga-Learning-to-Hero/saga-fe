@@ -1,37 +1,100 @@
 "use client";
 
+import { useState, useMemo } from "react";
 import {
   CrownIcon,
   StarIcon,
+  CheckCircle2Icon,
+  FilterIcon,
 } from "lucide-react";
 import type { MemberContribution } from "../types/contribution";
+import {
+  COMPLETED_SPRINTS,
+  MOCK_SPRINT_CONTRIBUTIONS,
+  MOCK_CONTRIBUTION_MEMBERS,
+} from "../data/mock-contribution-data";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { CustomSelect, type CustomSelectOption } from "@/components/common/custom-select";
 
 interface ContributionTableProps {
-  members: MemberContribution[];
+  members?: MemberContribution[];
   currentStudentCode: string;
 }
 
 export function ContributionTable({ members, currentStudentCode }: ContributionTableProps) {
+  const [selectedSprintId, setSelectedSprintId] = useState<string>("all-completed");
+
+  const sprintOptions: CustomSelectOption[] = useMemo(() => [
+    {
+      value: "all-completed",
+      label: "Tất cả Sprint đã hoàn thành (Tổng hợp)",
+      subLabel: "Lũy kế Sprint 1 + Sprint 2 (Đã đóng)",
+    },
+    ...COMPLETED_SPRINTS.map((s) => ({
+      value: s.id,
+      label: s.name,
+      subLabel: s.subLabel,
+    })),
+  ], []);
+
+  const activeMembers = useMemo(() => {
+    return MOCK_SPRINT_CONTRIBUTIONS[selectedSprintId] || members || MOCK_CONTRIBUTION_MEMBERS;
+  }, [selectedSprintId, members]);
+
+  // Chuẩn hoá progress bar theo % đóng góp lớn nhất trong nhóm
+  // để thanh bar luôn phản ánh đúng tương quan giữa các thành viên,
+  // không bị clamp về 100% khi ai đó vượt chuẩn 20%.
+  const maxContribution = Math.max(1, ...activeMembers.map((m) => m.contributionPercentage));
+
+  const activeSprintInfo = COMPLETED_SPRINTS.find((s) => s.id === selectedSprintId);
 
   return (
     <Card className="rounded-2xl border border-border/80 shadow-2xs bg-card overflow-hidden">
-      <CardHeader className="p-4 sm:p-5 pb-3 border-b border-border/60">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div>
-            <CardTitle className="text-sm sm:text-base font-bold text-foreground">
-              Bảng So Sánh Chỉ Số Đóng Góp Nhóm
-            </CardTitle>
+      <CardHeader className="p-4 sm:p-5 pb-4 border-b border-border/60">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <CardTitle className="text-sm sm:text-base font-bold text-foreground">
+                Bảng So Sánh Chỉ Số Đóng Góp Nhóm
+              </CardTitle>
+              <Badge
+                variant="outline"
+                className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 text-[11px] font-bold gap-1"
+              >
+                <CheckCircle2Icon className="w-3.5 h-3.5" />
+                Sprint đã đóng
+              </Badge>
+            </div>
             <CardDescription className="text-xs text-muted-foreground">
-              Tổng hợp từ GitHub Commits, Jira Tasks, Peer Review và liên kết Traceability
+              {activeSprintInfo
+                ? `Dữ liệu đối soát chốt sổ cho ${activeSprintInfo.name} (Hoàn thành ${activeSprintInfo.completedDate}).`
+                : "Tổng hợp đối soát từ các Sprint đã hoàn thành (GitHub Commits, Jira Tasks, Peer Review & Traceability)."}
             </CardDescription>
           </div>
 
-          <Badge variant="outline" className="text-[10px] font-mono font-semibold self-start sm:self-auto">
-            Standard: 20% / Member
-          </Badge>
+          <div className="flex flex-wrap items-center gap-2.5 shrink-0">
+            <div className="flex items-center gap-2 w-full sm:w-auto">
+              <span className="text-xs text-muted-foreground font-semibold flex items-center gap-1 shrink-0">
+                <FilterIcon className="w-3.5 h-3.5 text-primary" />
+                Lọc Sprint:
+              </span>
+              <div className="w-full sm:w-[320px]">
+                <CustomSelect
+                  id="contribution-completed-sprint-filter"
+                  value={selectedSprintId}
+                  onChange={setSelectedSprintId}
+                  options={sprintOptions}
+                  className="text-xs"
+                />
+              </div>
+            </div>
+
+            <Badge variant="outline" className="text-[10px] font-mono font-semibold hidden xl:inline-flex py-1 px-2.5">
+              Standard: 20% / Member
+            </Badge>
+          </div>
         </div>
       </CardHeader>
 
@@ -48,7 +111,7 @@ export function ContributionTable({ members, currentStudentCode }: ContributionT
             </tr>
           </thead>
           <tbody className="divide-y divide-border/60">
-            {members.map((m) => {
+            {activeMembers.map((m) => {
               const isSelf = m.studentCode === currentStudentCode;
 
               return (
@@ -125,10 +188,10 @@ export function ContributionTable({ members, currentStudentCode }: ContributionT
                   <td className="py-3.5 px-3 text-center">
                     <span
                       className={`font-mono font-bold text-xs ${m.metrics.traceabilityRate >= 90
-                          ? "text-emerald-600"
+                          ? "text-emerald-600 dark:text-emerald-400"
                           : m.metrics.traceabilityRate >= 75
-                            ? "text-blue-600"
-                            : "text-rose-600"
+                            ? "text-blue-600 dark:text-blue-400"
+                            : "text-rose-600 dark:text-rose-400"
                         }`}
                     >
                       {m.metrics.traceabilityRate}%
@@ -156,7 +219,9 @@ export function ContributionTable({ members, currentStudentCode }: ContributionT
                                   ? "bg-amber-500"
                                   : "bg-rose-500"
                             }`}
-                          style={{ width: `${Math.min(m.contributionPercentage * 3, 100)}%` }}
+                          style={{
+                            width: `${Math.min((m.contributionPercentage / maxContribution) * 100, 100)}%`,
+                          }}
                         />
                       </div>
                     </div>
