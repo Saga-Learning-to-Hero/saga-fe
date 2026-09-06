@@ -65,13 +65,24 @@ export const DynamicCytoscapeCanvas = dynamic(
 
 ---
 
-## 4. Chiến Lược Caching Với TanStack Query
-- **`staleTime: 1000 * 60 * 5`** (5 phút): Với dữ liệu tĩnh ít biến động như danh sách lớp học kỳ, danh mục môn học.
-- **`staleTime: 1000 * 30`** (30 giây): Với dữ liệu biến động real-time như commit log, trạng thái Jira task.
-- **Event-Driven Invalidation**: Chỉ kích hoạt `queryClient.invalidateQueries()` khi người dùng thực hiện thao tác đột biến (Mutations) hoặc khi nhận Webhook event.
+## 4. Chiến Lược Caching & Tối Ưu Gọi API (TanStack Query + Axios)
+- **Phân tầng `staleTime`**:
+  - `staleTime: 1000 * 60 * 5` (5 phút): Dữ liệu tĩnh ít biến động (học kỳ, danh mục môn học, danh sách lớp).
+  - `staleTime: 1000 * 30` (30 giây): Dữ liệu biến động theo thời gian thực (commit log, trạng thái Jira task, bảng điểm).
+- **Request Deduplication & Cache Reuse**: Tận dụng cơ chế gom request tự động của TanStack Query để loại bỏ các cuộc gọi API trùng lặp tại cùng một thời điểm.
+- **Optimistic Updates (Cập nhật Lạc quan)**:
+  - Với các thao tác tức thời (đổi trạng thái Task Jira, thêm/xóa Repo, chấm điểm): Cập nhật State giao diện ngay lập tức để phản hồi người dùng < 16ms, sau đó mới gọi mutation ngầm tới Backend. Tự động rollback khi gặp lỗi.
+- **Debounce Cho Tìm Kiếm & Bộ Lọc**: Bắt buộc debounce 300ms - 400ms cho các ô input tìm kiếm (commit, issue, audit log) để tránh spam API trên từng ký tự.
 
 ---
 
 ## 5. Tối Ưu Bundle & Iconography
 - **Tree-shaking Lucide Icons**: Luôn import tường minh từng icon riêng lẻ (`import { UsersIcon } from "lucide-react"`), tuyệt đối không import cả gói `import * as Icons`.
 - **Zero Runtime CSS**: Tận dụng tối đa Tailwind CSS v4 biên dịch tĩnh, không dùng CSS-in-JS gây overhead trên runtime.
+
+---
+
+## 6. Ổn Định Khung Hình & Chống Nhấp Nháy (Zero Layout Shift - CLS = 0)
+- **Skeleton Loaders Đúng Kích Thước**: Mọi trang và component khi đợi API phản hồi phải sử dụng Skeleton Loader có chiều cao (`h-...`) và bố cục tương đương nội dung thật.
+- **Tránh Spinner Toàn Màn Hình**: Không dùng loading overlay che toàn bộ trang gây đứt đoạn trải nghiệm, ưu tiên skeleton theo từng thẻ card hoặc bảng dữ liệu.
+

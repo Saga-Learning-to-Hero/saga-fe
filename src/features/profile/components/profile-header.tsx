@@ -5,8 +5,6 @@ import {
   CheckCircle2Icon,
   XCircleIcon,
   MailIcon,
-  PhoneIcon,
-  GraduationCapIcon,
   GitBranchIcon,
   CheckSquareIcon,
 } from "lucide-react";
@@ -38,14 +36,12 @@ export function ProfileHeader({ user, compact = false }: ProfileHeaderProps) {
             "linear-gradient(135deg, oklch(from var(--saga-primary) calc(l + 0.05) c h), oklch(from var(--saga-accent) calc(l - 0.05) c h))",
         }}
       >
-        {/* Visual background accents */}
         <div
           className="absolute -top-16 -right-16 w-48 h-48 rounded-full opacity-15"
           style={{ background: "oklch(1 0 0 / 20%)" }}
         />
 
         <div className="relative flex flex-col sm:flex-row sm:items-center justify-between gap-3.5">
-          {/* User Info Left */}
           <div className="flex items-center gap-3.5">
             <Avatar className="w-13 h-13 sm:w-14 sm:h-14 rounded-xl border-2 border-white/40 shadow-sm shrink-0">
               <AvatarImage src={user.avatar} alt={user.name} />
@@ -61,21 +57,9 @@ export function ProfileHeader({ user, compact = false }: ProfileHeaderProps) {
                   {ROLE_LABELS[user.role]}
                 </Badge>
 
-                {user.studentCode && (
-                  <Badge className="bg-emerald-500/20 text-white border-0 text-[10px] font-mono px-2 py-0.5">
-                    MSSV: {user.studentCode}
-                  </Badge>
-                )}
-
-                {user.lecturerCode && (
-                  <Badge className="bg-amber-500/20 text-white border-0 text-[10px] font-mono px-2 py-0.5">
-                    Mã CB: {user.lecturerCode}
-                  </Badge>
-                )}
-
-                {user.adminClass && (
-                  <Badge className="bg-blue-500/20 text-white border-0 text-[10px] font-mono px-2 py-0.5">
-                    Lớp: {user.adminClass}
+                {user.username && (
+                  <Badge className="bg-white/15 text-white/90 border-0 text-[10px] font-mono px-2 py-0.5">
+                    @{user.username}
                   </Badge>
                 )}
               </div>
@@ -89,23 +73,10 @@ export function ProfileHeader({ user, compact = false }: ProfileHeaderProps) {
                   <MailIcon className="w-3 h-3 opacity-80" />
                   {user.email}
                 </span>
-                {user.phone && (
-                  <span className="flex items-center gap-1">
-                    <PhoneIcon className="w-3 h-3 opacity-80" />
-                    {user.phone}
-                  </span>
-                )}
-                {user.department && (
-                  <span className="flex items-center gap-1">
-                    <GraduationCapIcon className="w-3 h-3 opacity-80" />
-                    {user.department}
-                  </span>
-                )}
               </div>
             </div>
           </div>
 
-          {/* Right: Integration status badges (for Student role) */}
           {isStudent && (
             <div className="flex sm:flex-col gap-2 shrink-0 self-start sm:self-center">
               <div className="bg-white/15 backdrop-blur-md border border-white/20 rounded-xl px-2.5 py-1 text-white flex items-center gap-2">
@@ -150,7 +121,6 @@ export function ProfileHeader({ user, compact = false }: ProfileHeaderProps) {
           "linear-gradient(135deg, oklch(from var(--saga-primary) calc(l + 0.05) c h), oklch(from var(--saga-accent) calc(l - 0.05) c h))",
       }}
     >
-      {/* Visual background accents */}
       <div
         className="absolute -top-24 -right-24 w-80 h-80 rounded-full opacity-15"
         style={{ background: "oklch(1 0 0 / 20%)" }}
@@ -161,7 +131,6 @@ export function ProfileHeader({ user, compact = false }: ProfileHeaderProps) {
       />
 
       <div className="relative flex flex-col md:flex-row md:items-center justify-between gap-6">
-        {/* User Info Left */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5">
           <Avatar className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl border-2 border-white/40 shadow-md shrink-0">
             <AvatarImage src={user.avatar} alt={user.name} />
@@ -177,21 +146,9 @@ export function ProfileHeader({ user, compact = false }: ProfileHeaderProps) {
                 {ROLE_LABELS[user.role]}
               </Badge>
 
-              {user.studentCode && (
-                <Badge className="bg-emerald-500/20 text-white border-0 text-xs font-mono">
-                  MSSV: {user.studentCode}
-                </Badge>
-              )}
-
-              {user.lecturerCode && (
-                <Badge className="bg-amber-500/20 text-white border-0 text-xs font-mono">
-                  Mã CB: {user.lecturerCode}
-                </Badge>
-              )}
-
-              {user.adminClass && (
-                <Badge className="bg-blue-500/20 text-white border-0 text-xs font-mono">
-                  Lớp: {user.adminClass}
+              {user.username && (
+                <Badge className="bg-white/15 text-white/90 border-0 text-xs font-mono px-2 py-0.5">
+                  @{user.username}
                 </Badge>
               )}
             </div>
@@ -205,26 +162,12 @@ export function ProfileHeader({ user, compact = false }: ProfileHeaderProps) {
                 <MailIcon className="w-3.5 h-3.5 opacity-80" />
                 {user.email}
               </span>
-              {user.phone && (
-                <span className="flex items-center gap-1.5">
-                  <PhoneIcon className="w-3.5 h-3.5 opacity-80" />
-                  {user.phone}
-                </span>
-              )}
-              {user.department && (
-                <span className="flex items-center gap-1.5">
-                  <GraduationCapIcon className="w-3.5 h-3.5 opacity-80" />
-                  {user.department}
-                </span>
-              )}
             </div>
           </div>
         </div>
 
-        {/* Right: Integration status badges (for Student role) */}
         {isStudent && (
           <div className="flex flex-col sm:flex-row md:flex-col gap-2.5 shrink-0">
-            {/* Jira Integration status */}
             <div className="bg-white/15 backdrop-blur-md border border-white/20 rounded-2xl p-3 px-4 text-white flex items-center justify-between gap-4 min-w-[200px]">
               <div className="flex items-center gap-2">
                 <CheckSquareIcon className="w-4 h-4 text-blue-300" />
@@ -241,7 +184,6 @@ export function ProfileHeader({ user, compact = false }: ProfileHeaderProps) {
               )}
             </div>
 
-            {/* GitHub Integration status */}
             <div className="bg-white/15 backdrop-blur-md border border-white/20 rounded-2xl p-3 px-4 text-white flex items-center justify-between gap-4 min-w-[200px]">
               <div className="flex items-center gap-2">
                 <GitBranchIcon className="w-4 h-4 text-purple-300" />

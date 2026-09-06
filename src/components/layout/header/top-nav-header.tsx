@@ -27,7 +27,6 @@ import {
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
 import { useLogout } from "@/features/auth/hooks/useAuth";
-import { getRoleHomePath } from "@/features/auth/lib/role-routes";
 import {
   ROLE_COLORS,
   ROLE_LABELS,
@@ -73,7 +72,6 @@ export function TopNavHeader() {
 
   if (!user) return null;
 
-  const homePath = getRoleHomePath(user.role);
   const displayName = user.fullName || user.name || (user.role === "STUDENT" ? "Sinh viên" : "Giảng viên");
 
   // Trích xuất courseId đối với Giảng viên
@@ -113,7 +111,7 @@ export function TopNavHeader() {
             </Button>
           )}
 
-          <Link href={homePath} className="flex items-center hover:opacity-90 transition-opacity shrink-0">
+          <Link href="/" className="flex items-center hover:opacity-90 transition-opacity shrink-0">
             <SagaLogo size="sm" showText={true} showSubtitle={false} />
           </Link>
 

@@ -25,7 +25,6 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
 import { useLogout } from "@/features/auth/hooks/useAuth";
 import { useProfileModalStore } from "@/features/profile/store/useProfileModalStore";
-import { getRoleHomePath } from "@/features/auth/lib/role-routes";
 import { ROLE_COLORS, ROLE_LABELS, getInitials } from "@/components/layout/sidebar/nav-config";
 import { cn } from "@/lib/utils";
 
@@ -58,8 +57,6 @@ export function TopHeader() {
 
   if (!user) return null;
 
-  const homePath = getRoleHomePath(user.role);
-
   const displayName = user.fullName || user.name || (user.role === "STUDENT" ? "Sinh viên" : "Giảng viên");
 
   const roleSubtitle =
@@ -77,7 +74,7 @@ export function TopHeader() {
     <header className="flex h-15 shrink-0 items-center justify-between border-b border-border bg-card/95 backdrop-blur-md px-5 sm:px-6 shadow-saga-xs z-20">
       {/* ── Left: Logo + App Context Badge ── */}
       <div className="flex items-center gap-3">
-        <Link href={homePath} className="flex items-center hover:opacity-90 transition-opacity">
+        <Link href="/" className="flex items-center hover:opacity-90 transition-opacity">
           <SagaLogo size="sm" showText={true} showSubtitle={false} />
         </Link>
 

@@ -1,5 +1,4 @@
-import { apiClient, getCookie } from "@/lib/axios";
-import type { Role } from "@/types/auth";
+import { apiClient } from "@/lib/axios";
 import type {
   CsrfTokenResponse,
   AuthMeResponse,
@@ -9,29 +8,6 @@ import type {
   PasswordSetupRequest,
 } from "../types/auth-dto";
 
-const API_BASE_URL = typeof window !== "undefined" ? "" : process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
-
-function createMockUser(identifier: string): AuthMeResponse {
-  const role = identifier.includes("admin")
-    ? "ADMIN"
-    : identifier.includes("lecturer")
-      ? "LECTURER"
-      : "STUDENT";
-  
-  return {
-    authenticated: true,
-    passwordSetupRequired: false,
-    user: {
-      id: `mock-${role.toLowerCase()}-123`,
-      email: `${role.toLowerCase()}@mock.fpt.edu.vn`,
-      fullName: `Dev Mock ${role}`,
-      username: role.toLowerCase(),
-      avatarUrl: null,
-      role: role as Role,
-    },
-  };
-}
-
 export class AuthService {
   static async getCsrfToken(): Promise<CsrfTokenResponse> {
     const response = await apiClient.get<CsrfTokenResponse>("/api/auth/csrf");
@@ -39,12 +15,6 @@ export class AuthService {
   }
 
   static async getMe(): Promise<AuthMeResponse> {
-    if (process.env.NODE_ENV === "development" && typeof window !== "undefined") {
-      const mockSession = getCookie("mock_session");
-      if (mockSession) {
-        return createMockUser(mockSession);
-      }
-    }
     const response = await apiClient.get<AuthMeResponse>("/api/auth/me");
     return response.data;
   }
@@ -56,13 +26,6 @@ export class AuthService {
 
     if (!payload.password || payload.password === "") {
       throw new Error("Throw ValidationException: Password is required");
-    }
-
-    if (process.env.NODE_ENV === "development" && payload.password === "mock") {
-      if (typeof window !== "undefined") {
-        document.cookie = `mock_session=${payload.identifier}; path=/`;
-      }
-      return createMockUser(payload.identifier);
     }
 
     const response = await apiClient.post<AuthMeResponse>("/api/auth/login", payload);
@@ -114,16 +77,11 @@ export class AuthService {
   }
 
   static async logout(): Promise<void> {
-    if (process.env.NODE_ENV === "development" && typeof window !== "undefined") {
-      if (getCookie("mock_session")) {
-        document.cookie = "mock_session=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-        return;
-      }
-    }
     await apiClient.post<void>("/api/auth/logout", {});
   }
 
   static getGoogleLoginUrl(): string {
-    return `${API_BASE_URL}/oauth2/authorization/google`;
+    const backendOrigin = process.env.NEXT_PUBLIC_API_URL || "https://saga-be-production.up.railway.app";
+    return `${backendOrigin}/oauth2/authorization/google`;
   }
 }
