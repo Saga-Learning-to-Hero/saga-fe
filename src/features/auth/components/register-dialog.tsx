@@ -36,7 +36,7 @@ export function RegisterDialog({ open, onOpenChange, onSuccess }: RegisterDialog
 
   const { mutateAsync: registerStudent, isPending: isLoading } = useRegister();
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError(null);
 

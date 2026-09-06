@@ -1,11 +1,7 @@
 export interface ProfileFormValues {
   name: string;
+  username?: string;
   email: string;
-  phone: string;
-  studentCode: string;
-  department: string;
-  adminClass: string;
-  bio: string;
   avatar: string;
 }
 

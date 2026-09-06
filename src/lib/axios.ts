@@ -1,6 +1,6 @@
 import axios, { type AxiosInstance, type AxiosResponse, type InternalAxiosRequestConfig } from "axios";
 
-const API_BASE_URL = typeof window !== "undefined" ? "" : process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "https://saga-be-production.up.railway.app";
 
 export function getCookie(name: string): string | null {
   if (typeof document === "undefined") return null;
@@ -35,9 +35,20 @@ export async function fetchFreshCsrfToken(): Promise<string | null> {
 }
 
 export async function ensureCsrfToken(forceRefresh = false): Promise<string | null> {
+  if (csrfPromise) {
+    return csrfPromise;
+  }
+
   if (forceRefresh) {
     cachedCsrfToken = null;
-    return fetchFreshCsrfToken();
+    csrfPromise = fetchFreshCsrfToken().finally(() => {
+      csrfPromise = null;
+    });
+    return csrfPromise;
+  }
+
+  if (cachedCsrfToken) {
+    return cachedCsrfToken;
   }
 
   const existingCookie = getCookie("XSRF-TOKEN");
@@ -46,15 +57,9 @@ export async function ensureCsrfToken(forceRefresh = false): Promise<string | nu
     return existingCookie;
   }
 
-  if (cachedCsrfToken) {
-    return cachedCsrfToken;
-  }
-
-  if (!csrfPromise) {
-    csrfPromise = fetchFreshCsrfToken().finally(() => {
-      csrfPromise = null;
-    });
-  }
+  csrfPromise = fetchFreshCsrfToken().finally(() => {
+    csrfPromise = null;
+  });
 
   return csrfPromise;
 }
@@ -65,7 +70,7 @@ apiClient.interceptors.request.use(
     const isMutatingMethod = method === "POST" || method === "PUT" || method === "PATCH" || method === "DELETE";
 
     if (isMutatingMethod && typeof window !== "undefined") {
-      let token = getCookie("XSRF-TOKEN") || cachedCsrfToken;
+      let token = cachedCsrfToken || getCookie("XSRF-TOKEN");
       if (!token && !config.url?.includes("/api/auth/csrf")) {
         token = await ensureCsrfToken();
       }

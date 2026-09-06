@@ -5,8 +5,13 @@ import { ArrowRightIcon, BookOpenIcon, ShieldCheckIcon } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
 import { SagaLogo } from "@/components/common/saga-logo";
 import { Badge } from "@/components/ui/badge";
+import { useAuthStore } from "@/features/auth/store/useAuthStore";
+import { getRoleHomePath } from "@/features/auth/lib/role-routes";
 
 export function CtaFooterSection() {
+  const { user } = useAuthStore();
+  const targetPath = user ? getRoleHomePath(user.role) : "/login";
+
   const handleScrollToFeatures = (e: React.MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault();
     const elem = document.getElementById("tinh-nang");
@@ -39,13 +44,13 @@ export function CtaFooterSection() {
 
           <div className="flex flex-wrap items-center justify-center gap-3.5 pt-2">
             <Link
-              href="/login"
+              href={targetPath}
               className={buttonVariants({
                 size: "lg",
                 className: "gap-2.5 font-bold shadow-lg shadow-primary/20 px-8 py-3.5 h-12 rounded-xl text-base transition-all hover:scale-[1.02]",
               })}
             >
-              Vào hệ thống ngay
+              {user ? "Vào không gian làm việc" : "Vào hệ thống ngay"}
               <ArrowRightIcon className="w-4 h-4" />
             </Link>
 

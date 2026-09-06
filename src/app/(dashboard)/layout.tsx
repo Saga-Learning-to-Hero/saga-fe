@@ -22,35 +22,29 @@ export default function DashboardLayout({
   const router = useRouter();
   const pathname = usePathname();
   const { isAuthenticated, user, passwordSetupRequired, hasHydrated } = useAuthStore();
-  useSession(); // Tự động đồng bộ và làm mới phiên từ cookie backend
+  const { isPending: isSessionLoading } = useSession();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
 
   useEffect(() => {
-    // Chờ Zustand đọc xong localStorage trước khi quyết định
-    if (!hasHydrated) return;
+    if (!hasHydrated || isSessionLoading) return;
 
     if (!isAuthenticated || !user) {
-      // Giữ lại URL hiện tại để quay lại sau khi đăng nhập
       router.replace(`/login?next=${encodeURIComponent(pathname)}`);
       return;
     }
 
-    // Nếu tài khoản Google yêu cầu đặt mật khẩu lần đầu, bắt buộc sang trang thiết lập mật khẩu
     if (passwordSetupRequired) {
       router.replace("/auth/setup-password");
       return;
     }
 
-    // Role guard — chặn truy cập route sai role (isPathAllowedForRole đã tự động bao gồm các tuyến dùng chung)
     if (!isPathAllowedForRole(pathname, user.role)) {
       router.replace(getRoleHomePath(user.role));
     }
-  }, [hasHydrated, isAuthenticated, user, passwordSetupRequired, router, pathname]);
+  }, [hasHydrated, isSessionLoading, isAuthenticated, user, passwordSetupRequired, router, pathname]);
 
-
-  // Hiển thị loading shell trong lúc hydrate
-  if (!hasHydrated) {
+  if (!hasHydrated || (isSessionLoading && !user)) {
     return (
       <div className="flex h-screen items-center justify-center bg-background">
         <div className="flex flex-col items-center gap-4">

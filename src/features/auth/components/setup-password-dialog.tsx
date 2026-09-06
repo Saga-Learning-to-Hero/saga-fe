@@ -33,7 +33,7 @@ export function SetupPasswordDialog({ open, onOpenChange, onSuccess }: SetupPass
 
   const { mutateAsync: setupPassword, isPending: isLoading } = useSetupPassword();
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError(null);
 

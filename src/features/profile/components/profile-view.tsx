@@ -13,22 +13,19 @@ interface ProfileViewProps {
 }
 
 export function ProfileView({ user, compact = false }: ProfileViewProps) {
-
   return (
-    <div className={compact ? "space-y-3.5 max-w-full pb-1" : "space-y-6 max-w-[1600px] mx-auto pb-12"}>
-      {/* Profile Header Banner */}
+    <div className={compact ? "space-y-4 max-w-full pb-1" : "space-y-6 max-w-4xl lg:max-w-5xl mx-auto pb-12"}>
       <ProfileHeader user={user} compact={compact} />
 
-      {/* Quick Navigation Card to Integrations Page (nếu là Sinh viên hoặc Giảng viên) */}
-      {!compact && (
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-2xl bg-card border border-border/80 shadow-2xs gap-3">
+      {!compact && user.role === "STUDENT" && (
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between p-4.5 rounded-2xl bg-card border border-border/80 shadow-2xs gap-3">
           <div className="flex items-center gap-3">
-            <div className="size-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
-              <Link2Icon className="size-4.5" />
+            <div className="size-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+              <Link2Icon className="size-5" />
             </div>
             <div>
-              <p className="text-xs font-bold text-foreground">Tích hợp Công cụ Jira Software & GitHub</p>
-              <p className="text-[11px] text-muted-foreground">
+              <p className="text-sm font-bold text-foreground">Tích hợp Công cụ Jira Software & GitHub</p>
+              <p className="text-xs text-muted-foreground">
                 Quản lý kết nối tài khoản, API Token và Repository để đồng bộ và liên kết dữ liệu đồ án.
               </p>
             </div>
@@ -38,7 +35,7 @@ export function ProfileView({ user, compact = false }: ProfileViewProps) {
             <Button
               variant="outline"
               size="sm"
-              className="text-xs rounded-xl gap-1.5 hover:bg-primary/10 hover:text-primary hover:border-primary/30 shrink-0 cursor-pointer"
+              className="text-xs rounded-xl gap-1.5 hover:bg-primary/10 hover:text-primary hover:border-primary/30 shrink-0 cursor-pointer h-9 px-4"
             >
               <span>Đi đến trang Tích hợp</span>
               <ArrowRightIcon className="size-3.5" />
@@ -47,7 +44,6 @@ export function ProfileView({ user, compact = false }: ProfileViewProps) {
         </div>
       )}
 
-      {/* Thông tin chi tiết hồ sơ cá nhân */}
       <ProfileInfoForm user={user} compact={compact} />
     </div>
   );

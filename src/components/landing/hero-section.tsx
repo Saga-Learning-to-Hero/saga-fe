@@ -10,8 +10,13 @@ import {
 } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { useAuthStore } from "@/features/auth/store/useAuthStore";
+import { getRoleHomePath } from "@/features/auth/lib/role-routes";
 
 export function HeroSection() {
+  const { user } = useAuthStore();
+  const targetPath = user ? getRoleHomePath(user.role) : "/login";
+
   return (
     <section className="relative overflow-hidden pt-8 pb-20 lg:pt-12 lg:pb-24">
       <div
@@ -44,13 +49,13 @@ export function HeroSection() {
 
           <div className="flex flex-wrap items-center gap-3.5 pt-2">
             <Link
-              href="/login"
+              href={targetPath}
               className={buttonVariants({
                 size: "lg",
                 className: "gap-2.5 font-bold px-8 py-3.5 h-12 rounded-xl shadow-lg shadow-primary/25 text-base transition-all hover:scale-[1.02]",
               })}
             >
-              Bắt đầu ngay
+              {user ? "Vào không gian làm việc" : "Bắt đầu ngay"}
               <ArrowRightIcon className="w-4 h-4" />
             </Link>
 
