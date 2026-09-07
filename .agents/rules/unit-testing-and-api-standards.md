@@ -77,3 +77,15 @@ Trước khi tạo Pull Request hoặc điền dữ liệu vào file Unit Test R
    - Ca Normal `N`: $\approx 20\% - 30\%$
    - Ca Abnormal `A`: $\approx 40\% - 50\%$
    - Ca Boundary `B`: $\approx 25\% - 35\%$
+
+---
+
+## 6. Xử Lý Tích Hợp API Thực Tế & Tránh Giả Lập Sai Lệch (Real API Integration & Mock Avoidance)
+Trong quá trình kết nối Frontend với Backend:
+1. **Tuyệt đối KHÔNG hardcode Mock Data trong Dialog/Form tạo mới thực thể**:
+   - Khi Backend chưa cung cấp endpoint lấy danh sách thực thể phụ thuộc (ví dụ: danh sách tài khoản Giảng viên, danh sách Phòng ban), **không được gán mảng mock data tĩnh** vào component để tạo dropdown giả tạo. Việc này gây hiểu lầm rằng hệ thống đã có API thật và dễ dẫn đến lỗi `Foreign Key Constraint Violation (400/500)` khi gửi dữ liệu mock lên Backend.
+2. **Cung cấp ô nhập ID/UUID thực tế tạm thời**:
+   - Thay thế dropdown mock bằng ô `Input` nhập ID/UUID định danh thực tế (kèm định dạng font mono và dòng mô tả giải thích ngắn gọn).
+   - Cho phép đội ngũ kiểm thử nhập trực tiếp ID người dùng thật đã tồn tại trong Database để thực hiện luồng end-to-end hoàn chỉnh.
+3. **Chuyển đổi ngay khi Backend sẵn sàng**:
+   - Ngay khi Backend hoàn thiện endpoint lấy danh sách (ví dụ `GET /api/v1/users?role=LECTURER`), lập tức viết Service/Hook `useQuery` và thay thế ô nhập ID bằng `<CustomSelect>`.

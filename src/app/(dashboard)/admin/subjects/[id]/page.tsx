@@ -214,7 +214,7 @@ export default function SubjectDetailPage({
             href="/admin/subjects"
             className="inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
           >
-            <ArrowLeftIcon className="w-3.5 h-3.5" /> Quay lại danh mục Môn học
+            <ArrowLeftIcon className="w-3.5 h-3.5" /> Quay lại danh mục Môn học & Đề cương
           </Link>
 
           <Button
@@ -271,11 +271,11 @@ export default function SubjectDetailPage({
         <TabsList className="bg-muted p-1 rounded-xl">
           <TabsTrigger value="versions" className="text-xs font-semibold gap-1.5 px-3.5 py-1.5 cursor-pointer">
             <LayersIcon className="w-3.5 h-3.5" />
-            1. Phiên bản Đề cương ({syllabi.length})
+            1. Danh sách Phiên bản Đề cương ({syllabi.length})
           </TabsTrigger>
           <TabsTrigger value="structure" className="text-xs font-semibold gap-1.5 px-3.5 py-1.5 cursor-pointer">
             <AwardIcon className="w-3.5 h-3.5" />
-            2. Cấu trúc đào tạo chi tiết
+            2. Cấu trúc Đề cương (CLOs & Sprints)
           </TabsTrigger>
         </TabsList>
 
@@ -305,7 +305,7 @@ export default function SubjectDetailPage({
               <div>
                 <div className="flex items-center gap-2 flex-wrap">
                   <h3 className="text-sm font-bold text-foreground">
-                    Cấu trúc đề cương:
+                    Đề cương môn học:
                   </h3>
                   <span className="font-mono text-xs font-extrabold text-primary bg-primary/10 px-2 py-0.5 rounded-md border border-primary/20">
                     {activeSyllabusSummary?.versionLabel || "Đang chọn"}
@@ -313,12 +313,12 @@ export default function SubjectDetailPage({
                   {activeSyllabusSummary?.status === "PUBLISHED" ? (
                     <Badge className="bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 text-[10px] font-bold px-2 py-0">
                       <CheckCircle2Icon className="w-3 h-3 mr-1" />
-                      Chính thức
+                      Bản chuẩn áp dụng
                     </Badge>
                   ) : activeSyllabusSummary?.status === "DRAFT" ? (
                     <Badge className="bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30 text-[10px] font-bold px-2 py-0">
                       <ClockIcon className="w-3 h-3 mr-1" />
-                      Bản nháp
+                      Bản nháp biên soạn
                     </Badge>
                   ) : activeSyllabusSummary?.status === "ARCHIVED" ? (
                     <Badge variant="outline" className="bg-muted text-muted-foreground border-border text-[10px] font-semibold px-2 py-0">
@@ -328,7 +328,7 @@ export default function SubjectDetailPage({
                   ) : null}
                 </div>
                 <p className="text-[11px] text-muted-foreground">
-                  Chuẩn đầu ra năng lực (CLOs), bài học (Units) và tiêu chí nghiệm thu (Phases).
+                  Chuẩn đầu ra môn học (CLOs), nội dung đào tạo (Units) và các mốc bàn giao Sprint đồ án.
                 </p>
               </div>
             </div>
@@ -376,9 +376,9 @@ export default function SubjectDetailPage({
             />
           ) : (
             <div className="p-12 text-center space-y-3 bg-card border border-border rounded-2xl">
-              <p className="text-sm font-bold text-foreground">Chưa có đề cương nào cho môn học này</p>
+              <p className="text-sm font-bold text-foreground">Chưa có phiên bản đề cương nào cho môn học này</p>
               <p className="text-xs text-muted-foreground">
-                Bấm nút &quot;Tạo bản nháp mới&quot; ở tab Phiên bản để bắt đầu cấu hình đề cương học phần.
+                Bấm nút &quot;Tạo bản đề cương mới&quot; ở tab Danh sách Phiên bản để bắt đầu cấu hình chuẩn đầu ra (CLOs) và tiêu chí đồ án.
               </p>
             </div>
           )}

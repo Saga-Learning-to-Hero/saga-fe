@@ -80,22 +80,42 @@ export interface RosterItemResponse {
   enrolledAt?: string | null;
 }
 
+export type RosterPreviewRowAction =
+  | "READY_ENROLL"
+  | "READY_INVITE"
+  | "ALREADY_ENROLLED"
+  | "ALREADY_INVITED"
+  | "INVALID"
+  | "CONFLICT"
+  | string;
+
 export interface RosterPreviewRow {
   rowNumber: number;
+  classCode?: string;
   studentCode: string;
   email: string;
   fullName: string;
-  valid: boolean;
+  memberCode?: string | null;
+  action?: RosterPreviewRowAction;
+  errors?: string[];
+  warnings?: string[];
+  valid?: boolean;
   errorMessage?: string | null;
-  accountExists: boolean;
+  accountExists?: boolean;
 }
 
 export interface RosterPreviewSummary {
   totalRows: number;
-  validCount: number;
-  errorCount: number;
-  existingAccountsCount: number;
-  newInvitesCount: number;
+  validRows?: number;
+  validCount?: number;
+  invalidRows?: number;
+  errorCount?: number;
+  existingAccounts?: number;
+  existingAccountsCount?: number;
+  newInvitations?: number;
+  newInvitesCount?: number;
+  alreadyEnrolled?: number;
+  alreadyInvited?: number;
 }
 
 export interface RosterPreviewResponse {

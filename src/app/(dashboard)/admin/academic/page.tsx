@@ -43,10 +43,10 @@ export default function AdminAcademicPage() {
           </div>
           <div>
             <h1 className="text-xl font-bold text-foreground tracking-tight">
-              Cấu trúc Học thuật & Danh sách Lớp (Academic Structure & Roster)
+              Quản Lý Lớp Học & Học Kỳ Đào Tạo
             </h1>
             <p className="text-xs text-muted-foreground">
-              Quản trị Lớp học phần (Course Sections), Lớp hành chính niên khóa (Cohort Classes) và Học kỳ đào tạo (Semesters).
+              Quản lý Lớp học phần mở trong kỳ (Course Sections), Lớp sinh viên niên khóa (Cohort Classes) và Học kỳ (Semesters).
             </p>
           </div>
         </div>
@@ -78,7 +78,7 @@ export default function AdminAcademicPage() {
             className="text-xs font-semibold gap-1.5 px-3.5 py-1.5 cursor-pointer"
           >
             <SchoolIcon className="w-3.5 h-3.5" />
-            Lớp hành chính (Cohort Classes)
+            Lớp sinh viên (Cohort Classes)
           </TabsTrigger>
           <TabsTrigger
             value="semesters"

@@ -47,10 +47,10 @@ export function SyllabusVersionList({
           </div>
           <div>
             <h3 className="text-sm font-bold text-foreground">
-              Phiên bản Đề cương ({syllabi.length})
+              Danh sách Phiên bản Đề cương ({syllabi.length})
             </h3>
             <p className="text-[11px] text-muted-foreground">
-              Chọn phiên bản để xem hoặc chỉnh sửa cây cấu trúc tiêu chí đào tạo.
+              Chọn phiên bản để xem hoặc cấu hình chuẩn đầu ra (CLOs) và các mốc Sprint đồ án.
             </p>
           </div>
         </div>
@@ -64,7 +64,7 @@ export function SyllabusVersionList({
               className="h-8 text-xs font-semibold gap-1.5 cursor-pointer shadow-xs bg-primary text-primary-foreground hover:bg-primary/90"
             >
               <LayersIcon className="w-3.5 h-3.5" />
-              <span>Xem cấu trúc ({currentSelected.versionLabel})</span>
+              <span>Xem cấu trúc Đề cương ({currentSelected.versionLabel})</span>
               <ArrowRightIcon className="w-3.5 h-3.5" />
             </Button>
           )}
@@ -78,7 +78,7 @@ export function SyllabusVersionList({
               className="h-8 text-xs font-semibold gap-1.5 border-emerald-500/40 text-emerald-600 hover:bg-emerald-500/10 cursor-pointer shadow-xs"
             >
               <ShieldCheckIcon className="w-3.5 h-3.5" />
-              {isPublishing ? "Đang xuất bản..." : "Xuất bản chính thức"}
+              {isPublishing ? "Đang xử lý..." : "Ban hành chính thức (PUBLISH)"}
             </Button>
           )}
 
@@ -102,7 +102,7 @@ export function SyllabusVersionList({
             className="h-8 text-xs font-semibold gap-1.5 cursor-pointer shadow-2xs"
           >
             <PlusIcon className="w-3.5 h-3.5" />
-            Tạo bản nháp mới
+            Tạo bản đề cương mới
           </Button>
         </div>
       </div>
@@ -128,21 +128,21 @@ export function SyllabusVersionList({
                 {s.status === "PUBLISHED" && (
                   <Badge className="bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 text-[10px] font-bold px-2 py-0">
                     <CheckCircle2Icon className="w-3 h-3 mr-1" />
-                    Chính thức
+                    Bản chuẩn áp dụng
                   </Badge>
                 )}
 
                 {s.status === "DRAFT" && (
                   <Badge className="bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30 text-[10px] font-bold px-2 py-0">
                     <ClockIcon className="w-3 h-3 mr-1" />
-                    Bản nháp
+                    Bản nháp biên soạn
                   </Badge>
                 )}
 
                 {s.status === "ARCHIVED" && (
                   <Badge variant="outline" className="bg-muted text-muted-foreground border-border text-[10px] font-semibold px-2 py-0">
                     <ArchiveIcon className="w-3 h-3 mr-1" />
-                    Lưu trữ
+                    Đã lưu trữ
                   </Badge>
                 )}
               </div>
@@ -163,7 +163,7 @@ export function SyllabusVersionList({
                     }}
                     className="inline-flex items-center gap-1 font-sans text-xs font-semibold text-primary hover:underline cursor-pointer"
                   >
-                    <span>Cấu trúc</span>
+                    <span>Xem cấu trúc</span>
                     <ArrowRightIcon className="w-3 h-3" />
                   </button>
                 ) : (

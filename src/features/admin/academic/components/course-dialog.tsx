@@ -1,7 +1,15 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { GraduationCapIcon, UserIcon, MailIcon, SchoolIcon, BookOpenIcon, CalendarIcon } from "lucide-react";
+import {
+  GraduationCapIcon,
+  UserIcon,
+  SchoolIcon,
+  BookOpenIcon,
+  CalendarIcon,
+  LayersIcon,
+  AlertCircleIcon,
+} from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -12,9 +20,8 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import { CustomSelect } from "@/components/common/custom-select";
-import { MOCK_LECTURERS } from "../data/mock-academic";
+import { useSyllabi } from "@/features/admin/subjects/hooks/use-syllabi";
 import type { CourseResponse } from "../types/course-roster-types";
 import type { SubjectResponse } from "@/features/admin/subjects/types/subject-types";
 import type { AcademicClassResponse, SemesterResponse } from "../types/academic-types";
@@ -26,6 +33,7 @@ interface CourseDialogProps {
     courseCode: string;
     name: string;
     subjectId: string;
+    syllabusVersionId: string;
     academicClassId: string;
     semesterId: string;
     lecturerId: string;
@@ -49,6 +57,7 @@ export function CourseDialog({
     courseCode: string;
     name: string;
     subjectId: string;
+    syllabusVersionId: string;
     semesterId: string;
     academicClassId: string;
     lecturerId: string;
@@ -56,50 +65,72 @@ export function CourseDialog({
     courseCode: "",
     name: "",
     subjectId: subjects[0]?.id || "",
+    syllabusVersionId: "",
     semesterId: semesters[0]?.id || "",
     academicClassId: adminClasses[0]?.id || "",
-    lecturerId: MOCK_LECTURERS[0]?.id || "usr-gv-001",
+    lecturerId: "",
   });
+
+  const { data: syllabi = [], isLoading: isLoadingSyllabi } = useSyllabi(formData.subjectId);
 
   useEffect(() => {
     if (editingCourse) {
-      const matchedLecturer = MOCK_LECTURERS.find(
-        (l) => l.id === editingCourse.lecturerId
-      );
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setFormData({
         courseCode: editingCourse.courseCode,
         name: editingCourse.name,
         subjectId: editingCourse.subjectId,
+        syllabusVersionId: editingCourse.syllabusVersionId || "",
         semesterId: editingCourse.semesterId || semesters[0]?.id || "",
         academicClassId: editingCourse.academicClassId,
-        lecturerId: matchedLecturer?.id || editingCourse.lecturerId || MOCK_LECTURERS[0]?.id,
+        lecturerId: editingCourse.lecturerId || "",
       });
     } else {
       setFormData({
         courseCode: "",
         name: "",
         subjectId: subjects[0]?.id || "",
+        syllabusVersionId: "",
         semesterId: semesters[0]?.id || "",
         academicClassId: adminClasses[0]?.id || "",
-        lecturerId: MOCK_LECTURERS[0]?.id || "usr-gv-001",
+        lecturerId: "",
       });
     }
   }, [editingCourse, isOpen, subjects, semesters, adminClasses]);
 
-  const selectedLecturer = MOCK_LECTURERS.find((l) => l.id === formData.lecturerId) || MOCK_LECTURERS[0];
+  useEffect(() => {
+    if (!editingCourse && syllabi.length > 0) {
+      const isCurrentValid = syllabi.some((s) => s.id === formData.syllabusVersionId);
+      if (!isCurrentValid) {
+        const published = syllabi.find((s) => s.status === "PUBLISHED");
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setFormData((prev) => ({
+          ...prev,
+          syllabusVersionId: published?.id || syllabi[0]?.id || "",
+        }));
+      }
+    }
+  }, [syllabi, formData.syllabusVersionId, editingCourse]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.courseCode.trim() || !formData.name.trim()) return;
+    if (
+      !formData.courseCode.trim() ||
+      !formData.name.trim() ||
+      !formData.lecturerId.trim() ||
+      !formData.syllabusVersionId.trim()
+    ) {
+      return;
+    }
 
     onSubmit({
       courseCode: formData.courseCode.trim().toUpperCase(),
       name: formData.name.trim(),
       subjectId: formData.subjectId,
+      syllabusVersionId: formData.syllabusVersionId,
       semesterId: formData.semesterId,
       academicClassId: formData.academicClassId,
-      lecturerId: formData.lecturerId,
+      lecturerId: formData.lecturerId.trim(),
     });
     onClose();
   };
@@ -117,7 +148,7 @@ export function CourseDialog({
                 {editingCourse ? "Cập nhật Khóa học / Học phần" : "Mở Khóa học / Học phần mới"}
               </DialogTitle>
               <DialogDescription className="text-xs text-muted-foreground mt-0.5">
-                Thiết lập học phần đồ án, gán môn học, học kỳ, lớp hành chính và giảng viên.
+                Thiết lập học phần đồ án, gán môn học, học kỳ, lớp sinh viên và giảng viên.
               </DialogDescription>
             </div>
           </DialogHeader>
@@ -151,8 +182,8 @@ export function CourseDialog({
               />
             </div>
 
-            {/* Row 3: Subject, Semester & Administrative Class */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            {/* Row 3: Subject & Syllabus Version */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold text-foreground flex items-center gap-1">
                   <BookOpenIcon className="w-3 h-3 text-primary" />
@@ -160,7 +191,13 @@ export function CourseDialog({
                 </label>
                 <CustomSelect
                   value={formData.subjectId}
-                  onChange={(val) => setFormData({ ...formData, subjectId: val })}
+                  onChange={(val) => {
+                    setFormData((prev) => ({
+                      ...prev,
+                      subjectId: val,
+                      syllabusVersionId: "",
+                    }));
+                  }}
                   options={subjects.map((sub) => ({
                     value: sub.id,
                     label: sub.code,
@@ -169,6 +206,44 @@ export function CourseDialog({
                 />
               </div>
 
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-foreground flex items-center gap-1">
+                  <LayersIcon className="w-3 h-3 text-primary" />
+                  Đề cương chi tiết (Syllabus) *
+                </label>
+                <CustomSelect
+                  value={formData.syllabusVersionId}
+                  onChange={(val) => setFormData((prev) => ({ ...prev, syllabusVersionId: val }))}
+                  options={
+                    syllabi.length > 0
+                      ? syllabi.map((s) => ({
+                        value: s.id,
+                        label: s.versionLabel,
+                        subLabel:
+                          s.status === "PUBLISHED"
+                            ? "Bản chuẩn áp dụng"
+                            : s.status === "DRAFT"
+                              ? "Bản nháp"
+                              : "Đã lưu trữ",
+                      }))
+                      : [{ value: "", label: "Chưa có đề cương" }]
+                  }
+                  disabled={syllabi.length === 0}
+                />
+              </div>
+            </div>
+
+            {syllabi.length === 0 && !isLoadingSyllabi && (
+              <div className="flex items-center gap-2 p-2.5 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive text-xs">
+                <AlertCircleIcon className="w-4 h-4 shrink-0" />
+                <span>
+                  Môn học này chưa có phiên bản đề cương nào. Cần vào mục <strong>Môn học & Đề cương</strong> để tạo đề cương trước khi mở lớp.
+                </span>
+              </div>
+            )}
+
+            {/* Row 4: Semester & Academic Class */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold text-foreground flex items-center gap-1">
                   <CalendarIcon className="w-3 h-3 text-primary" />
@@ -187,7 +262,7 @@ export function CourseDialog({
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold text-foreground flex items-center gap-1">
                   <SchoolIcon className="w-3 h-3 text-primary" />
-                  Lớp hành chính *
+                  Lớp sinh viên *
                 </label>
                 <CustomSelect
                   value={formData.academicClassId}
@@ -201,42 +276,21 @@ export function CourseDialog({
               </div>
             </div>
 
-            {/* Row 4: Lecturer Selection Dropdown */}
             <div className="space-y-1.5">
               <label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
                 <UserIcon className="w-3.5 h-3.5 text-primary" />
-                Giảng viên phụ trách (Chọn từ danh sách) *
+                ID Giảng viên phụ trách (Tạm thời) *
               </label>
-              <CustomSelect
+              <Input
+                placeholder="Nhập ID/UUID của giảng viên (VD: d67d58a3-...)"
                 value={formData.lecturerId}
-                onChange={(val) => setFormData({ ...formData, lecturerId: val })}
-                options={MOCK_LECTURERS.map((lec) => ({
-                  value: lec.id,
-                  label: lec.fullName,
-                  subLabel: `${lec.email} — ${lec.department}`,
-                }))}
+                onChange={(e) => setFormData({ ...formData, lecturerId: e.target.value })}
+                required
+                className="h-9 text-xs font-mono bg-muted/30 border-border/80 focus:border-primary rounded-xl"
               />
-
-              {/* Selected Lecturer Info Preview */}
-              {selectedLecturer && (
-                <div className="flex items-center gap-2.5 p-2.5 rounded-xl bg-muted/40 border border-border/60 text-xs mt-1.5">
-                  <div className="w-7 h-7 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-bold text-xs shrink-0">
-                    GV
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-foreground text-xs leading-none">
-                      {selectedLecturer.fullName}
-                    </p>
-                    <p className="text-[11px] text-muted-foreground flex items-center gap-1 mt-1">
-                      <MailIcon className="w-3 h-3 text-muted-foreground" />
-                      {selectedLecturer.email}
-                    </p>
-                  </div>
-                  <Badge variant="outline" className="text-[10px] text-muted-foreground shrink-0 border-border">
-                    {selectedLecturer.department}
-                  </Badge>
-                </div>
-              )}
+              <p className="text-[11px] text-muted-foreground">
+                Nhập ID định danh tài khoản Giảng viên trong hệ thống.
+              </p>
             </div>
           </div>
 
@@ -244,7 +298,12 @@ export function CourseDialog({
             <Button type="button" variant="outline" size="sm" onClick={onClose} className="text-xs">
               Hủy bỏ
             </Button>
-            <Button type="submit" size="sm" className="text-xs font-semibold bg-primary text-primary-foreground hover:bg-primary/90">
+            <Button
+              type="submit"
+              size="sm"
+              disabled={!formData.syllabusVersionId}
+              className="text-xs font-semibold bg-primary text-primary-foreground hover:bg-primary/90"
+            >
               {editingCourse ? "Lưu thay đổi" : "Tạo khóa học"}
             </Button>
           </DialogFooter>

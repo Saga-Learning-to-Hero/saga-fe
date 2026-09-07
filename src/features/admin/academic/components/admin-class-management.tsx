@@ -135,7 +135,7 @@ export function AdminClassManagement() {
             className="h-9 gap-1.5 text-xs font-semibold cursor-pointer bg-primary text-primary-foreground hover:bg-primary/90 shadow-2xs"
           >
             <PlusIcon className="w-4 h-4" />
-            Thêm lớp hành chính mới
+            Thêm lớp sinh viên mới (Cohort Class)
           </Button>
         </div>
       </div>
@@ -162,7 +162,7 @@ export function AdminClassManagement() {
         </div>
       ) : filteredClasses.length === 0 ? (
         <Card className="rounded-2xl border border-dashed border-border p-8 text-center">
-          <p className="text-xs text-muted-foreground">Không tìm thấy lớp hành chính nào phù hợp.</p>
+          <p className="text-xs text-muted-foreground">Không tìm thấy lớp sinh viên nào phù hợp.</p>
         </Card>
       ) : viewMode === "cards" ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -242,7 +242,7 @@ export function AdminClassManagement() {
                     Mã lớp (Cohort Code)
                   </TableHead>
                   <TableHead className="py-3 px-4 text-xs font-semibold min-w-[280px]">
-                    Tên lớp hành chính (Class Name)
+                    Tên lớp sinh viên (Cohort Name)
                   </TableHead>
                   <TableHead className="py-3 px-4 text-xs font-semibold whitespace-nowrap w-[220px]">
                     Học kỳ (Semester)

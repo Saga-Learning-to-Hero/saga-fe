@@ -104,7 +104,54 @@ export class RosterService {
         },
       }
     );
-    return response.data;
+
+    const raw = response.data;
+    const rawSummary = (raw.summary || {}) as typeof raw.summary;
+    const validCount = rawSummary.validRows ?? rawSummary.validCount ?? 0;
+    const errorCount = rawSummary.invalidRows ?? rawSummary.errorCount ?? 0;
+    const existingAccountsCount = rawSummary.existingAccounts ?? rawSummary.existingAccountsCount ?? 0;
+    const newInvitesCount = rawSummary.newInvitations ?? rawSummary.newInvitesCount ?? 0;
+
+    return {
+      ...raw,
+      summary: {
+        totalRows: rawSummary.totalRows ?? (raw.rows ? raw.rows.length : 0),
+        validRows: validCount,
+        validCount,
+        invalidRows: errorCount,
+        errorCount,
+        existingAccounts: existingAccountsCount,
+        existingAccountsCount,
+        newInvitations: newInvitesCount,
+        newInvitesCount,
+        alreadyEnrolled: rawSummary.alreadyEnrolled ?? 0,
+        alreadyInvited: rawSummary.alreadyInvited ?? 0,
+      },
+      rows: (raw.rows || []).map((r) => {
+        const isValid =
+          r.valid !== undefined
+            ? Boolean(r.valid)
+            : r.action
+              ? r.action !== "INVALID" && r.action !== "CONFLICT"
+              : (r.errors?.length ?? 0) === 0;
+
+        const accountExists =
+          r.accountExists !== undefined
+            ? Boolean(r.accountExists)
+            : r.action === "READY_ENROLL" || r.action === "ALREADY_ENROLLED";
+
+        const errMessage =
+          r.errorMessage ||
+          (Array.isArray(r.errors) && r.errors.length > 0 ? r.errors.join(", ") : null);
+
+        return {
+          ...r,
+          valid: isValid,
+          accountExists,
+          errorMessage: errMessage,
+        };
+      }),
+    };
   }
 
   static async confirmImport(

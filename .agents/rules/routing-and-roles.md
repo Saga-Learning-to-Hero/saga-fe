@@ -12,8 +12,8 @@ Hệ thống SAGA phân chia 3 vai trò độc lập với các tuyến đườn
 ### 👑 Quản Trị Viên (Admin - `/admin/*`)
 - `/admin/dashboard`: Tổng quan hệ thống, tài nguyên và trạng thái tích hợp Webhook Jira/GitHub.
 - `/admin/users`: Quản lý tài khoản người dùng và phân quyền (User Accounts & IAM).
-- `/admin/academic`: Quản lý cấu trúc học thuật, lớp học phần, lớp hành chính và học kỳ (Academic Structure & Roster).
-- `/admin/subjects`: Quản lý khung chương trình môn học và đề cương (FLM Curriculum & Syllabus).
+- `/admin/academic`: Quản lý Lớp học & Học kỳ đào tạo — Lớp học phần mở trong kỳ (Course Sections), Lớp sinh viên niên khóa (Cohort Classes) và Học kỳ (Semesters).
+- `/admin/subjects`: Quản lý Môn học & Đề cương đào tạo theo chuẩn FLM (FLM Curriculum & Syllabus).
 - `/admin/audit-log`: Nhật ký kiểm toán hệ thống từ MongoDB (Audit Logs).
 
 ### 👨‍🏫 Giảng Viên (Lecturer - `/lecturer/*`)

@@ -110,6 +110,9 @@ export function ImportStudentsDialog({
   if (!isOpen) return null;
 
   const summary = previewData?.summary;
+  const validCount = summary ? (summary.validRows ?? summary.validCount ?? 0) : 0;
+  const existingCount = summary ? (summary.existingAccounts ?? summary.existingAccountsCount ?? 0) : 0;
+  const invitesCount = summary ? (summary.newInvitations ?? summary.newInvitesCount ?? 0) : 0;
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
@@ -193,15 +196,15 @@ export function ImportStudentsDialog({
                   </div>
                   <div className="p-3 bg-card border border-border rounded-xl text-center space-y-0.5">
                     <p className="text-[11px] text-emerald-600 dark:text-emerald-400">Hợp lệ</p>
-                    <p className="font-mono text-lg font-extrabold text-emerald-600 dark:text-emerald-400">{summary.validCount}</p>
+                    <p className="font-mono text-lg font-extrabold text-emerald-600 dark:text-emerald-400">{validCount}</p>
                   </div>
                   <div className="p-3 bg-card border border-border rounded-xl text-center space-y-0.5">
                     <p className="text-[11px] text-primary">Đã có tài khoản</p>
-                    <p className="font-mono text-lg font-extrabold text-primary">{summary.existingAccountsCount}</p>
+                    <p className="font-mono text-lg font-extrabold text-primary">{existingCount}</p>
                   </div>
                   <div className="p-3 bg-card border border-border rounded-xl text-center space-y-0.5">
                     <p className="text-[11px] text-amber-600 dark:text-amber-400">Gửi lời mời mới</p>
-                    <p className="font-mono text-lg font-extrabold text-amber-600 dark:text-amber-400">{summary.newInvitesCount}</p>
+                    <p className="font-mono text-lg font-extrabold text-amber-600 dark:text-amber-400">{invitesCount}</p>
                   </div>
                 </div>
               )}
@@ -214,7 +217,7 @@ export function ImportStudentsDialog({
                       <TableHead className="w-[110px] text-xs font-bold py-2.5 px-3">MSSV</TableHead>
                       <TableHead className="text-xs font-bold py-2.5 px-3">Họ và tên</TableHead>
                       <TableHead className="text-xs font-bold py-2.5 px-3">Email</TableHead>
-                      <TableHead className="w-[130px] text-xs font-bold py-2.5 px-3 text-center">Trạng thái</TableHead>
+                      <TableHead className="w-[140px] text-xs font-bold py-2.5 px-3 text-center">Trạng thái</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody className="divide-y divide-border/60">
@@ -230,21 +233,36 @@ export function ImportStudentsDialog({
                           {r.fullName}
                         </TableCell>
                         <TableCell className="text-xs font-mono text-muted-foreground py-2 px-3">
-                          {r.email}
+                          <div>{r.email}</div>
+                          {(r.errorMessage || (r.errors && r.errors.length > 0)) && (
+                            <p className="text-[11px] text-destructive font-sans font-medium mt-0.5">
+                              {r.errorMessage || r.errors?.join(", ")}
+                            </p>
+                          )}
                         </TableCell>
                         <TableCell className="text-center py-2 px-3">
-                          {r.valid ? (
-                            r.accountExists ? (
-                              <Badge className="bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 text-[10px] px-1.5 py-0 inline-flex items-center gap-1">
-                                <UserCheckIcon className="w-3 h-3" /> Ghi danh
-                              </Badge>
-                            ) : (
-                              <Badge className="bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30 text-[10px] px-1.5 py-0 inline-flex items-center gap-1">
-                                <MailIcon className="w-3 h-3" /> Gửi thư mời
-                              </Badge>
-                            )
+                          {r.action === "READY_ENROLL" || (r.valid && r.accountExists) ? (
+                            <Badge className="bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 text-[10px] px-1.5 py-0 inline-flex items-center gap-1">
+                              <UserCheckIcon className="w-3 h-3" /> Ghi danh
+                            </Badge>
+                          ) : r.action === "READY_INVITE" || (r.valid && !r.accountExists) ? (
+                            <Badge className="bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30 text-[10px] px-1.5 py-0 inline-flex items-center gap-1">
+                              <MailIcon className="w-3 h-3" /> Gửi thư mời
+                            </Badge>
+                          ) : r.action === "ALREADY_ENROLLED" ? (
+                            <Badge variant="outline" className="bg-muted text-muted-foreground border-border text-[10px] px-1.5 py-0 inline-flex items-center gap-1">
+                              <CheckCircle2Icon className="w-3 h-3" /> Đã trong lớp
+                            </Badge>
+                          ) : r.action === "ALREADY_INVITED" ? (
+                            <Badge className="bg-purple-500/15 text-purple-600 dark:text-purple-400 border-purple-500/30 text-[10px] px-1.5 py-0 inline-flex items-center gap-1">
+                              <MailIcon className="w-3 h-3" /> Đã gửi lời mời
+                            </Badge>
                           ) : (
-                            <Badge variant="destructive" className="text-[10px] px-1.5 py-0 inline-flex items-center gap-1">
+                            <Badge
+                              variant="destructive"
+                              className="text-[10px] px-1.5 py-0 inline-flex items-center gap-1"
+                              title={r.errorMessage || r.errors?.join(", ") || "Dữ liệu không hợp lệ"}
+                            >
                               <AlertCircleIcon className="w-3 h-3" /> Lỗi
                             </Badge>
                           )}
@@ -266,13 +284,13 @@ export function ImportStudentsDialog({
             <Button
               size="sm"
               onClick={handleConfirm}
-              disabled={confirmMutation.isPending || (summary?.validCount || 0) === 0}
+              disabled={confirmMutation.isPending || validCount === 0}
               className="text-xs font-semibold gap-1.5 cursor-pointer bg-primary text-primary-foreground"
             >
               <CheckCircle2Icon className="w-3.5 h-3.5" />
               {confirmMutation.isPending
                 ? "Đang xác nhận..."
-                : `Xác nhận Import (${summary?.validCount || 0} sinh viên)`}
+                : `Xác nhận Import (${validCount} sinh viên)`}
             </Button>
           )}
         </DialogFooter>

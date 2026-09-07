@@ -51,14 +51,14 @@ function SubjectSyllabiBadge({ subjectId }: { subjectId: string }) {
   return (
     <div className="flex items-center gap-2">
       <span className="font-mono font-semibold text-foreground">
-        {syllabiCount} phiên bản
+        {syllabiCount > 0 ? `${syllabiCount} phiên bản` : "Chưa có đề cương"}
       </span>
       {activeSyllabus && (
         <Badge
           variant="outline"
           className="text-[10px] font-mono text-emerald-600 dark:text-emerald-400 border-emerald-500/30 bg-emerald-500/10 px-1.5 py-0"
         >
-          {activeSyllabus.versionLabel}
+          {activeSyllabus.versionLabel} Chính thức
         </Badge>
       )}
     </div>
@@ -85,11 +85,11 @@ function TableSyllabiCell({ subjectId }: { subjectId: string }) {
         className="font-mono text-[11px] font-semibold gap-1 px-2 py-0.5 bg-muted/30"
       >
         <LayersIcon className="w-3 h-3 text-muted-foreground" />
-        {syllabiCount} phiên bản
+        {syllabiCount > 0 ? `${syllabiCount} phiên bản` : "Chưa có"}
       </Badge>
       {activeSyllabus && (
         <span className="text-[10px] font-mono text-emerald-600 dark:text-emerald-400 font-medium">
-          Chuẩn: {activeSyllabus.versionLabel}
+          Chính thức: {activeSyllabus.versionLabel}
         </span>
       )}
     </div>
@@ -146,7 +146,7 @@ export function SubjectList({
           <div className="relative flex-1 max-w-md">
             <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
-              placeholder="Tìm theo mã môn (SWP391) hoặc tên môn..."
+              placeholder="Tìm theo mã môn (SWP391, SWR302) hoặc tên môn..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-9 h-9 text-xs bg-background"
@@ -159,9 +159,9 @@ export function SubjectList({
               value={statusFilter}
               onChange={setStatusFilter}
               options={[
-                { value: "ALL", label: "Tất cả trạng thái", subLabel: "Tất cả môn học trong hệ thống" },
-                { value: "ACTIVE", label: "Đang hoạt động (ACTIVE)", subLabel: "Môn học được phép mở lớp" },
-                { value: "INACTIVE", label: "Tạm ngừng (INACTIVE)", subLabel: "Môn học bị ngưng đào tạo" },
+                { value: "ALL", label: "Tất cả trạng thái", subLabel: "Tất cả môn học trong khung đào tạo" },
+                { value: "ACTIVE", label: "Đang mở lớp (ACTIVE)", subLabel: "Môn học được phép tổ chức giảng dạy" },
+                { value: "INACTIVE", label: "Tạm ngưng (INACTIVE)", subLabel: "Môn học chưa hoặc dừng mở lớp" },
               ]}
             />
           </div>
@@ -303,7 +303,7 @@ export function SubjectList({
                   <div className="p-3 rounded-xl bg-muted/40 border border-border/60 flex items-center justify-between text-xs h-[46px]">
                     <span className="text-muted-foreground flex items-center gap-1.5">
                       <LayersIcon className="w-3.5 h-3.5 text-muted-foreground" />
-                      Đề cương:
+                      Đề cương chi tiết:
                     </span>
                     <SubjectSyllabiBadge subjectId={sub.id} />
                   </div>
@@ -338,7 +338,7 @@ export function SubjectList({
                         onMouseEnter={() => handlePrefetch(sub.id)}
                         className="inline-flex items-center justify-center rounded-lg border border-border/80 bg-background hover:bg-primary/10 hover:text-primary h-7 px-2.5 text-xs font-semibold text-primary transition-colors cursor-pointer shadow-2xs"
                       >
-                        Đề cương
+                        Xem Đề cương
                         <ArrowRightIcon className="w-3 h-3 ml-1" />
                       </Link>
                     </div>
@@ -357,7 +357,7 @@ export function SubjectList({
                   <TableHead className="w-[110px] text-xs font-bold py-3.5 px-4">Mã môn</TableHead>
                   <TableHead className="min-w-[220px] text-xs font-bold py-3.5 px-4">Tên môn học</TableHead>
                   <TableHead className="w-[130px] text-xs font-bold py-3.5 px-4 text-center">Trạng thái</TableHead>
-                  <TableHead className="w-[160px] text-xs font-bold py-3.5 px-4 text-center">Phiên bản Đề cương</TableHead>
+                  <TableHead className="w-[170px] text-xs font-bold py-3.5 px-4 text-center">Đề cương chi tiết</TableHead>
                   <TableHead className="w-[120px] text-xs font-bold py-3.5 px-4 text-center">Ngày tạo</TableHead>
                   <TableHead className="w-[120px] text-xs font-bold py-3.5 px-4 text-center">Cập nhật</TableHead>
                   <TableHead className="w-[90px] text-xs font-bold py-3.5 px-4 text-center">Thao tác</TableHead>

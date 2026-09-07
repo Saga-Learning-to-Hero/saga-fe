@@ -362,7 +362,7 @@ export function SyllabusStructureBuilder({
           <div className="flex items-center gap-3 text-emerald-700 dark:text-emerald-300 text-xs font-semibold">
             <LockIcon className="w-5 h-5 shrink-0 text-emerald-600 dark:text-emerald-400" />
             <span>
-              Đề cương phiên bản <strong>{syllabus.versionLabel}</strong> đã được <strong>XUẤT BẢN CHÍNH THỨC</strong>. Cấu trúc học thuật đang ở trạng thái bất biến (Immutable) và sẵn sàng gán vào Lớp học phần.
+              Đề cương phiên bản <strong>{syllabus.versionLabel}</strong> đã được <strong>BAN HÀNH CHÍNH THỨC</strong>. Cấu trúc chuẩn đã khóa bất biến (Immutable) và sẵn sàng áp dụng cho các Lớp học phần.
             </span>
           </div>
           <Badge className="bg-emerald-600 text-white font-mono text-[10px] px-2.5 py-0.5 shrink-0">
@@ -372,9 +372,9 @@ export function SyllabusStructureBuilder({
       ) : (
         <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="text-xs text-amber-800 dark:text-amber-200">
-            <p className="font-bold">Đề cương đang ở trạng thái Bản nháp (DRAFT)</p>
+            <p className="font-bold">Đề cương đang ở trạng thái Biên soạn (Bản nháp - DRAFT)</p>
             <p className="text-[11px] opacity-90">
-              Bạn có thể tự do thêm chuẩn đầu ra, bài học và tiêu chí giai đoạn. Sau khi lưu và hoàn thiện, hãy bấm &quot;Xuất bản chính thức&quot; để sử dụng.
+              Bạn có thể cấu hình Chuẩn đầu ra (CLOs), phân bổ bài học (Units) và thiết lập các tiêu chí nghiệm thu từng Sprint. Sau khi lưu hoàn tất, hãy bấm &quot;Ban hành chính thức&quot; để sử dụng.
             </p>
           </div>
 
@@ -388,7 +388,7 @@ export function SyllabusStructureBuilder({
               className="h-8 text-xs font-semibold gap-1.5 cursor-pointer shadow-2xs border-amber-500/40 text-amber-900 dark:text-amber-100 hover:bg-amber-500/10"
             >
               <SparklesIcon className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
-              Nạp cấu trúc mẫu
+              Nạp cấu trúc mẫu đồ án SE (SWP/SWR)
             </Button>
             <Button
               onClick={handleSave}
@@ -407,15 +407,15 @@ export function SyllabusStructureBuilder({
         <TabsList className="bg-muted p-1 rounded-xl">
           <TabsTrigger value="clos" className="text-xs font-semibold gap-1.5 px-3.5 py-1.5">
             <AwardIcon className="w-3.5 h-3.5" />
-            1. Chuẩn đầu ra ({outcomes.length})
+            1. Chuẩn đầu ra môn học CLOs ({outcomes.length})
           </TabsTrigger>
           <TabsTrigger value="units" className="text-xs font-semibold gap-1.5 px-3.5 py-1.5">
             <LayersIcon className="w-3.5 h-3.5" />
-            2. Học phần & Bài học ({units.length})
+            2. Nội dung đào tạo & Bài học Units ({units.length})
           </TabsTrigger>
           <TabsTrigger value="phases" className="text-xs font-semibold gap-1.5 px-3.5 py-1.5">
             <CalendarDaysIcon className="w-3.5 h-3.5" />
-            3. Giai đoạn & Tiêu chí ({phases.length})
+            3. Giai đoạn Sprints & Tiêu chí nghiệm thu ({phases.length})
           </TabsTrigger>
         </TabsList>
 
@@ -423,10 +423,10 @@ export function SyllabusStructureBuilder({
           <div className="flex items-center justify-between">
             <div>
               <h4 className="text-xs font-bold text-foreground uppercase tracking-wider">
-                Danh sách Chuẩn Đầu Ra (Course Learning Outcomes)
+                Danh sách Chuẩn Đầu Ra (Course Learning Outcomes - CLOs)
               </h4>
               <p className="text-[11px] text-muted-foreground">
-                Định nghĩa các năng lực cốt lõi sinh viên phải đạt được sau khóa học.
+                Định nghĩa các năng lực, kỹ năng cốt lõi sinh viên ngành Phần mềm cần đạt sau môn học.
               </p>
             </div>
             {!isImmutable && (
@@ -525,10 +525,10 @@ export function SyllabusStructureBuilder({
           <div className="flex items-center justify-between">
             <div>
               <h4 className="text-xs font-bold text-foreground uppercase tracking-wider">
-                Danh sách Học phần / Bài học (Learning Units)
+                Nội Dung Đào Tạo & Bài Học (Learning Units)
               </h4>
               <p className="text-[11px] text-muted-foreground">
-                Cấu trúc các khối kiến thức phân chia theo tuần hoặc chủ đề.
+                Phân bổ chủ đề học tập và nội dung đào tạo theo từng tuần.
               </p>
             </div>
             {!isImmutable && (
@@ -628,17 +628,17 @@ export function SyllabusStructureBuilder({
             <div>
               <div className="flex items-center gap-2.5 flex-wrap">
                 <h4 className="text-xs font-bold text-foreground uppercase tracking-wider">
-                  Giai đoạn Đồ án & Sản phẩm bàn giao (Phases & Deliverables)
+                  Các Mốc Sprint & Sản Phẩm Bàn Giao (Phases & Deliverables)
                 </h4>
                 <Badge
                   variant="outline"
                   className="text-[11px] font-mono font-bold px-2 py-0.5 bg-primary/10 text-primary border-primary/20"
                 >
-                  {phases.length} Giai đoạn
+                  {phases.length} Mốc Sprint
                 </Badge>
               </div>
               <p className="text-[11px] text-muted-foreground pt-0.5">
-                Phân rã các cột mốc Sprint và các sản phẩm bàn giao của môn học.
+                Thiết lập các đợt nghiệm thu đồ án, sản phẩm bàn giao (SRS, GitHub, Jira) và % trọng số đánh giá.
               </p>
             </div>
             {!isImmutable && (

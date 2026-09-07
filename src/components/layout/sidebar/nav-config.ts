@@ -57,8 +57,8 @@ export const ADMIN_NAV: NavGroup[] = [
     roles: ["ADMIN"],
     items: [
       { id: "admin-users", title: "Quản lý Người dùng (GV & SV)", href: "/admin/users", icon: "Users", match: "exact" },
-      { id: "admin-academic", title: "Cấu trúc học thuật & Lớp", href: "/admin/academic", icon: "Database", match: "prefix" },
-      { id: "admin-subjects", title: "Chương trình đào tạo (FLM)", href: "/admin/subjects", icon: "BookOpen", match: "prefix" },
+      { id: "admin-academic", title: "Lớp học & Học kỳ", href: "/admin/academic", icon: "Database", match: "prefix" },
+      { id: "admin-subjects", title: "Môn học & Đề cương (FLM)", href: "/admin/subjects", icon: "BookOpen", match: "prefix" },
     ],
   },
   {

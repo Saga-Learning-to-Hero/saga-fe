@@ -53,6 +53,7 @@ export interface CourseFormData {
   courseCode: string;
   name: string;
   subjectId: string;
+  syllabusVersionId: string;
   academicClassId: string;
   semesterId: string;
   lecturerId: string;
@@ -119,13 +120,14 @@ export function CourseManagement() {
           name: data.name,
           courseCode: data.courseCode,
           lecturerId: data.lecturerId,
+          syllabusVersionId: data.syllabusVersionId,
         },
       });
     } else {
       createMutation.mutate({
         academicClassId: data.academicClassId,
         subjectId: data.subjectId,
-        syllabusVersionId: "799bceba-46dc-4713-8161-0192d01275d2",
+        syllabusVersionId: data.syllabusVersionId,
         lecturerId: data.lecturerId,
         courseCode: data.courseCode,
         name: data.name,

@@ -56,10 +56,10 @@ export default function AdminSubjectsPage() {
           </div>
           <div>
             <h1 className="text-xl font-bold text-foreground tracking-tight">
-              Khung Chương Trình Đào Tạo (FLM Academic Curriculum)
+              Quản Lý Môn Học & Đề Cương (FLM Curriculum)
             </h1>
             <p className="text-xs text-muted-foreground">
-              Quản lý danh mục môn học đào tạo, mã môn và các phiên bản đề cương chi tiết (Syllabus).
+              Danh mục môn học chuyên ngành SE và các phiên bản đề cương chi tiết (Syllabus).
             </p>
           </div>
         </div>

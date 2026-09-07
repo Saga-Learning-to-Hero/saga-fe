@@ -77,7 +77,7 @@ export function AdminClassDialog({
             </div>
             <div>
               <DialogTitle className="text-base font-bold text-foreground">
-                {editingClass ? "Cập nhật Lớp hành chính" : "Thêm Lớp hành chính mới"}
+                {editingClass ? "Cập nhật Lớp sinh viên (Cohort Class)" : "Thêm Lớp sinh viên mới (Cohort Class)"}
               </DialogTitle>
               <DialogDescription className="text-xs text-muted-foreground">
                 Quản lý lớp sinh viên theo chuyên ngành và khóa tuyển sinh.
@@ -109,7 +109,7 @@ export function AdminClassDialog({
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs font-semibold text-foreground">Tên lớp hành chính *</label>
+              <label className="text-xs font-semibold text-foreground">Tên lớp sinh viên niên khóa *</label>
               <Input
                 placeholder="VD: Kỹ thuật phần mềm K17 - Lớp 03"
                 value={formData.name}
@@ -126,7 +126,7 @@ export function AdminClassDialog({
               Hủy bỏ
             </Button>
             <Button type="submit" size="sm" className="text-xs font-semibold">
-              {editingClass ? "Lưu thay đổi" : "Tạo lớp hành chính"}
+              {editingClass ? "Lưu thay đổi" : "Tạo lớp sinh viên"}
             </Button>
           </DialogFooter>
         </form>
