@@ -128,7 +128,7 @@ export function ProjectEditModal({
               <p className="text-xs text-muted-foreground">
                 {hasProject
                   ? "Chỉnh sửa tên dự án, loại đề tài và mô tả giải pháp"
-                  : "Đăng ký tên dự án, phân loại đề tài và mô tả bài toán ban đầu"}
+                  : "Đăng ký tên dự án, phân loại đề tài và mô tả bài toán"}
               </p>
             </div>
           </div>
@@ -155,7 +155,7 @@ export function ProjectEditModal({
               required
               value={form.name}
               onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
-              placeholder="Nhập tên dự án đồ án tốt nghiệp..."
+              placeholder="Nhập tên dự án..."
               className="h-9 text-xs rounded-xl bg-card font-semibold"
             />
           </div>

@@ -14,9 +14,16 @@ import { Badge } from "@/components/ui/badge";
 interface ProjectBannerHeaderProps {
   project: StudentProjectDetails;
   course?: StudentCourse | null;
+  isLeader?: boolean;
+  hasTeam?: boolean;
 }
 
-export function ProjectBannerHeader({ project, course }: ProjectBannerHeaderProps) {
+export function ProjectBannerHeader({
+  project,
+  course,
+  isLeader,
+  hasTeam,
+}: ProjectBannerHeaderProps) {
   const categoryLabel = project.projectType?.name || project.category;
 
   return (
@@ -69,6 +76,22 @@ export function ProjectBannerHeader({ project, course }: ProjectBannerHeaderProp
                 Chưa có dự án
               </Badge>
             )}
+
+            {hasTeam === false ? (
+              <Badge className="bg-amber-400/30 text-amber-100 font-bold border border-amber-300/40 text-xs px-2.5 py-0.5 backdrop-blur-md">
+                Chưa có nhóm
+              </Badge>
+            ) : isLeader !== undefined ? (
+              <Badge
+                className={
+                  isLeader
+                    ? "bg-amber-300 text-amber-950 font-bold border-0 text-xs px-2.5 py-0.5 shadow-xs"
+                    : "bg-white/20 text-white font-medium border-0 text-xs px-2.5 py-0.5 backdrop-blur-md"
+                }
+              >
+                {isLeader ? "Trưởng nhóm (Leader)" : "Thành viên (Member)"}
+              </Badge>
+            ) : null}
           </div>
 
           {/* Project Title */}

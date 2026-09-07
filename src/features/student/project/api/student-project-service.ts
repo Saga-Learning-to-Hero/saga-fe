@@ -3,6 +3,7 @@ import type {
   StudentTeamProjectResponse,
   ProjectTypeItem,
   CreateStudentProjectRequest,
+  StudentCourseTeamResponse,
 } from "../types/student-project";
 
 export class StudentProjectService {
@@ -21,6 +22,26 @@ export class StudentProjectService {
     const cleanCourseId = courseId.trim();
     const response = await apiClient.get<StudentTeamProjectResponse>(
       `/api/student/courses/${encodeURIComponent(cleanCourseId)}/project`
+    );
+
+    return response.data;
+  }
+
+  /**
+   * Lấy thông tin nhóm và danh sách thành viên của sinh viên trong môn học
+   * GET /api/student/courses/{courseId}/team
+   *
+   * @param courseId Mã định danh UUID của môn học
+   * @returns Dữ liệu nhóm, vai trò myRole và danh sách thành viên
+   */
+  static async getStudentTeam(courseId: string): Promise<StudentCourseTeamResponse> {
+    if (!courseId || courseId.trim() === "") {
+      throw new Error("Throw ValidationException: Course ID is required");
+    }
+
+    const cleanCourseId = courseId.trim();
+    const response = await apiClient.get<StudentCourseTeamResponse>(
+      `/api/student/courses/${encodeURIComponent(cleanCourseId)}/team`
     );
 
     return response.data;

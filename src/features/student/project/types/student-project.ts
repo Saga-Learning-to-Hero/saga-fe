@@ -49,6 +49,25 @@ export interface StudentTeamProjectResponse {
   createdAt: string;
 }
 
+/**
+ * Interface phản hồi từ Backend API cho Nhóm của Sinh viên
+ * GET /api/student/courses/{courseId}/team
+ */
+export interface StudentCourseTeamMember {
+  studentCode: string;
+  fullName: string;
+  role: string;
+}
+
+export interface StudentCourseTeamResponse {
+  teamId: string;
+  teamNo: number;
+  teamName: string;
+  myRole: string;
+  projectId?: string | null;
+  members: StudentCourseTeamMember[];
+}
+
 export type ProjectCategory = string;
 
 export interface ProjectTeamMember {
