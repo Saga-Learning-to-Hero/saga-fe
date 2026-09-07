@@ -180,13 +180,11 @@ export function IntegrationsView({ user }: IntegrationsViewProps) {
         <StudentJiraSettings
           user={user}
           identity={jiraIdentity}
-          onRefresh={() => refetch()}
           isLoading={isLoading}
         />
         <StudentGitHubSettings
           user={user}
           identity={githubIdentity}
-          onRefresh={() => refetch()}
           isLoading={isLoading}
         />
       </div>

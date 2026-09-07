@@ -11,6 +11,7 @@ import {
 import type { UserIdentityItem } from "@/features/integrations/types/user-integrations";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { formatVietnamDateTime } from "@/lib/utils";
 
 interface GitHubConnectedCardProps {
   identity?: UserIdentityItem | null;
@@ -38,9 +39,7 @@ export function GitHubConnectedCard({
   const username = identity?.login || fallbackUsername;
   const displayName = identity?.displayName || fallbackName;
   const githubId = identity?.providerSubject || identity?.id || "Chưa có định danh";
-  const lastSynced = identity?.linkedAt
-    ? new Date(identity.linkedAt).toLocaleString("vi-VN")
-    : "Mới đây";
+  const lastSynced = formatVietnamDateTime(identity?.linkedAt);
   const isPrimary = Boolean(identity?.primary);
   const resolvedAvatar =
     avatarUrl ||

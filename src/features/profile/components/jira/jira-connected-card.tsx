@@ -11,6 +11,7 @@ import {
 import type { UserIdentityItem } from "@/features/integrations/types/user-integrations";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { formatVietnamDateTime } from "@/lib/utils";
 
 interface JiraConnectedCardProps {
   identity?: UserIdentityItem | null;
@@ -24,8 +25,8 @@ interface JiraConnectedCardProps {
 
 export function JiraConnectedCard({
   identity,
-  fallbackName = "Thành viên Jira",
-  fallbackEmail = "",
+  fallbackName = "Sinh viên",
+  fallbackEmail = "jira.user@saga.edu.vn",
   isDeleting = false,
   isSettingPrimary = false,
   onSetPrimary,
@@ -34,9 +35,7 @@ export function JiraConnectedCard({
   const displayName = identity?.displayName || fallbackName;
   const jiraEmail = identity?.login || fallbackEmail;
   const accountId = identity?.providerSubject || identity?.id || "Chưa có định danh";
-  const lastSynced = identity?.linkedAt
-    ? new Date(identity.linkedAt).toLocaleString("vi-VN")
-    : "Mới đây";
+  const lastSynced = formatVietnamDateTime(identity?.linkedAt);
   const isPrimary = Boolean(identity?.primary);
 
   return (

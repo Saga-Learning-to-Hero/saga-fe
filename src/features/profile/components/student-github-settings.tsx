@@ -2,7 +2,6 @@
 
 import {
   GitBranchIcon,
-  RefreshCwIcon,
   ExternalLinkIcon,
   LoaderCircleIcon,
   ShieldCheckIcon,
@@ -23,14 +22,12 @@ import { GitHubConnectedCard } from "./github/github-connected-card";
 interface StudentGitHubSettingsProps {
   user: User;
   identity?: UserIdentityItem | null;
-  onRefresh?: () => void;
   isLoading?: boolean;
 }
 
 export function StudentGitHubSettings({
   user,
   identity,
-  onRefresh,
   isLoading = false,
 }: StudentGitHubSettingsProps) {
   const isConnected = Boolean(identity);
@@ -129,19 +126,7 @@ export function StudentGitHubSettings({
           <div className="flex items-center gap-2 shrink-0">
             {isLoading && !identity ? (
               <div className="w-24 h-8.5 rounded-xl bg-muted/60 animate-pulse" />
-            ) : isConnected ? (
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={onRefresh}
-                disabled={isLoading}
-                className="h-8.5 px-3 text-xs font-semibold rounded-xl gap-1.5 cursor-pointer"
-              >
-                <RefreshCwIcon className={`w-3.5 h-3.5 ${isLoading ? "animate-spin text-primary" : ""}`} />
-                <span>{isLoading ? "Đang đồng bộ..." : "Đồng bộ lại"}</span>
-              </Button>
-            ) : (
+            ) : !isConnected ? (
               <Button
                 type="button"
                 size="sm"
@@ -161,7 +146,7 @@ export function StudentGitHubSettings({
                   </>
                 )}
               </Button>
-            )}
+            ) : null}
           </div>
         </div>
       </CardHeader>
