@@ -1,95 +1,41 @@
 "use client";
 
-import { useState } from "react";
-import { DatabaseIcon, GraduationCapIcon, CalendarIcon, SchoolIcon } from "lucide-react";
+import { DatabaseIcon, GraduationCapIcon, CalendarIcon, SchoolIcon, RefreshCwIcon } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { CourseManagement } from "@/features/admin/academic/components/course-management";
 import { AdminClassManagement } from "@/features/admin/academic/components/admin-class-management";
 import { SemesterManagement } from "@/features/admin/academic/components/semester-management";
 import {
-  MOCK_COURSES,
-  MOCK_ADMIN_CLASSES,
-  MOCK_SUBJECTS,
-  MOCK_SEMESTERS,
-} from "@/features/admin/academic/data/mock-academic";
-import {
-  Course,
-  AdminClass,
-  Subject,
-  Semester,
-} from "@/features/admin/academic/types/academic-management";
+  useSemesters,
+  useAdminClasses,
+  useCourses,
+} from "@/features/admin/academic/hooks/use-academic";
 
 export default function AdminAcademicPage() {
-  const [courses, setCourses] = useState<Course[]>(MOCK_COURSES);
-  const [adminClasses, setAdminClasses] = useState<AdminClass[]>(MOCK_ADMIN_CLASSES);
-  const [subjects] = useState<Subject[]>(MOCK_SUBJECTS);
-  const [semesters, setSemesters] = useState<Semester[]>(MOCK_SEMESTERS);
+  const {
+    data: semesterResponses = [],
+    isLoading: isSemLoading,
+    refetch: refetchSemesters,
+  } = useSemesters();
 
+  const {
+    data: classResponses = [],
+    isLoading: isClassLoading,
+    refetch: refetchClasses,
+  } = useAdminClasses();
 
-  // Course CRUD (TRUNG TÂM)
-  const handleAddCourse = (
-    newCrs: Omit<Course, "id" | "studentsCount" | "groupsCount" | "createdAt">
-  ) => {
-    const created: Course = {
-      ...newCrs,
-      id: `crs-${Date.now()}`,
-      studentsCount: 0,
-      groupsCount: 0,
-      createdAt: new Date().toISOString(),
-    };
-    setCourses((prev) => [created, ...prev]);
-  };
+  const {
+    data: courseResponses = [],
+    isLoading: isCourseLoading,
+    refetch: refetchCourses,
+  } = useCourses();
 
-  const handleEditCourse = (id: string, updated: Partial<Course>) => {
-    setCourses((prev) =>
-      prev.map((c) => (c.id === id ? { ...c, ...updated } : c))
-    );
-  };
-
-  const handleDeleteCourse = (id: string) => {
-    setCourses((prev) => prev.filter((c) => c.id !== id));
-  };
-
-  // AdminClass CRUD
-  const handleAddAdminClass = (newCls: Omit<AdminClass, "id" | "createdAt">) => {
-    const created: AdminClass = {
-      ...newCls,
-      id: `adm-cls-${Date.now()}`,
-      createdAt: new Date().toISOString(),
-    };
-    setAdminClasses((prev) => [created, ...prev]);
-  };
-
-  const handleEditAdminClass = (id: string, updated: Partial<AdminClass>) => {
-    setAdminClasses((prev) =>
-      prev.map((c) => (c.id === id ? { ...c, ...updated } : c))
-    );
-  };
-
-  const handleDeleteAdminClass = (id: string) => {
-    setAdminClasses((prev) => prev.filter((c) => c.id !== id));
-  };
-
-
-  // Semester CRUD
-  const handleAddSemester = (newSem: Omit<Semester, "id" | "totalCourses">) => {
-    const created: Semester = {
-      ...newSem,
-      id: `sem-${Date.now()}`,
-      totalCourses: 0,
-    };
-    setSemesters((prev) => [created, ...prev]);
-  };
-
-  const handleEditSemester = (id: string, updated: Partial<Semester>) => {
-    setSemesters((prev) =>
-      prev.map((sem) => (sem.id === id ? { ...sem, ...updated } : sem))
-    );
-  };
-
-  const handleDeleteSemester = (id: string) => {
-    setSemesters((prev) => prev.filter((sem) => sem.id !== id));
+  const handleRefreshAll = () => {
+    refetchSemesters();
+    refetchClasses();
+    refetchCourses();
   };
 
   return (
@@ -108,6 +54,16 @@ export default function AdminAcademicPage() {
             </p>
           </div>
         </div>
+
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleRefreshAll}
+          className="text-xs h-9 gap-1.5 cursor-pointer self-start sm:self-auto"
+        >
+          <RefreshCwIcon className="w-3.5 h-3.5" />
+          Làm mới dữ liệu
+        </Button>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -115,8 +71,10 @@ export default function AdminAcademicPage() {
           <CardContent className="p-4 flex items-center justify-between">
             <div className="space-y-0.5">
               <p className="text-xs font-medium text-muted-foreground">Lớp học phần (Course Sections)</p>
-              <p className="text-2xl font-bold text-foreground">{courses.length}</p>
-              <p className="text-[11px] text-muted-foreground">Lớp học phần đồ án đang mở</p>
+              <p className="text-2xl font-bold text-foreground">{courseResponses.length}</p>
+              <p className="text-[11px] text-muted-foreground">
+                {isCourseLoading ? "Đang đồng bộ..." : "Lớp học phần đồ án"}
+              </p>
             </div>
             <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
               <GraduationCapIcon className="w-5 h-5" />
@@ -128,8 +86,10 @@ export default function AdminAcademicPage() {
           <CardContent className="p-4 flex items-center justify-between">
             <div className="space-y-0.5">
               <p className="text-xs font-medium text-muted-foreground">Lớp hành chính (Cohort Classes)</p>
-              <p className="text-2xl font-bold text-foreground">{adminClasses.length}</p>
-              <p className="text-[11px] text-muted-foreground">Lớp sinh viên niên khóa</p>
+              <p className="text-2xl font-bold text-foreground">{classResponses.length}</p>
+              <p className="text-[11px] text-muted-foreground">
+                {isClassLoading ? "Đang đồng bộ..." : "Lớp sinh viên niên khóa"}
+              </p>
             </div>
             <div className="w-10 h-10 rounded-xl bg-info-muted flex items-center justify-center text-info">
               <SchoolIcon className="w-5 h-5" />
@@ -141,9 +101,9 @@ export default function AdminAcademicPage() {
           <CardContent className="p-4 flex items-center justify-between">
             <div className="space-y-0.5">
               <p className="text-xs font-medium text-muted-foreground">Học kỳ đào tạo (Semesters)</p>
-              <p className="text-2xl font-bold text-foreground">{semesters.length}</p>
+              <p className="text-2xl font-bold text-foreground">{semesterResponses.length}</p>
               <p className="text-[11px] text-muted-foreground">
-                {semesters.filter((s) => s.status === "ACTIVE").length} kỳ đang diễn ra
+                {isSemLoading ? "Đang đồng bộ..." : `${semesterResponses.filter((s) => s.active).length} kỳ đang diễn ra`}
               </p>
             </div>
             <div className="w-10 h-10 rounded-xl bg-success-muted flex items-center justify-center text-success">
@@ -157,50 +117,28 @@ export default function AdminAcademicPage() {
         <TabsList className="bg-muted p-1 rounded-xl">
           <TabsTrigger value="courses" className="text-xs font-semibold gap-1.5 px-3.5 py-1.5">
             <GraduationCapIcon className="w-3.5 h-3.5" />
-            Lớp học phần ({courses.length})
+            Lớp học phần ({courseResponses.length})
           </TabsTrigger>
           <TabsTrigger value="admin-classes" className="text-xs font-semibold gap-1.5 px-3.5 py-1.5">
             <SchoolIcon className="w-3.5 h-3.5" />
-            Lớp hành chính ({adminClasses.length})
+            Lớp hành chính ({classResponses.length})
           </TabsTrigger>
           <TabsTrigger value="semesters" className="text-xs font-semibold gap-1.5 px-3.5 py-1.5">
             <CalendarIcon className="w-3.5 h-3.5" />
-            Học kỳ đào tạo ({semesters.length})
+            Học kỳ đào tạo ({semesterResponses.length})
           </TabsTrigger>
         </TabsList>
 
-        {/* Tab 1: Khóa học / Học phần (TRUNG TÂM) */}
-        <TabsContent value="courses">
-          <CourseManagement
-            courses={courses}
-            subjects={subjects}
-            semesters={semesters}
-            adminClasses={adminClasses}
-            onAddCourse={handleAddCourse}
-            onEditCourse={handleEditCourse}
-            onDeleteCourse={handleDeleteCourse}
-          />
+        <TabsContent value="courses" keepMounted>
+          <CourseManagement />
         </TabsContent>
 
-        {/* Tab 2: Lớp hành chính */}
-        <TabsContent value="admin-classes">
-          <AdminClassManagement
-            adminClasses={adminClasses}
-            onAddClass={handleAddAdminClass}
-            onEditClass={handleEditAdminClass}
-            onDeleteClass={handleDeleteAdminClass}
-          />
+        <TabsContent value="admin-classes" keepMounted>
+          <AdminClassManagement />
         </TabsContent>
 
-
-        {/* Tab 4: Học kỳ */}
-        <TabsContent value="semesters">
-          <SemesterManagement
-            semesters={semesters}
-            onAddSemester={handleAddSemester}
-            onEditSemester={handleEditSemester}
-            onDeleteSemester={handleDeleteSemester}
-          />
+        <TabsContent value="semesters" keepMounted>
+          <SemesterManagement />
         </TabsContent>
       </Tabs>
     </div>

@@ -61,6 +61,7 @@ export function TopNavTabs({ items }: TopNavTabsProps) {
           <Link
             key={item.id}
             href={item.href}
+            prefetch={true}
             className={cn(
               "group relative inline-flex items-center gap-2 px-3.5 py-2.5 text-xs font-semibold whitespace-nowrap transition-all duration-150 shrink-0 select-none",
               isActive

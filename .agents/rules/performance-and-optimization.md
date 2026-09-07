@@ -86,3 +86,49 @@ export const DynamicCytoscapeCanvas = dynamic(
 - **Skeleton Loaders Đúng Kích Thước**: Mọi trang và component khi đợi API phản hồi phải sử dụng Skeleton Loader có chiều cao (`h-...`) và bố cục tương đương nội dung thật.
 - **Tránh Spinner Toàn Màn Hình**: Không dùng loading overlay che toàn bộ trang gây đứt đoạn trải nghiệm, ưu tiên skeleton theo từng thẻ card hoặc bảng dữ liệu.
 
+---
+
+## 7. Tải Trước Dự Đoán (Predictive Hover & Viewport Prefetching)
+- **Tận dụng độ trễ cơ học (150ms - 300ms)**: Con người mất trung bình 150ms - 300ms từ khi rê chuột (`hover`) vào một phần tử cho tới khi nhấn (`click`).
+- **Prefetch Đa Tầng khi `onMouseEnter`**:
+  - Gọi `router.prefetch(url)` để Next.js nạp trước gói mã nguồn JS của trang đích.
+  - Gọi `queryClient.prefetchQuery(...)` để TanStack Query nạp trước dữ liệu API vào RAM.
+  - Khi người dùng click chuột, trang và dữ liệu đã có sẵn trong RAM ➔ Giao diện hiển thị ngay lập tức trong **0ms (Instant Navigation)**.
+
+---
+
+## 8. Kế Thừa Dữ Liệu Bộ Nhớ Đệm (`initialData` Cache Inheritance)
+- Khi điều hướng từ trang danh sách (List View) sang trang chi tiết (Detail View `[id]`):
+  - **Bắt buộc** cấu hình `initialData` trong `useQuery` để lấy thông tin đối tượng đã có sẵn từ query cache của danh sách:
+  ```typescript
+  export function useCourseDetail(courseId: string) {
+    const queryClient = useQueryClient();
+    return useQuery({
+      queryKey: ACADEMIC_QUERY_KEYS.courseDetail(courseId),
+      queryFn: () => CourseService.getCourseById(courseId),
+      staleTime: 1000 * 60 * 5,
+      initialData: () => {
+        const cached = queryClient.getQueryData<CourseResponse[]>(ACADEMIC_QUERY_KEYS.courses());
+        return cached?.find((c) => c.id === courseId);
+      },
+    });
+  }
+  ```
+  - Loại bỏ hoàn toàn thác đổ gọi API (Waterfall), hiển thị tiêu đề và thông tin cơ bản ngay trong 0ms mà không làm gián đoạn người dùng.
+
+---
+
+## 9. Điều Hướng Tức Thời Với Next.js (`prefetch={true}`)
+- **Bắt buộc bật `prefetch={true}`**: Toàn bộ các thẻ `<Link>` trên Sidebar (`sidebar-nav.tsx`), Top Header Tabs (`top-nav-tabs.tsx`), và các liên kết thẻ/dòng bảng sang trang chi tiết bắt buộc phải có `prefetch={true}`:
+  ```tsx
+  <Link href={item.href} prefetch={true} className={...}>
+  ```
+- Giúp Next.js tự động tải trước các chunk tĩnh vào bộ nhớ đệm ngay khi liên kết xuất hiện trong tầm nhìn (Viewport).
+
+---
+
+## 10. Tìm Kiếm Không Nghẽn Luồng & Giữ Trạng Thái Tab
+- **`useDeferredValue` Cho Tìm Kiếm / Lọc**: Tuyệt đối không để việc tính toán lọc danh sách lớn làm đơ luồng nhập liệu bàn phím. Sử dụng `useDeferredValue` để phản hồi gõ phím luôn đạt 60 FPS mượt mà.
+- **Giữ DOM Cho Component Tab (`keepMounted: true`)**: Các giao diện chuyển đổi Tab quản trị (như trang Dữ liệu học thuật, Bảng điểm) phải kích hoạt `keepMounted` trên `TabsContent` để không bị hủy (unmount) và phải render lại từ đầu, giúp chuyển tab diễn ra tức thì trong 0ms.
+
+

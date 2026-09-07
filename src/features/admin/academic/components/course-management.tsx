@@ -1,210 +1,241 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo, useDeferredValue } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   PlusIcon,
   EditIcon,
-  Trash2Icon,
   SearchIcon,
-  UsersIcon,
   MoreHorizontalIcon,
   GraduationCapIcon,
+  BookOpenIcon,
+  UsersIcon,
+  CalendarIcon,
+  SchoolIcon,
+  ArrowRightIcon,
+  LayoutGridIcon,
+  TableIcon,
 } from "lucide-react";
-import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from "@/components/ui/table";
-import { Card } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableHead,
+  TableRow,
+  TableCell,
+} from "@/components/ui/table";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { CourseDialog } from "./course-dialog";
-import { ConfirmDeleteDialog } from "@/components/common/confirm-delete-dialog";
-import type { Course, Subject, Semester, CourseStatus, AdminClass } from "../types/academic-management";
+import {
+  useCourses,
+  useCreateCourse,
+  usePatchCourse,
+  useSemesters,
+  useAdminClasses,
+  ACADEMIC_QUERY_KEYS,
+} from "../hooks/use-academic";
+import { CourseService } from "../api/course-service";
+import { RosterService } from "../api/roster-service";
+import { useSubjects } from "@/features/admin/subjects/hooks/use-subjects";
+import type { CourseResponse } from "../types/course-roster-types";
 
-interface CourseManagementProps {
-  courses: Course[];
-  subjects: Subject[];
-  semesters: Semester[];
-  adminClasses: AdminClass[];
-  onAddCourse: (cls: Omit<Course, "id" | "studentsCount" | "groupsCount" | "createdAt">) => void;
-  onEditCourse: (id: string, cls: Partial<Course>) => void;
-  onDeleteCourse: (id: string) => void;
+export interface CourseFormData {
+  courseCode: string;
+  name: string;
+  subjectId: string;
+  academicClassId: string;
+  semesterId: string;
+  lecturerId: string;
 }
 
-export function CourseManagement({
-  courses,
-  subjects,
-  semesters,
-  adminClasses,
-  onAddCourse,
-  onEditCourse,
-  onDeleteCourse,
-}: CourseManagementProps) {
+export function CourseManagement() {
   const router = useRouter();
+  const { data: courses = [], isLoading } = useCourses();
+  const { data: subjects = [] } = useSubjects();
+  const { data: semesters = [] } = useSemesters();
+  const { data: adminClasses = [] } = useAdminClasses();
+
+  const queryClient = useQueryClient();
+  const createMutation = useCreateCourse();
+  const patchMutation = usePatchCourse();
+
   const [search, setSearch] = useState("");
-
-  // Modal Form
+  const deferredSearch = useDeferredValue(search);
+  const [viewMode, setViewMode] = useState<"cards" | "table">("cards");
   const [isFormOpen, setIsFormOpen] = useState(false);
-  const [editingCourse, setEditingCourse] = useState<Course | null>(null);
+  const [editingCourse, setEditingCourse] = useState<CourseResponse | null>(null);
 
-  // Modal Xóa
-  const [deletingCourse, setDeletingCourse] = useState<Course | null>(null);
+  const handlePrefetchCourse = (courseId: string) => {
+    router.prefetch(`/admin/academic/courses/${courseId}`);
+    queryClient.prefetchQuery({
+      queryKey: ACADEMIC_QUERY_KEYS.courseDetail(courseId),
+      queryFn: () => CourseService.getCourseById(courseId),
+      staleTime: 1000 * 60 * 5,
+    });
+    queryClient.prefetchQuery({
+      queryKey: ACADEMIC_QUERY_KEYS.roster(courseId),
+      queryFn: () => RosterService.getRoster(courseId),
+      staleTime: 1000 * 60 * 2,
+    });
+  };
 
-  const filteredCourses = courses.filter(
-    (c) =>
-      c.code.toLowerCase().includes(search.toLowerCase()) ||
-      c.name.toLowerCase().includes(search.toLowerCase()) ||
-      c.subjectName.toLowerCase().includes(search.toLowerCase()) ||
-      c.lecturer.fullName.toLowerCase().includes(search.toLowerCase())
-  );
+  const filteredCourses = useMemo(() => {
+    return courses.filter((c) => {
+      if (!c) return false;
+      const term = deferredSearch.trim().toLowerCase();
+      if (!term) return true;
+      return (
+        (c.courseCode && c.courseCode.toLowerCase().includes(term)) ||
+        (c.name && c.name.toLowerCase().includes(term)) ||
+        (c.subjectName && c.subjectName.toLowerCase().includes(term)) ||
+        (c.lecturerFullName && c.lecturerFullName.toLowerCase().includes(term)) ||
+        (c.lecturerName && c.lecturerName.toLowerCase().includes(term)) ||
+        (c.lecturerEmail && c.lecturerEmail.toLowerCase().includes(term)) ||
+        (c.classCode && c.classCode.toLowerCase().includes(term)) ||
+        (c.semesterCode && c.semesterCode.toLowerCase().includes(term))
+      );
+    });
+  }, [courses, deferredSearch]);
 
   const handleOpenAdd = () => {
     setEditingCourse(null);
     setIsFormOpen(true);
   };
 
-  const handleOpenEdit = (crs: Course) => {
+  const handleOpenEdit = (crs: CourseResponse) => {
     setEditingCourse(crs);
     setIsFormOpen(true);
   };
 
-  const handleFormSubmit = (data: {
-    code: string;
-    name: string;
-    subjectCode: string;
-    subjectName: string;
-    semesterCode: string;
-    semesterName: string;
-    status: CourseStatus;
-    lecturer: { id: string; fullName: string; email: string };
-  }) => {
+  const handleFormSubmit = async (data: CourseFormData) => {
+    setIsFormOpen(false);
     if (editingCourse) {
-      onEditCourse(editingCourse.id, data);
+      patchMutation.mutate({
+        id: editingCourse.id,
+        data: {
+          name: data.name,
+          courseCode: data.courseCode,
+          lecturerId: data.lecturerId,
+        },
+      });
     } else {
-      onAddCourse(data);
-    }
-  };
-
-  const handleConfirmDelete = () => {
-    if (deletingCourse) {
-      onDeleteCourse(deletingCourse.id);
-      setDeletingCourse(null);
-    }
-  };
-
-  const renderStatusBadge = (status: CourseStatus) => {
-    switch (status) {
-      case "IN_PROGRESS":
-        return (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-success-muted text-success whitespace-nowrap">
-            <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
-            Đang học / Làm đồ án
-          </span>
-        );
-      case "UPCOMING":
-        return (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-info-muted text-info whitespace-nowrap">
-            Sắp diễn ra
-          </span>
-        );
-      case "COMPLETED":
-        return (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-muted text-muted-foreground whitespace-nowrap border border-border">
-            Đã hoàn thành
-          </span>
-        );
+      createMutation.mutate({
+        academicClassId: data.academicClassId,
+        subjectId: data.subjectId,
+        syllabusVersionId: "799bceba-46dc-4713-8161-0192d01275d2",
+        lecturerId: data.lecturerId,
+        courseCode: data.courseCode,
+        name: data.name,
+      });
     }
   };
 
   return (
     <div className="space-y-4">
+      {/* ── Toolbar ── */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
         <div className="relative flex-1 max-w-sm">
-          <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
           <Input
             type="text"
-            placeholder="Tìm theo mã học phần (SWP490_FA26), tên lớp, giảng viên..."
+            placeholder="Tìm theo mã học phần, môn học, giảng viên..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="pl-9 h-9 text-xs"
           />
         </div>
-        <Button onClick={handleOpenAdd} size="sm" className="h-9 gap-1.5 text-xs font-semibold cursor-pointer">
-          <PlusIcon className="w-4 h-4" />
-          Mở lớp học phần mới
-        </Button>
+
+        <div className="flex items-center gap-2">
+          {/* View Mode Toggle */}
+          <div className="flex items-center bg-muted/60 p-0.5 rounded-lg border border-border/80">
+            <button
+              onClick={() => setViewMode("cards")}
+              className={`p-1.5 rounded-md text-xs cursor-pointer transition-colors ${viewMode === "cards"
+                ? "bg-card text-foreground shadow-2xs font-semibold"
+                : "text-muted-foreground hover:text-foreground"
+                }`}
+              title="Dạng thẻ Card"
+            >
+              <LayoutGridIcon className="w-3.5 h-3.5" />
+            </button>
+            <button
+              onClick={() => setViewMode("table")}
+              className={`p-1.5 rounded-md text-xs cursor-pointer transition-colors ${viewMode === "table"
+                ? "bg-card text-foreground shadow-2xs font-semibold"
+                : "text-muted-foreground hover:text-foreground"
+                }`}
+              title="Dạng bảng Table"
+            >
+              <TableIcon className="w-3.5 h-3.5" />
+            </button>
+          </div>
+
+          <Button
+            onClick={handleOpenAdd}
+            size="sm"
+            className="h-9 gap-1.5 text-xs font-semibold cursor-pointer bg-primary text-primary-foreground hover:bg-primary/90 shadow-2xs"
+          >
+            <PlusIcon className="w-4 h-4" />
+            Mở lớp học phần mới
+          </Button>
+        </div>
       </div>
 
-      <Card className="rounded-2xl border border-border overflow-hidden shadow-xs">
-        <div className="overflow-x-auto">
-          <Table className="w-full text-left text-xs border-collapse">
-            <TableHeader className="bg-muted/40 border-b border-border">
-              <TableRow>
-                <TableHead className="py-3 px-4 text-xs font-semibold whitespace-nowrap w-[130px]">Mã học phần (Course Code)</TableHead>
-                <TableHead className="py-3 px-4 text-xs font-semibold min-w-[260px]">Lớp học phần (Course Section)</TableHead>
-                <TableHead className="py-3 px-4 text-xs font-semibold whitespace-nowrap w-[120px]">Học kỳ (Semester)</TableHead>
-                <TableHead className="py-3 px-4 text-xs font-semibold whitespace-nowrap min-w-[220px]">Giảng viên phụ trách (Instructor)</TableHead>
-                <TableHead className="py-3 px-4 text-xs font-semibold whitespace-nowrap w-[180px]">Sĩ số (Roster Size)</TableHead>
-                <TableHead className="py-3 px-4 text-xs font-semibold whitespace-nowrap text-center w-[160px]">Trạng thái (Status)</TableHead>
-                <TableHead className="py-3 px-4 text-xs font-semibold whitespace-nowrap text-right w-[80px]">Thao tác</TableHead>
-              </TableRow>
-            </TableHeader>
-
-            <TableBody className="divide-y divide-border/60">
-              {filteredCourses.map((crs) => (
-                <TableRow key={crs.id} className="hover:bg-muted/30 transition-colors">
-                  {/* Course Code */}
-                  <TableCell className="py-3 px-4 whitespace-nowrap font-mono font-bold text-foreground">
-                    <Badge variant="outline" className="font-mono text-xs font-bold text-primary border-primary/30">
-                      {crs.code}
-                    </Badge>
-                  </TableCell>
-
-                  {/* Course Name & Subject */}
-                  <TableCell className="py-3 px-4">
-                    <div className="flex flex-col">
-                      <span className="font-semibold text-foreground text-xs">{crs.name}</span>
-                      <span className="text-[11px] font-mono text-muted-foreground">{crs.subjectName}</span>
+      {isLoading && courses.length === 0 ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {Array.from({ length: 6 }).map((_, idx) => (
+            <Card key={idx} className="rounded-2xl border border-border p-5 space-y-4 animate-pulse">
+              <div className="h-5 bg-muted rounded w-1/3" />
+              <div className="h-4 bg-muted rounded w-2/3" />
+              <div className="h-8 bg-muted rounded w-full" />
+            </Card>
+          ))}
+        </div>
+      ) : filteredCourses.length === 0 ? (
+        <Card className="rounded-2xl border border-dashed border-border p-8 text-center">
+          <p className="text-xs text-muted-foreground">Không tìm thấy lớp học phần nào phù hợp.</p>
+        </Card>
+      ) : viewMode === "cards" ? (
+        /* ── DẠNG CARD (Card Grid Layout) ── */
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {filteredCourses.map((crs) => (
+            <Card
+              key={crs.id}
+              onMouseEnter={() => handlePrefetchCourse(crs.id)}
+              className="rounded-2xl border border-border/80 hover:border-primary/40 transition-all duration-200 shadow-xs hover:shadow-md bg-card overflow-hidden group flex flex-col justify-between"
+            >
+              <CardContent className="p-5 space-y-3.5 flex-1 flex flex-col justify-between">
+                <div>
+                  {/* Header: Course Code + Dropdown */}
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0 shadow-2xs">
+                        <GraduationCapIcon className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <Badge
+                          variant="outline"
+                          className="font-mono text-xs font-bold text-primary border-primary/30 px-2 py-0.5"
+                        >
+                          {crs.courseCode}
+                        </Badge>
+                        <h3 className="font-bold text-foreground text-sm mt-1 leading-snug line-clamp-1">
+                          {crs.name}
+                        </h3>
+                      </div>
                     </div>
-                  </TableCell>
 
-                  {/* Semester */}
-                  <TableCell className="py-3 px-4 whitespace-nowrap font-medium text-foreground">
-                    <Badge variant="secondary" className="text-[11px]">
-                      {crs.semesterName}
-                    </Badge>
-                  </TableCell>
-
-                  {/* Lecturer */}
-                  <TableCell className="py-3 px-4 whitespace-nowrap">
-                    <div className="flex flex-col">
-                      <span className="font-semibold text-foreground text-xs">{crs.lecturer.fullName}</span>
-                      <span className="text-[11px] text-muted-foreground">{crs.lecturer.email}</span>
-                    </div>
-                  </TableCell>
-
-                  {/* Stats */}
-                  <TableCell className="py-3 px-4 whitespace-nowrap">
-                    <div className="flex items-center gap-1.5 text-xs">
-                      <UsersIcon className="w-3.5 h-3.5 text-muted-foreground" />
-                      <strong className="text-foreground">{crs.studentsCount}</strong> sinh viên ·{" "}
-                      <strong className="text-foreground">{crs.groupsCount}</strong> nhóm
-                    </div>
-                  </TableCell>
-
-                  {/* Status */}
-                  <TableCell className="py-3 px-4 whitespace-nowrap text-center">
-                    {renderStatusBadge(crs.status)}
-                  </TableCell>
-
-                  {/* Actions Dropdown Menu */}
-                  <TableCell className="py-3 px-4 text-right whitespace-nowrap">
                     <DropdownMenu>
                       <DropdownMenuTrigger
                         className="inline-flex items-center justify-center w-8 h-8 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-colors cursor-pointer outline-none"
@@ -212,44 +243,154 @@ export function CourseManagement({
                       >
                         <MoreHorizontalIcon className="w-4 h-4" />
                       </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="w-48 p-1">
-                        <DropdownMenuItem
-                          onClick={() => router.push(`/admin/academic/courses/${crs.id}`)}
-                          className="flex items-center gap-2 px-2.5 py-1.5 text-xs font-medium cursor-pointer"
-                        >
-                          <GraduationCapIcon className="w-3.5 h-3.5 text-primary" />
-                          <span>Xem DS Sinh viên</span>
-                        </DropdownMenuItem>
-
+                      <DropdownMenuContent align="end" className="w-44 p-1">
                         <DropdownMenuItem
                           onClick={() => handleOpenEdit(crs)}
                           className="flex items-center gap-2 px-2.5 py-1.5 text-xs font-medium cursor-pointer"
                         >
                           <EditIcon className="w-3.5 h-3.5 text-muted-foreground" />
-                          <span>Chỉnh sửa khóa học</span>
-                        </DropdownMenuItem>
-
-                        <DropdownMenuSeparator />
-
-                        <DropdownMenuItem
-                          variant="destructive"
-                          onClick={() => setDeletingCourse(crs)}
-                          className="flex items-center gap-2 px-2.5 py-1.5 text-xs font-medium text-destructive cursor-pointer"
-                        >
-                          <Trash2Icon className="w-3.5 h-3.5" />
-                          <span>Xóa khóa học</span>
+                          <span>Chỉnh sửa thông tin</span>
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
-      </Card>
+                  </div>
 
-      {/* Modal Thêm / Sửa Khóa học tách riêng */}
+                  {/* Metadata Chips */}
+                  <div className="space-y-2 pt-3">
+                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                      <BookOpenIcon className="w-3.5 h-3.5 text-primary shrink-0" />
+                      <span className="truncate">
+                        {crs.subjectName || crs.subjectCode || "Môn học"}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                      <UsersIcon className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+                      <span className="truncate">
+                        GV: <strong className="text-foreground font-medium">{crs.lecturerFullName || crs.lecturerName || crs.lecturerEmail || "Chưa phân công"}</strong>
+                        {crs.lecturerEmail && crs.lecturerFullName && (
+                          <span className="text-[11px] text-muted-foreground ml-1 font-normal">({crs.lecturerEmail})</span>
+                        )}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center justify-between gap-2 pt-1 text-[11px] text-muted-foreground">
+                      <span className="inline-flex items-center gap-1 bg-muted/60 px-2 py-0.5 rounded-md border border-border/60">
+                        <SchoolIcon className="w-3 h-3 text-muted-foreground" />
+                        Lớp: <strong className="text-foreground">{crs.classCode || "—"}</strong>
+                      </span>
+                      <span className="inline-flex items-center gap-1 bg-muted/60 px-2 py-0.5 rounded-md border border-border/60">
+                        <CalendarIcon className="w-3 h-3 text-muted-foreground" />
+                        Kỳ: <strong className="text-foreground">{crs.semesterCode || "—"}</strong>
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Footer Action: Vào quản trị lớp */}
+                <div className="pt-3 border-t border-border/50">
+                  <Link
+                    href={`/admin/academic/courses/${crs.id}`}
+                    prefetch={true}
+                    onMouseEnter={() => handlePrefetchCourse(crs.id)}
+                    className="w-full inline-flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold bg-primary/10 hover:bg-primary text-primary hover:text-primary-foreground transition-all duration-150 cursor-pointer shadow-2xs group-hover:shadow-xs"
+                  >
+                    <span>Quản lý Roster sinh viên</span>
+                    <ArrowRightIcon className="w-3.5 h-3.5" />
+                  </Link>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      ) : (
+        /* ── DẠNG TABLE ── */
+        <Card className="rounded-2xl border border-border overflow-hidden shadow-xs">
+          <div className="overflow-x-auto">
+            <Table className="w-full text-left text-xs border-collapse">
+              <TableHeader className="bg-muted/40 border-b border-border">
+                <TableRow>
+                  <TableHead className="py-3 px-4 text-xs font-semibold whitespace-nowrap w-[130px]">
+                    Mã học phần
+                  </TableHead>
+                  <TableHead className="py-3 px-4 text-xs font-semibold min-w-[240px]">
+                    Tên học phần
+                  </TableHead>
+                  <TableHead className="py-3 px-4 text-xs font-semibold whitespace-nowrap min-w-[160px]">
+                    Môn học
+                  </TableHead>
+                  <TableHead className="py-3 px-4 text-xs font-semibold whitespace-nowrap min-w-[180px]">
+                    Giảng viên
+                  </TableHead>
+                  <TableHead className="py-3 px-4 text-xs font-semibold whitespace-nowrap text-right w-[120px]">
+                    Thao tác
+                  </TableHead>
+                </TableRow>
+              </TableHeader>
+
+              <TableBody className="divide-y divide-border/60">
+                {filteredCourses.map((crs) => (
+                  <TableRow
+                    key={crs.id}
+                    onMouseEnter={() => handlePrefetchCourse(crs.id)}
+                    className="hover:bg-muted/30 transition-colors"
+                  >
+                    <TableCell className="py-3 px-4 whitespace-nowrap font-mono font-bold text-foreground">
+                      <Badge variant="outline" className="font-mono text-xs font-bold text-primary border-primary/30">
+                        {crs.courseCode}
+                      </Badge>
+                    </TableCell>
+
+                    <TableCell className="py-3 px-4 font-semibold text-foreground text-xs">
+                      {crs.name}
+                    </TableCell>
+
+                    <TableCell className="py-3 px-4 whitespace-nowrap text-muted-foreground font-medium">
+                      {crs.subjectName || crs.subjectCode || "—"}
+                    </TableCell>
+
+                    <TableCell className="py-3 px-4 whitespace-nowrap text-muted-foreground font-medium">
+                      {crs.lecturerFullName || crs.lecturerName || crs.lecturerEmail || "—"}
+                    </TableCell>
+
+                    <TableCell className="py-3 px-4 text-right whitespace-nowrap">
+                      <div className="flex items-center justify-end gap-1.5">
+                        <Link
+                          href={`/admin/academic/courses/${crs.id}`}
+                          prefetch={true}
+                          onMouseEnter={() => handlePrefetchCourse(crs.id)}
+                          className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold bg-primary/10 hover:bg-primary text-primary hover:text-primary-foreground transition-colors cursor-pointer"
+                        >
+                          <span>Roster</span>
+                          <ArrowRightIcon className="w-3 h-3" />
+                        </Link>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger
+                            className="inline-flex items-center justify-center w-8 h-8 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-colors cursor-pointer outline-none"
+                            title="Tùy chọn thao tác"
+                          >
+                            <MoreHorizontalIcon className="w-4 h-4" />
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end" className="w-44 p-1">
+                            <DropdownMenuItem
+                              onClick={() => handleOpenEdit(crs)}
+                              className="flex items-center gap-2 px-2.5 py-1.5 text-xs font-medium cursor-pointer"
+                            >
+                              <EditIcon className="w-3.5 h-3.5 text-muted-foreground" />
+                              <span>Chỉnh sửa thông tin</span>
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        </Card>
+      )}
+
       <CourseDialog
         isOpen={isFormOpen}
         onClose={() => setIsFormOpen(false)}
@@ -258,15 +399,6 @@ export function CourseManagement({
         subjects={subjects}
         semesters={semesters}
         adminClasses={adminClasses}
-      />
-
-      {/* Modal Xác nhận Xóa tái sử dụng */}
-      <ConfirmDeleteDialog
-        isOpen={!!deletingCourse}
-        onClose={() => setDeletingCourse(null)}
-        onConfirm={handleConfirmDelete}
-        itemType="khóa học"
-        itemName={deletingCourse?.name}
       />
     </div>
   );

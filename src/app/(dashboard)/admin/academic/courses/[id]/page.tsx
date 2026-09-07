@@ -2,7 +2,6 @@
 
 import { use, useState, useMemo } from "react";
 import Link from "next/link";
-import { notFound } from "next/navigation";
 import {
   ArrowLeftIcon,
   GraduationCapIcon,
@@ -10,14 +9,16 @@ import {
   DownloadIcon,
   UsersIcon,
   SearchIcon,
-  FolderKanbanIcon,
   ClockIcon,
   UserXIcon,
   BookOpenIcon,
   UserCheckIcon,
-  MailIcon,
   XIcon,
   FilterIcon,
+  RefreshCwIcon,
+  LayoutGridIcon,
+  TableIcon,
+  MailIcon,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -34,13 +35,15 @@ import {
 } from "@/components/ui/table";
 import { ImportStudentsDialog } from "@/features/admin/academic/components/import-students-dialog";
 import {
-  MOCK_COURSES,
-  MOCK_COURSE_STUDENTS,
-} from "@/features/admin/academic/data/mock-academic";
+  useCourseDetail,
+  useRoster,
+  useDownloadRosterTemplate,
+} from "@/features/admin/academic/hooks/use-academic";
 import type {
-  CourseStudent,
-  ImportedStudentPreview,
-} from "@/features/admin/academic/types/academic-management";
+  CourseRosterEntry,
+  CourseRosterResponse,
+  RosterEnrollmentStatus,
+} from "@/features/admin/academic/types/course-roster-types";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -48,44 +51,57 @@ interface PageProps {
 
 export default function AdminCourseDetailPage({ params }: PageProps) {
   const resolvedParams = use(params);
-  const course = useMemo(() => {
-    return MOCK_COURSES.find((c) => c.id === resolvedParams.id);
-  }, [resolvedParams.id]);
+  const courseId = resolvedParams.id;
 
-  const [students, setStudents] = useState<CourseStudent[]>(() => {
-    return MOCK_COURSE_STUDENTS[resolvedParams.id] || MOCK_COURSE_STUDENTS["crs-01"] || [];
-  });
+  const { data: course, isLoading: isCourseLoading } = useCourseDetail(courseId);
+  const { data: rosterData, isLoading: isRosterLoading, refetch: refetchRoster } = useRoster(courseId);
 
   const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState<"ALL" | "ACTIVE" | "PENDING" | "BANNED">("ALL");
-  const [groupFilter, setGroupFilter] = useState<"ALL" | "ASSIGNED" | "UNASSIGNED">("ALL");
+  const [viewMode, setViewMode] = useState<"cards" | "table">("cards");
+  const [statusFilter, setStatusFilter] = useState<"ALL" | RosterEnrollmentStatus>("ALL");
   const [isImportOpen, setIsImportOpen] = useState(false);
 
+  const downloadMutation = useDownloadRosterTemplate();
+
+  const studentsList: CourseRosterEntry[] = useMemo(() => {
+    if (!rosterData) return [];
+    if (Array.isArray(rosterData)) return rosterData;
+    if (Array.isArray((rosterData as CourseRosterResponse).entries)) {
+      return (rosterData as CourseRosterResponse).entries;
+    }
+    if (Array.isArray((rosterData as unknown as { items?: CourseRosterEntry[] }).items)) {
+      return (rosterData as unknown as { items: CourseRosterEntry[] }).items;
+    }
+    return [];
+  }, [rosterData]);
+
   const filteredStudents = useMemo(() => {
-    return students.filter((s) => {
+    return studentsList.filter((s) => {
+      const term = search.trim().toLowerCase();
       const matchSearch =
-        search.trim() === "" ||
-        s.studentCode.toLowerCase().includes(search.toLowerCase()) ||
-        s.fullName.toLowerCase().includes(search.toLowerCase()) ||
-        s.email.toLowerCase().includes(search.toLowerCase()) ||
-        (s.groupName && s.groupName.toLowerCase().includes(search.toLowerCase()));
+        term === "" ||
+        (s.studentCode && s.studentCode.toLowerCase().includes(term)) ||
+        (s.fullName && s.fullName.toLowerCase().includes(term)) ||
+        (s.email && s.email.toLowerCase().includes(term));
 
-      const matchStatus = statusFilter === "ALL" || s.status === statusFilter;
+      const isEnrolled =
+        s.kind === "ENROLLMENT" || s.status === "ENROLLED" || s.enrollmentStatus === "ACTIVE";
+      const isInvited =
+        s.kind === "INVITATION" || s.status === "INVITED" || s.invitationStatus === "PENDING";
+      const isDropped = s.status === "DROPPED";
 
-      let matchGroup = true;
-      if (groupFilter === "ASSIGNED") {
-        matchGroup = Boolean(s.groupName && s.groupName !== "Chưa phân nhóm");
-      } else if (groupFilter === "UNASSIGNED") {
-        matchGroup = !s.groupName || s.groupName === "Chưa phân nhóm";
-      }
+      const currentStatus: RosterEnrollmentStatus = isEnrolled
+        ? "ENROLLED"
+        : isInvited
+          ? "INVITED"
+          : isDropped
+            ? "DROPPED"
+            : "ENROLLED";
 
-      return matchSearch && matchStatus && matchGroup;
+      const matchStatus = statusFilter === "ALL" || currentStatus === statusFilter;
+      return matchSearch && matchStatus;
     });
-  }, [students, search, statusFilter, groupFilter]);
-
-  if (!course) {
-    return notFound();
-  }
+  }, [studentsList, search, statusFilter]);
 
   const getInitials = (name: string) => {
     return name
@@ -96,68 +112,98 @@ export default function AdminCourseDetailPage({ params }: PageProps) {
       .toUpperCase();
   };
 
-  const handleConfirmImport = (
-    _courseId: string,
-    importedList: ImportedStudentPreview[]
-  ) => {
-    const newStudents: CourseStudent[] = importedList.map((item, index) => ({
-      id: `new-sv-${Date.now()}-${index}`,
-      studentCode: item.studentCode,
-      fullName: item.fullName,
-      email: item.email,
-      groupName: item.groupName || "Chưa phân nhóm",
-      status: "PENDING",
-      enrolledAt: new Date().toISOString(),
-    }));
-
-    setStudents((prev) => [...prev, ...newStudents]);
+  const handleDownloadTemplate = async () => {
+    if (!courseId) return;
+    await downloadMutation.mutateAsync({
+      courseId,
+      courseCode: course?.courseCode,
+    });
   };
 
-  const handleDownloadTemplate = () => {
-    const csvContent =
-      "data:text/csv;charset=utf-8,MSSV,HoVaTen,Email,Nhom\nHE170504,Le Hoang Hai,hailhhe170504@fpt.edu.vn,Nhom 01\nSE171234,Nguyen Duc Trung,trungndse171234@fpt.edu.vn,Nhom 01\nSE172345,Vu Tuan Minh,minhvtse172345@fpt.edu.vn,Nhom 02";
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", `Mau_Danh_Sach_Sinh_Vien_${course.code}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
+  const renderStatusBadge = (s: CourseRosterEntry) => {
+    const isEnrolled = s.kind === "ENROLLMENT" || s.status === "ENROLLED" || s.enrollmentStatus === "ACTIVE";
+    const isInvited = s.kind === "INVITATION" || s.status === "INVITED" || s.invitationStatus === "PENDING";
+    const isDropped = s.status === "DROPPED";
 
-  const renderStatusBadge = (status: "ACTIVE" | "PENDING" | "BANNED") => {
-    switch (status) {
-      case "ACTIVE":
-        return (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-success-muted text-success whitespace-nowrap">
-            <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
-            Hoạt động
-          </span>
-        );
-      case "PENDING":
-        return (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-warning-muted text-warning whitespace-nowrap">
-            <ClockIcon className="w-3 h-3" />
-            Chờ đăng nhập
-          </span>
-        );
-      case "BANNED":
-        return (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-danger-muted text-danger whitespace-nowrap">
-            <UserXIcon className="w-3 h-3" />
-            Đã khóa
-          </span>
-        );
+    if (isEnrolled) {
+      return (
+        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-success-muted text-success whitespace-nowrap">
+          <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
+          Đã ghi danh
+        </span>
+      );
     }
+    if (isInvited) {
+      return (
+        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-warning-muted text-warning whitespace-nowrap">
+          <ClockIcon className="w-3 h-3" />
+          Chờ kích hoạt
+        </span>
+      );
+    }
+    if (isDropped) {
+      return (
+        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-danger-muted text-danger whitespace-nowrap">
+          <UserXIcon className="w-3 h-3" />
+          Đã rút / Đã khóa
+        </span>
+      );
+    }
+    return (
+      <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-muted text-muted-foreground whitespace-nowrap">
+        {s.status || "Chưa xác định"}
+      </span>
+    );
   };
 
-  // Stats calculation
-  const activeCount = students.filter((s) => s.status === "ACTIVE").length;
-  const pendingCount = students.filter((s) => s.status === "PENDING").length;
+  const enrolledCount = useMemo(() => {
+    if (typeof (rosterData as CourseRosterResponse)?.enrolledCount === "number") {
+      return (rosterData as CourseRosterResponse).enrolledCount;
+    }
+    return studentsList.filter(
+      (s) => s.kind === "ENROLLMENT" || s.status === "ENROLLED" || s.enrollmentStatus === "ACTIVE"
+    ).length;
+  }, [rosterData, studentsList]);
+
+  const invitedCount = useMemo(() => {
+    if (typeof (rosterData as CourseRosterResponse)?.pendingInvitationCount === "number") {
+      return (rosterData as CourseRosterResponse).pendingInvitationCount;
+    }
+    return studentsList.filter(
+      (s) => s.kind === "INVITATION" || s.status === "INVITED" || s.invitationStatus === "PENDING"
+    ).length;
+  }, [rosterData, studentsList]);
+
+  const droppedCount = useMemo(() => {
+    return studentsList.filter((s) => s.status === "DROPPED").length;
+  }, [studentsList]);
+
+  if (isCourseLoading && !course) {
+    return (
+      <div className="max-w-7xl mx-auto space-y-5 animate-pulse pb-16">
+        <div className="h-4 bg-muted rounded w-48" />
+        <div className="p-6 rounded-2xl bg-card border border-border flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-2xl bg-muted shrink-0" />
+            <div className="space-y-2">
+              <div className="h-6 bg-muted rounded w-64" />
+              <div className="h-4 bg-muted rounded w-40" />
+            </div>
+          </div>
+          <div className="h-9 bg-muted rounded-xl w-32" />
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="h-20 bg-muted/60 rounded-2xl border border-border" />
+          <div className="h-20 bg-muted/60 rounded-2xl border border-border" />
+          <div className="h-20 bg-muted/60 rounded-2xl border border-border" />
+        </div>
+        <div className="h-64 bg-muted/40 rounded-2xl border border-border" />
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-7xl mx-auto space-y-5 animate-in fade-in-0 duration-200">
-      {/* ── Breadcrumb ── */}
       <div className="flex items-center gap-2 text-xs text-muted-foreground">
         <Link
           href="/admin/academic"
@@ -167,16 +213,14 @@ export default function AdminCourseDetailPage({ params }: PageProps) {
           Quay lại Dữ liệu học thuật
         </Link>
         <span>/</span>
-        <span>Khóa học & Học phần</span>
+        <span>Lớp học phần</span>
         <span>/</span>
-        <span className="font-semibold text-foreground">{course.code}</span>
+        <span className="font-semibold text-foreground font-mono">{course?.courseCode || courseId}</span>
       </div>
 
-      {/* ── Hero Header Card ── */}
       <Card className="rounded-2xl border border-border shadow-xs bg-card">
         <CardContent className="p-6">
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-5">
-            {/* Left: Course Info */}
             <div className="flex items-start gap-4">
               <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary shrink-0 shadow-2xs">
                 <GraduationCapIcon className="w-6 h-6" />
@@ -184,40 +228,56 @@ export default function AdminCourseDetailPage({ params }: PageProps) {
               <div className="space-y-2">
                 <div className="flex flex-wrap items-center gap-2">
                   <h1 className="text-xl font-bold text-foreground tracking-tight">
-                    {course.name}
+                    {course?.name || "Chi tiết Lớp học phần"}
                   </h1>
                   <Badge variant="outline" className="text-xs font-mono font-bold text-primary border-primary/30">
-                    {course.code}
+                    {course?.courseCode || "CHƯA CÓ MÃ"}
                   </Badge>
-                  <Badge variant="secondary" className="text-xs font-medium">
-                    {course.semesterName}
-                  </Badge>
+                  {course?.semesterCode && (
+                    <Badge variant="secondary" className="text-xs font-medium">
+                      Học kỳ {course.semesterCode}
+                    </Badge>
+                  )}
+                  {course?.classCode && (
+                    <Badge variant="outline" className="text-xs font-medium text-muted-foreground">
+                      Lớp: {course.classCode}
+                    </Badge>
+                  )}
                 </div>
 
-                {/* Metadata Pills */}
                 <div className="flex flex-wrap items-center gap-2 pt-0.5">
                   <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-muted/60 text-xs text-foreground font-medium border border-border/50">
                     <BookOpenIcon className="w-3.5 h-3.5 text-primary shrink-0" />
-                    {course.subjectName} ({course.subjectCode})
+                    {course?.subjectName || "Môn học"} ({course?.subjectCode || "N/A"})
                   </span>
                   <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-muted/60 text-xs text-foreground font-medium border border-border/50">
                     <UsersIcon className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
-                    GV: {course.lecturer.fullName}
-                  </span>
-                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-muted/60 text-xs text-muted-foreground border border-border/50">
-                    <MailIcon className="w-3.5 h-3.5 shrink-0" />
-                    {course.lecturer.email}
+                    GV: <strong className="text-foreground">{course?.lecturerFullName || course?.lecturerName || course?.lecturerEmail || "Giảng viên phụ trách"}</strong>
+                    {course?.lecturerEmail && course?.lecturerFullName && (
+                      <span className="text-[11px] text-muted-foreground font-normal">({course.lecturerEmail})</span>
+                    )}
                   </span>
                 </div>
               </div>
             </div>
 
-            {/* Right: Actions */}
             <div className="flex flex-wrap items-center gap-2.5 shrink-0 lg:self-center">
               <Button
                 variant="outline"
                 size="sm"
+                onClick={() => refetchRoster()}
+                disabled={isRosterLoading}
+                className="h-9 gap-1.5 text-xs font-medium cursor-pointer shadow-2xs"
+              >
+                <RefreshCwIcon className={`w-3.5 h-3.5 ${isRosterLoading ? "animate-spin" : ""}`} />
+                Làm mới danh sách
+              </Button>
+
+              <Button
+                variant="outline"
+                size="sm"
                 onClick={handleDownloadTemplate}
+                disabled={downloadMutation.isPending}
                 className="h-9 gap-1.5 text-xs font-medium cursor-pointer shadow-2xs"
               >
                 <DownloadIcon className="w-3.5 h-3.5" />
@@ -237,15 +297,13 @@ export default function AdminCourseDetailPage({ params }: PageProps) {
         </CardContent>
       </Card>
 
-      {/* ── Summary Metrics Grid (4 cột cân đối) ── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
-        {/* Metric 1 */}
         <Card className="rounded-2xl border border-border shadow-xs">
           <CardContent className="p-4 flex items-center justify-between">
             <div className="space-y-0.5">
               <p className="text-xs font-medium text-muted-foreground">Sĩ số sinh viên</p>
-              <p className="text-2xl font-bold text-foreground tracking-tight">{students.length}</p>
-              <p className="text-[11px] text-muted-foreground">Đã ghi danh vào khóa</p>
+              <p className="text-2xl font-bold text-foreground tracking-tight">{studentsList.length}</p>
+              <p className="text-[11px] text-muted-foreground">Sinh viên trong lớp học phần</p>
             </div>
             <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0">
               <UsersIcon className="w-5 h-5" />
@@ -253,29 +311,12 @@ export default function AdminCourseDetailPage({ params }: PageProps) {
           </CardContent>
         </Card>
 
-        {/* Metric 2 */}
         <Card className="rounded-2xl border border-border shadow-xs">
           <CardContent className="p-4 flex items-center justify-between">
             <div className="space-y-0.5">
-              <p className="text-xs font-medium text-muted-foreground">Nhóm đồ án</p>
-              <p className="text-2xl font-bold text-foreground tracking-tight">{course.groupsCount}</p>
-              <p className="text-[11px] text-muted-foreground">Đang thực hiện đồ án</p>
-            </div>
-            <div className="w-10 h-10 rounded-xl bg-info-muted flex items-center justify-center text-info shrink-0">
-              <FolderKanbanIcon className="w-5 h-5" />
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Metric 3 */}
-        <Card className="rounded-2xl border border-border shadow-xs">
-          <CardContent className="p-4 flex items-center justify-between">
-            <div className="space-y-0.5">
-              <p className="text-xs font-medium text-muted-foreground">Đang hoạt động</p>
-              <p className="text-2xl font-bold text-success tracking-tight">{activeCount}</p>
-              <p className="text-[11px] text-muted-foreground">
-                {students.length > 0 ? `${Math.round((activeCount / students.length) * 100)}% tổng số sinh viên` : "0%"}
-              </p>
+              <p className="text-xs font-medium text-muted-foreground">Đã ghi danh (Enrolled)</p>
+              <p className="text-2xl font-bold text-success tracking-tight">{enrolledCount}</p>
+              <p className="text-[11px] text-muted-foreground">Đã sẵn sàng tham gia</p>
             </div>
             <div className="w-10 h-10 rounded-xl bg-success-muted flex items-center justify-center text-success shrink-0">
               <UserCheckIcon className="w-5 h-5" />
@@ -283,12 +324,11 @@ export default function AdminCourseDetailPage({ params }: PageProps) {
           </CardContent>
         </Card>
 
-        {/* Metric 4 */}
         <Card className="rounded-2xl border border-border shadow-xs">
           <CardContent className="p-4 flex items-center justify-between">
             <div className="space-y-0.5">
-              <p className="text-xs font-medium text-muted-foreground">Chờ đăng nhập</p>
-              <p className="text-2xl font-bold text-warning tracking-tight">{pendingCount}</p>
+              <p className="text-xs font-medium text-muted-foreground">Chờ đăng nhập (Invited)</p>
+              <p className="text-2xl font-bold text-warning tracking-tight">{invitedCount}</p>
               <p className="text-[11px] text-muted-foreground">Chưa kích hoạt tài khoản</p>
             </div>
             <div className="w-10 h-10 rounded-xl bg-warning-muted flex items-center justify-center text-warning shrink-0">
@@ -296,18 +336,29 @@ export default function AdminCourseDetailPage({ params }: PageProps) {
             </div>
           </CardContent>
         </Card>
+
+        <Card className="rounded-2xl border border-border shadow-xs">
+          <CardContent className="p-4 flex items-center justify-between">
+            <div className="space-y-0.5">
+              <p className="text-xs font-medium text-muted-foreground">Đã rút / Đã khóa (Dropped)</p>
+              <p className="text-2xl font-bold text-danger tracking-tight">{droppedCount}</p>
+              <p className="text-[11px] text-muted-foreground">Không còn hoạt động</p>
+            </div>
+            <div className="w-10 h-10 rounded-xl bg-danger-muted flex items-center justify-center text-danger shrink-0">
+              <UserXIcon className="w-5 h-5" />
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
-      {/* ── Table Toolbar ── */}
       <Card className="rounded-2xl border border-border shadow-xs">
         <CardContent className="p-3 space-y-2.5">
           <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
-            {/* Search Input */}
             <div className="relative flex-1 max-w-md">
               <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
               <Input
                 type="text"
-                placeholder="Tìm theo MSSV, họ tên, email, nhóm..."
+                placeholder="Tìm theo MSSV, họ tên, email..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 className="pl-9 pr-8 h-9 text-xs"
@@ -322,16 +373,14 @@ export default function AdminCourseDetailPage({ params }: PageProps) {
               )}
             </div>
 
-            {/* Filter Tabs */}
-            <div className="flex flex-wrap items-center gap-2">
-              {/* Status Filter */}
-              <div className="flex items-center gap-1 bg-muted/50 border border-border rounded-lg p-1">
+            <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-1 bg-muted/50 border border-border rounded-lg p-1">
                 {(
                   [
                     { value: "ALL", label: "Tất cả trạng thái" },
-                    { value: "ACTIVE", label: "Hoạt động" },
-                    { value: "PENDING", label: "Chờ đăng nhập" },
-                    { value: "BANNED", label: "Đã khóa" },
+                    { value: "ENROLLED", label: "Đã ghi danh" },
+                    { value: "INVITED", label: "Chờ đăng nhập" },
+                    { value: "DROPPED", label: "Đã rút / Đã khóa" },
                   ] as const
                 ).map((tab) => (
                   <Button
@@ -347,82 +396,158 @@ export default function AdminCourseDetailPage({ params }: PageProps) {
                 ))}
               </div>
 
-              {/* Group Filter */}
-              <div className="flex items-center gap-1 bg-muted/50 border border-border rounded-lg p-1">
-                {(
-                  [
-                    { value: "ALL", label: "Tất cả nhóm" },
-                    { value: "ASSIGNED", label: "Đã có nhóm" },
-                    { value: "UNASSIGNED", label: "Chưa nhóm" },
-                  ] as const
-                ).map((tab) => (
-                  <Button
-                    key={tab.value}
-                    variant={groupFilter === tab.value ? "default" : "ghost"}
-                    size="sm"
-                    onClick={() => setGroupFilter(tab.value)}
-                    className={`h-7 px-2.5 text-xs font-medium rounded-md ${groupFilter === tab.value ? "shadow-2xs" : "text-muted-foreground"
-                      }`}
-                  >
-                    {tab.label}
-                  </Button>
-                ))}
+              <div className="flex items-center bg-muted/60 p-0.5 rounded-lg border border-border/80 shrink-0">
+                <button
+                  onClick={() => setViewMode("cards")}
+                  className={`p-1.5 rounded-md text-xs cursor-pointer transition-colors ${viewMode === "cards"
+                    ? "bg-card text-foreground shadow-2xs font-semibold"
+                    : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  title="Dạng thẻ Card"
+                >
+                  <LayoutGridIcon className="w-3.5 h-3.5" />
+                </button>
+                <button
+                  onClick={() => setViewMode("table")}
+                  className={`p-1.5 rounded-md text-xs cursor-pointer transition-colors ${viewMode === "table"
+                    ? "bg-card text-foreground shadow-2xs font-semibold"
+                    : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  title="Dạng bảng Table"
+                >
+                  <TableIcon className="w-3.5 h-3.5" />
+                </button>
               </div>
             </div>
           </div>
 
-          {/* Indicator */}
           <div className="flex items-center justify-between text-xs text-muted-foreground pt-1 border-t border-border/50">
             <span className="flex items-center gap-1.5">
               <FilterIcon className="w-3.5 h-3.5" />
-              Hiển thị <strong className="text-foreground">{filteredStudents.length}</strong> / {students.length} sinh viên
+              Hiển thị <strong className="text-foreground">{filteredStudents.length}</strong> / {studentsList.length} sinh viên
             </span>
           </div>
         </CardContent>
       </Card>
 
-      {/* ── Students Table (Bố cục chặt chẽ, khoảng cách chuẩn mực) ── */}
-      <Card className="rounded-2xl border border-border overflow-hidden shadow-xs">
-        <div className="overflow-x-auto">
-          <Table className="w-full text-left text-xs border-collapse">
-            <TableHeader className="bg-muted/40 border-b border-border">
-              <TableRow className="hover:bg-transparent">
-                <TableHead className="py-3 px-4 text-xs font-semibold whitespace-nowrap min-w-[130px]">
-                  Mã sinh viên (MSSV)
-                </TableHead>
-                <TableHead className="py-3 px-4 text-xs font-semibold min-w-[260px]">
-                  Sinh viên & Email
-                </TableHead>
-                <TableHead className="py-3 px-4 text-xs font-semibold whitespace-nowrap min-w-[180px]">
-                  Nhóm đồ án
-                </TableHead>
-                <TableHead className="py-3 px-4 text-xs font-semibold whitespace-nowrap min-w-[130px]">
-                  Trạng thái
-                </TableHead>
-                <TableHead className="py-3 px-4 text-xs font-semibold whitespace-nowrap text-right min-w-[120px]">
-                  Ngày ghi danh
-                </TableHead>
-              </TableRow>
-            </TableHeader>
+      {isRosterLoading && studentsList.length === 0 ? (
+        viewMode === "cards" ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 animate-pulse">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <div key={i} className="h-44 rounded-2xl bg-card border border-border/80 p-4 space-y-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-muted shrink-0" />
+                  <div className="space-y-1.5 flex-1">
+                    <div className="h-4 bg-muted rounded w-24" />
+                    <div className="h-3 bg-muted rounded w-16" />
+                  </div>
+                </div>
+                <div className="h-3 bg-muted rounded w-full" />
+                <div className="h-3 bg-muted rounded w-2/3" />
+                <div className="pt-2 border-t border-border/50 flex justify-between">
+                  <div className="h-3 bg-muted rounded w-12" />
+                  <div className="h-4 bg-muted rounded-full w-20" />
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="rounded-2xl border border-border bg-card p-6 space-y-3 animate-pulse">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <div key={i} className="h-10 bg-muted/60 rounded-lg w-full" />
+            ))}
+          </div>
+        )
+      ) : filteredStudents.length === 0 ? (
+        <Card className="rounded-2xl border border-dashed border-border p-10 text-center">
+          <p className="text-xs text-muted-foreground">
+            Không tìm thấy sinh viên nào phù hợp. Hãy import danh sách từ file Excel.
+          </p>
+        </Card>
+      ) : viewMode === "cards" ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          {filteredStudents.map((sv) => (
+            <Card
+              key={sv.enrollmentId || sv.invitationId || sv.studentCode}
+              className="rounded-2xl border border-border/80 hover:border-primary/40 transition-all duration-200 shadow-xs hover:shadow-md bg-card overflow-hidden group flex flex-col justify-between"
+            >
+              <CardContent className="p-4 space-y-3.5">
+                <div className="flex items-start justify-between gap-2.5">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <Avatar className="w-10 h-10 rounded-xl shrink-0 shadow-2xs border border-border">
+                      <AvatarImage src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${sv.studentCode}`} />
+                      <AvatarFallback className="text-xs font-bold bg-primary text-primary-foreground rounded-xl">
+                        {getInitials(sv.fullName)}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="min-w-0">
+                      <h3 className="font-bold text-foreground text-sm truncate leading-snug" title={sv.fullName}>
+                        {sv.fullName}
+                      </h3>
+                      <Badge variant="outline" className="font-mono text-[11px] font-bold text-primary border-primary/30 mt-1 px-1.5 py-0">
+                        {sv.studentCode}
+                      </Badge>
+                    </div>
+                  </div>
+                </div>
 
-            <TableBody className="divide-y divide-border/60">
-              {filteredStudents.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={5} className="text-center py-10 text-muted-foreground">
-                    Không tìm thấy sinh viên phù hợp. Hãy thử đổi từ khóa tìm kiếm hoặc điều chỉnh bộ lọc.
-                  </TableCell>
+                <div className="space-y-1.5 pt-1 text-xs">
+                  <div className="flex items-center gap-1.5 text-muted-foreground truncate">
+                    <MailIcon className="w-3.5 h-3.5 shrink-0 text-muted-foreground/70" />
+                    <span className="truncate" title={sv.email}>{sv.email}</span>
+                  </div>
+                  <div className="flex items-center justify-between text-[11px] text-muted-foreground pt-0.5">
+                    <span>Loại:</span>
+                    <span className="font-medium text-foreground">
+                      {sv.kind === "ENROLLMENT" ? "Sinh viên" : "Lời mời"}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between text-[11px] text-muted-foreground">
+                    <span>Tài khoản:</span>
+                    <span className={sv.accountState === "REGISTERED" ? "text-emerald-600 font-medium" : "text-amber-600 font-medium"}>
+                      {sv.accountState === "REGISTERED" ? "Đã kích hoạt" : "Chưa kích hoạt"}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="pt-2 border-t border-border/50 flex items-center justify-between">
+                  <span className="text-[11px] text-muted-foreground">Trạng thái:</span>
+                  {renderStatusBadge(sv)}
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      ) : (
+        <Card className="rounded-2xl border border-border overflow-hidden shadow-xs">
+          <div className="overflow-x-auto">
+            <Table className="w-full text-left text-xs border-collapse">
+              <TableHeader className="bg-muted/40 border-b border-border">
+                <TableRow className="hover:bg-transparent">
+                  <TableHead className="py-3 px-4 text-xs font-semibold whitespace-nowrap min-w-[130px]">
+                    Mã sinh viên (MSSV)
+                  </TableHead>
+                  <TableHead className="py-3 px-4 text-xs font-semibold min-w-[260px]">
+                    Sinh viên & Email
+                  </TableHead>
+                  <TableHead className="py-3 px-4 text-xs font-semibold whitespace-nowrap min-w-[130px]">
+                    Trạng thái
+                  </TableHead>
+                  <TableHead className="py-3 px-4 text-xs font-semibold whitespace-nowrap text-right min-w-[120px]">
+                    Tài khoản
+                  </TableHead>
                 </TableRow>
-              ) : (
-                filteredStudents.map((sv) => (
-                  <TableRow key={sv.id} className="hover:bg-muted/30 transition-colors">
-                    {/* MSSV (Font Mono chuẩn) */}
+              </TableHeader>
+
+              <TableBody className="divide-y divide-border/60">
+                {filteredStudents.map((sv) => (
+                  <TableRow key={sv.enrollmentId || sv.invitationId || sv.studentCode} className="hover:bg-muted/30 transition-colors">
                     <TableCell className="py-3 px-4 whitespace-nowrap">
                       <span className="font-mono font-bold text-xs px-2.5 py-1 rounded-md bg-muted text-foreground/90 border border-border/60">
                         {sv.studentCode}
                       </span>
                     </TableCell>
 
-                    {/* Avatar + Full Name + Email (Gộp khối hài hòa) */}
                     <TableCell className="py-3 px-4">
                       <div className="flex items-center gap-3">
                         <Avatar className="w-8 h-8 rounded-xl shrink-0">
@@ -442,43 +567,29 @@ export default function AdminCourseDetailPage({ params }: PageProps) {
                       </div>
                     </TableCell>
 
-                    {/* Group Name */}
                     <TableCell className="py-3 px-4 whitespace-nowrap">
-                      {sv.groupName && sv.groupName !== "Chưa phân nhóm" ? (
-                        <Badge variant="outline" className="text-xs font-medium border-border gap-1.5 py-1">
-                          <FolderKanbanIcon className="w-3 h-3 text-primary" />
-                          {sv.groupName}
-                        </Badge>
-                      ) : (
-                        <span className="text-muted-foreground/60 text-xs italic">
-                          Chưa phân nhóm
-                        </span>
-                      )}
+                      {renderStatusBadge(sv)}
                     </TableCell>
 
-                    {/* Status */}
-                    <TableCell className="py-3 px-4 whitespace-nowrap">
-                      {renderStatusBadge(sv.status)}
-                    </TableCell>
-
-                    {/* Enrolled Date */}
-                    <TableCell className="py-3 px-4 text-right whitespace-nowrap text-muted-foreground font-mono text-xs">
-                      {new Date(sv.enrolledAt).toLocaleDateString("vi-VN")}
+                    <TableCell className="py-3 px-4 text-right whitespace-nowrap font-medium text-xs">
+                      <span className={sv.accountState === "REGISTERED" ? "text-emerald-600" : "text-amber-600"}>
+                        {sv.accountState === "REGISTERED" ? "Đã kích hoạt" : "Chưa kích hoạt"}
+                      </span>
                     </TableCell>
                   </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
-        </div>
-      </Card>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        </Card>
+      )}
 
-      {/* ── Modal Import Sinh viên ── */}
       <ImportStudentsDialog
-        course={course}
+        courseId={courseId}
+        courseCode={course?.courseCode}
         isOpen={isImportOpen}
         onClose={() => setIsImportOpen(false)}
-        onConfirmImport={handleConfirmImport}
+        onSuccess={() => refetchRoster()}
       />
     </div>
   );

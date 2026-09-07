@@ -82,7 +82,7 @@ function NavLink({
     return (
       <Tooltip>
         <TooltipTrigger
-          render={<Link href={item.href} />}
+          render={<Link href={item.href} prefetch={true} />}
           className={linkCls}
         >
           <Icon
@@ -100,7 +100,7 @@ function NavLink({
   }
 
   return (
-    <Link href={item.href} className={linkCls}>
+    <Link href={item.href} prefetch={true} className={linkCls}>
       <Icon
         className={cn(
           "w-[18px] h-[18px] shrink-0 transition-colors",

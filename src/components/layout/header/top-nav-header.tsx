@@ -254,6 +254,7 @@ export function TopNavHeader() {
                 <Link
                   key={item.id}
                   href={item.href}
+                  prefetch={true}
                   onClick={() => setMobileOpen(false)}
                   className={cn(
                     "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors",
