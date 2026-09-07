@@ -43,10 +43,9 @@ import {
   usePatchCourse,
   useSemesters,
   useAdminClasses,
-  ACADEMIC_QUERY_KEYS,
+  prefetchCourseDetailQuery,
+  prefetchRosterQuery,
 } from "../hooks/use-academic";
-import { CourseService } from "../api/course-service";
-import { RosterService } from "../api/roster-service";
 import { useSubjects } from "@/features/admin/subjects/hooks/use-subjects";
 import type { CourseResponse } from "../types/course-roster-types";
 
@@ -61,10 +60,13 @@ export interface CourseFormData {
 
 export function CourseManagement() {
   const router = useRouter();
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [editingCourse, setEditingCourse] = useState<CourseResponse | null>(null);
+
   const { data: courses = [], isLoading } = useCourses();
-  const { data: subjects = [] } = useSubjects();
-  const { data: semesters = [] } = useSemesters();
-  const { data: adminClasses = [] } = useAdminClasses();
+  const { data: subjects = [] } = useSubjects(undefined, { enabled: isFormOpen });
+  const { data: semesters = [] } = useSemesters({ enabled: isFormOpen });
+  const { data: adminClasses = [] } = useAdminClasses({ enabled: isFormOpen });
 
   const queryClient = useQueryClient();
   const createMutation = useCreateCourse();
@@ -73,21 +75,11 @@ export function CourseManagement() {
   const [search, setSearch] = useState("");
   const deferredSearch = useDeferredValue(search);
   const [viewMode, setViewMode] = useState<"cards" | "table">("cards");
-  const [isFormOpen, setIsFormOpen] = useState(false);
-  const [editingCourse, setEditingCourse] = useState<CourseResponse | null>(null);
 
   const handlePrefetchCourse = (courseId: string) => {
     router.prefetch(`/admin/academic/courses/${courseId}`);
-    queryClient.prefetchQuery({
-      queryKey: ACADEMIC_QUERY_KEYS.courseDetail(courseId),
-      queryFn: () => CourseService.getCourseById(courseId),
-      staleTime: 1000 * 60 * 5,
-    });
-    queryClient.prefetchQuery({
-      queryKey: ACADEMIC_QUERY_KEYS.roster(courseId),
-      queryFn: () => RosterService.getRoster(courseId),
-      staleTime: 1000 * 60 * 2,
-    });
+    void prefetchCourseDetailQuery(queryClient, courseId);
+    void prefetchRosterQuery(queryClient, courseId);
   };
 
   const filteredCourses = useMemo(() => {
@@ -194,11 +186,31 @@ export function CourseManagement() {
 
       {isLoading && courses.length === 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {Array.from({ length: 6 }).map((_, idx) => (
-            <Card key={idx} className="rounded-2xl border border-border p-5 space-y-4 animate-pulse">
-              <div className="h-5 bg-muted rounded w-1/3" />
-              <div className="h-4 bg-muted rounded w-2/3" />
-              <div className="h-8 bg-muted rounded w-full" />
+          {Array.from({ length: 3 }).map((_, idx) => (
+            <Card key={idx} className="rounded-2xl border border-border p-5 space-y-3.5 animate-pulse bg-card shadow-xs">
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-10 h-10 rounded-xl bg-muted shrink-0" />
+                  <div className="space-y-1.5">
+                    <div className="h-5 bg-muted rounded w-24" />
+                    <div className="h-4 bg-muted rounded w-44" />
+                  </div>
+                </div>
+                <div className="w-8 h-8 rounded-lg bg-muted shrink-0" />
+              </div>
+
+              <div className="space-y-2 pt-2">
+                <div className="h-4 bg-muted/70 rounded w-36" />
+                <div className="h-4 bg-muted/70 rounded w-48" />
+                <div className="flex items-center gap-2 pt-1">
+                  <div className="h-5 bg-muted/60 rounded w-20" />
+                  <div className="h-5 bg-muted/60 rounded w-20" />
+                </div>
+              </div>
+
+              <div className="pt-3 border-t border-border/50">
+                <div className="h-9 bg-muted/80 rounded-xl w-full" />
+              </div>
             </Card>
           ))}
         </div>
@@ -207,7 +219,6 @@ export function CourseManagement() {
           <p className="text-xs text-muted-foreground">Không tìm thấy lớp học phần nào phù hợp.</p>
         </Card>
       ) : viewMode === "cards" ? (
-        /* ── DẠNG CARD (Card Grid Layout) ── */
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filteredCourses.map((crs) => (
             <Card

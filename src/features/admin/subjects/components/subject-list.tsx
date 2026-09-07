@@ -4,10 +4,8 @@ import { useState, useMemo, useDeferredValue } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
-import { SUBJECT_QUERY_KEYS } from "../hooks/use-subjects";
-import { SYLLABUS_QUERY_KEYS } from "../hooks/use-syllabi";
-import { SubjectService } from "../api/subject-service";
-import { SyllabusService } from "../api/syllabus-service";
+import { prefetchSubjectDetailQuery } from "../hooks/use-subjects";
+import { prefetchSyllabiQuery, prefetchSyllabusDetailQuery } from "../hooks/use-syllabi";
 import {
   SearchIcon,
   PlusIcon,
@@ -34,7 +32,69 @@ import {
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
 import { CustomSelect } from "@/components/common/custom-select";
+import { useSyllabi } from "../hooks/use-syllabi";
 import type { SubjectResponse, SubjectStatus } from "../types/subject-types";
+
+function SubjectSyllabiBadge({ subjectId }: { subjectId: string }) {
+  const { data: syllabi = [], isLoading } = useSyllabi(subjectId);
+  const activeSyllabus = syllabi.find((s) => s.status === "PUBLISHED");
+  const syllabiCount = syllabi.length;
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center gap-1.5 animate-pulse">
+        <div className="h-4 bg-muted rounded w-16" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex items-center gap-2">
+      <span className="font-mono font-semibold text-foreground">
+        {syllabiCount} phiên bản
+      </span>
+      {activeSyllabus && (
+        <Badge
+          variant="outline"
+          className="text-[10px] font-mono text-emerald-600 dark:text-emerald-400 border-emerald-500/30 bg-emerald-500/10 px-1.5 py-0"
+        >
+          {activeSyllabus.versionLabel}
+        </Badge>
+      )}
+    </div>
+  );
+}
+
+function TableSyllabiCell({ subjectId }: { subjectId: string }) {
+  const { data: syllabi = [], isLoading } = useSyllabi(subjectId);
+  const activeSyllabus = syllabi.find((s) => s.status === "PUBLISHED");
+  const syllabiCount = syllabi.length;
+
+  if (isLoading) {
+    return (
+      <div className="inline-flex flex-col items-center gap-1 animate-pulse">
+        <div className="h-4 bg-muted rounded w-20" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="inline-flex flex-col items-center gap-1">
+      <Badge
+        variant="outline"
+        className="font-mono text-[11px] font-semibold gap-1 px-2 py-0.5 bg-muted/30"
+      >
+        <LayersIcon className="w-3 h-3 text-muted-foreground" />
+        {syllabiCount} phiên bản
+      </Badge>
+      {activeSyllabus && (
+        <span className="text-[10px] font-mono text-emerald-600 dark:text-emerald-400 font-medium">
+          Chuẩn: {activeSyllabus.versionLabel}
+        </span>
+      )}
+    </div>
+  );
+}
 
 interface SubjectListProps {
   subjects: SubjectResponse[];
@@ -58,22 +118,10 @@ export function SubjectList({
 
   const handlePrefetch = (subjectId: string, activeVersionId?: string) => {
     router.prefetch(`/admin/subjects/${subjectId}`);
-    queryClient.prefetchQuery({
-      queryKey: SUBJECT_QUERY_KEYS.detail(subjectId),
-      queryFn: () => SubjectService.getSubjectById(subjectId),
-      staleTime: 1000 * 60 * 5,
-    });
-    queryClient.prefetchQuery({
-      queryKey: SYLLABUS_QUERY_KEYS.bySubject(subjectId),
-      queryFn: () => SyllabusService.getSyllabi(subjectId),
-      staleTime: 1000 * 60 * 5,
-    });
+    void prefetchSubjectDetailQuery(queryClient, subjectId);
+    void prefetchSyllabiQuery(queryClient, subjectId);
     if (activeVersionId) {
-      queryClient.prefetchQuery({
-        queryKey: SYLLABUS_QUERY_KEYS.detail(subjectId, activeVersionId),
-        queryFn: () => SyllabusService.getSyllabusDetail(subjectId, activeVersionId),
-        staleTime: 1000 * 60 * 5,
-      });
+      void prefetchSyllabusDetailQuery(queryClient, subjectId, activeVersionId);
     }
   };
 
@@ -178,13 +226,10 @@ export function SubjectList({
       ) : viewMode === "cards" ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filteredSubjects.map((sub) => {
-            const syllabiCount = sub.syllabi?.length || 0;
-            const activeSyllabus = sub.syllabi?.find((s) => s.status === "PUBLISHED");
-
             return (
               <Card
                 key={sub.id}
-                onMouseEnter={() => handlePrefetch(sub.id, activeSyllabus?.id || sub.syllabi?.[0]?.id)}
+                onMouseEnter={() => handlePrefetch(sub.id)}
                 className="rounded-2xl border border-border/80 hover:border-primary/40 transition-all duration-200 shadow-xs hover:shadow-md bg-card overflow-hidden group flex flex-col justify-between h-full"
               >
                 <CardContent className="p-5 flex flex-col justify-between h-full space-y-4">
@@ -260,23 +305,21 @@ export function SubjectList({
                       <LayersIcon className="w-3.5 h-3.5 text-muted-foreground" />
                       Đề cương:
                     </span>
-                    <div className="flex items-center gap-2">
-                      <span className="font-mono font-semibold text-foreground">
-                        {syllabiCount} phiên bản
-                      </span>
-                      {activeSyllabus && (
-                        <Badge variant="outline" className="text-[10px] font-mono text-emerald-600 dark:text-emerald-400 border-emerald-500/30 bg-emerald-500/10 px-1.5 py-0">
-                          {activeSyllabus.versionLabel}
-                        </Badge>
-                      )}
-                    </div>
+                    <SubjectSyllabiBadge subjectId={sub.id} />
                   </div>
 
                   <div className="flex items-center justify-between pt-2 border-t border-border/50 text-[11px] text-muted-foreground">
-                    <span className="flex items-center gap-1">
-                      <CalendarIcon className="w-3.5 h-3.5 text-muted-foreground/70" />
-                      {new Date(sub.createdAt).toLocaleDateString("vi-VN")}
-                    </span>
+                    <div className="space-y-0.5 font-mono text-[10px]">
+                      <div className="flex items-center gap-1 text-muted-foreground">
+                        <CalendarIcon className="w-3 h-3 text-muted-foreground/70" />
+                        <span>Tạo: {new Date(sub.createdAt).toLocaleDateString("vi-VN")}</span>
+                      </div>
+                      {sub.updatedAt && (
+                        <div className="text-muted-foreground/70 pl-4">
+                          Sửa: {new Date(sub.updatedAt).toLocaleDateString("vi-VN")}
+                        </div>
+                      )}
+                    </div>
 
                     <div className="flex items-center gap-1.5">
                       <Button
@@ -292,7 +335,7 @@ export function SubjectList({
                       <Link
                         href={`/admin/subjects/${sub.id}`}
                         prefetch={true}
-                        onMouseEnter={() => handlePrefetch(sub.id, activeSyllabus?.id || sub.syllabi?.[0]?.id)}
+                        onMouseEnter={() => handlePrefetch(sub.id)}
                         className="inline-flex items-center justify-center rounded-lg border border-border/80 bg-background hover:bg-primary/10 hover:text-primary h-7 px-2.5 text-xs font-semibold text-primary transition-colors cursor-pointer shadow-2xs"
                       >
                         Đề cương
@@ -312,22 +355,20 @@ export function SubjectList({
               <TableHeader className="bg-muted/40 border-b border-border">
                 <TableRow>
                   <TableHead className="w-[110px] text-xs font-bold py-3.5 px-4">Mã môn</TableHead>
-                  <TableHead className="min-w-[240px] text-xs font-bold py-3.5 px-4">Tên môn học</TableHead>
-                  <TableHead className="w-[140px] text-xs font-bold py-3.5 px-4 text-center">Trạng thái</TableHead>
+                  <TableHead className="min-w-[220px] text-xs font-bold py-3.5 px-4">Tên môn học</TableHead>
+                  <TableHead className="w-[130px] text-xs font-bold py-3.5 px-4 text-center">Trạng thái</TableHead>
                   <TableHead className="w-[160px] text-xs font-bold py-3.5 px-4 text-center">Phiên bản Đề cương</TableHead>
-                  <TableHead className="w-[130px] text-xs font-bold py-3.5 px-4 text-center">Ngày tạo</TableHead>
+                  <TableHead className="w-[120px] text-xs font-bold py-3.5 px-4 text-center">Ngày tạo</TableHead>
+                  <TableHead className="w-[120px] text-xs font-bold py-3.5 px-4 text-center">Cập nhật</TableHead>
                   <TableHead className="w-[90px] text-xs font-bold py-3.5 px-4 text-center">Thao tác</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody className="divide-y divide-border/60">
                 {filteredSubjects.map((sub) => {
-                  const syllabiCount = sub.syllabi?.length || 0;
-                  const activeSyllabus = sub.syllabi?.find((s) => s.status === "PUBLISHED");
-
                   return (
                     <TableRow
                       key={sub.id}
-                      onMouseEnter={() => handlePrefetch(sub.id, activeSyllabus?.id || sub.syllabi?.[0]?.id)}
+                      onMouseEnter={() => handlePrefetch(sub.id)}
                       className="hover:bg-muted/20 transition-colors"
                     >
                       <TableCell className="py-3.5 px-4">
@@ -366,24 +407,15 @@ export function SubjectList({
                       </TableCell>
 
                       <TableCell className="py-3.5 px-4 text-center">
-                        <div className="inline-flex flex-col items-center gap-1">
-                          <Badge
-                            variant="outline"
-                            className="font-mono text-[11px] font-semibold gap-1 px-2 py-0.5 bg-muted/30"
-                          >
-                            <LayersIcon className="w-3 h-3 text-muted-foreground" />
-                            {syllabiCount} phiên bản
-                          </Badge>
-                          {activeSyllabus && (
-                            <span className="text-[10px] font-mono text-emerald-600 dark:text-emerald-400 font-medium">
-                              Chuẩn: {activeSyllabus.versionLabel}
-                            </span>
-                          )}
-                        </div>
+                        <TableSyllabiCell subjectId={sub.id} />
                       </TableCell>
 
                       <TableCell className="py-3.5 px-4 text-center font-mono text-xs text-muted-foreground">
                         {new Date(sub.createdAt).toLocaleDateString("vi-VN")}
+                      </TableCell>
+
+                      <TableCell className="py-3.5 px-4 text-center font-mono text-xs text-muted-foreground">
+                        {new Date(sub.updatedAt || sub.createdAt).toLocaleDateString("vi-VN")}
                       </TableCell>
 
                       <TableCell className="py-3.5 px-4 text-center whitespace-nowrap w-[90px]">

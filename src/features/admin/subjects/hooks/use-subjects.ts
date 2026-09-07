@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient, type QueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { SubjectService } from "../api/subject-service";
 import type {
@@ -14,11 +14,31 @@ export const SUBJECT_QUERY_KEYS = {
   detail: (id: string) => ["subjects", "detail", id] as const,
 };
 
-export function useSubjects(params?: GetSubjectsParams) {
+export function prefetchSubjectsQuery(
+  queryClient: QueryClient,
+  params?: GetSubjectsParams
+) {
+  return queryClient.query({
+    queryKey: SUBJECT_QUERY_KEYS.list(params),
+    queryFn: () => SubjectService.getSubjects(params),
+    staleTime: 1000 * 60 * 5,
+  }).catch(() => { });
+}
+
+export function prefetchSubjectDetailQuery(queryClient: QueryClient, id: string) {
+  return queryClient.query({
+    queryKey: SUBJECT_QUERY_KEYS.detail(id),
+    queryFn: () => SubjectService.getSubjectById(id),
+    staleTime: 1000 * 60 * 5,
+  }).catch(() => { });
+}
+
+export function useSubjects(params?: GetSubjectsParams, options?: { enabled?: boolean }) {
   return useQuery({
     queryKey: SUBJECT_QUERY_KEYS.list(params),
     queryFn: () => SubjectService.getSubjects(params),
     staleTime: 1000 * 60 * 5,
+    enabled: options?.enabled ?? true,
   });
 }
 
@@ -29,13 +49,27 @@ export function useSubjectDetail(id: string) {
     queryKey: SUBJECT_QUERY_KEYS.detail(id),
     queryFn: () => SubjectService.getSubjectById(id),
     initialData: () => {
-      const list = queryClient.getQueryData<SubjectResponse[]>(
-        SUBJECT_QUERY_KEYS.list(undefined)
-      );
-      return list?.find((s) => s.id === id);
+      const direct = queryClient.getQueryData<SubjectResponse>(SUBJECT_QUERY_KEYS.detail(id));
+      if (direct) return direct;
+      const queries = queryClient.getQueriesData<SubjectResponse[]>({ queryKey: ["subjects", "list"] });
+      for (const [, list] of queries) {
+        if (Array.isArray(list)) {
+          const found = list.find((s) => s.id === id);
+          if (found) return found;
+        }
+      }
+      return undefined;
     },
-    initialDataUpdatedAt: () =>
-      queryClient.getQueryState(SUBJECT_QUERY_KEYS.list(undefined))?.dataUpdatedAt,
+    initialDataUpdatedAt: () => {
+      const state = queryClient.getQueryState(SUBJECT_QUERY_KEYS.detail(id));
+      if (state?.dataUpdatedAt) return state.dataUpdatedAt;
+      const queries = queryClient.getQueriesData<SubjectResponse[]>({ queryKey: ["subjects", "list"] });
+      for (const [key] of queries) {
+        const queryState = queryClient.getQueryState(key);
+        if (queryState?.dataUpdatedAt) return queryState.dataUpdatedAt;
+      }
+      return undefined;
+    },
     enabled: Boolean(id && id.trim()),
     staleTime: 1000 * 60 * 5,
   });

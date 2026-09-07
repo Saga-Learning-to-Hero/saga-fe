@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient, type QueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { AcademicService } from "../api/academic-service";
 import { CourseService } from "../api/course-service";
@@ -29,11 +29,52 @@ export const ACADEMIC_QUERY_KEYS = {
   roster: (courseId: string) => ["academic", "roster", courseId] as const,
 };
 
-export function useSemesters() {
+export function prefetchSemestersQuery(queryClient: QueryClient) {
+  return queryClient.query({
+    queryKey: ACADEMIC_QUERY_KEYS.semesters,
+    queryFn: () => AcademicService.getSemesters(),
+    staleTime: 1000 * 60 * 5,
+  }).catch(() => { });
+}
+
+export function prefetchClassesQuery(queryClient: QueryClient) {
+  return queryClient.query({
+    queryKey: ACADEMIC_QUERY_KEYS.classes,
+    queryFn: () => AcademicService.getClasses(),
+    staleTime: 1000 * 60 * 5,
+  }).catch(() => { });
+}
+
+export function prefetchCoursesQuery(queryClient: QueryClient, params?: GetCoursesParams) {
+  return queryClient.query({
+    queryKey: ACADEMIC_QUERY_KEYS.courses(params),
+    queryFn: () => CourseService.getCourses(params),
+    staleTime: 1000 * 60 * 5,
+  }).catch(() => { });
+}
+
+export function prefetchCourseDetailQuery(queryClient: QueryClient, courseId: string) {
+  return queryClient.query({
+    queryKey: ACADEMIC_QUERY_KEYS.courseDetail(courseId),
+    queryFn: () => CourseService.getCourseById(courseId),
+    staleTime: 1000 * 60 * 5,
+  }).catch(() => { });
+}
+
+export function prefetchRosterQuery(queryClient: QueryClient, courseId: string) {
+  return queryClient.query({
+    queryKey: ACADEMIC_QUERY_KEYS.roster(courseId),
+    queryFn: () => RosterService.getRoster(courseId),
+    staleTime: 1000 * 60 * 2,
+  }).catch(() => { });
+}
+
+export function useSemesters(options?: { enabled?: boolean }) {
   return useQuery({
     queryKey: ACADEMIC_QUERY_KEYS.semesters,
     queryFn: () => AcademicService.getSemesters(),
     staleTime: 1000 * 60 * 5,
+    enabled: options?.enabled ?? true,
   });
 }
 
@@ -132,11 +173,12 @@ export function useSetActiveSemester() {
   });
 }
 
-export function useAdminClasses() {
+export function useAdminClasses(options?: { enabled?: boolean }) {
   return useQuery({
     queryKey: ACADEMIC_QUERY_KEYS.classes,
     queryFn: () => AcademicService.getClasses(),
     staleTime: 1000 * 60 * 5,
+    enabled: options?.enabled ?? true,
   });
 }
 
@@ -193,11 +235,12 @@ export function usePatchAdminClass() {
   });
 }
 
-export function useCourses(params?: GetCoursesParams) {
+export function useCourses(params?: GetCoursesParams, options?: { enabled?: boolean }) {
   return useQuery({
     queryKey: ACADEMIC_QUERY_KEYS.courses(params),
     queryFn: () => CourseService.getCourses(params),
-    staleTime: 1000 * 60 * 3,
+    staleTime: 1000 * 60 * 5,
+    enabled: options?.enabled ?? true,
   });
 }
 

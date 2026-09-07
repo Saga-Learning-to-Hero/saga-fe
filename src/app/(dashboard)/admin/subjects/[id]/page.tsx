@@ -3,18 +3,23 @@
 import { use, useState, useMemo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import dynamic from "next/dynamic";
 import {
   ArrowLeftIcon,
   BookOpenIcon,
   RefreshCwIcon,
   CheckCircle2Icon,
   AlertCircleIcon,
+  LayersIcon,
+  AwardIcon,
+  ClockIcon,
+  ArchiveIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { SyllabusVersionList } from "@/features/admin/subjects/components/syllabus-version-list";
 import { SyllabusDialog } from "@/features/admin/subjects/components/syllabus-dialog";
-import { SyllabusStructureBuilder } from "@/features/admin/subjects/components/syllabus-structure-builder";
 import { useSubjectDetail } from "@/features/admin/subjects/hooks/use-subjects";
 import {
   useSyllabi,
@@ -28,6 +33,38 @@ import type {
   CreateSyllabusRequest,
   ReplaceSyllabusStructureRequest,
 } from "@/features/admin/subjects/types/syllabus-types";
+
+const DynamicSyllabusStructureBuilder = dynamic(
+  () =>
+    import("@/features/admin/subjects/components/syllabus-structure-builder").then(
+      (mod) => mod.SyllabusStructureBuilder
+    ),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="rounded-2xl border border-border bg-card p-6 space-y-6 shadow-xs animate-pulse">
+        <div className="flex items-center justify-between pb-4 border-b border-border/60">
+          <div className="space-y-2">
+            <div className="h-5 bg-muted rounded w-48" />
+            <div className="h-3.5 bg-muted rounded w-72" />
+          </div>
+          <div className="h-9 bg-muted rounded-xl w-32" />
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="h-8 bg-muted rounded-lg w-32" />
+          <div className="h-8 bg-muted rounded-lg w-36" />
+          <div className="h-8 bg-muted rounded-lg w-40" />
+        </div>
+        <div className="space-y-3 pt-2">
+          <div className="h-10 bg-muted/60 rounded-xl w-full" />
+          <div className="h-12 bg-muted/40 rounded-xl w-full" />
+          <div className="h-12 bg-muted/40 rounded-xl w-full" />
+          <div className="h-12 bg-muted/40 rounded-xl w-full" />
+        </div>
+      </div>
+    ),
+  }
+);
 
 export default function SubjectDetailPage({
   params,
@@ -48,6 +85,7 @@ export default function SubjectDetailPage({
     refetch: refetchSyllabi,
   } = useSyllabi(id);
 
+  const [activeTab, setActiveTab] = useState<"versions" | "structure">("versions");
   const [selectedVersionId, setSelectedVersionId] = useState<string | null>(null);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
 
@@ -59,11 +97,17 @@ export default function SubjectDetailPage({
     return published ? published.id : syllabi[0]?.id || null;
   }, [selectedVersionId, syllabi]);
 
+  const activeSyllabusSummary = useMemo(() => {
+    return syllabi.find((s) => s.id === activeVersionId) || null;
+  }, [syllabi, activeVersionId]);
+
   const {
     data: syllabusDetail,
     isLoading: isDetailLoading,
     refetch: refetchDetail,
-  } = useSyllabusDetail(id, activeVersionId || "");
+  } = useSyllabusDetail(id, activeVersionId || "", {
+    enabled: activeTab === "structure" && Boolean(activeVersionId),
+  });
 
   const createDraftMutation = useCreateSyllabusDraft();
   const replaceStructureMutation = useReplaceSyllabusStructure();
@@ -73,6 +117,7 @@ export default function SubjectDetailPage({
   const handleCreateDraft = async (data: CreateSyllabusRequest) => {
     const res = await createDraftMutation.mutateAsync({ subjectId: id, data });
     setSelectedVersionId(res.id);
+    setActiveTab("structure");
   };
 
   const handleSaveStructure = async (data: ReplaceSyllabusStructureRequest) => {
@@ -107,7 +152,7 @@ export default function SubjectDetailPage({
   const handleRefreshAll = () => {
     refetchSubject();
     refetchSyllabi();
-    if (activeVersionId) refetchDetail();
+    if (activeVersionId && activeTab === "structure") refetchDetail();
   };
 
   if (isSubjectLoading && !subject) {
@@ -134,10 +179,6 @@ export default function SubjectDetailPage({
             <div className="h-28 bg-muted rounded-2xl" />
             <div className="h-28 bg-muted rounded-2xl" />
           </div>
-        </div>
-        <div className="p-6 rounded-2xl bg-card border border-border space-y-4">
-          <div className="h-8 bg-muted rounded-xl w-80" />
-          <div className="h-64 bg-muted rounded-2xl" />
         </div>
       </div>
     );
@@ -216,45 +257,133 @@ export default function SubjectDetailPage({
                 </p>
               )}
 
-              <div className="flex items-center gap-2 text-xs text-muted-foreground pt-1">
-                <span>Ngày tạo: <strong className="text-foreground font-mono">{new Date(subject.createdAt).toLocaleDateString("vi-VN")}</strong></span>
+              <div className="flex items-center gap-4 text-xs text-muted-foreground pt-1 flex-wrap font-mono">
+                <span>Ngày tạo: <strong className="text-foreground">{new Date(subject.createdAt).toLocaleDateString("vi-VN")}</strong></span>
+                <span>•</span>
+                <span>Cập nhật lần cuối: <strong className="text-foreground">{new Date(subject.updatedAt || subject.createdAt).toLocaleDateString("vi-VN")}</strong></span>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      <SyllabusVersionList
-        syllabi={syllabi}
-        selectedVersionId={activeVersionId}
-        onSelectVersion={(verId) => setSelectedVersionId(verId)}
-        onOpenCreateDialog={() => setIsCreateDialogOpen(true)}
-        onPublish={handlePublish}
-        onArchive={handleArchive}
-        isPublishing={publishMutation.isPending}
-        isArchiving={archiveMutation.isPending}
-      />
+      <Tabs value={activeTab} onValueChange={(val) => setActiveTab(val as "versions" | "structure")} className="space-y-4">
+        <TabsList className="bg-muted p-1 rounded-xl">
+          <TabsTrigger value="versions" className="text-xs font-semibold gap-1.5 px-3.5 py-1.5 cursor-pointer">
+            <LayersIcon className="w-3.5 h-3.5" />
+            1. Phiên bản Đề cương ({syllabi.length})
+          </TabsTrigger>
+          <TabsTrigger value="structure" className="text-xs font-semibold gap-1.5 px-3.5 py-1.5 cursor-pointer">
+            <AwardIcon className="w-3.5 h-3.5" />
+            2. Cấu trúc đào tạo chi tiết
+          </TabsTrigger>
+        </TabsList>
 
-      {isDetailLoading ? (
-        <div className="p-12 text-center space-y-3 bg-card border border-border rounded-2xl">
-          <div className="w-8 h-8 rounded-full border-2 border-primary border-t-transparent animate-spin mx-auto" />
-          <p className="text-xs text-muted-foreground font-medium">Đang tải cấu trúc tiêu chí đề cương...</p>
-        </div>
-      ) : syllabusDetail ? (
-        <SyllabusStructureBuilder
-          key={syllabusDetail.id}
-          syllabus={syllabusDetail}
-          onSaveStructure={handleSaveStructure}
-          isSaving={replaceStructureMutation.isPending}
-        />
-      ) : (
-        <div className="p-12 text-center space-y-3 bg-card border border-border rounded-2xl">
-          <p className="text-sm font-bold text-foreground">Chưa có đề cương nào cho môn học này</p>
-          <p className="text-xs text-muted-foreground">
-            Bấm nút &quot;Tạo bản nháp mới&quot; ở trên để bắt đầu cấu hình đề cương học phần.
-          </p>
-        </div>
-      )}
+        <TabsContent value="versions" keepMounted className="space-y-4">
+          <SyllabusVersionList
+            syllabi={syllabi}
+            selectedVersionId={activeVersionId}
+            onSelectVersion={(verId) => setSelectedVersionId(verId)}
+            onOpenCreateDialog={() => setIsCreateDialogOpen(true)}
+            onPublish={handlePublish}
+            onArchive={handleArchive}
+            onViewStructure={(verId) => {
+              setSelectedVersionId(verId);
+              setActiveTab("structure");
+            }}
+            isPublishing={publishMutation.isPending}
+            isArchiving={archiveMutation.isPending}
+          />
+        </TabsContent>
+
+        <TabsContent value="structure" keepMounted className="space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-2xl bg-card border border-border shadow-xs">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0">
+                <AwardIcon className="w-4 h-4" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h3 className="text-sm font-bold text-foreground">
+                    Cấu trúc đề cương:
+                  </h3>
+                  <span className="font-mono text-xs font-extrabold text-primary bg-primary/10 px-2 py-0.5 rounded-md border border-primary/20">
+                    {activeSyllabusSummary?.versionLabel || "Đang chọn"}
+                  </span>
+                  {activeSyllabusSummary?.status === "PUBLISHED" ? (
+                    <Badge className="bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 text-[10px] font-bold px-2 py-0">
+                      <CheckCircle2Icon className="w-3 h-3 mr-1" />
+                      Chính thức
+                    </Badge>
+                  ) : activeSyllabusSummary?.status === "DRAFT" ? (
+                    <Badge className="bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30 text-[10px] font-bold px-2 py-0">
+                      <ClockIcon className="w-3 h-3 mr-1" />
+                      Bản nháp
+                    </Badge>
+                  ) : activeSyllabusSummary?.status === "ARCHIVED" ? (
+                    <Badge variant="outline" className="bg-muted text-muted-foreground border-border text-[10px] font-semibold px-2 py-0">
+                      <ArchiveIcon className="w-3 h-3 mr-1" />
+                      Lưu trữ
+                    </Badge>
+                  ) : null}
+                </div>
+                <p className="text-[11px] text-muted-foreground">
+                  Chuẩn đầu ra năng lực (CLOs), bài học (Units) và tiêu chí nghiệm thu (Phases).
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 self-start sm:self-auto">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setActiveTab("versions")}
+                className="h-8 text-xs font-semibold gap-1.5 cursor-pointer text-muted-foreground hover:text-foreground"
+              >
+                <LayersIcon className="w-3.5 h-3.5" />
+                <span>Đổi phiên bản khác</span>
+              </Button>
+            </div>
+          </div>
+
+          {isDetailLoading ? (
+            <div className="rounded-2xl border border-border bg-card p-6 space-y-6 shadow-xs animate-pulse">
+              <div className="flex items-center justify-between pb-4 border-b border-border/60">
+                <div className="space-y-2">
+                  <div className="h-5 bg-muted rounded w-48" />
+                  <div className="h-3.5 bg-muted rounded w-72" />
+                </div>
+                <div className="h-9 bg-muted rounded-xl w-32" />
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="h-8 bg-muted rounded-lg w-32" />
+                <div className="h-8 bg-muted rounded-lg w-36" />
+                <div className="h-8 bg-muted rounded-lg w-40" />
+              </div>
+              <div className="space-y-3 pt-2">
+                <div className="h-10 bg-muted/60 rounded-xl w-full" />
+                <div className="h-12 bg-muted/40 rounded-xl w-full" />
+                <div className="h-12 bg-muted/40 rounded-xl w-full" />
+                <div className="h-12 bg-muted/40 rounded-xl w-full" />
+              </div>
+            </div>
+          ) : syllabusDetail ? (
+            <DynamicSyllabusStructureBuilder
+              key={syllabusDetail.id}
+              syllabus={syllabusDetail}
+              onSaveStructure={handleSaveStructure}
+              isSaving={replaceStructureMutation.isPending}
+            />
+          ) : (
+            <div className="p-12 text-center space-y-3 bg-card border border-border rounded-2xl">
+              <p className="text-sm font-bold text-foreground">Chưa có đề cương nào cho môn học này</p>
+              <p className="text-xs text-muted-foreground">
+                Bấm nút &quot;Tạo bản nháp mới&quot; ở tab Phiên bản để bắt đầu cấu hình đề cương học phần.
+              </p>
+            </div>
+          )}
+        </TabsContent>
+      </Tabs>
 
       <SyllabusDialog
         isOpen={isCreateDialogOpen}

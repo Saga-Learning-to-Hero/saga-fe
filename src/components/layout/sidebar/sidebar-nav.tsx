@@ -22,6 +22,13 @@ import {
   ArrowLeftIcon,
   Link2Icon,
 } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
+import {
+  prefetchCoursesQuery,
+  prefetchClassesQuery,
+  prefetchSemestersQuery,
+} from "@/features/admin/academic/hooks/use-academic";
+import { prefetchSubjectsQuery } from "@/features/admin/subjects/hooks/use-subjects";
 import { cn } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
@@ -62,10 +69,22 @@ function NavLink({
   collapsed: boolean;
 }) {
   const pathname = usePathname();
+  const queryClient = useQueryClient();
   const isActive = isNavItemActive(pathname, item);
   const isBackButton = item.icon === "ArrowLeft";
 
   const Icon = ICON_MAP[item.icon] ?? LayoutDashboardIcon;
+
+  const handleHoverPrefetch = () => {
+    if (item.href === "/admin/academic") {
+      void prefetchCoursesQuery(queryClient);
+      void prefetchClassesQuery(queryClient);
+      void prefetchSemestersQuery(queryClient);
+    } else if (item.href === "/admin/subjects") {
+      void prefetchSubjectsQuery(queryClient);
+    }
+  };
+
 
   const linkCls = cn(
     "group flex items-center gap-3 rounded-lg text-sm font-medium",
@@ -82,7 +101,7 @@ function NavLink({
     return (
       <Tooltip>
         <TooltipTrigger
-          render={<Link href={item.href} prefetch={true} />}
+          render={<Link href={item.href} prefetch={true} onMouseEnter={handleHoverPrefetch} />}
           className={linkCls}
         >
           <Icon
@@ -100,7 +119,12 @@ function NavLink({
   }
 
   return (
-    <Link href={item.href} prefetch={true} className={linkCls}>
+    <Link
+      href={item.href}
+      prefetch={true}
+      onMouseEnter={handleHoverPrefetch}
+      className={linkCls}
+    >
       <Icon
         className={cn(
           "w-[18px] h-[18px] shrink-0 transition-colors",

@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient, type QueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { SyllabusService } from "../api/syllabus-service";
 import type {
@@ -8,6 +8,7 @@ import type {
   PatchSyllabusRequest,
   ReplaceSyllabusStructureRequest,
 } from "../types/syllabus-types";
+import type { SubjectResponse } from "../types/subject-types";
 import { SUBJECT_QUERY_KEYS } from "./use-subjects";
 
 export const SYLLABUS_QUERY_KEYS = {
@@ -17,6 +18,26 @@ export const SYLLABUS_QUERY_KEYS = {
     ["syllabi", "detail", subjectId, versionId] as const,
 };
 
+export function prefetchSyllabiQuery(queryClient: QueryClient, subjectId: string) {
+  return queryClient.query({
+    queryKey: SYLLABUS_QUERY_KEYS.bySubject(subjectId),
+    queryFn: () => SyllabusService.getSyllabi(subjectId),
+    staleTime: 1000 * 60 * 5,
+  }).catch(() => { });
+}
+
+export function prefetchSyllabusDetailQuery(
+  queryClient: QueryClient,
+  subjectId: string,
+  versionId: string
+) {
+  return queryClient.query({
+    queryKey: SYLLABUS_QUERY_KEYS.detail(subjectId, versionId),
+    queryFn: () => SyllabusService.getSyllabusDetail(subjectId, versionId),
+    staleTime: 1000 * 60 * 5,
+  }).catch(() => { });
+}
+
 export function useSyllabi(subjectId: string) {
   const queryClient = useQueryClient();
 
@@ -24,9 +45,26 @@ export function useSyllabi(subjectId: string) {
     queryKey: SYLLABUS_QUERY_KEYS.bySubject(subjectId),
     queryFn: () => SyllabusService.getSyllabi(subjectId),
     initialData: () => {
-      const detail = queryClient.getQueryData<{ syllabi?: Array<{ id: string; versionLabel: string; status: "DRAFT" | "PUBLISHED" | "ARCHIVED"; credits?: number | null; createdAt: string }> }>(
+      const cachedSyllabi = queryClient.getQueryData<SyllabusSummaryResponse[]>(
+        SYLLABUS_QUERY_KEYS.bySubject(subjectId)
+      );
+      if (cachedSyllabi && cachedSyllabi.length > 0) return cachedSyllabi;
+
+      let detail = queryClient.getQueryData<SubjectResponse>(
         SUBJECT_QUERY_KEYS.detail(subjectId)
       );
+      if (!detail) {
+        const queries = queryClient.getQueriesData<SubjectResponse[]>({ queryKey: ["subjects", "list"] });
+        for (const [, list] of queries) {
+          if (Array.isArray(list)) {
+            const found = list.find((s) => s.id === subjectId);
+            if (found) {
+              detail = found;
+              break;
+            }
+          }
+        }
+      }
       if (detail?.syllabi && detail.syllabi.length > 0) {
         return detail.syllabi.map((s) => ({
           id: s.id,
@@ -45,11 +83,15 @@ export function useSyllabi(subjectId: string) {
   });
 }
 
-export function useSyllabusDetail(subjectId: string, versionId: string) {
+export function useSyllabusDetail(
+  subjectId: string,
+  versionId: string,
+  options?: { enabled?: boolean }
+) {
   return useQuery({
     queryKey: SYLLABUS_QUERY_KEYS.detail(subjectId, versionId),
     queryFn: () => SyllabusService.getSyllabusDetail(subjectId, versionId),
-    enabled: Boolean(subjectId && versionId),
+    enabled: Boolean(subjectId && versionId && (options?.enabled ?? true)),
     staleTime: 1000 * 60 * 5,
   });
 }

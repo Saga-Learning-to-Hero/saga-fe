@@ -34,15 +34,16 @@ import { useAdminClasses, useCreateAdminClass, usePatchAdminClass, useSemesters 
 import type { AcademicClassResponse } from "../types/academic-types";
 
 export function AdminClassManagement() {
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [editingClass, setEditingClass] = useState<AcademicClassResponse | null>(null);
+
   const { data: adminClasses = [], isLoading } = useAdminClasses();
-  const { data: semesters = [] } = useSemesters();
+  const { data: semesters = [] } = useSemesters({ enabled: isFormOpen });
   const createMutation = useCreateAdminClass();
   const patchMutation = usePatchAdminClass();
 
   const [search, setSearch] = useState("");
   const [viewMode, setViewMode] = useState<"cards" | "table">("cards");
-  const [isFormOpen, setIsFormOpen] = useState(false);
-  const [editingClass, setEditingClass] = useState<AcademicClassResponse | null>(null);
 
   const filteredClasses = useMemo(() => {
     return adminClasses.filter((c) => {
@@ -141,11 +142,21 @@ export function AdminClassManagement() {
 
       {isLoading && adminClasses.length === 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {Array.from({ length: 6 }).map((_, idx) => (
-            <Card key={idx} className="rounded-2xl border border-border p-5 space-y-4 animate-pulse">
-              <div className="h-5 bg-muted rounded w-1/3" />
-              <div className="h-4 bg-muted rounded w-2/3" />
-              <div className="h-8 bg-muted rounded w-full" />
+          {Array.from({ length: 3 }).map((_, idx) => (
+            <Card key={idx} className="rounded-2xl border border-border p-5 space-y-3.5 animate-pulse bg-card shadow-xs">
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-10 h-10 rounded-xl bg-muted shrink-0" />
+                  <div className="space-y-1.5">
+                    <div className="h-5 bg-muted rounded w-24" />
+                    <div className="h-4 bg-muted rounded w-40" />
+                  </div>
+                </div>
+                <div className="w-8 h-8 rounded-lg bg-muted shrink-0" />
+              </div>
+              <div className="pt-2">
+                <div className="h-5 bg-muted/60 rounded w-24" />
+              </div>
             </Card>
           ))}
         </div>
@@ -154,7 +165,6 @@ export function AdminClassManagement() {
           <p className="text-xs text-muted-foreground">Không tìm thấy lớp hành chính nào phù hợp.</p>
         </Card>
       ) : viewMode === "cards" ? (
-        /* ── DẠNG CARD (Card Grid Layout) ── */
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filteredClasses.map((cls) => (
             <Card

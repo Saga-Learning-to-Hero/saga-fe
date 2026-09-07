@@ -7,6 +7,7 @@ import {
   ClockIcon,
   ArchiveIcon,
   ShieldCheckIcon,
+  ArrowRightIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -19,6 +20,7 @@ interface SyllabusVersionListProps {
   onOpenCreateDialog: () => void;
   onPublish: (versionId: string) => Promise<void>;
   onArchive: (versionId: string) => Promise<void>;
+  onViewStructure?: (versionId: string) => void;
   isPublishing?: boolean;
   isArchiving?: boolean;
 }
@@ -30,6 +32,7 @@ export function SyllabusVersionList({
   onOpenCreateDialog,
   onPublish,
   onArchive,
+  onViewStructure,
   isPublishing = false,
   isArchiving = false,
 }: SyllabusVersionListProps) {
@@ -53,16 +56,29 @@ export function SyllabusVersionList({
         </div>
 
         <div className="flex items-center gap-2 flex-wrap">
-          {currentSelected && currentSelected.status === "DRAFT" && (
+          {onViewStructure && currentSelected && (
             <Button
               variant="default"
               size="sm"
+              onClick={() => onViewStructure(currentSelected.id)}
+              className="h-8 text-xs font-semibold gap-1.5 cursor-pointer shadow-xs bg-primary text-primary-foreground hover:bg-primary/90"
+            >
+              <LayersIcon className="w-3.5 h-3.5" />
+              <span>Xem cấu trúc ({currentSelected.versionLabel})</span>
+              <ArrowRightIcon className="w-3.5 h-3.5" />
+            </Button>
+          )}
+
+          {currentSelected && currentSelected.status === "DRAFT" && (
+            <Button
+              variant="outline"
+              size="sm"
               onClick={() => onPublish(currentSelected.id)}
               disabled={isPublishing}
-              className="h-8 text-xs font-semibold gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer shadow-xs"
+              className="h-8 text-xs font-semibold gap-1.5 border-emerald-500/40 text-emerald-600 hover:bg-emerald-500/10 cursor-pointer shadow-xs"
             >
               <ShieldCheckIcon className="w-3.5 h-3.5" />
-              {isPublishing ? "Đang xuất bản..." : "Xuất bản chính thức (PUBLISH)"}
+              {isPublishing ? "Đang xuất bản..." : "Xuất bản chính thức"}
             </Button>
           )}
 
@@ -100,8 +116,8 @@ export function SyllabusVersionList({
               key={s.id}
               onClick={() => onSelectVersion(s.id)}
               className={`p-4 rounded-2xl border transition-all cursor-pointer text-left space-y-2 relative overflow-hidden ${isSelected
-                  ? "bg-primary/5 border-primary shadow-xs ring-1 ring-primary/30"
-                  : "bg-card border-border hover:border-border/80 hover:bg-muted/10"
+                ? "bg-primary/5 border-primary shadow-xs ring-1 ring-primary/30"
+                : "bg-card border-border hover:border-border/80 hover:bg-muted/10"
                 }`}
             >
               <div className="flex items-center justify-between gap-2">
@@ -137,7 +153,22 @@ export function SyllabusVersionList({
 
               <div className="flex items-center justify-between text-[11px] text-muted-foreground pt-1 border-t border-border/40 font-mono">
                 <span>{s.credits || 3} Tín chỉ</span>
-                <span>{new Date(s.createdAt).toLocaleDateString("vi-VN")}</span>
+                {onViewStructure ? (
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onSelectVersion(s.id);
+                      onViewStructure(s.id);
+                    }}
+                    className="inline-flex items-center gap-1 font-sans text-xs font-semibold text-primary hover:underline cursor-pointer"
+                  >
+                    <span>Cấu trúc</span>
+                    <ArrowRightIcon className="w-3 h-3" />
+                  </button>
+                ) : (
+                  <span>{new Date(s.createdAt).toLocaleDateString("vi-VN")}</span>
+                )}
               </div>
             </div>
           );
