@@ -18,8 +18,32 @@ export const apiClient: AxiosInstance = axios.create({
   },
 });
 
+const CSRF_STORAGE_KEY = "saga_xsrf_token";
+
 let cachedCsrfToken: string | null = null;
 let csrfPromise: Promise<string | null> | null = null;
+
+function getStoredCsrfToken(): string | null {
+  if (typeof window === "undefined") return null;
+  try {
+    return sessionStorage.getItem(CSRF_STORAGE_KEY);
+  } catch {
+    return null;
+  }
+}
+
+function setStoredCsrfToken(token: string | null) {
+  if (typeof window === "undefined") return;
+  try {
+    if (token) {
+      sessionStorage.setItem(CSRF_STORAGE_KEY, token);
+    } else {
+      sessionStorage.removeItem(CSRF_STORAGE_KEY);
+    }
+  } catch {
+    // Ignore storage errors
+  }
+}
 
 export async function fetchFreshCsrfToken(): Promise<string | null> {
   try {
@@ -28,6 +52,7 @@ export async function fetchFreshCsrfToken(): Promise<string | null> {
       { withCredentials: true }
     );
     cachedCsrfToken = res.data.token;
+    setStoredCsrfToken(res.data.token);
     return res.data.token;
   } catch {
     return null;
@@ -41,6 +66,7 @@ export async function ensureCsrfToken(forceRefresh = false): Promise<string | nu
 
   if (forceRefresh) {
     cachedCsrfToken = null;
+    setStoredCsrfToken(null);
     csrfPromise = fetchFreshCsrfToken().finally(() => {
       csrfPromise = null;
     });
@@ -51,9 +77,16 @@ export async function ensureCsrfToken(forceRefresh = false): Promise<string | nu
     return cachedCsrfToken;
   }
 
+  const storedToken = getStoredCsrfToken();
+  if (storedToken) {
+    cachedCsrfToken = storedToken;
+    return storedToken;
+  }
+
   const existingCookie = getCookie("XSRF-TOKEN");
   if (existingCookie) {
     cachedCsrfToken = existingCookie;
+    setStoredCsrfToken(existingCookie);
     return existingCookie;
   }
 
@@ -62,6 +95,10 @@ export async function ensureCsrfToken(forceRefresh = false): Promise<string | nu
   });
 
   return csrfPromise;
+}
+
+if (typeof window !== "undefined") {
+  ensureCsrfToken().catch(() => { });
 }
 
 apiClient.interceptors.request.use(
