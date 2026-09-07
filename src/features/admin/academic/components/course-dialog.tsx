@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { GraduationCapIcon, UserIcon, MailIcon, SchoolIcon, BookOpenIcon, CalendarIcon, ActivityIcon } from "lucide-react";
+import { GraduationCapIcon, UserIcon, MailIcon, SchoolIcon, BookOpenIcon, CalendarIcon } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -15,26 +15,25 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { CustomSelect } from "@/components/common/custom-select";
 import { MOCK_LECTURERS } from "../data/mock-academic";
-import type { Course, Subject, Semester, CourseStatus, AdminClass } from "../types/academic-management";
+import type { CourseResponse } from "../types/course-roster-types";
+import type { SubjectResponse } from "@/features/admin/subjects/types/subject-types";
+import type { AcademicClassResponse, SemesterResponse } from "../types/academic-types";
 
 interface CourseDialogProps {
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (data: {
-    code: string;
+    courseCode: string;
     name: string;
-    subjectCode: string;
-    subjectName: string;
-    semesterCode: string;
-    semesterName: string;
-    adminClassCode?: string;
-    status: CourseStatus;
-    lecturer: { id: string; fullName: string; email: string };
+    subjectId: string;
+    academicClassId: string;
+    semesterId: string;
+    lecturerId: string;
   }) => void;
-  editingCourse?: Course | null;
-  subjects: Subject[];
-  semesters: Semester[];
-  adminClasses: AdminClass[];
+  editingCourse?: CourseResponse | null;
+  subjects: SubjectResponse[];
+  semesters: SemesterResponse[];
+  adminClasses: AcademicClassResponse[];
 }
 
 export function CourseDialog({
@@ -47,46 +46,42 @@ export function CourseDialog({
   adminClasses,
 }: CourseDialogProps) {
   const [formData, setFormData] = useState<{
-    code: string;
+    courseCode: string;
     name: string;
-    subjectCode: string;
-    semesterCode: string;
-    adminClassCode: string;
-    status: CourseStatus;
+    subjectId: string;
+    semesterId: string;
+    academicClassId: string;
     lecturerId: string;
   }>({
-    code: "",
+    courseCode: "",
     name: "",
-    subjectCode: subjects[0]?.code || "SWP490",
-    semesterCode: semesters[0]?.code || "FA26",
-    adminClassCode: adminClasses[0]?.code || "SE1701",
-    status: "IN_PROGRESS",
+    subjectId: subjects[0]?.id || "",
+    semesterId: semesters[0]?.id || "",
+    academicClassId: adminClasses[0]?.id || "",
     lecturerId: MOCK_LECTURERS[0]?.id || "usr-gv-001",
   });
 
   useEffect(() => {
     if (editingCourse) {
       const matchedLecturer = MOCK_LECTURERS.find(
-        (l) => l.email === editingCourse.lecturer.email || l.fullName === editingCourse.lecturer.fullName
+        (l) => l.id === editingCourse.lecturerId
       );
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setFormData({
-        code: editingCourse.code,
+        courseCode: editingCourse.courseCode,
         name: editingCourse.name,
-        subjectCode: editingCourse.subjectCode,
-        semesterCode: editingCourse.semesterCode,
-        adminClassCode: editingCourse.adminClassCode || adminClasses[0]?.code || "SE1701",
-        status: editingCourse.status,
-        lecturerId: matchedLecturer?.id || editingCourse.lecturer.id || MOCK_LECTURERS[0]?.id,
+        subjectId: editingCourse.subjectId,
+        semesterId: editingCourse.semesterId || semesters[0]?.id || "",
+        academicClassId: editingCourse.academicClassId,
+        lecturerId: matchedLecturer?.id || editingCourse.lecturerId || MOCK_LECTURERS[0]?.id,
       });
     } else {
       setFormData({
-        code: "",
+        courseCode: "",
         name: "",
-        subjectCode: subjects[0]?.code || "SWP490",
-        semesterCode: semesters[0]?.code || "FA26",
-        adminClassCode: adminClasses[0]?.code || "SE1701",
-        status: "IN_PROGRESS",
+        subjectId: subjects[0]?.id || "",
+        semesterId: semesters[0]?.id || "",
+        academicClassId: adminClasses[0]?.id || "",
         lecturerId: MOCK_LECTURERS[0]?.id || "usr-gv-001",
       });
     }
@@ -96,25 +91,15 @@ export function CourseDialog({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.code.trim() || !formData.name.trim()) return;
-
-    const sub = subjects.find((s) => s.code === formData.subjectCode);
-    const sem = semesters.find((s) => s.code === formData.semesterCode);
+    if (!formData.courseCode.trim() || !formData.name.trim()) return;
 
     onSubmit({
-      code: formData.code.trim().toUpperCase(),
+      courseCode: formData.courseCode.trim().toUpperCase(),
       name: formData.name.trim(),
-      subjectCode: formData.subjectCode,
-      subjectName: sub?.name || formData.subjectCode,
-      semesterCode: formData.semesterCode,
-      semesterName: sem?.name || formData.semesterCode,
-      adminClassCode: formData.adminClassCode,
-      status: formData.status,
-      lecturer: {
-        id: selectedLecturer.id,
-        fullName: selectedLecturer.fullName,
-        email: selectedLecturer.email,
-      },
+      subjectId: formData.subjectId,
+      semesterId: formData.semesterId,
+      academicClassId: formData.academicClassId,
+      lecturerId: formData.lecturerId,
     });
     onClose();
   };
@@ -144,28 +129,14 @@ export function CourseDialog({
                 <label className="text-xs font-semibold text-foreground">Mã khóa học *</label>
                 <Input
                   placeholder="VD: SWP490_FA26"
-                  value={formData.code}
-                  onChange={(e) => setFormData({ ...formData, code: e.target.value })}
+                  value={formData.courseCode}
+                  onChange={(e) => setFormData({ ...formData, courseCode: e.target.value })}
                   required
                   className="h-9 text-xs font-mono uppercase bg-muted/30 border-border/80 focus:border-primary rounded-xl"
                 />
               </div>
 
-              <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-foreground flex items-center gap-1">
-                  <ActivityIcon className="w-3 h-3 text-primary" />
-                  Trạng thái *
-                </label>
-                <CustomSelect
-                  value={formData.status}
-                  onChange={(val) => setFormData({ ...formData, status: val as CourseStatus })}
-                  options={[
-                    { value: "IN_PROGRESS", label: "Đang học / Làm đồ án" },
-                    { value: "UPCOMING", label: "Sắp diễn ra" },
-                    { value: "COMPLETED", label: "Đã hoàn thành" },
-                  ]}
-                />
-              </div>
+              {/* Status removed as not in DTO */}
             </div>
 
             {/* Row 2: Course Name */}
@@ -188,12 +159,12 @@ export function CourseDialog({
                   Môn học *
                 </label>
                 <CustomSelect
-                  value={formData.subjectCode}
-                  onChange={(val) => setFormData({ ...formData, subjectCode: val })}
+                  value={formData.subjectId}
+                  onChange={(val) => setFormData({ ...formData, subjectId: val })}
                   options={subjects.map((sub) => ({
-                    value: sub.code,
+                    value: sub.id,
                     label: sub.code,
-                    subLabel: sub.name,
+                    subLabel: sub.nameEnglish,
                   }))}
                 />
               </div>
@@ -204,10 +175,10 @@ export function CourseDialog({
                   Học kỳ *
                 </label>
                 <CustomSelect
-                  value={formData.semesterCode}
-                  onChange={(val) => setFormData({ ...formData, semesterCode: val })}
+                  value={formData.semesterId}
+                  onChange={(val) => setFormData({ ...formData, semesterId: val })}
                   options={semesters.map((sem) => ({
-                    value: sem.code,
+                    value: sem.id,
                     label: `${sem.name} (${sem.code})`,
                   }))}
                 />
@@ -219,11 +190,11 @@ export function CourseDialog({
                   Lớp hành chính *
                 </label>
                 <CustomSelect
-                  value={formData.adminClassCode}
-                  onChange={(val) => setFormData({ ...formData, adminClassCode: val })}
+                  value={formData.academicClassId}
+                  onChange={(val) => setFormData({ ...formData, academicClassId: val })}
                   options={adminClasses.map((cls) => ({
-                    value: cls.code,
-                    label: cls.code,
+                    value: cls.id,
+                    label: cls.classCode || cls.code || cls.name,
                     subLabel: cls.name,
                   }))}
                 />

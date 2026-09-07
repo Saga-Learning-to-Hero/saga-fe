@@ -12,13 +12,15 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import type { AdminClass } from "../types/academic-management";
+import { CustomSelect } from "@/components/common/custom-select";
+import type { AcademicClassResponse, SemesterResponse } from "../types/academic-types";
 
 interface AdminClassDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (data: Omit<AdminClass, "id" | "createdAt">) => void;
-  editingClass?: AdminClass | null;
+  onSubmit: (data: Omit<AcademicClassResponse, "id" | "createdAt" | "semesterCode">) => void;
+  editingClass?: AcademicClassResponse | null;
+  semesters: SemesterResponse[];
 }
 
 export function AdminClassDialog({
@@ -26,42 +28,41 @@ export function AdminClassDialog({
   onClose,
   onSubmit,
   editingClass,
+  semesters,
 }: AdminClassDialogProps) {
   const [formData, setFormData] = useState({
     code: "",
     name: "",
-    department: "Kỹ thuật phần mềm",
-    academicYear: "K17 (2021 - 2025)",
+    semesterId: semesters[0]?.id || "",
   });
 
   useEffect(() => {
     if (editingClass) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setFormData({
-        code: editingClass.code,
+        code: editingClass.classCode || editingClass.code || "",
         name: editingClass.name,
-        department: editingClass.department,
-        academicYear: editingClass.academicYear,
+        semesterId: editingClass.semesterId,
       });
     } else {
       setFormData({
         code: "",
         name: "",
-        department: "Kỹ thuật phần mềm",
-        academicYear: "K17 (2021 - 2025)",
+        semesterId: semesters[0]?.id || "",
       });
     }
-  }, [editingClass, isOpen]);
+  }, [editingClass, isOpen, semesters]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.code.trim() || !formData.name.trim()) return;
 
+    const codeVal = formData.code.trim().toUpperCase();
     onSubmit({
-      code: formData.code.trim().toUpperCase(),
+      classCode: codeVal,
+      code: codeVal,
       name: formData.name.trim(),
-      department: formData.department.trim(),
-      academicYear: formData.academicYear.trim(),
+      semesterId: formData.semesterId,
     });
     onClose();
   };
@@ -97,13 +98,12 @@ export function AdminClassDialog({
                 />
               </div>
               <div className="space-y-1">
-                <label className="text-xs font-semibold text-foreground">Niên khóa *</label>
-                <Input
-                  placeholder="VD: K17 (2021 - 2025)"
-                  value={formData.academicYear}
-                  onChange={(e) => setFormData({ ...formData, academicYear: e.target.value })}
-                  required
-                  className="h-9 text-xs"
+                <label className="text-xs font-semibold text-foreground">Học kỳ *</label>
+                <CustomSelect
+                  value={formData.semesterId}
+                  onChange={(val) => setFormData({ ...formData, semesterId: val as string })}
+                  options={semesters.map((s) => ({ value: s.id, label: s.name }))}
+                  disabled={Boolean(editingClass)}
                 />
               </div>
             </div>
@@ -119,15 +119,6 @@ export function AdminClassDialog({
               />
             </div>
 
-            <div className="space-y-1">
-              <label className="text-xs font-semibold text-foreground">Chuyên ngành / Khoa</label>
-              <Input
-                placeholder="VD: Kỹ thuật phần mềm"
-                value={formData.department}
-                onChange={(e) => setFormData({ ...formData, department: e.target.value })}
-                className="h-9 text-xs"
-              />
-            </div>
           </div>
 
           <DialogFooter className="pt-2">

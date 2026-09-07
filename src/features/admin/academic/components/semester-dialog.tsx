@@ -12,14 +12,13 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { CustomSelect } from "@/components/common/custom-select";
-import type { Semester, SemesterStatus } from "../types/academic-management";
+import type { SemesterResponse } from "../types/academic-types";
 
 interface SemesterDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (data: Omit<Semester, "id" | "totalCourses">) => void;
-  editingSemester?: Semester | null;
+  onSubmit: (data: { code: string; name: string; startDate: string; endDate: string }) => void;
+  editingSemester?: SemesterResponse | null;
 }
 
 export function SemesterDialog({
@@ -33,13 +32,11 @@ export function SemesterDialog({
     name: string;
     startDate: string;
     endDate: string;
-    status: SemesterStatus;
   }>({
     code: "",
     name: "",
     startDate: "",
     endDate: "",
-    status: "UPCOMING",
   });
 
   useEffect(() => {
@@ -50,7 +47,6 @@ export function SemesterDialog({
         name: editingSemester.name,
         startDate: editingSemester.startDate,
         endDate: editingSemester.endDate,
-        status: editingSemester.status,
       });
     } else {
       setFormData({
@@ -58,7 +54,6 @@ export function SemesterDialog({
         name: "",
         startDate: "2027-01-10",
         endDate: "2027-04-25",
-        status: "UPCOMING",
       });
     }
   }, [editingSemester, isOpen]);
@@ -72,7 +67,6 @@ export function SemesterDialog({
       name: formData.name.trim(),
       startDate: formData.startDate,
       endDate: formData.endDate,
-      status: formData.status,
     });
     onClose();
   };
@@ -96,29 +90,15 @@ export function SemesterDialog({
           </DialogHeader>
 
           <div className="space-y-3 pt-2">
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1">
-                <label className="text-xs font-semibold text-foreground">Mã học kỳ *</label>
-                <Input
-                  placeholder="VD: FA26"
-                  value={formData.code}
-                  onChange={(e) => setFormData({ ...formData, code: e.target.value })}
-                  required
-                  className="h-9 text-xs font-mono uppercase"
-                />
-              </div>
-              <div className="space-y-1">
-                <label className="text-xs font-semibold text-foreground">Trạng thái *</label>
-                <CustomSelect
-                  value={formData.status}
-                  onChange={(val) => setFormData({ ...formData, status: val as SemesterStatus })}
-                  options={[
-                    { value: "ACTIVE", label: "Đang diễn ra" },
-                    { value: "UPCOMING", label: "Sắp diễn ra" },
-                    { value: "CLOSED", label: "Đã kết thúc" },
-                  ]}
-                />
-              </div>
+            <div className="space-y-1">
+              <label className="text-xs font-semibold text-foreground">Mã học kỳ *</label>
+              <Input
+                placeholder="VD: FA26"
+                value={formData.code}
+                onChange={(e) => setFormData({ ...formData, code: e.target.value })}
+                required
+                className="h-9 text-xs font-mono uppercase"
+              />
             </div>
 
             <div className="space-y-1">
