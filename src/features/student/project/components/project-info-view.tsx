@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
 import { MOCK_STUDENT_PROJECT } from "../data/mock-student-project";
 import type {
@@ -10,6 +10,8 @@ import type {
   ProjectCategory,
 } from "../types/student-project";
 import { useStudentProject } from "../hooks/useStudentProject";
+import { useRefreshStudentCourses, useStudentMyTeam } from "@/features/student/courses/hooks/use-student-courses";
+import { getApiErrorCode } from "@/lib/api-error";
 import { Loader2Icon } from "lucide-react";
 import { ProjectBannerHeader } from "./project-banner-header";
 import { TeamMembersCard } from "./team-members-card";
@@ -18,17 +20,42 @@ import { ProjectIntegrationsCard } from "./project-integrations-card";
 import { ProjectEditModal } from "./project-edit-modal";
 
 export function ProjectInfoView() {
-  const { user, selectedCourse } = useAuthStore();
+  const { selectedCourse } = useAuthStore();
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [localOverrides, setLocalOverrides] = useState<Partial<StudentProjectDetails>>({});
+  const refreshCourses = useRefreshStudentCourses();
 
-  // Gọi API Backend: GET /api/student/courses/{courseId}/project
-  const { data: apiProject, isLoading } = useStudentProject(selectedCourse?.id);
+  const courseId = selectedCourse?.courseId || selectedCourse?.id || "";
 
-  // Tính toán dữ liệu dự án kết hợp API Backend và các thao tác cập nhật tại client
+  const { data: apiProject, isLoading: isProjectLoading } = useStudentProject(courseId);
+
+  const {
+    data: team,
+    isLoading: isTeamLoading,
+    isError: isTeamError,
+    error: teamError,
+    refetch: refetchTeam,
+  } = useStudentMyTeam(courseId, { enabled: Boolean(courseId) });
+
+  const forbidden = getApiErrorCode(teamError) === "STUDENT_COURSE_FORBIDDEN";
+
+  useEffect(() => {
+    if (forbidden) {
+      void refreshCourses();
+    }
+  }, [forbidden, refreshCourses]);
+
   const project: StudentProjectDetails = useMemo(() => {
+    const teamName = team?.teamName || apiProject?.teamName || "";
+    const teamNo = team?.teamNo ?? apiProject?.teamNo ?? 0;
+
     const base: StudentProjectDetails = {
       ...MOCK_STUDENT_PROJECT,
+      members: [],
+      groupName: "",
+      teamId: "",
+      teamNo: 0,
+      teamName: "",
       ...(apiProject
         ? {
             id: apiProject.projectId,
@@ -50,16 +77,27 @@ export function ProjectInfoView() {
         : {}),
     };
 
+    if (team) {
+      base.teamId = team.teamId;
+      base.teamNo = teamNo;
+      base.teamName = teamName;
+      base.groupName = teamName
+        ? `Nhóm ${teamNo} · ${teamName}${team.myRole ? ` · ${team.myRole === "LEADER" ? "Leader" : "Member"}` : ""}`
+        : "";
+      if (team.projectId) {
+        base.projectId = team.projectId;
+        base.id = team.projectId;
+      }
+    }
+
     return {
       ...base,
       ...localOverrides,
+      members: [],
     };
-  }, [apiProject, localOverrides]);
+  }, [apiProject, localOverrides, team]);
 
-  const currentMember = (project.members || []).find(
-    (m) => m.studentCode === user?.studentCode || m.email === user?.email
-  );
-  const isLeader = currentMember ? currentMember.role === "LEADER" : true;
+  const isLeader = team?.myRole === "LEADER";
 
   const handleUpdateProject = (updatedFields: Partial<StudentProjectDetails>) => {
     setLocalOverrides((prev) => ({
@@ -91,7 +129,7 @@ export function ProjectInfoView() {
   const handleEditRepo = (repo: ProjectGitHubRepo) => {
     setLocalOverrides((prev) => {
       const currentRepos = prev.githubRepositories || project.githubRepositories || [];
-      const updated = currentRepos.map((r) => (r.id === repo.id ? repo : r));
+      const updated = currentRepos.map((item) => (item.id === repo.id ? repo : item));
       return {
         ...prev,
         githubRepositories: updated,
@@ -103,7 +141,7 @@ export function ProjectInfoView() {
   const handleDeleteRepo = (repoId: string) => {
     setLocalOverrides((prev) => {
       const currentRepos = prev.githubRepositories || project.githubRepositories || [];
-      const remaining = currentRepos.filter((r) => r.id !== repoId);
+      const remaining = currentRepos.filter((item) => item.id !== repoId);
       return {
         ...prev,
         githubRepositories: remaining,
@@ -113,11 +151,11 @@ export function ProjectInfoView() {
   };
 
   return (
-    <div className="space-y-6 max-w-[1600px] mx-auto pb-12">
-      {isLoading && (
-        <div className="flex items-center gap-2.5 px-4 py-2.5 rounded-2xl bg-primary/10 border border-primary/20 text-xs text-primary font-medium animate-pulse">
-          <Loader2Icon className="w-4 h-4 animate-spin shrink-0" />
-          <span>Đang đồng bộ dữ liệu dự án nhóm từ máy chủ...</span>
+    <div className="mx-auto max-w-[1600px] space-y-6 pb-12">
+      {(isProjectLoading || isTeamLoading) && (
+        <div className="flex animate-pulse items-center gap-2.5 rounded-2xl border border-primary/20 bg-primary/10 px-4 py-2.5 text-xs font-medium text-primary">
+          <Loader2Icon className="h-4 w-4 shrink-0 animate-spin" />
+          <span>Đang đồng bộ thông tin nhóm và dự án từ máy chủ...</span>
         </div>
       )}
 
@@ -138,17 +176,24 @@ export function ProjectInfoView() {
           onDeleteRepo={handleDeleteRepo}
         />
 
-        <TeamMembersCard project={project} course={selectedCourse} />
+        <TeamMembersCard
+          course={selectedCourse}
+          team={team}
+          isLoading={isTeamLoading}
+          isError={isTeamError}
+          error={teamError}
+          onRetry={() => void refetchTeam()}
+          onForbidden={() => void refreshCourses()}
+        />
       </div>
 
       <ProjectEditModal
         isOpen={isEditModalOpen}
         project={project}
-        courseId={selectedCourse?.id}
+        courseId={courseId}
         onClose={() => setIsEditModalOpen(false)}
         onSave={handleUpdateProject}
       />
     </div>
   );
 }
-

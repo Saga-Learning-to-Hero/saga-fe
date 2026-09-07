@@ -1,7 +1,4 @@
-import { notFound } from "next/navigation";
-import { createMockCourseDashboard } from "@/features/lecturer/class-dashboard/data/mock-course-dashboard";
-import { LecturerCourseDashboardPage } from "@/features/lecturer/class-dashboard/components/lecturer-course-dashboard-page";
-import { getLecturerCourseById } from "@/features/lecturer/courses/lib/course-repository";
+import { UnsupportedFeatureNotice } from "@/features/lecturer/courses/components/unsupported-feature-notice";
 
 interface Props {
   params: Promise<{ courseId: string }>;
@@ -9,11 +6,11 @@ interface Props {
 
 export default async function CourseDashboardRoute({ params }: Props) {
   const { courseId } = await params;
-
-  const course = getLecturerCourseById(courseId);
-  if (!course) notFound();
-
-  const dashboardData = createMockCourseDashboard(course);
-
-  return <LecturerCourseDashboardPage initialData={dashboardData} />;
+  return (
+    <UnsupportedFeatureNotice
+      courseId={courseId}
+      title="Tổng quan lớp học chưa được hỗ trợ"
+      description="API dashboard lớp chưa thuộc phạm vi quản trị lớp và phân nhóm. Hãy dùng không gian lớp để xem roster ACTIVE và phân nhóm Excel."
+    />
+  );
 }
