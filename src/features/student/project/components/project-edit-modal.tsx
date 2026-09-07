@@ -5,12 +5,12 @@ import {
   FolderKanbanIcon,
   XIcon,
   SaveIcon,
+  PlusIcon,
   LoaderCircleIcon,
-  CheckCircle2Icon,
-  Code2Icon,
   FileTextIcon,
 } from "lucide-react";
-import type { StudentProjectDetails, ProjectCategory } from "../types/student-project";
+import type { StudentProjectDetails } from "../types/student-project";
+import { useProjectTypes, useCreateStudentProject } from "../hooks/useStudentProject";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -20,62 +20,97 @@ import { CustomSelect } from "@/components/common/custom-select";
 interface ProjectEditModalProps {
   isOpen: boolean;
   project: StudentProjectDetails;
+  courseId?: string;
   onClose: () => void;
   onSave: (updated: Partial<StudentProjectDetails>) => void;
 }
 
-const CATEGORIES: ProjectCategory[] = [
-  "Web Application / EdTech",
-  "Mobile Application",
-  "AI & Machine Learning",
-  "Cloud & DevOps",
-  "Blockchain & Fintech",
-  "IoT & Embedded Systems",
-];
-
 export function ProjectEditModal({
   isOpen,
   project,
+  courseId,
   onClose,
   onSave,
 }: ProjectEditModalProps) {
+  // Lấy danh sách loại dự án thực tế từ API: GET /api/student/project-types
+  const { data: projectTypes, isLoading: isLoadingTypes } = useProjectTypes();
+  const createProjectMutation = useCreateStudentProject();
+
+  const hasProject = Boolean(
+    (project.name && project.name.trim() !== "") ||
+    (project.projectId && project.projectId.trim() !== "")
+  );
+
   const [form, setForm] = useState({
     name: project.name || "",
-    category: project.category || ("Web Application / EdTech" as ProjectCategory),
+    projectTypeId: project.projectType?.id || "",
     description: project.description || "",
-    techStack: project.techStack ? project.techStack.join(", ") : "",
   });
 
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [successMsg, setSuccessMsg] = useState("");
+  const effectiveProjectTypeId =
+    form.projectTypeId || project.projectType?.id || projectTypes?.[0]?.id || "";
 
   if (!isOpen) return null;
 
+  const isSubmitting = createProjectMutation.isPending;
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSubmitting(true);
-    setSuccessMsg("");
-    await new Promise((r) => setTimeout(r, 600));
 
-    const techArray = form.techStack
-      .split(",")
-      .map((t) => t.trim())
-      .filter(Boolean);
+    // Nếu có courseId, gọi API Backend: POST /api/student/courses/{courseId}/project
+    if (courseId) {
+      try {
+        const createdProject = await createProjectMutation.mutateAsync({
+          courseId,
+          payload: {
+            name: form.name.trim(),
+            projectTypeId: effectiveProjectTypeId,
+            description: form.description.trim(),
+          },
+        });
 
+        onSave({
+          id: createdProject.projectId,
+          projectId: createdProject.projectId,
+          name: createdProject.name,
+          description: createdProject.description,
+          projectType: createdProject.projectType,
+          category: createdProject.projectType.name,
+          teamId: createdProject.teamId,
+          teamNo: createdProject.teamNo,
+          teamName: createdProject.teamName,
+          groupName: createdProject.teamName
+            ? `Nhóm ${createdProject.teamNo} - ${createdProject.teamName}`
+            : undefined,
+          createdBy: createdProject.createdBy,
+          createdAt: createdProject.createdAt,
+        });
+
+        onClose();
+        return;
+      } catch {
+        return;
+      }
+    }
+
+    // Fallback cập nhật local nếu không có courseId
+    const selectedType = projectTypes?.find((pt) => pt.id === effectiveProjectTypeId);
     onSave({
       name: form.name,
-      category: form.category,
       description: form.description,
-      techStack: techArray.length > 0 ? techArray : project.techStack,
+      projectType: selectedType
+        ? { id: selectedType.id, code: selectedType.code, name: selectedType.name }
+        : project.projectType,
+      category: selectedType?.name || project.category,
     });
-
-    setIsSubmitting(false);
-    setSuccessMsg("Cập nhật thông tin dự án thành công!");
-    setTimeout(() => {
-      setSuccessMsg("");
-      onClose();
-    }, 1200);
+    onClose();
   };
+
+  const projectTypeOptions = (projectTypes || []).map((pt) => ({
+    value: pt.id,
+    label: pt.name,
+    subLabel: pt.code,
+  }));
 
   return (
     <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in-0 duration-200">
@@ -88,15 +123,18 @@ export function ProjectEditModal({
             </div>
             <div>
               <h3 className="text-base font-bold text-foreground">
-                Tạo & Cập nhật Thông tin Dự án
+                {hasProject ? "Cập nhật Thông tin Dự án" : "Tạo Dự án Mới (Team Leader)"}
               </h3>
               <p className="text-xs text-muted-foreground">
-                Chỉnh sửa tên dự án, phân loại, mô tả bài toán và danh sách công nghệ
+                {hasProject
+                  ? "Chỉnh sửa tên dự án, loại đề tài và mô tả giải pháp"
+                  : "Đăng ký tên dự án, phân loại đề tài và mô tả bài toán ban đầu"}
               </p>
             </div>
           </div>
 
           <button
+            type="button"
             onClick={onClose}
             className="w-8 h-8 rounded-xl flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted cursor-pointer transition-colors"
           >
@@ -106,14 +144,6 @@ export function ProjectEditModal({
 
         {/* Content Form */}
         <form onSubmit={handleSubmit} className="p-5 sm:p-6 space-y-4 overflow-y-auto flex-1 scrollbar-thin">
-          {/* Success Feedback Alert */}
-          {successMsg && (
-            <div className="p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 text-xs font-semibold flex items-center gap-2 animate-in fade-in-0">
-              <CheckCircle2Icon className="w-4 h-4 shrink-0" />
-              <span>{successMsg}</span>
-            </div>
-          )}
-
           {/* Tên dự án */}
           <div className="space-y-1.5">
             <Label htmlFor="proj-name" className="text-xs font-semibold">
@@ -133,16 +163,18 @@ export function ProjectEditModal({
           {/* Loại dự án */}
           <div className="space-y-1.5">
             <Label htmlFor="proj-category" className="text-xs font-semibold">
-              Loại dự án (Phân loại) <span className="text-destructive">*</span>
+              Loại dự án (Danh mục từ hệ thống) <span className="text-destructive">*</span>
             </Label>
             <CustomSelect
               id="proj-category"
-              value={form.category}
-              onChange={(val) => setForm((f) => ({ ...f, category: val as ProjectCategory }))}
-              options={CATEGORIES.map((cat) => ({
-                value: cat,
-                label: cat,
-              }))}
+              value={effectiveProjectTypeId}
+              onChange={(val) => setForm((f) => ({ ...f, projectTypeId: val }))}
+              options={
+                isLoadingTypes
+                  ? [{ value: "", label: "Đang tải danh mục loại dự án..." }]
+                  : projectTypeOptions
+              }
+              disabled={isLoadingTypes}
             />
           </div>
 
@@ -150,32 +182,16 @@ export function ProjectEditModal({
           <div className="space-y-1.5">
             <Label htmlFor="proj-desc" className="text-xs font-semibold flex items-center gap-1.5">
               <FileTextIcon className="w-3.5 h-3.5 text-primary" />
-              Mô tả chi tiết dự án & Bài toán
+              Mô tả chi tiết dự án & Bài toán <span className="text-destructive">*</span>
             </Label>
             <Textarea
               id="proj-desc"
-              rows={4}
+              rows={5}
               required
               value={form.description}
               onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
               placeholder="Mô tả bài toán thực tế, mục tiêu của dự án, các phân hệ chức năng chính..."
               className="text-xs rounded-xl bg-card resize-none"
-            />
-          </div>
-
-          {/* Tech Stack */}
-          <div className="space-y-1.5">
-            <Label htmlFor="proj-tech" className="text-xs font-semibold flex items-center gap-1.5">
-              <Code2Icon className="w-3.5 h-3.5 text-purple-500" />
-              Công nghệ & Framework sử dụng (phân cách bằng dấu phẩy)
-            </Label>
-            <Input
-              id="proj-tech"
-              type="text"
-              value={form.techStack}
-              onChange={(e) => setForm((f) => ({ ...f, techStack: e.target.value }))}
-              placeholder="Next.js, React, TypeScript, TailwindCSS, Cytoscape.js"
-              className="h-9 text-xs rounded-xl bg-card font-mono"
             />
           </div>
 
@@ -186,6 +202,7 @@ export function ProjectEditModal({
               variant="ghost"
               size="sm"
               onClick={onClose}
+              disabled={isSubmitting}
               className="h-9 text-xs rounded-xl"
             >
               Hủy
@@ -193,18 +210,23 @@ export function ProjectEditModal({
 
             <Button
               type="submit"
-              disabled={isSubmitting}
+              disabled={isSubmitting || !form.name || !effectiveProjectTypeId || !form.description}
               className="h-9 text-xs font-bold rounded-xl gap-2 cursor-pointer shadow-xs bg-primary text-primary-foreground hover:bg-primary/90 px-5"
             >
               {isSubmitting ? (
                 <>
                   <LoaderCircleIcon className="w-4 h-4 animate-spin" />
-                  Đang lưu...
+                  Đang xử lý...
+                </>
+              ) : hasProject ? (
+                <>
+                  <SaveIcon className="w-4 h-4" />
+                  Cập nhật dự án
                 </>
               ) : (
                 <>
-                  <SaveIcon className="w-4 h-4" />
-                  Lưu cập nhật dự án
+                  <PlusIcon className="w-4 h-4" />
+                  Tạo dự án
                 </>
               )}
             </Button>

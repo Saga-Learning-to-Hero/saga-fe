@@ -78,11 +78,15 @@ export function TopNavHeader() {
   const courseMatch = pathname.match(/^\/lecturer\/courses\/([^/]+)(?:\/|$)/);
   const lecturerCourseId = courseMatch ? decodeURIComponent(courseMatch[1]) : null;
 
-  // Xác định danh sách Nav Tabs ngang
+  // Xác định danh sách Nav Tabs ngang (chỉ hiển thị khi đang trong không gian học phần/khóa học)
   let navItems: NavItem[] = [];
   if (user.role === "LECTURER" && lecturerCourseId) {
     navItems = getLecturerNavItems(lecturerCourseId);
-  } else if (user.role === "STUDENT" && pathname !== "/student/courses") {
+  } else if (
+    user.role === "STUDENT" &&
+    pathname.startsWith("/student") &&
+    pathname !== "/student/courses"
+  ) {
     navItems = getStudentNavItems();
   }
 
@@ -115,10 +119,13 @@ export function TopNavHeader() {
             <SagaLogo size="sm" showText={true} showSubtitle={false} />
           </Link>
 
-          <div className="hidden h-5 w-px bg-border sm:block shrink-0" />
-
           {/* Bộ chọn / Hiển thị Ngữ cảnh Khóa học */}
-          <CourseContextSwitcher courseId={lecturerCourseId} pathname={pathname} />
+          {!pathname.startsWith("/profile") && !pathname.startsWith("/settings") && (
+            <>
+              <div className="hidden h-5 w-px bg-border sm:block shrink-0" />
+              <CourseContextSwitcher courseId={lecturerCourseId} pathname={pathname} />
+            </>
+          )}
         </div>
 
         {/* ── Center: Global Command Search (Ctrl + K) ── */}

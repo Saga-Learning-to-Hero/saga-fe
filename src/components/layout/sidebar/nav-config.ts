@@ -270,8 +270,33 @@ export const ROLE_COLORS: Record<Role, string> = {
   STUDENT: "bg-info-muted text-info",
 };
 
-export function getInitials(name: string) {
-  return name.split(" ").slice(-2).map((part) => part[0]).join("").toUpperCase();
+export function getInitials(name?: string | null): string {
+  if (!name || typeof name !== "string") return "U";
+
+  // Loại bỏ các phần chú thích trong ngoặc đơn hoặc ngoặc vuông (vd: "(K17 HCM)", "[Admin]")
+  const cleanName = name
+    .replace(/\([^)]*\)/g, "")
+    .replace(/\[[^\]]*\]/g, "")
+    .trim();
+
+  const words = cleanName.split(/\s+/).filter((w) => w.length > 0);
+
+  if (words.length === 0) {
+    const rawWords = name.trim().split(/\s+/).filter((w) => w.length > 0);
+    if (rawWords.length === 0) return "U";
+    if (rawWords.length === 1) return rawWords[0].slice(0, 2).toUpperCase();
+    return `${rawWords[0][0]}${rawWords[rawWords.length - 1][0]}`.toUpperCase();
+  }
+
+  if (words.length === 1) {
+    return words[0].slice(0, Math.min(2, words[0].length)).toUpperCase();
+  }
+
+  // Chữ cái đầu của chữ đầu và chữ cái đầu của chữ cuối của tên
+  const firstChar = words[0][0];
+  const lastChar = words[words.length - 1][0];
+
+  return `${firstChar}${lastChar}`.toUpperCase();
 }
 
 
