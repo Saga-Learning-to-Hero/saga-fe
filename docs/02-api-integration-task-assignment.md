@@ -30,57 +30,60 @@ Chia đều toàn bộ khối lượng công việc thành **3 trục nghiệp v
 
 | Thành viên | Trục Nghiệp Vụ Phụ Trách | Phần Tài Liệu | Mã Task Jira & Nhánh Git | Thư Mục Mã Nguồn |
 | :--- | :--- | :---: | :--- | :--- |
-| **Dev 1** | **Khung Học thuật & Đề cương môn học** *(Academic Catalog & Syllabus Engine)* | **Part C1 – C8** | `feat/SAGA-43-academic-catalog-and-syllabus` | `src/features/admin/academic/`<br/>`src/features/admin/subjects/`<br/>`src/app/(dashboard)/admin/` |
-| **Dev 2** | **Quản lý Lớp học, Roster & Phân nhóm** *(Course, Roster & Teams)* | **Part C9–C11, Part D, Part E, Part F, G1** | `feat/SAGA-44-course-roster-and-team-management` | `src/features/admin/users/`<br/>`src/features/lecturer/*`<br/>`src/features/student/courses/` |
+| **Dev 1** | **Toàn bộ Phân hệ ADMIN** *(Học thuật, Đề cương, Lớp học phần & Roster sinh viên)* | **Part C & Part D** | `feat/SAGA-43-admin-academic-course-roster` | `src/features/admin/*`<br/>`src/app/(dashboard)/admin/*` |
+| **Dev 2** | **Phân hệ GIẢNG VIÊN & TỔ CHỨC NHÓM** *(Lecturer Courses, Active Roster & Teams)* | **Part E, Part F, G1** | `feat/SAGA-44-lecturer-course-and-team-management` | `src/features/lecturer/*`<br/>`src/features/student/courses/`<br/>`src/app/(dashboard)/lecturer/*` |
 | **Dev 3** | **Khởi tạo Dự án & Tích hợp GitHub / Jira** *(Project & Integrations Hub)* | **Part H, Part I, Part J, Part N** | `feat/SAGA-45-project-and-tool-integrations` | `src/features/student/project/`<br/>`src/features/integrations/*`<br/>`src/app/integrations/` |
 
 ---
 
 ## 3. Chi Tiết Nhiệm Vụ Của Từng Lập Trình Viên
 
-### 👤 DEV 1: Khung Học thuật & Đề cương môn học (Academic Catalog & Syllabus Engine)
-- **Mục tiêu**: Xây dựng toàn bộ nền tảng dữ liệu học thuật của trường.
-- **Đặc thù UI**: Form nhập liệu nhiều bước, Cây cấu trúc tiêu chí môn học (Tree View/Nested Criteria).
-- **Danh mục API phụ trách (Part C1 – C8)**:
-  1. **Subject (Môn học)**:
+### 👤 DEV 1: Toàn bộ Phân hệ ADMIN (Academic Catalog, Course & Roster)
+- **Mục tiêu**: Xây dựng toàn bộ nền tảng dữ liệu học thuật của trường, quản lý danh sách lớp học phần và import danh sách sinh viên vào Course.
+- **Đặc thù UI**: Form nhập liệu nhiều bước, Cây cấu trúc tiêu chí môn học (Tree View), Bảng quản lý Course và bộ công cụ **Excel Roster Uploader (Template ➔ Preview lỗi/hợp lệ ➔ Confirm Import)**.
+- **Danh mục API phụ trách (Part C & Part D)**:
+  1. **Subject (Môn học - Part C1, C2)**:
      - `GET /api/admin/subjects` (Danh sách môn học)
      - `POST /api/admin/subjects` (Tạo môn học mới)
      - `GET /api/admin/subjects/{id}` (Chi tiết môn học)
      - `PATCH /api/admin/subjects/{id}` (Cập nhật môn học)
-  2. **Syllabus (Đề cương môn học)**:
+  2. **Syllabus (Đề cương môn học - Part C3 – C6)**:
      - `POST /api/admin/subjects/{id}/syllabi` (Tạo phiên bản Syllabus DRAFT)
      - `GET /api/admin/syllabi/{id}` (Đọc chi tiết Syllabus)
      - `PUT /api/admin/syllabi/{id}/structure` (Thay thế cây cấu trúc tiêu chí DRAFT)
-     - `POST /api/admin/syllabi/{id}/publish` (Xuất bản chính thức sang ACTIVE)
+     - `POST /api/admin/syllabi/{id}/publish` (Xuất bản chính thức sang ACTIVE / Bất biến)
      - `POST /api/admin/syllabi/{id}/archive` (Lưu trữ Syllabus cũ)
-  3. **Semester & Academic Class (Học kỳ & Lớp hành chính)**:
+  3. **Semester & Academic Class (Học kỳ & Lớp hành chính - Part C7, C8)**:
      - `GET /api/admin/semesters` & `POST /api/admin/semesters` (Quản lý học kỳ)
      - `GET /api/admin/classes` & `POST /api/admin/classes` (Quản lý lớp hành chính)
-
----
-
-### 👤 DEV 2: Quản lý Lớp học, Sinh viên & Phân chia Nhóm (Course, Roster & Teams)
-- **Mục tiêu**: Quản lý vòng đời lớp học phần, đưa sinh viên vào lớp và phân chia sinh viên vào các nhóm làm đồ án.
-- **Đặc thù UI**: Data Table (lọc, phân trang) kết hợp bộ xử lý **Excel Uploader (Tải template ➔ Upload xem trước lỗi/hợp lệ ➔ Xác nhận Import)**.
-- **Danh mục API phụ trách (Part C9–C11, Part D, Part E, Part F, G1)**:
-  1. **Course Operations (Admin & Lecturer)**:
+  4. **Course Operations (Lớp học phần của Admin - Part C9 – C11)**:
      - `POST /api/admin/courses` (Tạo lớp học phần mới từ Subject, Semester, Class, Lecturer)
      - `GET /api/admin/courses` (Liệt kê tất cả lớp học phần)
-     - `GET /api/lecturer/courses` (Danh sách lớp giảng viên được phân công)
-     - `GET /api/lecturer/courses/{courseId}` (Chi tiết thông tin lớp học phần)
-  2. **Roster Sinh viên (Admin Roster Import)**:
+  5. **Roster Sinh viên (Admin Roster Import - Part D1 – D4)**:
      - `GET /api/admin/courses/{id}/roster/template` (Tải file mẫu Excel)
      - `GET /api/admin/courses/{id}/roster` (Xem danh sách sinh viên kèm trạng thái lời mời)
      - `POST /api/admin/courses/{id}/roster/import/preview` (Upload xem trước danh sách import)
      - `POST /api/admin/courses/{id}/roster/import/confirm` (Xác nhận import sinh viên vào lớp)
-  3. **Tổ chức Nhóm (Lecturer Team Import & Student My-Team)**:
+
+---
+
+### 👤 DEV 2: Phân hệ GIẢNG VIÊN & TỔ CHỨC NHÓM (Lecturer Courses & Teams)
+- **Mục tiêu**: Quản lý không gian lớp học của giảng viên, theo dõi sinh viên ACTIVE và phân chia sinh viên vào các nhóm đồ án.
+- **Đặc thù UI**: Bảng lớp học giảng dạy, Danh sách sinh viên đang học thực tế và bộ xử lý **Excel Team Uploader (Tải template ➔ Upload xem trước nhóm/leader ➔ Xác nhận phân nhóm)**.
+- **Danh mục API phụ trách (Part E, Part F, G1)**:
+  1. **Không gian Lớp của Giảng viên (Part E1 – E3)**:
+     - `GET /api/lecturer/courses` (Danh sách lớp giảng viên được phân công)
+     - `GET /api/lecturer/courses/{courseId}` (Chi tiết thông tin lớp học phần)
      - `GET /api/lecturer/courses/{courseId}/roster` (Xem danh sách sinh viên ACTIVE)
+  2. **Tổ chức Nhóm Đồ án (Lecturer Team Management - Part E4 – E7)**:
      - `GET /api/lecturer/courses/{courseId}/teams/template` (Tải file mẫu chia nhóm)
      - `POST /api/lecturer/courses/{courseId}/teams/import/preview` (Upload xem trước danh sách nhóm, Leader, Member)
      - `POST /api/lecturer/courses/{courseId}/teams/import/confirm` (Xác nhận tạo nhóm hàng loạt)
      - `GET /api/lecturer/courses/{courseId}/teams` (Xem danh sách nhóm, `teamId`, `leader`, `projectId`)
+  3. **Sinh viên xem Môn & Nhóm (Part F, G1)**:
      - `GET /api/student/courses` (Môn học sinh viên đang tham gia)
      - `GET /api/student/courses/{courseId}/my-team` (Sinh viên xem nhóm của mình)
+
 
 ---
 
