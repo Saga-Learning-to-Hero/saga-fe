@@ -46,7 +46,7 @@ export function ProfileHeader({ user, compact = false }: ProfileHeaderProps) {
             <Avatar className="w-13 h-13 sm:w-14 sm:h-14 rounded-xl border-2 border-white/40 shadow-sm shrink-0">
               <AvatarImage src={user.avatar} alt={user.name} />
               <AvatarFallback className="text-base font-black bg-white/20 text-white backdrop-blur-md">
-                {getInitials(user.name)}
+                {getInitials(user.name || user.fullName)}
               </AvatarFallback>
             </Avatar>
 
@@ -115,62 +115,62 @@ export function ProfileHeader({ user, compact = false }: ProfileHeaderProps) {
 
   return (
     <div
-      className="relative overflow-hidden rounded-3xl p-6 sm:p-8 border border-border/80 shadow-md"
+      className="relative overflow-hidden rounded-3xl p-5 sm:p-6 border border-border/80 shadow-md"
       style={{
         background:
           "linear-gradient(135deg, oklch(from var(--saga-primary) calc(l + 0.05) c h), oklch(from var(--saga-accent) calc(l - 0.05) c h))",
       }}
     >
       <div
-        className="absolute -top-24 -right-24 w-80 h-80 rounded-full opacity-15"
+        className="absolute -top-24 -right-24 w-80 h-80 rounded-full opacity-15 pointer-events-none"
         style={{ background: "oklch(1 0 0 / 20%)" }}
       />
       <div
-        className="absolute -bottom-20 -left-20 w-64 h-64 rounded-full opacity-10"
+        className="absolute -bottom-20 -left-20 w-64 h-64 rounded-full opacity-10 pointer-events-none"
         style={{ background: "oklch(1 0 0 / 20%)" }}
       />
 
-      <div className="relative flex flex-col md:flex-row md:items-center justify-between gap-6">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5">
-          <Avatar className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl border-2 border-white/40 shadow-md shrink-0">
+      <div className="relative flex flex-col md:flex-row md:items-center justify-between gap-5">
+        {/* Thông tin cá nhân bên trái */}
+        <div className="flex items-center gap-4.5 min-w-0">
+          <Avatar className="w-16 h-16 sm:w-18 sm:h-18 rounded-2xl border-2 border-white/40 shadow-md shrink-0">
             <AvatarImage src={user.avatar} alt={user.name} />
             <AvatarFallback className="text-xl font-black bg-white/20 text-white backdrop-blur-md">
-              {getInitials(user.name)}
+              {getInitials(user.name || user.fullName)}
             </AvatarFallback>
           </Avatar>
 
-          <div className="space-y-1.5 text-white">
-            <div className="flex flex-wrap items-center gap-2">
-              <Badge className="bg-white/20 hover:bg-white/25 text-white border-0 text-xs px-2.5 py-0.5 font-semibold backdrop-blur-md">
+          <div className="space-y-1 text-white min-w-0">
+            <div className="flex flex-wrap items-center gap-1.5">
+              <Badge className="bg-white/20 hover:bg-white/25 text-white border-0 text-[11px] px-2.5 py-0.5 font-semibold backdrop-blur-md">
                 <ShieldCheckIcon className="w-3.5 h-3.5 mr-1" />
                 {ROLE_LABELS[user.role]}
               </Badge>
 
               {user.username && (
-                <Badge className="bg-white/15 text-white/90 border-0 text-xs font-mono px-2 py-0.5">
+                <Badge className="bg-white/15 text-white/90 border-0 text-[11px] font-mono px-2 py-0.5">
                   @{user.username}
                 </Badge>
               )}
             </div>
 
-            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
+            <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight truncate">
               {user.name}
             </h1>
 
-            <div className="flex flex-wrap items-center gap-4 text-xs text-white/80 pt-0.5">
-              <span className="flex items-center gap-1.5">
-                <MailIcon className="w-3.5 h-3.5 opacity-80" />
-                {user.email}
-              </span>
+            <div className="flex items-center gap-1.5 text-xs text-white/80">
+              <MailIcon className="w-3.5 h-3.5 opacity-80 shrink-0" />
+              <span className="truncate">{user.email}</span>
             </div>
           </div>
         </div>
 
+        {/* 2 Thẻ tích hợp Jira / GitHub cho Sinh viên bên phải */}
         {isStudent && (
-          <div className="flex flex-col sm:flex-row md:flex-col gap-2.5 shrink-0">
-            <div className="bg-white/15 backdrop-blur-md border border-white/20 rounded-2xl p-3 px-4 text-white flex items-center justify-between gap-4 min-w-[200px]">
+          <div className="flex flex-col sm:flex-row md:flex-col gap-2 shrink-0">
+            <div className="bg-white/15 backdrop-blur-md border border-white/20 rounded-2xl p-2.5 px-3.5 text-white flex items-center justify-between gap-3 min-w-[200px]">
               <div className="flex items-center gap-2">
-                <CheckSquareIcon className="w-4 h-4 text-blue-300" />
+                <CheckSquareIcon className="w-4 h-4 text-blue-300 shrink-0" />
                 <span className="text-xs font-semibold">Tích hợp Jira</span>
               </div>
               {jiraConnected ? (
@@ -184,9 +184,9 @@ export function ProfileHeader({ user, compact = false }: ProfileHeaderProps) {
               )}
             </div>
 
-            <div className="bg-white/15 backdrop-blur-md border border-white/20 rounded-2xl p-3 px-4 text-white flex items-center justify-between gap-4 min-w-[200px]">
+            <div className="bg-white/15 backdrop-blur-md border border-white/20 rounded-2xl p-2.5 px-3.5 text-white flex items-center justify-between gap-3 min-w-[200px]">
               <div className="flex items-center gap-2">
-                <GitBranchIcon className="w-4 h-4 text-purple-300" />
+                <GitBranchIcon className="w-4 h-4 text-purple-300 shrink-0" />
                 <span className="text-xs font-semibold">Tích hợp GitHub</span>
               </div>
               {githubConnected ? (

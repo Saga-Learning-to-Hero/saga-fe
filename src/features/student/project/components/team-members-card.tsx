@@ -7,15 +7,19 @@ import {
   GitGraphIcon,
 } from "lucide-react";
 import type { StudentProjectDetails } from "../types/student-project";
+import type { StudentCourse } from "@/features/student/courses/types/student-course";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 interface TeamMembersCardProps {
   project: StudentProjectDetails;
+  course?: StudentCourse | null;
 }
 
-export function TeamMembersCard({ project }: TeamMembersCardProps) {
+export function TeamMembersCard({ project, course }: TeamMembersCardProps) {
+  const members = project.members || [];
+
   return (
     <Card className="rounded-2xl border border-border/80 shadow-xs bg-card">
       <CardHeader className="p-5 border-b border-border/60">
@@ -29,18 +33,20 @@ export function TeamMembersCard({ project }: TeamMembersCardProps) {
                 <CardTitle className="text-base font-bold text-foreground">
                   Thông tin Nhóm & Các Thành viên
                 </CardTitle>
-                <Badge variant="outline" className="font-mono text-xs bg-primary/10 text-primary border-primary/25 font-bold">
-                  {project.groupName}
-                </Badge>
+                {project.groupName && (
+                  <Badge variant="outline" className="font-mono text-xs bg-primary/10 text-primary border-primary/25 font-bold">
+                    {project.groupName}
+                  </Badge>
+                )}
               </div>
               <CardDescription className="text-xs text-muted-foreground">
-                Danh sách 5 thành viên thực hiện đồ án học kỳ {project.semesterCode}
+                Danh sách thành viên thực hiện đồ án{course?.semesterCode ? ` học kỳ ${course.semesterCode}` : ""}
               </CardDescription>
             </div>
           </div>
 
           <Badge variant="secondary" className="w-fit text-xs font-mono">
-            Sĩ số: {project.members.length} sinh viên
+            Sĩ số: {members.length} sinh viên
           </Badge>
         </div>
       </CardHeader>
@@ -48,7 +54,7 @@ export function TeamMembersCard({ project }: TeamMembersCardProps) {
       <CardContent className="p-5 space-y-4">
         {/* Members List Table / Cards */}
         <div className="space-y-3">
-          {project.members.map((member) => {
+          {members.map((member) => {
             const isLeader = member.role === "LEADER";
 
             return (

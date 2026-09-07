@@ -1,24 +1,26 @@
 import type { StudentProjectDetails } from "../types/student-project";
 
 export const MOCK_STUDENT_PROJECT: StudentProjectDetails = {
-  id: "proj-saga-001",
-  name: "SAGA - Hệ thống quản lý và truy xuất tiến độ đồ án tốt nghiệp",
-  projectName: "SAGA - Hệ thống quản lý và truy xuất tiến độ đồ án tốt nghiệp",
-  category: "Web Application / EdTech",
-  description:
-    "SAGA (Software Artifact Graph Analytics) là nền tảng quản lý và theo dõi tiến độ dành cho sinh viên thực hiện đồ án tốt nghiệp. Hệ thống tự động tích hợp dữ liệu công việc từ Jira Software và lịch sử commit mã nguồn từ GitHub Repository, tạo nên biểu đồ Traceability Graph hỗ trợ sinh viên và giảng viên theo dõi minh bạch tiến độ thực hiện dự án theo mô hình Agile/Scrum.",
-  status: "ACTIVE",
-  courseCode: "SWP490_FA26_SE1701",
-  courseName: "Đồ án Kỹ thuật phần mềm (Capstone Project)",
-  semesterCode: "FA26",
-  adminClassCode: "SE1701",
-  groupName: "Nhóm 01 - SAGA Team",
-  lecturer: {
-    name: "TS. Trần Minh Thuận",
-    fullName: "TS. Trần Minh Thuận",
-    email: "thuantm@fpt.edu.vn",
-    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=thuantm",
+  id: "",
+  projectId: "",
+  courseId: "",
+  teamId: "",
+  teamNo: 0,
+  teamName: "",
+  name: "",
+  description: "",
+  projectType: {
+    id: "",
+    code: "",
+    name: "",
   },
+  createdBy: {
+    userId: "",
+    fullName: "",
+  },
+  createdAt: "",
+  category: "",
+  groupName: "",
   members: [
     {
       id: "sv-01",
@@ -86,16 +88,6 @@ export const MOCK_STUDENT_PROJECT: StudentProjectDetails = {
       commitsCount: 20,
     },
   ],
-  techStack: [
-    "Next.js 16 (App Router)",
-    "React 19",
-    "TypeScript",
-    "TailwindCSS",
-    "Cytoscape.js",
-    "Zustand State",
-    "Jira Cloud REST API",
-    "GitHub Webhooks API",
-  ],
   jiraConfig: {
     serverUrl: "https://saga-capstone.atlassian.net",
     projectKey: "SWP490_SAGA",
@@ -136,9 +128,5 @@ export const MOCK_STUDENT_PROJECT: StudentProjectDetails = {
       pullRequestsCount: 5,
     },
   ],
-  jiraProjectKey: "SWP490_SAGA",
-  githubRepository: "Saga-Learning-to-Hero/saga-fe",
-  githubRepo: "Saga-Learning-to-Hero/saga-fe",
-  createdAt: "2026-08-15T08:00:00Z",
   updatedAt: "2026-08-27T14:30:00Z",
 };

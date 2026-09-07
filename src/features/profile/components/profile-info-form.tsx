@@ -91,7 +91,7 @@ export function ProfileInfoForm({ user, compact = false }: ProfileInfoFormProps)
 
         <div className="space-y-2">
           <Label htmlFor="username" className="text-sm font-semibold text-foreground/90">
-            Tên đăng nhập (Username)
+            Tên đăng nhập
           </Label>
           <Input
             id="username"
@@ -126,19 +126,6 @@ export function ProfileInfoForm({ user, compact = false }: ProfileInfoFormProps)
             disabled
             value={getRoleLabel(user.role)}
             className="h-10 text-sm rounded-xl bg-muted/60 text-muted-foreground font-medium border-border/80 px-3.5"
-          />
-        </div>
-
-        <div className="space-y-2 sm:col-span-2">
-          <Label htmlFor="account-id" className="text-sm font-semibold text-foreground/90">
-            Mã tài khoản hệ thống (ID)
-          </Label>
-          <Input
-            id="account-id"
-            type="text"
-            disabled
-            value={user.id}
-            className="h-10 text-sm rounded-xl bg-muted/60 text-muted-foreground font-mono border-border/80 px-3.5"
           />
         </div>
 
@@ -192,8 +179,8 @@ export function ProfileInfoForm({ user, compact = false }: ProfileInfoFormProps)
   }
 
   return (
-    <Card className="rounded-2xl border border-border/80 shadow-xs bg-card">
-      <CardHeader className="p-6 border-b border-border/60">
+    <Card className="rounded-3xl border border-border/80 shadow-xs bg-card h-full flex flex-col justify-between">
+      <CardHeader className="p-5 sm:p-6 border-b border-border/60">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0">
             <UserIcon className="w-5 h-5" />
@@ -209,7 +196,7 @@ export function ProfileInfoForm({ user, compact = false }: ProfileInfoFormProps)
         </div>
       </CardHeader>
 
-      <CardContent className="p-6 sm:p-7">
+      <CardContent className="p-5 sm:p-6 flex-1 flex flex-col justify-between">
         {formFields}
       </CardContent>
     </Card>

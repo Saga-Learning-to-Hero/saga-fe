@@ -5,15 +5,20 @@ import {
   SparklesIcon,
   GraduationCapIcon,
   CheckCircle2Icon,
+  UserCheck2Icon,
 } from "lucide-react";
 import type { StudentProjectDetails } from "../types/student-project";
+import type { StudentCourse } from "@/features/student/courses/types/student-course";
 import { Badge } from "@/components/ui/badge";
 
 interface ProjectBannerHeaderProps {
   project: StudentProjectDetails;
+  course?: StudentCourse | null;
 }
 
-export function ProjectBannerHeader({ project }: ProjectBannerHeaderProps) {
+export function ProjectBannerHeader({ project, course }: ProjectBannerHeaderProps) {
+  const categoryLabel = project.projectType?.name || project.category;
+
   return (
     <div
       className="relative overflow-hidden rounded-3xl p-6 sm:p-8 border border-border/80 shadow-md"
@@ -36,44 +41,65 @@ export function ProjectBannerHeader({ project }: ProjectBannerHeaderProps) {
         <div className="space-y-3 max-w-3xl">
           {/* Top Badges */}
           <div className="flex flex-wrap items-center gap-2">
-            <Badge className="bg-white/20 hover:bg-white/25 text-white border-0 text-xs px-3 py-1 font-semibold backdrop-blur-md">
-              <FolderKanbanIcon className="w-3.5 h-3.5 mr-1.5" />
-              {project.category}
-            </Badge>
+            {categoryLabel && (
+              <Badge className="bg-white/20 hover:bg-white/25 text-white border-0 text-xs px-3 py-1 font-semibold backdrop-blur-md">
+                <FolderKanbanIcon className="w-3.5 h-3.5 mr-1.5" />
+                {categoryLabel}
+              </Badge>
+            )}
 
-            <Badge className="bg-emerald-500/20 text-white border-0 text-xs font-mono">
-              Học kỳ: {project.semesterCode}
-            </Badge>
+            {course?.semesterCode && (
+              <Badge className="bg-emerald-500/20 text-white border-0 text-xs font-mono">
+                Học kỳ: {course.semesterCode}
+              </Badge>
+            )}
 
-            <Badge className="bg-blue-500/20 text-white border-0 text-xs font-mono">
-              Lớp: {project.adminClassCode}
-            </Badge>
+            {course?.adminClassCode && (
+              <Badge className="bg-blue-500/20 text-white border-0 text-xs font-mono">
+                Lớp: {course.adminClassCode}
+              </Badge>
+            )}
 
-            {project.status === "ACTIVE" && (
+            {project.name ? (
               <Badge className="bg-emerald-400 text-emerald-950 font-bold border-0 text-xs gap-1">
                 <CheckCircle2Icon className="w-3 h-3" /> Đang phát triển
+              </Badge>
+            ) : (
+              <Badge className="bg-amber-400 text-amber-950 font-bold border-0 text-xs gap-1">
+                Chưa có dự án
               </Badge>
             )}
           </div>
 
           {/* Project Title */}
           <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight leading-tight">
-            {project.name}
+            {project.name || "Chưa khởi tạo dự án nhóm"}
           </h1>
 
           {/* Subtitle / Group & Mentor Info */}
           <div className="flex flex-wrap items-center gap-4 text-xs text-white/85 pt-1">
-            <span className="flex items-center gap-1.5 font-bold">
-              <SparklesIcon className="w-3.5 h-3.5 text-amber-300" />
-              {project.groupName}
-            </span>
-            <span className="flex items-center gap-1.5">
-              <GraduationCapIcon className="w-3.5 h-3.5 opacity-80" />
-              GVHD: <strong className="text-white">{project.lecturer.name}</strong> ({project.lecturer.email})
-            </span>
+            {project.groupName && (
+              <span className="flex items-center gap-1.5 font-bold">
+                <SparklesIcon className="w-3.5 h-3.5 text-amber-300" />
+                {project.groupName}
+              </span>
+            )}
+            {course?.lecturer?.fullName && (
+              <span className="flex items-center gap-1.5">
+                <GraduationCapIcon className="w-3.5 h-3.5 opacity-80" />
+                GVHD: <strong className="text-white">{course.lecturer.fullName}</strong> ({course.lecturer.email})
+              </span>
+            )}
+            {project.createdBy?.fullName && (
+              <span className="flex items-center gap-1.5 opacity-90">
+                <UserCheck2Icon className="w-3.5 h-3.5 text-sky-200" />
+                Người tạo: <strong className="text-white">{project.createdBy.fullName}</strong>
+              </span>
+            )}
           </div>
         </div>
       </div>
     </div>
   );
 }
+

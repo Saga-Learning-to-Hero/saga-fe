@@ -2,11 +2,11 @@
 
 import {
   FolderKanbanIcon,
-  Code2Icon,
   CheckSquareIcon,
   GitBranchIcon,
   FileTextIcon,
   Edit3Icon,
+  PlusIcon,
 } from "lucide-react";
 import type { StudentProjectDetails } from "../types/student-project";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
@@ -22,6 +22,12 @@ export function ProjectDetailsCard({
   project,
   onOpenEditModal,
 }: ProjectDetailsCardProps) {
+  // Kiểm tra xem nhóm đã có dự án hay chưa
+  const hasProject = Boolean(
+    (project.name && project.name.trim() !== "") ||
+    (project.projectId && project.projectId.trim() !== "")
+  );
+
   return (
     <Card className="rounded-2xl border border-border/80 shadow-xs bg-card">
       <CardHeader className="p-5 border-b border-border/60">
@@ -35,7 +41,7 @@ export function ProjectDetailsCard({
                 Thông tin Chi tiết Dự án
               </CardTitle>
               <CardDescription className="text-xs text-muted-foreground">
-                Thông tin loại dự án, mô tả bài toán và công nghệ phát triển
+                Thông tin chi tiết loại dự án và mô tả bài toán giải pháp
               </CardDescription>
             </div>
           </div>
@@ -46,8 +52,17 @@ export function ProjectDetailsCard({
               onClick={onOpenEditModal}
               className="h-9 text-xs font-bold rounded-xl gap-2 cursor-pointer shadow-xs bg-primary text-primary-foreground hover:bg-primary/90 px-4 shrink-0"
             >
-              <Edit3Icon className="w-4 h-4" />
-              Cập nhật dự án
+              {hasProject ? (
+                <>
+                  <Edit3Icon className="w-4 h-4" />
+                  Cập nhật dự án
+                </>
+              ) : (
+                <>
+                  <PlusIcon className="w-4 h-4" />
+                  Tạo dự án
+                </>
+              )}
             </Button>
           )}
         </div>
@@ -61,8 +76,18 @@ export function ProjectDetailsCard({
               Tên dự án chính thức
             </span>
             <h3 className="text-base font-bold text-foreground leading-snug">
-              {project.name}
+              {project.name || "Chưa có dự án được tạo"}
             </h3>
+            {project.createdBy?.fullName && (
+              <p className="text-xs text-muted-foreground pt-0.5">
+                Khởi tạo bởi: <span className="font-semibold text-foreground">{project.createdBy.fullName}</span>
+                {project.createdAt && (
+                  <span className="ml-2 font-mono text-[11px]">
+                    ({new Date(project.createdAt).toLocaleDateString("vi-VN")})
+                  </span>
+                )}
+              </p>
+            )}
           </div>
 
           <div className="space-y-1">
@@ -71,7 +96,7 @@ export function ProjectDetailsCard({
             </span>
             <div>
               <Badge className="bg-primary/15 text-primary border-primary/20 font-bold text-xs">
-                {project.category}
+                {project.projectType?.name || project.category || "Chưa phân loại"}
               </Badge>
             </div>
           </div>
@@ -84,26 +109,12 @@ export function ProjectDetailsCard({
             Mô tả dự án & Giải pháp
           </h4>
           <div className="p-4 rounded-2xl bg-card border border-border/70 text-xs text-muted-foreground leading-relaxed space-y-2">
-            <p className="whitespace-pre-line">{project.description}</p>
-          </div>
-        </div>
-
-        {/* Công nghệ sử dụng (Tech Stack) */}
-        <div className="space-y-2">
-          <h4 className="text-xs font-bold text-foreground uppercase tracking-wider flex items-center gap-1.5">
-            <Code2Icon className="w-4 h-4 text-purple-500" />
-            Công nghệ & Framework sử dụng (Tech Stack)
-          </h4>
-          <div className="flex flex-wrap gap-2 pt-1">
-            {project.techStack.map((tech, idx) => (
-              <Badge
-                key={idx}
-                variant="secondary"
-                className="bg-secondary text-secondary-foreground text-xs px-3 py-1 font-mono rounded-lg border border-border/60"
-              >
-                {tech}
-              </Badge>
-            ))}
+            <p className="whitespace-pre-line">
+              {project.description ||
+                (hasProject
+                  ? "Chưa có mô tả dự án từ hệ thống. Vui lòng bấm 'Cập nhật dự án' để bổ sung thông tin."
+                  : "Chưa có dự án nào được khởi tạo trong môn học này. Trưởng nhóm vui lòng bấm nút 'Tạo dự án' ở trên để bắt đầu đăng ký đề tài.")}
+            </p>
           </div>
         </div>
 
@@ -113,7 +124,9 @@ export function ProjectDetailsCard({
               <CheckSquareIcon className="w-4 h-4 text-blue-500 shrink-0" />
               <div className="flex flex-col">
                 <span className="text-[11px] font-semibold text-muted-foreground">Jira Project (1 Site & Key)</span>
-                <span className="text-xs font-bold font-mono text-foreground">{project.jiraConfig?.projectKey || project.jiraProjectKey || "SWP490_SAGA"}</span>
+                <span className="text-xs font-bold font-mono text-foreground">
+                  {project.jiraConfig?.projectKey || "Chưa liên kết"}
+                </span>
               </div>
             </div>
             <Badge className="bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-0 text-[10px] font-semibold">
@@ -126,10 +139,10 @@ export function ProjectDetailsCard({
               <GitBranchIcon className="w-4 h-4 text-purple-500 shrink-0" />
               <div className="flex flex-col min-w-0">
                 <span className="text-[11px] font-semibold text-muted-foreground">
-                  GitHub Repositories ({project.githubRepositories?.length || 1} repos)
+                  GitHub Repositories ({project.githubRepositories?.length || 0} repos)
                 </span>
                 <span className="text-xs font-bold font-mono text-purple-600 dark:text-purple-400 truncate">
-                  {project.githubRepositories?.[0]?.repository || project.githubRepository || "Saga-Learning-to-Hero/saga-fe"}
+                  {project.githubRepositories?.[0]?.repository || "Chưa liên kết"}
                 </span>
               </div>
             </div>

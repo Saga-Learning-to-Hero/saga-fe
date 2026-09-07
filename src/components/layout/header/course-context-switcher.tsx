@@ -50,6 +50,11 @@ export function CourseContextSwitcher({
     );
   }
 
+  // ── 2. Trang Hồ sơ cá nhân & Cài đặt chung (Shared Pages): Ẩn bộ chọn ─
+  if (pathname.startsWith("/profile") || pathname.startsWith("/settings")) {
+    return null;
+  }
+
   // ── 2. Giảng viên (Lecturer) ──────────────────────────────────────────
   if (user.role === "LECTURER") {
     const isRootCoursePage = pathname === "/lecturer/courses";

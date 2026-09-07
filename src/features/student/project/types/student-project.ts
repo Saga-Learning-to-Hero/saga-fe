@@ -1,12 +1,55 @@
 import type { RoleInTeam } from "@/types/auth";
 
-export type ProjectCategory =
-  | "Web Application / EdTech"
-  | "Mobile Application"
-  | "AI & Machine Learning"
-  | "Cloud & DevOps"
-  | "Blockchain & Fintech"
-  | "IoT & Embedded Systems";
+/**
+ * Interface phản hồi từ Backend API cho Dự án Sinh viên
+ * GET /api/student/courses/{courseId}/project
+ */
+export interface ProjectTypeSummary {
+  id: string;
+  code: string;
+  name: string;
+}
+
+/**
+ * Interface cho danh mục Loại dự án từ API:
+ * GET /api/student/project-types
+ */
+export interface ProjectTypeItem {
+  id: string;
+  code: string;
+  name: string;
+  description: string;
+}
+
+/**
+ * Request payload tạo dự án nhóm mới:
+ * POST /api/student/courses/{courseId}/project
+ */
+export interface CreateStudentProjectRequest {
+  name: string;
+  projectTypeId: string;
+  description: string;
+}
+
+export interface ProjectCreatorSummary {
+  userId: string;
+  fullName: string;
+}
+
+export interface StudentTeamProjectResponse {
+  projectId: string;
+  courseId: string;
+  teamId: string;
+  teamNo: number;
+  teamName: string;
+  name: string;
+  description: string;
+  projectType: ProjectTypeSummary;
+  createdBy: ProjectCreatorSummary;
+  createdAt: string;
+}
+
+export type ProjectCategory = string;
 
 export interface ProjectTeamMember {
   id: string;
@@ -44,29 +87,22 @@ export interface ProjectGitHubRepo {
 
 export interface StudentProjectDetails {
   id: string;
+  projectId: string;
+  courseId: string;
+  teamId: string;
+  teamNo: number;
+  teamName: string;
   name: string;
-  projectName?: string;
-  category: ProjectCategory;
   description: string;
-  status: "ACTIVE" | "COMPLETED" | "DRAFT" | "PLANNED";
-  courseCode: string;
-  courseName: string;
-  semesterCode: string;
-  adminClassCode: string;
-  groupName: string;
-  lecturer: {
-    name: string;
-    fullName?: string;
-    email: string;
-    avatar?: string;
-  };
-  members: ProjectTeamMember[];
-  techStack: string[];
+  projectType: ProjectTypeSummary;
+  createdBy: ProjectCreatorSummary;
+  createdAt: string;
+
+  // Thuộc tính hiển thị UI & tích hợp
+  category?: string;
+  groupName?: string;
+  members?: ProjectTeamMember[];
   jiraConfig?: ProjectJiraConfig;
   githubRepositories?: ProjectGitHubRepo[];
-  jiraProjectKey?: string;
-  githubRepository?: string;
-  githubRepo?: string;
-  createdAt: string;
-  updatedAt: string;
+  updatedAt?: string;
 }
