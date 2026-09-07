@@ -1,15 +1,20 @@
 "use client";
 
+import { useEffect } from "react";
 import {
-  Link2Icon,
   CheckCircle2Icon,
   XCircleIcon,
   ShieldCheckIcon,
   CheckSquareIcon,
   GitBranchIcon,
+  Loader2Icon,
 } from "lucide-react";
 import type { User } from "@/types/auth";
 import { Badge } from "@/components/ui/badge";
+import { toast } from "@/components/ui/sonner";
+import { useUserIdentities } from "@/features/integrations/hooks/useUserIntegrations";
+import { useJiraOAuthCallback } from "@/features/integrations/hooks/useJiraIntegrations";
+import { useGitHubOAuthCallback } from "@/features/integrations/hooks/useGithubIntegrations";
 import { StudentJiraSettings } from "./student-jira-settings";
 import { StudentGitHubSettings } from "./student-github-settings";
 
@@ -18,18 +23,74 @@ interface IntegrationsViewProps {
 }
 
 export function IntegrationsView({ user }: IntegrationsViewProps) {
-  const jiraConnected = Boolean(
-    user.jiraIntegration?.connected ||
-    (user.jiraIntegrations && user.jiraIntegrations.some((j) => j.connected))
-  );
+  // Gọi API: GET /api/integrations/me
+  const {
+    jiraIdentity,
+    githubIdentity,
+    isJiraConnected,
+    isGitHubConnected,
+    isLoading,
+    refetch,
+  } = useUserIdentities();
 
-  const githubConnected = Boolean(
-    user.githubIntegration?.connected ||
-    (user.githubIntegrations && user.githubIntegrations.some((g) => g.connected))
-  );
+  const jiraCallbackMutation = useJiraOAuthCallback();
+  const githubCallbackMutation = useGitHubOAuthCallback();
+  const { mutate: handleJiraCallback } = jiraCallbackMutation;
+  const { mutate: handleGithubCallback } = githubCallbackMutation;
+
+  // Xử lý tự động khi OAuth redirect về kèm query code & state
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const urlParams = new URLSearchParams(window.location.search);
+    const code = urlParams.get("code");
+    const state = urlParams.get("state");
+    const provider = urlParams.get("provider")?.toLowerCase();
+
+    if (code && state) {
+      const isGithub = provider === "github";
+      const handler = isGithub ? handleGithubCallback : handleJiraCallback;
+
+      handler(
+        { code, state },
+        {
+          onSuccess: () => {
+            window.history.replaceState({}, "", window.location.pathname);
+            refetch();
+            toast.success(
+              isGithub
+                ? "Liên kết tài khoản GitHub cá nhân thành công!"
+                : "Liên kết tài khoản Atlassian Jira cá nhân thành công!"
+            );
+          },
+          onError: () => {
+            toast.error("Xác thực OAuth thất bại. Vui lòng thử lại.");
+          },
+        }
+      );
+    }
+  }, [refetch, handleJiraCallback, handleGithubCallback]);
+
+  const jiraConnected = isJiraConnected;
+  const githubConnected = isGitHubConnected;
+
+  const isCallbackPending = jiraCallbackMutation.isPending || githubCallbackMutation.isPending;
 
   return (
     <div className="space-y-6 max-w-[1600px] mx-auto pb-12">
+      {isCallbackPending && (
+        <div className="flex items-center gap-2.5 px-4 py-2.5 rounded-2xl bg-primary/15 border border-primary/30 text-xs text-primary font-semibold animate-pulse">
+          <Loader2Icon className="w-4 h-4 animate-spin shrink-0" />
+          <span>Đang xử lý hoàn tất xác thực OAuth tài khoản cá nhân...</span>
+        </div>
+      )}
+
+      {isLoading && !isCallbackPending && (
+        <div className="flex items-center gap-2.5 px-4 py-2.5 rounded-2xl bg-primary/10 border border-primary/20 text-xs text-primary font-medium animate-pulse">
+          <Loader2Icon className="w-4 h-4 animate-spin shrink-0" />
+          <span>Đang đồng bộ trạng thái liên kết Jira & GitHub cá nhân...</span>
+        </div>
+      )}
+
       {/* Hero Banner */}
       <div
         className="relative overflow-hidden rounded-3xl p-6 sm:p-8 border border-border/80 shadow-md"
@@ -49,16 +110,6 @@ export function IntegrationsView({ user }: IntegrationsViewProps) {
 
         <div className="relative flex flex-col lg:flex-row lg:items-center justify-between gap-6">
           <div className="space-y-2.5 max-w-2xl">
-            <div className="flex items-center gap-2">
-              <Badge className="bg-white/20 hover:bg-white/25 text-white border-0 text-xs px-3 py-1 font-semibold backdrop-blur-sm">
-                <Link2Icon className="size-3.5 mr-1.5" />
-                Định danh Tác giả & Assignee SAGA
-              </Badge>
-              <Badge className="bg-emerald-400 text-emerald-950 border-0 text-xs font-bold font-mono">
-                OAuth 2.0 Direct Link
-              </Badge>
-            </div>
-
             <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight leading-tight">
               Liên kết Tài khoản Cá nhân Jira & GitHub
             </h1>
@@ -68,14 +119,18 @@ export function IntegrationsView({ user }: IntegrationsViewProps) {
             </p>
           </div>
 
-          {/* 2 Integration Status Pills (đồng bộ từ Profile) */}
+          {/* 2 Integration Status Pills */}
           <div className="flex flex-col sm:flex-row lg:flex-col gap-2.5 shrink-0">
             <div className="bg-white/15 backdrop-blur-md border border-white/20 rounded-2xl p-3 px-4 text-white flex items-center justify-between gap-4 min-w-[220px]">
               <div className="flex items-center gap-2">
                 <CheckSquareIcon className="w-4 h-4 text-blue-300" />
                 <span className="text-xs font-semibold">Tích hợp Jira</span>
               </div>
-              {jiraConnected ? (
+              {isLoading && !jiraIdentity ? (
+                <Badge className="bg-white/20 text-white border-0 text-[10px] gap-1 px-2 animate-pulse">
+                  <Loader2Icon className="w-3 h-3 animate-spin" /> Đang kiểm tra...
+                </Badge>
+              ) : jiraConnected ? (
                 <Badge className="bg-emerald-500/80 text-white border-0 text-[10px] gap-1 px-2">
                   <CheckCircle2Icon className="w-3 h-3" /> Đã kết nối
                 </Badge>
@@ -91,7 +146,11 @@ export function IntegrationsView({ user }: IntegrationsViewProps) {
                 <GitBranchIcon className="w-4 h-4 text-purple-300" />
                 <span className="text-xs font-semibold">Tích hợp GitHub</span>
               </div>
-              {githubConnected ? (
+              {isLoading && !githubIdentity ? (
+                <Badge className="bg-white/20 text-white border-0 text-[10px] gap-1 px-2 animate-pulse">
+                  <Loader2Icon className="w-3 h-3 animate-spin" /> Đang kiểm tra...
+                </Badge>
+              ) : githubConnected ? (
                 <Badge className="bg-emerald-500/80 text-white border-0 text-[10px] gap-1 px-2">
                   <CheckCircle2Icon className="w-3 h-3" /> Đã kết nối
                 </Badge>
@@ -118,8 +177,18 @@ export function IntegrationsView({ user }: IntegrationsViewProps) {
 
       {/* Two Integration Cards */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
-        <StudentJiraSettings user={user} />
-        <StudentGitHubSettings user={user} />
+        <StudentJiraSettings
+          user={user}
+          identity={jiraIdentity}
+          onRefresh={() => refetch()}
+          isLoading={isLoading}
+        />
+        <StudentGitHubSettings
+          user={user}
+          identity={githubIdentity}
+          onRefresh={() => refetch()}
+          isLoading={isLoading}
+        />
       </div>
     </div>
   );

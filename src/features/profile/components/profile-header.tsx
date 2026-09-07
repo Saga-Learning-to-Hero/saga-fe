@@ -13,19 +13,26 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { ROLE_LABELS, getInitials } from "@/components/layout/sidebar/nav-config";
 
+import { useUserIdentities } from "@/features/integrations/hooks/useUserIntegrations";
+
 interface ProfileHeaderProps {
   user: User;
   compact?: boolean;
 }
 
 export function ProfileHeader({ user, compact = false }: ProfileHeaderProps) {
+  const { isJiraConnected, isGitHubConnected } = useUserIdentities();
   const isStudent = user.role === "STUDENT";
-  const jiraConnected = (user.jiraIntegrations && user.jiraIntegrations.length > 0)
-    ? user.jiraIntegrations.some((j) => j.connected)
-    : user.jiraIntegration?.connected;
-  const githubConnected = (user.githubIntegrations && user.githubIntegrations.length > 0)
-    ? user.githubIntegrations.some((g) => g.connected)
-    : user.githubIntegration?.connected;
+  const jiraConnected =
+    isJiraConnected ||
+    (user.jiraIntegrations && user.jiraIntegrations.length > 0
+      ? user.jiraIntegrations.some((j) => j.connected)
+      : Boolean(user.jiraIntegration?.connected));
+  const githubConnected =
+    isGitHubConnected ||
+    (user.githubIntegrations && user.githubIntegrations.length > 0
+      ? user.githubIntegrations.some((g) => g.connected)
+      : Boolean(user.githubIntegration?.connected));
 
   if (compact) {
     return (
