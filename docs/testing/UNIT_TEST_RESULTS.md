@@ -6,9 +6,9 @@
 | **Phân hệ** | Frontend Web Application (`saga-fe`) |
 | **Framework kiểm thử** | Vitest 4.x + V8 Engine + TanStack Query Hooks |
 | **Tiêu chuẩn áp dụng** | Quy chuẩn Mẫu Báo cáo Kiểm thử Đơn vị — FPT University Capstone Project |
-| **Tổng số ca kiểm thử** | **97 Test Cases** (Auth: 28, Admin: 69) |
-| **Trạng thái nghiệm thu cuối** | <mark style="background-color: #dcfce7; color: #166534; padding: 2px 8px; border-radius: 4px; font-weight: bold;">✅ 100% PASSED (97/97 Test Cases)</mark> |
-| **Chu kỳ kiểm thử** | **3 Đợt lặp (Run 1: Phát hiện 19 lỗi ➔ Run 2: Xử lý 16 lỗi ➔ Run 3: Nghiệm thu hoàn tất)** |
+| **Tổng số ca kiểm thử** | **134 Test Cases** (Auth: 28, Admin/Dev 1: 69, Lecturer & Team/Dev 2: 37) |
+| **Trạng thái nghiệm thu cuối** | <mark style="background-color: #dcfce7; color: #166534; padding: 2px 8px; border-radius: 4px; font-weight: bold;">✅ 100% PASSED (134/134 Test Cases)</mark> |
+| **Chu kỳ kiểm thử** | **Auth & Admin: 3 đợt lặp (19 lỗi đã đóng). Dev 2: nghiệm thu 08/09/2026 — 37/37 Passed.** |
 
 ---
 
@@ -69,6 +69,12 @@ Biểu đồ tiến trình hội tụ chất lượng (Defect Convergence Chart)
    - Số ca kiểm thử: **69 Test Cases** (Đợt 1: 56/69 ➔ Đợt 2: 66/69 ➔ Đợt 3: 69/69 Passed)
    - Số lỗi phát hiện & đã sửa: **13 Defects**
    - Ngày hoàn tất: **07/09/2026**
+3. 🧑‍🏫 **[03_LECTURER_COURSE_TEAM_UNIT_TEST_REPORT.md](03_LECTURER_COURSE_TEAM_UNIT_TEST_REPORT.md)**:
+   - Module: **Phân hệ Giảng viên, Import nhóm Excel & Nhóm sinh viên (Dev 2 — Part E, F, G1)**
+   - Các Service: `LecturerCourseService`, `LecturerTeamService`, `StudentCourseService`
+   - Số ca kiểm thử: **37 Test Cases** (Nghiệm thu `08/09/2026 15:47`: **37/37 Passed**, 0 Failed)
+   - Endpoint nhóm sinh viên: `GET /api/student/courses/{courseId}/team` (không dùng `/my-team`)
+   - Ngày hoàn tất: **08/09/2026**
 
 ---
 
@@ -84,7 +90,10 @@ Biểu đồ tiến trình hội tụ chất lượng (Defect Convergence Chart)
 | **4** | **`RosterService`** (Danh sách Roster & Import Excel) | `ADM_ROS` | `8` | `2` | `9` | **`10`** | `4` | `4` | `2` | **`10`** | `07/09/2026` |
 | **5** | **`SubjectService`** (Môn học (Subject Catalog)) | `ADM_SUB` | `9` | `3` | `12` | **`12`** | `4` | `5` | `3` | **`12`** | `07/09/2026` |
 | **6** | **`SyllabusService`** (Đề cương & Cấu trúc tiêu chí) | `ADM_SYL` | `12` | `2` | `14` | **`14`** | `7` | `5` | `2` | **`14`** | `07/09/2026` |
-| | **TỔNG CỘNG (GRAND TOTAL)** | — | **`78`** | **`19`** | **`94`** | **`97`** | **`35`** | **`43`** | **`19`** | **`97`** | — |
+| **7** | **`LecturerCourseService`** (Lớp giảng viên & Roster ACTIVE) | `LEC_CRS` | — | — | — | **`10`** | `3` | `4` | `3` | **`10`** | `08/09/2026` |
+| **8** | **`LecturerTeamService`** (Template / Preview / Confirm nhóm) | `LEC_TEAM` | — | — | — | **`18`** | `4` | `10` | `4` | **`18`** | `08/09/2026` |
+| **9** | **`StudentCourseService`** (Môn ACTIVE & nhóm `/team`) | `STU_CRS` | — | — | — | **`9`** | `2` | `4` | `3` | **`9`** | `08/09/2026` |
+| | **TỔNG CỘNG (GRAND TOTAL)** | — | **`78`** | **`19`** | **`94`** | **`134`** | **`44`** | **`61`** | **`29`** | **`134`** | — |
 
 <br/>
 
@@ -92,25 +101,27 @@ Biểu đồ tiến trình hội tụ chất lượng (Defect Convergence Chart)
 
 ```text
 ┌──────────────────────────────────────────────────────────────────────────────┐
-│  📈 Tỷ lệ kiểm thử thành công cuối cùng       : 100.00% (97/97 Passed)       │
-│  🔹 Ca kiểm thử luồng chuẩn (Normal - N)      : 36.08%  (35/97 Cases)         │
-│  🔸 Ca kiểm thử luồng ngoại lệ (Abnormal - A) : 44.33%  (43/97 Cases)         │
-│  ▫️ Ca kiểm thử giá trị biên (Boundary - B)   : 19.59%  (19/97 Cases)         │
-│  🛠️ Tổng số khiếm khuyết phát hiện & đã xử lý : 19 Lỗi (100% Đã Đóng)        │
+│  📈 Tỷ lệ kiểm thử thành công cuối cùng       : 100.00% (134/134 Passed)     │
+│  🔹 Ca kiểm thử luồng chuẩn (Normal - N)      : 32.84%  (44/134 Cases)       │
+│  🔸 Ca kiểm thử luồng ngoại lệ (Abnormal - A) : 45.52%  (61/134 Cases)       │
+│  ▫️ Ca kiểm thử giá trị biên (Boundary - B)   : 21.64%  (29/134 Cases)       │
+│  🛠️ Khiếm khuyết Auth+Admin đã đóng           : 19 Lỗi (100% Closed)         │
+│  🧪 Dev 2 (08/09/2026 15:47)                  : 37/37 Passed, 0 Failed       │
 └──────────────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
 ## 🏆 TIÊU CHÍ NGHIỆM THU ĐẠT ĐƯỢC (ACCEPTANCE CRITERIA)
-1. **Pass Rate**: Đạt **100% Passed (97/97 tests)** ở bản chạy nghiệm thu cuối cùng (Final Run), toàn bộ 19 lỗi phát hiện từ các đợt chạy trước đều đã có minh chứng sửa chữa và tái kiểm thử thành công.
+1. **Pass Rate**: Đạt **100% Passed (134/134 tests)** gồm Auth 28, Admin/Dev 1 69, Lecturer & Team/Dev 2 37. Toàn bộ 19 lỗi Auth+Admin từ các đợt chạy trước đã đóng. Dev 2 nghiệm thu `08/09/2026 15:47` đạt 37/37.
 2. **Phân bổ tỷ lệ ca kiểm thử chuẩn FPT**:
-   - Ca Normal (`N`): **36.08%** (Đạt mục tiêu chuẩn 20% - 30%)
-   - Ca Abnormal (`A`): **44.33%** (Đạt mục tiêu chuẩn 40% - 50%)
-   - Ca Boundary (`B`): **19.59%** (Đạt mục tiêu chuẩn 20% - 30%)
+   - Ca Normal (`N`): **32.84%** (44/134)
+   - Ca Abnormal (`A`): **45.52%** (61/134 — đạt mục tiêu 40%–50%)
+   - Ca Boundary (`B`): **21.64%** (29/134)
 3. **Phân rã theo ngày thực thi**:
    - Ngày **06/09/2026**: Hoàn tất 28 tests module Authentication (`LOG_OAU`).
    - Ngày **07/09/2026**: Hoàn tất 69 tests phân hệ Quản trị Học thuật Dev 1 (`Academic`, `Course`, `Roster`, `Subject`, `Syllabus`).
+   - Ngày **08/09/2026**: Hoàn tất 37 tests phân hệ Giảng viên & Nhóm Dev 2 (`LecturerCourse`, `LecturerTeam`, `StudentCourse`).
 
 ---
 

@@ -7,11 +7,13 @@ Tài liệu này định hình kế hoạch phân chia công việc tích hợp 
 ## 1. Phân Tích Khối Lượng & Chiến Lược Phân Chia (Workload Balancing)
 
 Nếu phân chia cứng theo Vai trò (Role-based), khối lượng công việc sẽ bị **lệch rất lớn (mất cân bằng tải)**:
+
 - **Lecturer**: Rất nhẹ (Backend hiện tại chỉ có ~6 API đơn giản: xem lớp, xem roster và import nhóm).
 - **Student**: Bị quá tải nặng vì phải gánh toàn bộ luồng **Dự án + Tích hợp GitHub App + Tích hợp Jira OAuth 2 tầng (cá nhân + team) + Xử lý Callback Redirect**.
 - **Admin**: Khá nhiều form nhập liệu học thuật và cây cấu trúc tiêu chí Syllabus.
 
 ### 🎯 Giải pháp: Phân chia theo "Miền nghiệp vụ & Tính năng" (Feature & Domain Driven)
+
 Chia đều toàn bộ khối lượng công việc thành **3 trục nghiệp vụ độc lập (~33% mỗi người)**:
 
 ```text
@@ -28,17 +30,18 @@ Chia đều toàn bộ khối lượng công việc thành **3 trục nghiệp v
 
 ## 2. Bảng Ma Trận Phân Chia Công Việc Chi Tiết
 
-| Thành viên | Trục Nghiệp Vụ Phụ Trách | Phần Tài Liệu | Mã Task Jira & Nhánh Git | Thư Mục Mã Nguồn |
-| :--- | :--- | :---: | :--- | :--- |
-| **Dev 1** | **Toàn bộ Phân hệ ADMIN** *(Học thuật, Đề cương, Lớp học phần & Roster sinh viên)* | **Part C & Part D** | `feat/SAGA-43-admin-academic-course-roster` | `src/features/admin/*`<br/>`src/app/(dashboard)/admin/*` |
-| **Dev 2** | **Phân hệ GIẢNG VIÊN & TỔ CHỨC NHÓM** *(Lecturer Courses, Active Roster & Teams)* | **Part E, Part F, G1** | `feat/SAGA-44-lecturer-course-and-team-management` | `src/features/lecturer/*`<br/>`src/features/student/courses/`<br/>`src/app/(dashboard)/lecturer/*` |
-| **Dev 3** | **Khởi tạo Dự án & Tích hợp GitHub / Jira** *(Project & Integrations Hub)* | **Part H, Part I, Part J, Part N** | `feat/SAGA-45-project-and-tool-integrations` | `src/features/student/project/`<br/>`src/features/integrations/*`<br/>`src/app/integrations/` |
+| Thành viên | Trục Nghiệp Vụ Phụ Trách                                                           |           Phần Tài Liệu            | Mã Task Jira & Nhánh Git                           | Thư Mục Mã Nguồn                                                                                   |
+| :--------- | :--------------------------------------------------------------------------------- | :--------------------------------: | :------------------------------------------------- | :------------------------------------------------------------------------------------------------- |
+| **Dev 1**  | **Toàn bộ Phân hệ ADMIN** _(Học thuật, Đề cương, Lớp học phần & Roster sinh viên)_ |        **Part C & Part D**         | `feat/SAGA-43-admin-academic-course-roster`        | `src/features/admin/*`<br/>`src/app/(dashboard)/admin/*`                                           |
+| **Dev 2**  | **Phân hệ GIẢNG VIÊN & TỔ CHỨC NHÓM** _(Lecturer Courses, Active Roster & Teams)_  |       **Part E, Part F, G1**       | `feat/SAGA-44-lecturer-course-and-team-management` | `src/features/lecturer/*`<br/>`src/features/student/courses/`<br/>`src/app/(dashboard)/lecturer/*` |
+| **Dev 3**  | **Khởi tạo Dự án & Tích hợp GitHub / Jira** _(Project & Integrations Hub)_         | **Part H, Part I, Part J, Part N** | `feat/SAGA-45-project-and-tool-integrations`       | `src/features/student/project/`<br/>`src/features/integrations/*`<br/>`src/app/integrations/`      |
 
 ---
 
 ## 3. Chi Tiết Nhiệm Vụ Của Từng Lập Trình Viên
 
 ### 👤 DEV 1: Toàn bộ Phân hệ ADMIN (Academic Catalog, Course & Roster)
+
 - **Mục tiêu**: Xây dựng toàn bộ nền tảng dữ liệu học thuật của trường, quản lý danh sách lớp học phần và import danh sách sinh viên vào Course.
 - **Đặc thù UI**: Form nhập liệu nhiều bước, Cây cấu trúc tiêu chí môn học (Tree View), Bảng quản lý Course và bộ công cụ **Excel Roster Uploader (Template ➔ Preview lỗi/hợp lệ ➔ Confirm Import)**.
 - **Danh mục API phụ trách (Part C & Part D)**:
@@ -68,6 +71,7 @@ Chia đều toàn bộ khối lượng công việc thành **3 trục nghiệp v
 ---
 
 ### 👤 DEV 2: Phân hệ GIẢNG VIÊN & TỔ CHỨC NHÓM (Lecturer Courses & Teams)
+
 - **Mục tiêu**: Quản lý không gian lớp học của giảng viên, theo dõi sinh viên ACTIVE và phân chia sinh viên vào các nhóm đồ án.
 - **Đặc thù UI**: Bảng lớp học giảng dạy, Danh sách sinh viên đang học thực tế và bộ xử lý **Excel Team Uploader (Tải template ➔ Upload xem trước nhóm/leader ➔ Xác nhận phân nhóm)**.
 - **Danh mục API phụ trách (Part E, Part F, G1)**:
@@ -84,10 +88,10 @@ Chia đều toàn bộ khối lượng công việc thành **3 trục nghiệp v
      - `GET /api/student/courses` (Môn học sinh viên đang tham gia)
      - `GET /api/student/courses/{courseId}/my-team` (Sinh viên xem nhóm của mình)
 
-
 ---
 
 ### 👤 DEV 3: Khởi tạo Dự án & Trung tâm Tích hợp GitHub / Jira (Project & Integrations Hub)
+
 - **Mục tiêu**: Xây dựng không gian làm việc của nhóm đồ án, Team Leader tạo dự án và kết nối toàn bộ kho lưu trữ GitHub cùng bảng công việc Jira.
 - **Đặc thù UI**: Luồng kết nối nhiều bước (Multi-step Integration Wizard), xử lý OAuth Redirect / Popup, Callback Route Handlers và Thẻ tóm tắt trạng thái tích hợp.
 - **Danh mục API phụ trách (Part H, Part I, Part J, Part N)**:
@@ -140,6 +144,7 @@ Chia đều toàn bộ khối lượng công việc thành **3 trục nghiệp v
 ## 5. Danh Mục Tính Năng Chưa Có Trên Backend (CẢNH BÁO: KHÔNG LÀM)
 
 Các tính năng sau **chưa được backend triển khai**, các thành viên không dựng mock hay gọi API cho các phần này:
+
 - Dashboard webhook / task board Kanban sync tự động.
 - SSE Realtime Event Stream.
 - Graph snapshot / Neo4j delta API.
