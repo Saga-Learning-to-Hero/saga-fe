@@ -6,6 +6,7 @@ import type {
   RosterPreviewResponse,
   ConfirmRosterImportRequest,
   ConfirmRosterImportResponse,
+  AddStudentToCourseRequest,
 } from "../types/course-roster-types";
 
 export class RosterService {
@@ -168,6 +169,40 @@ export class RosterService {
     const response = await apiClient.post<ConfirmRosterImportResponse>(
       `/api/admin/courses/${courseId.trim()}/roster/import/confirm`,
       { previewToken: data.previewToken.trim() }
+    );
+    return response.data;
+  }
+
+  static async addStudent(
+    courseId: string,
+    data: AddStudentToCourseRequest
+  ): Promise<CourseRosterEntry> {
+    if (!courseId || !courseId.trim()) {
+      throw new Error("Throw ValidationException: Course ID is required");
+    }
+    if (!data.studentCode || !data.studentCode.trim()) {
+      throw new Error("Throw ValidationException: Student code is required");
+    }
+    if (!data.fullName || !data.fullName.trim()) {
+      throw new Error("Throw ValidationException: Full name is required");
+    }
+    if (!data.email || !data.email.trim()) {
+      throw new Error("Throw ValidationException: Email is required");
+    }
+    if (!data.memberCode || !data.memberCode.trim()) {
+      throw new Error("Throw ValidationException: Member code is required");
+    }
+
+    const payload: AddStudentToCourseRequest = {
+      studentCode: data.studentCode.trim().toUpperCase(),
+      fullName: data.fullName.trim(),
+      email: data.email.trim().toLowerCase(),
+      memberCode: data.memberCode.trim(),
+    };
+
+    const response = await apiClient.post<CourseRosterEntry>(
+      `/api/admin/courses/${courseId.trim()}/roster/students`,
+      payload
     );
     return response.data;
   }

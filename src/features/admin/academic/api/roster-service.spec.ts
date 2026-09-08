@@ -214,4 +214,132 @@ describe("RosterService", () => {
       );
     }
   );
+
+  fptTest(
+    {
+      id: "UTCID11",
+      type: "N",
+      executedDate: "08/09/2026",
+      description: "Them thu cong mot sinh vien vao lop hoc phan thanh cong",
+    },
+    async () => {
+      const mockNewStudent = {
+        id: "enr-new",
+        studentCode: "SE183904",
+        fullName: "Le Hoang Hai",
+        email: "hailhse183904@fpt.edu.vn",
+        memberCode: "HaiLHSE183904",
+        status: "ENROLLED" as const,
+      };
+
+      vi.spyOn(apiClient, "post").mockResolvedValueOnce({ data: mockNewStudent });
+
+      const res = await RosterService.addStudent(mockCourseId, {
+        studentCode: "SE183904",
+        fullName: "Le Hoang Hai",
+        email: "hailhse183904@fpt.edu.vn",
+        memberCode: "HaiLHSE183904",
+      });
+
+      expect(res.studentCode).toBe("SE183904");
+      expect(res.fullName).toBe("Le Hoang Hai");
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID12",
+      type: "A",
+      executedDate: "08/09/2026",
+      description: "Nem ValidationException khi thieu thong tin bat buoc",
+    },
+    async () => {
+      await expect(
+        RosterService.addStudent(mockCourseId, {
+          studentCode: "",
+          fullName: "Le Hoang Hai",
+          email: "hailhse183904@fpt.edu.vn",
+          memberCode: "HaiLHSE183904",
+        })
+      ).rejects.toThrow("Throw ValidationException: Student code is required");
+
+      await expect(
+        RosterService.addStudent(mockCourseId, {
+          studentCode: "SE183904",
+          fullName: "",
+          email: "hailhse183904@fpt.edu.vn",
+          memberCode: "HaiLHSE183904",
+        })
+      ).rejects.toThrow("Throw ValidationException: Full name is required");
+
+      await expect(
+        RosterService.addStudent(mockCourseId, {
+          studentCode: "SE183904",
+          fullName: "Le Hoang Hai",
+          email: "",
+          memberCode: "HaiLHSE183904",
+        })
+      ).rejects.toThrow("Throw ValidationException: Email is required");
+
+      await expect(
+        RosterService.addStudent(mockCourseId, {
+          studentCode: "SE183904",
+          fullName: "Le Hoang Hai",
+          email: "hailhse183904@fpt.edu.vn",
+          memberCode: "",
+        })
+      ).rejects.toThrow("Throw ValidationException: Member code is required");
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID13",
+      type: "A",
+      executedDate: "08/09/2026",
+      description: "Nem loi khi server backend tra ve ma loi sinh vien da ton tai",
+    },
+    async () => {
+      vi.spyOn(apiClient, "post").mockRejectedValueOnce(new Error("STUDENT_ALREADY_ENROLLED"));
+
+      await expect(
+        RosterService.addStudent(mockCourseId, {
+          studentCode: "SE183904",
+          fullName: "Le Hoang Hai",
+          email: "hailhse183904@fpt.edu.vn",
+          memberCode: "HaiLHSE183904",
+        })
+      ).rejects.toThrow("STUDENT_ALREADY_ENROLLED");
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID14",
+      type: "B",
+      executedDate: "08/09/2026",
+      description: "Chuan hoa ma sinh vien in hoa va email in thuong khi gui payload",
+    },
+    async () => {
+      const postSpy = vi.spyOn(apiClient, "post").mockResolvedValueOnce({ data: {} });
+
+      await RosterService.addStudent(mockCourseId, {
+        studentCode: "  se183904  ",
+        fullName: "  Le Hoang Hai  ",
+        email: "  HaiLHSE183904@FPT.EDU.VN  ",
+        memberCode: "  HaiLHSE183904  ",
+      });
+
+      expect(postSpy).toHaveBeenCalledWith(
+        `/api/admin/courses/${mockCourseId}/roster/students`,
+        {
+          studentCode: "SE183904",
+          fullName: "Le Hoang Hai",
+          email: "hailhse183904@fpt.edu.vn",
+          memberCode: "HaiLHSE183904",
+        }
+      );
+    }
+  );
 });
+

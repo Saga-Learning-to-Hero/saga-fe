@@ -148,3 +148,10 @@ export interface ConfirmRosterImportResponse {
   enrolled: number;
   invited: number;
 }
+
+export interface AddStudentToCourseRequest {
+  fullName: string;
+  studentCode: string;
+  email: string;
+  memberCode: string;
+}

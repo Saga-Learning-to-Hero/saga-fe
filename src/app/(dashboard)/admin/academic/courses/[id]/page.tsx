@@ -19,12 +19,20 @@ import {
   LayoutGridIcon,
   TableIcon,
   MailIcon,
+  UserPlusIcon,
+  MoreHorizontalIcon,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from "@/components/ui/dropdown-menu";
 import {
   Table,
   TableHeader,
@@ -34,6 +42,7 @@ import {
   TableCell,
 } from "@/components/ui/table";
 import { ImportStudentsDialog } from "@/features/admin/academic/components/import-students-dialog";
+import { AddStudentDialog } from "@/features/admin/academic/components/add-student-dialog";
 import {
   useCourseDetail,
   useRoster,
@@ -60,6 +69,7 @@ export default function AdminCourseDetailPage({ params }: PageProps) {
   const [viewMode, setViewMode] = useState<"cards" | "table">("cards");
   const [statusFilter, setStatusFilter] = useState<"ALL" | RosterEnrollmentStatus>("ALL");
   const [isImportOpen, setIsImportOpen] = useState(false);
+  const [isAddStudentOpen, setIsAddStudentOpen] = useState(false);
 
   const downloadMutation = useDownloadRosterTemplate();
 
@@ -261,27 +271,48 @@ export default function AdminCourseDetailPage({ params }: PageProps) {
               </div>
             </div>
 
-            <div className="flex flex-wrap items-center gap-2.5 shrink-0 lg:self-center">
+            <div className="flex flex-wrap items-center gap-2 shrink-0 lg:self-center">
               <Button
                 variant="outline"
-                size="sm"
+                size="icon"
                 onClick={() => refetchRoster()}
                 disabled={isRosterLoading}
-                className="h-9 gap-1.5 text-xs font-medium cursor-pointer shadow-2xs"
+                className="h-9 w-9 rounded-xl cursor-pointer shadow-2xs text-muted-foreground hover:text-foreground"
+                title="Làm mới danh sách"
               >
-                <RefreshCwIcon className={`w-3.5 h-3.5 ${isRosterLoading ? "animate-spin" : ""}`} />
-                Làm mới danh sách
+                <RefreshCwIcon className={`w-4 h-4 ${isRosterLoading ? "animate-spin" : ""}`} />
+                <span className="sr-only">Làm mới danh sách</span>
               </Button>
+
+              <DropdownMenu>
+                <DropdownMenuTrigger
+                  disabled={downloadMutation.isPending}
+                  className="inline-flex items-center justify-center h-9 w-9 rounded-xl border border-border/80 bg-card hover:bg-muted/80 text-muted-foreground hover:text-foreground transition-colors cursor-pointer outline-none shadow-2xs"
+                  title="Tùy chọn thao tác khác"
+                >
+                  <MoreHorizontalIcon className="w-4 h-4" />
+                  <span className="sr-only">Tùy chọn khác</span>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-52 p-1 rounded-xl shadow-lg border-border/80">
+                  <DropdownMenuItem
+                    onClick={handleDownloadTemplate}
+                    disabled={downloadMutation.isPending}
+                    className="flex items-center gap-2 px-2.5 py-2 text-xs font-medium cursor-pointer rounded-lg"
+                  >
+                    <DownloadIcon className="w-3.5 h-3.5 text-primary" />
+                    <span>Tải file mẫu Excel (.xlsx)</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
 
               <Button
                 variant="outline"
                 size="sm"
-                onClick={handleDownloadTemplate}
-                disabled={downloadMutation.isPending}
-                className="h-9 gap-1.5 text-xs font-medium cursor-pointer shadow-2xs"
+                onClick={() => setIsAddStudentOpen(true)}
+                className="h-9 gap-1.5 text-xs font-semibold cursor-pointer shadow-2xs border-border/80 hover:bg-muted"
               >
-                <DownloadIcon className="w-3.5 h-3.5" />
-                Tải file mẫu Excel
+                <UserPlusIcon className="w-4 h-4 text-primary" />
+                Thêm sinh viên
               </Button>
 
               <Button
@@ -290,7 +321,7 @@ export default function AdminCourseDetailPage({ params }: PageProps) {
                 className="h-9 gap-1.5 text-xs font-semibold cursor-pointer bg-primary text-primary-foreground hover:bg-primary/90 shadow-2xs"
               >
                 <UploadCloudIcon className="w-4 h-4" />
-                Import danh sách sinh viên
+                Import sinh viên
               </Button>
             </div>
           </div>
@@ -590,6 +621,13 @@ export default function AdminCourseDetailPage({ params }: PageProps) {
         isOpen={isImportOpen}
         onClose={() => setIsImportOpen(false)}
         onSuccess={() => refetchRoster()}
+      />
+
+      <AddStudentDialog
+        courseId={courseId}
+        courseCode={course?.courseCode}
+        isOpen={isAddStudentOpen}
+        onClose={() => setIsAddStudentOpen(false)}
       />
     </div>
   );

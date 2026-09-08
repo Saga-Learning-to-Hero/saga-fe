@@ -19,6 +19,7 @@ import type {
   GetCoursesParams,
   ConfirmRosterImportRequest,
   GetAdminLecturersParams,
+  AddStudentToCourseRequest,
 } from "../types/course-roster-types";
 
 export const ACADEMIC_QUERY_KEYS = {
@@ -354,6 +355,40 @@ export function useConfirmRosterImport() {
     onError: (error: unknown) => {
       const err = error as { response?: { data?: { code?: string; message?: string } }; message?: string };
       toast.error(err.response?.data?.message || err.message || "Không thể xác nhận import danh sách sinh viên.");
+    },
+  });
+}
+
+export function useAddStudentToRoster() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      courseId,
+      data,
+    }: {
+      courseId: string;
+      data: AddStudentToCourseRequest;
+    }) => RosterService.addStudent(courseId, data),
+    onSuccess: (newStudent, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: ACADEMIC_QUERY_KEYS.roster(variables.courseId),
+      });
+      queryClient.invalidateQueries({ queryKey: ["academic", "courses"] });
+      toast.success(
+        `Đã thêm sinh viên ${newStudent.fullName || variables.data.fullName} (${variables.data.studentCode}) vào lớp học phần.`
+      );
+    },
+    onError: (error: unknown) => {
+      const err = error as { response?: { data?: { code?: string; message?: string } }; message?: string };
+      const code = err.response?.data?.code;
+      if (code === "STUDENT_ALREADY_ENROLLED") {
+        toast.error("Sinh viên này đã được ghi danh trong lớp học phần.");
+      } else if (code === "STUDENT_ALREADY_INVITED") {
+        toast.error("Sinh viên này đã có thư mời đang chờ kích hoạt.");
+      } else {
+        toast.error(err.response?.data?.message || err.message || "Không thể thêm sinh viên vào lớp học phần.");
+      }
     },
   });
 }
