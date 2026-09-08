@@ -36,6 +36,12 @@ export interface NavGroup {
  * - "prefix": active khi pathname bắt đầu bằng href (có `/` phân cách)
  */
 export function isNavItemActive(pathname: string, item: NavItem): boolean {
+  if (
+    item.id === "student-integrations" &&
+    (pathname === "/student/integrations" || pathname === "/profile/integrations")
+  ) {
+    return true;
+  }
   if (item.match === "prefix") {
     return pathname === item.href || pathname.startsWith(`${item.href}/`);
   }

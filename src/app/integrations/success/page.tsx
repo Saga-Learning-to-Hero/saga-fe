@@ -42,7 +42,7 @@ function SuccessContent() {
       } finally {
         if (isMounted) {
           setIsSyncing(false);
-          router.replace("/profile/integrations");
+          router.replace(user?.role === "STUDENT" ? "/student/integrations" : "/profile/integrations");
         }
       }
     }
@@ -52,7 +52,7 @@ function SuccessContent() {
     return () => {
       isMounted = false;
     };
-  }, [queryClient, router]);
+  }, [queryClient, router, user?.role]);
 
   return (
     <div className="w-full max-w-xl mx-auto space-y-6">
@@ -111,7 +111,7 @@ function SuccessContent() {
 
         <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
           <Link
-            href="/profile/integrations"
+            href={user?.role === "STUDENT" ? "/student/integrations" : "/profile/integrations"}
             className="w-full sm:w-auto h-10 px-5 inline-flex items-center justify-center gap-2 text-xs font-bold rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 shadow-md shadow-primary/25 transition-all cursor-pointer"
           >
             <span>Đến trang Tích hợp ngay</span>

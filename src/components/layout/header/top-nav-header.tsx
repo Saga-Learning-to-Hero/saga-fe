@@ -85,8 +85,8 @@ export function TopNavHeader() {
     navItems = getLecturerNavItems(lecturerCourseId);
   } else if (
     user.role === "STUDENT" &&
-    pathname.startsWith("/student") &&
-    pathname !== "/student/courses"
+    pathname !== "/student/courses" &&
+    (pathname.startsWith("/student") || pathname.startsWith("/profile"))
   ) {
     navItems = getStudentNavItems();
   }
@@ -220,7 +220,7 @@ export function TopNavHeader() {
                 </DropdownMenuItem>
 
                 <DropdownMenuItem
-                  onClick={() => router.push("/profile/integrations")}
+                  onClick={() => router.push(user.role === "STUDENT" ? "/student/integrations" : "/profile/integrations")}
                   className="text-xs cursor-pointer py-2 px-2.5 rounded-lg flex items-center gap-2 hover:bg-primary/10 hover:text-primary font-medium"
                 >
                   <Link2Icon className="size-3.5 text-primary" />

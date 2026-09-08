@@ -43,7 +43,10 @@ export function StudentGitHubSettings({
   const handleConnectGitHubOAuth = async () => {
     try {
       toast.loading("Đang chuyển hướng sang GitHub OAuth...", { id: "github-oauth" });
-      const currentPath = typeof window !== "undefined" ? window.location.pathname : "/profile/integrations";
+      const defaultPath = user?.role === "STUDENT" ? "/student/integrations" : "/profile/integrations";
+      const currentPath = typeof window !== "undefined"
+        ? (window.location.pathname.startsWith("/student") ? window.location.pathname : defaultPath)
+        : defaultPath;
       const result = await startLinkMutation.mutateAsync(currentPath);
 
       if (result.authorizationUrl) {

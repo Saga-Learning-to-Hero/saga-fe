@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect } from "react";
-import { useRouter } from "next/navigation";
 import {
   CheckCircle2Icon,
   XCircleIcon,
@@ -9,10 +8,8 @@ import {
   CheckSquareIcon,
   GitBranchIcon,
   Loader2Icon,
-  ArrowLeftIcon,
 } from "lucide-react";
 import type { User } from "@/types/auth";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "@/components/ui/sonner";
 import { useUserIdentities } from "@/features/integrations/hooks/useUserIntegrations";
@@ -26,21 +23,6 @@ interface IntegrationsViewProps {
 }
 
 export function IntegrationsView({ user }: IntegrationsViewProps) {
-  const router = useRouter();
-
-  const handleBack = () => {
-    if (typeof window !== "undefined" && window.history.length > 2) {
-      router.back();
-    } else {
-      const defaultPath =
-        user.role === "STUDENT"
-          ? "/student/dashboard"
-          : user.role === "LECTURER"
-            ? "/lecturer/courses"
-            : "/admin/dashboard";
-      router.push(defaultPath);
-    }
-  };
 
   const {
     jiraIdentities,
@@ -96,18 +78,6 @@ export function IntegrationsView({ user }: IntegrationsViewProps) {
 
   return (
     <div className="space-y-4 max-w-[1600px] mx-auto pb-12">
-      <div className="flex items-center">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={handleBack}
-          className="h-8 px-2 -ml-2 rounded-xl gap-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground hover:bg-muted cursor-pointer transition-colors border border-transparent hover:border-border"
-        >
-          <ArrowLeftIcon className="size-4" />
-          <span>Quay lại</span>
-        </Button>
-      </div>
-
       {isCallbackPending && (
         <div className="flex items-center gap-2.5 px-4 py-2.5 rounded-2xl bg-primary/15 border border-primary/30 text-xs text-primary font-semibold animate-pulse">
           <Loader2Icon className="w-4 h-4 animate-spin shrink-0" />

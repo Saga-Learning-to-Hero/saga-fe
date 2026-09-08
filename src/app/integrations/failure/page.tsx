@@ -110,6 +110,7 @@ function FailureContent() {
   };
 
   const homeHref = isAuthenticated && user ? getRoleHomePath(user.role) : "/dashboard";
+  const integrationsHref = user?.role === "STUDENT" ? "/student/integrations" : "/profile/integrations";
 
   return (
     <div className="w-full max-w-xl mx-auto space-y-6">
@@ -186,7 +187,7 @@ function FailureContent() {
 
         <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
           <Link
-            href="/profile/integrations"
+            href={integrationsHref}
             className="w-full sm:w-auto h-10 px-5 inline-flex items-center justify-center gap-2 text-xs font-bold rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 shadow-md shadow-primary/25 transition-all cursor-pointer"
           >
             <RefreshCwIcon className="w-3.5 h-3.5" />
@@ -212,7 +213,7 @@ function FailureContent() {
           </Link>
 
           <Link
-            href="/profile/integrations"
+            href={integrationsHref}
             className="inline-flex items-center gap-1.5 hover:text-foreground transition-colors"
           >
             <ArrowLeftIcon className="w-3.5 h-3.5" />

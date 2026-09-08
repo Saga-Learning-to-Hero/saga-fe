@@ -43,7 +43,10 @@ export function StudentJiraSettings({
   const handleConnectJiraOAuth = async () => {
     try {
       toast.loading("Đang chuyển hướng sang Atlassian ID OAuth...", { id: "jira-oauth" });
-      const currentPath = typeof window !== "undefined" ? window.location.pathname : "/profile/integrations";
+      const defaultPath = user?.role === "STUDENT" ? "/student/integrations" : "/profile/integrations";
+      const currentPath = typeof window !== "undefined"
+        ? (window.location.pathname.startsWith("/student") ? window.location.pathname : defaultPath)
+        : defaultPath;
       const result = await startLinkMutation.mutateAsync(currentPath);
 
       if (result.authorizationUrl) {
