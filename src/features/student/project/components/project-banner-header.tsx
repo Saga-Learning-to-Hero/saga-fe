@@ -16,6 +16,7 @@ interface ProjectBannerHeaderProps {
   course?: StudentCourse | null;
   isLeader?: boolean;
   hasTeam?: boolean;
+  isRoleLoading?: boolean;
 }
 
 export function ProjectBannerHeader({
@@ -23,6 +24,7 @@ export function ProjectBannerHeader({
   course,
   isLeader,
   hasTeam,
+  isRoleLoading = false,
 }: ProjectBannerHeaderProps) {
   const categoryLabel = project.projectType?.name || project.category;
 
@@ -77,7 +79,12 @@ export function ProjectBannerHeader({
               </Badge>
             )}
 
-            {hasTeam === false ? (
+            {isRoleLoading ? (
+              <Badge className="bg-white/20 text-white font-medium border-0 text-xs px-2.5 py-0.5 animate-pulse backdrop-blur-md">
+                <UserCheck2Icon className="w-3 h-3 mr-1" />
+                Đang xác thực vai trò...
+              </Badge>
+            ) : hasTeam === false ? (
               <Badge className="bg-amber-400/30 text-amber-100 font-bold border border-amber-300/40 text-xs px-2.5 py-0.5 backdrop-blur-md">
                 Chưa có nhóm
               </Badge>

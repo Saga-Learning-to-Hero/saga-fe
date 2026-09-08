@@ -125,3 +125,36 @@ export interface StudentProjectDetails {
   githubRepositories?: ProjectGitHubRepo[];
   updatedAt?: string;
 }
+
+/**
+ * Interface cho phản hồi API Tích hợp Đồ án:
+ * GET /api/projects/{projectId}/integrations
+ */
+export interface ProjectGitHubRepositoryItem {
+  id: string;
+  repositoryId: number;
+  fullName: string;
+  role?: string;
+  status?: string;
+}
+
+export interface ProjectGitHubIntegration {
+  installationId?: number;
+  accountLogin?: string;
+  status?: string;
+  repositories: ProjectGitHubRepositoryItem[];
+}
+
+export interface ProjectJiraIntegration {
+  cloudId?: string;
+  siteName?: string;
+  projectKey?: string;
+  boardId?: string;
+  status?: string;
+}
+
+export interface ProjectIntegrationsResponse {
+  github: ProjectGitHubIntegration | null;
+  jira: ProjectJiraIntegration | null;
+}
+

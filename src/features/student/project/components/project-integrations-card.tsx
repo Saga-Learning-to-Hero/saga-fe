@@ -1,181 +1,72 @@
 "use client";
 
 import { useState } from "react";
-import { Link2Icon, CrownIcon, CheckCircle2Icon } from "lucide-react";
-import type { StudentProjectDetails, ProjectJiraConfig, ProjectGitHubRepo } from "../types/student-project";
+import { Link2Icon, CrownIcon, CheckCircle2Icon, RefreshCwIcon, Loader2Icon } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { toast } from "@/components/ui/sonner";
+import { useProjectIntegrations } from "../hooks/useProjectIntegrations";
+import { useStartJiraLink } from "@/features/integrations/hooks/useJiraIntegrations";
+import { useStartGitHubLink } from "@/features/integrations/hooks/useGithubIntegrations";
 import { ProjectJiraSection } from "./integrations/project-jira-section";
 import { ProjectGithubSection } from "./integrations/project-github-section";
 
 interface ProjectIntegrationsCardProps {
-  project: StudentProjectDetails;
+  projectId: string;
   isLeader: boolean;
-  onUpdateJira: (config: ProjectJiraConfig | undefined) => void;
-  onAddRepo: (repo: ProjectGitHubRepo) => void;
-  onEditRepo?: (repo: ProjectGitHubRepo) => void;
-  onDeleteRepo: (repoId: string) => void;
 }
 
-const PROJECT_JIRA_CANDIDATES: ProjectJiraConfig[] = [
-  {
-    serverUrl: "https://saga-capstone.atlassian.net",
-    projectKey: "SWP490_SAGA",
-    projectName: "SAGA Capstone Scrum Workspace",
-    connected: true,
-    lastSyncedAt: "Vừa xong",
-    tasksCount: 38,
-  },
-  {
-    serverUrl: "https://fpt-swp391.atlassian.net",
-    projectKey: "SWP391_ECOMMERCE",
-    projectName: "Hệ thống Thương mại Điện tử B2C",
-    connected: true,
-    lastSyncedAt: "Vừa xong",
-    tasksCount: 24,
-  },
-];
-
-const PROJECT_GITHUB_CANDIDATES: ProjectGitHubRepo[] = [
-  {
-    id: "repo-fe",
-    alias: "Frontend Web Application (Next.js 16)",
-    repository: "Saga-Learning-to-Hero/saga-fe",
-    defaultBranch: "dev",
-    connected: true,
-    lastSyncedAt: "Vừa xong",
-    commitsCount: 98,
-    pullRequestsCount: 12,
-  },
-  {
-    id: "repo-be",
-    alias: "Backend Core API (Spring Boot & Neo4j)",
-    repository: "Saga-Learning-to-Hero/saga-be",
-    defaultBranch: "main",
-    connected: true,
-    lastSyncedAt: "Vừa xong",
-    commitsCount: 142,
-    pullRequestsCount: 18,
-  },
-  {
-    id: "repo-ai",
-    alias: "SNA Graph Analytics Engine (Python FastAPI)",
-    repository: "Saga-Learning-to-Hero/saga-ai",
-    defaultBranch: "main",
-    connected: true,
-    lastSyncedAt: "Vừa xong",
-    commitsCount: 54,
-    pullRequestsCount: 6,
-  },
-  {
-    id: "repo-devops",
-    alias: "DevOps CI/CD & Kubernetes Infrastructure",
-    repository: "Saga-Learning-to-Hero/saga-devops",
-    defaultBranch: "main",
-    connected: true,
-    lastSyncedAt: "Vừa xong",
-    commitsCount: 31,
-    pullRequestsCount: 4,
-  },
-  {
-    id: "repo-mobile",
-    alias: "Student Companion App (React Native)",
-    repository: "Saga-Learning-to-Hero/saga-mobile",
-    defaultBranch: "dev",
-    connected: true,
-    lastSyncedAt: "Vừa xong",
-    commitsCount: 46,
-    pullRequestsCount: 8,
-  },
-];
-
 export function ProjectIntegrationsCard({
-  project,
+  projectId,
   isLeader,
-  onUpdateJira,
-  onAddRepo,
-  onDeleteRepo,
 }: ProjectIntegrationsCardProps) {
   const [feedbackMsg, setFeedbackMsg] = useState("");
   const [syncingId, setSyncingId] = useState<string | null>(null);
-  const [isConnectingJira, setIsConnectingJira] = useState(false);
-  const [isConnectingRepo, setIsConnectingRepo] = useState(false);
 
-  const jira = project.jiraConfig;
-  const repos =
-    project.githubRepositories && project.githubRepositories.length > 0
-      ? project.githubRepositories
-      : [
-          {
-            id: "repo-fe",
-            alias: "Frontend Web Application (Next.js 16)",
-            repository: project.githubRepositories?.[0]?.repository || "Saga-Learning-to-Hero/saga-fe",
-            defaultBranch: "dev",
-            connected: true,
-            lastSyncedAt: "28/08/2026 15:45",
-            commitsCount: 98,
-            pullRequestsCount: 12,
-          },
-        ];
+  const {
+    data: integrations,
+    isLoading,
+    isRefetching,
+    refetch,
+  } = useProjectIntegrations(projectId, { enabled: Boolean(projectId) });
 
-  const handleConnectJiraLink = async () => {
-    setIsConnectingJira(true);
-    setFeedbackMsg("Đang chuyển hướng sang Atlassian để xác thực và ủy quyền Jira cho Đồ án...");
+  const startJiraLinkMutation = useStartJiraLink();
+  const startGitHubLinkMutation = useStartGitHubLink();
 
-    await new Promise((r) => setTimeout(r, 1200));
+  const handleConnectJira = async () => {
+    try {
+      toast.loading("Đang chuyển hướng sang Atlassian Jira OAuth...", { id: "jira-oauth" });
+      const currentPath = typeof window !== "undefined" ? window.location.pathname : "/student/project-info";
+      const result = await startJiraLinkMutation.mutateAsync(currentPath);
 
-    const candidate =
-      PROJECT_JIRA_CANDIDATES.find((c) => c.projectKey !== jira?.projectKey) ||
-      PROJECT_JIRA_CANDIDATES[0];
-
-    onUpdateJira(candidate);
-    setIsConnectingJira(false);
-    setFeedbackMsg(`Đã kết nối thành công Jira Workspace (${candidate.projectKey}) cho Đồ án qua Atlassian OAuth!`);
-    setTimeout(() => setFeedbackMsg(""), 4500);
-  };
-
-  const handleDisconnectJira = () => {
-    onUpdateJira(undefined);
-    setFeedbackMsg("Đã ngắt kết nối Jira của Đồ án.");
-    setTimeout(() => setFeedbackMsg(""), 3500);
-  };
-
-  const handleAddRepoLink = async () => {
-    setIsConnectingRepo(true);
-    setFeedbackMsg("Đang chuyển hướng sang GitHub để cấp quyền kho mã nguồn cho Đồ án...");
-
-    await new Promise((r) => setTimeout(r, 1200));
-
-    const nextRepo = PROJECT_GITHUB_CANDIDATES.find(
-      (c) => !repos.some((r) => r.repository === c.repository)
-    );
-
-    if (!nextRepo) {
-      setIsConnectingRepo(false);
-      setFeedbackMsg("Tất cả các kho mã nguồn gợi ý của nhóm đã được kết nối đầy đủ!");
-      setTimeout(() => setFeedbackMsg(""), 4000);
-      return;
+      if (result.authorizationUrl && typeof window !== "undefined") {
+        window.open(result.authorizationUrl, "_self");
+      }
+    } catch {
+      toast.error("Lỗi khi kết nối với máy chủ Atlassian. Vui lòng thử lại sau.", { id: "jira-oauth" });
     }
+  };
 
-    onAddRepo(nextRepo);
-    setIsConnectingRepo(false);
-    setFeedbackMsg(`Đã liên kết thành công Repository (${nextRepo.repository}) từ GitHub!`);
-    setTimeout(() => setFeedbackMsg(""), 4500);
+  const handleConnectGitHub = async () => {
+    try {
+      toast.loading("Đang chuyển hướng sang GitHub App OAuth...", { id: "github-oauth" });
+      const currentPath = typeof window !== "undefined" ? window.location.pathname : "/student/project-info";
+      const result = await startGitHubLinkMutation.mutateAsync(currentPath);
+
+      if (result.authorizationUrl && typeof window !== "undefined") {
+        window.open(result.authorizationUrl, "_self");
+      }
+    } catch {
+      toast.error("Lỗi khi kết nối với GitHub. Vui lòng thử lại sau.", { id: "github-oauth" });
+    }
   };
 
   const handleSyncJira = async () => {
     setSyncingId("jira");
-    await new Promise((r) => setTimeout(r, 650));
+    await refetch();
     setSyncingId(null);
-    setFeedbackMsg("Đã đồng bộ lại tiến độ từ Jira Project thành công!");
-    setTimeout(() => setFeedbackMsg(""), 3500);
-  };
-
-  const handleSyncRepo = async (id: string) => {
-    setSyncingId(id);
-    await new Promise((r) => setTimeout(r, 650));
-    setSyncingId(null);
-    setFeedbackMsg("Đã đồng bộ commit từ Repository thành công!");
+    setFeedbackMsg("Đã đồng bộ thông tin Jira Project thành công!");
     setTimeout(() => setFeedbackMsg(""), 3500);
   };
 
@@ -204,10 +95,22 @@ export function ProjectIntegrationsCard({
                 )}
               </div>
               <CardDescription className="text-xs text-muted-foreground">
-                Kết nối trực tiếp qua link ủy quyền Atlassian Jira (duy nhất 1) và GitHub Repositories (đa repo)
+                Kết nối trực tiếp qua link ủy quyền Atlassian Jira và GitHub Repositories (đa repos)
               </CardDescription>
             </div>
           </div>
+
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => void refetch()}
+            disabled={isLoading || isRefetching}
+            className="h-8 px-2.5 text-xs rounded-xl gap-1.5 cursor-pointer self-start sm:self-auto shrink-0"
+            title="Làm mới dữ liệu tích hợp từ máy chủ"
+          >
+            <RefreshCwIcon className={`w-3.5 h-3.5 ${isRefetching ? "animate-spin text-primary" : ""}`} />
+            <span>{isRefetching ? "Đang đồng bộ..." : "Làm mới"}</span>
+          </Button>
         </div>
       </CardHeader>
 
@@ -219,25 +122,32 @@ export function ProjectIntegrationsCard({
           </div>
         )}
 
-        <ProjectJiraSection
-          jira={jira}
-          isLeader={isLeader}
-          isConnectingJira={isConnectingJira}
-          syncingId={syncingId}
-          onConnectJira={handleConnectJiraLink}
-          onSyncJira={handleSyncJira}
-          onDisconnectJira={handleDisconnectJira}
-        />
+        {isLoading ? (
+          <div className="space-y-4 py-4 animate-pulse">
+            <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground py-6">
+              <Loader2Icon className="w-4 h-4 animate-spin text-primary" />
+              <span>Đang tải thông tin tích hợp Jira và GitHub của đồ án...</span>
+            </div>
+          </div>
+        ) : (
+          <>
+            <ProjectJiraSection
+              jira={integrations?.jira}
+              isLeader={isLeader}
+              isConnectingJira={startJiraLinkMutation.isPending}
+              syncingId={syncingId}
+              onConnectJira={handleConnectJira}
+              onSyncJira={handleSyncJira}
+            />
 
-        <ProjectGithubSection
-          repos={repos}
-          isLeader={isLeader}
-          isConnectingRepo={isConnectingRepo}
-          syncingId={syncingId}
-          onAddRepo={handleAddRepoLink}
-          onSyncRepo={handleSyncRepo}
-          onDeleteRepo={onDeleteRepo}
-        />
+            <ProjectGithubSection
+              github={integrations?.github}
+              isLeader={isLeader}
+              isConnectingRepo={startGitHubLinkMutation.isPending}
+              onAddRepo={handleConnectGitHub}
+            />
+          </>
+        )}
       </CardContent>
     </Card>
   );

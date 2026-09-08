@@ -8,7 +8,7 @@ import {
   Edit3Icon,
   PlusIcon,
 } from "lucide-react";
-import type { StudentProjectDetails } from "../types/student-project";
+import type { StudentProjectDetails, ProjectIntegrationsResponse } from "../types/student-project";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -16,12 +16,14 @@ import { Button } from "@/components/ui/button";
 interface ProjectDetailsCardProps {
   project: StudentProjectDetails;
   isLeader?: boolean;
+  integrations?: ProjectIntegrationsResponse | null;
   onOpenEditModal?: () => void;
 }
 
 export function ProjectDetailsCard({
   project,
   isLeader = true,
+  integrations,
   onOpenEditModal,
 }: ProjectDetailsCardProps) {
   // Kiểm tra xem nhóm đã có dự án hay chưa
@@ -126,35 +128,47 @@ export function ProjectDetailsCard({
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-border/60">
           <div className="p-3.5 rounded-2xl bg-blue-500/5 border border-blue-500/20 flex items-center justify-between">
-            <div className="flex items-center gap-2.5">
+            <div className="flex items-center gap-2.5 min-w-0">
               <CheckSquareIcon className="w-4 h-4 text-blue-500 shrink-0" />
-              <div className="flex flex-col">
+              <div className="flex flex-col min-w-0">
                 <span className="text-[11px] font-semibold text-muted-foreground">Jira Project (1 Site & Key)</span>
-                <span className="text-xs font-bold font-mono text-foreground">
-                  {project.jiraConfig?.projectKey || "Chưa liên kết"}
+                <span className="text-xs font-bold font-mono text-foreground truncate">
+                  {integrations?.jira?.projectKey || "Chưa liên kết"}
                 </span>
               </div>
             </div>
-            <Badge className="bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-0 text-[10px] font-semibold">
-              Active
-            </Badge>
+            {integrations?.jira?.projectKey ? (
+              <Badge className="bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-0 text-[10px] font-semibold shrink-0">
+                {integrations.jira.status || "Active"}
+              </Badge>
+            ) : (
+              <Badge variant="outline" className="text-[10px] text-muted-foreground border-border shrink-0">
+                Chưa kết nối
+              </Badge>
+            )}
           </div>
 
           <div className="p-3.5 rounded-2xl bg-purple-500/5 border border-purple-500/20 flex items-center justify-between">
-            <div className="flex items-center gap-2.5">
+            <div className="flex items-center gap-2.5 min-w-0">
               <GitBranchIcon className="w-4 h-4 text-purple-500 shrink-0" />
               <div className="flex flex-col min-w-0">
                 <span className="text-[11px] font-semibold text-muted-foreground">
-                  GitHub Repositories ({project.githubRepositories?.length || 0} repos)
+                  GitHub Repositories ({integrations?.github?.repositories?.length || 0} repos)
                 </span>
                 <span className="text-xs font-bold font-mono text-purple-600 dark:text-purple-400 truncate">
-                  {project.githubRepositories?.[0]?.repository || "Chưa liên kết"}
+                  {integrations?.github?.repositories?.[0]?.fullName || "Chưa liên kết"}
                 </span>
               </div>
             </div>
-            <Badge className="bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-0 text-[10px] font-semibold">
-              Active
-            </Badge>
+            {integrations?.github?.repositories && integrations.github.repositories.length > 0 ? (
+              <Badge className="bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-0 text-[10px] font-semibold shrink-0">
+                {integrations.github.status || "Active"}
+              </Badge>
+            ) : (
+              <Badge variant="outline" className="text-[10px] text-muted-foreground border-border shrink-0">
+                Chưa kết nối
+              </Badge>
+            )}
           </div>
         </div>
       </CardContent>

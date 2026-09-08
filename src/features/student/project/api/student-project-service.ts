@@ -4,6 +4,7 @@ import type {
   ProjectTypeItem,
   CreateStudentProjectRequest,
   StudentCourseTeamResponse,
+  ProjectIntegrationsResponse,
 } from "../types/student-project";
 
 export class StudentProjectService {
@@ -96,6 +97,26 @@ export class StudentProjectService {
     const response = await apiClient.post<StudentTeamProjectResponse>(
       `/api/student/courses/${encodeURIComponent(cleanCourseId)}/project`,
       cleanPayload
+    );
+
+    return response.data;
+  }
+
+  /**
+   * Lấy thông tin liên kết tích hợp Jira và GitHub của Đồ án (Project Integrations)
+   * GET /api/projects/{projectId}/integrations
+   *
+   * @param projectId Mã định danh UUID của dự án đồ án
+   * @returns Thông tin tích hợp Jira và GitHub Repositories
+   */
+  static async getProjectIntegrations(projectId: string): Promise<ProjectIntegrationsResponse> {
+    if (!projectId || projectId.trim() === "") {
+      throw new Error("Throw ValidationException: Project ID is required");
+    }
+
+    const cleanProjectId = projectId.trim();
+    const response = await apiClient.get<ProjectIntegrationsResponse>(
+      `/api/projects/${encodeURIComponent(cleanProjectId)}/integrations`
     );
 
     return response.data;

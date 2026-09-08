@@ -5,34 +5,50 @@ import { useAuthStore } from "@/features/auth/store/useAuthStore";
 import { MOCK_STUDENT_PROJECT } from "../data/mock-student-project";
 import type {
   StudentProjectDetails,
-  ProjectJiraConfig,
-  ProjectGitHubRepo,
   ProjectCategory,
 } from "../types/student-project";
 import { useStudentProject } from "../hooks/useStudentProject";
+import { useProjectIntegrations } from "../hooks/useProjectIntegrations";
 import {
   useRefreshStudentCourses,
   useStudentMyTeam,
+  useStudentCourses,
 } from "@/features/student/courses/hooks/use-student-courses";
+import { mapStudentCourseResponse } from "@/features/student/courses/types/student-course";
 import { getApiErrorCode } from "@/lib/api-error";
 import { Loader2Icon, FolderKanbanIcon, PlusIcon } from "lucide-react";
+import type { RoleInTeam } from "@/types/auth";
 import { Button } from "@/components/ui/button";
 import { ProjectBannerHeader } from "./project-banner-header";
 import { TeamMembersCard } from "./team-members-card";
 import { ProjectDetailsCard } from "./project-details-card";
 import { ProjectIntegrationsCard } from "./project-integrations-card";
 import { ProjectEditModal } from "./project-edit-modal";
+import { ProjectInfoSkeleton } from "./project-info-skeleton";
 
 export function ProjectInfoView() {
-  const { selectedCourse } = useAuthStore();
+  const { user, selectedCourse, setSelectedCourse } = useAuthStore();
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [localOverrides, setLocalOverrides] = useState<Partial<StudentProjectDetails>>({});
   const refreshCourses = useRefreshStudentCourses();
 
-  const courseId = selectedCourse?.courseId || selectedCourse?.id || "";
+  const { data: apiCourses = [], isLoading: isCoursesLoading } = useStudentCourses({
+    enabled: user?.role === "STUDENT" && !selectedCourse,
+  });
+
+  const effectiveCourse = useMemo(() => {
+    if (selectedCourse) return selectedCourse;
+    if (apiCourses.length > 0) return mapStudentCourseResponse(apiCourses[0]);
+    return null;
+  }, [selectedCourse, apiCourses]);
+
+  useEffect(() => {
+    if (!selectedCourse && effectiveCourse) setSelectedCourse(effectiveCourse);
+  }, [selectedCourse, effectiveCourse, setSelectedCourse]);
+
+  const courseId = effectiveCourse?.courseId || effectiveCourse?.id || "";
 
   const { data: apiProject, isLoading: isProjectLoading } = useStudentProject(courseId);
-
   const {
     data: team,
     isLoading: isTeamLoading,
@@ -41,107 +57,89 @@ export function ProjectInfoView() {
     refetch: refetchTeam,
   } = useStudentMyTeam(courseId, { enabled: Boolean(courseId) });
 
-  const forbidden = getApiErrorCode(teamError) === "STUDENT_COURSE_FORBIDDEN";
+  const projectId = apiProject?.projectId || team?.projectId || effectiveCourse?.projectId || "";
+  const { data: integrations } = useProjectIntegrations(projectId, { enabled: Boolean(projectId) });
 
+  const forbidden = getApiErrorCode(teamError) === "STUDENT_COURSE_FORBIDDEN";
   useEffect(() => {
-    if (forbidden) {
-      void refreshCourses();
-    }
+    if (forbidden) void refreshCourses();
   }, [forbidden, refreshCourses]);
 
   const hasTeam = Boolean(
-    team?.teamId ||
-    team?.teamName ||
-    (team?.members && team.members.length > 0)
+    team?.teamId || team?.teamName || effectiveCourse?.teamId || effectiveCourse?.teamName || (team?.members && team.members.length > 0)
   );
 
-  const isLeader = Boolean(
-    team?.myRole?.toUpperCase() === "LEADER" ||
-    selectedCourse?.myGroup?.role?.toUpperCase() === "LEADER"
+  const norm = (s: string) =>
+    s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+  const cleanUserName = norm((user?.fullName || user?.name || "").replace(/\([^)]*\)/g, ""));
+
+  const isLeaderFromMembers = Boolean(
+    team?.members?.some((m) => {
+      if (m.role?.toUpperCase() !== "LEADER") return false;
+      if (user?.studentCode && m.studentCode?.toLowerCase() === user.studentCode.toLowerCase()) return true;
+      if (user?.email && m.studentCode && user.email.toLowerCase().includes(m.studentCode.toLowerCase())) return true;
+      const cleanMemberName = norm(m.fullName || "");
+      return cleanUserName.length > 0 && cleanUserName === cleanMemberName;
+    })
   );
+
+  const rawRole = team?.myRole || (team as unknown as { role?: string })?.role;
+  const effectiveRole = rawRole || effectiveCourse?.myGroup?.role;
+  const isLeader = Boolean(effectiveRole?.toUpperCase() === "LEADER" || isLeaderFromMembers);
+  const isRoleLoading = isTeamLoading && !effectiveRole && !isLeaderFromMembers;
+
+  useEffect(() => {
+    if (!team || !effectiveCourse) return;
+    const targetRole = (isLeader ? "LEADER" : (team.myRole || "MEMBER")) as RoleInTeam;
+    if (effectiveCourse.myGroup?.role === targetRole && effectiveCourse.projectId === team.projectId) return;
+    setSelectedCourse({
+      ...effectiveCourse,
+      teamId: team.teamId || effectiveCourse.teamId,
+      teamNo: team.teamNo ?? effectiveCourse.teamNo,
+      teamName: team.teamName || effectiveCourse.teamName,
+      projectId: team.projectId || effectiveCourse.projectId,
+      myGroup: { id: team.teamId || "", name: team.teamName || "", role: targetRole, membersCount: team.members?.length ?? 0 },
+    });
+  }, [team, effectiveCourse, isLeader, setSelectedCourse]);
 
   const hasProject = Boolean(
-    (apiProject?.projectId && apiProject.projectId.trim() !== "") ||
-    (apiProject?.name && apiProject.name.trim() !== "") ||
-    (team?.projectId && team.projectId.trim() !== "") ||
-    (localOverrides.projectId && localOverrides.projectId.trim() !== "") ||
-    (localOverrides.name && localOverrides.name.trim() !== "")
+    apiProject?.projectId?.trim() || apiProject?.name?.trim() || team?.projectId?.trim() ||
+    effectiveCourse?.projectId?.trim() || localOverrides.projectId?.trim() || localOverrides.name?.trim()
   );
 
+  const isInitialLoading = (isProjectLoading || isTeamLoading || (isCoursesLoading && !effectiveCourse)) && !apiProject && !team;
+
   const project: StudentProjectDetails = useMemo(() => {
-    const teamName = team?.teamName || apiProject?.teamName || "";
-    const teamNo = team?.teamNo ?? apiProject?.teamNo ?? 0;
+    const teamName = team?.teamName || apiProject?.teamName || effectiveCourse?.teamName || "";
+    const teamNo = team?.teamNo ?? apiProject?.teamNo ?? effectiveCourse?.teamNo ?? 0;
+    const roleLabel = isLeader ? "Leader" : (team?.myRole === "MEMBER" ? "Member" : "");
 
     const base: StudentProjectDetails = {
       ...MOCK_STUDENT_PROJECT,
+      jiraConfig: undefined,
+      githubRepositories: [],
       members: [],
-      groupName: teamName
-        ? `Nhóm ${teamNo} · ${teamName}${team?.myRole ? ` · ${team.myRole === "LEADER" ? "Leader" : "Member"}` : ""}`
-        : (hasTeam ? `Nhóm ${teamNo || 1}` : "Chưa có nhóm"),
-      teamId: team?.teamId || apiProject?.teamId || "",
+      groupName: teamName ? `Nhóm ${teamNo || 1} · ${teamName}${roleLabel ? ` · ${roleLabel}` : ""}` : (hasTeam ? `Nhóm ${teamNo || 1}` : "Chưa có nhóm"),
+      teamId: team?.teamId || apiProject?.teamId || effectiveCourse?.teamId || "",
       teamNo: teamNo,
       teamName: teamName,
-      ...(apiProject
-        ? {
-            id: apiProject.projectId,
-            projectId: apiProject.projectId,
-            courseId: apiProject.courseId,
-            name: apiProject.name,
-            description: apiProject.description,
-            category: (apiProject.projectType?.name as ProjectCategory) || "",
-            projectType: apiProject.projectType,
-            createdBy: apiProject.createdBy,
-            createdAt: apiProject.createdAt,
-          }
-        : {}),
+      ...(apiProject ? {
+        id: apiProject.projectId, projectId: apiProject.projectId, courseId: apiProject.courseId,
+        name: apiProject.name, description: apiProject.description, category: (apiProject.projectType?.name as ProjectCategory) || "",
+        projectType: apiProject.projectType, createdBy: apiProject.createdBy, createdAt: apiProject.createdAt,
+      } : {}),
+      ...(team?.projectId ? { id: team.projectId, projectId: team.projectId } : {}),
     };
 
-    if (team?.projectId) {
-      base.projectId = team.projectId;
-      base.id = team.projectId;
-    }
-
-    return {
-      ...base,
-      ...localOverrides,
-      members: [],
-    };
-  }, [apiProject, hasTeam, localOverrides, team]);
+    return { ...base, ...localOverrides, members: [] };
+  }, [apiProject, effectiveCourse, hasTeam, isLeader, localOverrides, team]);
 
   const handleUpdateProject = (fields: Partial<StudentProjectDetails>) =>
-    setLocalOverrides((prev) => ({ ...prev, ...fields, updatedAt: new Date().toISOString() }));
-
-  const handleUpdateJira = (config?: ProjectJiraConfig) =>
-    setLocalOverrides((prev) => ({ ...prev, jiraConfig: config, updatedAt: new Date().toISOString() }));
-
-  const handleAddRepo = (repo: ProjectGitHubRepo) =>
-    setLocalOverrides((prev) => ({
-      ...prev,
-      githubRepositories: [...(prev.githubRepositories || project.githubRepositories || []), repo],
-      updatedAt: new Date().toISOString(),
-    }));
-
-  const handleEditRepo = (repo: ProjectGitHubRepo) =>
-    setLocalOverrides((prev) => ({
-      ...prev,
-      githubRepositories: (prev.githubRepositories || project.githubRepositories || []).map((r) =>
-        r.id === repo.id ? repo : r
-      ),
-      updatedAt: new Date().toISOString(),
-    }));
-
-  const handleDeleteRepo = (repoId: string) =>
-    setLocalOverrides((prev) => ({
-      ...prev,
-      githubRepositories: (prev.githubRepositories || project.githubRepositories || []).filter(
-        (r) => r.id !== repoId
-      ),
-      updatedAt: new Date().toISOString(),
-    }));
+    setLocalOverrides((p) => ({ ...p, ...fields, updatedAt: new Date().toISOString() }));
 
   return (
     <div className="mx-auto max-w-[1600px] space-y-6 pb-12">
-      {(isProjectLoading || isTeamLoading) && (
+      {(isProjectLoading || isTeamLoading) && !isInitialLoading && (
         <div className="flex animate-pulse items-center gap-2.5 rounded-2xl border border-primary/20 bg-primary/10 px-4 py-2.5 text-xs font-medium text-primary">
           <Loader2Icon className="h-4 w-4 shrink-0 animate-spin" />
           <span>Đang đồng bộ thông tin nhóm và dự án từ máy chủ...</span>
@@ -150,13 +148,16 @@ export function ProjectInfoView() {
 
       <ProjectBannerHeader
         project={project}
-        course={selectedCourse}
+        course={effectiveCourse}
         isLeader={isLeader}
         hasTeam={hasTeam}
+        isRoleLoading={isRoleLoading}
       />
 
       <div className="space-y-6">
-        {!hasProject ? (
+        {isInitialLoading ? (
+          <ProjectInfoSkeleton />
+        ) : !hasProject ? (
           <div className="p-8 sm:p-10 rounded-3xl border border-dashed border-primary/30 bg-primary/[0.02] text-center space-y-5">
             <div className="relative mx-auto w-16 h-16">
               <div className="w-16 h-16 rounded-2xl bg-primary/10 text-primary border border-primary/20 flex items-center justify-center shadow-md">
@@ -174,7 +175,12 @@ export function ProjectInfoView() {
               </p>
             </div>
 
-            {isLeader ? (
+            {isRoleLoading ? (
+              <div className="flex flex-col items-center justify-center gap-2 p-4 text-xs text-muted-foreground animate-pulse">
+                <Loader2Icon className="w-5 h-5 animate-spin text-primary" />
+                <span>Đang đồng bộ và xác thực quyền Trưởng nhóm...</span>
+              </div>
+            ) : isLeader ? (
               <div className="flex flex-col items-center gap-2">
                 <Button
                   size="lg"
@@ -184,9 +190,7 @@ export function ProjectInfoView() {
                   <PlusIcon className="w-4 h-4" />
                   Tạo dự án mới
                 </Button>
-                <p className="text-[11px] text-muted-foreground/80">
-                  Dành cho Trưởng nhóm (Team Leader) đăng ký đề tài ban đầu
-                </p>
+                <p className="text-[11px] text-muted-foreground/80">Dành cho Trưởng nhóm (Team Leader) đăng ký đề tài ban đầu</p>
               </div>
             ) : (
               <div className="inline-block px-4 py-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-300 text-xs text-center max-w-md">
@@ -200,22 +204,19 @@ export function ProjectInfoView() {
             <ProjectDetailsCard
               project={project}
               isLeader={isLeader}
+              integrations={integrations}
               onOpenEditModal={() => setIsEditModalOpen(true)}
             />
 
             <ProjectIntegrationsCard
-              project={project}
+              projectId={project.projectId || project.id || ""}
               isLeader={isLeader}
-              onUpdateJira={handleUpdateJira}
-              onAddRepo={handleAddRepo}
-              onEditRepo={handleEditRepo}
-              onDeleteRepo={handleDeleteRepo}
             />
           </>
         )}
 
         <TeamMembersCard
-          course={selectedCourse}
+          course={effectiveCourse}
           team={team}
           isLoading={isTeamLoading}
           isError={isTeamError}
