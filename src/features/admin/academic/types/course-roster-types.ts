@@ -41,6 +41,19 @@ export interface GetCoursesParams {
   lecturerId?: string;
 }
 
+export interface AdminLecturerResponse {
+  lecturerProfileId: string;
+  userId: string;
+  fullName: string;
+  email: string;
+  active: boolean;
+}
+
+export interface GetAdminLecturersParams {
+  active?: boolean;
+  search?: string;
+}
+
 export type RosterEnrollmentStatus = "ENROLLED" | "INVITED" | "DROPPED";
 
 export interface CourseRosterEntry {

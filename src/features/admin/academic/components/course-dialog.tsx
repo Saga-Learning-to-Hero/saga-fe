@@ -22,6 +22,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { CustomSelect } from "@/components/common/custom-select";
 import { useSyllabi } from "@/features/admin/subjects/hooks/use-syllabi";
+import { useAdminLecturers } from "../hooks/use-academic";
 import type { CourseResponse } from "../types/course-roster-types";
 import type { SubjectResponse } from "@/features/admin/subjects/types/subject-types";
 import type { AcademicClassResponse, SemesterResponse } from "../types/academic-types";
@@ -72,6 +73,9 @@ export function CourseDialog({
   });
 
   const { data: syllabi = [], isLoading: isLoadingSyllabi } = useSyllabi(formData.subjectId);
+  const { data: lecturers = [], isLoading: isLoadingLecturers } = useAdminLecturers(undefined, {
+    enabled: isOpen,
+  });
 
   useEffect(() => {
     if (editingCourse) {
@@ -97,6 +101,16 @@ export function CourseDialog({
       });
     }
   }, [editingCourse, isOpen, subjects, semesters, adminClasses]);
+
+  useEffect(() => {
+    if (!editingCourse && lecturers.length > 0 && !formData.lecturerId) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setFormData((prev) => ({
+        ...prev,
+        lecturerId: lecturers[0].lecturerProfileId,
+      }));
+    }
+  }, [lecturers, formData.lecturerId, editingCourse]);
 
   useEffect(() => {
     if (!editingCourse && syllabi.length > 0) {
@@ -279,19 +293,39 @@ export function CourseDialog({
             <div className="space-y-1.5">
               <label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
                 <UserIcon className="w-3.5 h-3.5 text-primary" />
-                ID Giảng viên phụ trách (Tạm thời) *
+                Giảng viên phụ trách *
               </label>
-              <Input
-                placeholder="Nhập ID/UUID của giảng viên (VD: d67d58a3-...)"
+              <CustomSelect
                 value={formData.lecturerId}
-                onChange={(e) => setFormData({ ...formData, lecturerId: e.target.value })}
-                required
-                className="h-9 text-xs font-mono bg-muted/30 border-border/80 focus:border-primary rounded-xl"
+                onChange={(val) => setFormData({ ...formData, lecturerId: val })}
+                options={
+                  lecturers.length > 0
+                    ? lecturers.map((lec) => ({
+                      value: lec.lecturerProfileId,
+                      label: lec.fullName,
+                      subLabel: lec.email,
+                    }))
+                    : [
+                      {
+                        value: "",
+                        label: isLoadingLecturers
+                          ? "Đang tải danh sách giảng viên..."
+                          : "Chưa có giảng viên hoạt động",
+                      },
+                    ]
+                }
+                disabled={isLoadingLecturers || lecturers.length === 0}
               />
-              <p className="text-[11px] text-muted-foreground">
-                Nhập ID định danh tài khoản Giảng viên trong hệ thống.
-              </p>
             </div>
+
+            {lecturers.length === 0 && !isLoadingLecturers && (
+              <div className="flex items-center gap-2 p-2.5 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive text-xs">
+                <AlertCircleIcon className="w-4 h-4 shrink-0" />
+                <span>
+                  Chưa có tài khoản Giảng viên nào hoạt động trong hệ thống. Vui lòng tạo tài khoản giảng viên trước khi mở lớp.
+                </span>
+              </div>
+            )}
           </div>
 
           <DialogFooter className="pt-3 border-t border-border/60">
@@ -301,7 +335,7 @@ export function CourseDialog({
             <Button
               type="submit"
               size="sm"
-              disabled={!formData.syllabusVersionId}
+              disabled={!formData.syllabusVersionId || !formData.lecturerId}
               className="text-xs font-semibold bg-primary text-primary-foreground hover:bg-primary/90"
             >
               {editingCourse ? "Lưu thay đổi" : "Tạo khóa học"}

@@ -3,6 +3,7 @@ import { toast } from "sonner";
 import { AcademicService } from "../api/academic-service";
 import { CourseService } from "../api/course-service";
 import { RosterService } from "../api/roster-service";
+import { AdminLecturerService } from "../api/admin-lecturer-service";
 import type {
   SemesterResponse,
   AcademicClassResponse,
@@ -17,6 +18,7 @@ import type {
   PatchCourseRequest,
   GetCoursesParams,
   ConfirmRosterImportRequest,
+  GetAdminLecturersParams,
 } from "../types/course-roster-types";
 
 export const ACADEMIC_QUERY_KEYS = {
@@ -27,6 +29,7 @@ export const ACADEMIC_QUERY_KEYS = {
   courses: (params?: GetCoursesParams) => ["academic", "courses", params] as const,
   courseDetail: (id: string) => ["academic", "courseDetail", id] as const,
   roster: (courseId: string) => ["academic", "roster", courseId] as const,
+  lecturers: (params?: GetAdminLecturersParams) => ["academic", "lecturers", params] as const,
 };
 
 export function prefetchSemestersQuery(queryClient: QueryClient) {
@@ -375,6 +378,18 @@ export function useDownloadRosterTemplate() {
     onError: () => {
       toast.error("Không thể tải file mẫu Excel.");
     },
+  });
+}
+
+export function useAdminLecturers(
+  params?: GetAdminLecturersParams,
+  options?: { enabled?: boolean }
+) {
+  return useQuery({
+    queryKey: ACADEMIC_QUERY_KEYS.lecturers(params),
+    queryFn: () => AdminLecturerService.getLecturers(params),
+    staleTime: 1000 * 60 * 5,
+    enabled: options?.enabled ?? true,
   });
 }
 
