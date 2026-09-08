@@ -205,13 +205,11 @@ describe("RosterService", () => {
       const fakeFile = new File(["test"], "roster.xlsx");
       await RosterService.previewImport(mockCourseId, fakeFile);
 
-      expect(postSpy).toHaveBeenCalledWith(
-        `/api/admin/courses/${mockCourseId}/roster/import/preview`,
-        expect.any(FormData),
-        expect.objectContaining({
-          headers: { "Content-Type": "multipart/form-data" },
-        })
-      );
+      expect(postSpy).toHaveBeenCalledTimes(1);
+      const [url, body] = postSpy.mock.calls[0];
+      expect(url).toBe(`/api/admin/courses/${mockCourseId}/roster/import/preview`);
+      expect(body).toBeInstanceOf(FormData);
+      expect((body as FormData).get("file")).toBe(fakeFile);
     }
   );
 

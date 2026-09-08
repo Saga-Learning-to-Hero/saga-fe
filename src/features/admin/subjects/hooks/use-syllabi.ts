@@ -19,7 +19,7 @@ export const SYLLABUS_QUERY_KEYS = {
 };
 
 export function prefetchSyllabiQuery(queryClient: QueryClient, subjectId: string) {
-  return queryClient.query({
+  return queryClient.prefetchQuery({
     queryKey: SYLLABUS_QUERY_KEYS.bySubject(subjectId),
     queryFn: () => SyllabusService.getSyllabi(subjectId),
     staleTime: 1000 * 60 * 5,
@@ -31,7 +31,7 @@ export function prefetchSyllabusDetailQuery(
   subjectId: string,
   versionId: string
 ) {
-  return queryClient.query({
+  return queryClient.prefetchQuery({
     queryKey: SYLLABUS_QUERY_KEYS.detail(subjectId, versionId),
     queryFn: () => SyllabusService.getSyllabusDetail(subjectId, versionId),
     staleTime: 1000 * 60 * 5,

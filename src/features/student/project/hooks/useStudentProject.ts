@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { isAxiosError } from "axios";
 import { toast } from "@/components/ui/sonner";
 import { StudentProjectService } from "../api/student-project-service";
+import { STUDENT_COURSE_QUERY_KEYS } from "@/features/student/courses/hooks/use-student-courses";
 import type {
   StudentTeamProjectResponse,
   ProjectTypeItem,
@@ -14,8 +15,7 @@ import type {
 export const STUDENT_PROJECT_QUERY_KEY = (courseId?: string | null) =>
   ["student", "courses", courseId, "project"] as const;
 
-export const STUDENT_TEAM_QUERY_KEY = (courseId?: string | null) =>
-  ["student", "courses", courseId, "team"] as const;
+export const STUDENT_TEAM_QUERY_KEY = STUDENT_COURSE_QUERY_KEYS.studentMyTeam;
 
 export const PROJECT_TYPES_QUERY_KEY = ["student", "project-types"] as const;
 
@@ -112,9 +112,14 @@ export function useCreateStudentProject() {
       toast.success("Tạo dự án nhóm thành công!", {
         description: `Dự án "${data.name}" đã được ghi nhận trên hệ thống SAGA.`,
       });
-      // Làm mới cache query dự án nhóm cho khóa học hiện tại
       queryClient.invalidateQueries({
         queryKey: STUDENT_PROJECT_QUERY_KEY(variables.courseId),
+      });
+      queryClient.invalidateQueries({
+        queryKey: STUDENT_COURSE_QUERY_KEYS.studentMyTeam(variables.courseId),
+      });
+      queryClient.invalidateQueries({
+        queryKey: STUDENT_COURSE_QUERY_KEYS.studentCourses,
       });
     },
     onError: (error: unknown) => {

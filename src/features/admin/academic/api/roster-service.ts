@@ -100,9 +100,14 @@ export class RosterService {
       `/api/admin/courses/${courseId.trim()}/roster/import/preview`,
       formData,
       {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
+        transformRequest: [
+          (data, headers) => {
+            if (typeof FormData !== "undefined" && data instanceof FormData) {
+              headers.delete("Content-Type");
+            }
+            return data;
+          },
+        ],
       }
     );
 

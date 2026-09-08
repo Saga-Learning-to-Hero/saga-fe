@@ -18,7 +18,7 @@ export function prefetchSubjectsQuery(
   queryClient: QueryClient,
   params?: GetSubjectsParams
 ) {
-  return queryClient.query({
+  return queryClient.prefetchQuery({
     queryKey: SUBJECT_QUERY_KEYS.list(params),
     queryFn: () => SubjectService.getSubjects(params),
     staleTime: 1000 * 60 * 5,
@@ -26,7 +26,7 @@ export function prefetchSubjectsQuery(
 }
 
 export function prefetchSubjectDetailQuery(queryClient: QueryClient, id: string) {
-  return queryClient.query({
+  return queryClient.prefetchQuery({
     queryKey: SUBJECT_QUERY_KEYS.detail(id),
     queryFn: () => SubjectService.getSubjectById(id),
     staleTime: 1000 * 60 * 5,

@@ -4,8 +4,8 @@ import { StudentCourseService } from "../api/student-course-service";
 import { getApiErrorCode } from "@/lib/api-error";
 
 export const STUDENT_COURSE_QUERY_KEYS = {
-  studentCourses: ["studentCourses"] as const,
-  studentMyTeam: (courseId: string) => ["studentMyTeam", courseId] as const,
+  studentCourses: ["student", "courses"] as const,
+  studentMyTeam: (courseId?: string | null) => ["student", "courses", courseId, "team"] as const,
 };
 
 export function useStudentCourses(options?: { enabled?: boolean }) {

@@ -34,7 +34,7 @@ export const ACADEMIC_QUERY_KEYS = {
 };
 
 export function prefetchSemestersQuery(queryClient: QueryClient) {
-  return queryClient.query({
+  return queryClient.prefetchQuery({
     queryKey: ACADEMIC_QUERY_KEYS.semesters,
     queryFn: () => AcademicService.getSemesters(),
     staleTime: 1000 * 60 * 5,
@@ -42,7 +42,7 @@ export function prefetchSemestersQuery(queryClient: QueryClient) {
 }
 
 export function prefetchClassesQuery(queryClient: QueryClient) {
-  return queryClient.query({
+  return queryClient.prefetchQuery({
     queryKey: ACADEMIC_QUERY_KEYS.classes,
     queryFn: () => AcademicService.getClasses(),
     staleTime: 1000 * 60 * 5,
@@ -50,7 +50,7 @@ export function prefetchClassesQuery(queryClient: QueryClient) {
 }
 
 export function prefetchCoursesQuery(queryClient: QueryClient, params?: GetCoursesParams) {
-  return queryClient.query({
+  return queryClient.prefetchQuery({
     queryKey: ACADEMIC_QUERY_KEYS.courses(params),
     queryFn: () => CourseService.getCourses(params),
     staleTime: 1000 * 60 * 5,
@@ -58,7 +58,7 @@ export function prefetchCoursesQuery(queryClient: QueryClient, params?: GetCours
 }
 
 export function prefetchCourseDetailQuery(queryClient: QueryClient, courseId: string) {
-  return queryClient.query({
+  return queryClient.prefetchQuery({
     queryKey: ACADEMIC_QUERY_KEYS.courseDetail(courseId),
     queryFn: () => CourseService.getCourseById(courseId),
     staleTime: 1000 * 60 * 5,
@@ -66,7 +66,7 @@ export function prefetchCourseDetailQuery(queryClient: QueryClient, courseId: st
 }
 
 export function prefetchRosterQuery(queryClient: QueryClient, courseId: string) {
-  return queryClient.query({
+  return queryClient.prefetchQuery({
     queryKey: ACADEMIC_QUERY_KEYS.roster(courseId),
     queryFn: () => RosterService.getRoster(courseId),
     staleTime: 1000 * 60 * 2,
