@@ -110,7 +110,7 @@ export function ProjectBannerHeader({
             {course?.lecturer?.fullName && (
               <span className="flex items-center gap-1.5">
                 <GraduationCapIcon className="w-3.5 h-3.5 opacity-80" />
-                GVHD: <strong className="text-white">{course.lecturer.fullName}</strong> ({course.lecturer.email})
+                GVHD: <strong className="text-white">{course.lecturer?.fullName}</strong> ({course.lecturer?.email})
               </span>
             )}
             {project.createdBy?.fullName && (

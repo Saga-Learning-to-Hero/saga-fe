@@ -32,7 +32,6 @@ import { prefetchSubjectsQuery } from "@/features/admin/subjects/hooks/use-subje
 import { cn } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
-import { getLecturerCourseById } from "@/features/lecturer/courses/lib/course-repository";
 import { getNavGroups, isNavItemActive } from "./nav-config";
 import type { NavItem } from "./nav-config";
 
@@ -144,10 +143,7 @@ export function SidebarNav({ collapsed }: SidebarNavProps) {
   // Trích xuất courseId từ pathname (chỉ cho Lecturer)
   const courseMatch = pathname.match(/^\/lecturer\/courses\/([^/]+)(?:\/|$)/);
   const courseId = courseMatch ? decodeURIComponent(courseMatch[1]) : null;
-
-  // Lấy courseCode từ mock data (nếu đang trong context lớp)
-  const course = courseId ? getLecturerCourseById(courseId) : null;
-  const courseCode = course?.code;
+  const courseCode = courseId ?? undefined;
 
   // Xây dựng navigation theo context — không trộn global + course
   const navGroups = getNavGroups(role, courseId, courseCode, pathname, selectedCourse);

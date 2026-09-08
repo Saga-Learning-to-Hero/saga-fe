@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
 import { MOCK_STUDENT_PROJECT } from "../data/mock-student-project";
 import type {
@@ -9,7 +9,12 @@ import type {
   ProjectGitHubRepo,
   ProjectCategory,
 } from "../types/student-project";
-import { useStudentProject, useStudentTeam } from "../hooks/useStudentProject";
+import { useStudentProject } from "../hooks/useStudentProject";
+import {
+  useRefreshStudentCourses,
+  useStudentMyTeam,
+} from "@/features/student/courses/hooks/use-student-courses";
+import { getApiErrorCode } from "@/lib/api-error";
 import { Loader2Icon, FolderKanbanIcon, PlusIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ProjectBannerHeader } from "./project-banner-header";
@@ -22,44 +27,60 @@ export function ProjectInfoView() {
   const { selectedCourse } = useAuthStore();
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [localOverrides, setLocalOverrides] = useState<Partial<StudentProjectDetails>>({});
+  const refreshCourses = useRefreshStudentCourses();
 
-  // Gọi API Backend: GET /api/student/courses/{courseId}/project & /team
-  const { data: apiProject, isLoading: isProjectLoading } = useStudentProject(selectedCourse?.id);
-  const { data: teamData, isLoading: isTeamLoading } = useStudentTeam(selectedCourse?.id);
-  const isLoading = isProjectLoading || isTeamLoading;
+  const courseId = selectedCourse?.courseId || selectedCourse?.id || "";
 
-  // Kiểm tra dự án đã được khởi tạo hay chưa (từ API hoặc từ thay đổi cục bộ sau khi tạo)
+  const { data: apiProject, isLoading: isProjectLoading } = useStudentProject(courseId);
+
+  const {
+    data: team,
+    isLoading: isTeamLoading,
+    isError: isTeamError,
+    error: teamError,
+    refetch: refetchTeam,
+  } = useStudentMyTeam(courseId, { enabled: Boolean(courseId) });
+
+  const forbidden = getApiErrorCode(teamError) === "STUDENT_COURSE_FORBIDDEN";
+
+  useEffect(() => {
+    if (forbidden) {
+      void refreshCourses();
+    }
+  }, [forbidden, refreshCourses]);
+
+  const hasTeam = Boolean(
+    team?.teamId ||
+    team?.teamName ||
+    (team?.members && team.members.length > 0)
+  );
+
+  const isLeader = Boolean(
+    team?.myRole?.toUpperCase() === "LEADER" ||
+    selectedCourse?.myGroup?.role?.toUpperCase() === "LEADER"
+  );
+
   const hasProject = Boolean(
     (apiProject?.projectId && apiProject.projectId.trim() !== "") ||
     (apiProject?.name && apiProject.name.trim() !== "") ||
-    (teamData?.projectId && teamData.projectId.trim() !== "") ||
+    (team?.projectId && team.projectId.trim() !== "") ||
     (localOverrides.projectId && localOverrides.projectId.trim() !== "") ||
     (localOverrides.name && localOverrides.name.trim() !== "")
   );
 
-  const hasTeam = Boolean(
-    teamData?.teamId ||
-    teamData?.teamName ||
-    (teamData?.members && teamData.members.length > 0)
-  );
-
-  const teamGroupName = teamData?.teamName
-    ? `Nhóm ${teamData.teamNo || 1} - ${teamData.teamName}`
-    : "Chưa có nhóm";
-
-  // Tính toán dữ liệu dự án: không dùng dữ liệu thành viên cứng từ mock
   const project: StudentProjectDetails = useMemo(() => {
+    const teamName = team?.teamName || apiProject?.teamName || "";
+    const teamNo = team?.teamNo ?? apiProject?.teamNo ?? 0;
+
     const base: StudentProjectDetails = {
       ...MOCK_STUDENT_PROJECT,
-      members: [], // Bỏ toàn bộ mock members
-      groupName: hasTeam ? teamGroupName : "Chưa có nhóm",
-      ...(teamData
-        ? {
-            teamId: teamData.teamId,
-            teamNo: teamData.teamNo,
-            teamName: teamData.teamName,
-          }
-        : {}),
+      members: [],
+      groupName: teamName
+        ? `Nhóm ${teamNo} · ${teamName}${team?.myRole ? ` · ${team.myRole === "LEADER" ? "Leader" : "Member"}` : ""}`
+        : (hasTeam ? `Nhóm ${teamNo || 1}` : "Chưa có nhóm"),
+      teamId: team?.teamId || apiProject?.teamId || "",
+      teamNo: teamNo,
+      teamName: teamName,
       ...(apiProject
         ? {
             id: apiProject.projectId,
@@ -67,12 +88,6 @@ export function ProjectInfoView() {
             courseId: apiProject.courseId,
             name: apiProject.name,
             description: apiProject.description,
-            teamId: apiProject.teamId || teamData?.teamId,
-            teamNo: apiProject.teamNo || teamData?.teamNo,
-            teamName: apiProject.teamName || teamData?.teamName,
-            groupName: apiProject.teamName
-              ? `Nhóm ${apiProject.teamNo || 1} - ${apiProject.teamName}`
-              : (hasTeam ? teamGroupName : "Chưa có nhóm"),
             category: (apiProject.projectType?.name as ProjectCategory) || "",
             projectType: apiProject.projectType,
             createdBy: apiProject.createdBy,
@@ -81,14 +96,17 @@ export function ProjectInfoView() {
         : {}),
     };
 
-    return { ...base, ...localOverrides };
-  }, [apiProject, teamData, hasTeam, teamGroupName, localOverrides]);
+    if (team?.projectId) {
+      base.projectId = team.projectId;
+      base.id = team.projectId;
+    }
 
-  // Phân quyền: Trưởng nhóm (LEADER) hay Thành viên (MEMBER) từ API team
-  const isLeader = Boolean(
-    teamData?.myRole?.toUpperCase() === "LEADER" ||
-    selectedCourse?.myGroup?.role?.toUpperCase() === "LEADER"
-  );
+    return {
+      ...base,
+      ...localOverrides,
+      members: [],
+    };
+  }, [apiProject, hasTeam, localOverrides, team]);
 
   const handleUpdateProject = (fields: Partial<StudentProjectDetails>) =>
     setLocalOverrides((prev) => ({ ...prev, ...fields, updatedAt: new Date().toISOString() }));
@@ -121,23 +139,15 @@ export function ProjectInfoView() {
       updatedAt: new Date().toISOString(),
     }));
 
-  // Trạng thái 1: Đang tải thông tin từ máy chủ
-  if (isLoading) {
-    return (
-      <div className="min-h-[60vh] flex flex-col items-center justify-center p-8 text-center space-y-4">
-        <div className="w-12 h-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center animate-spin">
-          <Loader2Icon className="w-6 h-6" />
-        </div>
-        <div className="space-y-1">
-          <h3 className="text-sm font-semibold text-foreground">Đang tải thông tin dự án...</h3>
-          <p className="text-xs text-muted-foreground">Đang đồng bộ dữ liệu từ máy chủ SAGA</p>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="space-y-6 max-w-[1600px] mx-auto pb-12">
+    <div className="mx-auto max-w-[1600px] space-y-6 pb-12">
+      {(isProjectLoading || isTeamLoading) && (
+        <div className="flex animate-pulse items-center gap-2.5 rounded-2xl border border-primary/20 bg-primary/10 px-4 py-2.5 text-xs font-medium text-primary">
+          <Loader2Icon className="h-4 w-4 shrink-0 animate-spin" />
+          <span>Đang đồng bộ thông tin nhóm và dự án từ máy chủ...</span>
+        </div>
+      )}
+
       <ProjectBannerHeader
         project={project}
         course={selectedCourse}
@@ -205,9 +215,13 @@ export function ProjectInfoView() {
         )}
 
         <TeamMembersCard
-          project={project}
           course={selectedCourse}
-          teamData={teamData}
+          team={team}
+          isLoading={isTeamLoading}
+          isError={isTeamError}
+          error={teamError}
+          onRetry={() => void refetchTeam()}
+          onForbidden={() => void refreshCourses()}
         />
       </div>
 
@@ -215,11 +229,10 @@ export function ProjectInfoView() {
         key={isEditModalOpen ? "modal-open" : "modal-closed"}
         isOpen={isEditModalOpen}
         project={project}
-        courseId={selectedCourse?.id}
+        courseId={courseId}
         onClose={() => setIsEditModalOpen(false)}
         onSave={handleUpdateProject}
       />
     </div>
   );
 }
-

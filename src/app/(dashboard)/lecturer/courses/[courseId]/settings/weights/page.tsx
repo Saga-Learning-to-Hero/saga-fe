@@ -1,8 +1,5 @@
 import { Metadata } from "next";
-import { CourseWeightConfigPage } from "@/features/lecturer/course-weight-config/components/course-weight-config-page";
-import { getLecturerCourseById } from "@/features/lecturer/courses/lib/course-repository";
-import { getMockTeamsByCourseId } from "@/features/lecturer/course-weight-config/data/mock-course-weight-config";
-import { notFound } from "next/navigation";
+import { UnsupportedFeatureNotice } from "@/features/lecturer/courses/components/unsupported-feature-notice";
 
 export const metadata: Metadata = {
   title: "Cấu hình trọng số - SAGA",
@@ -15,14 +12,12 @@ interface PageProps {
 }
 
 export default async function LecturerCourseWeightConfigRoute({ params }: PageProps) {
-  const resolvedParams = await params;
-  const course = getLecturerCourseById(resolvedParams.courseId);
-  
-  if (!course) {
-    notFound();
-  }
-  
-  const teams = getMockTeamsByCourseId(course.id);
-  
-  return <CourseWeightConfigPage course={course} teams={teams} />;
+  const { courseId } = await params;
+  return (
+    <UnsupportedFeatureNotice
+      courseId={courseId}
+      title="Cấu hình trọng số chưa được hỗ trợ"
+      description="API cấu hình trọng số không thuộc phạm vi quản trị lớp và phân nhóm."
+    />
+  );
 }

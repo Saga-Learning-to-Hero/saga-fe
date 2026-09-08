@@ -20,11 +20,10 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { MOCK_LECTURER_COURSES } from "@/features/lecturer/courses/data/mock-courses";
-import { getLecturerCourseById } from "@/features/lecturer/courses/lib/course-repository";
-import { lecturerCourseDashboardPath } from "@/features/lecturer/courses/lib/course-routes";
-import { MOCK_STUDENT_COURSES } from "@/features/student/courses/data/mock-student-courses";
-import type { StudentCourse } from "@/features/student/courses/types/student-course";
+import { lecturerCoursePath } from "@/features/lecturer/courses/lib/course-routes";
+import { useLecturerCourses } from "@/features/lecturer/courses/hooks/use-lecturer-courses";
+import { useStudentCourses } from "@/features/student/courses/hooks/use-student-courses";
+import { mapStudentCourseResponse } from "@/features/student/courses/types/student-course";
 
 interface CourseContextSwitcherProps {
   courseId: string | null;
@@ -37,111 +36,108 @@ export function CourseContextSwitcher({
 }: CourseContextSwitcherProps) {
   const router = useRouter();
   const { user, selectedCourse, setSelectedCourse } = useAuthStore();
+  const lecturerCoursesQuery = useLecturerCourses({
+    enabled: user?.role === "LECTURER",
+  });
+  const studentCoursesQuery = useStudentCourses({
+    enabled: user?.role === "STUDENT",
+  });
 
   if (!user) return null;
 
-  // ── 1. Quản trị viên (Admin) ──────────────────────────────────────────
   if (user.role === "ADMIN") {
     return (
-      <span className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-danger-muted text-danger border border-danger/20">
+      <span className="hidden sm:inline-flex items-center gap-1.5 rounded-full border border-danger/20 bg-danger-muted px-3 py-1 text-xs font-semibold text-danger">
         <LayersIcon className="size-3.5" />
         Quản trị hệ thống
       </span>
     );
   }
 
-  // ── 2. Trang Hồ sơ cá nhân & Cài đặt chung (Shared Pages): Ẩn bộ chọn ─
   if (pathname.startsWith("/profile") || pathname.startsWith("/settings")) {
     return null;
   }
 
-  // ── 2. Giảng viên (Lecturer) ──────────────────────────────────────────
   if (user.role === "LECTURER") {
     const isRootCoursePage = pathname === "/lecturer/courses";
+    const lecturerCourses = lecturerCoursesQuery.data ?? [];
+    const currentCourse = lecturerCourses.find((course) => course.id === courseId);
 
     if (isRootCoursePage || !courseId) {
       return (
         <div className="flex items-center gap-2">
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-primary/10 text-primary border border-primary/20">
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-xs font-bold text-primary">
             <BookOpenIcon className="size-3.5 text-primary" />
             Không gian giảng dạy
-          </span>
-          <span className="hidden md:inline-flex items-center text-[11px] font-mono text-muted-foreground bg-muted/60 px-2 py-0.5 rounded-md border border-border">
-            Học kỳ Spring 2026
           </span>
         </div>
       );
     }
 
-    const currentCourse = getLecturerCourseById(courseId);
-    const courseCode = currentCourse?.code ?? "Lớp học";
-    const courseName = currentCourse?.name ?? "Chi tiết học phần";
+    const courseCode = currentCourse?.courseCode ?? "Lớp học phần";
+    const courseName = currentCourse?.subjectName || currentCourse?.name || "Chi tiết học phần";
 
     return (
       <DropdownMenu>
-        <DropdownMenuTrigger className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-muted/50 hover:bg-muted text-foreground border border-border/80 hover:border-primary/40 transition-all cursor-pointer outline-none group max-w-[280px] sm:max-w-[360px]">
-          <div className="size-6 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+        <DropdownMenuTrigger className="group flex max-w-[280px] cursor-pointer items-center gap-2 rounded-xl border border-border/80 bg-muted/50 px-3 py-1.5 text-foreground outline-none transition-all hover:border-primary/40 hover:bg-muted sm:max-w-[360px]">
+          <div className="flex size-6 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
             <BookOpenIcon className="size-3.5" />
           </div>
-
-          <div className="flex flex-col items-start min-w-0 text-left">
-            <div className="flex items-center gap-1.5 w-full">
-              <span className="text-xs font-bold font-mono text-foreground group-hover:text-primary transition-colors truncate">
+          <div className="flex min-w-0 flex-col items-start text-left">
+            <div className="flex w-full items-center gap-1.5">
+              <span className="truncate font-mono text-xs font-bold text-foreground transition-colors group-hover:text-primary">
                 {courseCode}
               </span>
-              <span className="text-[10px] font-semibold px-1.5 py-0.2 rounded bg-primary/15 text-primary">
-                {currentCourse?.room ?? "Phòng học"}
-              </span>
+              {currentCourse?.classCode && (
+                <span className="rounded bg-primary/15 px-1.5 font-mono text-[10px] font-semibold text-primary">
+                  {currentCourse.classCode}
+                </span>
+              )}
             </div>
-            <span className="text-[11px] text-muted-foreground truncate w-full">
-              {courseName}
-            </span>
+            <span className="w-full truncate text-[11px] text-muted-foreground">{courseName}</span>
           </div>
-
-          <ChevronDownIcon className="size-3.5 text-muted-foreground group-hover:text-foreground shrink-0 transition-transform duration-200 group-data-[state=open]:rotate-180" />
+          <ChevronDownIcon className="size-3.5 shrink-0 text-muted-foreground transition-transform duration-200 group-hover:text-foreground group-data-[state=open]:rotate-180" />
         </DropdownMenuTrigger>
 
-        <DropdownMenuContent align="start" sideOffset={8} className="w-80 rounded-2xl p-1.5 shadow-xl border-border">
+        <DropdownMenuContent align="start" sideOffset={8} className="w-80 rounded-2xl border-border p-1.5 shadow-xl">
           <DropdownMenuLabel className="flex items-center justify-between px-3 py-2 text-xs font-bold text-muted-foreground">
-            <span>Danh sách lớp giảng dạy</span>
-            <span className="text-[10px] font-mono font-normal">Học kỳ Spring 2026</span>
+            <span>Danh sách lớp được phân công</span>
           </DropdownMenuLabel>
-
           <DropdownMenuSeparator />
-
-          <DropdownMenuGroup className="space-y-0.5 p-1 max-h-64 overflow-y-auto">
-            {MOCK_LECTURER_COURSES.map((course) => {
+          <DropdownMenuGroup className="max-h-64 space-y-0.5 overflow-y-auto p-1">
+            {lecturerCourses.map((course) => {
               const isSelected = course.id === courseId;
               return (
                 <DropdownMenuItem
                   key={course.id}
-                  onClick={() => router.push(lecturerCourseDashboardPath(course.id))}
+                  onClick={() => router.push(lecturerCoursePath(course.id))}
                   className={cn(
-                    "flex items-center justify-between p-2.5 rounded-xl text-xs cursor-pointer",
-                    isSelected ? "bg-primary/10 text-primary font-bold" : "hover:bg-muted text-foreground"
+                    "flex cursor-pointer items-center justify-between rounded-xl p-2.5 text-xs",
+                    isSelected ? "bg-primary/10 font-bold text-primary" : "text-foreground hover:bg-muted"
                   )}
                 >
-                  <div className="flex flex-col min-w-0 pr-2">
+                  <div className="flex min-w-0 flex-col pr-2">
                     <div className="flex items-center gap-1.5">
-                      <span className="font-mono font-bold">{course.code}</span>
-                      <span className="text-[10px] px-1.5 py-0.2 rounded bg-muted text-muted-foreground">
-                        {course.room} · {course.groupsCount} nhóm
-                      </span>
+                      <span className="font-mono font-bold">{course.courseCode}</span>
+                      {course.classCode && (
+                        <span className="rounded bg-muted px-1.5 text-[10px] text-muted-foreground">
+                          {course.classCode}
+                        </span>
+                      )}
                     </div>
-                    <span className="text-[11px] text-muted-foreground truncate">{course.name}</span>
+                    <span className="truncate text-[11px] text-muted-foreground">
+                      {course.subjectName || course.name}
+                    </span>
                   </div>
-
-                  {isSelected && <CheckIcon className="size-4 text-primary shrink-0" />}
+                  {isSelected && <CheckIcon className="size-4 shrink-0 text-primary" />}
                 </DropdownMenuItem>
               );
             })}
           </DropdownMenuGroup>
-
           <DropdownMenuSeparator />
-
           <DropdownMenuItem
             onClick={() => router.push("/lecturer/courses")}
-            className="flex items-center gap-2 p-2.5 rounded-xl text-xs text-primary font-semibold hover:bg-primary/10 cursor-pointer"
+            className="flex cursor-pointer items-center gap-2 rounded-xl p-2.5 text-xs font-semibold text-primary hover:bg-primary/10"
           >
             <ArrowLeftRightIcon className="size-3.5" />
             <span>Xem tất cả khóa học của tôi</span>
@@ -151,99 +147,91 @@ export function CourseContextSwitcher({
     );
   }
 
-  // ── 3. Sinh viên (Student) ────────────────────────────────────────────
   const isRootCoursePage = pathname === "/student/courses";
-
   if (isRootCoursePage) {
     return (
       <div className="flex items-center gap-2">
-        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-primary/10 text-primary border border-primary/20">
+        <span className="inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-xs font-bold text-primary">
           <GraduationCapIcon className="size-3.5 text-primary" />
           Không gian học tập
-        </span>
-        <span className="hidden md:inline-flex items-center text-[11px] font-mono text-muted-foreground bg-muted/60 px-2 py-0.5 rounded-md border border-border">
-          Học kỳ Fall 2026
         </span>
       </div>
     );
   }
 
-  // Khóa học sinh viên đang chọn (hoặc mặc định môn đầu tiên)
-  const activeStudentCourse = selectedCourse ?? MOCK_STUDENT_COURSES[0];
-  const subjectCode = activeStudentCourse?.subjectCode ?? "SWP490";
-  const classCode = activeStudentCourse?.adminClassCode ?? "SE1701";
-  const groupName = activeStudentCourse?.myGroup?.name ?? "SAGA Team";
+  const studentCourses = (studentCoursesQuery.data ?? []).map(mapStudentCourseResponse);
+  const activeStudentCourse =
+    selectedCourse ?? studentCourses.find((course) => course.id === courseId) ?? studentCourses[0];
 
-  const handleSelectStudentCourse = (c: StudentCourse) => {
-    setSelectedCourse(c);
-    router.push("/student/dashboard");
-  };
+  if (!activeStudentCourse) {
+    return (
+      <span className="inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-xs font-bold text-primary">
+        <GraduationCapIcon className="size-3.5 text-primary" />
+        Chưa có lớp ACTIVE
+      </span>
+    );
+  }
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-muted/50 hover:bg-muted text-foreground border border-border/80 hover:border-primary/40 transition-all cursor-pointer outline-none group max-w-[280px] sm:max-w-[360px]">
-        <div className="size-6 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+      <DropdownMenuTrigger className="group flex max-w-[280px] cursor-pointer items-center gap-2 rounded-xl border border-border/80 bg-muted/50 px-3 py-1.5 text-foreground outline-none transition-all hover:border-primary/40 hover:bg-muted sm:max-w-[360px]">
+        <div className="flex size-6 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
           <GraduationCapIcon className="size-3.5" />
         </div>
-
-        <div className="flex flex-col items-start min-w-0 text-left">
-          <div className="flex items-center gap-1.5 w-full">
-            <span className="text-xs font-bold font-mono text-foreground group-hover:text-primary transition-colors truncate">
-              {subjectCode}
+        <div className="flex min-w-0 flex-col items-start text-left">
+          <div className="flex w-full items-center gap-1.5">
+            <span className="truncate font-mono text-xs font-bold text-foreground transition-colors group-hover:text-primary">
+              {activeStudentCourse.subjectCode}
             </span>
-            <span className="text-[10px] font-semibold px-1.5 py-0.2 rounded bg-primary/15 text-primary">
-              {classCode}
+            <span className="rounded bg-primary/15 px-1.5 font-semibold text-[10px] text-primary">
+              {activeStudentCourse.adminClassCode}
             </span>
           </div>
-          <span className="text-[11px] text-muted-foreground truncate w-full">
-            {groupName} · {activeStudentCourse?.subjectName}
+          <span className="w-full truncate text-[11px] text-muted-foreground">
+            {activeStudentCourse.teamName || "Chưa có nhóm"} · {activeStudentCourse.subjectName}
           </span>
         </div>
-
-        <ChevronDownIcon className="size-3.5 text-muted-foreground group-hover:text-foreground shrink-0 transition-transform duration-200 group-data-[state=open]:rotate-180" />
+        <ChevronDownIcon className="size-3.5 shrink-0 text-muted-foreground transition-transform duration-200 group-hover:text-foreground group-data-[state=open]:rotate-180" />
       </DropdownMenuTrigger>
 
-      <DropdownMenuContent align="start" sideOffset={8} className="w-80 rounded-2xl p-1.5 shadow-xl border-border">
+      <DropdownMenuContent align="start" sideOffset={8} className="w-80 rounded-2xl border-border p-1.5 shadow-xl">
         <DropdownMenuLabel className="flex items-center justify-between px-3 py-2 text-xs font-bold text-muted-foreground">
           <span>Khóa học đang tham gia</span>
-          <span className="text-[10px] font-mono font-normal">Kỳ FA26</span>
         </DropdownMenuLabel>
-
         <DropdownMenuSeparator />
-
-        <DropdownMenuGroup className="space-y-0.5 p-1 max-h-64 overflow-y-auto">
-          {MOCK_STUDENT_COURSES.map((course) => {
-            const isSelected = (selectedCourse?.id ?? activeStudentCourse?.id) === course.id;
+        <DropdownMenuGroup className="max-h-64 space-y-0.5 overflow-y-auto p-1">
+          {studentCourses.map((course) => {
+            const isSelected = (selectedCourse?.id ?? activeStudentCourse.id) === course.id;
             return (
               <DropdownMenuItem
                 key={course.id}
-                onClick={() => handleSelectStudentCourse(course)}
+                onClick={() => {
+                  setSelectedCourse(course);
+                  router.push("/student/dashboard");
+                }}
                 className={cn(
-                  "flex items-center justify-between p-2.5 rounded-xl text-xs cursor-pointer",
-                  isSelected ? "bg-primary/10 text-primary font-bold" : "hover:bg-muted text-foreground"
+                  "flex cursor-pointer items-center justify-between rounded-xl p-2.5 text-xs",
+                  isSelected ? "bg-primary/10 font-bold text-primary" : "text-foreground hover:bg-muted"
                 )}
               >
-                <div className="flex flex-col min-w-0 pr-2">
+                <div className="flex min-w-0 flex-col pr-2">
                   <div className="flex items-center gap-1.5">
                     <span className="font-mono font-bold">{course.subjectCode}</span>
-                    <span className="text-[10px] px-1.5 py-0.2 rounded bg-muted text-muted-foreground">
+                    <span className="rounded bg-muted px-1.5 text-[10px] text-muted-foreground">
                       {course.adminClassCode}
                     </span>
                   </div>
-                  <span className="text-[11px] text-muted-foreground truncate">{course.subjectName}</span>
+                  <span className="truncate text-[11px] text-muted-foreground">{course.subjectName}</span>
                 </div>
-
-                {isSelected && <CheckIcon className="size-4 text-primary shrink-0" />}
+                {isSelected && <CheckIcon className="size-4 shrink-0 text-primary" />}
               </DropdownMenuItem>
             );
           })}
         </DropdownMenuGroup>
-
         <DropdownMenuSeparator />
-
         <DropdownMenuItem
           onClick={() => router.push("/student/courses")}
-          className="flex items-center gap-2 p-2.5 rounded-xl text-xs text-primary font-semibold hover:bg-primary/10 cursor-pointer"
+          className="flex cursor-pointer items-center gap-2 rounded-xl p-2.5 text-xs font-semibold text-primary hover:bg-primary/10"
         >
           <ArrowLeftRightIcon className="size-3.5" />
           <span>Đổi môn học / Chọn môn khác</span>

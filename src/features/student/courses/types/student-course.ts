@@ -34,7 +34,7 @@ export interface StudentCourse {
   room?: string; // VD: AL-302
   schedule?: string; // VD: Thứ 2, 4 (Ca 2: 09:00 - 11:15)
   status: CourseStatus;
-  lecturer: LecturerInfo;
+  lecturer?: LecturerInfo;
   studentsCount: number;
   studentCount?: number; // Tương thích ngược
   myGroup?: {
@@ -44,4 +44,84 @@ export interface StudentCourse {
     membersCount: number;
   };
   description?: string;
+  courseId?: string;
+  teamId?: string | null;
+  teamNo?: number | null;
+  teamName?: string | null;
+  projectId?: string | null;
+  enrollmentStatus?: string;
+}
+
+export interface StudentCourseResponse {
+  courseId: string;
+  courseCode: string;
+  subjectCode: string;
+  subjectName: string;
+  classCode: string;
+  semesterCode: string;
+  semesterName: string;
+  enrollmentStatus: "ACTIVE" | string;
+  teamId: string | null;
+  teamNo: number | null;
+  teamName: string | null;
+  projectId: string | null;
+}
+
+export type StudentCourseTeamStatus = "WAITING_TEAM" | "WAITING_PROJECT" | "PROJECT_READY";
+
+export interface StudentTeamMember {
+  studentCode: string;
+  fullName: string;
+  role: "LEADER" | "MEMBER" | string;
+}
+
+export interface StudentTeamResponse {
+  teamId: string;
+  teamNo: number;
+  teamName: string;
+  myRole: "LEADER" | "MEMBER" | string;
+  projectId: string | null;
+  members: StudentTeamMember[];
+}
+
+export function sortStudentTeamMembers(members: StudentTeamMember[]): StudentTeamMember[] {
+  return [...members].sort((a, b) => {
+    const roleRank = (role: string) => (role === "LEADER" ? 0 : 1);
+    const rankDiff = roleRank(a.role) - roleRank(b.role);
+    if (rankDiff !== 0) return rankDiff;
+    return a.studentCode.localeCompare(b.studentCode, "vi");
+  });
+}
+
+export function getStudentCourseTeamStatus(
+  course: Pick<StudentCourseResponse, "teamId" | "projectId">
+): StudentCourseTeamStatus {
+  if (course.teamId === null || course.teamId === undefined) {
+    return "WAITING_TEAM";
+  }
+  if (course.projectId === null || course.projectId === undefined) {
+    return "WAITING_PROJECT";
+  }
+  return "PROJECT_READY";
+}
+
+export function mapStudentCourseResponse(course: StudentCourseResponse): StudentCourse {
+  return {
+    id: course.courseId,
+    courseId: course.courseId,
+    code: course.courseCode,
+    subjectCode: course.subjectCode,
+    subjectName: course.subjectName,
+    semesterCode: course.semesterCode,
+    semesterName: course.semesterName,
+    adminClassCode: course.classCode,
+    adminClassName: course.classCode,
+    status: "ACTIVE",
+    studentsCount: 0,
+    teamId: course.teamId,
+    teamNo: course.teamNo,
+    teamName: course.teamName,
+    projectId: course.projectId,
+    enrollmentStatus: course.enrollmentStatus,
+  };
 }

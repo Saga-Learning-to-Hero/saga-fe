@@ -1,248 +1,228 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import {
   SearchIcon,
   BookOpenIcon,
   SparklesIcon,
   FilterXIcon,
+  UsersIcon,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { SemesterTabs } from "./semester-tabs";
 import { CourseCard } from "./course-card";
-import {
-  MOCK_STUDENT_SEMESTERS,
-  MOCK_STUDENT_COURSES,
-} from "../data/mock-student-courses";
+import { StudentMyTeamPanel } from "./student-my-team-panel";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
-import type { StudentCourse } from "../types/student-course";
+import { useStudentCourses } from "../hooks/use-student-courses";
+import {
+  mapStudentCourseResponse,
+  type StudentCourse,
+  type StudentCourseResponse,
+  type StudentSemester,
+} from "../types/student-course";
+import { getApiErrorMessage } from "@/lib/api-error";
 
 interface StudentCourseSelectionProps {
   onSelectCourse?: (course: StudentCourse) => void;
 }
 
+function buildSemesters(courses: StudentCourseResponse[]): StudentSemester[] {
+  const map = new Map<string, StudentSemester>();
+  for (const course of courses) {
+    const existing = map.get(course.semesterCode);
+    if (existing) {
+      existing.totalCourses += 1;
+    } else {
+      map.set(course.semesterCode, {
+        id: course.semesterCode,
+        code: course.semesterCode,
+        name: course.semesterName,
+        status: "ACTIVE",
+        totalCourses: 1,
+      });
+    }
+  }
+  return Array.from(map.values());
+}
+
 export function StudentCourseSelection({ onSelectCourse }: StudentCourseSelectionProps) {
   const { user } = useAuthStore();
-  const [selectedSemesterCode, setSelectedSemesterCode] = useState<string>("FA26");
+  const { data: apiCourses = [], isLoading, isError, error, refetch } = useStudentCourses();
+  const [selectedSemesterCode, setSelectedSemesterCode] = useState<string>("");
   const [searchQuery, setSearchQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState<"ALL" | "IN_PROGRESS" | "COMPLETED">("ALL");
+  const [teamCourseId, setTeamCourseId] = useState<string | null>(null);
 
-  // Tìm đối tượng học kỳ hiện tại đang chọn
-  const currentSemester = useMemo(
-    () =>
-      MOCK_STUDENT_SEMESTERS.find((s) => s.code === selectedSemesterCode) ||
-      MOCK_STUDENT_SEMESTERS[0],
-    [selectedSemesterCode]
-  );
+  const semesters = buildSemesters(apiCourses);
+  const currentSemester =
+    semesters.find((semester) => semester.code === selectedSemesterCode) || semesters[0];
+  const activeSemesterCode = currentSemester?.code || "";
 
-  // Filter danh sách khóa học theo Học kỳ & Từ khóa tìm kiếm & Trạng thái
-  const filteredCourses = useMemo(() => {
-    return MOCK_STUDENT_COURSES.filter((course) => {
-      // 1. Lọc theo mã học kỳ
-      const matchSemester = course.semesterCode === selectedSemesterCode;
+  const filteredCourses = apiCourses.filter((course) => {
+    const matchSemester = !activeSemesterCode || course.semesterCode === activeSemesterCode;
+    const query = searchQuery.toLowerCase().trim();
+    const matchQuery =
+      !query ||
+      course.subjectName.toLowerCase().includes(query) ||
+      course.subjectCode.toLowerCase().includes(query) ||
+      course.courseCode.toLowerCase().includes(query) ||
+      course.classCode.toLowerCase().includes(query);
+    return matchSemester && matchQuery;
+  });
 
-      // 2. Lọc theo từ khóa tìm kiếm (tên môn, mã môn, tên giảng viên, mã lớp)
-      const query = searchQuery.toLowerCase().trim();
-      const matchQuery =
-        !query ||
-        course.subjectName.toLowerCase().includes(query) ||
-        course.subjectCode.toLowerCase().includes(query) ||
-        course.code.toLowerCase().includes(query) ||
-        course.lecturer.fullName.toLowerCase().includes(query) ||
-        course.adminClassCode.toLowerCase().includes(query);
-
-      // 3. Lọc theo trạng thái
-      const matchStatus =
-        statusFilter === "ALL" ||
-        (statusFilter === "IN_PROGRESS" && course.status === "IN_PROGRESS") ||
-        (statusFilter === "COMPLETED" && course.status === "COMPLETED");
-
-      return matchSemester && matchQuery && matchStatus;
-    });
-  }, [selectedSemesterCode, searchQuery, statusFilter]);
-
-  // Thống kê nhanh số lượng khóa học
-  const totalCoursesInSemester = useMemo(() => {
-    return MOCK_STUDENT_COURSES.filter((c) => c.semesterCode === selectedSemesterCode).length;
-  }, [selectedSemesterCode]);
+  const mappedCourses = filteredCourses.map(mapStudentCourseResponse);
+  const totalCoursesInSemester = apiCourses.filter(
+    (course) => course.semesterCode === activeSemesterCode
+  ).length;
 
   return (
-    <div className="space-y-6 max-w-[1600px] mx-auto pb-10">
-      {/* ── Banner Chào mừng Sinh viên ───────────────────────────────── */}
-      <div
-        className="relative overflow-hidden rounded-3xl p-6 sm:p-8 border border-border/80 shadow-md"
-        style={{
-          background:
-            "linear-gradient(135deg, oklch(from var(--saga-primary) calc(l + 0.05) c h), oklch(from var(--saga-accent) calc(l - 0.05) c h))",
-        }}
-      >
-        {/* Họa tiết trang trí mềm mại */}
-        <div
-          className="absolute -top-24 -right-24 w-80 h-80 rounded-full opacity-15"
-          style={{ background: "oklch(1 0 0 / 20%)" }}
-        />
-        <div
-          className="absolute -bottom-20 -left-20 w-64 h-64 rounded-full opacity-10"
-          style={{ background: "oklch(1 0 0 / 20%)" }}
-        />
-
-        <div className="relative flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div className="space-y-2 max-w-2xl">
-            <div className="flex items-center gap-2">
-              <Badge className="bg-white/20 hover:bg-white/25 text-white border-0 text-xs px-3 py-1 font-semibold backdrop-blur-sm">
-                <SparklesIcon className="w-3.5 h-3.5 mr-1" />
-                Cổng chọn học phần & Khóa học SAGA
-              </Badge>
-              <Badge className="bg-emerald-500/20 text-white border-0 text-xs font-mono">
-                MSSV: HE170504
-              </Badge>
-            </div>
-
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
-              Xin chào, {user?.name || "Lê Hoàng Hải"}! 👋
+    <div className="mx-auto max-w-[1600px] space-y-6 pb-10">
+      <div className="relative overflow-hidden rounded-3xl border border-primary/20 bg-gradient-to-br from-primary to-primary/70 p-6 text-white shadow-md sm:p-8">
+        <div className="relative flex flex-col justify-between gap-6 md:flex-row md:items-center">
+          <div className="max-w-2xl space-y-2">
+            <Badge className="border-0 bg-white/20 px-3 py-1 text-xs font-semibold text-white">
+              <SparklesIcon className="mr-1 h-3.5 w-3.5" />
+              Khóa học ACTIVE của tôi
+            </Badge>
+            <h1 className="text-2xl font-extrabold tracking-tight sm:text-3xl">
+              Xin chào, {user?.name || "Sinh viên"}
             </h1>
-            <p className="text-white/80 text-xs sm:text-sm leading-relaxed">
-              Vui lòng chọn khóa học theo từng học kỳ để truy cập Dashboard tiến độ đồ án và quản lý học tập.
+            <p className="text-xs leading-relaxed text-white/80 sm:text-sm">
+              Danh sách lấy từ phiên đăng nhập. Không gửi userId hay bộ lọc vai trò. Chọn lớp để xem
+              nhóm của bạn.
             </p>
           </div>
-
-          {/* Quick Stats Badges */}
-          <div className="flex items-center gap-3 shrink-0">
-            <div className="bg-white/15 backdrop-blur-md border border-white/20 rounded-2xl p-4 text-white text-center min-w-[110px]">
-              <span className="text-2xl font-black block leading-none">{MOCK_STUDENT_SEMESTERS.length}</span>
-              <span className="text-[11px] text-white/80 font-medium">Học kỳ</span>
+          <div className="flex shrink-0 items-center gap-3">
+            <div className="min-w-[110px] rounded-2xl border border-white/20 bg-white/15 p-4 text-center text-white backdrop-blur-md">
+              <span className="block text-2xl font-black leading-none">
+                {isLoading ? "…" : semesters.length}
+              </span>
+              <span className="text-[11px] font-medium text-white/80">Học kỳ</span>
             </div>
-            <div className="bg-white/15 backdrop-blur-md border border-white/20 rounded-2xl p-4 text-white text-center min-w-[110px]">
-              <span className="text-2xl font-black block leading-none">{MOCK_STUDENT_COURSES.length}</span>
-              <span className="text-[11px] text-white/80 font-medium">Tổng khóa học</span>
+            <div className="min-w-[110px] rounded-2xl border border-white/20 bg-white/15 p-4 text-center text-white backdrop-blur-md">
+              <span className="block text-2xl font-black leading-none">
+                {isLoading ? "…" : apiCourses.length}
+              </span>
+              <span className="text-[11px] font-medium text-white/80">Lớp ACTIVE</span>
             </div>
           </div>
         </div>
       </div>
 
-      {/* ── Section Header: Tiêu đề & Chọn Học kỳ (Menu Tabs + Dropdown) ── */}
-      <div className="space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div>
-            <div className="flex items-center gap-2">
-              <h2 className="text-lg font-bold text-foreground tracking-tight">
-                Danh sách khóa học theo Học kỳ
-              </h2>
-              <Badge variant="outline" className="font-mono text-xs font-bold text-primary bg-primary/5">
-                {currentSemester.name} ({currentSemester.code})
-              </Badge>
-            </div>
-          </div>
-
-          {/* Controls tìm kiếm & lọc */}
-          <div className="flex items-center gap-2">
-            <div className="relative w-full sm:w-64">
-              <SearchIcon className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                type="text"
-                placeholder="Tìm môn học, giảng viên, lớp..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-9 h-9 text-xs rounded-xl bg-card border-border/80"
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* ── Category Menu Tabs (5 kỳ mới nhất + Dropdown các kỳ cũ) ──── */}
-        <SemesterTabs
-          semesters={MOCK_STUDENT_SEMESTERS}
-          activeSemesterCode={selectedSemesterCode}
-          onSelectSemester={(code) => {
-            setSelectedSemesterCode(code);
-            setSearchQuery(""); // Clear search when switching semester
-          }}
-        />
-      </div>
-
-      {/* ── Summary & Status Filter Bar ───────────────────────────────── */}
-      <div className="flex items-center justify-between gap-3 pt-1">
-        <span className="text-xs font-semibold text-muted-foreground">
-          Tìm thấy <strong className="text-foreground">{filteredCourses.length}</strong> / {totalCoursesInSemester} khóa học trong học kỳ <span className="text-primary font-mono">{selectedSemesterCode}</span>
-        </span>
-
-        {/* Status filter toggle pills */}
-        <div className="flex items-center gap-1 bg-muted/60 p-1 rounded-xl text-xs">
-          <button
-            onClick={() => setStatusFilter("ALL")}
-            className={`px-3 py-1 rounded-lg font-medium transition-colors cursor-pointer ${statusFilter === "ALL"
-                ? "bg-card text-foreground shadow-xs font-semibold"
-                : "text-muted-foreground hover:text-foreground"
-              }`}
-          >
-            Tất cả
-          </button>
-          <button
-            onClick={() => setStatusFilter("IN_PROGRESS")}
-            className={`px-3 py-1 rounded-lg font-medium transition-colors cursor-pointer ${statusFilter === "IN_PROGRESS"
-                ? "bg-card text-blue-600 dark:text-blue-400 shadow-xs font-semibold"
-                : "text-muted-foreground hover:text-foreground"
-              }`}
-          >
-            Đang học
-          </button>
-          <button
-            onClick={() => setStatusFilter("COMPLETED")}
-            className={`px-3 py-1 rounded-lg font-medium transition-colors cursor-pointer ${statusFilter === "COMPLETED"
-                ? "bg-card text-emerald-600 dark:text-emerald-400 shadow-xs font-semibold"
-                : "text-muted-foreground hover:text-foreground"
-              }`}
-          >
-            Đã kết thúc
-          </button>
-        </div>
-      </div>
-
-      {/* ── Grid Danh sách Khóa học dạng Card ─────────────────────────── */}
-      {filteredCourses.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-5">
-          {filteredCourses.map((course) => (
-            <CourseCard
-              key={course.id}
-              course={course}
-              onSelectCourse={onSelectCourse}
-            />
+      {isLoading ? (
+        <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
+          {Array.from({ length: 3 }).map((_, index) => (
+            <div key={index} className="h-64 animate-pulse rounded-2xl bg-muted/60" />
           ))}
         </div>
+      ) : isError ? (
+        <Card className="rounded-2xl border border-dashed border-destructive/30 p-8 text-center">
+          <p className="text-sm font-semibold">Không tải được danh sách khóa học</p>
+          <p className="mt-1 text-xs text-muted-foreground">
+            {getApiErrorMessage(error, "Vui lòng thử lại.")}
+          </p>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => void refetch()}
+            className="mt-3 cursor-pointer text-xs"
+          >
+            Thử lại
+          </Button>
+        </Card>
+      ) : apiCourses.length === 0 ? (
+        <Card className="flex flex-col items-center justify-center space-y-3 rounded-3xl border border-dashed border-border bg-card/40 px-4 py-16 text-center">
+          <BookOpenIcon className="size-8 text-muted-foreground/50" />
+          <h3 className="text-base font-bold">Bạn chưa có lớp học phần ACTIVE</h3>
+          <p className="max-w-sm text-xs text-muted-foreground">
+            Khi hoàn tất ghi danh, các lớp ACTIVE sẽ xuất hiện tại đây.
+          </p>
+        </Card>
       ) : (
-        /* Trạng thái Rỗng (Empty State) */
-        <div className="flex flex-col items-center justify-center py-16 px-4 rounded-3xl border border-dashed border-border bg-card/40 text-center space-y-4">
-          <div className="w-14 h-14 rounded-2xl bg-muted flex items-center justify-center text-muted-foreground">
-            <BookOpenIcon className="w-7 h-7" />
+        <>
+          <div className="space-y-4">
+            <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
+              <div className="flex items-center gap-2">
+                <h2 className="text-lg font-bold tracking-tight">Danh sách khóa học theo học kỳ</h2>
+                {currentSemester && (
+                  <Badge variant="outline" className="bg-primary/5 font-mono text-xs font-bold text-primary">
+                    {currentSemester.name} ({currentSemester.code})
+                  </Badge>
+                )}
+              </div>
+              <div className="relative w-full sm:w-64">
+                <SearchIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  type="text"
+                  placeholder="Tìm môn học, mã lớp..."
+                  value={searchQuery}
+                  onChange={(event) => setSearchQuery(event.target.value)}
+                  className="h-9 rounded-xl border-border/80 bg-card pl-9 text-xs"
+                />
+              </div>
+            </div>
+
+            {semesters.length > 0 && (
+              <SemesterTabs
+                semesters={semesters}
+                activeSemesterCode={activeSemesterCode}
+                onSelectSemester={(code) => {
+                  setSelectedSemesterCode(code);
+                  setSearchQuery("");
+                }}
+              />
+            )}
           </div>
-          <div className="space-y-1 max-w-sm">
-            <h3 className="text-base font-bold text-foreground">
-              Không tìm thấy khóa học phù hợp
-            </h3>
-            <p className="text-xs text-muted-foreground">
-              {searchQuery
-                ? `Không có khóa học nào khớp với từ khóa "${searchQuery}" trong học kỳ ${selectedSemesterCode}.`
-                : `Học kỳ ${selectedSemesterCode} hiện chưa có dữ liệu khóa học.`}
-            </p>
+
+          <div className="flex items-center justify-between gap-3 pt-1">
+            <span className="text-xs font-semibold text-muted-foreground">
+              Tìm thấy <strong className="text-foreground">{filteredCourses.length}</strong> /{" "}
+              {totalCoursesInSemester} khóa học
+            </span>
           </div>
-          {(searchQuery || statusFilter !== "ALL") && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                setSearchQuery("");
-                setStatusFilter("ALL");
-              }}
-              className="text-xs gap-1.5 rounded-xl cursor-pointer"
-            >
-              <FilterXIcon className="w-3.5 h-3.5" />
-              Xóa bộ lọc
-            </Button>
+
+          {mappedCourses.length > 0 ? (
+            <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
+              {mappedCourses.map((course) => (
+                <CourseCard
+                  key={course.id}
+                  course={course}
+                  onSelectCourse={onSelectCourse}
+                  onViewTeam={() => setTeamCourseId(course.courseId || course.id)}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="flex flex-col items-center justify-center space-y-4 rounded-3xl border border-dashed border-border bg-card/40 px-4 py-16 text-center">
+              <UsersIcon className="size-8 text-muted-foreground/40" />
+              <div className="max-w-sm space-y-1">
+                <h3 className="text-base font-bold">Không tìm thấy khóa học phù hợp</h3>
+                <p className="text-xs text-muted-foreground">
+                  Thử đổi từ khóa hoặc chọn học kỳ khác.
+                </p>
+              </div>
+              {searchQuery && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setSearchQuery("")}
+                  className="cursor-pointer gap-1.5 rounded-xl text-xs"
+                >
+                  <FilterXIcon className="h-3.5 w-3.5" />
+                  Xóa bộ lọc
+                </Button>
+              )}
+            </div>
           )}
-        </div>
+        </>
       )}
+
+      <StudentMyTeamPanel
+        courseId={teamCourseId}
+        onClose={() => setTeamCourseId(null)}
+      />
     </div>
   );
 }

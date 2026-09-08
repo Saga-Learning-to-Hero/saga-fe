@@ -1,14 +1,10 @@
-import { ClassMemberTab } from "@/features/lecturer/team-project-activity/components/class-member-list/class-member-tab";
+import { CourseWorkspacePage } from "@/features/lecturer/courses/components/course-workspace-page";
 
-export default async function LecturerClassMembersPage({
-  params,
-}: {
+interface Props {
   params: Promise<{ courseId: string }>;
-}) {
-  const resolvedParams = await params;
-  return (
-    <div className="p-6 h-full flex flex-col">
-      <ClassMemberTab courseId={resolvedParams.courseId} />
-    </div>
-  );
+}
+
+export default async function LecturerTeamsPage({ params }: Props) {
+  const { courseId } = await params;
+  return <CourseWorkspacePage key={courseId} courseId={courseId} initialTab="teams" />;
 }

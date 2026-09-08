@@ -1,15 +1,16 @@
-import { notFound } from "next/navigation";
-import { LecturerFinalGradesPage } from "@/features/lecturer/final-grades/components/lecturer-final-grades-page";
-import { getLecturerCourseById } from "@/features/lecturer/courses/lib/course-repository";
-import { createMockGradebook } from "@/features/lecturer/final-grades/data/mock-final-grades";
+import { UnsupportedFeatureNotice } from "@/features/lecturer/courses/components/unsupported-feature-notice";
 
-export default async function GradebookRoute({ params }: { params: Promise<{ courseId: string }> }) {
+export default async function GradebookRoute({
+  params,
+}: {
+  params: Promise<{ courseId: string }>;
+}) {
   const { courseId } = await params;
-
-  const course = getLecturerCourseById(courseId);
-  if (!course) notFound();
-
-  const gradebook = createMockGradebook(course);
-
-  return <LecturerFinalGradesPage course={course} gradebook={gradebook} />;
+  return (
+    <UnsupportedFeatureNotice
+      courseId={courseId}
+      title="Bảng điểm chưa được hỗ trợ"
+      description="Chấm điểm và gradebook không thuộc phạm vi phân nhóm. Dữ liệu giả không được hiển thị như API thật."
+    />
+  );
 }
