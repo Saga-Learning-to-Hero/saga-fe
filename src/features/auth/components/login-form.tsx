@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
@@ -17,11 +17,13 @@ import { toast } from "@/components/ui/sonner";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
 import { getSafeRedirectUrl } from "@/features/auth/lib/role-routes";
 import { useLogin, useSession, useGoogleLogin } from "@/features/auth/hooks/useAuth";
-import { validateLogin } from "@/features/auth/lib/auth-validation";
+import { validateLogin, getGoogleErrorMessage } from "@/features/auth/lib/auth-validation";
 import { GoogleIcon } from "./google-icon";
 import { ensureCsrfToken } from "@/lib/axios";
 import { cn } from "@/lib/utils";
 import type { Role } from "@/types/auth";
+
+const emptySubscribe = () => () => {};
 
 export function LoginForm() {
   const router = useRouter();
@@ -30,38 +32,22 @@ export function LoginForm() {
   const { mutate: login, isPending: isLoading } = useLogin();
   const { loginWithGoogle } = useGoogleLogin();
   const { isPending: isSessionLoading } = useSession();
+  const mounted = useSyncExternalStore(
+    emptySubscribe,
+    () => true,
+    () => false
+  );
 
   useEffect(() => {
     ensureCsrfToken(true);
   }, []);
 
   const googleError = searchParams.get("error");
-  const getGoogleErrorMessage = (errCode: string): string => {
-    switch (errCode) {
-      case "GOOGLE_ACCOUNT_NOT_ELIGIBLE":
-        return "Tài khoản Google này không đủ điều kiện truy cập SAGA. Yêu cầu tài khoản Google trường FPT/FE (@fpt.edu.vn hoặc @fe.edu.vn).";
-      case "GOOGLE_DOMAIN_NOT_ALLOWED":
-        return "Tên miền Google không thuộc tổ chức FPT/FE (@fpt.edu.vn / @fe.edu.vn). Vui lòng đăng ký tài khoản nội bộ nếu dùng email cá nhân.";
-      case "GOOGLE_EMAIL_NOT_VERIFIED":
-        return "Email Google của bạn chưa được xác thực.";
-      case "GOOGLE_IDENTITY_CONFLICT":
-        return "Tài khoản Google này đã được liên kết với một tài khoản khác trong hệ thống.";
-      case "INSTITUTIONAL_EMAIL_USE_GOOGLE":
-        return "Tài khoản FPT/FE bắt buộc phải đăng nhập bằng nút Tiếp tục với Google.";
-      case "ACCOUNT_DISABLED":
-        return "Tài khoản của bạn hiện đang bị vô hiệu hóa.";
-      default:
-        return `Đăng nhập Google thất bại (${errCode}). Vui lòng thử lại.`;
-    }
-  };
 
   useEffect(() => {
     if (googleError) {
-      if (typeof window !== "undefined") {
-        sessionStorage.removeItem("saga_auth_provider");
-      }
-      const msg = getGoogleErrorMessage(googleError);
-      toast.error(msg, { id: "google-auth-error", duration: 6000 });
+      if (typeof window !== "undefined") sessionStorage.removeItem("saga_auth_provider");
+      toast.error(getGoogleErrorMessage(googleError), { id: "google-auth-error", duration: 6000 });
     }
   }, [googleError]);
 
@@ -121,16 +107,12 @@ export function LoginForm() {
     });
   };
 
-  const handleGoogleLogin = () => {
-    loginWithGoogle();
-  };
-
+  const handleGoogleLogin = () => loginWithGoogle();
   const canSubmit = !isLoading && form.identifier.trim() !== "" && form.password !== "";
-
   const isPendingGoogle =
-    typeof window !== "undefined" && sessionStorage.getItem("saga_auth_provider") === "google";
+    mounted && typeof window !== "undefined" && sessionStorage.getItem("saga_auth_provider") === "google";
 
-  if ((isSessionLoading && isPendingGoogle) || (isAuthenticated && user)) {
+  if (mounted && ((isSessionLoading && isPendingGoogle) || (isAuthenticated && user))) {
     return (
       <div className="flex flex-col items-center justify-center py-16 space-y-4 animate-in fade-in-0">
         <LoaderCircleIcon className="size-8 animate-spin text-primary" />

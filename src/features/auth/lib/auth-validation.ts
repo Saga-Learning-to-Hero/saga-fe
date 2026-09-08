@@ -111,3 +111,22 @@ export function validatePasswordSetup(newPassword: string, confirmPassword: stri
   }
   return { isValid: false, errors: extractZodErrors(result.error) };
 }
+
+export function getGoogleErrorMessage(errCode: string): string {
+  switch (errCode) {
+    case "GOOGLE_ACCOUNT_NOT_ELIGIBLE":
+      return "Tài khoản Google này không đủ điều kiện truy cập SAGA. Yêu cầu tài khoản Google trường FPT/FE (@fpt.edu.vn hoặc @fe.edu.vn).";
+    case "GOOGLE_DOMAIN_NOT_ALLOWED":
+      return "Tên miền Google không thuộc tổ chức FPT/FE (@fpt.edu.vn / @fe.edu.vn). Vui lòng đăng ký tài khoản nội bộ nếu dùng email cá nhân.";
+    case "GOOGLE_EMAIL_NOT_VERIFIED":
+      return "Email Google của bạn chưa được xác thực.";
+    case "GOOGLE_IDENTITY_CONFLICT":
+      return "Tài khoản Google này đã được liên kết với một tài khoản khác trong hệ thống.";
+    case "INSTITUTIONAL_EMAIL_USE_GOOGLE":
+      return "Tài khoản FPT/FE bắt buộc phải đăng nhập bằng nút Tiếp tục với Google.";
+    case "ACCOUNT_DISABLED":
+      return "Tài khoản của bạn hiện đang bị vô hiệu hóa.";
+    default:
+      return `Đăng nhập Google thất bại (${errCode}). Vui lòng thử lại.`;
+  }
+}

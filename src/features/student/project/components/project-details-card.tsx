@@ -15,11 +15,13 @@ import { Button } from "@/components/ui/button";
 
 interface ProjectDetailsCardProps {
   project: StudentProjectDetails;
+  isLeader?: boolean;
   onOpenEditModal?: () => void;
 }
 
 export function ProjectDetailsCard({
   project,
+  isLeader = true,
   onOpenEditModal,
 }: ProjectDetailsCardProps) {
   // Kiểm tra xem nhóm đã có dự án hay chưa
@@ -46,7 +48,7 @@ export function ProjectDetailsCard({
             </div>
           </div>
 
-          {onOpenEditModal && (
+          {isLeader && onOpenEditModal ? (
             <Button
               type="button"
               onClick={onOpenEditModal}
@@ -64,6 +66,10 @@ export function ProjectDetailsCard({
                 </>
               )}
             </Button>
+          ) : (
+            <Badge variant="outline" className="text-[11px] bg-muted/60 text-muted-foreground border-border/80 font-medium">
+              Chế độ xem (Thành viên)
+            </Badge>
           )}
         </div>
       </CardHeader>
