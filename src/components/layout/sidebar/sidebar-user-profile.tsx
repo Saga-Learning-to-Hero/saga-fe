@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { LogOutIcon, ChevronRightIcon, UserIcon, SunIcon, MoonIcon } from "lucide-react";
+import { LogOutIcon, ChevronRightIcon, UserIcon, Link2Icon, SunIcon, MoonIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
 import { useLogout } from "@/features/auth/hooks/useAuth";
@@ -163,6 +163,14 @@ export function SidebarUserProfile({ collapsed }: Props) {
             >
               <UserIcon className="w-4 h-4 text-primary" />
               <span>Hồ sơ cá nhân</span>
+            </DropdownMenuItem>
+
+            <DropdownMenuItem
+              onClick={() => router.push("/profile/integrations")}
+              className="text-sm cursor-pointer py-2 px-3 rounded-lg flex items-center gap-2 hover:bg-primary/10 hover:text-primary font-medium"
+            >
+              <Link2Icon className="w-4 h-4 text-primary" />
+              <span>Tích hợp Jira & GitHub</span>
             </DropdownMenuItem>
 
             <DropdownMenuSeparator />

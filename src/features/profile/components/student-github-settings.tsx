@@ -5,6 +5,7 @@ import {
   ExternalLinkIcon,
   LoaderCircleIcon,
   ShieldCheckIcon,
+  PlusIcon,
 } from "lucide-react";
 import type { User } from "@/types/auth";
 import type { UserIdentityItem } from "@/features/integrations/types/user-integrations";
@@ -21,16 +22,19 @@ import { GitHubConnectedCard } from "./github/github-connected-card";
 
 interface StudentGitHubSettingsProps {
   user: User;
+  identities?: UserIdentityItem[];
   identity?: UserIdentityItem | null;
   isLoading?: boolean;
 }
 
 export function StudentGitHubSettings({
   user,
+  identities,
   identity,
   isLoading = false,
 }: StudentGitHubSettingsProps) {
-  const isConnected = Boolean(identity);
+  const resolvedIdentities = identities ?? (identity ? [identity] : []);
+  const isConnected = resolvedIdentities.length > 0;
 
   const startLinkMutation = useStartGitHubLink();
   const setPrimaryMutation = useSetPrimaryGitHubIdentity();
@@ -39,7 +43,7 @@ export function StudentGitHubSettings({
   const handleConnectGitHubOAuth = async () => {
     try {
       toast.loading("Đang chuyển hướng sang GitHub OAuth...", { id: "github-oauth" });
-      const currentPath = typeof window !== "undefined" ? window.location.pathname : "/student/integrations";
+      const currentPath = typeof window !== "undefined" ? window.location.pathname : "/profile/integrations";
       const result = await startLinkMutation.mutateAsync(currentPath);
 
       if (result.authorizationUrl) {
@@ -52,27 +56,27 @@ export function StudentGitHubSettings({
     }
   };
 
-  const handleSetPrimary = async () => {
-    if (!identity?.id) return;
+  const handleSetPrimary = async (identityId: string) => {
+    if (!identityId) return;
     const toastId = "github-primary";
     try {
       toast.loading("Đang đặt tài khoản GitHub làm định danh chính...", { id: toastId });
-      await setPrimaryMutation.mutateAsync(identity.id);
+      await setPrimaryMutation.mutateAsync(identityId);
       toast.success("Đã đặt tài khoản GitHub làm định danh chính!", { id: toastId });
     } catch {
       toast.error("Không thể đặt làm định danh chính. Vui lòng thử lại.", { id: toastId });
     }
   };
 
-  const handleDisconnect = async () => {
-    if (!identity?.id) {
+  const handleDisconnect = async (identityId: string) => {
+    if (!identityId) {
       toast.success("Đã hủy trạng thái liên kết.");
       return;
     }
     const toastId = "github-disconnect";
     try {
       toast.loading("Đang hủy liên kết tài khoản GitHub...", { id: toastId });
-      await deleteMutation.mutateAsync(identity.id);
+      await deleteMutation.mutateAsync(identityId);
       toast.success("Đã hủy liên kết tài khoản GitHub cá nhân thành công!", { id: toastId });
     } catch {
       toast.error("Lỗi khi hủy liên kết tài khoản GitHub. Vui lòng thử lại.", { id: toastId });
@@ -92,7 +96,7 @@ export function StudentGitHubSettings({
                 <CardTitle className="text-base font-bold text-foreground tracking-tight">
                   Tài khoản GitHub Cá nhân
                 </CardTitle>
-                {isLoading && !identity ? (
+                {isLoading && resolvedIdentities.length === 0 ? (
                   <Badge
                     variant="outline"
                     className="bg-primary/10 text-primary border-primary/30 text-[11px] font-semibold gap-1 animate-pulse"
@@ -106,7 +110,7 @@ export function StudentGitHubSettings({
                     className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 text-[11px] font-bold gap-1"
                   >
                     <ShieldCheckIcon className="w-3.5 h-3.5" />
-                    Đã kết nối
+                    Đã kết nối ({resolvedIdentities.length})
                   </Badge>
                 ) : (
                   <Badge
@@ -124,9 +128,25 @@ export function StudentGitHubSettings({
           </div>
 
           <div className="flex items-center gap-2 shrink-0">
-            {isLoading && !identity ? (
+            {isLoading && resolvedIdentities.length === 0 ? (
               <div className="w-24 h-8.5 rounded-xl bg-muted/60 animate-pulse" />
-            ) : !isConnected ? (
+            ) : isConnected ? (
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                onClick={handleConnectGitHubOAuth}
+                disabled={startLinkMutation.isPending}
+                className="h-8.5 px-3 text-xs font-semibold rounded-xl gap-1.5 border-purple-500/30 hover:bg-purple-500/10 text-purple-600 dark:text-purple-400 cursor-pointer"
+              >
+                {startLinkMutation.isPending ? (
+                  <LoaderCircleIcon className="w-3.5 h-3.5 animate-spin" />
+                ) : (
+                  <PlusIcon className="w-3.5 h-3.5" />
+                )}
+                <span>Thêm tài khoản GitHub</span>
+              </Button>
+            ) : (
               <Button
                 type="button"
                 size="sm"
@@ -146,29 +166,34 @@ export function StudentGitHubSettings({
                   </>
                 )}
               </Button>
-            ) : null}
+            )}
           </div>
         </div>
       </CardHeader>
 
       <CardContent className="p-4 sm:p-5 space-y-4 bg-card">
-        {isLoading && !identity ? (
+        {isLoading && resolvedIdentities.length === 0 ? (
           <div className="p-8 flex flex-col items-center justify-center gap-2.5 rounded-2xl bg-muted/15 border border-dashed border-border/80 text-muted-foreground animate-pulse">
             <LoaderCircleIcon className="w-5 h-5 animate-spin text-primary" />
             <span className="text-xs font-medium">Đang tải trạng thái liên kết GitHub cá nhân...</span>
           </div>
         ) : isConnected ? (
-          <GitHubConnectedCard
-            identity={identity}
-            fallbackName={user.fullName || user.name}
-            fallbackUsername={user.githubIntegration?.username}
-            fallbackEmail={user.email}
-            avatarUrl={user.avatar}
-            isDeleting={deleteMutation.isPending}
-            isSettingPrimary={setPrimaryMutation.isPending}
-            onSetPrimary={handleSetPrimary}
-            onDisconnect={handleDisconnect}
-          />
+          <div className="space-y-3">
+            {resolvedIdentities.map((item) => (
+              <GitHubConnectedCard
+                key={item.id}
+                identity={item}
+                fallbackName={user.fullName || user.name}
+                fallbackUsername={item.login || user.githubIntegration?.username}
+                fallbackEmail={user.email}
+                avatarUrl={user.avatar}
+                isDeleting={deleteMutation.isPending}
+                isSettingPrimary={setPrimaryMutation.isPending}
+                onSetPrimary={() => handleSetPrimary(item.id)}
+                onDisconnect={() => handleDisconnect(item.id)}
+              />
+            ))}
+          </div>
         ) : (
           <div className="p-6 sm:p-8 text-center rounded-2xl border border-dashed border-border/80 bg-muted/10 space-y-4">
             <div className="w-12 h-12 rounded-2xl bg-purple-500/10 text-purple-600 dark:text-purple-400 flex items-center justify-center mx-auto">
@@ -190,12 +215,12 @@ export function StudentGitHubSettings({
             >
               {startLinkMutation.isPending ? (
                 <>
-                  <LoaderCircleIcon className="w-3.5 h-3.5 animate-spin" />
+                  <LoaderCircleIcon className="w-4 h-4 animate-spin" />
                   <span>Đang kết nối GitHub...</span>
                 </>
               ) : (
                 <>
-                  <ExternalLinkIcon className="w-3.5 h-3.5" />
+                  <ExternalLinkIcon className="w-4 h-4" />
                   <span>Kết nối tài khoản GitHub</span>
                 </>
               )}

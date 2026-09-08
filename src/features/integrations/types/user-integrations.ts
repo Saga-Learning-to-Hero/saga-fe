@@ -1,8 +1,3 @@
-/**
- * Kiểu dữ liệu danh tính nhà cung cấp liên kết cho người dùng hiện tại
- * API: GET /api/integrations/me
- */
-
 export type IntegrationProvider = "JIRA" | "GITHUB" | (string & {});
 
 export interface UserIdentityItem {
@@ -14,6 +9,7 @@ export interface UserIdentityItem {
   primary?: boolean;
   status?: string;
   linkedAt?: string;
+  lastVerifiedAt?: string;
 }
 
 export interface UserIdentitiesResponse {

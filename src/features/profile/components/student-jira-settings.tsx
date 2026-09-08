@@ -5,6 +5,7 @@ import {
   ExternalLinkIcon,
   LoaderCircleIcon,
   ShieldCheckIcon,
+  PlusIcon,
 } from "lucide-react";
 import type { User } from "@/types/auth";
 import type { UserIdentityItem } from "@/features/integrations/types/user-integrations";
@@ -21,16 +22,19 @@ import { JiraConnectedCard } from "./jira/jira-connected-card";
 
 interface StudentJiraSettingsProps {
   user: User;
+  identities?: UserIdentityItem[];
   identity?: UserIdentityItem | null;
   isLoading?: boolean;
 }
 
 export function StudentJiraSettings({
   user,
+  identities,
   identity,
   isLoading = false,
 }: StudentJiraSettingsProps) {
-  const isConnected = Boolean(identity);
+  const resolvedIdentities = identities ?? (identity ? [identity] : []);
+  const isConnected = resolvedIdentities.length > 0;
 
   const startLinkMutation = useStartJiraLink();
   const setPrimaryMutation = useSetPrimaryJiraIdentity();
@@ -39,7 +43,7 @@ export function StudentJiraSettings({
   const handleConnectJiraOAuth = async () => {
     try {
       toast.loading("Đang chuyển hướng sang Atlassian ID OAuth...", { id: "jira-oauth" });
-      const currentPath = typeof window !== "undefined" ? window.location.pathname : "/student/integrations";
+      const currentPath = typeof window !== "undefined" ? window.location.pathname : "/profile/integrations";
       const result = await startLinkMutation.mutateAsync(currentPath);
 
       if (result.authorizationUrl) {
@@ -52,27 +56,27 @@ export function StudentJiraSettings({
     }
   };
 
-  const handleSetPrimary = async () => {
-    if (!identity?.id) return;
+  const handleSetPrimary = async (identityId: string) => {
+    if (!identityId) return;
     const toastId = "jira-primary";
     try {
       toast.loading("Đang đặt tài khoản Jira làm định danh chính...", { id: toastId });
-      await setPrimaryMutation.mutateAsync(identity.id);
+      await setPrimaryMutation.mutateAsync(identityId);
       toast.success("Đã đặt tài khoản Atlassian Jira làm định danh chính!", { id: toastId });
     } catch {
       toast.error("Không thể đặt làm định danh chính. Vui lòng thử lại.", { id: toastId });
     }
   };
 
-  const handleDisconnect = async () => {
-    if (!identity?.id) {
+  const handleDisconnect = async (identityId: string) => {
+    if (!identityId) {
       toast.success("Đã hủy trạng thái liên kết.");
       return;
     }
     const toastId = "jira-disconnect";
     try {
       toast.loading("Đang hủy liên kết tài khoản Jira...", { id: toastId });
-      await deleteMutation.mutateAsync(identity.id);
+      await deleteMutation.mutateAsync(identityId);
       toast.success("Đã hủy liên kết tài khoản Atlassian Jira cá nhân thành công!", { id: toastId });
     } catch {
       toast.error("Lỗi khi hủy liên kết tài khoản Jira. Vui lòng thử lại.", { id: toastId });
@@ -92,7 +96,7 @@ export function StudentJiraSettings({
                 <CardTitle className="text-base font-bold text-foreground tracking-tight">
                   Tài khoản Atlassian Jira Cá nhân
                 </CardTitle>
-                {isLoading && !identity ? (
+                {isLoading && resolvedIdentities.length === 0 ? (
                   <Badge
                     variant="outline"
                     className="bg-primary/10 text-primary border-primary/30 text-[11px] font-semibold gap-1 animate-pulse"
@@ -106,7 +110,7 @@ export function StudentJiraSettings({
                     className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 text-[11px] font-bold gap-1"
                   >
                     <ShieldCheckIcon className="w-3.5 h-3.5" />
-                    Đã kết nối
+                    Đã kết nối ({resolvedIdentities.length})
                   </Badge>
                 ) : (
                   <Badge
@@ -124,9 +128,25 @@ export function StudentJiraSettings({
           </div>
 
           <div className="flex items-center gap-2 shrink-0">
-            {isLoading && !identity ? (
+            {isLoading && resolvedIdentities.length === 0 ? (
               <div className="w-24 h-8.5 rounded-xl bg-muted/60 animate-pulse" />
-            ) : !isConnected ? (
+            ) : isConnected ? (
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                onClick={handleConnectJiraOAuth}
+                disabled={startLinkMutation.isPending}
+                className="h-8.5 px-3 text-xs font-semibold rounded-xl gap-1.5 border-blue-500/30 hover:bg-blue-500/10 text-blue-600 dark:text-blue-400 cursor-pointer"
+              >
+                {startLinkMutation.isPending ? (
+                  <LoaderCircleIcon className="w-3.5 h-3.5 animate-spin" />
+                ) : (
+                  <PlusIcon className="w-3.5 h-3.5" />
+                )}
+                <span>Thêm tài khoản Jira</span>
+              </Button>
+            ) : (
               <Button
                 type="button"
                 size="sm"
@@ -146,27 +166,32 @@ export function StudentJiraSettings({
                   </>
                 )}
               </Button>
-            ) : null}
+            )}
           </div>
         </div>
       </CardHeader>
 
       <CardContent className="p-4 sm:p-5 space-y-4 bg-card">
-        {isLoading && !identity ? (
+        {isLoading && resolvedIdentities.length === 0 ? (
           <div className="p-8 flex flex-col items-center justify-center gap-2.5 rounded-2xl bg-muted/15 border border-dashed border-border/80 text-muted-foreground animate-pulse">
             <LoaderCircleIcon className="w-5 h-5 animate-spin text-primary" />
             <span className="text-xs font-medium">Đang tải trạng thái liên kết Atlassian Jira cá nhân...</span>
           </div>
         ) : isConnected ? (
-          <JiraConnectedCard
-            identity={identity}
-            fallbackName={user.fullName || user.name}
-            fallbackEmail={user.email}
-            isDeleting={deleteMutation.isPending}
-            isSettingPrimary={setPrimaryMutation.isPending}
-            onSetPrimary={handleSetPrimary}
-            onDisconnect={handleDisconnect}
-          />
+          <div className="space-y-3">
+            {resolvedIdentities.map((item) => (
+              <JiraConnectedCard
+                key={item.id}
+                identity={item}
+                fallbackName={user.fullName || user.name}
+                fallbackEmail={user.email}
+                isDeleting={deleteMutation.isPending}
+                isSettingPrimary={setPrimaryMutation.isPending}
+                onSetPrimary={() => handleSetPrimary(item.id)}
+                onDisconnect={() => handleDisconnect(item.id)}
+              />
+            ))}
+          </div>
         ) : (
           <div className="p-6 sm:p-8 text-center rounded-2xl border border-dashed border-border/80 bg-muted/10 space-y-4">
             <div className="w-12 h-12 rounded-2xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center mx-auto">

@@ -39,7 +39,8 @@ export function GitHubConnectedCard({
   const username = identity?.login || fallbackUsername;
   const displayName = identity?.displayName || fallbackName;
   const githubId = identity?.providerSubject || identity?.id || "Chưa có định danh";
-  const lastSynced = formatVietnamDateTime(identity?.linkedAt);
+  const firstLinked = formatVietnamDateTime(identity?.linkedAt);
+  const lastVerified = formatVietnamDateTime(identity?.lastVerifiedAt || identity?.linkedAt);
   const isPrimary = Boolean(identity?.primary);
   const resolvedAvatar =
     avatarUrl ||
@@ -128,9 +129,15 @@ export function GitHubConnectedCard({
       </div>
 
       <div className="pt-2 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
-        <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground font-mono">
-          <ClockIcon className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
-          <span>Liên kết: <strong className="text-foreground">{lastSynced}</strong></span>
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] text-muted-foreground font-mono">
+          <div className="flex items-center gap-1.5">
+            <ClockIcon className="w-3.5 h-3.5 text-blue-500 shrink-0" />
+            <span>Liên kết lần đầu: <strong className="text-foreground">{firstLinked}</strong></span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <ClockIcon className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+            <span>Thời gian liên kết gần nhất: <strong className="text-foreground">{lastVerified}</strong></span>
+          </div>
         </div>
 
         {onDisconnect && (
