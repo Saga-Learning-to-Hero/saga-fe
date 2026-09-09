@@ -2,6 +2,8 @@
 
 Tài liệu này định hình kế hoạch phân chia công việc tích hợp API Backend cho nhóm **Frontend (3 thành viên)** của dự án SAGA, dựa trên tài liệu đặc tả kỹ thuật `docs/FRONTEND_API_STEP_BY_STEP.md`.
 
+> 📋 **Sổ bộ đăng ký & Đối soát trạng thái API (Live Registry):** Xem chi tiết tại [.agents/rules/api-integration-registry.md](file:///d:/Capstone/saga%20workspace/saga-fe/.agents/rules/api-integration-registry.md). Mọi thành viên và AI Agent khi tích hợp xong bất kỳ API nào bắt buộc phải cập nhật trạng thái tại đây.
+
 ---
 
 ## 1. Phân Tích Khối Lượng & Chiến Lược Phân Chia (Workload Balancing)
@@ -18,11 +20,19 @@ Chia đều toàn bộ khối lượng công việc thành **3 trục nghiệp v
 
 ```text
 ┌─────────────────────────────────────────────────────────────────────────────────┐
-│                      🎯 BẢN ĐỒ PHÂN CHIA CÂN BẰNG TẢI (3 DEVS)                  │
+│              🎯 BẢN ĐỒ TÁI CÂN BẰNG TẢI HOÀN HẢO (3 DEVS - 97 APIS)            │
 ├───────────────────────┬─────────────────────────────┬───────────────────────────┤
 │  👤 DEV 1 (~33%)      │  👤 DEV 2 (~33%)            │  👤 DEV 3 (~34%)          │
-│  Học thuật & Đề cương │  Quản trị Lớp & Phân Nhóm   │  Dự án & Tích hợp GH/Jira │
-│  (Academic Catalog)   │  (Course, Roster & Teams)   │  (Project & Integrations) │
+│  Học thuật & Đề cương │  Quản trị Lớp, Phân Nhóm    │  Dự án, Tích hợp GH/Jira  │
+│  + Minh Chứng Task    │  + Trọng Số Slicing Pie     │  + Đồng Bộ Chiếu Dữ Liệu  │
+│  (Academic & Evidence)│  (Course, Team & Weights)   │  (Project & Sync Engine)  │
+├───────────────────────┼─────────────────────────────┼───────────────────────────┤
+│ • 32 API Admin (Xong) │ • 11 API Lớp/Nhóm (Xong)    │ • 18 API Tích hợp (Xong)  │
+│ • 10 API MỚI CẦN LÀM: │ • 8 API MỚI CẦN LÀM:        │ • 5 API MỚI CẦN LÀM:      │
+│   - Work Sessions (2) │   - Course Weights (4)      │   - Sync & Status (2)     │
+│   - Confirmations (1) │   - Group Weights (2)       │   - Tasks & Commits (3)   │
+│   - Web Links (3)     │   - Team Eval DEC-002 (2)   │ • Viết Unit Tests cho 12  │
+│   - File Evidence (4) │                             │   Services tích hợp       │
 └───────────────────────┴─────────────────────────────┴───────────────────────────┘
 ```
 
@@ -30,21 +40,21 @@ Chia đều toàn bộ khối lượng công việc thành **3 trục nghiệp v
 
 ## 2. Bảng Ma Trận Phân Chia Công Việc Chi Tiết
 
-| Thành viên | Trục Nghiệp Vụ Phụ Trách                                                           |           Phần Tài Liệu            | Mã Task Jira & Nhánh Git                           | Thư Mục Mã Nguồn                                                                                   |
-| :--------- | :--------------------------------------------------------------------------------- | :--------------------------------: | :------------------------------------------------- | :------------------------------------------------------------------------------------------------- |
-| **Dev 1**  | **Toàn bộ Phân hệ ADMIN** _(Học thuật, Đề cương, Lớp học phần & Roster sinh viên)_ |        **Part C & Part D**         | `feat/SAGA-43-admin-academic-course-roster`        | `src/features/admin/*`<br/>`src/app/(dashboard)/admin/*`                                           |
-| **Dev 2**  | **Phân hệ GIẢNG VIÊN & TỔ CHỨC NHÓM** _(Lecturer Courses, Active Roster & Teams)_  |       **Part E, Part F, G1**       | `feat/SAGA-44-lecturer-course-and-team-management` | `src/features/lecturer/*`<br/>`src/features/student/courses/`<br/>`src/app/(dashboard)/lecturer/*` |
-| **Dev 3**  | **Khởi tạo Dự án & Tích hợp GitHub / Jira** _(Project & Integrations Hub)_         | **Part H, Part I, Part J, Part N** | `feat/SAGA-45-project-and-tool-integrations`       | `src/features/student/project/`<br/>`src/features/integrations/*`<br/>`src/app/integrations/`      |
+| Thành viên | Trục Nghiệp Vụ Phụ Trách                                                                     |         Phần Tài Liệu          | Mã Task Jira & Nhánh Git                           | Thư Mục Mã Nguồn                                                                                   |
+| :--------- | :------------------------------------------------------------------------------------------- | :----------------------------: | :------------------------------------------------- | :------------------------------------------------------------------------------------------------- |
+| **Dev 1**  | **HỌC THUẬT & MINH CHỨNG TASK** _(Admin Catalog, Course Roster, Work Sessions & Task Evidence)_ |  **Part C, D & Task Evidence** | `feat/SAGA-43-admin-academic-and-task-evidence`    | `src/features/admin/*`<br/>`src/features/student/sprint-progress/*`<br/>`src/app/(dashboard)/admin/*` |
+| **Dev 2**  | **LỚP HỌC, PHÂN NHÓM & TRỌNG SỐ** _(Lecturer Courses, Teams, Slicing Pie Weights & Team Eval)_ | **Part E, F, G1, Weights & DEC-002** | `feat/SAGA-44-lecturer-course-and-team-management` | `src/features/lecturer/*`<br/>`src/features/student/courses/`<br/>`src/app/(dashboard)/lecturer/*` |
+| **Dev 3**  | **DỰ ÁN, TÍCH HỢP & ĐỒNG BỘ** _(Project, GitHub/Jira Integrations, OAuth Callbacks & Projections Sync)_ |   **Part H, I, J, N & Sync**   | `feat/SAGA-45-project-and-tool-integrations`       | `src/features/student/project/`<br/>`src/features/integrations/*`<br/>`src/features/student/commits/*`      |
 
 ---
 
 ## 3. Chi Tiết Nhiệm Vụ Của Từng Lập Trình Viên
 
-### 👤 DEV 1: Toàn bộ Phân hệ ADMIN (Academic Catalog, Course & Roster)
+### 👤 DEV 1: Học Thuật, Quản Lý Lớp & Thu Thập Minh Chứng Task (Academic & Task Evidence)
 
-- **Mục tiêu**: Xây dựng toàn bộ nền tảng dữ liệu học thuật của trường, quản lý danh sách lớp học phần và import danh sách sinh viên vào Course.
-- **Đặc thù UI**: Form nhập liệu nhiều bước, Cây cấu trúc tiêu chí môn học (Tree View), Bảng quản lý Course và bộ công cụ **Excel Roster Uploader (Template ➔ Preview lỗi/hợp lệ ➔ Confirm Import)**.
-- **Danh mục API phụ trách (Part C & Part D)**:
+- **Mục tiêu**: Xây dựng toàn bộ nền tảng dữ liệu học thuật của trường, quản lý lớp học phần, import danh sách sinh viên vào Course, và phụ trách toàn bộ hệ thống thu thập minh chứng làm việc (Task Evidence: link, file, bấm giờ phiên làm việc).
+- **Đặc thù UI**: Form nhập liệu nhiều bước, Cây cấu trúc tiêu chí môn học (Tree View), Bảng Course, **Excel Roster Uploader**, và **Hộp thoại Minh chứng Công sức (Task Evidence Dialog: Upload file minh chứng, đính kèm link tài liệu/Figma, Widget bấm giờ làm việc)**.
+- **Danh mục API phụ trách (32 API Nền tảng + 10 API MỚI CẦN LÀM)**:
   1. **Subject (Môn học - Part C1, C2)**:
      - `GET /api/admin/subjects` (Danh sách môn học)
      - `POST /api/admin/subjects` (Tạo môn học mới)
@@ -67,14 +77,25 @@ Chia đều toàn bộ khối lượng công việc thành **3 trục nghiệp v
      - `GET /api/admin/courses/{id}/roster` (Xem danh sách sinh viên kèm trạng thái lời mời)
      - `POST /api/admin/courses/{id}/roster/import/preview` (Upload xem trước danh sách import)
      - `POST /api/admin/courses/{id}/roster/import/confirm` (Xác nhận import sinh viên vào lớp)
+  6. **Thu Thập Chứng Cứ & Minh Chứng Phiên Làm Việc (Task Evidence & Work Sessions - 10 API MỚI CẦN LÀM)**:
+     - `POST /api/tasks/{taskId}/work-sessions/start` (Bắt đầu phiên bấm giờ làm việc trên task)
+     - `POST /api/tasks/{taskId}/work-sessions/{sessionId}/stop` (Dừng và lưu lại thời lượng phiên làm việc)
+     - `POST /api/tasks/{taskId}/contribution-confirmations` (Đồng đội xác nhận đóng góp chéo)
+     - `GET /api/tasks/{taskId}/web-links` (Lấy danh sách URL tài liệu/thiết kế đính kèm)
+     - `POST /api/tasks/{taskId}/web-links` (Đính kèm liên kết web minh chứng đầu việc)
+     - `DELETE /api/tasks/{taskId}/web-links/{linkId}` (Xóa liên kết web khỏi task)
+     - `GET /api/tasks/{taskId}/files` (Xem danh sách tệp đính kèm)
+     - `POST /api/tasks/{taskId}/files` (Tải lên file minh chứng `multipart/form-data`)
+     - `GET /api/tasks/{taskId}/files/{fileId}` (Tải xuống file minh chứng)
+     - `DELETE /api/tasks/{taskId}/files/{fileId}` (Xóa tệp đính kèm)
 
 ---
 
-### 👤 DEV 2: Phân hệ GIẢNG VIÊN & TỔ CHỨC NHÓM (Lecturer Courses & Teams)
+### 👤 DEV 2: Lớp Học, Phân Nhóm & Toàn Bộ Trọng Số Slicing Pie (Courses, Teams & Weights)
 
-- **Mục tiêu**: Quản lý không gian lớp học của giảng viên, theo dõi sinh viên ACTIVE và phân chia sinh viên vào các nhóm đồ án.
-- **Đặc thù UI**: Bảng lớp học giảng dạy, Danh sách sinh viên đang học thực tế và bộ xử lý **Excel Team Uploader (Tải template ➔ Upload xem trước nhóm/leader ➔ Xác nhận phân nhóm)**.
-- **Danh mục API phụ trách (Part E, Part F, G1)**:
+- **Mục tiêu**: Quản lý không gian lớp học của giảng viên, theo dõi sinh viên ACTIVE, phân chia sinh viên vào các nhóm đồ án, và **phụ trách toàn bộ hệ thống Trọng số Slicing Pie (cấp Lớp & cấp Nhóm) cùng đánh giá đóng góp DEC-002**.
+- **Đặc thù UI**: Bảng lớp học giảng dạy, Danh sách sinh viên đang học thực tế, bộ xử lý **Excel Team Uploader**, **Giao diện điều chỉnh Trọng số Slicing Pie (Slider/Input tổng 100%)** và **Bảng đối soát tỷ lệ % đóng góp thực tế của thành viên**.
+- **Danh mục API phụ trách (11 API Nền tảng + 8 API MỚI CẦN LÀM)**:
   1. **Không gian Lớp của Giảng viên (Part E1 – E3)**:
      - `GET /api/lecturer/courses` (Danh sách lớp giảng viên được phân công)
      - `GET /api/lecturer/courses/{courseId}` (Chi tiết thông tin lớp học phần)
@@ -90,14 +111,25 @@ Chia đều toàn bộ khối lượng công việc thành **3 trục nghiệp v
   4. **Điều phối Nhóm Đồ án Bổ sung**:
      - `PUT /api/lecturer/courses/{courseId}/teams/{teamId}/leader` (Chỉ định / thay đổi Trưởng nhóm mới)
      - `PATCH /api/lecturer/courses/{courseId}/team-members/{teamMemberId}/team` (Chuyển thành viên sang nhóm khác trong lớp)
+  5. **Cấu hình Trọng số Lát cắt Đóng góp Lớp học (Slicing Pie Weights - DEC-002 - 4 API MỚI)**:
+     - `GET /api/lecturer/courses/{courseId}/contribution-slice-weights` (Lấy trọng số lát cắt mặc định của lớp học phần)
+     - `PUT /api/lecturer/courses/{courseId}/contribution-slice-weights` (Cập nhật tỷ trọng các tiêu chí đóng góp của lớp)
+     - `PUT /api/lecturer/courses/{courseId}/contribution-config-mode` (Chuyển đổi chế độ trọng số: `COURSE` vs `PROJECT_GROUP`)
+     - `GET /api/lecturer/courses/{courseId}/contribution-team-weights` (Xem nhóm nào đã thiết lập trọng số riêng)
+  6. **Cấu hình Trọng số Nhóm Dự án (Project Group Weights - 2 API MỚI)**:
+     - `GET /api/projects/{projectId}/group-weights` (Xem trọng số riêng của nhóm đồ án)
+     - `PUT /api/projects/{projectId}/group-weights` (Team Leader cập nhật bộ trọng số riêng khi lớp cho phép)
+  7. **Đánh giá & Điều phối Đóng góp Nhóm (Team Contribution Evaluation - DEC-002 - 2 API MỚI)**:
+     - `GET /api/teams/{teamId}/contribution-evaluation` (Tính toán tự động tỷ lệ % đóng góp thực tế của từng thành viên)
+     - `POST /api/teams/{teamId}/contribution-override` (Ghi đè thủ công tỷ lệ % đóng góp khi nhóm có biên bản thỏa thuận)
 
 ---
 
-### 👤 DEV 3: Khởi tạo Dự án & Trung tâm Tích hợp GitHub / Jira (Project & Integrations Hub)
+### 👤 DEV 3: Không Gian Dự Án, Tích Hợp GH/Jira & Chiếu Đồng Bộ Dữ Liệu (Project, Integrations & Sync)
 
-- **Mục tiêu**: Xây dựng không gian làm việc của nhóm đồ án, Team Leader tạo dự án, kết nối GitHub App & Jira Software và đồng bộ dữ liệu chiếu (Project Projections).
-- **Đặc thù UI**: Luồng kết nối nhiều bước (Multi-step Integration Wizard), xử lý OAuth Redirect / Popup, Callback Route Handlers, Thẻ tóm tắt tích hợp và Bảng đối soát Task / Commit.
-- **Danh mục API phụ trách (Part H, Part I, Part J, Part N)**:
+- **Mục tiêu**: Xây dựng không gian làm việc của nhóm đồ án, Team Leader tạo dự án, kết nối GitHub App & Jira Software, xử lý luồng xác thực OAuth 2 tầng, và **phụ trách toàn bộ động cơ Chiếu & Đồng bộ Dữ liệu (Project Projections & Sync Engine)**.
+- **Đặc thù UI**: Luồng kết nối nhiều bước (Multi-step Integration Wizard), xử lý OAuth Redirect / Popup, Callback Route Handlers, Thẻ tóm tắt tích hợp, **Nút kích hoạt đồng bộ backfill kèm thanh tiến trình**, và **Bảng Kanban / Nhật ký Commit chiếu liên kết**.
+- **Danh mục API phụ trách (18 API Nền tảng + 5 API MỚI CẦN LÀM + Hoàn thiện Unit Tests)**:
   1. **Khởi tạo Dự án Nhóm (Part H)**:
      - `GET /api/student/project-types` (Danh mục loại đồ án)
      - `GET /api/student/courses/{courseId}/project` (Xem thông tin dự án hiện tại)
@@ -120,15 +152,17 @@ Chia đều toàn bộ khối lượng công việc thành **3 trục nghiệp v
      - `POST /api/integrations/jira/link` (Khởi tạo OAuth liên kết Jira cá nhân)
      - `PATCH /api/integrations/github/{identityId}/primary` & `PATCH /api/integrations/jira/{identityId}/primary` (Đặt làm tài khoản chính)
      - `DELETE /api/integrations/github/{identityId}` & `DELETE /api/integrations/jira/{identityId}` (Hủy liên kết cá nhân)
-  5. **Chiếu Dữ Liệu Dự Án & Đồng Bộ Ngầm (Project Projections & Sync)**:
+  5. **OAuth Callback & Tóm Tắt Tích Hợp**:
+     - Tuyến callback redirect: `/api/integrations/github/oauth/callback`, `/api/integrations/jira/oauth/callback`, `/api/projects/{projectId}/integrations/github/setup/callback`.
+     - `GET /api/projects/{projectId}/integrations` (Thẻ trạng thái tích hợp của dự án).
+  6. **Chiếu Dữ Liệu Dự Án & Đồng Bộ Ngầm (Project Projections & Sync - 5 API MỚI CẦN LÀM)**:
      - `POST /api/projects/{projectId}/sync` (Team Leader kích hoạt backfill dữ liệu ngầm)
      - `GET /api/projects/{projectId}/sync-status` (Xem tiến độ và trạng thái đồng bộ của Jira & GitHub)
      - `GET /api/projects/{projectId}/tasks` (Danh sách Jira tasks đã chiếu)
      - `GET /api/projects/{projectId}/tasks/{taskId}/commits` (Danh sách commits nối với Jira task)
      - `GET /api/projects/{projectId}/commits` (Danh sách GitHub commits đã chiếu)
-  6. **OAuth Callback & Tóm Tắt Tích Hợp**:
-     - Tuyến callback redirect: `/api/integrations/github/oauth/callback`, `/api/integrations/jira/oauth/callback`, `/api/projects/{projectId}/integrations/github/setup/callback`.
-     - `GET /api/projects/{projectId}/integrations` (Thẻ trạng thái tích hợp của dự án).
+  7. **Hoàn Thiện Bộ Unit Tests (Nhiệm vụ bắt buộc)**:
+     - Viết đầy đủ 3 nhóm ca kiểm thử (`[N] Normal`, `[A] Abnormal`, `[B] Boundary`) cho các file service: `github-integrations-service.ts`, `jira-integrations-service.ts`, `user-integrations-service.ts`, và `project-projection-service.ts`.
 
 ---
 
@@ -158,9 +192,11 @@ Chia đều toàn bộ khối lượng công việc thành **3 trục nghiệp v
 
 Các tính năng sau **chưa được backend triển khai**, các thành viên không dựng mock hay gọi API cho các phần này:
 
-- Dashboard webhook / task board Kanban sync tự động.
+- Dashboard webhook / task board Kanban sync tự động thời gian thực (hiện dùng sync thủ công qua `/sync`).
 - SSE Realtime Event Stream.
-- Graph snapshot / Neo4j delta API.
-- Assessment / Continuous scoring API.
-- Quên mật khẩu / Xác minh email.
+- Graph snapshot / Neo4j delta sync realtime API.
+- Master Gradebook / Continuous scoring API chấm điểm môn học FLM theo từng đầu điểm riêng.
+- Quên mật khẩu / Xác minh email qua token.
 - WebAuthn Step-up Authentication.
+
+*(Lưu ý: Tính năng Đánh giá đóng góp nhóm Slicing Pie DEC-002 **ĐÃ CÓ** trên Backend và được giao cho **Dev 2** thực hiện qua `/api/teams/{teamId}/contribution-evaluation`).*

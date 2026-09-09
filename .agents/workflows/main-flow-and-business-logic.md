@@ -4,6 +4,9 @@ description: End-to-end user journeys, main business flows for Student, Lecturer
 
 # Quy Trình Nghiệp Vụ Cốt Lõi & Luồng Người Dùng (Mainflow & Business Logic)
 
+> 📖 **Tài liệu phân tích chi tiết & Kịch bản Case Study:** Xem tại [04-main-flow-and-capstone-case-study.md](file:///d:/Capstone/saga%20workspace/saga-fe/docs/04-main-flow-and-capstone-case-study.md).
+> 📋 **Sổ bộ đăng ký 97 API Backend:** Xem tại [.agents/rules/api-integration-registry.md](file:///d:/Capstone/saga%20workspace/saga-fe/.agents/rules/api-integration-registry.md).
+
 ## 1. Hành Trình Người Dùng Sinh Viên (Student User Journey)
 
 ```text
