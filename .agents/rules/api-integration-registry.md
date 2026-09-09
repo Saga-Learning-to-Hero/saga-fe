@@ -81,10 +81,10 @@ $$\text{projectId} \xrightarrow{\text{Tích hợp}} \text{GitHub Repositories} +
 | **2. Quản trị viên (Admin Academic & Roster)** | 32 | Dev 1 | [subject-service.ts](file:///d:/Capstone/saga%20workspace/saga-fe/src/features/admin/subjects/api/subject-service.ts), [syllabus-service.ts](file:///d:/Capstone/saga%20workspace/saga-fe/src/features/admin/subjects/api/syllabus-service.ts), [academic-service.ts](file:///d:/Capstone/saga%20workspace/saga-fe/src/features/admin/academic/api/academic-service.ts), [course-service.ts](file:///d:/Capstone/saga%20workspace/saga-fe/src/features/admin/academic/api/course-service.ts), [roster-service.ts](file:///d:/Capstone/saga%20workspace/saga-fe/src/features/admin/academic/api/roster-service.ts) | ✅ **32/32 ĐÃ TÍCH HỢP** |
 | **3. Giảng viên & Tổ chức Nhóm (Courses & Teams)** | 11 | Dev 2 | [lecturer-course-service.ts](file:///d:/Capstone/saga%20workspace/saga-fe/src/features/lecturer/courses/api/lecturer-course-service.ts), [lecturer-team-service.ts](file:///d:/Capstone/saga%20workspace/saga-fe/src/features/lecturer/teams/api/lecturer-team-service.ts), [student-course-service.ts](file:///d:/Capstone/saga%20workspace/saga-fe/src/features/student/courses/api/student-course-service.ts) | ✅ **11/11 ĐÃ TÍCH HỢP** |
 | **4. Trọng số Slicing Pie & Đóng góp Nhóm (Weights & Eval)** | 8 | Dev 2 | `lecturer-weights-service.ts`, `project-weights-service.ts`, `team-contribution-service.ts` | ⏳ **0/8 CHƯA TÍCH HỢP** |
-| **5. Dự án & Tích hợp GitHub/Jira (Project & Tools)** | 24 | Dev 3 | [student-project-service.ts](file:///d:/Capstone/saga%20workspace/saga-fe/src/features/student/project/api/student-project-service.ts), [github-integrations-service.ts](file:///d:/Capstone/saga%20workspace/saga-fe/src/features/integrations/api/github-integrations-service.ts), [jira-integrations-service.ts](file:///d:/Capstone/saga%20workspace/saga-fe/src/features/integrations/api/jira-integrations-service.ts), [user-integrations-service.ts](file:///d:/Capstone/saga%20workspace/saga-fe/src/features/integrations/api/user-integrations-service.ts) | ✅ **19/24 ĐÃ TÍCH HỢP** |
-| **6. Chiếu Dữ liệu Dự án & Đồng bộ Ngầm (Projections)** | 5 | Dev 3 | `project-projection-service.ts` | ⏳ **0/5 CHƯA TÍCH HỢP** |
-| **7. Thu thập Chứng cứ Phiên làm việc (Task Evidence)** | 10 | Dev 1 | `task-evidence-service.ts` | ⏳ **0/10 CHƯA TÍCH HỢP** |
-| **TỔNG CỘNG TOÀN HỆ THỐNG** | **97** | **3 Devs** | **Đầy đủ Service Classes + Unit Test Specs** | **69 ĐÃ XONG / 28 CHỜ** |
+| **5. Dự án & Tích hợp GitHub/Jira (Project & Tools)** | 24 | Dev 3 | [student-project-service.ts](file:///d:/Capstone/saga%20workspace/saga-fe/src/features/student/project/api/student-project-service.ts), [github-integrations-service.ts](file:///d:/Capstone/saga%20workspace/saga-fe/src/features/integrations/api/github-integrations-service.ts), [jira-integrations-service.ts](file:///d:/Capstone/saga%20workspace/saga-fe/src/features/integrations/api/jira-integrations-service.ts), [user-integrations-service.ts](file:///d:/Capstone/saga%20workspace/saga-fe/src/features/integrations/api/user-integrations-service.ts) | ✅ **22/24 ĐÃ TÍCH HỢP**<br>*(Còn 2 API group-weights của Dev 2)* |
+| **6. Chiếu Dữ liệu Dự án & Đồng bộ Ngầm (Projections)** | 5 | Dev 3 | [project-projection-service.ts](file:///d:/Capstone/saga%20workspace/saga-fe/src/features/student/project/api/project-projection-service.ts) | ✅ **5/5 ĐÃ TÍCH HỢP** |
+| **7. Thu thập Chứng cứ Phiên làm việc (Task Evidence)** | 10 | Dev 1 | [task-evidence-service.ts](file:///d:/Capstone/saga%20workspace/saga-fe/src/features/student/sprint-progress/api/task-evidence-service.ts) | ✅ **10/10 ĐÃ TÍCH HỢP** |
+| **TỔNG CỘNG TOÀN HỆ THỐNG** | **97** | **3 Devs** | **Đầy đủ Service Classes + Unit Test Specs** | **87 ĐÃ XONG / 10 CHỜ** |
 
 ---
 
@@ -100,6 +100,10 @@ $$\text{projectId} \xrightarrow{\text{Tích hợp}} \text{GitHub Repositories} +
 ### 5.2. Chuẩn Hóa Bắt Lỗi (Error Envelope Handling)
 - Backend trả lỗi dưới dạng `{ "code": "STRING_ERROR_CODE", "message": "Human readable message" }`.
 - Phía Frontend bắt buộc kiểm tra trường **`error.response?.data?.code`** để hiển thị thông báo tương ứng.
+
+### 5.3. Lưu Ý Xung Đột Dữ Liệu Tích Hợp Jira (Constraint uk_jira_cloud_project)
+- Khi gọi `PUT /api/projects/{projectId}/integrations/jira`, nếu server trả về mã lỗi HTTP 500 kèm payload Spring Boot mặc định:
+  Nguyên nhân là do Jira Project đó đã được liên kết với một Dự án khác trong database (`UNIQUE KEY uk_jira_cloud_project (cloud_id, jira_project_id)`), dẫn đến `DataIntegrityViolationException` chưa được bọc try-catch phía backend. Lập trình viên và kiểm thử viên cần chọn Jira Project độc lập chưa từng được gán cho nhóm khác.
 
 ---
 

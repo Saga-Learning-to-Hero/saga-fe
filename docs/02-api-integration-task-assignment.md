@@ -111,8 +111,8 @@ Chia đều toàn bộ khối lượng công việc thành **3 trục nghiệp v
   4. **Điều phối Nhóm Đồ án Bổ sung**:
      - `PUT /api/lecturer/courses/{courseId}/teams/{teamId}/leader` (Chỉ định / thay đổi Trưởng nhóm mới)
      - `PATCH /api/lecturer/courses/{courseId}/team-members/{teamMemberId}/team` (Chuyển thành viên sang nhóm khác trong lớp)
-  5. **Cấu hình Trọng số Lát cắt Đóng góp Lớp học (Slicing Pie Weights - DEC-002 - 4 API MỚI)**:
-     - `GET /api/lecturer/courses/{courseId}/contribution-slice-weights` (Lấy trọng số lát cắt mặc định của lớp học phần)
+  5. **Cấu hình Trọng số Slice Đóng góp Lớp học (Slicing Pie Weights - DEC-002 - 4 API MỚI)**:
+     - `GET /api/lecturer/courses/{courseId}/contribution-slice-weights` (Lấy trọng số Slice mặc định của lớp học phần)
      - `PUT /api/lecturer/courses/{courseId}/contribution-slice-weights` (Cập nhật tỷ trọng các tiêu chí đóng góp của lớp)
      - `PUT /api/lecturer/courses/{courseId}/contribution-config-mode` (Chuyển đổi chế độ trọng số: `COURSE` vs `PROJECT_GROUP`)
      - `GET /api/lecturer/courses/{courseId}/contribution-team-weights` (Xem nhóm nào đã thiết lập trọng số riêng)

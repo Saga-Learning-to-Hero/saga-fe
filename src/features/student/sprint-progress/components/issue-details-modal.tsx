@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import {
   XIcon,
   SaveIcon,
@@ -25,10 +25,11 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { CustomSelect } from "@/components/common/custom-select";
 import { TaskLinkedCommitsList } from "./task-linked-commits-list";
+import { TaskEvidencePanel } from "./task-evidence-panel";
 
 interface IssueDetailsModalProps {
   isOpen: boolean;
-  issue: SprintIssue | null; // Null means creating a new issue
+  issue: SprintIssue | null;
   projectId?: string;
   defaultSprintId?: string;
   sprints: Sprint[];
@@ -72,6 +73,48 @@ export function IssueDetailsModal({
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successMsg, setSuccessMsg] = useState("");
+  const [selectedCommitShas, setSelectedCommitShas] = useState("");
+
+  const handleToggleCommitSha = (sha: string) => {
+    setSelectedCommitShas((prev) => {
+      const currentList = prev
+        ? prev
+          .split(",")
+          .map((s) => s.trim())
+          .filter(Boolean)
+        : [];
+      const exists = currentList.includes(sha);
+      const nextList = exists
+        ? currentList.filter((s) => s !== sha)
+        : [...currentList, sha];
+      return nextList.join(", ");
+    });
+  };
+
+  const handleSelectAllCommitShas = (shas: string[]) => {
+    setSelectedCommitShas((prev) => {
+      const currentList = prev
+        ? prev
+          .split(",")
+          .map((s) => s.trim())
+          .filter(Boolean)
+        : [];
+      const allSelected = shas.length > 0 && shas.every((s) => currentList.includes(s));
+      if (allSelected) {
+        return currentList.filter((s) => !shas.includes(s)).join(", ");
+      }
+      return Array.from(new Set([...currentList, ...shas])).join(", ");
+    });
+  };
+
+  const selectedShasList = useMemo(() => {
+    return selectedCommitShas
+      ? selectedCommitShas
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean)
+      : [];
+  }, [selectedCommitShas]);
 
   if (!isOpen) return null;
 
@@ -343,9 +386,22 @@ export function IssueDetailsModal({
             />
           </div>
 
-          {/* Linked Commits from GET /api/projects/{projectId}/tasks/{taskId}/commits */}
           {isEditing && issue?.id && (
-            <TaskLinkedCommitsList projectId={projectId} taskId={issue.id} />
+            <>
+              <TaskLinkedCommitsList
+                projectId={projectId}
+                taskId={issue.id}
+                onSelectCommit={handleToggleCommitSha}
+                onSelectAllCommits={handleSelectAllCommitShas}
+                selectedShas={selectedShasList}
+              />
+              <TaskEvidencePanel
+                taskId={issue.id}
+                isOwnerOrLeader={canEdit}
+                externalCommitShas={selectedCommitShas}
+                onConfirmCommitsChange={setSelectedCommitShas}
+              />
+            </>
           )}
 
           {/* Modal Footer */}

@@ -75,7 +75,7 @@ Tài liệu này là **Sổ bộ theo dõi chi tiết toàn bộ 97 API** của 
 | 49 | `GET` | `/api/student/courses` | Môn học sinh viên đang theo học | Dev 2 | [student-course-service.ts](file:///d:/Capstone/saga%20workspace/saga-fe/src/features/student/courses/api/student-course-service.ts) | [student-course-service.spec.ts](file:///d:/Capstone/saga%20workspace/saga-fe/src/features/student/courses/api/student-course-service.spec.ts) | ✅ ĐÃ TÍCH HỢP |
 | 50 | `GET` | `/api/student/courses/{id}/team` | Xem nhóm và vai trò `myRole` | Dev 2 | [student-project-service.ts](file:///d:/Capstone/saga%20workspace/saga-fe/src/features/student/project/api/student-project-service.ts) | [student-project-service.spec.ts](file:///d:/Capstone/saga%20workspace/saga-fe/src/features/student/project/api/student-project-service.spec.ts) | ✅ ĐÃ TÍCH HỢP |
 | 51 | `GET` | `/api/lecturer/courses/{id}/contribution-slice-weights` | Lấy trọng số đóng góp mặc định lớp | Dev 2 | `lecturer-weights-service.ts` | `lecturer-weights-service.spec.ts` | ⏳ CHƯA TÍCH HỢP |
-| 52 | `PUT` | `/api/lecturer/courses/{id}/contribution-slice-weights` | Cập nhật trọng số lát cắt lớp | Dev 2 | `lecturer-weights-service.ts` | `lecturer-weights-service.spec.ts` | ⏳ CHƯA TÍCH HỢP |
+| 52 | `PUT` | `/api/lecturer/courses/{id}/contribution-slice-weights` | Cập nhật trọng số Slice lớp | Dev 2 | `lecturer-weights-service.ts` | `lecturer-weights-service.spec.ts` | ⏳ CHƯA TÍCH HỢP |
 | 53 | `PUT` | `/api/lecturer/courses/{id}/contribution-config-mode` | Đổi mode COURSE vs PROJECT_GROUP | Dev 2 | `lecturer-weights-service.ts` | `lecturer-weights-service.spec.ts` | ⏳ CHƯA TÍCH HỢP |
 | 54 | `GET` | `/api/lecturer/courses/{id}/contribution-team-weights` | Xem nhóm đã có trọng số riêng chưa | Dev 2 | `lecturer-weights-service.ts` | `lecturer-weights-service.spec.ts` | ⏳ CHƯA TÍCH HỢP |
 | 55 | `GET` | `/api/teams/{teamId}/contribution-evaluation` | Đánh giá tỷ lệ % đóng góp DEC-002 | Dev 2 | `team-contribution-service.ts` | `team-contribution-service.spec.ts` | ⏳ CHƯA TÍCH HỢP |
@@ -127,15 +127,37 @@ Tài liệu này là **Sổ bộ theo dõi chi tiết toàn bộ 97 API** của 
 ---
 
 ### 6. Phân Hệ Thu Thập Chứng Cứ Phiên Làm Việc (Task Evidence & Artifacts) — Dev 1
-| STT | Method | Endpoint | Mục Đích Nghiệp Vụ | Dev | Service File Dự Kiến | Test File | Trạng Thái |
+| STT | Method | Endpoint | Mục Đích Nghiệp Vụ | Dev | Service File (FE) | Test File | Trạng Thái |
 | :---: | :--- | :--- | :--- | :---: | :--- | :--- | :---: |
-| 88 | `POST` | `/api/tasks/{taskId}/work-sessions/start` | Bắt đầu phiên làm việc trên đầu việc | Dev 1 | `task-evidence-service.ts` | `task-evidence-service.spec.ts` | ⏳ CHƯA TÍCH HỢP |
-| 89 | `POST` | `/api/tasks/{taskId}/work-sessions/{sessionId}/stop` | Kết thúc phiên làm việc | Dev 1 | `task-evidence-service.ts` | `task-evidence-service.spec.ts` | ⏳ CHƯA TÍCH HỢP |
-| 90 | `POST` | `/api/tasks/{taskId}/contribution-confirmations` | Xác nhận đóng góp chéo thành viên | Dev 1 | `task-evidence-service.ts` | `task-evidence-service.spec.ts` | ⏳ CHƯA TÍCH HỢP |
-| 91 | `GET` | `/api/tasks/{taskId}/web-links` | Danh sách liên kết URL đính kèm task | Dev 1 | `task-evidence-service.ts` | `task-evidence-service.spec.ts` | ⏳ CHƯA TÍCH HỢP |
-| 92 | `POST` | `/api/tasks/{taskId}/web-links` | Đính kèm link DOCUMENT/RESEARCH | Dev 1 | `task-evidence-service.ts` | `task-evidence-service.spec.ts` | ⏳ CHƯA TÍCH HỢP |
-| 93 | `DELETE` | `/api/tasks/{taskId}/web-links/{linkId}` | Xóa URL đính kèm khỏi task | Dev 1 | `task-evidence-service.ts` | `task-evidence-service.spec.ts` | ⏳ CHƯA TÍCH HỢP |
-| 94 | `GET` | `/api/tasks/{taskId}/files` | Danh sách files sinh viên tải lên | Dev 1 | `task-evidence-service.ts` | `task-evidence-service.spec.ts` | ⏳ CHƯA TÍCH HỢP |
-| 95 | `POST` | `/api/tasks/{taskId}/files` | Tải lên file ảnh/tài liệu minh chứng | Dev 1 | `task-evidence-service.ts` | `task-evidence-service.spec.ts` | ⏳ CHƯA TÍCH HỢP |
-| 96 | `GET` | `/api/tasks/{taskId}/files/{fileId}` | Tải xuống file minh chứng | Dev 1 | `task-evidence-service.ts` | `task-evidence-service.spec.ts` | ⏳ CHƯA TÍCH HỢP |
-| 97 | `DELETE` | `/api/tasks/{taskId}/files/{fileId}` | Xóa file minh chứng khỏi task | Dev 1 | `task-evidence-service.ts` | `task-evidence-service.spec.ts` | ⏳ CHƯA TÍCH HỢP |
+| 88 | `POST` | `/api/tasks/{taskId}/work-sessions/start` | Bắt đầu phiên làm việc trên đầu việc | Dev 1 | [task-evidence-service.ts](file:///d:/Capstone/saga%20workspace/saga-fe/src/features/student/sprint-progress/api/task-evidence-service.ts) | [task-evidence-service.spec.ts](file:///d:/Capstone/saga%20workspace/saga-fe/src/features/student/sprint-progress/api/task-evidence-service.spec.ts) | ✅ ĐÃ TÍCH HỢP |
+| 89 | `POST` | `/api/tasks/{taskId}/work-sessions/{sessionId}/stop` | Kết thúc phiên làm việc | Dev 1 | [task-evidence-service.ts](file:///d:/Capstone/saga%20workspace/saga-fe/src/features/student/sprint-progress/api/task-evidence-service.ts) | [task-evidence-service.spec.ts](file:///d:/Capstone/saga%20workspace/saga-fe/src/features/student/sprint-progress/api/task-evidence-service.spec.ts) | ✅ ĐÃ TÍCH HỢP |
+| 90 | `POST` | `/api/tasks/{taskId}/contribution-confirmations` | Xác nhận đóng góp chéo thành viên | Dev 1 | [task-evidence-service.ts](file:///d:/Capstone/saga%20workspace/saga-fe/src/features/student/sprint-progress/api/task-evidence-service.ts) | [task-evidence-service.spec.ts](file:///d:/Capstone/saga%20workspace/saga-fe/src/features/student/sprint-progress/api/task-evidence-service.spec.ts) | ✅ ĐÃ TÍCH HỢP |
+| 91 | `GET` | `/api/tasks/{taskId}/web-links` | Danh sách liên kết URL đính kèm task | Dev 1 | [task-evidence-service.ts](file:///d:/Capstone/saga%20workspace/saga-fe/src/features/student/sprint-progress/api/task-evidence-service.ts) | [task-evidence-service.spec.ts](file:///d:/Capstone/saga%20workspace/saga-fe/src/features/student/sprint-progress/api/task-evidence-service.spec.ts) | ✅ ĐÃ TÍCH HỢP |
+| 92 | `POST` | `/api/tasks/{taskId}/web-links` | Đính kèm link DOCUMENT/RESEARCH | Dev 1 | [task-evidence-service.ts](file:///d:/Capstone/saga%20workspace/saga-fe/src/features/student/sprint-progress/api/task-evidence-service.ts) | [task-evidence-service.spec.ts](file:///d:/Capstone/saga%20workspace/saga-fe/src/features/student/sprint-progress/api/task-evidence-service.spec.ts) | ✅ ĐÃ TÍCH HỢP |
+| 93 | `DELETE` | `/api/tasks/{taskId}/web-links/{linkId}` | Xóa URL đính kèm khỏi task | Dev 1 | [task-evidence-service.ts](file:///d:/Capstone/saga%20workspace/saga-fe/src/features/student/sprint-progress/api/task-evidence-service.ts) | [task-evidence-service.spec.ts](file:///d:/Capstone/saga%20workspace/saga-fe/src/features/student/sprint-progress/api/task-evidence-service.spec.ts) | ✅ ĐÃ TÍCH HỢP |
+| 94 | `GET` | `/api/tasks/{taskId}/files` | Danh sách files sinh viên tải lên | Dev 1 | [task-evidence-service.ts](file:///d:/Capstone/saga%20workspace/saga-fe/src/features/student/sprint-progress/api/task-evidence-service.ts) | [task-evidence-service.spec.ts](file:///d:/Capstone/saga%20workspace/saga-fe/src/features/student/sprint-progress/api/task-evidence-service.spec.ts) | ✅ ĐÃ TÍCH HỢP |
+| 95 | `POST` | `/api/tasks/{taskId}/files` | Tải lên file ảnh/tài liệu minh chứng | Dev 1 | [task-evidence-service.ts](file:///d:/Capstone/saga%20workspace/saga-fe/src/features/student/sprint-progress/api/task-evidence-service.ts) | [task-evidence-service.spec.ts](file:///d:/Capstone/saga%20workspace/saga-fe/src/features/student/sprint-progress/api/task-evidence-service.spec.ts) | ✅ ĐÃ TÍCH HỢP |
+| 96 | `GET` | `/api/tasks/{taskId}/files/{fileId}` | Tải xuống file minh chứng | Dev 1 | [task-evidence-service.ts](file:///d:/Capstone/saga%20workspace/saga-fe/src/features/student/sprint-progress/api/task-evidence-service.ts) | [task-evidence-service.spec.ts](file:///d:/Capstone/saga%20workspace/saga-fe/src/features/student/sprint-progress/api/task-evidence-service.spec.ts) | ✅ ĐÃ TÍCH HỢP |
+| 97 | `DELETE` | `/api/tasks/{taskId}/files/{fileId}` | Xóa file minh chứng khỏi task | Dev 1 | [task-evidence-service.ts](file:///d:/Capstone/saga%20workspace/saga-fe/src/features/student/sprint-progress/api/task-evidence-service.ts) | [task-evidence-service.spec.ts](file:///d:/Capstone/saga%20workspace/saga-fe/src/features/student/sprint-progress/api/task-evidence-service.spec.ts) | ✅ ĐÃ TÍCH HỢP |
+
+---
+
+## 7. Ghi Chú Kỹ Thuật & Cảnh Báo Lỗi Ngoại Lệ (Technical Caveats)
+
+### ⚠️ Caveat Endpoint 69 (`PUT /api/projects/{id}/integrations/jira`):
+- **Hiện tượng lỗi 500 (Internal Server Error)**: Khi gọi API lưu cấu hình Jira, nếu Server Backend trả về mã lỗi HTTP 500 kèm payload Spring Boot mặc định:
+  ```json
+  {
+    "timestamp": "...",
+    "status": 500,
+    "error": "Internal Server Error",
+    "path": "/api/projects/{projectId}/integrations/jira"
+  }
+  ```
+- **Nguyên nhân gốc rễ**: 
+  1. Ràng buộc toàn vẹn duy nhất trong Database MySQL: `UNIQUE KEY uk_jira_cloud_project (cloud_id, jira_project_id)`. Mỗi Jira Project trên Atlassian Cloud chỉ được gắn với duy nhất 1 Dự án trong hệ thống.
+  2. Nếu Jira Project này đã từng được liên kết bởi một Project khác (ví dụ: nhóm khác hoặc project test cũ), lệnh INSERT của Spring Data JPA sẽ ném `DataIntegrityViolationException`.
+  3. Phía Backend `ProjectIntegrationService` hiện chưa bọc `try-catch` riêng cho trường hợp này và `GlobalExceptionHandler` chưa có handler chuyên biệt, dẫn đến ngoại lệ văng ra thành HTTP 500.
+- **Biện pháp xử lý**:
+  - Chọn một Jira Project độc lập chưa từng được gán cho nhóm nào khác.
+  - Hoặc yêu cầu Backend/DB Admin xóa bản ghi `jira_integration` cũ đang chiếm giữ `jira_project_id` đó.

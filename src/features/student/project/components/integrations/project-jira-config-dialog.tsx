@@ -77,7 +77,7 @@ export function ProjectJiraConfigDialog({
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="max-w-xl bg-card border border-border/80 rounded-2xl shadow-xl p-5 space-y-4">
         <DialogHeader className="space-y-1.5 text-left border-b border-border/60 pb-3">
-          <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center justify-between gap-3 pr-8">
             <div className="flex items-center gap-2.5">
               <div className="w-9 h-9 rounded-xl bg-blue-600 text-white flex items-center justify-center shrink-0 shadow-xs">
                 <CheckSquareIcon className="w-4.5 h-4.5" />

@@ -3,11 +3,21 @@
 import { useTaskCommits } from "@/features/student/project/hooks/useProjectSync";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { GitCommitIcon, RotateCwIcon, GitBranchIcon } from "lucide-react";
+import {
+  GitCommitIcon,
+  RotateCwIcon,
+  GitBranchIcon,
+  PlusIcon,
+  CheckIcon,
+  ShieldCheckIcon,
+} from "lucide-react";
 
 interface TaskLinkedCommitsListProps {
   projectId?: string;
   taskId?: string;
+  onSelectCommit?: (sha: string) => void;
+  onSelectAllCommits?: (shas: string[]) => void;
+  selectedShas?: string[];
 }
 
 function formatDateTime(dateStr?: string | null): string {
@@ -29,7 +39,13 @@ function formatDateTime(dateStr?: string | null): string {
   }
 }
 
-export function TaskLinkedCommitsList({ projectId, taskId }: TaskLinkedCommitsListProps) {
+export function TaskLinkedCommitsList({
+  projectId,
+  taskId,
+  onSelectCommit,
+  onSelectAllCommits,
+  selectedShas = [],
+}: TaskLinkedCommitsListProps) {
   const {
     data: commits = [],
     isLoading,
@@ -42,6 +58,10 @@ export function TaskLinkedCommitsList({ projectId, taskId }: TaskLinkedCommitsLi
   if (!projectId || !taskId) {
     return null;
   }
+
+  const validShas = commits.map((c) => c.sha).filter(Boolean);
+  const isAllSelected =
+    validShas.length > 0 && validShas.every((sha) => selectedShas.includes(sha));
 
   return (
     <div className="space-y-2.5 pt-2 border-t border-border/60">
@@ -59,17 +79,35 @@ export function TaskLinkedCommitsList({ projectId, taskId }: TaskLinkedCommitsLi
           </Badge>
         </div>
 
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
-          onClick={() => void refetch()}
-          disabled={isLoading || isRefetching}
-          className="h-7 px-2 text-[11px] text-muted-foreground hover:text-foreground gap-1 cursor-pointer"
-        >
-          <RotateCwIcon className={`w-3 h-3 ${isRefetching ? "animate-spin text-primary" : ""}`} />
-          <span>Làm mới</span>
-        </Button>
+        <div className="flex items-center gap-1.5">
+          {onSelectAllCommits && validShas.length > 0 && (
+            <Button
+              type="button"
+              variant={isAllSelected ? "secondary" : "outline"}
+              size="sm"
+              onClick={() => onSelectAllCommits(validShas)}
+              className={`h-7 px-2 text-[11px] font-semibold gap-1 cursor-pointer transition-colors ${isAllSelected
+                  ? "bg-violet-600 text-white hover:bg-violet-700 border-0"
+                  : "text-violet-600 dark:text-violet-400 border-violet-500/30 hover:bg-violet-500/10"
+                }`}
+            >
+              <ShieldCheckIcon className="w-3 h-3" />
+              <span>{isAllSelected ? "Bỏ gắn tất cả" : `Gắn tất cả (${validShas.length})`}</span>
+            </Button>
+          )}
+
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={() => void refetch()}
+            disabled={isLoading || isRefetching}
+            className="h-7 px-2 text-[11px] text-muted-foreground hover:text-foreground gap-1 cursor-pointer"
+          >
+            <RotateCwIcon className={`w-3 h-3 ${isRefetching ? "animate-spin text-primary" : ""}`} />
+            <span>Làm mới</span>
+          </Button>
+        </div>
       </div>
 
       {isLoading ? (
@@ -88,10 +126,15 @@ export function TaskLinkedCommitsList({ projectId, taskId }: TaskLinkedCommitsLi
         <div className="space-y-2 max-h-[220px] overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-border hover:scrollbar-thumb-muted-foreground/30">
           {commits.map((commit) => {
             const shortSha = commit.sha ? commit.sha.slice(0, 7) : "commit";
+            const isSelected = Boolean(commit.sha && selectedShas.includes(commit.sha));
+
             return (
               <div
                 key={commit.id}
-                className="p-3 rounded-xl bg-card border border-border/70 hover:border-primary/40 hover:bg-muted/20 transition-all space-y-1.5"
+                className={`p-3 rounded-xl bg-card border transition-all space-y-1.5 ${isSelected
+                    ? "border-violet-500/50 bg-violet-500/[0.04]"
+                    : "border-border/70 hover:border-primary/40 hover:bg-muted/20"
+                  }`}
               >
                 <div className="flex items-center justify-between gap-2">
                   <div className="flex items-center gap-2 min-w-0">
@@ -104,9 +147,36 @@ export function TaskLinkedCommitsList({ projectId, taskId }: TaskLinkedCommitsLi
                     </span>
                   </div>
 
-                  <span className="text-[10px] font-mono text-muted-foreground shrink-0">
-                    {formatDateTime(commit.committedAt)}
-                  </span>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <span className="text-[10px] font-mono text-muted-foreground">
+                      {formatDateTime(commit.committedAt)}
+                    </span>
+
+                    {onSelectCommit && commit.sha && (
+                      <Button
+                        type="button"
+                        variant={isSelected ? "secondary" : "outline"}
+                        size="sm"
+                        onClick={() => onSelectCommit(commit.sha)}
+                        className={`h-6 px-2 text-[10px] font-semibold gap-1 rounded-md cursor-pointer transition-all ${isSelected
+                            ? "bg-violet-600 text-white hover:bg-violet-700 border-0"
+                            : "text-violet-600 dark:text-violet-400 border-violet-500/30 hover:bg-violet-500/10"
+                          }`}
+                      >
+                        {isSelected ? (
+                          <>
+                            <CheckIcon className="w-3 h-3" />
+                            <span>Đã gắn</span>
+                          </>
+                        ) : (
+                          <>
+                            <PlusIcon className="w-3 h-3" />
+                            <span>Gắn SHA</span>
+                          </>
+                        )}
+                      </Button>
+                    )}
+                  </div>
                 </div>
 
                 <p className="text-xs font-medium text-foreground line-clamp-2 leading-relaxed">

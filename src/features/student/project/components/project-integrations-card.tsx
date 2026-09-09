@@ -27,7 +27,11 @@ export function ProjectIntegrationsCard({ projectId, isLeader }: ProjectIntegrat
   const [syncingId, setSyncingId] = useState<string | null>(null);
   const [disconnectModalType, setDisconnectModalType] = useState<"jira" | "github" | null>(null);
   const [isReposModalOpen, setIsReposModalOpen] = useState(false);
-  const [isJiraModalOpen, setIsJiraModalOpen] = useState(false);
+  const [isJiraModalOpen, setIsJiraModalOpen] = useState(() => {
+    if (typeof window === "undefined") return false;
+    const urlParams = new URLSearchParams(window.location.search);
+    return urlParams.get("jira_setup") === "true";
+  });
 
   const { data: integrations, isLoading, isRefetching, refetch } = useProjectIntegrations(
     projectId,
@@ -48,6 +52,13 @@ export function ProjectIntegrationsCard({ projectId, isLeader }: ProjectIntegrat
     const installationId = urlParams.get("installation_id");
     const code = urlParams.get("code") || undefined;
 
+    const jiraSetup = urlParams.get("jira_setup");
+    if (jiraSetup === "true") {
+      window.history.replaceState({}, "", window.location.pathname);
+      toast.success("Đã ủy quyền Atlassian thành công! Vui lòng chọn Site, Project và Board.");
+      void refetch();
+    }
+
     if (state && installationId) {
       toast.loading("Đang hoàn tất kết nối GitHub cho dự án...", { id: "github-setup-callback" });
       setupCallbackMutation.mutate(
@@ -67,15 +78,25 @@ export function ProjectIntegrationsCard({ projectId, isLeader }: ProjectIntegrat
   const handleRedirectJiraConnect = async () => {
     try {
       toast.loading("Đang chuyển hướng sang Jira Atlassian...", { id: "jira-connect" });
-      const returnPath = typeof window !== "undefined" ? window.location.pathname : "/student/project-info";
+      const currentPath = typeof window !== "undefined" ? window.location.pathname : "/student/project-info";
+      const returnPath = `${currentPath}?jira_setup=true`;
       const result = await connectJiraMutation.mutateAsync({ projectId, returnPath });
-      if (result.authorizationUrl && typeof window !== "undefined") window.location.href = result.authorizationUrl;
+      if (result.authorizationUrl && typeof window !== "undefined") {
+        window.location.href = result.authorizationUrl;
+      }
     } catch {
       toast.error("Lỗi khi kết nối Jira với dự án. Vui lòng thử lại sau.", { id: "jira-connect" });
     }
   };
 
-  const handleConnectJira = () => setIsJiraModalOpen(true);
+  const handleConnectJira = () => {
+    const isConfigured = integrations?.jira?.status === "ACTIVE";
+    if (isConfigured) {
+      setIsJiraModalOpen(true);
+    } else {
+      void handleRedirectJiraConnect();
+    }
+  };
 
   const handleRedirectGitHubConnect = async () => {
     try {

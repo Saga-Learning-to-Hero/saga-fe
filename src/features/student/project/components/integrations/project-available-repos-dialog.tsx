@@ -126,7 +126,7 @@ export function ProjectAvailableReposDialog({
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="max-w-2xl bg-card border border-border/80 rounded-2xl shadow-xl p-5 space-y-4">
         <DialogHeader className="space-y-1.5 text-left border-b border-border/60 pb-3">
-          <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center justify-between gap-3 pr-8">
             <div className="flex items-center gap-2.5">
               <div className="w-9 h-9 rounded-xl bg-purple-600 text-white flex items-center justify-center shrink-0 shadow-xs">
                 <GitBranchIcon className="w-4.5 h-4.5" />
@@ -162,9 +162,8 @@ export function ProjectAvailableReposDialog({
               return (
                 <div
                   key={repo.id}
-                  className={`p-3 rounded-xl border transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs ${
-                    isSelected ? "bg-purple-500/10 border-purple-500/40" : "bg-muted/20 border-border/70 hover:border-purple-500/30"
-                  }`}
+                  className={`p-3 rounded-xl border transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs ${isSelected ? "bg-purple-500/10 border-purple-500/40" : "bg-muted/20 border-border/70 hover:border-purple-500/30"
+                    }`}
                 >
                   <div className="flex items-center gap-3 min-w-0">
                     <Checkbox

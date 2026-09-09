@@ -270,7 +270,7 @@ Giao diện sinh viên được điều hướng động dựa trên trạng th�
 
 #### 3. Cấu hình Trọng số Đóng góp Lớp học (Course Contribution Weights)
 - `GET /api/lecturer/courses/{courseId}/contribution-slice-weights`: Lấy trọng số đóng góp mặc định của lớp học.
-- `PUT /api/lecturer/courses/{courseId}/contribution-slice-weights`: Cập nhật trọng số đóng góp các lát cắt (chế độ COURSE).
+- `PUT /api/lecturer/courses/{courseId}/contribution-slice-weights`: Cập nhật trọng số đóng góp các Slice (chế độ COURSE).
 - `PUT /api/lecturer/courses/{courseId}/contribution-config-mode`: Chuyển đổi chế độ trọng số giữa `COURSE` và `PROJECT_GROUP`.
 - `GET /api/lecturer/courses/{courseId}/contribution-team-weights`: Kiểm tra danh sách các nhóm trong lớp đã có cấu hình trọng số nhóm riêng chưa.
 
