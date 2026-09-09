@@ -112,7 +112,7 @@ export function LecturerFinalGradesPage({ course, gradebook }: LecturerFinalGrad
           {/* Breadcrumbs */}
           <div className="mb-4 flex items-center gap-2 text-sm text-muted-foreground">
             <Link href="/lecturer/courses" className="transition-colors hover:text-foreground">
-              Khóa học của tôi
+              Lớp học phần của tôi
             </Link>
             <ChevronRightIcon className="size-4" />
             <Link href={`/lecturer/courses/${course.id}/dashboard`} className="transition-colors hover:text-foreground">

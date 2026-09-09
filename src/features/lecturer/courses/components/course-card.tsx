@@ -1,5 +1,6 @@
 "use client";
 
+/** Legacy mock card — không đưa vào luồng chọn lớp API thật. */
 import Link from "next/link";
 import {
   ArrowRightIcon,
@@ -87,7 +88,7 @@ export function CourseCard({ course }: CourseCardProps) {
           </p>
         </div>
 
-        {/* ── Class Metrics Strip: Sinh viên & Nhóm đồ án ─────────── */}
+        {/* ── Class Metrics Strip: Sinh viên & Dự án nhóm ─────────── */}
         <div className="grid grid-cols-2 gap-3 p-3.5 rounded-2xl bg-muted/40 border border-border/50 text-center">
           <div>
             <span className="text-[10px] text-muted-foreground font-semibold block uppercase tracking-wider">
@@ -99,7 +100,7 @@ export function CourseCard({ course }: CourseCardProps) {
           </div>
           <div className="border-l border-border/50">
             <span className="text-[10px] text-muted-foreground font-semibold block uppercase tracking-wider">
-              Nhóm đồ án
+              Dự án nhóm
             </span>
             <span className="text-lg font-black text-primary font-mono mt-0.5 block">
               {groupCount} Nhóm

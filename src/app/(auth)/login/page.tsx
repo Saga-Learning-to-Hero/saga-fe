@@ -6,7 +6,7 @@ export default function LoginPage() {
   return (
     <Suspense>
       <AuthSplitLayout
-        bannerTitle="Theo dõi đồ án"
+        bannerTitle="Theo dõi dự án nhóm"
         bannerHighlight="minh bạch & rõ ràng"
         bannerDescription="Đồng bộ task Jira, commit GitHub và thống kê đóng góp của từng thành viên trong nhóm."
         bannerStats={[

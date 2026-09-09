@@ -146,7 +146,7 @@ export function TeamImportDialog({
               </div>
               <div>
                 <DialogTitle className="text-base font-extrabold">
-                  Phân nhóm đồ án bằng Excel
+                  Phân nhóm bằng Excel
                 </DialogTitle>
                 <DialogDescription className="text-xs">
                   Lớp học phần:{" "}

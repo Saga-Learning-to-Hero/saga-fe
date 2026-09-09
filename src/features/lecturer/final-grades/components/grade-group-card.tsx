@@ -90,7 +90,7 @@ export function GradeGroupCard({
             
             {isNoGroup && (
               <div className="text-xs text-muted-foreground mt-0.5">
-                Sinh viên chưa được xếp nhóm nên chưa có điểm đồ án nhóm
+                Sinh viên chưa được xếp nhóm nên chưa có điểm dự án nhóm
               </div>
             )}
           </div>

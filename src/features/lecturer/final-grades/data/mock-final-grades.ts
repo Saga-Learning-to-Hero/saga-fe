@@ -11,7 +11,7 @@ export function createMockGradebook(course: LecturerCourse): FinalGradebook {
   components: [
     { id: "process", name: "Quá trình", shortName: "QT", weight: 20, source: "MANUAL", editable: true, minScore: 0, maxScore: 10, order: 1 },
     { id: "sprint", name: "Điểm Sprint", shortName: "SP", weight: 20, source: "SYSTEM", editable: false, minScore: 0, maxScore: 10, order: 2 },
-    { id: "project", name: "Đồ án nhóm", shortName: "ĐA", weight: 30, source: "MANUAL", editable: true, minScore: 0, maxScore: 10, order: 3 },
+    { id: "project", name: "Dự án nhóm", shortName: "ĐA", weight: 30, source: "MANUAL", editable: true, minScore: 0, maxScore: 10, order: 3 },
     { id: "contribution", name: "Đóng góp", shortName: "ĐG", weight: 15, source: "SYSTEM", editable: false, minScore: 0, maxScore: 10, order: 4 },
     { id: "defense", name: "Bảo vệ", shortName: "BV", weight: 15, source: "MANUAL", editable: true, minScore: 0, maxScore: 10, order: 5 },
   ],

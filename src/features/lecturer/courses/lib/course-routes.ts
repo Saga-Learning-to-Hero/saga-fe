@@ -2,6 +2,7 @@ export function lecturerCoursesPath() {
   return "/lecturer/courses";
 }
 
+/** Root lớp: chuyển hướng sang Tổng quan. Không dùng làm đích chọn lớp. */
 export function lecturerCoursePath(courseId: string) {
   return `/lecturer/courses/${courseId}`;
 }
@@ -14,16 +15,16 @@ export function lecturerCourseGradesPath(courseId: string) {
   return `/lecturer/courses/${courseId}/grades`;
 }
 
+export function lecturerCourseContributionPath(courseId: string) {
+  return `/lecturer/courses/${courseId}/contribution-configuration`;
+}
+
 export function lecturerCourseWeightSettingsPath(courseId: string) {
-  return `/lecturer/courses/${courseId}/settings/weights`;
+  return lecturerCourseContributionPath(courseId);
 }
 
 export function lecturerCourseGraphPath(courseId: string) {
   return `/lecturer/courses/${courseId}/graph`;
-}
-
-export function lecturerCourseGroupsPath(courseId: string) {
-  return `/lecturer/courses/${courseId}/groups`;
 }
 
 export function lecturerCourseTeamsPath(courseId: string) {
@@ -34,8 +35,8 @@ export function lecturerCourseTeamPath(courseId: string, teamId: string) {
   return `/lecturer/courses/${courseId}/teams/${teamId}`;
 }
 
-export function lecturerCourseGroupPath(courseId: string, groupId: string) {
-  return `/lecturer/courses/${courseId}/groups/${groupId}`;
+export function lecturerCourseTeamEvaluationPath(courseId: string, teamId: string) {
+  return `/lecturer/courses/${courseId}/teams/${teamId}/contribution-evaluation`;
 }
 
 export function lecturerCourseStudentPath(courseId: string, studentId: string) {

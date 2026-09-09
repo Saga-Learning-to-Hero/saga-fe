@@ -297,7 +297,7 @@ Giao diện sinh viên được điều hướng động dựa trên trạng th�
     "projectTypeId": "uuid-project-type"
   }
   ```
-  *(Thành viên thường `MEMBER` gọi endpoint này sẽ nhận lỗi `403 ONLY_LEADER_CAN_CREATE_PROJECT`).*
+  *(Thành viên thường `MEMBER` gọi endpoint này sẽ nhận lỗi `403 NOT_TEAM_LEADER`).*
 
 ---
 
@@ -511,7 +511,7 @@ Giao diện sinh viên được điều hướng động dựa trên trạng th�
 | `TEAM_NOT_FOUND` | 404 | Sinh viên chưa được xếp nhóm trong môn học. Hiển thị trạng thái chờ giảng viên. |
 | `PROJECT_NOT_FOUND` | 404 | Nhóm chưa tạo dự án. Nếu là Leader -> hiện form tạo; nếu là Member -> hiện thông báo chờ. |
 | `PROJECT_ALREADY_EXISTS` | 409 | Nhóm đã có dự án rồi, không thể tạo thêm. |
-| `ONLY_LEADER_CAN_CREATE_PROJECT`| 403 | Chỉ tài khoản có vai trò `LEADER` trong nhóm mới được quyền tạo dự án. |
+| `NOT_TEAM_LEADER` | 403 | Chỉ tài khoản có vai trò `LEADER` trong nhóm mới được quyền tạo dự án. |
 | `COURSE_SYLLABUS_IMMUTABLE` | 400 | Đề cương đã PUBLISHED và được gán vào lớp, không thể sửa đổi cấu trúc. |
 | `COURSE_LECTURER_INVALID` | 400 | Lecturer ID không hợp lệ hoặc tài khoản giảng viên đã bị vô hiệu hóa. |
 | `GITHUB_NOT_CONFIGURED` | 400 | Chưa hoàn thành kết nối GitHub App cho dự án. |
@@ -541,3 +541,9 @@ Giao diện sinh viên được điều hướng động dựa trên trạng th�
 - SSE Stream hoặc WebSocket đẩy realtime.
 - Đồ thị Cytoscape SNA thuật toán mạng xã hội phức tạp và Bảng chấm điểm tổng kết tự động (Đang tính toán ở tầng Graph Engine tiếp theo).
 
+### 6.3. Endpoint có trong Swagger nhưng chưa thuộc luồng sản phẩm FE
+
+- `POST /api/webhooks/github`, `POST /api/webhooks/jira` và các OAuth callback là endpoint cho provider/backend; không gọi từ trình duyệt.
+- `POST /api/tasks/{taskId}/work-sessions/start`, `POST /api/tasks/{taskId}/work-sessions/{sessionId}/stop`, `POST /api/tasks/{taskId}/contribution-confirmations` chỉ là bề mặt ghi nhận bằng chứng thô; chưa có contract danh sách, dashboard hoặc đánh giá để dựng luồng FE.
+- `POST /api/auth/reauth/password` chỉ dùng khi một luồng nghiệp vụ tương lai yêu cầu step-up; `POST /api/auth/reauth/webauthn` hiện chưa khả dụng (`WEBAUTHN_DISABLED`).
+- `POST /api/admin/dev/email-test` chỉ phục vụ smoke test mail/outbox của backend trong môi trường phát triển.

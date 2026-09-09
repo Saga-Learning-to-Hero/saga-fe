@@ -1,4 +1,4 @@
-import { UnsupportedFeatureNotice } from "@/features/lecturer/courses/components/unsupported-feature-notice";
+import { LecturerMonitoringPreview } from "@/features/lecturer/courses/components/lecturer-monitoring-preview";
 
 export default async function GradebookRoute({
   params,
@@ -6,11 +6,5 @@ export default async function GradebookRoute({
   params: Promise<{ courseId: string }>;
 }) {
   const { courseId } = await params;
-  return (
-    <UnsupportedFeatureNotice
-      courseId={courseId}
-      title="Bảng điểm chưa được hỗ trợ"
-      description="Chấm điểm và gradebook không thuộc phạm vi phân nhóm. Dữ liệu giả không được hiển thị như API thật."
-    />
-  );
+  return <LecturerMonitoringPreview key={courseId} courseId={courseId} kind="grades" />;
 }

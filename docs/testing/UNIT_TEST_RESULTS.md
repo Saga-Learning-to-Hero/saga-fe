@@ -6,9 +6,9 @@
 | **Phân hệ** | Frontend Web Application (`saga-fe`) |
 | **Framework kiểm thử** | Vitest 4.x + V8 Engine + TanStack Query Hooks |
 | **Tiêu chuẩn áp dụng** | Quy chuẩn Mẫu Báo cáo Kiểm thử Đơn vị — FPT University Capstone Project |
-| **Tổng số ca kiểm thử** | **185 Test Cases** (Auth: 28, Admin: 64, Integrations/Dev 3: 45, Lecturer & Team: 37, Task Evidence: 30) |
-| **Trạng thái nghiệm thu cuối** | <mark style="background-color: #dcfce7; color: #166534; padding: 2px 8px; border-radius: 4px; font-weight: bold;">✅ 100% PASSED (185/185 Test Cases)</mark> |
-| **Chu kỳ kiểm thử** | **Auth & Admin: 3 đợt lặp (19 lỗi đã đóng). Dev 2: nghiệm thu 08/09. Dev 3 & Dev 1 SAGA-57: nghiệm thu 09/09/2026.** |
+| **Tổng số ca kiểm thử** | **240 Test Cases** trên **17 test files** |
+| **Trạng thái nghiệm thu cuối** | <mark style="background-color: #dcfce7; color: #166534; padding: 2px 8px; border-radius: 4px; font-weight: bold;">✅ 100% PASSED (240/240 Test Cases)</mark> |
+| **Chu kỳ kiểm thử** | **Full regression sau khi đồng bộ `dev` ngày 10/09/2026; riêng phạm vi Dev 2 đạt 92/92 ca.** |
 
 ---
 
@@ -25,6 +25,7 @@
 | **Đợt 3 (Final Regression)** | `07/09/2026 Chiều` | 97 | **97** | **0** | **100.00%** | Đóng hoàn toàn 19/19 lỗi (`100% Closed`), sẵn sàng bàn giao nghiệm thu đồ án. |
 | **Đợt 4 (Dev 2 Expansion)** | `08/09/2026` | 134 | **134** | **0** | **100.00%** | Bổ sung 37 ca kiểm thử phân hệ Giảng viên, Team Uploader & Student Course. |
 | **Đợt 5 (Dev 3 & SAGA-57)** | `09/09/2026` | 185 | **185** | **0** | **100.00%** | Tích hợp phân hệ Dự án, Chiếu dữ liệu ngầm (Dev 3) và Task Evidence & Work Sessions (Dev 1). |
+| **Đợt 6 (Dev 2 Full Regression)** | `10/09/2026` | 240 | **240** | **0** | **100.00%** | Hoàn thiện điều phối nhóm, trọng số và đánh giá đóng góp; kiểm thử lại toàn bộ suite sau khi đồng bộ `dev`. |
 
 ```text
 Biểu đồ tiến trình hội tụ chất lượng (Defect Convergence Chart):
@@ -33,6 +34,7 @@ Biểu đồ tiến trình hội tụ chất lượng (Defect Convergence Chart)
 Đợt 3 (Final Runs)     : [█████████████████████████] 100.00% (97 Passed, 0 Defect - 100% Closed)
 Đợt 4 (Dev 2 Runs)     : [█████████████████████████] 100.00% (134 Passed - Lecturer & Teams)
 Đợt 5 (Dev 3 + Dev 1)  : [█████████████████████████] 100.00% (185 Passed - Full Suite Integration)
+Đợt 6 (Dev 2 Regression): [█████████████████████████] 100.00% (240 Passed - Full Suite Integration)
 ```
 
 ---
@@ -72,14 +74,13 @@ Biểu đồ tiến trình hội tụ chất lượng (Defect Convergence Chart)
    - Số ca kiểm thử: **69 Test Cases** (Đợt 1: 56/69 ➔ Đợt 2: 66/69 ➔ Đợt 3: 69/69 Passed)
    - Ngày hoàn tất: **07/09/2026**
 3. 🧑‍🏫 **[03_LECTURER_COURSE_TEAM_UNIT_TEST_REPORT.md](03_LECTURER_COURSE_TEAM_UNIT_TEST_REPORT.md)**:
-   - Module: **Phân hệ Giảng viên, Import nhóm Excel & Nhóm sinh viên (Dev 2 — Part E, F, G1)**
-   - Các Service: `LecturerCourseService`, `LecturerTeamService`, `StudentCourseService`
-   - Số ca kiểm thử: **37 Test Cases** (Nghiệm thu: **37/37 Passed**)
-   - Ngày hoàn tất: **08/09/2026**
+   - Module: **Phân hệ Giảng viên, Import nhóm Excel, Điều phối nhóm, Trọng số lát cắt & Đánh giá đóng góp (Dev 2 — Part E, F, G1 + DEC-002)**
+   - Các Service: `LecturerCourseService`, `LecturerTeamService`, `StudentCourseService`, `LecturerWeightsService`, `ProjectWeightsService`, `TeamContributionService`, `contribution-utils`
+   - Số ca kiểm thử: **92 Test Cases** (Regression `10/09/2026`: **92/92 Passed**, 0 Failed)
+   - Endpoint nhóm sinh viên: `GET /api/student/courses/{courseId}/team` (không dùng `/my-team`)
+   - Ngày chạy gần nhất: **10/09/2026**
 4. 🚀 **[04_STUDENT_PROJECT_INTEGRATIONS_UNIT_TEST_REPORT.md](04_STUDENT_PROJECT_INTEGRATIONS_UNIT_TEST_REPORT.md)**:
    - Module: **Phân hệ Dự án, Tích hợp GitHub/Jira & Chiếu dữ liệu đồng bộ (Dev 3 — Part H, I, J, K)**
-   - Các Service: `StudentProjectService`, `ProjectProjectionService`, `UserIntegrationsService`, `UserIntegrationsRefreshFlow`
-   - Số ca kiểm thử: **45 Test Cases** (Nghiệm thu: **45/45 Passed**)
    - Ngày hoàn tất: **09/09/2026**
 5. ⏱️ **[05_TASK_EVIDENCE_WORK_SESSIONS_UNIT_TEST_REPORT.md](05_TASK_EVIDENCE_WORK_SESSIONS_UNIT_TEST_REPORT.md)**:
    - Module: **Phân hệ Minh chứng công sức, Bấm giờ phiên làm việc & Xác nhận đóng góp (Dev 1 — SAGA-57)**
@@ -91,24 +92,28 @@ Biểu đồ tiến trình hội tụ chất lượng (Defect Convergence Chart)
 
 ## 📊 BẢNG TỔNG HỢP KẾT QUẢ KIỂM THỬ TOÀN HỆ THỐNG (MASTER STATISTICS)
 
-> Bảng này tổng hợp toàn bộ 185 kết quả kiểm thử đơn vị, đối soát với sheet **Statistics** trong file Báo cáo Kiểm thử Đồ án Tốt nghiệp FPT University.
+> Bảng này tổng hợp toàn bộ 240 kết quả kiểm thử đơn vị từ lần chạy hồi quy ngày 10/09/2026, đối soát với sheet **Statistics** trong file Báo cáo Kiểm thử Đồ án Tốt nghiệp FPT University.
 
-| STT | Tên Service / Module | Mã Module | Passed | Failed | Normal (N) | Abnormal (A) | Boundary (B) | Tổng Số Ca | Ngày Hoàn Tất |
-| :---: | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| **1** | **`AuthService`** (Xác thực & Google OIDC) | `LOG_OAU` | **`28`** | `0` | `7` | `15` | `6` | **`28`** | `06/09/2026` |
-| **2** | **`Personal Integrations Refresh`** (Đồng bộ tài khoản Jira/GitHub) | `USR_INT_REF` | **`7`** | `0` | `4` | `1` | `2` | **`7`** | `08/09/2026` |
-| **3** | **`UserIntegrationsService`** (Danh sách liên kết định danh cá nhân) | `USR_INT` | **`5`** | `0` | `1` | `2` | `2` | **`5`** | `08/09/2026` |
-| **4** | **`AcademicService`** (Học kỳ & Lớp hành chính) | `ADM_ACA` | **`22`** | `0` | `9` | `9` | `4` | **`22`** | `07/09/2026` |
-| **5** | **`AdminLecturerService`** (Danh sách tài khoản Giảng viên) | `ADM_LEC` | **`5`** | `0` | `2` | `2` | `1` | **`5`** | `08/09/2026` |
-| **6** | **`CourseService`** (Lớp học phần mở trong kỳ) | `ADM_CRS` | **`11`** | `0` | `4` | `5` | `2` | **`11`** | `07/09/2026` |
-| **7** | **`RosterService`** (Danh sách Roster & Import Excel) | `ADM_ROS` | **`14`** | `0` | `5` | `6` | `3` | **`14`** | `07/09, 08/09/2026` |
-| **8** | **`SubjectService`** (Danh mục Môn học FLM) | `ADM_SUB` | **`12`** | `0` | `4` | `5` | `3` | **`12`** | `07/09/2026` |
-| **9** | **`SyllabusService`** (Đề cương chi tiết & Tiêu chí) | `ADM_SYL` | **`14`** | `0` | `7` | `5` | `2` | **`14`** | `07/09/2026` |
-| **10** | **`LecturerCourseService`** (Lớp giảng viên & Roster ACTIVE) | `LEC_CRS` | **`10`** | `0` | `3` | `4` | `3` | **`10`** | `08/09/2026` |
-| **11** | **`LecturerTeamService`** (Template, Preview, Confirm nhóm Excel) | `LEC_TEAM` | **`18`** | `0` | `4` | `10` | `4` | **`18`** | `08/09/2026` |
-| **12** | **`StudentCourseService`** (Môn ACTIVE & Nhóm sinh viên `/team`) | `STU_CRS` | **`9`** | `0` | `2` | `4` | `3` | **`9`** | `08/09/2026` |
-| **13** | **`TaskEvidenceService`** (Bấm giờ, Link, File, Xác nhận đóng góp) | `STU_EVI` | **`30`** | `0` | `10` | `16` | `4` | **`30`** | `09/09/2026` |
-| | **TỔNG CỘNG TOÀN HỆ THỐNG (GRAND TOTAL)** | — | **`185`** | **`0`** | **`62`** | **`84`** | **`39`** | **`185`** | `09/09/2026` |
+| STT | Tên Service / Module | Mã Module | Passed | Failed | Normal (N) | Abnormal (A) | Boundary (B) | Tổng Số Ca | Ngày Chạy Gần Nhất |
+| :---: | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| **1** | **`AuthService`** | `LOG_OAU` | **`28`** | `0` | `7` | `15` | `6` | **`28`** | `06/09/2026` |
+| **2** | **`Personal Integrations Refresh`** | `USR_INT_REF` | **`7`** | `0` | `4` | `1` | `2` | **`7`** | `08/09/2026` |
+| **3** | **`UserIntegrationsService`** | `USR_INT` | **`5`** | `0` | `1` | `2` | `2` | **`5`** | `08/09/2026` |
+| **4** | **`AcademicService`** | `ADM_ACA` | **`22`** | `0` | `9` | `9` | `4` | **`22`** | `07/09/2026` |
+| **5** | **`AdminLecturerService`** | `ADM_LEC` | **`5`** | `0` | `2` | `2` | `1` | **`5`** | `08/09/2026` |
+| **6** | **`CourseService`** | `ADM_CRS` | **`11`** | `0` | `4` | `5` | `2` | **`11`** | `07/09/2026` |
+| **7** | **`RosterService`** | `ADM_ROS` | **`14`** | `0` | `5` | `6` | `3` | **`14`** | `08/09/2026` |
+| **8** | **`SubjectService`** | `ADM_SUB` | **`12`** | `0` | `4` | `5` | `3` | **`12`** | `07/09/2026` |
+| **9** | **`SyllabusService`** | `ADM_SYL` | **`14`** | `0` | `7` | `5` | `2` | **`14`** | `07/09/2026` |
+| **10** | **`LecturerWeightsService`** | `LEC_WGT` | **`12`** | `0` | `4` | `5` | `3` | **`12`** | `09/09/2026` |
+| **11** | **`ProjectWeightsService`** | `PRJ_WGT` | **`10`** | `0` | `2` | `5` | `3` | **`10`** | `09/09/2026` |
+| **12** | **`TeamContributionService`** | `TEAM_CTR` | **`12`** | `0` | `2` | `7` | `3` | **`12`** | `09/09/2026` |
+| **13** | **`contribution-utils`** | `CTR_UTIL` | **`8`** | `0` | `3` | `2` | `3` | **`8`** | `09/09/2026` |
+| **14** | **`LecturerCourseService`** | `LEC_CRS` | **`10`** | `0` | `3` | `4` | `3` | **`10`** | `07/09/2026` |
+| **15** | **`LecturerTeamService`** | `LEC_TEAM` | **`31`** | `0` | `7` | `14` | `10` | **`31`** | `10/09/2026` |
+| **16** | **`StudentCourseService`** | `STU_CRS` | **`9`** | `0` | `2` | `4` | `3` | **`9`** | `07/09/2026` |
+| **17** | **`TaskEvidenceService`** | `STU_EVI` | **`30`** | `0` | `10` | `16` | `4` | **`30`** | `09/09/2026` |
+| | **TỔNG CỘNG TOÀN HỆ THỐNG (GRAND TOTAL)** | — | **`240`** | **`0`** | **`76`** | **`107`** | **`57`** | **`240`** | `10/09/2026` |
 
 <br/>
 
@@ -116,28 +121,28 @@ Biểu đồ tiến trình hội tụ chất lượng (Defect Convergence Chart)
 
 ```text
 ┌──────────────────────────────────────────────────────────────────────────────┐
-│  📈 Tỷ lệ kiểm thử thành công cuối cùng       : 100.00% (185/185 Passed)     │
-│  🔹 Ca kiểm thử luồng chuẩn (Normal - N)      : 33.51%  (62/185 Cases)       │
-│  🔸 Ca kiểm thử luồng ngoại lệ (Abnormal - A) : 45.41%  (84/185 Cases)       │
-│  ▫️ Ca kiểm thử giá trị biên (Boundary - B)   : 21.08%  (39/185 Cases)       │
-│  🛠️ Khiếm khuyết ban đầu đã khắc phục         : 30 Lỗi (100% Closed)         │
-│  🧪 Kiểm thử hồi quy tự động                  : 13 File Spec Passed (100%)   │
+│  📈 Tỷ lệ kiểm thử thành công cuối cùng       : 100.00% (240/240 Passed)     │
+│  🔹 Ca kiểm thử luồng chuẩn (Normal - N)      : 31.67%  (76/240 Cases)       │
+│  🔸 Ca kiểm thử luồng ngoại lệ (Abnormal - A) : 44.58% (107/240 Cases)       │
+│  ▫️ Ca kiểm thử giá trị biên (Boundary - B)   : 23.75%  (57/240 Cases)       │
+│  🧪 Kiểm thử hồi quy tự động                  : 17 File Spec Passed (100%)   │
+│  🧑‍🏫 Phạm vi Dev 2                            : 92/92 Passed, 0 Failed       │
 └──────────────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
 ## 🏆 TIÊU CHÍ NGHIỆM THU ĐẠT ĐƯỢC (ACCEPTANCE CRITERIA)
-1. **Pass Rate**: Đạt **100% Passed (185/185 tests)** bao phủ 13 Services/Modules trên toàn bộ Frontend.
-2. **Phân bổ tỷ lệ ca kiểm thử chuẩn FPT**:
-   - Ca Normal (`N`): **33.51%** (62/185)
-   - Ca Abnormal (`A`): **45.41%** (84/185 — đạt mục tiêu 40%–50%)
-   - Ca Boundary (`B`): **21.08%** (39/185)
-3. **Phân rã theo ngày thực thi**:
-   - Ngày **06/09/2026**: Hoàn tất 28 tests module Authentication (`LOG_OAU`).
-   - Ngày **07/09/2026**: Hoàn tất 69 tests phân hệ Quản trị Học thuật Dev 1 (`Academic`, `Course`, `Roster`, `Subject`, `Syllabus`).
-   - Ngày **08/09/2026**: Hoàn tất 58 tests phân hệ Giảng viên, Nhóm & Tích hợp cá nhân (`LecturerCourse`, `LecturerTeam`, `StudentCourse`, `UserIntegrations`, `AdminLecturer`).
-   - Ngày **09/09/2026**: Hoàn tất 45 tests phân hệ Dự án, Tích hợp & Chiếu dữ liệu đồng bộ Dev 3 (`StudentProject`, `ProjectProjection`) và 30 tests phân hệ Minh chứng công sức & Phiên làm việc Dev 1 (`TaskEvidenceService` — `SAGA-57`).
+1. **Pass Rate**: Đạt **100% Passed (240/240 tests)** trên 17 test files sau khi đồng bộ nhánh `dev`.
+2. **Phân bổ ca kiểm thử**:
+   - Ca Normal (`N`): **31.67%** (76/240)
+   - Ca Abnormal (`A`): **44.58%** (107/240)
+   - Ca Boundary (`B`): **23.75%** (57/240)
+3. **Phạm vi Dev 2**:
+   - Bao phủ lớp học phần, roster ACTIVE, import/điều phối nhóm, khóa học sinh viên, trọng số và đánh giá đóng góp.
+   - Regression ngày **10/09/2026**: **92/92 Passed**, gồm 7 service/module và 0 lỗi.
+4. **Full regression ngày 10/09/2026**:
+   - Toàn bộ **240/240 tests** pass sau khi tích hợp cập nhật mới nhất từ `dev`.
 
 ---
 

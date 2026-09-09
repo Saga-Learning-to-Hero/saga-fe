@@ -1,7 +1,8 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient, type QueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { LecturerTeamService } from "../api/lecturer-team-service";
 import { LECTURER_COURSE_QUERY_KEYS } from "@/features/lecturer/courses/hooks/use-lecturer-courses";
+import { CONTRIBUTION_QUERY_KEYS } from "@/features/lecturer/contribution/hooks/use-lecturer-contribution";
 import { getApiErrorCode, getApiErrorMessage } from "@/lib/api-error";
 import { TEAM_TEMPLATE_FILENAME, type ConfirmTeamImportRequest } from "../types/lecturer-team";
 
@@ -52,6 +53,60 @@ export function usePreviewTeamImport() {
   });
 }
 
+function invalidateTeamCoordination(queryClient: QueryClient, courseId: string) {
+  return Promise.all([
+    queryClient.invalidateQueries({
+      queryKey: LECTURER_TEAM_QUERY_KEYS.lecturerTeams(courseId),
+    }),
+    queryClient.invalidateQueries({
+      queryKey: LECTURER_COURSE_QUERY_KEYS.lecturerRoster(courseId),
+    }),
+    queryClient.invalidateQueries({
+      queryKey: CONTRIBUTION_QUERY_KEYS.teamWeights(courseId),
+    }),
+    queryClient.invalidateQueries({
+      queryKey: CONTRIBUTION_QUERY_KEYS.evaluations,
+    }),
+  ]);
+}
+
+export function useReplaceTeamLeader(courseId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ teamId, teamMemberId }: { teamId: string; teamMemberId: string }) =>
+      LecturerTeamService.replaceLeader(courseId, teamId, teamMemberId),
+    onSuccess: async () => {
+      await invalidateTeamCoordination(queryClient, courseId);
+      toast.success("Đã đổi trưởng nhóm. Danh sách nhóm được tải lại từ máy chủ.");
+    },
+    onError: (error: unknown) => {
+      toast.error(getApiErrorMessage(error, "Không thể đổi trưởng nhóm."));
+    },
+  });
+}
+
+export function useMoveTeamMember(courseId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      teamMemberId,
+      targetTeamId,
+    }: {
+      teamMemberId: string;
+      targetTeamId: string;
+    }) => LecturerTeamService.moveMember(courseId, teamMemberId, targetTeamId),
+    onSuccess: async () => {
+      await invalidateTeamCoordination(queryClient, courseId);
+      toast.success("Đã chuyển thành viên sang nhóm khác. Dữ liệu nhóm được tải lại từ máy chủ.");
+    },
+    onError: (error: unknown) => {
+      toast.error(getApiErrorMessage(error, "Không thể chuyển thành viên sang nhóm khác."));
+    },
+  });
+}
+
 export function useConfirmTeamImport() {
   const queryClient = useQueryClient();
 
@@ -63,13 +118,13 @@ export function useConfirmTeamImport() {
       courseId: string;
       data: ConfirmTeamImportRequest;
     }) => LecturerTeamService.confirmImport(courseId, data),
-    onSuccess: (result, variables) => {
-      void queryClient.invalidateQueries({
-        queryKey: LECTURER_TEAM_QUERY_KEYS.lecturerTeams(variables.courseId),
-      });
-      void queryClient.invalidateQueries({
-        queryKey: LECTURER_COURSE_QUERY_KEYS.lecturerRoster(variables.courseId),
-      });
+    onSuccess: async (result, variables) => {
+      await Promise.all([
+        invalidateTeamCoordination(queryClient, variables.courseId),
+        queryClient.invalidateQueries({
+          queryKey: CONTRIBUTION_QUERY_KEYS.sliceWeights(variables.courseId),
+        }),
+      ]);
       toast.success(
         `Đã xác nhận phân nhóm: tạo ${result.createdTeams}, cập nhật ${result.updatedTeams}, gán ${result.assignedMembers}, chuyển ${result.reassignedMembers}, đổi vai trò ${result.updatedRoles}, không đổi ${result.unchanged}, email ${result.emailsEnqueued}.`
       );

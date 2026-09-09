@@ -1,10 +1,11 @@
 import { apiClient } from "@/lib/axios";
-import { requireCourseId } from "@/lib/api-error";
-import type {
-  ConfirmTeamImportRequest,
-  ConfirmTeamImportResponse,
-  LecturerTeamsResponse,
-  TeamPreviewResponse,
+import { requireCourseId, requireTeamId, requireTeamMemberId } from "@/lib/api-error";
+import {
+  parseLecturerTeamsResponse,
+  type ConfirmTeamImportRequest,
+  type ConfirmTeamImportResponse,
+  type LecturerTeamsResponse,
+  type TeamPreviewResponse,
 } from "../types/lecturer-team";
 
 export class LecturerTeamService {
@@ -61,12 +62,38 @@ export class LecturerTeamService {
 
   static async getTeams(courseId: string): Promise<LecturerTeamsResponse> {
     const id = requireCourseId(courseId);
-    const response = await apiClient.get<LecturerTeamsResponse>(`/api/lecturer/courses/${id}/teams`);
-    const data = response.data;
+    const response = await apiClient.get(`/api/lecturer/courses/${id}/teams`);
+    return parseLecturerTeamsResponse(response.data, id);
+  }
 
-    return {
-      courseId: data?.courseId || id,
-      teams: Array.isArray(data?.teams) ? data.teams : [],
-    };
+  static async replaceLeader(
+    courseId: string,
+    teamId: string,
+    teamMemberId: string
+  ): Promise<LecturerTeamsResponse> {
+    const cid = requireCourseId(courseId);
+    const tid = requireTeamId(teamId);
+    const mid = requireTeamMemberId(teamMemberId);
+    const response = await apiClient.put(`/api/lecturer/courses/${cid}/teams/${tid}/leader`, {
+      teamMemberId: mid,
+    });
+    return parseLecturerTeamsResponse(response.data, cid);
+  }
+
+  static async moveMember(
+    courseId: string,
+    teamMemberId: string,
+    targetTeamId: string
+  ): Promise<LecturerTeamsResponse> {
+    const cid = requireCourseId(courseId);
+    const mid = requireTeamMemberId(teamMemberId);
+    if (!targetTeamId || !targetTeamId.trim()) {
+      throw new Error("Throw ValidationException: Target team ID is required");
+    }
+    const targetId = targetTeamId.trim();
+    const response = await apiClient.patch(`/api/lecturer/courses/${cid}/team-members/${mid}/team`, {
+      targetTeamId: targetId,
+    });
+    return parseLecturerTeamsResponse(response.data, cid);
   }
 }

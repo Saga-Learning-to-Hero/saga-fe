@@ -4,7 +4,7 @@ import {
   lecturerCourseDashboardPath,
   lecturerCourseGradesPath,
   lecturerCourseGraphPath,
-  lecturerCourseWeightSettingsPath,
+  lecturerCourseContributionPath,
   lecturerCourseTeamsPath,
 } from "@/features/lecturer/courses/lib/course-routes";
 
@@ -84,7 +84,7 @@ export function getLecturerNavItems(courseId: string): NavItem[] {
     },
     {
       id: "course-teams",
-      title: "Hoạt động nhóm",
+      title: "Dự án nhóm",
       href: lecturerCourseTeamsPath(courseId),
       icon: "Users",
       match: "prefix",
@@ -106,7 +106,7 @@ export function getLecturerNavItems(courseId: string): NavItem[] {
     {
       id: "course-weights",
       title: "Cấu hình trọng số",
-      href: lecturerCourseWeightSettingsPath(courseId),
+      href: lecturerCourseContributionPath(courseId),
       icon: "SlidersHorizontal",
       match: "prefix",
     },
@@ -189,7 +189,7 @@ export function getNavGroups(
           label: "Giảng dạy",
           roles: ["LECTURER"],
           items: [
-            { id: "lecturer-courses", title: "Khóa học của tôi", href: "/lecturer/courses", icon: "BookOpen", match: "exact" },
+            { id: "lecturer-courses", title: "Lớp học phần của tôi", href: "/lecturer/courses", icon: "BookOpen", match: "exact" },
           ],
         },
       ];
@@ -201,7 +201,7 @@ export function getNavGroups(
         label: "",
         roles: ["LECTURER"],
         items: [
-          { id: "lecturer-back-courses", title: "Đổi khóa học", href: "/lecturer/courses", icon: "ArrowLeft", match: "exact" },
+          { id: "lecturer-back-courses", title: "Đổi lớp học phần", href: "/lecturer/courses", icon: "ArrowLeft", match: "exact" },
         ],
       },
       {

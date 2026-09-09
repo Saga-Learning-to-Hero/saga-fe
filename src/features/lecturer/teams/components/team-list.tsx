@@ -1,14 +1,23 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { FolderKanbanIcon, UsersIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { useLecturerCourseAccess } from "@/features/lecturer/courses/hooks/use-lecturer-courses";
+import { CourseQueryError } from "@/features/lecturer/courses/components/course-query-error";
+import {
+  lecturerCourseTeamEvaluationPath,
+  lecturerCourseTeamPath,
+  lecturerCoursesPath,
+} from "@/features/lecturer/courses/lib/course-routes";
 import { useLecturerTeams } from "../hooks/use-lecturer-teams";
-import { sortTeamMembers } from "../types/lecturer-team";
+import { sortTeamMembers, teamRoleLabel } from "../types/lecturer-team";
 import { TeamImportDialog } from "./team-import-dialog";
-import { getApiErrorCode, getApiErrorMessage } from "@/lib/api-error";
+import { cn } from "@/lib/utils";
 
 interface TeamListProps {
   courseId: string;
@@ -16,10 +25,11 @@ interface TeamListProps {
   onForbidden?: () => void;
 }
 
-export function TeamList({ courseId, courseCode, onForbidden }: TeamListProps) {
+export function TeamList({ courseId, courseCode }: TeamListProps) {
+  const router = useRouter();
   const { data, isLoading, isError, error, refetch } = useLecturerTeams(courseId);
+  const { isAccessDenied } = useLecturerCourseAccess(isError, error);
   const [importOpen, setImportOpen] = useState(false);
-  const forbidden = getApiErrorCode(error) === "LECTURER_COURSE_FORBIDDEN";
 
   const sortedTeams = useMemo(
     () =>
@@ -40,43 +50,25 @@ export function TeamList({ courseId, courseCode, onForbidden }: TeamListProps) {
     );
   }
 
-  if (isError) {
+  if (isAccessDenied) {
     return (
-      <Card className="rounded-2xl border border-dashed border-destructive/30 p-8 text-center">
-        <p className="text-sm font-semibold">Không tải được danh sách nhóm</p>
-        <p className="mt-1 text-xs text-muted-foreground">
-          {getApiErrorMessage(error, "Vui lòng thử lại.")}
-        </p>
-        {forbidden ? (
-          <Button
-            variant="outline"
-            size="sm"
-            className="mt-3 cursor-pointer text-xs"
-            onClick={onForbidden}
-          >
-            Quay về danh sách lớp
-          </Button>
-        ) : (
-          <Button
-            variant="outline"
-            size="sm"
-            className="mt-3 cursor-pointer text-xs"
-            onClick={() => void refetch()}
-          >
-            Thử lại
-          </Button>
-        )}
-      </Card>
+      <div className="rounded-2xl border border-dashed border-border p-8 text-center text-sm text-muted-foreground">
+        Đang chuyển về danh sách lớp...
+      </div>
     );
+  }
+
+  if (isError) {
+    return <CourseQueryError error={error} onRetry={() => void refetch()} />;
   }
 
   return (
     <div className="space-y-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h2 className="text-base font-bold">Nhóm đồ án</h2>
+          <h2 className="text-base font-bold">Dự án nhóm</h2>
           <p className="text-xs text-muted-foreground">
-            Phân nhóm bằng workflow Excel. Giảng viên không tạo dự án hộ nhóm.
+            Phân nhóm bằng Excel. Giảng viên không tạo dự án hộ nhóm.
           </p>
         </div>
         <Button
@@ -93,7 +85,9 @@ export function TeamList({ courseId, courseCode, onForbidden }: TeamListProps) {
           <UsersIcon className="mx-auto mb-3 size-8 text-muted-foreground/40" />
           <p className="text-sm font-semibold">Chưa có nhóm trong lớp</p>
           <p className="mt-1 text-xs text-muted-foreground">
-            Tải mẫu Excel, điền TeamNo / TeamName / TeamRole, preview rồi xác nhận để tạo nhóm.
+            Tải mẫu Excel, điền{" "}
+            <span className="font-mono">TeamNo</span> / <span className="font-mono">TeamName</span> /{" "}
+            <span className="font-mono">TeamRole</span>, preview rồi xác nhận để tạo nhóm.
           </p>
         </Card>
       ) : (
@@ -113,9 +107,17 @@ export function TeamList({ courseId, courseCode, onForbidden }: TeamListProps) {
                       : "border-amber-500/30 bg-amber-500/15 text-amber-700 dark:text-amber-300"
                   }
                 >
-                  {team.projectId ? "Đã có dự án" : "Chưa có dự án"}
+                  {team.projectId ? "Đã có dự án nhóm" : "Chưa có dự án nhóm"}
                 </Badge>
               </div>
+
+              {team.projectId ? null : (
+                <div className="mb-3 space-y-1 rounded-xl bg-muted/40 px-3 py-2 text-xs text-muted-foreground">
+                  <p className="font-semibold text-foreground">Nhóm đã được phân công.</p>
+                  <p>Chưa có dự án nhóm.</p>
+                  <p>Trưởng nhóm cần đăng nhập bằng tài khoản sinh viên để khởi tạo dự án nhóm.</p>
+                </div>
+              )}
 
               <ul className="space-y-2">
                 {team.members.map((member) => (
@@ -137,16 +139,42 @@ export function TeamList({ courseId, courseCode, onForbidden }: TeamListProps) {
                           : "text-[10px]"
                       }
                     >
-                      {member.role === "LEADER" ? "Leader" : "Member"}
+                      {teamRoleLabel(member.role)}
                     </Badge>
                   </li>
                 ))}
               </ul>
 
-              <p className="mt-3 flex items-center gap-1.5 text-[11px] text-muted-foreground">
-                <FolderKanbanIcon className="size-3.5" />
-                Định danh nhóm chỉ dùng để hiển thị. Không tạo dự án từ tài khoản giảng viên.
-              </p>
+              <div className="mt-3 flex items-center justify-between gap-2">
+                <p className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+                  <FolderKanbanIcon className="size-3.5" />
+                  {team.projectId
+                    ? "Dự án nhóm đã được khởi tạo."
+                    : "Không tạo dự án từ tài khoản giảng viên."}
+                </p>
+                <div className="flex shrink-0 flex-wrap justify-end gap-2">
+                  <Link
+                    href={lecturerCourseTeamEvaluationPath(courseId, team.teamId)}
+                    prefetch={true}
+                    className={cn(buttonVariants({ size: "sm", variant: "outline" }), "h-8 text-xs font-semibold")}
+                  >
+                    Đánh giá đóng góp
+                  </Link>
+                  <Link
+                    href={lecturerCourseTeamPath(courseId, team.teamId)}
+                    prefetch={true}
+                    className={cn(
+                      buttonVariants({
+                        size: "sm",
+                        variant: team.projectId ? "default" : "outline",
+                      }),
+                      "h-8 text-xs font-semibold"
+                    )}
+                  >
+                    {team.projectId ? "Xem dự án nhóm" : "Xem thông tin nhóm"}
+                  </Link>
+                </div>
+              </div>
             </Card>
           ))}
         </div>
@@ -158,7 +186,7 @@ export function TeamList({ courseId, courseCode, onForbidden }: TeamListProps) {
         courseCode={courseCode}
         isOpen={importOpen}
         onOpenChange={setImportOpen}
-        onForbidden={onForbidden}
+        onForbidden={() => router.replace(lecturerCoursesPath())}
       />
     </div>
   );

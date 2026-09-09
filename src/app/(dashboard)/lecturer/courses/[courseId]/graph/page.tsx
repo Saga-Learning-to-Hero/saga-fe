@@ -1,9 +1,10 @@
 import { Metadata } from "next";
-import { UnsupportedFeatureNotice } from "@/features/lecturer/courses/components/unsupported-feature-notice";
+import { LecturerMonitoringPreview } from "@/features/lecturer/courses/components/lecturer-monitoring-preview";
 
 export const metadata: Metadata = {
-  title: "Giám sát Đồ thị Nhóm & SNA | Giảng viên SAGA",
-  description: "Trung tâm giám sát toàn bộ các nhóm đồ án, theo dõi Traceability và phân tích mạng lưới SNA cho Giảng viên.",
+  title: "Giám sát đồ thị nhóm & SNA | Giảng viên SAGA",
+  description:
+    "Trung tâm giám sát toàn bộ các dự án nhóm, theo dõi Traceability và phân tích mạng lưới SNA cho giảng viên.",
 };
 
 export default async function LecturerGraphPage({
@@ -12,11 +13,5 @@ export default async function LecturerGraphPage({
   params: Promise<{ courseId: string }>;
 }) {
   const { courseId } = await params;
-  return (
-    <UnsupportedFeatureNotice
-      courseId={courseId}
-      title="Đồ thị SNA chưa được hỗ trợ"
-      description="API đồ thị và phân tích mạng lưới không thuộc phạm vi quản trị lớp và phân nhóm."
-    />
-  );
+  return <LecturerMonitoringPreview key={courseId} courseId={courseId} kind="graph" />;
 }

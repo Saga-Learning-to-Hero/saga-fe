@@ -1,6 +1,12 @@
 import { useQuery, useQueryClient, type QueryClient } from "@tanstack/react-query";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { LecturerCourseService } from "../api/lecturer-course-service";
 import type { LecturerCourseResponse } from "../types/lecturer-course";
+import { LecturerTeamService } from "@/features/lecturer/teams/api/lecturer-team-service";
+import { getApiErrorCode } from "@/lib/api-error";
+import { lecturerCoursesPath } from "../lib/course-routes";
 
 export const LECTURER_COURSE_QUERY_KEYS = {
   lecturerCourses: ["lecturerCourses"] as const,
@@ -70,5 +76,30 @@ export function usePrefetchLecturerCourse() {
       queryFn: () => LecturerCourseService.getRoster(courseId),
       staleTime: 1000 * 30,
     });
+    void queryClient.prefetchQuery({
+      queryKey: ["lecturerTeams", courseId] as const,
+      queryFn: () => LecturerTeamService.getTeams(courseId),
+      staleTime: 1000 * 30,
+    });
   };
+}
+
+export function useLecturerCourseAccess(isError: boolean, error: unknown) {
+  const router = useRouter();
+  const errorCode = getApiErrorCode(error);
+  const isAccessDenied =
+    errorCode === "LECTURER_COURSE_FORBIDDEN" || errorCode === "COURSE_NOT_FOUND";
+
+  useEffect(() => {
+    if (!isError || !isAccessDenied) return;
+
+    if (errorCode === "LECTURER_COURSE_FORBIDDEN") {
+      toast.error("Bạn không có quyền truy cập lớp học phần này.");
+    } else {
+      toast.error("Lớp học phần không còn tồn tại.");
+    }
+    router.replace(lecturerCoursesPath());
+  }, [errorCode, isAccessDenied, isError, router]);
+
+  return { errorCode, isAccessDenied };
 }

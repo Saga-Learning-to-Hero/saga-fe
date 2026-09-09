@@ -14,7 +14,7 @@ export default function RegisterPage() {
           </div>
         }
         bannerTitle="Tạo tài khoản"
-        bannerHighlight="tham gia nhóm đồ án"
+        bannerHighlight="tham gia dự án nhóm"
         bannerDescription="Dành cho sinh viên dùng email cá nhân để tham gia làm việc cùng nhóm trên hệ thống SAGA."
       >
         <RegisterForm />

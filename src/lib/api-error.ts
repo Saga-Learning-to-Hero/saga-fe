@@ -30,3 +30,31 @@ export function requireCourseId(courseId: string): string {
   }
   return courseId.trim();
 }
+
+export function requireTeamId(teamId: string): string {
+  if (!teamId || !teamId.trim()) {
+    throw new Error("Throw ValidationException: Team ID is required");
+  }
+  return teamId.trim();
+}
+
+export function requireProjectId(projectId: string): string {
+  if (!projectId || !projectId.trim()) {
+    throw new Error("Throw ValidationException: Project ID is required");
+  }
+  return projectId.trim();
+}
+
+export function requireStudentProfileId(studentProfileId: string): string {
+  if (!studentProfileId || !studentProfileId.trim()) {
+    throw new Error("Throw ValidationException: Student profile ID is required");
+  }
+  return studentProfileId.trim();
+}
+
+export function requireTeamMemberId(teamMemberId: string): string {
+  if (!teamMemberId || !teamMemberId.trim()) {
+    throw new Error("Throw ValidationException: Team member ID is required");
+  }
+  return teamMemberId.trim();
+}

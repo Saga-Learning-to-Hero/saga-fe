@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { lecturerCourseTeamsPath } from "@/features/lecturer/team-project-activity/lib/team-project-routes";
+import { lecturerCourseTeamsPath } from "@/features/lecturer/courses/lib/course-routes";
 
 export default async function LecturerTeamSelectPage({
   params,
