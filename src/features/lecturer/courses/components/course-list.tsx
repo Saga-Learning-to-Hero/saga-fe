@@ -17,7 +17,7 @@ import {
   useLecturerCourses,
   usePrefetchLecturerCourse,
 } from "../hooks/use-lecturer-courses";
-import { lecturerCoursePath } from "../lib/course-routes";
+import { lecturerCourseDashboardPath } from "../lib/course-routes";
 import type { LecturerCourseResponse } from "../types/lecturer-course";
 import { getApiErrorMessage } from "@/lib/api-error";
 
@@ -51,9 +51,9 @@ function CourseListCard({
   course: LecturerCourseResponse;
   onPrefetch: (courseId: string) => void;
 }) {
-  const href = lecturerCoursePath(course.id);
+  const href = lecturerCourseDashboardPath(course.id);
   const subjectLabel = course.subjectName || course.name;
-  const classLabel = course.classCode || course.className || "Chưa có lớp niên khóa";
+  const classLabel = course.classCode || course.className || "Chưa có lớp sinh viên niên khóa";
   const semesterLabel = course.semesterName
     ? `${course.semesterName} (${course.semesterCode || ""})`
     : course.semesterCode || "Chưa có học kỳ";
@@ -95,7 +95,7 @@ function CourseListCard({
       <div className="mt-4 border-t border-border/60 pt-4">
         <Link href={href} prefetch={true} className="block">
           <Button className="h-9.5 w-full cursor-pointer gap-2 rounded-xl text-xs font-bold">
-            Mở không gian lớp
+            Mở tổng quan lớp
             <ArrowRightIcon className="h-4 w-4 transition-transform group-hover:translate-x-1" />
           </Button>
         </Link>
@@ -134,7 +134,7 @@ export function CourseList() {
               Xin chào, {user?.name ?? "Thầy/Cô"}
             </h1>
             <p className="max-w-lg text-sm text-white/75">
-              Chọn một lớp được phân công để xem danh sách sinh viên ACTIVE và phân nhóm đồ án.
+              Chọn một lớp được phân công để xem tổng quan, danh sách sinh viên đang học và phân nhóm.
             </p>
           </div>
           <div className="flex items-center gap-3 rounded-xl border border-white/20 bg-white/10 px-4 py-3 backdrop-blur-sm">
@@ -158,7 +158,7 @@ export function CourseList() {
         <Input
           value={searchQuery}
           onChange={(event) => setSearchQuery(event.target.value)}
-          placeholder="Tìm mã lớp học phần, môn, lớp niên khóa..."
+          placeholder="Tìm mã lớp học phần, môn, lớp sinh viên niên khóa..."
           className="h-9 rounded-xl pl-9 text-xs"
         />
       </div>

@@ -1,3 +1,4 @@
+/** Dữ liệu minh họa — không lấy từ hệ thống. Không dùng trong luồng Lecturer runtime. */
 import { MOCK_LECTURER_COURSES } from "../data/mock-courses";
 import type { LecturerCourse } from "../types/course";
 

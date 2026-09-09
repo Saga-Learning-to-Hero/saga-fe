@@ -20,7 +20,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { lecturerCoursePath } from "@/features/lecturer/courses/lib/course-routes";
+import { lecturerCourseDashboardPath } from "@/features/lecturer/courses/lib/course-routes";
 import { useLecturerCourses } from "@/features/lecturer/courses/hooks/use-lecturer-courses";
 import { useStudentCourses } from "@/features/student/courses/hooks/use-student-courses";
 import { mapStudentCourseResponse } from "@/features/student/courses/types/student-course";
@@ -110,7 +110,7 @@ export function CourseContextSwitcher({
               return (
                 <DropdownMenuItem
                   key={course.id}
-                  onClick={() => router.push(lecturerCoursePath(course.id))}
+                  onClick={() => router.push(lecturerCourseDashboardPath(course.id))}
                   className={cn(
                     "flex cursor-pointer items-center justify-between rounded-xl p-2.5 text-xs",
                     isSelected ? "bg-primary/10 font-bold text-primary" : "text-foreground hover:bg-muted"
@@ -140,7 +140,7 @@ export function CourseContextSwitcher({
             className="flex cursor-pointer items-center gap-2 rounded-xl p-2.5 text-xs font-semibold text-primary hover:bg-primary/10"
           >
             <ArrowLeftRightIcon className="size-3.5" />
-            <span>Xem tất cả khóa học của tôi</span>
+            <span>Xem tất cả lớp học phần của tôi</span>
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

@@ -148,7 +148,7 @@ Admin bấm vào nút **"Roster"** trên thẻ lớp học phần để chuyển
 ### ❓ Câu 2: Nếu một Lớp học phần đang diễn ra, Giảng viên hoặc Admin có được phép sửa lại trọng số bài nộp trong Đề cương không?
 * **Trả lời**:
   * **Tuyệt đối KHÔNG.** Hệ thống áp dụng quy tắc **Bất biến của Đề cương đã xuất bản (Syllabus Immutability)**.
-  * Một khi đề cương đã chuyển sang `PUBLISHED` và được gán vào Lớp học phần, Backend sẽ chặn mọi thao tác cập nhật cấu trúc (`PUT /api/admin/subjects/{subjectId}/syllabi/{syllabusVersionId}/structure`). 
+  * Một khi đề cương đã chuyển sang `PUBLISHED` và được gán vào Lớp học phần, Backend sẽ chặn mọi thao tác cập nhật cấu trúc (`PUT /api/admin/subjects/{subjectId}/syllabi/{syllabusVersionId}/structure`).
   * Nếu cố tình gọi API, Backend sẽ trả về lỗi nghiệp vụ: `COURSE_SYLLABUS_IMMUTABLE`. Điều này ngăn chặn gian lận điểm số và bảo vệ quyền lợi minh bạch của sinh viên.
 
 ### ❓ Câu 3: Quy trình Import Roster sinh viên bằng file Excel xử lý thế nào nếu gặp sinh viên chưa từng có tài khoản trong hệ thống?

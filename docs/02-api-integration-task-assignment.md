@@ -188,9 +188,9 @@ Chia đều toàn bộ khối lượng công việc thành **3 trục nghiệp v
 
 ---
 
-## 5. Danh Mục Tính Năng Chưa Có Trên Backend (CẢNH BÁO: KHÔNG LÀM)
+## 5. Bề Mặt Backend Không Thuộc Phạm Vi Tích Hợp FE Hiện Tại
 
-Các tính năng sau **chưa được backend triển khai**, các thành viên không dựng mock hay gọi API cho các phần này:
+Đối chiếu `docs/openapi.json` ngày 08/09/2026: không dựng mock hoặc tạo product flow cho các mục dưới đây khi chưa có yêu cầu nghiệp vụ và contract FE hoàn chỉnh.
 
 - Dashboard webhook / task board Kanban sync tự động thời gian thực (hiện dùng sync thủ công qua `/sync`).
 - SSE Realtime Event Stream.

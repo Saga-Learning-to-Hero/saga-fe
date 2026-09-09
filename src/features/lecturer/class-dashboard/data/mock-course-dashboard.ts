@@ -1,3 +1,4 @@
+/** Dữ liệu minh họa — không lấy từ hệ thống. Không gắn mock ID vào route Lecturer thật. */
 import type { CourseDashboardData } from "../types/course-dashboard";
 
 import type { LecturerCourse } from "../../courses/types/course";
@@ -55,9 +56,9 @@ export function createMockCourseDashboard(course: LecturerCourse): CourseDashboa
     { id: "g8", name: "Nhóm 08", projectName: "Quản lý thiết bị IoT", memberCount: 5, currentSprint: "Sprint 3", tasksCompleted: 21, totalTasks: 26, commitsLast7Days: 42, contributionBalance: 85, status: "HEALTHY", weeklyCommits: [7, 12, 16, 22, 28, 34, 38, 40, 41, 42], metrics: { taskCompletion: 81, codeActivity: 90, participation: 88, contributionBalance: 85, onTimeDelivery: 88 } },
   ],
   alerts: [
-    { id: "a1", severity: "CRITICAL", title: "Nhóm 05 không có commit trong 6 ngày", reason: "Nguy cơ chậm tiến độ đồ án nghiêm trọng", timeAgo: "1 giờ trước", actionLabel: "Xem nhóm", actionUrl: "/lecturer/groups/g5" },
-    { id: "a2", severity: "WARNING", title: "Thành viên đóng góp thấp", reason: "Nguyễn Văn B chỉ chiếm 4% hoạt động của Nhóm 03", timeAgo: "3 giờ trước", actionLabel: "Xem sinh viên", actionUrl: "/lecturer/students/b" },
-    { id: "a3", severity: "INFO", title: "Nhóm 05 chưa kết nối Jira", reason: "Chưa thể đồng bộ task", timeAgo: "1 ngày trước", actionLabel: "Cấu hình", actionUrl: "/lecturer/groups/g5/settings" },
+    { id: "a1", severity: "CRITICAL", title: "Nhóm 05 không có commit trong 6 ngày", reason: "Nguy cơ chậm tiến độ dự án nhóm nghiêm trọng", timeAgo: "1 giờ trước", actionLabel: "Xem nhóm", actionUrl: "#" },
+    { id: "a2", severity: "WARNING", title: "Thành viên đóng góp thấp", reason: "Nguyễn Văn B chỉ chiếm 4% hoạt động của Nhóm 03", timeAgo: "3 giờ trước", actionLabel: "Xem sinh viên", actionUrl: "#" },
+    { id: "a3", severity: "INFO", title: "Nhóm 05 chưa kết nối Jira", reason: "Chưa thể đồng bộ task", timeAgo: "1 ngày trước", actionLabel: "Cấu hình", actionUrl: "#" },
   ],
   recentActivities: [
     { id: "ra1", source: "GITHUB", actor: "Nhóm 01", action: "merge PR #42", target: "“Implement authentication”", timestamp: "5 phút trước" },

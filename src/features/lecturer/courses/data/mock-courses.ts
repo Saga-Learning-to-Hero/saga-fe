@@ -1,3 +1,4 @@
+/** Dữ liệu minh họa — không lấy từ hệ thống. Không dùng trong luồng chọn lớp / tổng quan thật. */
 import type { LecturerCourse } from "../types/course";
 import type { LecturerSemester } from "../components/semester-tabs";
 

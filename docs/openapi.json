@@ -29,6 +29,14 @@
       "description": "Desired-state and interactive team assignment for an assigned course."
     },
     {
+      "name": "Project group weights",
+      "description": "Per-project contribution weights when course mode is PROJECT_GROUP."
+    },
+    {
+      "name": "Team contribution",
+      "description": "Live contribution evaluation (DEC-092) mapped onto V2 schema."
+    },
+    {
       "name": "Admin subjects",
       "description": "Academic catalog: Subject and versioned syllabus. ADMIN only. Not a course offering."
     },
@@ -43,6 +51,10 @@
     {
       "name": "Student courses",
       "description": "The authenticated student's enrolled courses."
+    },
+    {
+      "name": "Course contribution weights",
+      "description": "Course-default or project-group contribution weights. Assigned lecturer or ADMIN."
     },
     {
       "name": "Student project types",
@@ -63,6 +75,10 @@
     {
       "name": "Student project",
       "description": "Team Leader creates the course team project; members may read it."
+    },
+    {
+      "name": "Task evidence",
+      "description": "Work sessions, contribution confirmations, and student-submitted task links and files."
     },
     {
       "name": "Admin lecturers",
@@ -274,6 +290,88 @@
         ]
       }
     },
+    "/api/projects/{projectId}/group-weights": {
+      "get": {
+        "tags": [
+          "Project group weights"
+        ],
+        "summary": "Get project-group contribution weights",
+        "operationId": "get",
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectGroupWeightsResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "SAGA_SESSION": []
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "Project group weights"
+        ],
+        "summary": "Create or replace project-group contribution weights",
+        "operationId": "put",
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProjectGroupWeightsRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectGroupWeightsResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "SAGA_SESSION": []
+          }
+        ]
+      }
+    },
     "/api/lecturer/courses/{courseId}/teams/{teamId}/leader": {
       "put": {
         "tags": [
@@ -318,6 +416,135 @@
               "*/*": {
                 "schema": {
                   "$ref": "#/components/schemas/LecturerCourseTeamsResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "SAGA_SESSION": []
+          }
+        ]
+      }
+    },
+    "/api/lecturer/courses/{courseId}/contribution-slice-weights": {
+      "get": {
+        "tags": [
+          "Course contribution weights"
+        ],
+        "summary": "Get course contribution slice weights",
+        "operationId": "getWeights",
+        "parameters": [
+          {
+            "name": "courseId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/CourseContributionWeightsResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "SAGA_SESSION": []
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "Course contribution weights"
+        ],
+        "summary": "Update course contribution slice weights (COURSE mode)",
+        "operationId": "putWeights",
+        "parameters": [
+          {
+            "name": "courseId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ContributionSliceWeightsRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/CourseContributionWeightsResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "SAGA_SESSION": []
+          }
+        ]
+      }
+    },
+    "/api/lecturer/courses/{courseId}/contribution-config-mode": {
+      "put": {
+        "tags": [
+          "Course contribution weights"
+        ],
+        "summary": "Switch COURSE vs PROJECT_GROUP contribution weight mode",
+        "operationId": "putMode",
+        "parameters": [
+          {
+            "name": "courseId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ContributionConfigModeRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/CourseContributionWeightsResponse"
                 }
               }
             }
@@ -516,10 +743,57 @@
         }
       }
     },
+    "/api/teams/{teamId}/contribution-override": {
+      "post": {
+        "tags": [
+          "Team contribution"
+        ],
+        "summary": "Override a member contribution percentage",
+        "operationId": "override",
+        "parameters": [
+          {
+            "name": "teamId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ContributionOverrideRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContributionOverrideResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "SAGA_SESSION": []
+          }
+        ]
+      }
+    },
     "/api/tasks/{taskId}/work-sessions/{sessionId}/stop": {
       "post": {
         "tags": [
-          "task-evidence-controller"
+          "Task evidence"
         ],
         "operationId": "stop",
         "parameters": [
@@ -554,13 +828,18 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "SAGA_SESSION": []
+          }
+        ]
       }
     },
     "/api/tasks/{taskId}/work-sessions/start": {
       "post": {
         "tags": [
-          "task-evidence-controller"
+          "Task evidence"
         ],
         "operationId": "start",
         "parameters": [
@@ -586,13 +865,196 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "SAGA_SESSION": []
+          }
+        ]
+      }
+    },
+    "/api/tasks/{taskId}/web-links": {
+      "get": {
+        "tags": [
+          "Task evidence"
+        ],
+        "summary": "List URLs attached to a task",
+        "operationId": "listLinks",
+        "parameters": [
+          {
+            "name": "taskId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TaskWebLinkResponse"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "SAGA_SESSION": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "Task evidence"
+        ],
+        "summary": "Attach an http(s) URL to a task as DOCUMENT/RESEARCH evidence",
+        "operationId": "addLink",
+        "parameters": [
+          {
+            "name": "taskId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateTaskWebLinkRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskWebLinkResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "SAGA_SESSION": []
+          }
+        ]
+      }
+    },
+    "/api/tasks/{taskId}/files": {
+      "get": {
+        "tags": [
+          "Task evidence"
+        ],
+        "summary": "List files students uploaded to a task",
+        "operationId": "listFiles",
+        "parameters": [
+          {
+            "name": "taskId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TaskFileResponse"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "SAGA_SESSION": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "Task evidence"
+        ],
+        "summary": "Upload a document or image as DOCUMENT/RESEARCH evidence",
+        "operationId": "addFile",
+        "parameters": [
+          {
+            "name": "taskId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                },
+                "required": [
+                  "file"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskFileResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "SAGA_SESSION": []
+          }
+        ]
       }
     },
     "/api/tasks/{taskId}/contribution-confirmations": {
       "post": {
         "tags": [
-          "task-evidence-controller"
+          "Task evidence"
         ],
         "operationId": "confirm",
         "parameters": [
@@ -634,7 +1096,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "SAGA_SESSION": []
+          }
+        ]
       }
     },
     "/api/student/courses/{courseId}/project": {
@@ -643,7 +1110,7 @@
           "Student project"
         ],
         "summary": "Get the current student's team project in a course",
-        "operationId": "get",
+        "operationId": "get_1",
         "parameters": [
           {
             "name": "courseId",
@@ -1235,7 +1702,7 @@
           "Authentication"
         ],
         "summary": "End session",
-        "description": "Invalidates the server session and clears cookies `SAGA_SESSION` and `XSRF-TOKEN`. CSRF required.",
+        "description": "Invalidates the server session, clears cookie `SAGA_SESSION`, and rotates cookie `XSRF-TOKEN` to a fresh anonymous CSRF token so the next POST (e.g. login) can succeed without an extra GET /csrf. CSRF required.",
         "operationId": "logout",
         "responses": {
           "204": {
@@ -2158,7 +2625,7 @@
           "Admin subjects"
         ],
         "summary": "Get subject detail including syllabus versions",
-        "operationId": "get_1",
+        "operationId": "get_2",
         "parameters": [
           {
             "name": "subjectId",
@@ -2340,7 +2807,7 @@
           "Admin semesters"
         ],
         "summary": "Get a semester",
-        "operationId": "get_2",
+        "operationId": "get_3",
         "parameters": [
           {
             "name": "semesterId",
@@ -2422,7 +2889,7 @@
           "Admin courses"
         ],
         "summary": "Get a course with class, semester, subject, syllabus, and lecturer",
-        "operationId": "get_3",
+        "operationId": "get_4",
         "parameters": [
           {
             "name": "courseId",
@@ -2504,7 +2971,7 @@
           "Admin classes"
         ],
         "summary": "Get an academic class",
-        "operationId": "get_4",
+        "operationId": "get_5",
         "parameters": [
           {
             "name": "classId",
@@ -2571,6 +3038,127 @@
                 }
               }
             }
+          }
+        },
+        "security": [
+          {
+            "SAGA_SESSION": []
+          }
+        ]
+      }
+    },
+    "/api/teams/{teamId}/contribution-evaluation": {
+      "get": {
+        "tags": [
+          "Team contribution"
+        ],
+        "summary": "Evaluate team contribution percentages",
+        "operationId": "evaluate",
+        "parameters": [
+          {
+            "name": "teamId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContributionEvaluationResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "SAGA_SESSION": []
+          }
+        ]
+      }
+    },
+    "/api/tasks/{taskId}/files/{fileId}": {
+      "get": {
+        "tags": [
+          "Task evidence"
+        ],
+        "summary": "Download a student-uploaded task file",
+        "operationId": "downloadFile",
+        "parameters": [
+          {
+            "name": "taskId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "fileId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "string",
+                  "format": "byte"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "SAGA_SESSION": []
+          }
+        ]
+      },
+      "delete": {
+        "tags": [
+          "Task evidence"
+        ],
+        "summary": "Remove a student-uploaded file from a task",
+        "operationId": "deleteFile",
+        "parameters": [
+          {
+            "name": "taskId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "fileId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
           }
         },
         "security": [
@@ -3101,7 +3689,7 @@
           "Lecturer courses"
         ],
         "summary": "Get an assigned course",
-        "operationId": "get_5",
+        "operationId": "get_6",
         "parameters": [
           {
             "name": "courseId",
@@ -3232,6 +3820,43 @@
               "*/*": {
                 "schema": {
                   "$ref": "#/components/schemas/LecturerActiveRosterResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "SAGA_SESSION": []
+          }
+        ]
+      }
+    },
+    "/api/lecturer/courses/{courseId}/contribution-team-weights": {
+      "get": {
+        "tags": [
+          "Course contribution weights"
+        ],
+        "summary": "List whether each team has project-group weights",
+        "operationId": "teamWeights",
+        "parameters": [
+          {
+            "name": "courseId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContributionTeamWeightsResponse"
                 }
               }
             }
@@ -3553,7 +4178,7 @@
           "Admin course roster"
         ],
         "summary": "List enrollments and pending invitations for a course",
-        "operationId": "get_6",
+        "operationId": "get_7",
         "parameters": [
           {
             "name": "courseId",
@@ -3613,6 +4238,45 @@
                 }
               }
             }
+          }
+        },
+        "security": [
+          {
+            "SAGA_SESSION": []
+          }
+        ]
+      }
+    },
+    "/api/tasks/{taskId}/web-links/{linkId}": {
+      "delete": {
+        "tags": [
+          "Task evidence"
+        ],
+        "summary": "Remove a URL from a task",
+        "operationId": "deleteLink",
+        "parameters": [
+          {
+            "name": "taskId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "linkId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
           }
         },
         "security": [
@@ -3783,6 +4447,64 @@
           "repositoryId"
         ]
       },
+      "ProjectGroupWeightsRequest": {
+        "type": "object",
+        "properties": {
+          "teamId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "codeWeight": {
+            "type": "number"
+          },
+          "testWeight": {
+            "type": "number"
+          },
+          "documentWeight": {
+            "type": "number"
+          },
+          "researchWeight": {
+            "type": "number"
+          },
+          "note": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "codeWeight",
+          "documentWeight",
+          "researchWeight",
+          "testWeight"
+        ]
+      },
+      "ProjectGroupWeightsResponse": {
+        "type": "object",
+        "properties": {
+          "projectId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "teamId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "codeWeight": {
+            "type": "number"
+          },
+          "testWeight": {
+            "type": "number"
+          },
+          "documentWeight": {
+            "type": "number"
+          },
+          "researchWeight": {
+            "type": "number"
+          },
+          "note": {
+            "type": "string"
+          }
+        }
+      },
       "ReplaceTeamLeaderRequest": {
         "type": "object",
         "properties": {
@@ -3864,6 +4586,68 @@
             }
           }
         }
+      },
+      "ContributionSliceWeightsRequest": {
+        "type": "object",
+        "properties": {
+          "codeWeight": {
+            "type": "number"
+          },
+          "testWeight": {
+            "type": "number"
+          },
+          "documentWeight": {
+            "type": "number"
+          },
+          "researchWeight": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "codeWeight",
+          "documentWeight",
+          "researchWeight",
+          "testWeight"
+        ]
+      },
+      "CourseContributionWeightsResponse": {
+        "type": "object",
+        "properties": {
+          "mode": {
+            "type": "string",
+            "enum": [
+              "COURSE",
+              "PROJECT_GROUP"
+            ]
+          },
+          "codeWeight": {
+            "type": "number"
+          },
+          "testWeight": {
+            "type": "number"
+          },
+          "documentWeight": {
+            "type": "number"
+          },
+          "researchWeight": {
+            "type": "number"
+          }
+        }
+      },
+      "ContributionConfigModeRequest": {
+        "type": "object",
+        "properties": {
+          "mode": {
+            "type": "string",
+            "enum": [
+              "COURSE",
+              "PROJECT_GROUP"
+            ]
+          }
+        },
+        "required": [
+          "mode"
+        ]
       },
       "ActivityInput": {
         "type": "object",
@@ -4337,6 +5121,129 @@
             "format": "date-time"
           },
           "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "ContributionOverrideRequest": {
+        "type": "object",
+        "properties": {
+          "studentProfileId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "percentage": {
+            "type": "number"
+          },
+          "reason": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "percentage",
+          "studentProfileId"
+        ]
+      },
+      "ContributionOverrideResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "studentProfileId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "oldValue": {
+            "type": "number"
+          },
+          "newValue": {
+            "type": "number"
+          },
+          "reason": {
+            "type": "string"
+          }
+        }
+      },
+      "CreateTaskWebLinkRequest": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "maxLength": 2048,
+            "minLength": 0
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 255,
+            "minLength": 0
+          }
+        },
+        "required": [
+          "url"
+        ]
+      },
+      "TaskWebLinkResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "taskId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "url": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "source": {
+            "type": "string"
+          },
+          "createdByUserId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "TaskFileResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "taskId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "filename": {
+            "type": "string"
+          },
+          "mimeType": {
+            "type": "string"
+          },
+          "sizeBytes": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "source": {
+            "type": "string"
+          },
+          "createdByUserId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "createdAt": {
             "type": "string",
             "format": "date-time"
           }
@@ -5627,6 +6534,139 @@
           }
         }
       },
+      "ContributionEvaluationResponse": {
+        "type": "object",
+        "properties": {
+          "teamId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "projectId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "courseId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "configMode": {
+            "type": "string",
+            "enum": [
+              "COURSE",
+              "PROJECT_GROUP"
+            ]
+          },
+          "sliceWeights": {
+            "$ref": "#/components/schemas/ContributionSliceWeightsResponse"
+          },
+          "members": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ContributionMemberResponse"
+            }
+          }
+        }
+      },
+      "ContributionMemberResponse": {
+        "type": "object",
+        "properties": {
+          "studentProfileId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "fullName": {
+            "type": "string"
+          },
+          "studentCode": {
+            "type": "string"
+          },
+          "roleInTeam": {
+            "type": "string",
+            "enum": [
+              "LEADER",
+              "MEMBER",
+              "MENTOR"
+            ]
+          },
+          "sliceScore": {
+            "type": "number"
+          },
+          "sliceContributionPercentage": {
+            "type": "number"
+          },
+          "finalContributionPercentage": {
+            "type": "number"
+          },
+          "peerReviewScore": {
+            "type": "number"
+          },
+          "codeContributionPercentage": {
+            "type": "number"
+          },
+          "testContributionPercentage": {
+            "type": "number"
+          },
+          "documentContributionPercentage": {
+            "type": "number"
+          },
+          "researchContributionPercentage": {
+            "type": "number"
+          },
+          "taskContributionPercentage": {
+            "type": "number"
+          },
+          "sprintBreakdowns": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ContributionSprintBreakdownResponse"
+            }
+          },
+          "warnings": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "ContributionSliceWeightsResponse": {
+        "type": "object",
+        "properties": {
+          "codeWeight": {
+            "type": "number"
+          },
+          "testWeight": {
+            "type": "number"
+          },
+          "documentWeight": {
+            "type": "number"
+          },
+          "researchWeight": {
+            "type": "number"
+          }
+        }
+      },
+      "ContributionSprintBreakdownResponse": {
+        "type": "object",
+        "properties": {
+          "sprintId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "sprintName": {
+            "type": "string"
+          },
+          "sliceScore": {
+            "type": "number"
+          },
+          "sliceContributionPercentage": {
+            "type": "number"
+          },
+          "contributionPercentage": {
+            "type": "number"
+          }
+        }
+      },
       "ProjectTypeResponse": {
         "type": "object",
         "properties": {
@@ -6045,6 +7085,51 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/LecturerActiveRosterEntryResponse"
+            }
+          }
+        }
+      },
+      "ContributionTeamWeightRowResponse": {
+        "type": "object",
+        "properties": {
+          "teamId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "projectId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "teamName": {
+            "type": "string"
+          },
+          "teamNo": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "configured": {
+            "type": "boolean"
+          }
+        }
+      },
+      "ContributionTeamWeightsResponse": {
+        "type": "object",
+        "properties": {
+          "courseId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "COURSE",
+              "PROJECT_GROUP"
+            ]
+          },
+          "teams": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ContributionTeamWeightRowResponse"
             }
           }
         }

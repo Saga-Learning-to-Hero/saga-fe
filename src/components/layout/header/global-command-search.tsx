@@ -39,7 +39,6 @@ export function GlobalCommandSearch() {
   const router = useRouter();
   const { user, setSelectedCourse } = useAuthStore();
   const { mutate: logout } = useLogout();
-
   const lecturerCoursesQuery = useLecturerCourses({
     enabled: user?.role === "LECTURER",
   });

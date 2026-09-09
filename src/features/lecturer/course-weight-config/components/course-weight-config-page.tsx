@@ -1,5 +1,7 @@
 "use client";
 
+/** @deprecated Dùng `src/features/lecturer/contribution`. Thư mục này chỉ là UI mock cũ. */
+
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { ChevronRightIcon, SaveIcon } from "lucide-react";

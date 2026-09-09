@@ -13,8 +13,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useLecturerRoster } from "../hooks/use-lecturer-courses";
-import { getApiErrorMessage } from "@/lib/api-error";
+import { useLecturerRoster, useLecturerCourseAccess } from "../hooks/use-lecturer-courses";
+import { CourseQueryError } from "./course-query-error";
 
 interface CourseRosterProps {
   courseId: string;
@@ -22,6 +22,7 @@ interface CourseRosterProps {
 
 export function CourseRoster({ courseId }: CourseRosterProps) {
   const { data, isLoading, isError, error, refetch } = useLecturerRoster(courseId);
+  const { isAccessDenied } = useLecturerCourseAccess(isError, error);
   const [searchQuery, setSearchQuery] = useState("");
   const deferredQuery = useDeferredValue(searchQuery);
 
@@ -45,29 +46,23 @@ export function CourseRoster({ courseId }: CourseRosterProps) {
     );
   }
 
-  if (isError) {
+  if (isAccessDenied) {
     return (
-      <Card className="rounded-2xl border border-dashed border-destructive/30 p-8 text-center">
-        <p className="text-sm font-semibold">Không tải được danh sách sinh viên ACTIVE</p>
-        <p className="mt-1 text-xs text-muted-foreground">
-          {getApiErrorMessage(error, "Vui lòng thử lại.")}
-        </p>
-        <button
-          type="button"
-          onClick={() => void refetch()}
-          className="mt-3 text-xs font-semibold text-primary hover:underline"
-        >
-          Thử lại
-        </button>
-      </Card>
+      <div className="rounded-2xl border border-dashed border-border p-8 text-center text-sm text-muted-foreground">
+        Đang chuyển về danh sách lớp...
+      </div>
     );
+  }
+
+  if (isError) {
+    return <CourseQueryError error={error} onRetry={() => void refetch()} />;
   }
 
   return (
     <div className="space-y-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h2 className="text-base font-bold text-foreground">Danh sách sinh viên ACTIVE</h2>
+          <h2 className="text-base font-bold text-foreground">Danh sách sinh viên đang học</h2>
           <p className="text-xs text-muted-foreground">
             Chỉ sinh viên đã hoàn tất ghi danh. Đây là nguồn duy nhất để kiểm tra trước khi phân nhóm.
           </p>
@@ -93,7 +88,7 @@ export function CourseRoster({ courseId }: CourseRosterProps) {
       {entries.length === 0 ? (
         <Card className="rounded-2xl border border-dashed border-border p-8 text-center">
           <UsersIcon className="mx-auto mb-3 size-8 text-muted-foreground/40" />
-          <p className="text-sm font-semibold">Chưa có sinh viên ACTIVE trong lớp</p>
+          <p className="text-sm font-semibold">Chưa có sinh viên đang học trong lớp</p>
           <p className="mx-auto mt-1 max-w-md text-xs text-muted-foreground">
             Cần sinh viên hoàn tất đăng ký hoặc nhận lời mời trước khi có thể phân nhóm. Giảng viên
             không thêm sinh viên từ màn hình này.
@@ -107,7 +102,7 @@ export function CourseRoster({ courseId }: CourseRosterProps) {
                 <TableHead className="text-xs font-bold">Mã SV</TableHead>
                 <TableHead className="text-xs font-bold">Họ và tên</TableHead>
                 <TableHead className="text-xs font-bold">Email</TableHead>
-                <TableHead className="text-xs font-bold">Lớp niên khóa</TableHead>
+                <TableHead className="text-xs font-bold">Lớp sinh viên niên khóa</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>

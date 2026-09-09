@@ -1,3 +1,4 @@
+/** Dữ liệu minh họa — không lấy từ hệ thống. Không tìm project bằng mock id như g1/g2. */
 import type { TeamProjectInfo, TeamMember, CommitActivity, JiraIssue } from "../types/team-project";
 
 export const MOCK_MEMBERS: TeamMember[] = [

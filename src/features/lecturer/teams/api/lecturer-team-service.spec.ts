@@ -2,7 +2,7 @@ import { describe, expect, vi, beforeEach } from "vitest";
 import { LecturerTeamService } from "./lecturer-team-service";
 import { apiClient } from "@/lib/axios";
 import { fptTest } from "@/testing/fpt-test-helper";
-import { canConfirmTeamImport, type TeamPreviewResponse } from "../types/lecturer-team";
+import { canConfirmTeamImport, summarizeLecturerTeams, teamRoleLabel, type TeamPreviewResponse } from "../types/lecturer-team";
 
 vi.mock("@/lib/axios");
 
@@ -435,6 +435,276 @@ describe("LecturerTeamService", () => {
       await expect(LecturerTeamService.getTeams("")).rejects.toThrow(
         "Throw ValidationException: Course ID is required"
       );
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID19",
+      type: "B",
+      executedDate: "08/09/2026",
+      description: "transformRequest xoa Content-Type khi payload la FormData va giu nguyen payload khac",
+    },
+    async () => {
+      const postSpy = vi.spyOn(apiClient, "post").mockResolvedValueOnce({ data: mockPreview });
+      const fakeFile = new File(["xlsx"], "Team_Assignment.xlsx");
+
+      await LecturerTeamService.previewImport(mockCourseId, fakeFile);
+
+      const config = postSpy.mock.calls[0][2] as {
+        transformRequest?: Array<(data: unknown, headers: { delete: (key: string) => void }) => unknown>;
+      };
+      const transform = config.transformRequest?.[0];
+      expect(typeof transform).toBe("function");
+
+      const headers = { delete: vi.fn() };
+      const formData = new FormData();
+      formData.append("file", fakeFile);
+      expect(transform?.(formData, headers)).toBe(formData);
+      expect(headers.delete).toHaveBeenCalledWith("Content-Type");
+
+      headers.delete.mockClear();
+      const plainPayload = { previewToken: "x" };
+      expect(transform?.(plainPayload, headers)).toEqual(plainPayload);
+      expect(headers.delete).not.toHaveBeenCalled();
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID20",
+      type: "B",
+      executedDate: "08/09/2026",
+      description: "GET teams khi payload thieu mang teams van tra ve []",
+    },
+    async () => {
+      vi.spyOn(apiClient, "get").mockResolvedValueOnce({
+        data: { courseId: mockCourseId },
+      });
+
+      const res = await LecturerTeamService.getTeams(mockCourseId);
+
+      expect(res.teams).toEqual([]);
+      expect(res.courseId).toBe(mockCourseId);
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID21",
+      type: "N",
+      executedDate: "08/09/2026",
+      description: "Adapter teamRoleLabel va summarizeLecturerTeams khong bia ten du an",
+    },
+    async () => {
+      expect(teamRoleLabel("LEADER")).toBe("Trưởng nhóm");
+      expect(teamRoleLabel("MEMBER")).toBe("Thành viên");
+      expect(
+        summarizeLecturerTeams([
+          { teamId: "t1", teamNo: 1, teamName: "SAGA Team", projectId: null, members: [] },
+          { teamId: "t2", teamNo: 2, teamName: "Alpha", projectId: "p1", members: [] },
+        ])
+      ).toEqual({ teamCount: 2, withProjectCount: 1, waitingProjectCount: 1 });
+    }
+  );
+
+  const mockTeamId = "43098af7-0f8c-4597-beb7-e09e70a5c7ad";
+  const mockTeamMemberId = "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa";
+  const mockTargetTeamId = "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb";
+
+  fptTest(
+    {
+      id: "UTCID22",
+      type: "N",
+      executedDate: "09/09/2026",
+      description: "PUT leader gui dung courseId, teamId va teamMemberId",
+    },
+    async () => {
+      const putSpy = vi.spyOn(apiClient, "put").mockResolvedValueOnce({ data: mockTeams });
+
+      const res = await LecturerTeamService.replaceLeader(mockCourseId, mockTeamId, mockTeamMemberId);
+
+      expect(putSpy).toHaveBeenCalledWith(
+        `/api/lecturer/courses/${mockCourseId}/teams/${mockTeamId}/leader`,
+        { teamMemberId: mockTeamMemberId }
+      );
+      expect(res.courseId).toBe(mockCourseId);
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID23",
+      type: "N",
+      executedDate: "09/09/2026",
+      description: "PATCH move member chi gui targetTeamId trong body",
+    },
+    async () => {
+      const patchSpy = vi.spyOn(apiClient, "patch").mockResolvedValueOnce({ data: mockTeams });
+
+      await LecturerTeamService.moveMember(mockCourseId, mockTeamMemberId, mockTargetTeamId);
+
+      expect(patchSpy).toHaveBeenCalledWith(
+        `/api/lecturer/courses/${mockCourseId}/team-members/${mockTeamMemberId}/team`,
+        { targetTeamId: mockTargetTeamId }
+      );
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID24",
+      type: "A",
+      executedDate: "09/09/2026",
+      description: "Khong nuot loi 401 khi doi truong nhom",
+    },
+    async () => {
+      vi.spyOn(apiClient, "put").mockRejectedValueOnce(
+        apiError("Phiên đăng nhập đã hết hạn", "INVALID_CREDENTIALS", 401)
+      );
+
+      await expect(
+        LecturerTeamService.replaceLeader(mockCourseId, mockTeamId, mockTeamMemberId)
+      ).rejects.toMatchObject({ code: "INVALID_CREDENTIALS", status: 401 });
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID25",
+      type: "A",
+      executedDate: "09/09/2026",
+      description: "Khong nuot loi 403 khi chuyen thanh vien",
+    },
+    async () => {
+      vi.spyOn(apiClient, "patch").mockRejectedValueOnce(
+        apiError("Không có quyền", "LECTURER_COURSE_FORBIDDEN", 403)
+      );
+
+      await expect(
+        LecturerTeamService.moveMember(mockCourseId, mockTeamMemberId, mockTargetTeamId)
+      ).rejects.toMatchObject({ code: "LECTURER_COURSE_FORBIDDEN", status: 403 });
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID26",
+      type: "A",
+      executedDate: "09/09/2026",
+      description: "Khong nuot loi 404 TEAM_NOT_FOUND khi doi truong nhom",
+    },
+    async () => {
+      vi.spyOn(apiClient, "put").mockRejectedValueOnce(
+        apiError("Nhóm không tồn tại", "TEAM_NOT_FOUND", 404)
+      );
+
+      await expect(
+        LecturerTeamService.replaceLeader(mockCourseId, mockTeamId, mockTeamMemberId)
+      ).rejects.toMatchObject({ code: "TEAM_NOT_FOUND", status: 404 });
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID27",
+      type: "A",
+      executedDate: "09/09/2026",
+      description: "Khong nuot loi khi BE tu choi chuyen thanh vien khong hop le",
+    },
+    async () => {
+      vi.spyOn(apiClient, "patch").mockRejectedValueOnce(
+        apiError("Thành viên không thuộc lớp", "TEAM_MEMBER_INVALID", 400)
+      );
+
+      await expect(
+        LecturerTeamService.moveMember(mockCourseId, mockTeamMemberId, mockTargetTeamId)
+      ).rejects.toMatchObject({ code: "TEAM_MEMBER_INVALID", status: 400 });
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID28",
+      type: "B",
+      executedDate: "09/09/2026",
+      description: "Throw ValidationException khi teamMemberId rong luc doi truong nhom",
+    },
+    async () => {
+      await expect(LecturerTeamService.replaceLeader(mockCourseId, mockTeamId, "")).rejects.toThrow(
+        "Throw ValidationException: Team member ID is required"
+      );
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID29",
+      type: "B",
+      executedDate: "09/09/2026",
+      description: "Throw ValidationException khi courseId hoac teamId rong luc doi truong nhom",
+    },
+    async () => {
+      await expect(LecturerTeamService.replaceLeader("", mockTeamId, mockTeamMemberId)).rejects.toThrow(
+        "Throw ValidationException: Course ID is required"
+      );
+      await expect(LecturerTeamService.replaceLeader(mockCourseId, "", mockTeamMemberId)).rejects.toThrow(
+        "Throw ValidationException: Team ID is required"
+      );
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID30",
+      type: "B",
+      executedDate: "09/09/2026",
+      description: "Throw ValidationException khi targetTeamId rong luc chuyen thanh vien",
+    },
+    async () => {
+      await expect(LecturerTeamService.moveMember(mockCourseId, mockTeamMemberId, "   ")).rejects.toThrow(
+        "Throw ValidationException: Target team ID is required"
+      );
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID31",
+      type: "B",
+      executedDate: "09/09/2026",
+      description: "GET teams giu teamMemberId that, khong thay bang studentProfileId",
+    },
+    async () => {
+      vi.spyOn(apiClient, "get").mockResolvedValueOnce({
+        data: {
+          courseId: mockCourseId,
+          teams: [
+            {
+              teamId: mockTeamId,
+              teamNo: 1,
+              teamName: "SAGA Team",
+              projectId: null,
+              members: [
+                {
+                  teamMemberId: mockTeamMemberId,
+                  courseEnrollmentId: "dddddddd-dddd-dddd-dddd-dddddddddddd",
+                  studentProfileId: "eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee",
+                  studentCode: "SE111111",
+                  fullName: "Alpha Leader",
+                  email: "alpha@gmail.com",
+                  role: "LEADER",
+                },
+              ],
+            },
+          ],
+        },
+      });
+
+      const res = await LecturerTeamService.getTeams(mockCourseId);
+
+      expect(res.teams[0].members[0].teamMemberId).toBe(mockTeamMemberId);
+      expect(res.teams[0].members[0].studentProfileId).toBe("eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee");
     }
   );
 });

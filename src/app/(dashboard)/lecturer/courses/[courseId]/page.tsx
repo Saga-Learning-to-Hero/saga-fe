@@ -1,4 +1,5 @@
-import { CourseWorkspacePage } from "@/features/lecturer/courses/components/course-workspace-page";
+import { redirect } from "next/navigation";
+import { lecturerCourseDashboardPath } from "@/features/lecturer/courses/lib/course-routes";
 
 interface Props {
   params: Promise<{ courseId: string }>;
@@ -6,5 +7,5 @@ interface Props {
 
 export default async function CourseRootRoute({ params }: Props) {
   const { courseId } = await params;
-  return <CourseWorkspacePage key={courseId} courseId={courseId} />;
+  redirect(lecturerCourseDashboardPath(courseId));
 }

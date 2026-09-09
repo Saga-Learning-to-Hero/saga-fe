@@ -88,7 +88,7 @@ export function RegisterForm() {
       <div className="space-y-1">
         <h1 className="text-2xl font-bold text-foreground">Tạo tài khoản sinh viên</h1>
         <p className="text-xs text-muted-foreground">
-          Dành cho sinh viên dùng email cá nhân để tham gia nhóm đồ án.
+          Dành cho sinh viên dùng email cá nhân để tham gia dự án nhóm.
         </p>
       </div>
 
