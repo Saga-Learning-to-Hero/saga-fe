@@ -3,6 +3,7 @@
 Tài liệu quy chuẩn ngắn gọn, chuẩn xác dành cho lập trình viên Frontend (FE) để tích hợp toàn bộ API của hệ thống SAGA từ đầu đến cuối.
 
 > 📌 **Kế hoạch phân chia công việc cho 3 Devs:** Xem chi tiết tại [02-api-integration-task-assignment.md](file:///d:/Capstone/saga%20workspace/saga-fe/docs/02-api-integration-task-assignment.md).
+> 📋 **Sổ bộ đăng ký & Đối soát trạng thái API (Live Registry):** Xem tại [.agents/rules/api-integration-registry.md](file:///d:/Capstone/saga%20workspace/saga-fe/.agents/rules/api-integration-registry.md). Mọi Dev và AI Agent bắt buộc phải đọc và cập nhật trạng thái tại đây sau mỗi lần gọi API.
 
 ---
 
@@ -267,6 +268,16 @@ Giao diện sinh viên được điều hướng động dựa trên trạng th�
   { "targetTeamId": "uuid-target-team" }
   ```
 
+#### 3. Cấu hình Trọng số Đóng góp Lớp học (Course Contribution Weights)
+- `GET /api/lecturer/courses/{courseId}/contribution-slice-weights`: Lấy trọng số đóng góp mặc định của lớp học.
+- `PUT /api/lecturer/courses/{courseId}/contribution-slice-weights`: Cập nhật trọng số đóng góp các lát cắt (chế độ COURSE).
+- `PUT /api/lecturer/courses/{courseId}/contribution-config-mode`: Chuyển đổi chế độ trọng số giữa `COURSE` và `PROJECT_GROUP`.
+- `GET /api/lecturer/courses/{courseId}/contribution-team-weights`: Kiểm tra danh sách các nhóm trong lớp đã có cấu hình trọng số nhóm riêng chưa.
+
+#### 4. Đánh giá & Điều chỉnh Đóng góp Nhóm (Team Contribution)
+- `GET /api/teams/{teamId}/contribution-evaluation`: Tính toán và đánh giá tỷ lệ % đóng góp thực tế của các thành viên trong nhóm (DEC-002 trên V2 schema).
+- `POST /api/teams/{teamId}/contribution-override`: Giảng viên ghi đè tỷ lệ % đóng góp của một thành viên nếu có căn cứ điều chỉnh.
+
 ---
 
 ### 4.4. Phân Hệ Sinh Viên (Student Course, Team & Project)
@@ -326,6 +337,10 @@ Giao diện sinh viên được điều hướng động dựa trên trạng th�
 #### 3. Báo Cáo Tổng Hợp Trạng Thái Tích Hợp Dự Án
 - **Endpoint:** `GET /api/projects/{projectId}/integrations`
 - **Mục đích:** Cung cấp toàn bộ trạng thái kết nối GitHub & Jira để hiển thị Card/Badge trạng thái trên FE.
+
+#### 4. Cấu hình Trọng số Đóng góp Nhóm Dự án (Project Group Weights)
+- `GET /api/projects/{projectId}/group-weights`: Lấy trọng số đóng góp các tiêu chí của nhóm dự án (khi chế độ là `PROJECT_GROUP`).
+- `PUT /api/projects/{projectId}/group-weights`: Tạo mới hoặc cập nhật toàn bộ trọng số đóng góp cho nhóm dự án.
 
 ---
 
@@ -456,12 +471,30 @@ Giao diện sinh viên được điều hướng động dựa trên trạng th�
 - `DELETE /api/integrations/github/{identityId}`: Hủy liên kết tài khoản GitHub cá nhân.
 - `DELETE /api/integrations/jira/{identityId}`: Hủy liên kết tài khoản Jira cá nhân.
 
+#### 4. Tuyến Callback OAuth (Redirect Handlers)
+- `GET /api/integrations/github/oauth/callback`: Xử lý OAuth callback liên kết tài khoản GitHub cá nhân.
+- `GET /api/integrations/jira/oauth/callback`: Xử lý OAuth callback liên kết tài khoản Jira cá nhân.
+- `GET /api/projects/{projectId}/integrations/github/setup/callback`: Xử lý callback sau khi cài đặt GitHub App cho nhóm dự án.
+
 ---
 
-### 4.8. Phân Hệ Thu Thập Chứng Cứ Phiên Làm Việc (Task Evidence - Đang Triển Khai)
+### 4.8. Phân Hệ Thu Thập Chứng Cứ Phiên Làm Việc (Task Evidence)
+
+#### 1. Phiên Làm Việc & Đóng Góp (Work Sessions & Confirmations)
 - `POST /api/tasks/{taskId}/work-sessions/start`: Ghi nhận bắt đầu phiên làm việc trên đầu việc.
 - `POST /api/tasks/{taskId}/work-sessions/{sessionId}/stop`: Ghi nhận kết thúc phiên làm việc.
 - `POST /api/tasks/{taskId}/contribution-confirmations`: Xác nhận đóng góp chéo giữa các thành viên.
+
+#### 2. Minh Chứng Liên Kết Web (Web Links Evidence)
+- `GET /api/tasks/{taskId}/web-links`: Lấy danh sách các liên kết URL đính kèm trên task.
+- `POST /api/tasks/{taskId}/web-links`: Đính kèm liên kết `http(s)://` làm minh chứng DOCUMENT hoặc RESEARCH (`{ "url": "https://...", "description": "..." }`).
+- `DELETE /api/tasks/{taskId}/web-links/{linkId}`: Xóa liên kết URL khỏi task.
+
+#### 3. Minh Chứng Tệp Tài Liệu & Ảnh (File Evidence)
+- `GET /api/tasks/{taskId}/files`: Lấy danh sách các tệp tài liệu do sinh viên tải lên task.
+- `POST /api/tasks/{taskId}/files`: Tải lên tài liệu hoặc hình ảnh làm minh chứng DOCUMENT/RESEARCH (`multipart/form-data` field `file`).
+- `GET /api/tasks/{taskId}/files/{fileId}`: Tải xuống tệp minh chứng đã upload.
+- `DELETE /api/tasks/{taskId}/files/{fileId}`: Xóa tệp minh chứng khỏi task.
 
 ---
 
