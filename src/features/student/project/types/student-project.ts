@@ -212,3 +212,51 @@ export interface UpdateProjectJiraPayload {
   boardId?: string | null;
 }
 
+export interface ProjectSyncResponse {
+  projectId: string;
+  jira: string;
+  github: string;
+}
+
+export interface ProjectTaskItem {
+  id: string;
+  externalId: string;
+  externalKey: string;
+  title: string;
+  status: string;
+  issueTypeName: string;
+  assigneeExternalId: string | null;
+  assigneeStudentId: string | null;
+  linkedCommitCount: number;
+  externalUpdatedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ProjectSyncStatusItem {
+  projectId: string;
+  provider: string;
+  status: string;
+  startedAt: string | null;
+  completedAt: string | null;
+  itemsProcessed: number;
+  itemsFailed: number;
+}
+
+export interface TaskLinkedCommitItem {
+  id: string;
+  repoId: string;
+  repositoryFullName: string;
+  sha: string;
+  message: string;
+  authorExternalId?: string | null;
+  authorStudentId?: string | null;
+  committedAt: string;
+  createdAt: string;
+}
+
+export type ProjectCommitItem = TaskLinkedCommitItem;
+
+
+
+

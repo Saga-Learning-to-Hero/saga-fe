@@ -22,6 +22,7 @@ import { ProjectBannerHeader } from "./project-banner-header";
 import { TeamMembersCard } from "./team-members-card";
 import { ProjectDetailsCard } from "./project-details-card";
 import { ProjectIntegrationsCard } from "./project-integrations-card";
+import { ProjectSyncStatusCard } from "./project-sync-status-card";
 import { ProjectEditModal } from "./project-edit-modal";
 import { ProjectInfoSkeleton } from "./project-info-skeleton";
 
@@ -59,25 +60,18 @@ export function ProjectInfoView() {
   const projectId = apiProject?.projectId || team?.projectId || effectiveCourse?.projectId || "";
 
   const forbidden = getApiErrorCode(teamError) === "STUDENT_COURSE_FORBIDDEN";
-  useEffect(() => {
-    if (forbidden) void refreshCourses();
-  }, [forbidden, refreshCourses]);
+  useEffect(() => { if (forbidden) void refreshCourses(); }, [forbidden, refreshCourses]);
 
-  const hasTeam = Boolean(
-    team?.teamId || team?.teamName || effectiveCourse?.teamId || effectiveCourse?.teamName || (team?.members && team.members.length > 0)
-  );
+  const hasTeam = Boolean(team?.teamId || team?.teamName || effectiveCourse?.teamId || effectiveCourse?.teamName || (team?.members && team.members.length > 0));
 
-  const norm = (s: string) =>
-    s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+  const norm = (s: string) => s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
   const cleanUserName = norm((user?.fullName || user?.name || "").replace(/\([^)]*\)/g, ""));
-
   const isLeaderFromMembers = Boolean(
     team?.members?.some((m) => {
       if (m.role?.toUpperCase() !== "LEADER") return false;
       if (user?.studentCode && m.studentCode?.toLowerCase() === user.studentCode.toLowerCase()) return true;
       if (user?.email && m.studentCode && user.email.toLowerCase().includes(m.studentCode.toLowerCase())) return true;
-      const cleanMemberName = norm(m.fullName || "");
-      return cleanUserName.length > 0 && cleanUserName === cleanMemberName;
+      return cleanUserName.length > 0 && cleanUserName === norm(m.fullName || "");
     })
   );
 
@@ -104,7 +98,6 @@ export function ProjectInfoView() {
     apiProject?.projectId?.trim() || apiProject?.name?.trim() || team?.projectId?.trim() ||
     effectiveCourse?.projectId?.trim() || localOverrides.projectId?.trim() || localOverrides.name?.trim()
   );
-
   const isInitialLoading = (isProjectLoading || isTeamLoading || (isCoursesLoading && !effectiveCourse)) && !apiProject && !team;
 
   const project: StudentProjectDetails = useMemo(() => {
@@ -210,26 +203,32 @@ export function ProjectInfoView() {
             />
           </div>
         ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
-            <div className="lg:col-span-6 space-y-5">
-              <ProjectDetailsCard project={project} isLeader={isLeader} />
-              <TeamMembersCard
-                course={effectiveCourse}
-                team={team}
-                isLoading={isTeamLoading}
-                isError={isTeamError}
-                error={teamError}
-                onRetry={() => void refetchTeam()}
-                onForbidden={() => void refreshCourses()}
-              />
+          <div className="space-y-5">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+              <div className="lg:col-span-6 space-y-5">
+                <ProjectDetailsCard project={project} isLeader={isLeader} />
+                <TeamMembersCard
+                  course={effectiveCourse}
+                  team={team}
+                  isLoading={isTeamLoading}
+                  isError={isTeamError}
+                  error={teamError}
+                  onRetry={() => void refetchTeam()}
+                  onForbidden={() => void refreshCourses()}
+                />
+              </div>
+
+              <div className="lg:col-span-6 space-y-5">
+                <ProjectIntegrationsCard
+                  projectId={projectId || project.projectId || project.id || ""}
+                  isLeader={isLeader}
+                />
+              </div>
             </div>
 
-            <div className="lg:col-span-6 space-y-5">
-              <ProjectIntegrationsCard
-                projectId={projectId || project.projectId || project.id || ""}
-                isLeader={isLeader}
-              />
-            </div>
+            <ProjectSyncStatusCard
+              projectId={projectId || project.projectId || project.id || ""}
+            />
           </div>
         )}
       </div>

@@ -24,10 +24,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { CustomSelect } from "@/components/common/custom-select";
+import { TaskLinkedCommitsList } from "./task-linked-commits-list";
 
 interface IssueDetailsModalProps {
   isOpen: boolean;
   issue: SprintIssue | null; // Null means creating a new issue
+  projectId?: string;
   defaultSprintId?: string;
   sprints: Sprint[];
   teamMembers: { id: string; name: string; avatar: string; studentCode: string }[];
@@ -41,6 +43,7 @@ interface IssueDetailsModalProps {
 export function IssueDetailsModal({
   isOpen,
   issue,
+  projectId,
   defaultSprintId,
   sprints,
   teamMembers,
@@ -339,6 +342,11 @@ export function IssueDetailsModal({
               className="text-xs rounded-xl bg-card resize-none disabled:opacity-80"
             />
           </div>
+
+          {/* Linked Commits from GET /api/projects/{projectId}/tasks/{taskId}/commits */}
+          {isEditing && issue?.id && (
+            <TaskLinkedCommitsList projectId={projectId} taskId={issue.id} />
+          )}
 
           {/* Modal Footer */}
           <div className="pt-3 border-t border-border/60 flex items-center justify-between">

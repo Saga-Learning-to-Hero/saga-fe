@@ -1,25 +1,16 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import {
-  Link2Icon,
-  CrownIcon,
-  CheckCircle2Icon,
-  RefreshCwIcon,
-  Loader2Icon,
-} from "lucide-react";
+import { Link2Icon, CrownIcon, CheckCircle2Icon, RefreshCwIcon, Loader2Icon } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/sonner";
 import {
-  useProjectIntegrations,
-  useDisconnectProjectJira,
-  useDisconnectProjectGitHub,
-  useConnectProjectGitHub,
-  useConnectProjectJira,
-  useProjectGitHubSetupCallback,
+  useProjectIntegrations, useDisconnectProjectJira, useDisconnectProjectGitHub,
+  useConnectProjectGitHub, useConnectProjectJira, useProjectGitHubSetupCallback,
 } from "../hooks/useProjectIntegrations";
+import { useSyncProject } from "../hooks/useProjectSync";
 import { ProjectJiraSection } from "./integrations/project-jira-section";
 import { ProjectGithubSection } from "./integrations/project-github-section";
 import { ProjectDisconnectDialog } from "./integrations/project-disconnect-dialog";
@@ -108,12 +99,22 @@ export function ProjectIntegrationsCard({ projectId, isLeader }: ProjectIntegrat
     }
   };
 
+  const syncMutation = useSyncProject();
   const handleSyncJira = async () => {
     setSyncingId("jira");
-    await refetch();
-    setSyncingId(null);
-    setFeedbackMsg("Đã đồng bộ Jira Project của nhóm!");
-    setTimeout(() => setFeedbackMsg(""), 3500);
+    try {
+      const res = await syncMutation.mutateAsync(projectId);
+      setFeedbackMsg(`Đã kích hoạt đồng bộ! (Jira: ${res.jira} · GitHub: ${res.github})`);
+      toast.success("Đã đưa yêu cầu đồng bộ Jira & GitHub vào hàng đợi!", {
+        description: `Jira: ${res.jira} · GitHub: ${res.github}`,
+      });
+      await refetch();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Lỗi khi kích hoạt đồng bộ");
+    } finally {
+      setSyncingId(null);
+      setTimeout(() => setFeedbackMsg(""), 4500);
+    }
   };
 
   const handleConfirmDisconnect = async () => {

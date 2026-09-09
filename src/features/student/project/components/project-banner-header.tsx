@@ -1,15 +1,20 @@
 "use client";
 
+import { useState } from "react";
 import {
   FolderKanbanIcon,
   SparklesIcon,
   GraduationCapIcon,
   CheckCircle2Icon,
   UserCheck2Icon,
+  RefreshCwIcon,
 } from "lucide-react";
-import type { StudentProjectDetails } from "../types/student-project";
+import type { StudentProjectDetails, ProjectSyncResponse } from "../types/student-project";
 import type { StudentCourse } from "@/features/student/courses/types/student-course";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { toast } from "@/components/ui/sonner";
+import { useSyncProject } from "../hooks/useProjectSync";
 
 interface ProjectBannerHeaderProps {
   project: StudentProjectDetails;
@@ -26,7 +31,27 @@ export function ProjectBannerHeader({
   hasTeam,
   isRoleLoading = false,
 }: ProjectBannerHeaderProps) {
+  const syncMutation = useSyncProject();
+  const [syncResult, setSyncResult] = useState<ProjectSyncResponse | null>(null);
+
   const categoryLabel = project.projectType?.name || project.category;
+  const projectId = project.projectId || project.id || "";
+
+  const handleSync = async () => {
+    if (!projectId) {
+      toast.error("Không tìm thấy mã dự án để kích hoạt đồng bộ.");
+      return;
+    }
+    try {
+      const res = await syncMutation.mutateAsync(projectId);
+      setSyncResult(res);
+      toast.success("Đã đưa yêu cầu đồng bộ Jira & GitHub vào hàng đợi!", {
+        description: `Trạng thái: Jira [${res.jira}], GitHub [${res.github}]`,
+      });
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Không thể kích hoạt đồng bộ dự án.");
+    }
+  };
 
   return (
     <div
@@ -124,8 +149,30 @@ export function ProjectBannerHeader({
             )}
           </div>
         </div>
+
+        {projectId && isLeader && (
+          <div className="flex flex-col items-start md:items-end gap-2 shrink-0">
+            <Button
+              type="button"
+              size="sm"
+              onClick={() => void handleSync()}
+              disabled={syncMutation.isPending}
+              className="h-9 px-3.5 rounded-xl bg-white/20 hover:bg-white/30 text-white border border-white/20 text-xs font-semibold backdrop-blur-md gap-2 shadow-xs transition-all cursor-pointer active:scale-95"
+            >
+              <RefreshCwIcon className={`w-3.5 h-3.5 ${syncMutation.isPending ? "animate-spin text-amber-300" : ""}`} />
+              <span>{syncMutation.isPending ? "Đang gửi yêu cầu..." : "Đồng bộ Jira & GitHub"}</span>
+            </Button>
+            {syncResult && (
+              <div className="text-[11px] text-white/95 bg-black/25 px-2.5 py-1 rounded-lg border border-white/10 flex items-center gap-2 font-mono backdrop-blur-sm animate-in fade-in-0">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                <span>
+                  Jira: <strong className="text-emerald-300">{syncResult.jira}</strong> · GitHub: <strong className="text-sky-300">{syncResult.github}</strong>
+                </span>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
 }
-

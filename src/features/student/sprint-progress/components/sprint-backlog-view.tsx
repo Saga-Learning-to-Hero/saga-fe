@@ -12,6 +12,7 @@ import {
   SparklesIcon,
   LockIcon,
   LayersIcon,
+  GitCommitIcon,
 } from "lucide-react";
 import type { Sprint, SprintIssue } from "../types/sprint-progress";
 import { renderTypeIcon, renderPriorityIcon } from "./sprint-board-view";
@@ -260,7 +261,7 @@ export function SprintBacklogView({
 
               {/* Sprint Issues Content */}
               {!isCollapsed && (
-                <CardContent className="p-0 divide-y divide-border/60">
+                <CardContent className="p-0 max-h-[500px] overflow-y-auto divide-y divide-border/60 scrollbar-thin scrollbar-thumb-border hover:scrollbar-thumb-muted-foreground/30">
                   {sprintIssues.length === 0 ? (
                     <div className="p-6 text-center text-xs text-muted-foreground">
                       Chưa có công việc nào trong Sprint này. Kéo thả từ Backlog vào đây hoặc bấm &quot;Thêm việc&quot;.
@@ -338,6 +339,13 @@ export function SprintBacklogView({
                             >
                               {issue.status}
                             </Badge>
+
+                            {issue.githubCommitCount ? (
+                              <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-mono text-[10px] font-semibold">
+                                <GitCommitIcon className="w-3 h-3" />
+                                {issue.githubCommitCount}
+                              </span>
+                            ) : null}
 
                             <Badge variant="secondary" className="font-mono text-[10px] px-2 py-0.5">
                               {issue.storyPoints} SP
@@ -426,7 +434,7 @@ export function SprintBacklogView({
 
         {/* Backlog Issues Content */}
         {!isBacklogCollapsed && (
-          <CardContent className="p-0 divide-y divide-border/60">
+          <CardContent className="p-0 max-h-[500px] overflow-y-auto divide-y divide-border/60 scrollbar-thin scrollbar-thumb-border hover:scrollbar-thumb-muted-foreground/30">
             {productBacklogIssues.length === 0 ? (
               <div className="p-6 text-center text-xs text-muted-foreground">
                 Chưa có công việc nào trong Backlog. Bấm nút &quot;+ Thêm việc vào Backlog&quot; hoặc kéo thả task từ Sprint vào đây.
@@ -504,6 +512,13 @@ export function SprintBacklogView({
                       >
                         {issue.status}
                       </Badge>
+
+                      {issue.githubCommitCount ? (
+                        <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-mono text-[10px] font-semibold">
+                          <GitCommitIcon className="w-3 h-3" />
+                          {issue.githubCommitCount}
+                        </span>
+                      ) : null}
 
                       <Badge variant="secondary" className="font-mono text-[10px] px-2 py-0.5">
                         {issue.storyPoints} SP

@@ -116,13 +116,13 @@ Tài liệu này là **Sổ bộ theo dõi chi tiết toàn bộ 97 API** của 
 ---
 
 ### 5. Phân Hệ Chiếu Dữ Liệu Dự Án & Đồng Bộ Ngầm (Projections & Sync) — Dev 3
-| STT | Method | Endpoint | Mục Đích Nghiệp Vụ | Dev | Service File Dự Kiến | Test File | Trạng Thái |
+| STT | Method | Endpoint | Mục Đích Nghiệp Vụ | Dev | Service File (FE) | Test File | Trạng Thái |
 | :---: | :--- | :--- | :--- | :---: | :--- | :--- | :---: |
-| 83 | `POST` | `/api/projects/{id}/sync` | Leader kích hoạt đồng bộ backfill | Dev 3 | `project-projection-service.ts` | `project-projection-service.spec.ts` | ⏳ CHƯA TÍCH HỢP |
-| 84 | `GET` | `/api/projects/{id}/sync-status` | Xem tiến độ & số lượng items sync | Dev 3 | `project-projection-service.ts` | `project-projection-service.spec.ts` | ⏳ CHƯA TÍCH HỢP |
-| 85 | `GET` | `/api/projects/{id}/tasks` | Danh sách Jira tasks chiếu (Kanban) | Dev 3 | `project-projection-service.ts` | `project-projection-service.spec.ts` | ⏳ CHƯA TÍCH HỢP |
-| 86 | `GET` | `/api/projects/{id}/tasks/{taskId}/commits` | Commits liên kết với task Jira | Dev 3 | `project-projection-service.ts` | `project-projection-service.spec.ts` | ⏳ CHƯA TÍCH HỢP |
-| 87 | `GET` | `/api/projects/{id}/commits` | Nhật ký Git commits chiếu | Dev 3 | `project-projection-service.ts` | `project-projection-service.spec.ts` | ⏳ CHƯA TÍCH HỢP |
+| 83 | `POST` | `/api/projects/{id}/sync` | Leader kích hoạt đồng bộ backfill | Dev 3 | [project-projection-service.ts](file:///d:/Capstone/saga%20workspace/saga-fe/src/features/student/project/api/project-projection-service.ts) | N/A | ✅ ĐÃ TÍCH HỢP |
+| 84 | `GET` | `/api/projects/{id}/sync-status` | Xem tiến độ & số lượng items sync | Dev 3 | [project-projection-service.ts](file:///d:/Capstone/saga%20workspace/saga-fe/src/features/student/project/api/project-projection-service.ts) | N/A | ✅ ĐÃ TÍCH HỢP |
+| 85 | `GET` | `/api/projects/{id}/tasks` | Danh sách Jira tasks chiếu (Kanban) | Dev 3 | [project-projection-service.ts](file:///d:/Capstone/saga%20workspace/saga-fe/src/features/student/project/api/project-projection-service.ts) | N/A | ✅ ĐÃ TÍCH HỢP |
+| 86 | `GET` | `/api/projects/{id}/tasks/{taskId}/commits` | Commits liên kết với task Jira | Dev 3 | [project-projection-service.ts](file:///d:/Capstone/saga%20workspace/saga-fe/src/features/student/project/api/project-projection-service.ts) | N/A | ✅ ĐÃ TÍCH HỢP |
+| 87 | `GET` | `/api/projects/{id}/commits` | Nhật ký Git commits chiếu | Dev 3 | [project-projection-service.ts](file:///d:/Capstone/saga%20workspace/saga-fe/src/features/student/project/api/project-projection-service.ts) | N/A | ✅ ĐÃ TÍCH HỢP |
 
 ---
 

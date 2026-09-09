@@ -109,8 +109,8 @@ export function CommitListTimeline({
               </Badge>
             </div>
 
-          {/* List of Commits */}
-          <Card className="rounded-2xl border border-border/80 bg-card overflow-hidden divide-y divide-border/60 shadow-xs">
+          {/* List of Commits - cuộn độc lập cho từng nhóm ngày khi có nhiều commits */}
+          <Card className="rounded-2xl border border-border/80 bg-card overflow-hidden divide-y divide-border/60 shadow-xs max-h-[380px] overflow-y-auto scrollbar-thin scrollbar-thumb-border hover:scrollbar-thumb-muted-foreground/30">
             {groupCommits.map((commit) => {
               const isCopied = copiedHash === commit.shortHash;
 

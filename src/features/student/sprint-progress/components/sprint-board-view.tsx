@@ -102,27 +102,31 @@ export function SprintBoardView({
             key={col.id}
             onDragOver={handleDragOver}
             onDrop={(e) => handleDrop(e, col.id)}
-            className={`rounded-2xl border ${col.color} p-3.5 space-y-3 min-h-[520px] flex flex-col justify-between transition-all`}
+            className={`rounded-2xl border ${col.color} p-3.5 flex flex-col transition-all max-h-[calc(100vh-220px)] min-h-[540px]`}
           >
-            <div className="space-y-3">
-              {/* Column Header */}
-              <div className="flex items-center justify-between pb-2 border-b border-border/50">
-                <div className="flex items-center gap-2">
-                  <h3 className="text-xs font-bold tracking-wider text-foreground">
-                    {col.title}
-                  </h3>
-                  <Badge variant="secondary" className="font-mono text-[10px] px-1.5 py-0.2">
-                    {colIssues.length}
-                  </Badge>
-                </div>
-                <span className="text-[11px] font-mono text-muted-foreground font-semibold">
-                  {totalSP} SP
-                </span>
+            {/* Column Header */}
+            <div className="flex items-center justify-between pb-2.5 mb-2.5 border-b border-border/50 shrink-0">
+              <div className="flex items-center gap-2">
+                <h3 className="text-xs font-bold tracking-wider text-foreground">
+                  {col.title}
+                </h3>
+                <Badge variant="secondary" className="font-mono text-[10px] px-1.5 py-0.2">
+                  {colIssues.length}
+                </Badge>
               </div>
+              <span className="text-[11px] font-mono text-muted-foreground font-semibold">
+                {totalSP} SP
+              </span>
+            </div>
 
-              {/* Cards List */}
-              <div className="space-y-2.5 min-h-[400px]">
-                {colIssues.map((issue) => {
+            {/* Cards List (Cuộn độc lập khi nhiều task) */}
+            <div className="space-y-2.5 flex-1 overflow-y-auto pr-1.5 scrollbar-thin scrollbar-thumb-border hover:scrollbar-thumb-muted-foreground/30 min-h-[350px]">
+              {colIssues.length === 0 ? (
+                <div className="h-28 flex items-center justify-center rounded-xl border border-dashed border-border/50 text-[11px] text-muted-foreground/60 select-none">
+                  Chưa có công việc nào
+                </div>
+              ) : null}
+              {colIssues.map((issue) => {
                   const canDrag = isTeamLeader || issue.assignee.studentCode === currentUserStudentCode;
 
                   return (
@@ -211,7 +215,6 @@ export function SprintBoardView({
                   );
                 })}
               </div>
-            </div>
           </div>
         );
       })}

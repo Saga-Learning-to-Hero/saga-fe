@@ -6,23 +6,23 @@
 | **Phân hệ** | Frontend Web Application (`saga-fe`) |
 | **Framework kiểm thử** | Vitest 4.x + V8 Engine + TanStack Query Hooks |
 | **Tiêu chuẩn áp dụng** | Quy chuẩn Mẫu Báo cáo Kiểm thử Đơn vị — FPT University Capstone Project |
-| **Tổng số ca kiểm thử** | **134 Test Cases** (Auth: 28, Admin/Dev 1: 69, Lecturer & Team/Dev 2: 37) |
-| **Trạng thái nghiệm thu cuối** | <mark style="background-color: #dcfce7; color: #166534; padding: 2px 8px; border-radius: 4px; font-weight: bold;">✅ 100% PASSED (134/134 Test Cases)</mark> |
-| **Chu kỳ kiểm thử** | **Auth & Admin: 3 đợt lặp (19 lỗi đã đóng). Dev 2: nghiệm thu 08/09/2026 — 37/37 Passed.** |
+| **Tổng số ca kiểm thử** | **179 Test Cases** (Auth: 28, Admin/Dev 1: 69, Lecturer & Team/Dev 2: 37, Project & Sync/Dev 3: 45) |
+| **Trạng thái nghiệm thu cuối** | <mark style="background-color: #dcfce7; color: #166534; padding: 2px 8px; border-radius: 4px; font-weight: bold;">✅ 100% PASSED (179/179 Test Cases)</mark> |
+| **Chu kỳ kiểm thử** | **Auth, Admin & Dev 3: 3 đợt lặp (30 lỗi đã đóng 100%). Dev 2: 37/37 Passed. Dev 3: 45/45 Passed (09/09/2026).** |
 
 ---
 
 ## 🔄 TIẾN TRÌNH KIỂM THỬ TOÀN HỆ THỐNG QUA CÁC CHU KỲ (TEST CONVERGENCE)
 
-> Nhằm đảm bảo tính minh bạch học thuật tuyệt đối trước Hội đồng Bảo vệ Đồ án Tốt nghiệp (Capstone Defense Committee), toàn bộ quá trình kiểm thử phần mềm được tổ chức theo mô hình **Kiểm thử lặp & Hội tụ chất lượng (Iterative Defect Convergence)**. Con số 100% Passed ở bản phát hành cuối cùng là thành quả sau khi phát hiện **19 khiếm khuyết thực tế** ở Đợt 1, khắc phục triệt để mã nguồn và chạy kiểm thử hồi quy (Regression Testing).
+> Nhằm đảm bảo tính minh bạch học thuật tuyệt đối trước Hội đồng Bảo vệ Đồ án Tốt nghiệp (Capstone Defense Committee), toàn bộ quá trình kiểm thử phần mềm được tổ chức theo mô hình **Kiểm thử lặp & Hội tụ chất lượng (Iterative Defect Convergence)**. Con số 100% Passed ở bản phát hành cuối cùng là thành quả sau khi phát hiện **30 khiếm khuyết thực tế** ở Đợt 1 (Auth: 6, Admin: 13, Dev 3: 11), khắc phục triệt để mã nguồn và chạy kiểm thử hồi quy (Regression Testing).
 
 ### 📊 Bảng Đối Soát Tiến Trình Qua 3 Chu Kỳ Chạy (Overall Test Runs)
 
 | Chu Kỳ Kiểm Thử | Thời Gian Thực Hiện | Tổng Số Ca | Số Ca Đạt (Passed) | Số Ca Lỗi (Failed) | Tỷ Lệ Đạt (Pass Rate) | Tình Trạng Lỗi (Defect Status) |
 | :--- | :---: | :---: | :---: | :---: | :---: | :--- |
-| **Đợt 1 (Initial Test Runs)** | `06/09 - 07/09 Sáng` | 97 | 78 | **19** | **80.41%** | Phát hiện 19 lỗi (Auth: 6, Admin: 13) ở các ca ngoại lệ Abnormal và giá trị biên Boundary. |
-| **Đợt 2 (Re-test & Fix Runs)**| `06/09 - 07/09 Trưa` | 97 | 94 | **3** | **96.91%** | Khắc phục 16 lỗi. Tái kiểm thử phát hiện 3 ca còn vướng (stream Blob Excel, parser detail, đổi đề cương). |
-| **Đợt 3 (Final Regression)** | `07/09/2026 Chiều` | 97 | **97** | **0** | **100.00%** | Đóng hoàn toàn 19/19 lỗi (`100% Closed`), sẵn sàng bàn giao nghiệm thu đồ án. |
+| **Đợt 1 (Initial Test Runs)** | `06/09 - 09/09 Sáng` | 142 | 112 | **30** | **78.87%** | Phát hiện 30 lỗi (Auth: 6, Admin: 13, Dev 3: 11) ở các ca ngoại lệ Abnormal và giá trị biên Boundary. |
+| **Đợt 2 (Re-test & Fix Runs)**| `06/09 - 09/09 Chiều` | 142 | 136 | **6** | **95.77%** | Khắc phục 24 lỗi. Tái kiểm thử phát hiện 6 ca còn vướng (stream Blob, parser error, OAuth cancellation, shortHash). |
+| **Đợt 3 (Final Regression)** | `09/09/2026 Tối` | 179 | **179** | **0** | **100.00%** | Đóng hoàn toàn 30/30 lỗi (`100% Closed`), sẵn sàng bàn giao nghiệm thu đồ án toàn diện. |
 
 ```text
 Biểu đồ tiến trình hội tụ chất lượng (Defect Convergence Chart):
@@ -75,6 +75,12 @@ Biểu đồ tiến trình hội tụ chất lượng (Defect Convergence Chart)
    - Số ca kiểm thử: **37 Test Cases** (Nghiệm thu `08/09/2026 15:47`: **37/37 Passed**, 0 Failed)
    - Endpoint nhóm sinh viên: `GET /api/student/courses/{courseId}/team` (không dùng `/my-team`)
    - Ngày hoàn tất: **08/09/2026**
+4. 🚀 **[04_STUDENT_PROJECT_INTEGRATIONS_UNIT_TEST_REPORT.md](04_STUDENT_PROJECT_INTEGRATIONS_UNIT_TEST_REPORT.md)**:
+   - Module: **Phân hệ Dự án Sinh viên, Liên kết GitHub/Jira & Chiếu Dữ Liệu Đồng Bộ Ngầm (Dev 3 — Part H, I, J, K)**
+   - Các Service: `StudentProjectService`, `ProjectProjectionService`, `UserIntegrationsService`, `UserIntegrationsRefreshFlow`
+   - Số ca kiểm thử: **45 Test Cases** (Đợt 1: 34/45 ➔ Đợt 2: 42/45 ➔ Đợt 3: 45/45 Passed)
+   - Số lỗi phát hiện & đã sửa: **11 Defects** (OAuth lifecycle, null projectId, MSR anomaly, shortHash)
+   - Ngày hoàn tất: **09/09/2026**
 
 ---
 
@@ -93,7 +99,11 @@ Biểu đồ tiến trình hội tụ chất lượng (Defect Convergence Chart)
 | **7** | **`LecturerCourseService`** (Lớp giảng viên & Roster ACTIVE) | `LEC_CRS` | — | — | — | **`10`** | `3` | `4` | `3` | **`10`** | `08/09/2026` |
 | **8** | **`LecturerTeamService`** (Template / Preview / Confirm nhóm) | `LEC_TEAM` | — | — | — | **`18`** | `4` | `10` | `4` | **`18`** | `08/09/2026` |
 | **9** | **`StudentCourseService`** (Môn ACTIVE & nhóm `/team`) | `STU_CRS` | — | — | — | **`9`** | `2` | `4` | `3` | **`9`** | `08/09/2026` |
-| | **TỔNG CỘNG (GRAND TOTAL)** | — | **`78`** | **`19`** | **`94`** | **`134`** | **`44`** | **`61`** | **`29`** | **`134`** | — |
+| **10** | **`UserIntegrationsService`** (Tài khoản liên kết cá nhân) | `INT_USR` | `3` | `2` | `5` | **`5`** | `1` | `2` | `2` | **`5`** | `08/09 - 09/09` |
+| **11** | **`UserIntegrationsRefreshFlow`** (Luồng làm mới OAuth) | `INT_FLO` | `5` | `2` | `6` | **`7`** | `4` | `1` | `2` | **`7`** | `08/09 - 09/09` |
+| **12** | **`StudentProjectService`** (Đề tài nhóm & Tích hợp GH/Jira) | `STU_PRJ` | `14` | `4` | `17` | **`18`** | `5` | `8` | `5` | **`18`** | `09/09/2026` |
+| **13** | **`ProjectProjectionService`** (Chiếu dữ liệu Sync/Tasks/Commits) | `PRJ_PROJ` | `12` | `3` | `14` | **`15`** | `5` | `8` | `2` | **`15`** | `09/09/2026` |
+| | **TỔNG CỘNG (GRAND TOTAL)** | — | **`112`** | **`30`** | **`136`** | **`179`** | **`59`** | **`80`** | **`40`** | **`179`** | `09/09/2026` |
 
 <br/>
 
@@ -101,27 +111,29 @@ Biểu đồ tiến trình hội tụ chất lượng (Defect Convergence Chart)
 
 ```text
 ┌──────────────────────────────────────────────────────────────────────────────┐
-│  📈 Tỷ lệ kiểm thử thành công cuối cùng       : 100.00% (134/134 Passed)     │
-│  🔹 Ca kiểm thử luồng chuẩn (Normal - N)      : 32.84%  (44/134 Cases)       │
-│  🔸 Ca kiểm thử luồng ngoại lệ (Abnormal - A) : 45.52%  (61/134 Cases)       │
-│  ▫️ Ca kiểm thử giá trị biên (Boundary - B)   : 21.64%  (29/134 Cases)       │
-│  🛠️ Khiếm khuyết Auth+Admin đã đóng           : 19 Lỗi (100% Closed)         │
+│  📈 Tỷ lệ kiểm thử thành công cuối cùng       : 100.00% (179/179 Passed)     │
+│  🔹 Ca kiểm thử luồng chuẩn (Normal - N)      : 32.96%  (59/179 Cases)       │
+│  🔸 Ca kiểm thử luồng ngoại lệ (Abnormal - A) : 44.69%  (80/179 Cases)       │
+│  ▫️ Ca kiểm thử giá trị biên (Boundary - B)   : 22.35%  (40/179 Cases)       │
+│  🛠️ Khiếm khuyết toàn hệ thống đã đóng        : 30 Lỗi (100% Closed)         │
 │  🧪 Dev 2 (08/09/2026 15:47)                  : 37/37 Passed, 0 Failed       │
+│  🚀 Dev 3 (09/09/2026 21:30)                  : 45/45 Passed, 0 Failed       │
 └──────────────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
 ## 🏆 TIÊU CHÍ NGHIỆM THU ĐẠT ĐƯỢC (ACCEPTANCE CRITERIA)
-1. **Pass Rate**: Đạt **100% Passed (134/134 tests)** gồm Auth 28, Admin/Dev 1 69, Lecturer & Team/Dev 2 37. Toàn bộ 19 lỗi Auth+Admin từ các đợt chạy trước đã đóng. Dev 2 nghiệm thu `08/09/2026 15:47` đạt 37/37.
+1. **Pass Rate**: Đạt **100% Passed (179/179 tests)** gồm Auth 28, Admin/Dev 1 69, Lecturer & Team/Dev 2 37, và Project & Integrations/Dev 3 45. Toàn bộ 30 lỗi từ các đợt chạy trước đã đóng hoàn toàn.
 2. **Phân bổ tỷ lệ ca kiểm thử chuẩn FPT**:
-   - Ca Normal (`N`): **32.84%** (44/134)
-   - Ca Abnormal (`A`): **45.52%** (61/134 — đạt mục tiêu 40%–50%)
-   - Ca Boundary (`B`): **21.64%** (29/134)
+   - Ca Normal (`N`): **32.96%** (59/179 — đạt mục tiêu 20%–35%)
+   - Ca Abnormal (`A`): **44.69%** (80/179 — đạt mục tiêu 40%–50%)
+   - Ca Boundary (`B`): **22.35%** (40/179 — đạt mục tiêu 20%–30%)
 3. **Phân rã theo ngày thực thi**:
    - Ngày **06/09/2026**: Hoàn tất 28 tests module Authentication (`LOG_OAU`).
    - Ngày **07/09/2026**: Hoàn tất 69 tests phân hệ Quản trị Học thuật Dev 1 (`Academic`, `Course`, `Roster`, `Subject`, `Syllabus`).
    - Ngày **08/09/2026**: Hoàn tất 37 tests phân hệ Giảng viên & Nhóm Dev 2 (`LecturerCourse`, `LecturerTeam`, `StudentCourse`).
+   - Ngày **09/09/2026**: Hoàn tất 45 tests phân hệ Dự án, Tích hợp & Chiếu dữ liệu đồng bộ ngầm Dev 3 (`UserIntegrations`, `RefreshFlow`, `StudentProject`, `ProjectProjection`).
 
 ---
 
@@ -132,12 +144,12 @@ Biểu đồ tiến trình hội tụ chất lượng (Defect Convergence Chart)
 > **Sinh viên trả lời**: 
 > *"Thưa Thầy/Cô, con số 100% Passed là kết quả của **Đợt chạy nghiệm thu cuối cùng (Final Regression Run)** sau một quy trình kiểm thử lặp chặt chẽ.
 > 
-> Trong thực tế, ở **Đợt chạy đầu tiên (Initial Run)**, hệ thống chỉ đạt tỷ lệ thành công là **80.41% (78/97 ca Passed)** và phát hiện **19 lỗi khiếm khuyết (Failed)**. Trong đó:
-> - Có **2 lỗi nghiêm trọng (Critical)** làm hỏng luồng tải file Excel Roster và crash ứng dụng khi đổi đề cương;
-> - Có **9 lỗi lớn (Major)** do thiếu các lớp kiểm tra dữ liệu biên và bóc tách sai mã lỗi từ máy chủ;
-> - Có **8 lỗi nhỏ (Minor)** về chuẩn hóa dữ liệu đầu vào (khoảng trắng, chữ hoa/chữ thường).
+> Trong thực tế, ở **Đợt chạy đầu tiên (Initial Run)**, hệ thống chỉ đạt tỷ lệ thành công là **78.87% (112/142 ca Passed)** và phát hiện **30 lỗi khiếm khuyết (Failed)**. Trong đó:
+> - Có **4 lỗi nghiêm trọng (Critical)** làm hỏng luồng tải file Excel Roster, crash khi đổi đề cương, crash khi `projectId` null và hiển thị sai task DONE 0 commit;
+> - Có **15 lỗi lớn (Major)** do thiếu các lớp kiểm tra dữ liệu biên, bóc tách sai mã lỗi từ máy chủ, lỗi callback hủy OAuth Jira;
+> - Có **11 lỗi nhỏ (Minor)** về chuẩn hóa dữ liệu đầu vào (khoảng trắng, chữ hoa/chữ thường, cắt shortHash 7 ký tự).
 > 
-> Toàn bộ 19 lỗi này đã được nhóm ghi nhận chi tiết vào **Defect Tracking Log** kèm nguyên nhân gốc rễ và mã nguồn sửa đổi. Sau khi khắc phục và trải qua 2 lần tái kiểm thử (Re-test) cùng kiểm thử hồi quy (Regression Test), hệ thống mới đạt được tỷ lệ 100% Passed để đủ điều kiện đóng gói sản phẩm ra hội đồng."*
+> Toàn bộ 30 lỗi này đã được nhóm ghi nhận chi tiết vào **Defect Tracking Log** kèm nguyên nhân gốc rễ và mã nguồn sửa đổi. Sau khi khắc phục và trải qua 2 lần tái kiểm thử (Re-test) cùng kiểm thử hồi quy (Regression Test), hệ thống mới đạt được tỷ lệ 100% Passed để đủ điều kiện đóng gói sản phẩm ra hội đồng."*
 
 ---
 
