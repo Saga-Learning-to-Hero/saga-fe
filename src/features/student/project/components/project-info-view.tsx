@@ -8,7 +8,6 @@ import type {
   ProjectCategory,
 } from "../types/student-project";
 import { useStudentProject } from "../hooks/useStudentProject";
-import { useProjectIntegrations } from "../hooks/useProjectIntegrations";
 import {
   useRefreshStudentCourses,
   useStudentMyTeam,
@@ -58,7 +57,6 @@ export function ProjectInfoView() {
   } = useStudentMyTeam(courseId, { enabled: Boolean(courseId) });
 
   const projectId = apiProject?.projectId || team?.projectId || effectiveCourse?.projectId || "";
-  const { data: integrations } = useProjectIntegrations(projectId, { enabled: Boolean(projectId) });
 
   const forbidden = getApiErrorCode(teamError) === "STUDENT_COURSE_FORBIDDEN";
   useEffect(() => {
@@ -158,72 +156,86 @@ export function ProjectInfoView() {
         {isInitialLoading ? (
           <ProjectInfoSkeleton />
         ) : !hasProject ? (
-          <div className="p-8 sm:p-10 rounded-3xl border border-dashed border-primary/30 bg-primary/[0.02] text-center space-y-5">
-            <div className="relative mx-auto w-16 h-16">
-              <div className="w-16 h-16 rounded-2xl bg-primary/10 text-primary border border-primary/20 flex items-center justify-center shadow-md">
-                <FolderKanbanIcon className="w-8 h-8" />
+          <div className="space-y-5">
+            <div className="p-8 sm:p-10 rounded-3xl border border-dashed border-primary/30 bg-primary/[0.02] text-center space-y-5">
+              <div className="relative mx-auto w-16 h-16">
+                <div className="w-16 h-16 rounded-2xl bg-primary/10 text-primary border border-primary/20 flex items-center justify-center shadow-md">
+                  <FolderKanbanIcon className="w-8 h-8" />
+                </div>
+                <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-xs">
+                  <PlusIcon className="w-3.5 h-3.5" />
+                </div>
               </div>
-              <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-xs">
-                <PlusIcon className="w-3.5 h-3.5" />
+
+              <div className="space-y-1.5 max-w-md mx-auto">
+                <h3 className="text-lg font-bold text-foreground">Chưa có Dự án Nhóm</h3>
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  Nhóm của bạn hiện tại chưa có dự án nào được khởi tạo cho môn học này. Hãy khởi tạo đề tài để bắt đầu quản lý tiến độ và tích hợp Jira cùng GitHub.
+                </p>
               </div>
+
+              {isRoleLoading ? (
+                <div className="flex flex-col items-center justify-center gap-2 p-4 text-xs text-muted-foreground animate-pulse">
+                  <Loader2Icon className="w-5 h-5 animate-spin text-primary" />
+                  <span>Đang đồng bộ và xác thực quyền Trưởng nhóm...</span>
+                </div>
+              ) : isLeader ? (
+                <div className="flex flex-col items-center gap-2">
+                  <Button
+                    size="lg"
+                    onClick={() => setIsEditModalOpen(true)}
+                    className="h-10 px-6 text-xs font-bold rounded-xl gap-2 cursor-pointer shadow-md bg-primary text-primary-foreground hover:bg-primary/90 transition-all hover:scale-[1.02] active:scale-[0.98]"
+                  >
+                    <PlusIcon className="w-4 h-4" />
+                    Tạo dự án mới
+                  </Button>
+                  <p className="text-[11px] text-muted-foreground/80">Dành cho Trưởng nhóm (Team Leader) đăng ký đề tài ban đầu</p>
+                </div>
+              ) : (
+                <div className="inline-block px-4 py-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-300 text-xs text-center max-w-md">
+                  <span className="font-semibold">Bạn đang tham gia với vai trò Thành viên (Member). </span>
+                  <span className="text-muted-foreground">Vui lòng chờ Trưởng nhóm khởi tạo đề tài dự án.</span>
+                </div>
+              )}
             </div>
 
-            <div className="space-y-1.5 max-w-md mx-auto">
-              <h3 className="text-lg font-bold text-foreground">Chưa có Dự án Nhóm</h3>
-              <p className="text-xs text-muted-foreground leading-relaxed">
-                Nhóm của bạn hiện tại chưa có dự án nào được khởi tạo cho môn học này. Hãy khởi tạo đề tài để bắt đầu quản lý tiến độ và tích hợp Jira cùng GitHub.
-              </p>
-            </div>
-
-            {isRoleLoading ? (
-              <div className="flex flex-col items-center justify-center gap-2 p-4 text-xs text-muted-foreground animate-pulse">
-                <Loader2Icon className="w-5 h-5 animate-spin text-primary" />
-                <span>Đang đồng bộ và xác thực quyền Trưởng nhóm...</span>
-              </div>
-            ) : isLeader ? (
-              <div className="flex flex-col items-center gap-2">
-                <Button
-                  size="lg"
-                  onClick={() => setIsEditModalOpen(true)}
-                  className="h-10 px-6 text-xs font-bold rounded-xl gap-2 cursor-pointer shadow-md bg-primary text-primary-foreground hover:bg-primary/90 transition-all hover:scale-[1.02] active:scale-[0.98]"
-                >
-                  <PlusIcon className="w-4 h-4" />
-                  Tạo dự án mới
-                </Button>
-                <p className="text-[11px] text-muted-foreground/80">Dành cho Trưởng nhóm (Team Leader) đăng ký đề tài ban đầu</p>
-              </div>
-            ) : (
-              <div className="inline-block px-4 py-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-300 text-xs text-center max-w-md">
-                <span className="font-semibold">Bạn đang tham gia với vai trò Thành viên (Member). </span>
-                <span className="text-muted-foreground">Vui lòng chờ Trưởng nhóm khởi tạo đề tài dự án.</span>
-              </div>
-            )}
+            <TeamMembersCard
+              course={effectiveCourse}
+              team={team}
+              isLoading={isTeamLoading}
+              isError={isTeamError}
+              error={teamError}
+              onRetry={() => void refetchTeam()}
+              onForbidden={() => void refreshCourses()}
+            />
           </div>
         ) : (
-          <>
-            <ProjectDetailsCard
-              project={project}
-              isLeader={isLeader}
-              integrations={integrations}
-              onOpenEditModal={() => setIsEditModalOpen(true)}
-            />
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+            <div className="lg:col-span-6 space-y-5">
+              <ProjectDetailsCard
+                project={project}
+                isLeader={isLeader}
+              />
 
-            <ProjectIntegrationsCard
-              projectId={project.projectId || project.id || ""}
-              isLeader={isLeader}
-            />
-          </>
+              <TeamMembersCard
+                course={effectiveCourse}
+                team={team}
+                isLoading={isTeamLoading}
+                isError={isTeamError}
+                error={teamError}
+                onRetry={() => void refetchTeam()}
+                onForbidden={() => void refreshCourses()}
+              />
+            </div>
+
+            <div className="lg:col-span-6 space-y-5">
+              <ProjectIntegrationsCard
+                projectId={projectId || project.projectId || project.id || ""}
+                isLeader={isLeader}
+              />
+            </div>
+          </div>
         )}
-
-        <TeamMembersCard
-          course={effectiveCourse}
-          team={team}
-          isLoading={isTeamLoading}
-          isError={isTeamError}
-          error={teamError}
-          onRetry={() => void refetchTeam()}
-          onForbidden={() => void refreshCourses()}
-        />
       </div>
 
       <ProjectEditModal

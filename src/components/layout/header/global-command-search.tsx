@@ -30,8 +30,9 @@ import {
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
 import { useLogout } from "@/features/auth/hooks/useAuth";
 import { lecturerCourseDashboardPath } from "@/features/lecturer/courses/lib/course-routes";
-import { MOCK_LECTURER_COURSES } from "@/features/lecturer/courses/data/mock-courses";
-import { MOCK_STUDENT_COURSES } from "@/features/student/courses/data/mock-student-courses";
+import { useLecturerCourses } from "@/features/lecturer/courses/hooks/use-lecturer-courses";
+import { useStudentCourses } from "@/features/student/courses/hooks/use-student-courses";
+import { mapStudentCourseResponse } from "@/features/student/courses/types/student-course";
 
 export function GlobalCommandSearch() {
   const [open, setOpen] = useState(false);
@@ -39,7 +40,16 @@ export function GlobalCommandSearch() {
   const { user, setSelectedCourse } = useAuthStore();
   const { mutate: logout } = useLogout();
 
-  // Lắng nghe phím tắt Ctrl + K hoặc Cmd + K
+  const lecturerCoursesQuery = useLecturerCourses({
+    enabled: user?.role === "LECTURER",
+  });
+  const studentCoursesQuery = useStudentCourses({
+    enabled: user?.role === "STUDENT",
+  });
+
+  const lecturerCourses = lecturerCoursesQuery.data ?? [];
+  const studentCourses = (studentCoursesQuery.data ?? []).map(mapStudentCourseResponse);
+
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
       if ((e.key === "k" || e.key === "K") && (e.metaKey || e.ctrlKey)) {
@@ -72,7 +82,6 @@ export function GlobalCommandSearch() {
 
   return (
     <>
-      {/* Nút Trigger trên Top Header (Linear Style) */}
       <button
         onClick={() => setOpen(true)}
         className="hidden md:flex items-center justify-between gap-3 px-3 py-1.5 rounded-xl bg-muted/40 hover:bg-muted text-muted-foreground hover:text-foreground border border-border/70 hover:border-border transition-all cursor-pointer text-xs w-56 lg:w-72 shadow-2xs group"
@@ -87,28 +96,26 @@ export function GlobalCommandSearch() {
         </kbd>
       </button>
 
-      {/* Command Palette Dialog */}
       <CommandDialog open={open} onOpenChange={setOpen}>
         <CommandInput placeholder="Nhập từ khóa tìm kiếm phân hệ, task, môn học..." />
         <CommandList className="max-h-80">
           <CommandEmpty>Không tìm thấy kết quả phù hợp.</CommandEmpty>
 
-          {/* Nhóm Điều hướng cho Sinh viên */}
           {user.role === "STUDENT" && (
-            <CommandGroup heading="Điều hướng học phần (Sinh viên)">
+            <CommandGroup heading="Điều hướng học phần">
               <CommandItem
                 onSelect={() => runCommand(() => router.push("/student/dashboard"))}
                 className="flex items-center gap-2.5 cursor-pointer py-2 px-3 text-xs"
               >
                 <LayoutDashboardIcon className="size-4 text-primary" />
-                <span>Dashboard Tổng quan</span>
+                <span>Dashboard tổng quan</span>
               </CommandItem>
               <CommandItem
                 onSelect={() => runCommand(() => router.push("/student/project-info"))}
                 className="flex items-center gap-2.5 cursor-pointer py-2 px-3 text-xs"
               >
                 <FolderKanbanIcon className="size-4 text-blue-500" />
-                <span>Thông tin dự án & Nhóm</span>
+                <span>Thông tin dự án nhóm</span>
               </CommandItem>
               <CommandItem
                 onSelect={() => runCommand(() => router.push("/student/graph"))}
@@ -122,7 +129,7 @@ export function GlobalCommandSearch() {
                 className="flex items-center gap-2.5 cursor-pointer py-2 px-3 text-xs"
               >
                 <KanbanSquareIcon className="size-4 text-purple-500" />
-                <span>Tiến độ công việc & Sprint Kanban</span>
+                <span>Tiến độ công việc Agile Kanban</span>
               </CommandItem>
               <CommandItem
                 onSelect={() => runCommand(() => router.push("/student/commits"))}
@@ -132,11 +139,11 @@ export function GlobalCommandSearch() {
                 <span>Lịch sử Commit Git</span>
               </CommandItem>
               <CommandItem
-                onSelect={() => runCommand(() => router.push("/student/peer-assessment"))}
+                onSelect={() => runCommand(() => router.push("/student/assessment"))}
                 className="flex items-center gap-2.5 cursor-pointer py-2 px-3 text-xs"
               >
                 <UserCheckIcon className="size-4 text-amber-500" />
-                <span>Đánh giá chéo đồng đẳng (Peer Review)</span>
+                <span>Đánh giá chéo đồng đẳng</span>
               </CommandItem>
               <CommandItem
                 onSelect={() => runCommand(() => router.push("/student/contribution"))}
@@ -148,9 +155,8 @@ export function GlobalCommandSearch() {
             </CommandGroup>
           )}
 
-          {/* Nhóm Điều hướng cho Giảng viên */}
           {user.role === "LECTURER" && (
-            <CommandGroup heading="Lớp giảng dạy (Giảng viên)">
+            <CommandGroup heading="Lớp giảng dạy">
               <CommandItem
                 onSelect={() => runCommand(() => router.push("/lecturer/courses"))}
                 className="flex items-center gap-2.5 cursor-pointer py-2 px-3 text-xs"
@@ -158,7 +164,7 @@ export function GlobalCommandSearch() {
                 <BookOpenIcon className="size-4 text-primary" />
                 <span>Danh sách tất cả lớp giảng dạy</span>
               </CommandItem>
-              {MOCK_LECTURER_COURSES.slice(0, 4).map((c) => (
+              {lecturerCourses.slice(0, 5).map((c) => (
                 <CommandItem
                   key={c.id}
                   onSelect={() => runCommand(() => router.push(lecturerCourseDashboardPath(c.id)))}
@@ -166,17 +172,16 @@ export function GlobalCommandSearch() {
                 >
                   <LayersIcon className="size-4 text-muted-foreground" />
                   <span>
-                    {c.code} · {c.name} ({c.room})
+                    {c.courseCode} · {c.name} {c.classCode ? `(${c.classCode})` : ""}
                   </span>
                 </CommandItem>
               ))}
             </CommandGroup>
           )}
 
-          {/* Nhóm Chuyển Khóa học cho Sinh viên */}
-          {user.role === "STUDENT" && (
+          {user.role === "STUDENT" && studentCourses.length > 0 && (
             <CommandGroup heading="Môn học đang theo học">
-              {MOCK_STUDENT_COURSES.map((c) => (
+              {studentCourses.map((c) => (
                 <CommandItem
                   key={c.id}
                   onSelect={() =>
@@ -189,7 +194,7 @@ export function GlobalCommandSearch() {
                 >
                   <BookOpenIcon className="size-4 text-muted-foreground" />
                   <span>
-                    {c.subjectCode} · {c.subjectName} ({c.adminClassCode})
+                    {c.subjectCode} · {c.subjectName} {c.adminClassCode ? `(${c.adminClassCode})` : ""}
                   </span>
                 </CommandItem>
               ))}
@@ -198,7 +203,6 @@ export function GlobalCommandSearch() {
 
           <CommandSeparator />
 
-          {/* Tác vụ nhanh & Cài đặt */}
           <CommandGroup heading="Tác vụ nhanh">
             <CommandItem
               onSelect={() => runCommand(() => router.push("/profile"))}
@@ -207,19 +211,21 @@ export function GlobalCommandSearch() {
               <UserIcon className="size-4 text-primary" />
               <span>Hồ sơ cá nhân</span>
             </CommandItem>
-            <CommandItem
-              onSelect={() => runCommand(() => router.push("/profile/integrations"))}
-              className="flex items-center gap-2.5 cursor-pointer py-2 px-3 text-xs"
-            >
-              <Link2Icon className="size-4 text-accent" />
-              <span>Cài đặt Tích hợp Jira & GitHub</span>
-            </CommandItem>
+            {user.role === "STUDENT" && (
+              <CommandItem
+                onSelect={() => runCommand(() => router.push("/profile/integrations"))}
+                className="flex items-center gap-2.5 cursor-pointer py-2 px-3 text-xs"
+              >
+                <Link2Icon className="size-4 text-accent" />
+                <span>Cài đặt tích hợp Jira và GitHub</span>
+              </CommandItem>
+            )}
             <CommandItem
               onSelect={() => runCommand(toggleTheme)}
               className="flex items-center gap-2.5 cursor-pointer py-2 px-3 text-xs"
             >
               <SunIcon className="size-4 text-amber-500" />
-              <span>Chuyển đổi giao diện Sáng / Tối</span>
+              <span>Chuyển đổi giao diện sáng tối</span>
             </CommandItem>
             <CommandItem
               onSelect={() =>

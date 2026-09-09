@@ -86,7 +86,7 @@ export function TopNavHeader() {
   } else if (
     user.role === "STUDENT" &&
     pathname !== "/student/courses" &&
-    (pathname.startsWith("/student") || pathname.startsWith("/profile"))
+    pathname.startsWith("/student")
   ) {
     navItems = getStudentNavItems();
   }
@@ -120,8 +120,7 @@ export function TopNavHeader() {
             <SagaLogo size="sm" showText={true} showSubtitle={false} />
           </Link>
 
-          {/* Bộ chọn / Hiển thị Ngữ cảnh Khóa học */}
-          {!pathname.startsWith("/profile") && !pathname.startsWith("/settings") && (
+          {!pathname.startsWith("/profile") && (
             <>
               <div className="hidden h-5 w-px bg-border sm:block shrink-0" />
               <CourseContextSwitcher courseId={lecturerCourseId} pathname={pathname} />
@@ -219,13 +218,15 @@ export function TopNavHeader() {
                   <span>Hồ sơ cá nhân</span>
                 </DropdownMenuItem>
 
-                <DropdownMenuItem
-                  onClick={() => router.push(user.role === "STUDENT" ? "/student/integrations" : "/profile/integrations")}
-                  className="text-xs cursor-pointer py-2 px-2.5 rounded-lg flex items-center gap-2 hover:bg-primary/10 hover:text-primary font-medium"
-                >
-                  <Link2Icon className="size-3.5 text-primary" />
-                  <span>Tích hợp Jira & GitHub</span>
-                </DropdownMenuItem>
+                {user.role === "STUDENT" && (
+                  <DropdownMenuItem
+                    onClick={() => router.push("/profile/integrations")}
+                    className="text-xs cursor-pointer py-2 px-2.5 rounded-lg flex items-center gap-2 hover:bg-primary/10 hover:text-primary font-medium"
+                  >
+                    <Link2Icon className="size-3.5 text-primary" />
+                    <span>Tích hợp Jira & GitHub</span>
+                  </DropdownMenuItem>
+                )}
 
                 <DropdownMenuSeparator />
 

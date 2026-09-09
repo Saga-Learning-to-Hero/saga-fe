@@ -54,7 +54,7 @@ export function CourseContextSwitcher({
     );
   }
 
-  if (pathname.startsWith("/profile") || pathname.startsWith("/settings")) {
+  if (pathname.startsWith("/profile")) {
     return null;
   }
 

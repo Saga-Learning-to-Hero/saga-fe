@@ -22,7 +22,6 @@ export function SNANetworkView() {
 
   return (
     <div className="space-y-6 animate-in fade-in-0 duration-300">
-      {/* ── Heading & Academic Overview Banner: Tinh gọn ── */}
       <div className="p-3 sm:p-4 rounded-2xl bg-linear-to-r from-purple-500/10 via-card to-blue-500/10 border border-border/80 shadow-xs">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
@@ -31,7 +30,7 @@ export function SNANetworkView() {
                 SNA Graph
               </Badge>
               <h2 className="text-base sm:text-lg font-black text-foreground tracking-tight">
-                Mạng Lưới Tương Tác Nhóm & Code Review (SNA)
+                Mạng lưới tương tác nhóm và code review
               </h2>
             </div>
             <p className="text-[11px] text-muted-foreground mt-0.5 max-w-2xl leading-relaxed">
@@ -56,7 +55,6 @@ export function SNANetworkView() {
         </div>
       </div>
 
-      {/* ── Cytoscape SNA Graph Canvas ── */}
       <CytoscapeGraphCanvas
         nodes={snaData.nodes}
         edges={snaData.edges}
@@ -64,7 +62,6 @@ export function SNANetworkView() {
         layoutName="concentric"
       />
 
-      {/* ── Centrality & Interaction Metrics Table ── */}
       <Card className="rounded-3xl border border-border/80 shadow-xs bg-card overflow-hidden">
         <CardHeader className="p-5 border-b border-border/60 bg-muted/20">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -76,10 +73,10 @@ export function SNANetworkView() {
                 <span className="text-xs text-muted-foreground font-mono">Mức độ tương tác & review PR</span>
               </div>
               <CardTitle className="text-base font-extrabold tracking-tight mt-1">
-                Bảng Thống Kê Tương Tác Code Review (SNA Matrix)
+                Bảng thống kê tương tác code review
               </CardTitle>
               <CardDescription className="text-xs text-muted-foreground">
-                Thống kê số lượt review Pull Request đã gửi và nhận, cùng chỉ số mức độ kết nối (Centrality).
+                Thống kê số lượt review Pull Request đã gửi và nhận, cùng chỉ số mức độ kết nối Centrality.
               </CardDescription>
             </div>
             <Badge variant="outline" className="text-xs font-mono font-bold">
@@ -95,7 +92,7 @@ export function SNANetworkView() {
                   <th className="p-4">Thành viên</th>
                   <th className="p-4 text-center">PR Reviews đã gửi</th>
                   <th className="p-4 text-center">PR Reviews được nhận</th>
-                  <th className="p-4 text-center">Mức độ kết nối (Centrality)</th>
+                  <th className="p-4 text-center">Mức độ kết nối Centrality</th>
                   <th className="p-4 text-right">Phân loại thành viên</th>
                 </tr>
               </thead>
@@ -131,18 +128,18 @@ export function SNANetworkView() {
                       {m.isKeyContributor && (
                         <Badge className="bg-purple-500/15 text-purple-600 dark:text-purple-400 border border-purple-500/30 gap-1.5 font-extrabold text-[11px]">
                           <CrownIcon className="w-3.5 h-3.5 text-purple-500" />
-                          Key Contributor (Nòng cốt)
+                          Thành viên nòng cốt
                         </Badge>
                       )}
                       {m.isGhosting && (
                         <Badge className="bg-red-500/15 text-red-600 dark:text-red-400 border border-red-500/30 gap-1.5 font-extrabold animate-pulse text-[11px]">
                           <AlertTriangleIcon className="w-3.5 h-3.5 text-red-500" />
-                          Cảnh báo ít tương tác (Ghosting)
+                          Cảnh báo ít tương tác
                         </Badge>
                       )}
                       {!m.isKeyContributor && !m.isGhosting && (
                         <Badge variant="outline" className="text-muted-foreground font-semibold">
-                          Tương tác tốt (Balanced)
+                          Tương tác cân bằng
                         </Badge>
                       )}
                     </td>
@@ -154,7 +151,6 @@ export function SNANetworkView() {
         </CardContent>
       </Card>
 
-      {/* Node Detail Modal */}
       <GraphNodeDetailsModal nodeData={selectedNode} onClose={() => setSelectedNode(null)} />
     </div>
   );

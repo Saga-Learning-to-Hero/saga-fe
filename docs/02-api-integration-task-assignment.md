@@ -51,11 +51,11 @@ Chia đều toàn bộ khối lượng công việc thành **3 trục nghiệp v
      - `GET /api/admin/subjects/{id}` (Chi tiết môn học)
      - `PATCH /api/admin/subjects/{id}` (Cập nhật môn học)
   2. **Syllabus (Đề cương môn học - Part C3 – C6)**:
-     - `POST /api/admin/subjects/{id}/syllabi` (Tạo phiên bản Syllabus DRAFT)
-     - `GET /api/admin/syllabi/{id}` (Đọc chi tiết Syllabus)
-     - `PUT /api/admin/syllabi/{id}/structure` (Thay thế cây cấu trúc tiêu chí DRAFT)
-     - `POST /api/admin/syllabi/{id}/publish` (Xuất bản chính thức sang ACTIVE / Bất biến)
-     - `POST /api/admin/syllabi/{id}/archive` (Lưu trữ Syllabus cũ)
+     - `POST /api/admin/subjects/{subjectId}/syllabi` (Tạo phiên bản Syllabus DRAFT)
+     - `GET /api/admin/subjects/{subjectId}/syllabi/{syllabusVersionId}` (Đọc chi tiết Syllabus)
+     - `PUT /api/admin/subjects/{subjectId}/syllabi/{syllabusVersionId}/structure` (Thay thế cây cấu trúc tiêu chí DRAFT)
+     - `POST /api/admin/subjects/{subjectId}/syllabi/{syllabusVersionId}/publish` (Xuất bản chính thức sang ACTIVE / Bất biến)
+     - `POST /api/admin/subjects/{subjectId}/syllabi/{syllabusVersionId}/archive` (Lưu trữ Syllabus cũ)
   3. **Semester & Academic Class (Học kỳ & Lớp hành chính - Part C7, C8)**:
      - `GET /api/admin/semesters` & `POST /api/admin/semesters` (Quản lý học kỳ)
      - `GET /api/admin/classes` & `POST /api/admin/classes` (Quản lý lớp hành chính)
@@ -86,36 +86,49 @@ Chia đều toàn bộ khối lượng công việc thành **3 trục nghiệp v
      - `GET /api/lecturer/courses/{courseId}/teams` (Xem danh sách nhóm, `teamId`, `leader`, `projectId`)
   3. **Sinh viên xem Môn & Nhóm (Part F, G1)**:
      - `GET /api/student/courses` (Môn học sinh viên đang tham gia)
-     - `GET /api/student/courses/{courseId}/my-team` (Sinh viên xem nhóm của mình)
+     - `GET /api/student/courses/{courseId}/team` (Sinh viên xem nhóm và vai trò của mình)
+  4. **Điều phối Nhóm Đồ án Bổ sung**:
+     - `PUT /api/lecturer/courses/{courseId}/teams/{teamId}/leader` (Chỉ định / thay đổi Trưởng nhóm mới)
+     - `PATCH /api/lecturer/courses/{courseId}/team-members/{teamMemberId}/team` (Chuyển thành viên sang nhóm khác trong lớp)
 
 ---
 
 ### 👤 DEV 3: Khởi tạo Dự án & Trung tâm Tích hợp GitHub / Jira (Project & Integrations Hub)
 
-- **Mục tiêu**: Xây dựng không gian làm việc của nhóm đồ án, Team Leader tạo dự án và kết nối toàn bộ kho lưu trữ GitHub cùng bảng công việc Jira.
-- **Đặc thù UI**: Luồng kết nối nhiều bước (Multi-step Integration Wizard), xử lý OAuth Redirect / Popup, Callback Route Handlers và Thẻ tóm tắt trạng thái tích hợp.
+- **Mục tiêu**: Xây dựng không gian làm việc của nhóm đồ án, Team Leader tạo dự án, kết nối GitHub App & Jira Software và đồng bộ dữ liệu chiếu (Project Projections).
+- **Đặc thù UI**: Luồng kết nối nhiều bước (Multi-step Integration Wizard), xử lý OAuth Redirect / Popup, Callback Route Handlers, Thẻ tóm tắt tích hợp và Bảng đối soát Task / Commit.
 - **Danh mục API phụ trách (Part H, Part I, Part J, Part N)**:
   1. **Khởi tạo Dự án Nhóm (Part H)**:
-     - `GET /api/projects/types` (Danh mục loại đồ án)
+     - `GET /api/student/project-types` (Danh mục loại đồ án)
      - `GET /api/student/courses/{courseId}/project` (Xem thông tin dự án hiện tại)
      - `POST /api/student/courses/{courseId}/project` (Chỉ Team Leader tạo dự án)
-  2. **Tích hợp GitHub Workspace (Part I)**:
-     - `GET /api/users/me/identities` & `POST /api/users/me/identities/github/start` (Liên kết GitHub cá nhân)
-     - `POST /api/projects/{projectId}/integrations/github/app/installations/start` (Bắt đầu cài GitHub App)
-     - `GET /api/projects/{projectId}/integrations/github/app/installations/{installationId}/repositories` (Liệt kê repositories)
-     - `PUT /api/projects/{projectId}/integrations/github/repositories` (Chọn repo Frontend / Backend / Fullstack)
-     - `DELETE /api/projects/{projectId}/integrations/github` (Hủy liên kết repo)
-  3. **Tích hợp Jira Workspace (Part J)**:
-     - `POST /api/users/me/identities/jira/start` (Bắt buộc liên kết Jira cá nhân trước)
-     - `POST /api/projects/{projectId}/integrations/jira/oauth/start` (Bắt đầu OAuth Jira nhóm)
-     - `GET /api/projects/{projectId}/integrations/jira/sites` (Chọn Atlassian Site/CloudId)
-     - `GET /api/projects/{projectId}/integrations/jira/sites/{cloudId}/projects` (Chọn Jira Project)
-     - `GET /api/projects/{projectId}/integrations/jira/sites/{cloudId}/projects/{jiraProjectId}/boards` (Chọn Jira Board)
-     - `PUT /api/projects/{projectId}/integrations/jira/selection` (Lưu cấu hình Jira)
+  2. **Tích hợp GitHub Workspace Nhóm (Part I)**:
+     - `POST /api/projects/{projectId}/integrations/github/connect` (Khởi tạo kết nối GitHub App cho nhóm)
+     - `GET /api/projects/{projectId}/integrations/github/repositories` (Liệt kê repositories được cấp quyền)
+     - `PUT /api/projects/{projectId}/integrations/github/repositories` (Chọn repo kèm role `FRONTEND` / `BACKEND` / `OTHER`)
+     - `DELETE /api/projects/{projectId}/integrations/github` (Hủy liên kết GitHub)
+  3. **Tích hợp Jira Workspace Nhóm (Part J)**:
+     - `POST /api/projects/{projectId}/integrations/jira/connect` (Bắt đầu luồng OAuth Jira nhóm)
+     - `GET /api/projects/{projectId}/integrations/jira/sites` (Chọn Atlassian Site / `cloudId`)
+     - `GET /api/projects/{projectId}/integrations/jira/projects?cloudId={cloudId}` (Chọn Jira Project)
+     - `GET /api/projects/{projectId}/integrations/jira/boards?cloudId={cloudId}&jiraProjectId={jiraProjectId}` (Chọn Jira Board)
+     - `PUT /api/projects/{projectId}/integrations/jira` (Lưu cấu hình Jira: `cloudId`, `jiraProjectId`, `boardId`)
      - `DELETE /api/projects/{projectId}/integrations/jira` (Hủy liên kết Jira)
-  4. **OAuth Callback & Tóm Tắt Tích Hợp (Part I4, J6, Part N)**:
-     - Xử lý các tuyến callback chuyển hướng từ GitHub & Jira.
-     - `GET /api/projects/{projectId}/integrations` (Hiển thị thẻ minh chứng đã kết nối cả GitHub & Jira).
+  4. **Liên kết Danh tính Cá nhân (Personal Integrations)**:
+     - `GET /api/integrations/me` (Xem danh sách tài khoản cá nhân đã liên kết)
+     - `POST /api/integrations/github/link` (Khởi tạo OAuth liên kết GitHub cá nhân)
+     - `POST /api/integrations/jira/link` (Khởi tạo OAuth liên kết Jira cá nhân)
+     - `PATCH /api/integrations/github/{identityId}/primary` & `PATCH /api/integrations/jira/{identityId}/primary` (Đặt làm tài khoản chính)
+     - `DELETE /api/integrations/github/{identityId}` & `DELETE /api/integrations/jira/{identityId}` (Hủy liên kết cá nhân)
+  5. **Chiếu Dữ Liệu Dự Án & Đồng Bộ Ngầm (Project Projections & Sync)**:
+     - `POST /api/projects/{projectId}/sync` (Team Leader kích hoạt backfill dữ liệu ngầm)
+     - `GET /api/projects/{projectId}/sync-status` (Xem tiến độ và trạng thái đồng bộ của Jira & GitHub)
+     - `GET /api/projects/{projectId}/tasks` (Danh sách Jira tasks đã chiếu)
+     - `GET /api/projects/{projectId}/tasks/{taskId}/commits` (Danh sách commits nối với Jira task)
+     - `GET /api/projects/{projectId}/commits` (Danh sách GitHub commits đã chiếu)
+  6. **OAuth Callback & Tóm Tắt Tích Hợp**:
+     - Tuyến callback redirect: `/api/integrations/github/oauth/callback`, `/api/integrations/jira/oauth/callback`, `/api/projects/{projectId}/integrations/github/setup/callback`.
+     - `GET /api/projects/{projectId}/integrations` (Thẻ trạng thái tích hợp của dự án).
 
 ---
 

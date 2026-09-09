@@ -223,7 +223,7 @@ export function CourseDialog({
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold text-foreground flex items-center gap-1">
                   <LayersIcon className="w-3 h-3 text-primary" />
-                  Đề cương chi tiết (Syllabus) *
+                  Đề cương môn học *
                 </label>
                 <CustomSelect
                   value={formData.syllabusVersionId}

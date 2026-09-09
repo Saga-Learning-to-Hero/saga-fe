@@ -146,8 +146,8 @@ export function RecentAuditAndQuickActionsSection() {
                 <BookOpenIcon className="w-4 h-4" />
               </div>
               <div>
-                <p className="text-xs font-semibold text-foreground">Chương trình đào tạo (FLM)</p>
-                <p className="text-[11px] text-muted-foreground">Syllabus, Tín chỉ, Cơ cấu điểm</p>
+                <p className="text-xs font-semibold text-foreground">Chương trình môn học</p>
+                <p className="text-[11px] text-muted-foreground">Đề cương, tín chỉ, cơ cấu điểm</p>
               </div>
             </div>
             <ArrowRightIcon className="w-4 h-4 text-muted-foreground group-hover:text-foreground transition-transform group-hover:translate-x-0.5" />
@@ -162,8 +162,8 @@ export function RecentAuditAndQuickActionsSection() {
                 <ScrollTextIcon className="w-4 h-4" />
               </div>
               <div>
-                <p className="text-xs font-semibold text-foreground">Nhật ký hệ thống (Audit Log)</p>
-                <p className="text-[11px] text-muted-foreground">Audit Trail & Security Logs</p>
+                <p className="text-xs font-semibold text-foreground">Nhật ký hệ thống</p>
+                <p className="text-[11px] text-muted-foreground">Lịch sử thao tác và bảo mật</p>
               </div>
             </div>
             <ArrowRightIcon className="w-4 h-4 text-muted-foreground group-hover:text-foreground transition-transform group-hover:translate-x-0.5" />

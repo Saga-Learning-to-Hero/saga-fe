@@ -28,7 +28,6 @@ export function PeerAssessmentView() {
   const authUser = useAuthStore((state) => state.user);
   const currentUserStudentCode = authUser?.studentCode || "HE170504";
 
-  // Select Sprint state (Default: Sprint 2 - COMPLETED)
   const [selectedSprintId, setSelectedSprintId] = useState<string>("sprint-02");
   const selectedSprint = useMemo(() => {
     return (
@@ -42,26 +41,22 @@ export function PeerAssessmentView() {
   const sprintOptions: CustomSelectOption[] = useMemo(() => {
     return MOCK_ASSESSMENT_SPRINTS.map((s) => ({
       value: s.id,
-      label: `${s.name} (${s.status === "COMPLETED" ? "Đã đóng ✓" : "Đang mở ⏳"})`,
-      subLabel: s.status === "COMPLETED" ? "Đã hoàn thành · Mở Form đánh giá chéo" : "Đang diễn ra · Chưa đóng sprint",
+      label: `${s.name} - ${s.status === "COMPLETED" ? "Đã đóng" : "Đang mở"}`,
+      subLabel: s.status === "COMPLETED" ? "Đã hoàn thành · Mở form đánh giá chéo" : "Đang diễn ra · Chưa đóng sprint",
     }));
   }, []);
 
-  // Records state
   const [records, setRecords] = useState<PeerReviewRecord[]>(INITIAL_MOCK_RECORDS);
 
-  // Modal State
   const [targetMemberForModal, setTargetMemberForModal] = useState<PeerReviewMember | null>(null);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
 
-  // Other team members to review (excluding self)
   const membersToReview = useMemo(() => {
     return MOCK_TEAM_MEMBERS_ASSESSMENT.filter(
       (m) => m.studentCode !== currentUserStudentCode
     );
   }, [currentUserStudentCode]);
 
-  // Overall evaluation progress
   const completedReviewsCount = useMemo(() => {
     return membersToReview.filter((member) => {
       const rec = records.find(
@@ -73,7 +68,6 @@ export function PeerAssessmentView() {
     }).length;
   }, [membersToReview, records, selectedSprintId]);
 
-  // Handler open modal
   const handleOpenReviewModal = (member: PeerReviewMember) => {
     if (isSprintLocked) return;
     setTargetMemberForModal(member);
@@ -103,14 +97,12 @@ export function PeerAssessmentView() {
 
   return (
     <div className="space-y-6 max-w-[1600px] mx-auto pb-12">
-      {/* Top Header Banner */}
       <PeerAssessmentHeader
         completedCount={completedReviewsCount}
         totalMembersToReview={membersToReview.length}
         currentSprintName={selectedSprint.name}
       />
 
-      {/* Toolbar: Sprint Selector & Info */}
       <div className="p-4 rounded-2xl bg-card border border-border/80 shadow-2xs space-y-3">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center gap-3 flex-wrap">
@@ -131,12 +123,12 @@ export function PeerAssessmentView() {
             {selectedSprint.status === "COMPLETED" ? (
               <Badge className="bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 font-bold text-xs gap-1 hidden md:flex self-end mb-0.5">
                 <CheckCircle2Icon className="w-3.5 h-3.5" />
-                Sprint đã hoàn thành (Mở Form Đánh giá)
+                Sprint đã hoàn thành · Mở form đánh giá
               </Badge>
             ) : (
               <Badge variant="outline" className="bg-amber-500/15 text-amber-900 dark:text-amber-300 border-amber-500/30 font-bold text-xs gap-1 hidden md:flex self-end mb-0.5">
                 <LockIcon className="w-3.5 h-3.5 text-amber-700 dark:text-amber-400" />
-                Sprint đang mở (Chưa đóng)
+                Sprint đang mở · Chưa kết thúc
               </Badge>
             )}
           </div>
@@ -147,12 +139,11 @@ export function PeerAssessmentView() {
         </div>
       </div>
 
-      {/* Warning Notice if selecting ACTIVE or PLANNED sprint */}
       {isSprintLocked && (
         <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-950 dark:text-amber-200 text-xs font-semibold flex items-center gap-3 animate-in fade-in-0 shadow-2xs">
           <ShieldAlertIcon className="w-5 h-5 shrink-0 text-amber-600 dark:text-amber-400" />
           <div>
-            <strong className="block text-sm font-bold">Sprint này đang diễn ra / Chưa kết thúc!</strong>
+            <strong className="block text-sm font-bold">Sprint này đang diễn ra và chưa kết thúc!</strong>
             <span>
               Theo quy định, đánh giá chéo đồng đội chỉ được thực hiện sau khi Sprint đã hoàn thành và được Trưởng nhóm đóng chính thức. Vui lòng chọn Sprint 1 hoặc Sprint 2 để tiến hành chấm điểm.
             </span>
@@ -160,12 +151,11 @@ export function PeerAssessmentView() {
         </div>
       )}
 
-      {/* Peer Members Grid */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
             <SparklesIcon className="w-4 h-4 text-purple-500" />
-            Danh sách Đồng đội cần Đánh giá ({membersToReview.length} thành viên)
+            Danh sách thành viên nhóm cần đánh giá ({membersToReview.length} thành viên)
           </h2>
         </div>
 
@@ -192,7 +182,6 @@ export function PeerAssessmentView() {
         </div>
       </div>
 
-      {/* Review Modal */}
       <PeerReviewModal
         isOpen={isModalOpen}
         targetMember={targetMemberForModal}

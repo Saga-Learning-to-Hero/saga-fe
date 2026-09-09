@@ -4,7 +4,6 @@ import {
   CheckSquareIcon,
   ExternalLinkIcon,
   RefreshCwIcon,
-  ShieldCheckIcon,
   LoaderCircleIcon,
   UnlinkIcon,
 } from "lucide-react";
@@ -37,98 +36,121 @@ export function ProjectJiraSection({
     ? jira.siteName.startsWith("http")
       ? jira.siteName
       : jira.siteName.includes(".")
-      ? `https://${jira.siteName}`
-      : `https://${jira.siteName}.atlassian.net`
+        ? `https://${jira.siteName}`
+        : `https://${jira.siteName}.atlassian.net`
     : "";
 
   return (
-    <div className="space-y-3">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-lg bg-blue-600 text-white flex items-center justify-center shrink-0">
-            <CheckSquareIcon className="w-3.5 h-3.5" />
+    <div className="rounded-xl border border-blue-500/25 bg-blue-500/[0.02] p-4 flex flex-col justify-between space-y-3">
+      <div className="space-y-3">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-lg bg-blue-600 text-white flex items-center justify-center shrink-0 shadow-xs">
+              <CheckSquareIcon className="w-4 h-4" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h4 className="text-xs sm:text-sm font-bold text-foreground">
+                  Jira Project của nhóm
+                </h4>
+                {isConnected ? (
+                  <Badge className="bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-0 text-[10px] font-semibold">
+                    Đã kết nối
+                  </Badge>
+                ) : (
+                  <Badge variant="outline" className="text-[10px] text-muted-foreground border-border">
+                    Chưa kết nối
+                  </Badge>
+                )}
+              </div>
+              <p className="text-[11px] text-muted-foreground">
+                Quản lý sprint, backlog và task chung của nhóm
+              </p>
+            </div>
           </div>
-          <div>
-            <h4 className="text-xs font-bold text-foreground uppercase tracking-wider">
-              Jira Software Project (Duy nhất 1 Site & Key)
-            </h4>
-            <p className="text-[11px] text-muted-foreground">
-              Tất cả thành viên trong nhóm sẽ đối soát thẻ công việc theo Jira Site và Key này
-            </p>
-          </div>
-        </div>
 
-        {isLeader && onConnectJira && (
-          <Button
-            type="button"
-            size="sm"
-            onClick={onConnectJira}
-            disabled={isConnectingJira}
-            className="h-8 px-3 text-xs font-bold rounded-xl gap-1.5 bg-blue-600 hover:bg-blue-700 text-white cursor-pointer shadow-2xs"
-          >
-            {isConnectingJira ? (
-              <>
-                <LoaderCircleIcon className="w-3.5 h-3.5 animate-spin" />
-                <span>Đang chuyển hướng...</span>
-              </>
-            ) : (
-              <>
-                <ExternalLinkIcon className="w-3.5 h-3.5" />
-                <span>{isConnected ? "Đổi Jira Workspace" : "+ Kết nối Jira Workspace"}</span>
-              </>
-            )}
-          </Button>
-        )}
-      </div>
-
-      {!isConnected ? (
-        <div className="p-6 rounded-2xl border border-dashed border-border/80 bg-muted/20 text-center space-y-3">
-          <div className="w-10 h-10 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center mx-auto">
-            <CheckSquareIcon className="w-5 h-5" />
-          </div>
-          <div className="max-w-md mx-auto space-y-1">
-            <h5 className="text-xs font-bold text-foreground">Chưa có Jira Workspace nào cho đồ án</h5>
-            <p className="text-[11px] text-muted-foreground">
-              Trưởng nhóm kết nối Atlassian Jira để đồng bộ tiến độ Sprint, Backlog và thẻ công việc tự động.
-            </p>
-          </div>
           {isLeader && onConnectJira && (
             <Button
               type="button"
               size="sm"
               onClick={onConnectJira}
               disabled={isConnectingJira}
-              className="h-8 px-3 text-xs font-bold rounded-xl gap-1.5 bg-blue-600 hover:bg-blue-700 text-white cursor-pointer shadow-2xs"
+              className="h-7.5 px-2.5 text-[11px] font-bold rounded-lg gap-1.5 bg-blue-600 hover:bg-blue-700 text-white cursor-pointer shadow-2xs self-start sm:self-auto shrink-0"
             >
-              <ExternalLinkIcon className="w-3.5 h-3.5" />
-              <span>Chuyển sang Atlassian để kết nối Jira</span>
+              {isConnectingJira ? (
+                <>
+                  <LoaderCircleIcon className="w-3 h-3 animate-spin" />
+                  <span>Đang xử lý...</span>
+                </>
+              ) : (
+                <>
+                  <ExternalLinkIcon className="w-3 h-3" />
+                  <span>{isConnected ? "Đổi Jira" : "+ Kết nối Jira"}</span>
+                </>
+              )}
             </Button>
           )}
         </div>
-      ) : (
-        <div className="p-4 rounded-2xl bg-blue-500/5 border border-blue-500/25 flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="space-y-1.5 min-w-0">
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-sm font-bold text-foreground font-mono">
-                {jira?.siteName || "Jira Site"}
-              </span>
-              {jira?.projectKey && (
-                <Badge variant="outline" className="font-mono font-bold text-xs bg-background">
-                  Key: {jira.projectKey}
-                </Badge>
+
+        {!isConnected ? (
+          <div className="p-4 rounded-xl border border-dashed border-border/80 bg-muted/15 text-center space-y-2">
+            <div className="w-8 h-8 rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center mx-auto">
+              <CheckSquareIcon className="w-4 h-4" />
+            </div>
+            <div className="max-w-sm mx-auto space-y-0.5">
+              <h5 className="text-xs font-bold text-foreground">Chưa kết nối Jira Project</h5>
+              <p className="text-[11px] text-muted-foreground">
+                Trưởng nhóm kết nối Jira để đồng bộ sprint và task của nhóm.
+              </p>
+            </div>
+            {isLeader && onConnectJira && (
+              <Button
+                type="button"
+                size="sm"
+                onClick={onConnectJira}
+                disabled={isConnectingJira}
+                className="h-7.5 px-3 text-[11px] font-bold rounded-lg gap-1.5 bg-blue-600 hover:bg-blue-700 text-white cursor-pointer shadow-2xs"
+              >
+                <ExternalLinkIcon className="w-3 h-3" />
+                <span>Kết nối Jira Project</span>
+              </Button>
+            )}
+          </div>
+        ) : (
+          <div className="p-4 rounded-xl bg-card border border-border/70 space-y-3 shadow-2xs">
+            <div className="flex items-center justify-between gap-2 flex-wrap">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="text-sm font-bold text-foreground font-mono">
+                  {jira?.siteName || "Jira Site"}
+                </span>
+                {jira?.projectKey && (
+                  <Badge variant="outline" className="font-mono font-bold text-xs bg-background">
+                    Key: {jira.projectKey}
+                  </Badge>
+                )}
+                {jira?.boardId && (
+                  <Badge variant="secondary" className="font-mono text-xs">
+                    Board: #{jira.boardId}
+                  </Badge>
+                )}
+              </div>
+
+              {onSyncJira && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={onSyncJira}
+                  disabled={syncingId === "jira"}
+                  className="h-7 px-2.5 text-xs font-semibold rounded-lg gap-1 cursor-pointer"
+                >
+                  <RefreshCwIcon className={`w-3 h-3 ${syncingId === "jira" ? "animate-spin text-primary" : ""}`} />
+                  <span>Đồng bộ</span>
+                </Button>
               )}
-              {jira?.boardId && (
-                <Badge variant="secondary" className="font-mono text-xs">
-                  Board: #{jira.boardId}
-                </Badge>
-              )}
-              <Badge className="bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-0 text-[10px] font-semibold">
-                <ShieldCheckIcon className="w-3 h-3 mr-1" />
-                {jira?.status || "ACTIVE"}
-              </Badge>
             </div>
 
-            <div className="flex items-center gap-3 text-xs text-muted-foreground font-mono truncate">
+            <div className="flex items-center gap-3 text-xs text-muted-foreground font-mono truncate pt-1 border-t border-border/60">
               {siteUrl && (
                 <a
                   href={siteUrl}
@@ -148,35 +170,21 @@ export function ProjectJiraSection({
               )}
             </div>
           </div>
+        )}
+      </div>
 
-          <div className="flex items-center gap-2 shrink-0">
-            {onSyncJira && (
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={onSyncJira}
-                disabled={syncingId === "jira"}
-                className="h-8 px-3 text-xs font-semibold rounded-xl gap-1.5 cursor-pointer"
-              >
-                <RefreshCwIcon className={`w-3.5 h-3.5 ${syncingId === "jira" ? "animate-spin text-primary" : ""}`} />
-                <span>Đồng bộ ngay</span>
-              </Button>
-            )}
-
-            {isLeader && onDisconnectJira && (
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={onDisconnectJira}
-                className="h-8 w-8 p-0 rounded-xl text-muted-foreground hover:text-rose-600 hover:bg-rose-500/10 cursor-pointer"
-                title="Ngắt kết nối Jira"
-              >
-                <UnlinkIcon className="w-3.5 h-3.5" />
-              </Button>
-            )}
-          </div>
+      {isLeader && isConnected && onDisconnectJira && (
+        <div className="pt-2 flex justify-end">
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={onDisconnectJira}
+            className="h-7 px-2.5 text-xs text-rose-500 hover:text-rose-600 hover:bg-rose-500/10 rounded-lg gap-1 cursor-pointer"
+          >
+            <UnlinkIcon className="w-3 h-3" />
+            <span>Ngắt kết nối Jira</span>
+          </Button>
         </div>
       )}
     </div>

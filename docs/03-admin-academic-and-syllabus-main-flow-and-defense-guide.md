@@ -67,8 +67,8 @@ Tại giao diện xây dựng cấu trúc đề cương, Admin thiết lập 3 t
    * **Ràng buộc nghiệp vụ bắt buộc**: Tổng trọng số của toàn bộ bài nộp trong đề cương phải **chính xác bằng 100%**. Nếu khác 100%, hệ thống sẽ chặn nút lưu và cảnh báo đỏ.
 3. **CLO Matrix (Ma trận Chuẩn đầu ra)**:
    * Mỗi bài nộp phải được tích chọn liên kết tới ít nhất một chuẩn đầu ra (`outcomeCodes`, ví dụ: `G1.1`, `G2.1`, `G3.2`).
-4. **Lưu Cấu Trúc**: Admin bấm **"Lưu cấu trúc đề cương"** (`PUT /api/admin/syllabi/{id}/structure`).
-5. **Xuất Bản Chính Thức**: Admin bấm **"Xuất bản chính thức (Publish)"** (`POST /api/admin/syllabi/{id}/publish`):
+4. **Lưu Cấu Trúc**: Admin bấm **"Lưu cấu trúc đề cương"** (`PUT /api/admin/subjects/{subjectId}/syllabi/{syllabusVersionId}/structure`).
+5. **Xuất Bản Chính Thức**: Admin bấm **"Xuất bản chính thức (Publish)"** (`POST /api/admin/subjects/{subjectId}/syllabi/{syllabusVersionId}/publish`):
    * Đề cương chuyển sang trạng thái `PUBLISHED`.
    * Toàn bộ các nút chỉnh sửa cấu trúc bị khóa lại để bảo toàn tính bất biến.
 
@@ -148,7 +148,7 @@ Admin bấm vào nút **"Roster"** trên thẻ lớp học phần để chuyển
 ### ❓ Câu 2: Nếu một Lớp học phần đang diễn ra, Giảng viên hoặc Admin có được phép sửa lại trọng số bài nộp trong Đề cương không?
 * **Trả lời**:
   * **Tuyệt đối KHÔNG.** Hệ thống áp dụng quy tắc **Bất biến của Đề cương đã xuất bản (Syllabus Immutability)**.
-  * Một khi đề cương đã chuyển sang `PUBLISHED` và được gán vào Lớp học phần, Backend sẽ chặn mọi thao tác cập nhật cấu trúc (`PUT /api/admin/syllabi/{id}/structure`). 
+  * Một khi đề cương đã chuyển sang `PUBLISHED` và được gán vào Lớp học phần, Backend sẽ chặn mọi thao tác cập nhật cấu trúc (`PUT /api/admin/subjects/{subjectId}/syllabi/{syllabusVersionId}/structure`). 
   * Nếu cố tình gọi API, Backend sẽ trả về lỗi nghiệp vụ: `COURSE_SYLLABUS_IMMUTABLE`. Điều này ngăn chặn gian lận điểm số và bảo vệ quyền lợi minh bạch của sinh viên.
 
 ### ❓ Câu 3: Quy trình Import Roster sinh viên bằng file Excel xử lý thế nào nếu gặp sinh viên chưa từng có tài khoản trong hệ thống?

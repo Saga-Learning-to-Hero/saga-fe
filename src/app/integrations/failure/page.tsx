@@ -110,7 +110,7 @@ function FailureContent() {
   };
 
   const homeHref = isAuthenticated && user ? getRoleHomePath(user.role) : "/dashboard";
-  const integrationsHref = user?.role === "STUDENT" ? "/student/integrations" : "/profile/integrations";
+  const integrationsHref = "/profile/integrations";
 
   return (
     <div className="w-full max-w-xl mx-auto space-y-6">

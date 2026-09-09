@@ -275,7 +275,7 @@ export default function SubjectDetailPage({
           </TabsTrigger>
           <TabsTrigger value="structure" className="text-xs font-semibold gap-1.5 px-3.5 py-1.5 cursor-pointer">
             <AwardIcon className="w-3.5 h-3.5" />
-            2. Cấu trúc Đề cương (CLOs & Sprints)
+            2. Cấu trúc đề cương chi tiết
           </TabsTrigger>
         </TabsList>
 

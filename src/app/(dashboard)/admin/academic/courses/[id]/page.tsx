@@ -345,7 +345,7 @@ export default function AdminCourseDetailPage({ params }: PageProps) {
         <Card className="rounded-2xl border border-border shadow-xs">
           <CardContent className="p-4 flex items-center justify-between">
             <div className="space-y-0.5">
-              <p className="text-xs font-medium text-muted-foreground">Đã ghi danh (Enrolled)</p>
+              <p className="text-xs font-medium text-muted-foreground">Đã ghi danh</p>
               <p className="text-2xl font-bold text-success tracking-tight">{enrolledCount}</p>
               <p className="text-[11px] text-muted-foreground">Đã sẵn sàng tham gia</p>
             </div>
@@ -358,7 +358,7 @@ export default function AdminCourseDetailPage({ params }: PageProps) {
         <Card className="rounded-2xl border border-border shadow-xs">
           <CardContent className="p-4 flex items-center justify-between">
             <div className="space-y-0.5">
-              <p className="text-xs font-medium text-muted-foreground">Chờ đăng nhập (Invited)</p>
+              <p className="text-xs font-medium text-muted-foreground">Chờ kích hoạt</p>
               <p className="text-2xl font-bold text-warning tracking-tight">{invitedCount}</p>
               <p className="text-[11px] text-muted-foreground">Chưa kích hoạt tài khoản</p>
             </div>
@@ -371,7 +371,7 @@ export default function AdminCourseDetailPage({ params }: PageProps) {
         <Card className="rounded-2xl border border-border shadow-xs">
           <CardContent className="p-4 flex items-center justify-between">
             <div className="space-y-0.5">
-              <p className="text-xs font-medium text-muted-foreground">Đã rút / Đã khóa (Dropped)</p>
+              <p className="text-xs font-medium text-muted-foreground">Đã rút môn</p>
               <p className="text-2xl font-bold text-danger tracking-tight">{droppedCount}</p>
               <p className="text-[11px] text-muted-foreground">Không còn hoạt động</p>
             </div>
@@ -556,7 +556,7 @@ export default function AdminCourseDetailPage({ params }: PageProps) {
               <TableHeader className="bg-muted/40 border-b border-border">
                 <TableRow className="hover:bg-transparent">
                   <TableHead className="py-3 px-4 text-xs font-semibold whitespace-nowrap min-w-[130px]">
-                    Mã sinh viên (MSSV)
+                    Mã sinh viên
                   </TableHead>
                   <TableHead className="py-3 px-4 text-xs font-semibold min-w-[260px]">
                     Sinh viên & Email

@@ -115,13 +115,13 @@ export function GitHubConnectedCard({
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-3 border-t border-border/60 text-xs">
         <div className="p-3 rounded-xl bg-background border border-border/60 space-y-1">
-          <span className="text-muted-foreground text-[11px] block">Mã người dùng GitHub (Subject / ID):</span>
+          <span className="text-muted-foreground text-[11px] block">GitHub ID:</span>
           <span className="font-mono font-bold text-foreground text-xs block truncate" title={githubId}>
             {githubId}
           </span>
         </div>
         <div className="p-3 rounded-xl bg-background border border-border/60 space-y-1">
-          <span className="text-muted-foreground text-[11px] block">Phạm vi quyền truy cập:</span>
+          <span className="text-muted-foreground text-[11px] block">Quyền truy cập:</span>
           <span className="font-medium text-foreground text-xs block">
             read:user, user:email
           </span>
@@ -132,11 +132,11 @@ export function GitHubConnectedCard({
         <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] text-muted-foreground font-mono">
           <div className="flex items-center gap-1.5">
             <ClockIcon className="w-3.5 h-3.5 text-blue-500 shrink-0" />
-            <span>Liên kết lần đầu: <strong className="text-foreground">{firstLinked}</strong></span>
+            <span>Kết nối lúc: <strong className="text-foreground">{firstLinked}</strong></span>
           </div>
           <div className="flex items-center gap-1.5">
             <ClockIcon className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
-            <span>Thời gian liên kết gần nhất: <strong className="text-foreground">{lastVerified}</strong></span>
+            <span>Cập nhật lúc: <strong className="text-foreground">{lastVerified}</strong></span>
           </div>
         </div>
 

@@ -135,7 +135,7 @@ export function AdminClassManagement() {
             className="h-9 gap-1.5 text-xs font-semibold cursor-pointer bg-primary text-primary-foreground hover:bg-primary/90 shadow-2xs"
           >
             <PlusIcon className="w-4 h-4" />
-            Thêm lớp sinh viên mới (Cohort Class)
+            Thêm lớp sinh viên mới
           </Button>
         </div>
       </div>
@@ -239,13 +239,13 @@ export function AdminClassManagement() {
               <TableHeader className="bg-muted/40 border-b border-border">
                 <TableRow>
                   <TableHead className="py-3 px-4 text-xs font-semibold whitespace-nowrap w-[120px]">
-                    Mã lớp (Cohort Code)
+                    Mã lớp sinh viên
                   </TableHead>
                   <TableHead className="py-3 px-4 text-xs font-semibold min-w-[280px]">
-                    Tên lớp sinh viên (Cohort Name)
+                    Tên lớp sinh viên
                   </TableHead>
                   <TableHead className="py-3 px-4 text-xs font-semibold whitespace-nowrap w-[220px]">
-                    Học kỳ (Semester)
+                    Học kỳ đào tạo
                   </TableHead>
                   <TableHead className="py-3 px-4 text-xs font-semibold whitespace-nowrap text-right w-[80px]">
                     Thao tác

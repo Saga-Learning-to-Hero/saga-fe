@@ -169,21 +169,36 @@ Giao diện sinh viên được điều hướng động dựa trên trạng th�
   ```json
   { "code": "SWP391", "nameEnglish": "Software Development Project", "nameVietnamese": "Đồ án phát triển phần mềm" }
   ```
-- `GET /api/admin/subjects`: Tìm kiếm/liệt kê môn học (query param: `?code=SWP391` hoặc `?status=ACTIVE`).
-- `GET /api/admin/subjects/{subjectId}`: Xem chi tiết môn học.
+- `GET /api/admin/subjects`: Tìm kiếm/liệt kê môn học (query param: `?code=SWP391`, `?status=ACTIVE`, hoặc `?q=SWP`).
+- `GET /api/admin/subjects/{subjectId}`: Xem chi tiết môn học (kèm danh sách các phiên bản đề cương).
+- `PATCH /api/admin/subjects/{subjectId}`: Cập nhật thông tin môn học (`code`, `nameEnglish`, `nameVietnamese`, `status: "ACTIVE" | "INACTIVE"`).
 
-#### 2. Quản lý Đề cương (Syllabus)
+#### 2. Quản lý Đề cương Chi tiết (Syllabus)
 - `POST /api/admin/subjects/{subjectId}/syllabi`: Khởi tạo phiên bản đề cương nháp (DRAFT).
-- `PUT /api/admin/subjects/{subjectId}/syllabi/{syllabusVersionId}/structure`: Cập nhật cấu trúc học thuật (Milestones, Assessments, Criteria).
-- `POST /api/admin/subjects/{subjectId}/syllabi/{syllabusVersionId}/publish`: Phát hành chính thức đề cương (chuyển sang `PUBLISHED` để gán vào Course).
+- `GET /api/admin/subjects/{subjectId}/syllabi`: Danh sách các phiên bản đề cương của môn học.
+- `GET /api/admin/subjects/{subjectId}/syllabi/{syllabusVersionId}`: Xem chi tiết phiên bản đề cương kèm cấu trúc cây tiêu chí học thuật.
+- `PATCH /api/admin/subjects/{subjectId}/syllabi/{syllabusVersionId}`: Cập nhật metadata của đề cương DRAFT (`titleEnglish`, `titleVietnamese`, `credits`, `versionLabel`,...).
+- `PUT /api/admin/subjects/{subjectId}/syllabi/{syllabusVersionId}/structure`: Cập nhật cấu trúc học thuật (Milestones, Assessments, Criteria, CLO mapping). Tổng trọng số bắt buộc đúng 100%.
+- `POST /api/admin/subjects/{subjectId}/syllabi/{syllabusVersionId}/publish`: Phát hành chính thức đề cương (chuyển sang `PUBLISHED` - Bất biến).
+- `POST /api/admin/subjects/{subjectId}/syllabi/{syllabusVersionId}/archive`: Lưu trữ đề cương PUBLISHED (ngưng áp dụng, vẫn đọc được).
 
-#### 3. Quản lý Học kỳ (Semester) & Lớp hành chính (Class)
+#### 3. Quản lý Học kỳ (Semester) & Lớp Sinh Viên (Academic Class)
 - `POST /api/admin/semesters`: Tạo học kỳ mới (`code`, `name`, `startDate`, `endDate`).
 - `GET /api/admin/semesters`: Danh sách học kỳ.
-- `PUT /api/admin/semesters/active`: Kích hoạt học kỳ hiện tại (`{ "semesterId": "uuid" }`).
-- `POST /api/admin/classes`: Tạo lớp học phần (`{ "semesterId": "uuid", "classCode": "SE1705", "name": "SE1705" }`).
+- `GET /api/admin/semesters/{semesterId}`: Xem chi tiết học kỳ.
+- `PATCH /api/admin/semesters/{semesterId}`: Cập nhật mã, tên, ngày bắt đầu/kết thúc học kỳ.
+- `GET /api/admin/semesters/active`: Lấy thông tin học kỳ đang hoạt động trên toàn hệ thống.
+- `PUT /api/admin/semesters/active`: Thiết lập học kỳ kích hoạt (`{ "semesterId": "uuid" }`).
+- `POST /api/admin/classes`: Tạo lớp sinh viên niên khóa (`{ "semesterId": "uuid", "classCode": "SE1705", "name": "SE1705" }`).
+- `GET /api/admin/classes`: Danh sách lớp sinh viên (có thể lọc theo `?semesterId={semesterId}`).
+- `GET /api/admin/classes/{classId}`: Xem chi tiết lớp sinh viên.
+- `PATCH /api/admin/classes/{classId}`: Cập nhật mã hoặc tên lớp sinh viên (`{ "classCode": "SE1705", "name": "SE1705" }`).
 
-#### 4. Tạo Khóa học (Course)
+#### 4. Quản lý Danh mục Giảng viên (Lecturer Directory)
+- `GET /api/admin/lecturers`: Danh sách giảng viên đang hoạt động trong hệ thống (`active=true`, tìm kiếm qua `?search=...`).
+  - **Lưu ý đặc biệt:** Trường `lecturerProfileId` trong response chính là giá trị dùng làm `lecturerId` khi tạo hoặc sửa Khóa học (`Course`). **Tuyệt đối không dùng `userId`**.
+
+#### 5. Tạo & Cập nhật Khóa học (Course Offering)
 - `POST /api/admin/courses`:
   ```json
   {
@@ -195,10 +210,13 @@ Giao diện sinh viên được điều hướng động dựa trên trạng th�
     "name": "SWP391 · SE1705"
   }
   ```
+- `GET /api/admin/courses`: Danh sách khóa học (lọc theo `?semesterId=...&academicClassId=...&subjectId=...&lecturerId=...`).
+- `GET /api/admin/courses/{courseId}`: Xem chi tiết khóa học.
+- `PATCH /api/admin/courses/{courseId}`: Cập nhật tên khóa học, giảng viên phụ trách hoặc đề cương áp dụng (chỉ được sửa khi chưa có dữ liệu hạ tầng phát sinh).
 
-#### 5. Quản lý Danh sách Sinh viên Khóa học (Roster Import)
-- `GET /api/admin/courses/{courseId}/roster/template`: Tải file Excel mẫu.
-- `GET /api/admin/courses/{courseId}/roster`: Danh sách sinh viên đã vào lớp hoặc đang chờ mời.
+#### 6. Quản lý Danh sách Sinh viên Khóa học (Roster Import & Add Student)
+- `GET /api/admin/courses/{courseId}/roster/template`: Tải file Excel mẫu danh sách sinh viên.
+- `GET /api/admin/courses/{courseId}/roster`: Danh sách sinh viên đã vào lớp hoặc đang chờ mời (`PENDING_INVITATION`).
 - `POST /api/admin/courses/{courseId}/roster/import/preview`: Tải file Excel lên xem trước (Form-data: `file: <binary>`). Nhận về:
   ```json
   {
@@ -210,24 +228,44 @@ Giao diện sinh viên được điều hướng động dựa trên trạng th�
   ```json
   { "previewToken": "opaque-token" }
   ```
+- `POST /api/admin/courses/{courseId}/roster/students`: Thêm hoặc mời trực tiếp 1 sinh viên vào lớp:
+  ```json
+  {
+    "fullName": "Nguyen Van C",
+    "studentCode": "SE171234",
+    "email": "studentc@fpt.edu.vn",
+    "memberCode": "optional-code"
+  }
+  ```
+
+#### 7. Tiện ích Dev & Test Email (Admin Local/Dev Only)
+- `POST /api/admin/dev/email-test`: Đẩy một email thử nghiệm vào hàng đợi outbox và kích hoạt worker gửi mail ngay lập tức (`{ "to": "test@fpt.edu.vn", "subject": "Test", "body": "..." }`).
 
 ---
 
 ### 4.3. Phân Hệ Giảng Viên (Lecturer Management & Teams)
 
 #### 1. Quản lý Khóa học của Giảng viên
-- `GET /api/lecturer/courses`: Danh sách khóa học được phân công giảng dạy.
-- `GET /api/lecturer/courses/{courseId}`: Xem chi tiết một khóa học.
-- `GET /api/lecturer/courses/{courseId}/roster`: Danh sách sinh viên chính thức (`ACTIVE`) trong lớp.
+- `GET /api/lecturer/courses`: Danh sách khóa học được phân công giảng dạy cho giảng viên hiện tại.
+- `GET /api/lecturer/courses/{courseId}`: Xem chi tiết một khóa học được phân công.
+- `GET /api/lecturer/courses/{courseId}/roster`: Danh sách sinh viên chính thức (`ACTIVE`) trong lớp học phần.
 
-#### 2. Phân chia Nhóm sinh viên (Team Import)
-- `GET /api/lecturer/courses/{courseId}/teams/template`: Tải file mẫu phân chia nhóm.
-- `POST /api/lecturer/courses/{courseId}/teams/import/preview`: Tải file Excel phân nhóm lên xem trước (Form-data: `file: <binary>`). Nhận về `previewToken` và danh sách thành viên/vai trò (`LEADER`, `MEMBER`).
-- `POST /api/lecturer/courses/{courseId}/teams/import/confirm`: Xác nhận lưu nhóm vào hệ thống:
+#### 2. Phân chia & Điều phối Nhóm sinh viên (Teams & Leadership)
+- `GET /api/lecturer/courses/{courseId}/teams/template`: Tải file mẫu phân chia nhóm đồ án.
+- `POST /api/lecturer/courses/{courseId}/teams/import/preview`: Tải file Excel phân nhóm lên xem trước (Form-data: `file: <binary>`). Nhận về `previewToken` và danh sách phân nhóm.
+- `POST /api/lecturer/courses/{courseId}/teams/import/confirm`: Xác nhận lưu phân nhóm vào hệ thống:
   ```json
   { "previewToken": "opaque-token" }
   ```
-- `GET /api/lecturer/courses/{courseId}/teams`: Danh sách các nhóm và thành viên trong lớp.
+- `GET /api/lecturer/courses/{courseId}/teams`: Danh sách các nhóm, đề tài và thành viên trong lớp.
+- `PUT /api/lecturer/courses/{courseId}/teams/{teamId}/leader`: Chỉ định hoặc thay đổi Trưởng nhóm (Leader) mới. Trưởng nhóm cũ sẽ tự động trở thành thành viên thường (`MEMBER`):
+  ```json
+  { "teamMemberId": "uuid-team-member" }
+  ```
+- `PATCH /api/lecturer/courses/{courseId}/team-members/{teamMemberId}/team`: Chuyển một thành viên từ nhóm hiện tại sang một nhóm khác trong cùng lớp học phần:
+  ```json
+  { "targetTeamId": "uuid-target-team" }
+  ```
 
 ---
 
@@ -239,7 +277,7 @@ Giao diện sinh viên được điều hướng động dựa trên trạng th�
 - `GET /api/student/courses/{courseId}/project`: Xem thông tin đồ án/dự án của nhóm (nếu chưa tạo sẽ trả về `404 PROJECT_NOT_FOUND`).
 
 #### 2. Tạo Dự Án (Chỉ dành cho Team Leader)
-- `GET /api/student/project-types`: Lấy danh mục các loại đồ án được phép tạo.
+- `GET /api/student/project-types`: Lấy danh mục các loại đồ án được phép tạo (phân loại đề tài).
 - `POST /api/student/courses/{courseId}/project`:
   ```json
   {
@@ -252,65 +290,178 @@ Giao diện sinh viên được điều hướng động dựa trên trạng th�
 
 ---
 
-### 4.5. Phân Hệ Tích Hợp Công Cụ Đồ Án (GitHub & Jira Integrations)
+### 4.5. Phân Hệ Tích Hợp Công Cụ Đồ Án (Project GitHub & Jira Integrations)
 
 > Các API tích hợp yêu cầu **`projectId`** (lấy từ thông tin dự án sau khi tạo).
 
 #### 1. Tích Hợp GitHub (GitHub App)
-- `POST /api/projects/{projectId}/integrations/github/connect`: Khởi tạo liên kết GitHub App. Trả về `authorizationUrl` để mở popup/redirect người dùng cài đặt App vào Organization/Tài khoản GitHub.
+- `POST /api/projects/{projectId}/integrations/github/connect`: Khởi tạo liên kết GitHub App cho nhóm. Trả về `authorizationUrl` để chuyển hướng cài đặt App vào Organization/Repository.
 - `GET /api/projects/{projectId}/integrations/github/repositories`: Liệt kê danh sách các repository mà GitHub App được cấp quyền truy cập.
-- `PUT /api/projects/{projectId}/integrations/github/repositories`: Chọn các repository theo dõi cho dự án:
+- `PUT /api/projects/{projectId}/integrations/github/repositories`: **(Lưu ý: Payload là mảng JSON Array trực tiếp)**
   ```json
-  {
-    "selectedRepositories": [
-      { "repositoryId": 1338790015, "repoFullName": "Saga-Learning-to-Hero/saga-fe", "defaultBranch": "dev" }
-    ]
-  }
+  [
+    { "repositoryId": 1338790015, "role": "FRONTEND" },
+    { "repositoryId": 1339720224, "role": "BACKEND" }
+  ]
   ```
-  *(Trả về `204 No Content` khi thành công).*
+  *Trong đó `role` là enum: `"FRONTEND" | "BACKEND" | "OTHER"`. Trả về `204 No Content` khi thành công.*
 - `DELETE /api/projects/{projectId}/integrations/github`: Hủy kết nối GitHub của dự án.
 
 #### 2. Tích Hợp Jira Software (Atlassian OAuth)
-- `POST /api/integrations/jira/link`: (Tùy chọn) Liên kết tài khoản Jira cá nhân của sinh viên.
 - `POST /api/projects/{projectId}/integrations/jira/connect`: Bắt đầu luồng OAuth Jira cho nhóm. Trả về `authorizationUrl` đến Atlassian.
-- `GET /api/projects/{projectId}/integrations/jira/sites`: Danh sách Jira Cloud Sites (Domains) có quyền truy cập.
+- `GET /api/projects/{projectId}/integrations/jira/sites`: Danh sách Jira Cloud Sites (Domains) mà tài khoản có quyền truy cập.
 - `GET /api/projects/{projectId}/integrations/jira/projects?cloudId={cloudId}`: Danh sách Jira Projects trên site đã chọn.
 - `GET /api/projects/{projectId}/integrations/jira/boards?cloudId={cloudId}&jiraProjectId={jiraProjectId}`: Danh sách Scrum/Kanban Boards thuộc project.
 - `PUT /api/projects/{projectId}/integrations/jira`: Lưu cấu hình Jira chính thức cho nhóm:
   ```json
   {
-    "cloudId": "cloud-uuid",
-    "jiraProjectId": "10001",
-    "jiraProjectKey": "SAGA",
-    "boardId": 1
+    "cloudId": "aeb21465-f2da-4923-b356-f6f1cfa4fd13",
+    "jiraProjectId": "10067",
+    "boardId": "68"
   }
   ```
-  *(Trả về `204 No Content` khi thành công).*
+  *Lưu ý: `boardId` là tùy chọn (optional). Trả về `204 No Content` khi thành công.*
 - `DELETE /api/projects/{projectId}/integrations/jira`: Hủy cấu hình Jira của dự án.
 
-#### 3. Báo Cáo Tổng Hợp Trạng Thái Tích Hợp (Integration Summary)
+#### 3. Báo Cáo Tổng Hợp Trạng Thái Tích Hợp Dự Án
 - **Endpoint:** `GET /api/projects/{projectId}/integrations`
-- **Mục đích:** Cung cấp toàn bộ trạng thái kết nối GitHub & Jira để hiển thị Badge/Card trạng thái trên FE.
+- **Mục đích:** Cung cấp toàn bộ trạng thái kết nối GitHub & Jira để hiển thị Card/Badge trạng thái trên FE.
+
+---
+
+### 4.6. Phân Hệ Quản Lý Dữ Liệu Chiếu & Đồng Bộ Dự Án (Project Projections & Sync)
+
+> **Đây là cụm API cốt lõi** cung cấp dữ liệu thực tế cho Bảng tiến độ Jira Kanban, Nhật ký Git Commits, và Đồ thị Traceability Graph (Task <-> Commit Link).
+
+#### 1. Kích hoạt Đồng bộ Dữ liệu Ngầm (Sync Backfill)
+- **Endpoint:** `POST /api/projects/{projectId}/sync`
+- **Quyền:** Chỉ dành cho Team Leader.
+- **Mục đích:** Đưa yêu cầu phục hồi / đồng bộ backfill dữ liệu Jira và GitHub vào hàng đợi xử lý ngầm (không chặn request HTTP của người dùng).
 - **Response (200):**
   ```json
   {
     "projectId": "uuid-project",
-    "github": {
-      "accountLogin": "Saga-Learning-to-Hero",
-      "status": "ACTIVE",
-      "repositories": [
-        { "fullName": "Saga-Learning-to-Hero/saga-fe", "defaultBranch": "dev" }
-      ]
-    },
-    "jira": {
-      "cloudId": "cloud-uuid",
-      "projectKey": "SAGA",
-      "projectName": "SAGA Management",
-      "boardName": "SAGA Board",
-      "status": "ACTIVE"
-    }
+    "jira": "ENQUEUED",
+    "github": "ENQUEUED"
   }
   ```
+
+#### 2. Kiểm tra Tiến độ Đồng bộ (Sync Status)
+- **Endpoint:** `GET /api/projects/{projectId}/sync-status`
+- **Response (200):** Mảng trạng thái theo từng provider (`JIRA`, `GITHUB`):
+  ```json
+  [
+    {
+      "projectId": "uuid-project",
+      "provider": "JIRA",
+      "status": "COMPLETED",
+      "startedAt": "2026-09-09T08:00:00Z",
+      "completedAt": "2026-09-09T08:00:15Z",
+      "itemsProcessed": 42,
+      "itemsFailed": 0
+    },
+    {
+      "projectId": "uuid-project",
+      "provider": "GITHUB",
+      "status": "COMPLETED",
+      "startedAt": "2026-09-09T08:00:00Z",
+      "completedAt": "2026-09-09T08:00:20Z",
+      "itemsProcessed": 128,
+      "itemsFailed": 0
+    }
+  ]
+  ```
+
+#### 3. Danh sách Đầu việc Jira Chiếu (Projected Jira Tasks)
+- **Endpoint:** `GET /api/projects/{projectId}/tasks`
+- **Quyền:** Sinh viên trong nhóm và Giảng viên phụ trách khóa học.
+- **Mục đích:** Hiển thị danh sách task Jira trên bảng Kanban và đối soát công sức.
+- **Response (200):**
+  ```json
+  [
+    {
+      "id": "uuid-task",
+      "externalId": "10023",
+      "externalKey": "SAGA-15",
+      "title": "Xay dung UI Traceability Graph",
+      "status": "DONE",
+      "issueTypeName": "Story",
+      "assigneeExternalId": "atlassian-account-id",
+      "assigneeStudentId": "uuid-student",
+      "linkedCommitCount": 4,
+      "externalUpdatedAt": "2026-09-08T14:30:00Z",
+      "createdAt": "2026-09-07T10:00:00Z",
+      "updatedAt": "2026-09-08T14:30:00Z"
+    }
+  ]
+  ```
+
+#### 4. Danh sách Commit Liên Kết với Jira Task (Task-Commit Link)
+- **Endpoint:** `GET /api/projects/{projectId}/tasks/{taskId}/commits`
+- **Mục đích:** Hiển thị toàn bộ các Git Commits đã thực thi một Jira Task cụ thể (phục vụ đối soát chứng cứ và vẽ cạnh `[:IMPLEMENTS]` trên Cytoscape Graph).
+- **Response (200):** Danh sách `ProjectCommitResponse[]`.
+
+#### 5. Danh sách Commit Mã Nguồn Chiếu (Projected GitHub Commits)
+- **Endpoint:** `GET /api/projects/{projectId}/commits`
+- **Quyền:** Sinh viên trong nhóm và Giảng viên phụ trách.
+- **Mục đích:** Hiển thị nhật ký commit thực tế của dự án theo repository và tác giả.
+- **Response (200):**
+  ```json
+  [
+    {
+      "id": "uuid-commit",
+      "repoId": "uuid-repo",
+      "repositoryFullName": "Saga-Learning-to-Hero/saga-fe",
+      "sha": "d46f6004523c12a884f",
+      "message": "feat: [FE][SAGA-15] Complete Traceability Graph Canvas",
+      "authorExternalId": "github-username",
+      "authorStudentId": "uuid-student",
+      "committedAt": "2026-09-08T14:25:00Z",
+      "createdAt": "2026-09-08T14:26:00Z"
+    }
+  ]
+  ```
+
+---
+
+### 4.7. Phân Hệ Liên Kết Danh Tính Cá Nhân (Personal Integrations)
+
+> Phân hệ này quản lý việc liên kết tài khoản GitHub và Atlassian Jira cá nhân của từng sinh viên / giảng viên để phục vụ thuật toán nhận diện danh tính và phân tích công sức tự động.
+
+#### 1. Xem Danh sách Tài khoản Cá nhân Đã Liên kết
+- **Endpoint:** `GET /api/integrations/me`
+- **Response (200):**
+  ```json
+  {
+    "identities": [
+      {
+        "id": "uuid-identity",
+        "provider": "GITHUB",
+        "providerUsername": "octocat",
+        "providerEmail": "octocat@gmail.com",
+        "primary": true,
+        "createdAt": "2026-09-06T10:00:00Z"
+      }
+    ]
+  }
+  ```
+
+#### 2. Khởi tạo Liên kết Tài khoản Cá nhân
+- `POST /api/integrations/github/link?returnPath={returnPath}`: Bắt đầu OAuth liên kết tài khoản GitHub cá nhân (nhận `authorizationUrl`).
+- `POST /api/integrations/jira/link?returnPath={returnPath}`: Bắt đầu OAuth liên kết tài khoản Jira cá nhân (nhận `authorizationUrl`).
+
+#### 3. Thiết lập Tài khoản Chính & Hủy Liên kết
+- `PATCH /api/integrations/github/{identityId}/primary`: Đặt tài khoản GitHub này làm tài khoản chính.
+- `PATCH /api/integrations/jira/{identityId}/primary`: Đặt tài khoản Jira này làm tài khoản chính.
+- `DELETE /api/integrations/github/{identityId}`: Hủy liên kết tài khoản GitHub cá nhân.
+- `DELETE /api/integrations/jira/{identityId}`: Hủy liên kết tài khoản Jira cá nhân.
+
+---
+
+### 4.8. Phân Hệ Thu Thập Chứng Cứ Phiên Làm Việc (Task Evidence - Đang Triển Khai)
+- `POST /api/tasks/{taskId}/work-sessions/start`: Ghi nhận bắt đầu phiên làm việc trên đầu việc.
+- `POST /api/tasks/{taskId}/work-sessions/{sessionId}/stop`: Ghi nhận kết thúc phiên làm việc.
+- `POST /api/tasks/{taskId}/contribution-confirmations`: Xác nhận đóng góp chéo giữa các thành viên.
 
 ---
 
@@ -328,6 +479,8 @@ Giao diện sinh viên được điều hướng động dựa trên trạng th�
 | `PROJECT_NOT_FOUND` | 404 | Nhóm chưa tạo dự án. Nếu là Leader -> hiện form tạo; nếu là Member -> hiện thông báo chờ. |
 | `PROJECT_ALREADY_EXISTS` | 409 | Nhóm đã có dự án rồi, không thể tạo thêm. |
 | `ONLY_LEADER_CAN_CREATE_PROJECT`| 403 | Chỉ tài khoản có vai trò `LEADER` trong nhóm mới được quyền tạo dự án. |
+| `COURSE_SYLLABUS_IMMUTABLE` | 400 | Đề cương đã PUBLISHED và được gán vào lớp, không thể sửa đổi cấu trúc. |
+| `COURSE_LECTURER_INVALID` | 400 | Lecturer ID không hợp lệ hoặc tài khoản giảng viên đã bị vô hiệu hóa. |
 | `GITHUB_NOT_CONFIGURED` | 400 | Chưa hoàn thành kết nối GitHub App cho dự án. |
 | `JIRA_NOT_CONFIGURED` | 400 | Chưa hoàn thành kết nối Jira cho dự án. |
 | `CSRF_TOKEN_MISSING` / `INVALID`| 403 | Thiếu hoặc sai header `X-XSRF-TOKEN`. Cần gọi lại `GET /api/auth/csrf`. |
@@ -338,16 +491,20 @@ Giao diện sinh viên được điều hướng động dựa trên trạng th�
 ## 6. Phạm Vi Triển Khai & Danh Sách API Tuyệt Đối Chưa Gọi (Out-of-Scope)
 
 ### 6.1. Các tính năng Backend **đã hoàn thiện** cho FE
-- Đăng nhập (Local / Google), Đăng ký, Đổi/Tạo mật khẩu, CSRF.
-- Quản lý Học thuật Admin (Subject, Syllabus, Semester, Class, Course).
-- Import Roster sinh viên & Phân nhóm sinh viên bằng Excel qua Preview Token.
+- Đăng nhập (Local / Google), Đăng ký, Đổi/Tạo mật khẩu, CSRF Session Cookie.
+- Quản lý Học thuật Admin (Subject, Multi-version Syllabus, Semester, Class, Course, Lecturer Directory).
+- Import Roster sinh viên (File Excel & thêm trực tiếp) & Phân nhóm sinh viên bằng Excel qua Preview Token.
+- Điều phối nhóm giảng viên: Bổ nhiệm Trưởng nhóm mới (`PUT .../leader`), Chuyển đổi thành viên giữa các nhóm (`PATCH .../team`).
 - Khám phá môn học sinh viên, xem nhóm, xem vai trò.
 - Team Leader khởi tạo dự án.
-- Tích hợp GitHub App (Chọn Repo) & Jira Software (Chọn Site, Project, Board).
+- Tích hợp GitHub App (Chọn Repo với Role) & Jira Software (Chọn Site, Project, Board).
+- **Quản lý danh tính cá nhân:** `GET /api/integrations/me`, liên kết và hủy liên kết GitHub/Jira cá nhân.
+- **Chiếu dữ liệu dự án (Project Projections):** Đồng bộ backfill (`POST .../sync`), xem trạng thái sync (`GET .../sync-status`), danh sách Jira Tasks (`GET .../tasks`), danh sách Commits (`GET .../commits`), và liên kết Task-Commit (`GET .../tasks/{taskId}/commits`).
 
 ### 6.2. Các tính năng **CHƯA triển khai** (Backend chưa có endpoint - Không tự ý bịa API)
 - Quên mật khẩu / Gửi mail khôi phục mật khẩu.
 - Sinh viên chỉnh sửa hoặc xóa Project (`PATCH`/`DELETE .../project` - Không có).
-- Webhook nhận dữ liệu từ GitHub/Jira (`/api/webhooks/**` là endpoint nội bộ nhận event, không dùng cho giao diện).
+- Webhook nhận dữ liệu từ GitHub/Jira (`/api/webhooks/**` là endpoint nội bộ nhận event từ GitHub/Atlassian, không gọi từ giao diện FE).
 - SSE Stream hoặc WebSocket đẩy realtime.
-- Đồ thị / SNA / XAI và Bảng chấm điểm đánh giá tự động (Đang trong giai đoạn xây dựng ở Phase tiếp theo).
+- Đồ thị Cytoscape SNA thuật toán mạng xã hội phức tạp và Bảng chấm điểm tổng kết tự động (Đang tính toán ở tầng Graph Engine tiếp theo).
+

@@ -1,14 +1,21 @@
 "use client";
 
 import { useState } from "react";
-import { Link2Icon, CrownIcon, CheckCircle2Icon, RefreshCwIcon, Loader2Icon } from "lucide-react";
+import Link from "next/link";
+import {
+  Link2Icon,
+  CrownIcon,
+  CheckCircle2Icon,
+  RefreshCwIcon,
+  Loader2Icon,
+  AlertCircleIcon,
+} from "lucide-react";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/sonner";
+import { useUserIdentities } from "@/features/integrations/hooks/useUserIntegrations";
 import { useProjectIntegrations } from "../hooks/useProjectIntegrations";
-import { useStartJiraLink } from "@/features/integrations/hooks/useJiraIntegrations";
-import { useStartGitHubLink } from "@/features/integrations/hooks/useGithubIntegrations";
 import { ProjectJiraSection } from "./integrations/project-jira-section";
 import { ProjectGithubSection } from "./integrations/project-github-section";
 
@@ -31,42 +38,27 @@ export function ProjectIntegrationsCard({
     refetch,
   } = useProjectIntegrations(projectId, { enabled: Boolean(projectId) });
 
-  const startJiraLinkMutation = useStartJiraLink();
-  const startGitHubLinkMutation = useStartGitHubLink();
+  const {
+    isJiraConnected,
+    isGitHubConnected,
+    isLoading: isIdentitiesLoading,
+  } = useUserIdentities();
 
-  const handleConnectJira = async () => {
-    try {
-      toast.loading("Đang chuyển hướng sang Atlassian Jira OAuth...", { id: "jira-oauth" });
-      const currentPath = typeof window !== "undefined" ? window.location.pathname : "/student/project-info";
-      const result = await startJiraLinkMutation.mutateAsync(currentPath);
+  const isFullyConnected = isJiraConnected && isGitHubConnected;
 
-      if (result.authorizationUrl && typeof window !== "undefined") {
-        window.open(result.authorizationUrl, "_self");
-      }
-    } catch {
-      toast.error("Lỗi khi kết nối với máy chủ Atlassian. Vui lòng thử lại sau.", { id: "jira-oauth" });
-    }
+  const handleConnectJira = () => {
+    toast.info("Jira Project của nhóm do Trưởng nhóm cấu hình. Mỗi thành viên cần liên kết tài khoản cá nhân tại Hồ sơ để hệ thống ghi nhận task.");
   };
 
-  const handleConnectGitHub = async () => {
-    try {
-      toast.loading("Đang chuyển hướng sang GitHub App OAuth...", { id: "github-oauth" });
-      const currentPath = typeof window !== "undefined" ? window.location.pathname : "/student/project-info";
-      const result = await startGitHubLinkMutation.mutateAsync(currentPath);
-
-      if (result.authorizationUrl && typeof window !== "undefined") {
-        window.open(result.authorizationUrl, "_self");
-      }
-    } catch {
-      toast.error("Lỗi khi kết nối với GitHub. Vui lòng thử lại sau.", { id: "github-oauth" });
-    }
+  const handleConnectGitHub = () => {
+    toast.info("GitHub Repositories của nhóm do Trưởng nhóm cấu hình. Mỗi thành viên cần liên kết tài khoản cá nhân tại Hồ sơ để hệ thống ghi nhận commit.");
   };
 
   const handleSyncJira = async () => {
     setSyncingId("jira");
     await refetch();
     setSyncingId(null);
-    setFeedbackMsg("Đã đồng bộ thông tin Jira Project thành công!");
+    setFeedbackMsg("Đã đồng bộ Jira Project của nhóm!");
     setTimeout(() => setFeedbackMsg(""), 3500);
   };
 
@@ -81,21 +73,21 @@ export function ProjectIntegrationsCard({
             <div>
               <div className="flex items-center gap-2">
                 <CardTitle className="text-base font-bold text-foreground">
-                  Liên kết Tích hợp Đồ án (Project Integrations)
+                  Jira & GitHub của Dự án Nhóm
                 </CardTitle>
                 {isLeader ? (
                   <Badge className="bg-amber-500/15 text-amber-700 dark:text-amber-300 border-0 text-[10px] font-semibold gap-1">
                     <CrownIcon className="w-3 h-3" />
-                    Quyền Trưởng nhóm
+                    Trưởng nhóm
                   </Badge>
                 ) : (
                   <Badge variant="outline" className="text-[10px] text-muted-foreground border-border">
-                    Chế độ xem (Thành viên)
+                    Thành viên
                   </Badge>
                 )}
               </div>
               <CardDescription className="text-xs text-muted-foreground">
-                Kết nối trực tiếp qua link ủy quyền Atlassian Jira và GitHub Repositories (đa repos)
+                Jira Project và các GitHub Repositories chung của nhóm để theo dõi tiến độ và commit
               </CardDescription>
             </div>
           </div>
@@ -114,27 +106,47 @@ export function ProjectIntegrationsCard({
         </div>
       </CardHeader>
 
-      <CardContent className="p-4 sm:p-6 space-y-6">
+      <CardContent className="p-4 sm:p-5 space-y-3.5">
+        {!isIdentitiesLoading && !isFullyConnected && (
+          <div className="flex items-center gap-2.5 p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/25 text-[11px] text-amber-800 dark:text-amber-300 animate-in fade-in-0">
+            <AlertCircleIcon className="w-4 h-4 text-amber-600 shrink-0" />
+            <p className="leading-snug flex-1">
+              {!isJiraConnected && !isGitHubConnected
+                ? "Bạn chưa liên kết tài khoản Jira & GitHub cá nhân. Vui lòng "
+                : !isJiraConnected
+                  ? "Bạn chưa liên kết tài khoản Jira cá nhân. Vui lòng "
+                  : "Bạn chưa liên kết tài khoản GitHub cá nhân. Vui lòng "}
+              <Link
+                href="/profile/integrations"
+                className="font-bold underline underline-offset-2 hover:opacity-80 transition-opacity"
+              >
+                Liên kết tài khoản cá nhân
+              </Link>{" "}
+              để hệ thống nhận diện task và tính điểm commit cho bạn.
+            </p>
+          </div>
+        )}
+
         {feedbackMsg && (
-          <div className="p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 text-xs font-semibold flex items-center gap-2 animate-in fade-in-0">
+          <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 text-xs font-semibold flex items-center gap-2 animate-in fade-in-0">
             <CheckCircle2Icon className="w-4 h-4 shrink-0" />
             <span>{feedbackMsg}</span>
           </div>
         )}
 
         {isLoading ? (
-          <div className="space-y-4 py-4 animate-pulse">
+          <div className="space-y-3 py-4 animate-pulse">
             <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground py-6">
               <Loader2Icon className="w-4 h-4 animate-spin text-primary" />
-              <span>Đang tải thông tin tích hợp Jira và GitHub của đồ án...</span>
+              <span>Đang tải Jira và GitHub của dự án...</span>
             </div>
           </div>
         ) : (
-          <>
+          <div className="space-y-3.5">
             <ProjectJiraSection
               jira={integrations?.jira}
               isLeader={isLeader}
-              isConnectingJira={startJiraLinkMutation.isPending}
+              isConnectingJira={false}
               syncingId={syncingId}
               onConnectJira={handleConnectJira}
               onSyncJira={handleSyncJira}
@@ -143,10 +155,10 @@ export function ProjectIntegrationsCard({
             <ProjectGithubSection
               github={integrations?.github}
               isLeader={isLeader}
-              isConnectingRepo={startGitHubLinkMutation.isPending}
+              isConnectingRepo={false}
               onAddRepo={handleConnectGitHub}
             />
-          </>
+          </div>
         )}
       </CardContent>
     </Card>

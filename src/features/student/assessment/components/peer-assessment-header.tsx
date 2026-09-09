@@ -26,7 +26,7 @@ export function PeerAssessmentHeader({
           <div>
             <div className="flex items-center gap-2">
               <h1 className="text-xl sm:text-2xl font-extrabold text-foreground tracking-tight">
-                Đánh giá Chéo Đồng đội (Peer Assessment)
+                Đánh giá chéo đồng đội
               </h1>
               <Badge className="bg-purple-500/15 text-purple-600 dark:text-purple-400 border-purple-500/30 font-bold text-xs">
                 SWP490_SAGA
@@ -38,7 +38,6 @@ export function PeerAssessmentHeader({
           </div>
         </div>
 
-        {/* Progress Badge */}
         <div className="flex items-center gap-3 bg-muted/60 p-2.5 px-4 rounded-2xl border border-border/60 shrink-0">
           <div className="text-right">
             <span className="text-[11px] font-semibold text-muted-foreground block">

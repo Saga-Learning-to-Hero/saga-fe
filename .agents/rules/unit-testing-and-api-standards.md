@@ -39,9 +39,10 @@ Mọi lệnh gọi Backend API bên Frontend phải được trừu tượng hó
 1. **Không gọi trực tiếp `fetch()` hoặc `axios.get()` bên trong React Components**:
    - Component chỉ gọi `useQuery` / `useMutation` (TanStack Query) hoặc gọi hàm từ `Service`.
 2. **Khởi tạo Axios Client tập trung (`src/lib/axios.ts`)**:
-   - Đính kèm `Authorization: Bearer <token>` tự động từ `useAuthStore`.
-   - Cấu hình `timeout: 10000ms`.
-   - Chuẩn hóa format lỗi trả về từ Backend.
+   - Sử dụng cơ chế Session Cookie Redis (`withCredentials: true`, cookie `SAGA_SESSION`), **tuyệt đối không gửi JWT Bearer**.
+   - Tự động gắn header `X-XSRF-TOKEN` cho các mutation requests (`POST`, `PUT`, `PATCH`, `DELETE`).
+   - Cấu hình `timeout: 15000ms`.
+   - Chuẩn hóa format lỗi trả về từ Backend (`ApiErrorResponse` chứa trường `code` và `message`).
 3. **Cấu trúc mỗi Service Function**:
    - Nhận Input Interface có kiểu dữ liệu tường minh (TypeScript).
    - Kiểm tra validation đầu vào (nếu có logic ràng buộc).

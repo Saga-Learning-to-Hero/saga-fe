@@ -43,9 +43,9 @@ export function StudentGitHubSettings({
   const handleConnectGitHubOAuth = async () => {
     try {
       toast.loading("Đang chuyển hướng sang GitHub OAuth...", { id: "github-oauth" });
-      const defaultPath = user?.role === "STUDENT" ? "/student/integrations" : "/profile/integrations";
+      const defaultPath = "/profile/integrations";
       const currentPath = typeof window !== "undefined"
-        ? (window.location.pathname.startsWith("/student") ? window.location.pathname : defaultPath)
+        ? (window.location.pathname.startsWith("/profile") ? window.location.pathname : defaultPath)
         : defaultPath;
       const result = await startLinkMutation.mutateAsync(currentPath);
 
@@ -97,7 +97,7 @@ export function StudentGitHubSettings({
             <div>
               <div className="flex items-center gap-2">
                 <CardTitle className="text-base font-bold text-foreground tracking-tight">
-                  Tài khoản GitHub Cá nhân
+                  Tài khoản GitHub cá nhân
                 </CardTitle>
                 {isLoading && resolvedIdentities.length === 0 ? (
                   <Badge
@@ -125,7 +125,7 @@ export function StudentGitHubSettings({
                 )}
               </div>
               <CardDescription className="text-xs text-muted-foreground mt-0.5">
-                Khớp tác giả commit git với sinh viên để tích lũy điểm Traceability và đóng góp code
+                Khớp username và email GitHub để hệ thống tính điểm commit và đóng góp code
               </CardDescription>
             </div>
           </div>
@@ -204,9 +204,9 @@ export function StudentGitHubSettings({
             </div>
 
             <div className="max-w-md mx-auto space-y-1.5">
-              <h4 className="text-sm font-bold text-foreground">Tài khoản GitHub chưa được kết nối</h4>
+              <h4 className="text-sm font-bold text-foreground">Chưa kết nối tài khoản GitHub</h4>
               <p className="text-xs text-muted-foreground leading-relaxed">
-                Liên kết tài khoản GitHub cá nhân để hệ thống tự động ghi nhận tác giả các lượt commit mã nguồn của bạn vào đồ án nhóm.
+                Kết nối tài khoản GitHub của bạn để hệ thống tự động ghi nhận các commit mã nguồn vào dự án nhóm.
               </p>
             </div>
 

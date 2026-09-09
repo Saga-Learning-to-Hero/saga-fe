@@ -30,13 +30,12 @@ export function ProjectBannerHeader({
 
   return (
     <div
-      className="relative overflow-hidden rounded-3xl p-6 sm:p-8 border border-border/80 shadow-md"
+      className="relative overflow-hidden rounded-2xl p-4 sm:p-5 border border-border/80 shadow-md"
       style={{
         background:
           "linear-gradient(135deg, oklch(from var(--saga-primary) calc(l + 0.05) c h), oklch(from var(--saga-accent) calc(l - 0.05) c h))",
       }}
     >
-      {/* Visual background accents */}
       <div
         className="absolute -top-24 -right-24 w-80 h-80 rounded-full opacity-15"
         style={{ background: "oklch(1 0 0 / 20%)" }}
@@ -46,54 +45,53 @@ export function ProjectBannerHeader({
         style={{ background: "oklch(1 0 0 / 20%)" }}
       />
 
-      <div className="relative flex flex-col md:flex-row md:items-center justify-between gap-6">
-        <div className="space-y-3 max-w-3xl">
-          {/* Top Badges */}
+      <div className="relative flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="space-y-2 max-w-3xl">
           <div className="flex flex-wrap items-center gap-2">
             {categoryLabel && (
-              <Badge className="bg-white/20 hover:bg-white/25 text-white border-0 text-xs px-3 py-1 font-semibold backdrop-blur-md">
-                <FolderKanbanIcon className="w-3.5 h-3.5 mr-1.5" />
+              <Badge className="bg-white/20 hover:bg-white/25 text-white border-0 text-[11px] px-2.5 py-0.5 font-semibold backdrop-blur-md">
+                <FolderKanbanIcon className="w-3 h-3 mr-1" />
                 {categoryLabel}
               </Badge>
             )}
 
             {course?.semesterCode && (
-              <Badge className="bg-emerald-500/20 text-white border-0 text-xs font-mono">
+              <Badge className="bg-emerald-500/20 text-white border-0 text-[11px] font-mono">
                 Học kỳ: {course.semesterCode}
               </Badge>
             )}
 
             {course?.adminClassCode && (
-              <Badge className="bg-blue-500/20 text-white border-0 text-xs font-mono">
+              <Badge className="bg-blue-500/20 text-white border-0 text-[11px] font-mono">
                 Lớp: {course.adminClassCode}
               </Badge>
             )}
 
             {project.name ? (
-              <Badge className="bg-emerald-400 text-emerald-950 font-bold border-0 text-xs gap-1">
+              <Badge className="bg-emerald-400 text-emerald-950 font-bold border-0 text-[11px] gap-1">
                 <CheckCircle2Icon className="w-3 h-3" /> Đang phát triển
               </Badge>
             ) : (
-              <Badge className="bg-amber-400 text-amber-950 font-bold border-0 text-xs gap-1">
+              <Badge className="bg-amber-400 text-amber-950 font-bold border-0 text-[11px] gap-1">
                 Chưa có dự án
               </Badge>
             )}
 
             {isRoleLoading ? (
-              <Badge className="bg-white/20 text-white font-medium border-0 text-xs px-2.5 py-0.5 animate-pulse backdrop-blur-md">
+              <Badge className="bg-white/20 text-white font-medium border-0 text-[11px] px-2 py-0.5 animate-pulse backdrop-blur-md">
                 <UserCheck2Icon className="w-3 h-3 mr-1" />
                 Đang xác thực vai trò...
               </Badge>
             ) : hasTeam === false ? (
-              <Badge className="bg-amber-400/30 text-amber-100 font-bold border border-amber-300/40 text-xs px-2.5 py-0.5 backdrop-blur-md">
+              <Badge className="bg-amber-400/30 text-amber-100 font-bold border border-amber-300/40 text-[11px] px-2 py-0.5 backdrop-blur-md">
                 Chưa có nhóm
               </Badge>
             ) : isLeader !== undefined ? (
               <Badge
                 className={
                   isLeader
-                    ? "bg-amber-300 text-amber-950 font-bold border-0 text-xs px-2.5 py-0.5 shadow-xs"
-                    : "bg-white/20 text-white font-medium border-0 text-xs px-2.5 py-0.5 backdrop-blur-md"
+                    ? "bg-amber-300 text-amber-950 font-bold border-0 text-[11px] px-2 py-0.5 shadow-xs"
+                    : "bg-white/20 text-white font-medium border-0 text-[11px] px-2 py-0.5 backdrop-blur-md"
                 }
               >
                 {isLeader ? "Trưởng nhóm (Leader)" : "Thành viên (Member)"}
@@ -101,28 +99,26 @@ export function ProjectBannerHeader({
             ) : null}
           </div>
 
-          {/* Project Title */}
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight leading-tight">
+          <h1 className="text-lg sm:text-xl font-extrabold text-white tracking-tight leading-snug">
             {project.name || "Chưa khởi tạo dự án nhóm"}
           </h1>
 
-          {/* Subtitle / Group & Mentor Info */}
-          <div className="flex flex-wrap items-center gap-4 text-xs text-white/85 pt-1">
+          <div className="flex flex-wrap items-center gap-3 text-[11px] text-white/90">
             {project.groupName && (
-              <span className="flex items-center gap-1.5 font-bold">
-                <SparklesIcon className="w-3.5 h-3.5 text-amber-300" />
+              <span className="flex items-center gap-1 font-bold">
+                <SparklesIcon className="w-3 h-3 text-amber-300" />
                 {project.groupName}
               </span>
             )}
             {course?.lecturer?.fullName && (
-              <span className="flex items-center gap-1.5">
-                <GraduationCapIcon className="w-3.5 h-3.5 opacity-80" />
+              <span className="flex items-center gap-1">
+                <GraduationCapIcon className="w-3 h-3 opacity-80" />
                 GVHD: <strong className="text-white">{course.lecturer?.fullName}</strong> ({course.lecturer?.email})
               </span>
             )}
             {project.createdBy?.fullName && (
-              <span className="flex items-center gap-1.5 opacity-90">
-                <UserCheck2Icon className="w-3.5 h-3.5 text-sky-200" />
+              <span className="flex items-center gap-1 opacity-90">
+                <UserCheck2Icon className="w-3 h-3 text-sky-200" />
                 Người tạo: <strong className="text-white">{project.createdBy.fullName}</strong>
               </span>
             )}

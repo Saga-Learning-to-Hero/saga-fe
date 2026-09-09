@@ -36,12 +36,6 @@ export interface NavGroup {
  * - "prefix": active khi pathname bắt đầu bằng href (có `/` phân cách)
  */
 export function isNavItemActive(pathname: string, item: NavItem): boolean {
-  if (
-    item.id === "student-integrations" &&
-    (pathname === "/student/integrations" || pathname === "/profile/integrations")
-  ) {
-    return true;
-  }
   if (item.match === "prefix") {
     return pathname === item.href || pathname.startsWith(`${item.href}/`);
   }
@@ -62,9 +56,9 @@ export const ADMIN_NAV: NavGroup[] = [
     label: "Quản trị học thuật",
     roles: ["ADMIN"],
     items: [
-      { id: "admin-users", title: "Quản lý Người dùng (GV & SV)", href: "/admin/users", icon: "Users", match: "exact" },
+      { id: "admin-users", title: "Tài khoản người dùng", href: "/admin/users", icon: "Users", match: "exact" },
       { id: "admin-academic", title: "Lớp học & Học kỳ", href: "/admin/academic", icon: "Database", match: "prefix" },
-      { id: "admin-subjects", title: "Môn học & Đề cương (FLM)", href: "/admin/subjects", icon: "BookOpen", match: "prefix" },
+      { id: "admin-subjects", title: "Môn học và đề cương", href: "/admin/subjects", icon: "BookOpen", match: "prefix" },
     ],
   },
   {
@@ -72,7 +66,7 @@ export const ADMIN_NAV: NavGroup[] = [
     label: "Hạ tầng & An ninh",
     roles: ["ADMIN"],
     items: [
-      { id: "admin-audit", title: "Nhật ký hệ thống (Audit Log)", href: "/admin/audit-log", icon: "ScrollText", match: "exact" },
+      { id: "admin-audit", title: "Nhật ký hệ thống", href: "/admin/audit-log", icon: "ScrollText", match: "exact" },
     ],
   },
 ];
@@ -131,13 +125,6 @@ export function getStudentNavItems(): NavItem[] {
       match: "exact",
     },
     {
-      id: "student-integrations",
-      title: "Tích hợp",
-      href: "/student/integrations",
-      icon: "Link2",
-      match: "exact",
-    },
-    {
       id: "student-project",
       title: "Dự án",
       href: "/student/project-info",
@@ -166,9 +153,9 @@ export function getStudentNavItems(): NavItem[] {
       match: "exact",
     },
     {
-      id: "student-peer",
+      id: "student-assessment",
       title: "Đánh giá chéo",
-      href: "/student/peer-assessment",
+      href: "/student/assessment",
       icon: "UserCheck",
       match: "exact",
     },

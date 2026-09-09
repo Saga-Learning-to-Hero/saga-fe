@@ -2,7 +2,6 @@ import type { Role } from '@/types/auth';
 
 export const SHARED_AUTHENTICATED_ROUTES = [
   '/profile',
-  '/settings',
   '/dashboard',
   '/integrations',
 ] as const;

@@ -46,7 +46,7 @@ export default function AdminAcademicPage() {
               Quản Lý Lớp Học & Học Kỳ Đào Tạo
             </h1>
             <p className="text-xs text-muted-foreground">
-              Quản lý Lớp học phần mở trong kỳ (Course Sections), Lớp sinh viên niên khóa (Cohort Classes) và Học kỳ (Semesters).
+              Quản lý lớp học phần trong kỳ, lớp sinh viên niên khóa và các học kỳ đào tạo.
             </p>
           </div>
         </div>
@@ -70,7 +70,7 @@ export default function AdminAcademicPage() {
         <TabsList className="bg-muted p-1 rounded-xl">
           <TabsTrigger value="courses" className="text-xs font-semibold gap-1.5 px-3.5 py-1.5 cursor-pointer">
             <GraduationCapIcon className="w-3.5 h-3.5" />
-            Lớp học phần (Course Sections)
+            Lớp học phần
           </TabsTrigger>
           <TabsTrigger
             value="admin-classes"
@@ -78,7 +78,7 @@ export default function AdminAcademicPage() {
             className="text-xs font-semibold gap-1.5 px-3.5 py-1.5 cursor-pointer"
           >
             <SchoolIcon className="w-3.5 h-3.5" />
-            Lớp sinh viên (Cohort Classes)
+            Lớp sinh viên
           </TabsTrigger>
           <TabsTrigger
             value="semesters"
@@ -86,7 +86,7 @@ export default function AdminAcademicPage() {
             className="text-xs font-semibold gap-1.5 px-3.5 py-1.5 cursor-pointer"
           >
             <CalendarIcon className="w-3.5 h-3.5" />
-            Học kỳ đào tạo (Semesters)
+            Học kỳ đào tạo
           </TabsTrigger>
         </TabsList>
 

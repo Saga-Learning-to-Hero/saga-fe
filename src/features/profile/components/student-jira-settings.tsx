@@ -43,9 +43,9 @@ export function StudentJiraSettings({
   const handleConnectJiraOAuth = async () => {
     try {
       toast.loading("Đang chuyển hướng sang Atlassian ID OAuth...", { id: "jira-oauth" });
-      const defaultPath = user?.role === "STUDENT" ? "/student/integrations" : "/profile/integrations";
+      const defaultPath = "/profile/integrations";
       const currentPath = typeof window !== "undefined"
-        ? (window.location.pathname.startsWith("/student") ? window.location.pathname : defaultPath)
+        ? (window.location.pathname.startsWith("/profile") ? window.location.pathname : defaultPath)
         : defaultPath;
       const result = await startLinkMutation.mutateAsync(currentPath);
 
@@ -97,7 +97,7 @@ export function StudentJiraSettings({
             <div>
               <div className="flex items-center gap-2">
                 <CardTitle className="text-base font-bold text-foreground tracking-tight">
-                  Tài khoản Atlassian Jira Cá nhân
+                  Tài khoản Jira cá nhân
                 </CardTitle>
                 {isLoading && resolvedIdentities.length === 0 ? (
                   <Badge
@@ -125,7 +125,7 @@ export function StudentJiraSettings({
                 )}
               </div>
               <CardDescription className="text-xs text-muted-foreground mt-0.5">
-                Định danh Assignee để hệ thống tự động ghi nhận các task Jira của bạn
+                Khớp tài khoản Jira để hệ thống tự động nhận diện các task được giao cho bạn
               </CardDescription>
             </div>
           </div>
@@ -202,9 +202,9 @@ export function StudentJiraSettings({
             </div>
 
             <div className="max-w-md mx-auto space-y-1.5">
-              <h4 className="text-sm font-bold text-foreground">Tài khoản Atlassian Jira chưa được kết nối</h4>
+              <h4 className="text-sm font-bold text-foreground">Chưa kết nối tài khoản Jira</h4>
               <p className="text-xs text-muted-foreground leading-relaxed">
-                Liên kết tài khoản Atlassian Jira cá nhân của bạn để hệ thống tự động nhận diện và tính điểm các Task được giao trong dự án nhóm.
+                Kết nối tài khoản Jira của bạn để hệ thống tự động nhận diện các task được giao trong dự án nhóm.
               </p>
             </div>
 
@@ -217,12 +217,12 @@ export function StudentJiraSettings({
               {startLinkMutation.isPending ? (
                 <>
                   <LoaderCircleIcon className="w-4 h-4 animate-spin" />
-                  <span>Đang kết nối Atlassian...</span>
+                  <span>Đang kết nối Jira...</span>
                 </>
               ) : (
                 <>
                   <ExternalLinkIcon className="w-4 h-4" />
-                  <span>Kết nối tài khoản Atlassian Jira</span>
+                  <span>Kết nối tài khoản Jira</span>
                 </>
               )}
             </Button>

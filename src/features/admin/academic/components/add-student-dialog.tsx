@@ -163,7 +163,7 @@ export function AddStudentDialog({
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold text-foreground flex items-center gap-1">
                   <HashIcon className="w-3 h-3 text-primary" />
-                  Mã số sinh viên (MSSV) *
+                  Mã sinh viên *
                 </label>
                 <Input
                   placeholder="VD: SE183904"
@@ -192,7 +192,7 @@ export function AddStudentDialog({
             <div className="space-y-1.5">
               <label className="text-xs font-semibold text-foreground flex items-center gap-1">
                 <MailIcon className="w-3 h-3 text-primary" />
-                Email trường cấp (FPT Edu) *
+                Email trường *
               </label>
               <Input
                 type="email"
@@ -211,7 +211,7 @@ export function AddStudentDialog({
               <div className="flex items-center justify-between">
                 <label className="text-xs font-semibold text-foreground flex items-center gap-1">
                   <SparklesIcon className="w-3 h-3 text-primary" />
-                  Mã thành viên (Member Code) *
+                  Mã thành viên *
                 </label>
                 {formData.fullName && formData.studentCode && (
                   <button

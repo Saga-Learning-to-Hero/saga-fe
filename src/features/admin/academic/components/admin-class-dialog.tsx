@@ -77,7 +77,7 @@ export function AdminClassDialog({
             </div>
             <div>
               <DialogTitle className="text-base font-bold text-foreground">
-                {editingClass ? "Cập nhật Lớp sinh viên (Cohort Class)" : "Thêm Lớp sinh viên mới (Cohort Class)"}
+                {editingClass ? "Cập nhật lớp sinh viên" : "Thêm lớp sinh viên mới"}
               </DialogTitle>
               <DialogDescription className="text-xs text-muted-foreground">
                 Quản lý lớp sinh viên theo chuyên ngành và khóa tuyển sinh.

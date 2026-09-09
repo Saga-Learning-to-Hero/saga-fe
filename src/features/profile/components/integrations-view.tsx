@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 import {
   CheckCircle2Icon,
   XCircleIcon,
@@ -8,9 +9,11 @@ import {
   CheckSquareIcon,
   GitBranchIcon,
   Loader2Icon,
+  ArrowLeftIcon,
 } from "lucide-react";
 import type { User } from "@/types/auth";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/sonner";
 import { useUserIdentities } from "@/features/integrations/hooks/useUserIntegrations";
 import { useJiraOAuthCallback } from "@/features/integrations/hooks/useJiraIntegrations";
@@ -23,6 +26,21 @@ interface IntegrationsViewProps {
 }
 
 export function IntegrationsView({ user }: IntegrationsViewProps) {
+  const router = useRouter();
+
+  const handleBack = () => {
+    if (typeof window !== "undefined" && window.history.length > 2) {
+      router.back();
+    } else {
+      const defaultPath =
+        user.role === "STUDENT"
+          ? "/student/dashboard"
+          : user.role === "LECTURER"
+            ? "/lecturer/courses"
+            : "/admin/dashboard";
+      router.push(defaultPath);
+    }
+  };
 
   const {
     jiraIdentities,
@@ -76,8 +94,56 @@ export function IntegrationsView({ user }: IntegrationsViewProps) {
 
   const isCallbackPending = jiraCallbackMutation.isPending || githubCallbackMutation.isPending;
 
+  if (user.role !== "STUDENT") {
+    return (
+      <div className="space-y-4 max-w-2xl mx-auto pb-12 pt-8">
+        <div className="flex items-center">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleBack}
+            className="h-8 px-2.5 -ml-1 rounded-xl gap-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground hover:bg-muted cursor-pointer transition-colors border border-transparent hover:border-border"
+          >
+            <ArrowLeftIcon className="size-4" />
+            <span>Quay lại</span>
+          </Button>
+        </div>
+
+        <div className="rounded-3xl border border-border/80 bg-card p-6 sm:p-8 text-center space-y-4 shadow-xs">
+          <div className="w-12 h-12 rounded-2xl bg-amber-500/10 text-amber-600 flex items-center justify-center mx-auto">
+            <ShieldCheckIcon className="w-6 h-6" />
+          </div>
+          <h2 className="text-lg font-bold text-foreground">
+            Tính năng chỉ áp dụng cho tài khoản Sinh viên
+          </h2>
+          <p className="text-xs text-muted-foreground max-w-md mx-auto leading-relaxed">
+            Liên kết tài khoản Jira và GitHub cá nhân chỉ dành cho tài khoản Sinh viên nhằm đối soát tác giả commit mã nguồn và người thực hiện nhiệm vụ trong các đồ án học phần.
+          </p>
+          <Button
+            onClick={handleBack}
+            className="text-xs font-bold rounded-xl cursor-pointer"
+          >
+            Quay lại trang làm việc
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-4 max-w-[1600px] mx-auto pb-12">
+      <div className="flex items-center">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={handleBack}
+          className="h-8 px-2.5 -ml-1 rounded-xl gap-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground hover:bg-muted cursor-pointer transition-colors border border-transparent hover:border-border"
+        >
+          <ArrowLeftIcon className="size-4" />
+          <span>Quay lại</span>
+        </Button>
+      </div>
+
       {isCallbackPending && (
         <div className="flex items-center gap-2.5 px-4 py-2.5 rounded-2xl bg-primary/15 border border-primary/30 text-xs text-primary font-semibold animate-pulse">
           <Loader2Icon className="w-4 h-4 animate-spin shrink-0" />
@@ -111,11 +177,10 @@ export function IntegrationsView({ user }: IntegrationsViewProps) {
         <div className="relative flex flex-col lg:flex-row lg:items-center justify-between gap-6">
           <div className="space-y-2.5 max-w-2xl">
             <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight leading-tight">
-              Liên kết Tài khoản Cá nhân Jira & GitHub
+              Tài khoản Jira & GitHub Cá nhân
             </h1>
             <p className="text-white/85 text-xs sm:text-sm leading-relaxed">
-              Sinh viên chỉ cần liên kết tài khoản Jira và GitHub cá nhân một lần duy nhất. Hệ thống SAGA tự động
-              đối soát tác giả commit và người thực hiện task trên toàn bộ các repository và bảng Jira của nhóm mà không cần chọn từng site hay repo.
+              Liên kết tài khoản của bạn một lần duy nhất. Hệ thống sẽ tự động nhận diện các commit trên GitHub và task trên Jira của bạn trong tất cả các môn học và dự án nhóm.
             </p>
           </div>
 
@@ -123,7 +188,7 @@ export function IntegrationsView({ user }: IntegrationsViewProps) {
             <div className="bg-white/15 backdrop-blur-md border border-white/20 rounded-2xl p-3 px-4 text-white flex items-center justify-between gap-4 min-w-[220px]">
               <div className="flex items-center gap-2">
                 <CheckSquareIcon className="w-4 h-4 text-blue-300" />
-                <span className="text-xs font-semibold">Tích hợp Jira</span>
+                <span className="text-xs font-semibold">Jira cá nhân</span>
               </div>
               {isLoading && !jiraIdentity ? (
                 <Badge className="bg-white/20 text-white border-0 text-[10px] gap-1 px-2 animate-pulse">
@@ -143,7 +208,7 @@ export function IntegrationsView({ user }: IntegrationsViewProps) {
             <div className="bg-white/15 backdrop-blur-md border border-white/20 rounded-2xl p-3 px-4 text-white flex items-center justify-between gap-4 min-w-[220px]">
               <div className="flex items-center gap-2">
                 <GitBranchIcon className="w-4 h-4 text-purple-300" />
-                <span className="text-xs font-semibold">Tích hợp GitHub</span>
+                <span className="text-xs font-semibold">GitHub cá nhân</span>
               </div>
               {isLoading && !githubIdentity ? (
                 <Badge className="bg-white/20 text-white border-0 text-[10px] gap-1 px-2 animate-pulse">
@@ -166,9 +231,9 @@ export function IntegrationsView({ user }: IntegrationsViewProps) {
       <div className="flex items-start gap-3 p-4 rounded-2xl bg-card border border-border/80 text-xs text-muted-foreground shadow-2xs">
         <ShieldCheckIcon className="size-4 text-primary shrink-0 mt-0.5" />
         <div className="space-y-1">
-          <p className="font-bold text-foreground">Bảo mật & Quyền riêng tư của Sinh viên</p>
+          <p className="font-bold text-foreground">Bảo mật & Quyền truy cập</p>
           <p>
-            Hệ thống SAGA chỉ yêu cầu quyền đọc thông tin tài khoản cơ bản để khớp danh tính sinh viên với tác giả commit và người nhận việc Jira. Hệ thống không bao giờ lưu trữ mật khẩu cá nhân và không yêu cầu quyền can thiệp vào mã nguồn hay các dự án riêng tư bên ngoài đồ án.
+            SAGA chỉ dùng quyền đọc (read-only) để ghi nhận commit GitHub và task Jira của bạn trong đồ án, không chỉnh sửa code hay can thiệp dữ liệu cá nhân.
           </p>
         </div>
       </div>

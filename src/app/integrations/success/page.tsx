@@ -42,7 +42,7 @@ function SuccessContent() {
       } finally {
         if (isMounted) {
           setIsSyncing(false);
-          router.replace(user?.role === "STUDENT" ? "/student/integrations" : "/profile/integrations");
+          router.replace("/profile/integrations");
         }
       }
     }
@@ -111,7 +111,7 @@ function SuccessContent() {
 
         <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
           <Link
-            href={user?.role === "STUDENT" ? "/student/integrations" : "/profile/integrations"}
+            href="/profile/integrations"
             className="w-full sm:w-auto h-10 px-5 inline-flex items-center justify-center gap-2 text-xs font-bold rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 shadow-md shadow-primary/25 transition-all cursor-pointer"
           >
             <span>Đến trang Tích hợp ngay</span>
