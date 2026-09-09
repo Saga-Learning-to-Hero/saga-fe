@@ -14,6 +14,10 @@ import {
   AwardIcon,
   ClockIcon,
   ArchiveIcon,
+  PencilIcon,
+  ChevronDownIcon,
+  ChevronUpIcon,
+  InfoIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -25,12 +29,14 @@ import {
   useSyllabi,
   useSyllabusDetail,
   useCreateSyllabusDraft,
+  useUpdateSyllabusMetadata,
   useReplaceSyllabusStructure,
   usePublishSyllabus,
   useArchiveSyllabus,
 } from "@/features/admin/subjects/hooks/use-syllabi";
 import type {
   CreateSyllabusRequest,
+  PatchSyllabusRequest,
   ReplaceSyllabusStructureRequest,
 } from "@/features/admin/subjects/types/syllabus-types";
 
@@ -87,7 +93,9 @@ export default function SubjectDetailPage({
 
   const [activeTab, setActiveTab] = useState<"versions" | "structure">("versions");
   const [selectedVersionId, setSelectedVersionId] = useState<string | null>(null);
-  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [dialogMode, setDialogMode] = useState<"create" | "edit">("create");
+  const [isMetadataExpanded, setIsMetadataExpanded] = useState(false);
 
   const activeVersionId = useMemo(() => {
     if (selectedVersionId && syllabi.some((s) => s.id === selectedVersionId)) {
@@ -110,14 +118,37 @@ export default function SubjectDetailPage({
   });
 
   const createDraftMutation = useCreateSyllabusDraft();
+  const updateMetadataMutation = useUpdateSyllabusMetadata();
   const replaceStructureMutation = useReplaceSyllabusStructure();
   const publishMutation = usePublishSyllabus();
   const archiveMutation = useArchiveSyllabus();
 
-  const handleCreateDraft = async (data: CreateSyllabusRequest) => {
-    const res = await createDraftMutation.mutateAsync({ subjectId: id, data });
-    setSelectedVersionId(res.id);
-    setActiveTab("structure");
+  const handleOpenCreate = () => {
+    setDialogMode("create");
+    setIsDialogOpen(true);
+  };
+
+  const handleOpenEdit = (targetVersionId?: string) => {
+    if (targetVersionId) {
+      setSelectedVersionId(targetVersionId);
+    }
+    setDialogMode("edit");
+    setIsDialogOpen(true);
+  };
+
+  const handleDialogSubmit = async (data: CreateSyllabusRequest) => {
+    if (dialogMode === "create") {
+      const res = await createDraftMutation.mutateAsync({ subjectId: id, data });
+      setSelectedVersionId(res.id);
+      setActiveTab("structure");
+    } else {
+      if (!activeVersionId) return;
+      await updateMetadataMutation.mutateAsync({
+        subjectId: id,
+        versionId: activeVersionId,
+        data: data as PatchSyllabusRequest,
+      });
+    }
   };
 
   const handleSaveStructure = async (data: ReplaceSyllabusStructureRequest) => {
@@ -284,13 +315,14 @@ export default function SubjectDetailPage({
             syllabi={syllabi}
             selectedVersionId={activeVersionId}
             onSelectVersion={(verId) => setSelectedVersionId(verId)}
-            onOpenCreateDialog={() => setIsCreateDialogOpen(true)}
+            onOpenCreateDialog={handleOpenCreate}
             onPublish={handlePublish}
             onArchive={handleArchive}
             onViewStructure={(verId) => {
               setSelectedVersionId(verId);
               setActiveTab("structure");
             }}
+            onEditMetadata={(verId) => handleOpenEdit(verId)}
             isPublishing={publishMutation.isPending}
             isArchiving={archiveMutation.isPending}
           />
@@ -333,7 +365,19 @@ export default function SubjectDetailPage({
               </div>
             </div>
 
-            <div className="flex items-center gap-2 self-start sm:self-auto">
+            <div className="flex items-center gap-2 self-start sm:self-auto flex-wrap">
+              {activeSyllabusSummary?.status === "DRAFT" && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleOpenEdit()}
+                  className="h-8 text-xs font-semibold gap-1.5 cursor-pointer shadow-2xs hover:bg-muted"
+                >
+                  <PencilIcon className="w-3.5 h-3.5" />
+                  <span>Sửa thông tin</span>
+                </Button>
+              )}
+
               <Button
                 variant="outline"
                 size="sm"
@@ -345,6 +389,89 @@ export default function SubjectDetailPage({
               </Button>
             </div>
           </div>
+
+          {syllabusDetail && (
+            <div className="rounded-2xl border border-border bg-card shadow-xs overflow-hidden">
+              <button
+                type="button"
+                onClick={() => setIsMetadataExpanded(!isMetadataExpanded)}
+                className="w-full p-4 flex items-center justify-between hover:bg-muted/10 transition-colors text-left cursor-pointer"
+              >
+                <div className="flex items-center gap-2.5">
+                  <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center text-primary shrink-0">
+                    <InfoIcon className="w-3.5 h-3.5" />
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-bold text-foreground">
+                      Thông Tin Tổng Quan Đề Cương (FLM Curriculum Metadata)
+                    </h4>
+                    <p className="text-[11px] text-muted-foreground font-mono">
+                      Mã FLM: {syllabusDetail.externalSyllabusId || "Chưa gán"} • Bậc: {syllabusDetail.level || "Bachelor"} • Tín chỉ: {syllabusDetail.credits || 3} • Điểm đạt: {syllabusDetail.gradingScale || "Thang 10"}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 text-xs font-semibold text-primary">
+                  <span>{isMetadataExpanded ? "Thu gọn" : "Xem chi tiết"}</span>
+                  {isMetadataExpanded ? (
+                    <ChevronUpIcon className="w-4 h-4" />
+                  ) : (
+                    <ChevronDownIcon className="w-4 h-4" />
+                  )}
+                </div>
+              </button>
+
+              {isMetadataExpanded && (
+                <div className="p-5 border-t border-border/60 bg-muted/5 space-y-4 animate-in fade-in-50 duration-200">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-xs">
+                    <div className="space-y-1 p-3 rounded-xl bg-card border border-border/60">
+                      <span className="text-[10px] font-bold text-muted-foreground uppercase">Học phần tiên quyết</span>
+                      <p className="font-mono text-foreground font-medium">{syllabusDetail.prerequisites || "Không yêu cầu"}</p>
+                    </div>
+
+                    <div className="space-y-1 p-3 rounded-xl bg-card border border-border/60">
+                      <span className="text-[10px] font-bold text-muted-foreground uppercase">Phân bổ thời gian</span>
+                      <p className="text-foreground font-medium">{syllabusDetail.timeAllocation || "Chưa cập nhật"}</p>
+                    </div>
+
+                    <div className="space-y-1 p-3 rounded-xl bg-card border border-border/60">
+                      <span className="text-[10px] font-bold text-muted-foreground uppercase">Phương pháp giảng dạy</span>
+                      <p className="text-foreground font-medium">{syllabusDetail.learningTeachingMethod || "Chưa cập nhật"}</p>
+                    </div>
+
+                    <div className="space-y-1 p-3 rounded-xl bg-card border border-border/60 md:col-span-2 lg:col-span-3">
+                      <span className="text-[10px] font-bold text-muted-foreground uppercase">Công cụ & Môi trường phát triển</span>
+                      <p className="font-mono text-foreground font-medium">{syllabusDetail.tools || "Chưa cập nhật"}</p>
+                    </div>
+
+                    {syllabusDetail.description && (
+                      <div className="space-y-1 p-3 rounded-xl bg-card border border-border/60 md:col-span-2 lg:col-span-3">
+                        <span className="text-[10px] font-bold text-muted-foreground uppercase">Mô tả học phần</span>
+                        <p className="text-foreground leading-relaxed whitespace-pre-line">{syllabusDetail.description}</p>
+                      </div>
+                    )}
+
+                    {syllabusDetail.studentDuties && (
+                      <div className="space-y-1 p-3 rounded-xl bg-card border border-border/60 md:col-span-2 lg:col-span-3">
+                        <span className="text-[10px] font-bold text-muted-foreground uppercase">Nhiệm vụ của sinh viên</span>
+                        <p className="text-foreground leading-relaxed whitespace-pre-line">{syllabusDetail.studentDuties}</p>
+                      </div>
+                    )}
+
+                    {(syllabusDetail.textbooks || syllabusDetail.referenceMaterials) && (
+                      <div className="space-y-1 p-3 rounded-xl bg-card border border-border/60 md:col-span-2 lg:col-span-3">
+                        <span className="text-[10px] font-bold text-muted-foreground uppercase">Giáo trình & Tài liệu tham khảo</span>
+                        <p className="text-foreground">
+                          {syllabusDetail.textbooks && <span><strong>Giáo trình:</strong> {syllabusDetail.textbooks} </span>}
+                          {syllabusDetail.referenceMaterials && <span><strong>Tài liệu:</strong> {syllabusDetail.referenceMaterials}</span>}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
 
           {isDetailLoading ? (
             <div className="rounded-2xl border border-border bg-card p-6 space-y-6 shadow-xs animate-pulse">
@@ -386,10 +513,16 @@ export default function SubjectDetailPage({
       </Tabs>
 
       <SyllabusDialog
-        isOpen={isCreateDialogOpen}
-        onClose={() => setIsCreateDialogOpen(false)}
-        onSubmit={handleCreateDraft}
-        isSubmitting={createDraftMutation.isPending}
+        isOpen={isDialogOpen}
+        onClose={() => setIsDialogOpen(false)}
+        onSubmit={handleDialogSubmit}
+        initialData={dialogMode === "edit" ? syllabusDetail || activeSyllabusSummary : null}
+        mode={dialogMode}
+        isSubmitting={
+          dialogMode === "create"
+            ? createDraftMutation.isPending
+            : updateMetadataMutation.isPending
+        }
       />
     </div>
   );

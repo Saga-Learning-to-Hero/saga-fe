@@ -106,6 +106,7 @@ export interface SyllabusSummaryResponse {
   id: string;
   subjectId: string;
   subjectCode?: string;
+  externalSyllabusId?: string | null;
   versionLabel: string;
   status: SyllabusStatus;
   titleEnglish?: string | null;
@@ -117,7 +118,6 @@ export interface SyllabusSummaryResponse {
 }
 
 export interface SyllabusDetailResponse extends SyllabusSummaryResponse {
-  externalSyllabusId?: string | null;
   level?: string | null;
   learningTeachingMethod?: string | null;
   timeAllocation?: string | null;
