@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import {
   GitBranchIcon,
   ExternalLinkIcon,
@@ -19,6 +20,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "@/components/ui/sonner";
 import { GitHubConnectedCard } from "./github/github-connected-card";
+import { IdentityDisconnectDialog } from "./identity-disconnect-dialog";
 
 interface StudentGitHubSettingsProps {
   user: User;
@@ -39,6 +41,7 @@ export function StudentGitHubSettings({
   const startLinkMutation = useStartGitHubLink();
   const setPrimaryMutation = useSetPrimaryGitHubIdentity();
   const deleteMutation = useDeleteGitHubIdentity();
+  const [disconnectItem, setDisconnectItem] = useState<UserIdentityItem | null>(null);
 
   const handleConnectGitHubOAuth = async () => {
     try {
@@ -49,10 +52,8 @@ export function StudentGitHubSettings({
         : defaultPath;
       const result = await startLinkMutation.mutateAsync(currentPath);
 
-      if (result.authorizationUrl) {
-        if (typeof window !== "undefined") {
-          window.open(result.authorizationUrl, "_self");
-        }
+      if (result.authorizationUrl && typeof window !== "undefined") {
+        window.open(result.authorizationUrl, "_self");
       }
     } catch {
       toast.error("Lỗi khi kết nối với máy chủ GitHub. Vui lòng thử lại sau.", { id: "github-oauth" });
@@ -71,16 +72,14 @@ export function StudentGitHubSettings({
     }
   };
 
-  const handleDisconnect = async (identityId: string) => {
-    if (!identityId) {
-      toast.success("Đã hủy trạng thái liên kết.");
-      return;
-    }
+  const handleConfirmDisconnect = async () => {
+    if (!disconnectItem) return;
     const toastId = "github-disconnect";
     try {
       toast.loading("Đang hủy liên kết tài khoản GitHub...", { id: toastId });
-      await deleteMutation.mutateAsync(identityId);
+      await deleteMutation.mutateAsync(disconnectItem.id);
       toast.success("Đã hủy liên kết tài khoản GitHub cá nhân thành công!", { id: toastId });
+      setDisconnectItem(null);
     } catch {
       toast.error("Lỗi khi hủy liên kết tài khoản GitHub. Vui lòng thử lại.", { id: toastId });
     }
@@ -193,7 +192,7 @@ export function StudentGitHubSettings({
                 isDeleting={deleteMutation.isPending}
                 isSettingPrimary={setPrimaryMutation.isPending}
                 onSetPrimary={() => handleSetPrimary(item.id)}
-                onDisconnect={() => handleDisconnect(item.id)}
+                onDisconnect={() => setDisconnectItem(item)}
               />
             ))}
           </div>
@@ -231,6 +230,15 @@ export function StudentGitHubSettings({
           </div>
         )}
       </CardContent>
+
+      <IdentityDisconnectDialog
+        open={Boolean(disconnectItem)}
+        onOpenChange={(open) => !open && setDisconnectItem(null)}
+        provider="GITHUB"
+        accountLabel={disconnectItem?.login || disconnectItem?.displayName}
+        isPending={deleteMutation.isPending}
+        onConfirm={handleConfirmDisconnect}
+      />
     </Card>
   );
 }

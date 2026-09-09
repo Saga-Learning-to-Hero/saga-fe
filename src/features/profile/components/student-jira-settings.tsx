@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import {
   CheckSquareIcon,
   ExternalLinkIcon,
@@ -19,6 +20,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "@/components/ui/sonner";
 import { JiraConnectedCard } from "./jira/jira-connected-card";
+import { IdentityDisconnectDialog } from "./identity-disconnect-dialog";
 
 interface StudentJiraSettingsProps {
   user: User;
@@ -39,6 +41,7 @@ export function StudentJiraSettings({
   const startLinkMutation = useStartJiraLink();
   const setPrimaryMutation = useSetPrimaryJiraIdentity();
   const deleteMutation = useDeleteJiraIdentity();
+  const [disconnectItem, setDisconnectItem] = useState<UserIdentityItem | null>(null);
 
   const handleConnectJiraOAuth = async () => {
     try {
@@ -49,10 +52,8 @@ export function StudentJiraSettings({
         : defaultPath;
       const result = await startLinkMutation.mutateAsync(currentPath);
 
-      if (result.authorizationUrl) {
-        if (typeof window !== "undefined") {
-          window.open(result.authorizationUrl, "_self");
-        }
+      if (result.authorizationUrl && typeof window !== "undefined") {
+        window.open(result.authorizationUrl, "_self");
       }
     } catch {
       toast.error("Lỗi khi kết nối với máy chủ Atlassian. Vui lòng thử lại sau.", { id: "jira-oauth" });
@@ -71,16 +72,14 @@ export function StudentJiraSettings({
     }
   };
 
-  const handleDisconnect = async (identityId: string) => {
-    if (!identityId) {
-      toast.success("Đã hủy trạng thái liên kết.");
-      return;
-    }
+  const handleConfirmDisconnect = async () => {
+    if (!disconnectItem) return;
     const toastId = "jira-disconnect";
     try {
       toast.loading("Đang hủy liên kết tài khoản Jira...", { id: toastId });
-      await deleteMutation.mutateAsync(identityId);
+      await deleteMutation.mutateAsync(disconnectItem.id);
       toast.success("Đã hủy liên kết tài khoản Atlassian Jira cá nhân thành công!", { id: toastId });
+      setDisconnectItem(null);
     } catch {
       toast.error("Lỗi khi hủy liên kết tài khoản Jira. Vui lòng thử lại.", { id: toastId });
     }
@@ -191,7 +190,7 @@ export function StudentJiraSettings({
                 isDeleting={deleteMutation.isPending}
                 isSettingPrimary={setPrimaryMutation.isPending}
                 onSetPrimary={() => handleSetPrimary(item.id)}
-                onDisconnect={() => handleDisconnect(item.id)}
+                onDisconnect={() => setDisconnectItem(item)}
               />
             ))}
           </div>
@@ -229,6 +228,15 @@ export function StudentJiraSettings({
           </div>
         )}
       </CardContent>
+
+      <IdentityDisconnectDialog
+        open={Boolean(disconnectItem)}
+        onOpenChange={(open) => !open && setDisconnectItem(null)}
+        provider="JIRA"
+        accountLabel={disconnectItem?.displayName || disconnectItem?.login}
+        isPending={deleteMutation.isPending}
+        onConfirm={handleConfirmDisconnect}
+      />
     </Card>
   );
 }

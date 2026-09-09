@@ -7,6 +7,7 @@ import {
   LoaderCircleIcon,
   Code2Icon,
   ShieldCheckIcon,
+  UnlinkIcon,
 } from "lucide-react";
 import type { ProjectGitHubIntegration } from "../../types/student-project";
 import { Badge } from "@/components/ui/badge";
@@ -16,17 +17,22 @@ interface ProjectGithubSectionProps {
   github?: ProjectGitHubIntegration | null;
   isLeader: boolean;
   isConnectingRepo?: boolean;
+  isDisconnectingGitHub?: boolean;
   onAddRepo?: () => void;
+  onDisconnectGitHub?: () => void;
 }
 
 export function ProjectGithubSection({
   github,
   isLeader,
   isConnectingRepo = false,
+  isDisconnectingGitHub = false,
   onAddRepo,
+  onDisconnectGitHub,
 }: ProjectGithubSectionProps) {
   const repositories = github?.repositories || [];
   const hasRepos = repositories.length > 0;
+  const isConnected = Boolean(github && (hasRepos || github.accountLogin));
 
   return (
     <div className="rounded-xl border border-purple-500/25 bg-purple-500/[0.02] p-4 flex flex-col justify-between space-y-3">
@@ -41,12 +47,15 @@ export function ProjectGithubSection({
                 <h4 className="text-xs sm:text-sm font-bold text-foreground">
                   GitHub Repositories của nhóm
                 </h4>
-                <Badge
-                  variant="outline"
-                  className="font-mono text-[10px] border-purple-500/30 text-purple-600 dark:text-purple-400 bg-purple-500/10 font-bold"
-                >
-                  {repositories.length} repos
-                </Badge>
+                {isConnected ? (
+                  <Badge className="bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-0 text-[10px] font-semibold">
+                    Đang kết nối ({repositories.length} repo)
+                  </Badge>
+                ) : (
+                  <Badge variant="outline" className="text-[10px] text-muted-foreground border-border">
+                    Chưa kết nối
+                  </Badge>
+                )}
               </div>
               <p className="text-[11px] text-muted-foreground">
                 Các repo mã nguồn chung để theo dõi commit và PR
@@ -70,7 +79,7 @@ export function ProjectGithubSection({
               ) : (
                 <>
                   <PlusIcon className="w-3 h-3" />
-                  <span>+ Thêm Repo</span>
+                  <span>{isConnected ? " Thêm Repo" : "Kết nối GitHub"}</span>
                 </>
               )}
             </Button>
@@ -102,7 +111,7 @@ export function ProjectGithubSection({
             )}
           </div>
         ) : (
-          <div className="space-y-2 max-h-[160px] overflow-y-auto pr-1">
+          <div className="space-y-2 max-h-[200px] overflow-y-auto pr-1">
             {repositories.map((r) => (
               <div
                 key={r.id || `${r.repositoryId}-${r.fullName}`}
@@ -127,7 +136,7 @@ export function ProjectGithubSection({
                 </div>
                 <Badge className="bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-0 text-[10px] font-semibold shrink-0">
                   <ShieldCheckIcon className="w-3 h-3 mr-1" />
-                  {r.status || "ACTIVE"}
+                  ACTIVE
                 </Badge>
               </div>
             ))}
@@ -141,6 +150,31 @@ export function ProjectGithubSection({
           <Badge variant="secondary" className="font-mono text-[10px]">
             @{github.accountLogin}
           </Badge>
+        </div>
+      )}
+
+      {isLeader && isConnected && onDisconnectGitHub && (
+        <div className="pt-2 flex justify-end">
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={onDisconnectGitHub}
+            disabled={isDisconnectingGitHub}
+            className="h-7 px-2.5 text-xs text-rose-500 hover:text-rose-600 hover:bg-rose-500/10 rounded-lg gap-1 cursor-pointer"
+          >
+            {isDisconnectingGitHub ? (
+              <>
+                <LoaderCircleIcon className="w-3 h-3 animate-spin" />
+                <span>Đang ngắt kết nối...</span>
+              </>
+            ) : (
+              <>
+                <UnlinkIcon className="w-3 h-3" />
+                <span>Ngắt kết nối GitHub</span>
+              </>
+            )}
+          </Button>
         </div>
       )}
     </div>

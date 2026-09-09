@@ -212,11 +212,7 @@ export function ProjectInfoView() {
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
             <div className="lg:col-span-6 space-y-5">
-              <ProjectDetailsCard
-                project={project}
-                isLeader={isLeader}
-              />
-
+              <ProjectDetailsCard project={project} isLeader={isLeader} />
               <TeamMembersCard
                 course={effectiveCourse}
                 team={team}

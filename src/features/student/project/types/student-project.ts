@@ -135,13 +135,13 @@ export interface ProjectGitHubRepositoryItem {
   repositoryId: number;
   fullName: string;
   role?: string;
-  status?: string;
+  status?: "ACTIVE" | "REVOKED" | string;
 }
 
 export interface ProjectGitHubIntegration {
   installationId?: number;
   accountLogin?: string;
-  status?: string;
+  status?: "ACTIVE" | "REVOKED" | string;
   repositories: ProjectGitHubRepositoryItem[];
 }
 
@@ -150,11 +150,65 @@ export interface ProjectJiraIntegration {
   siteName?: string;
   projectKey?: string;
   boardId?: string;
-  status?: string;
+  status?: "ACTIVE" | "REVOKED" | string;
 }
 
 export interface ProjectIntegrationsResponse {
   github: ProjectGitHubIntegration | null;
   jira: ProjectJiraIntegration | null;
+}
+
+export interface ProjectGitHubConnectResponse {
+  authorizationUrl: string;
+  state: string;
+}
+
+export interface ProjectAvailableGitHubRepositoryItem {
+  id: number;
+  name: string;
+  fullName: string;
+  owner: string;
+  defaultBranch: string;
+  privateRepo: boolean;
+}
+
+export interface ProjectGitHubSetupCallbackParams {
+  state: string;
+  installation_id: number | string;
+  code?: string;
+}
+
+export interface SelectProjectGitHubRepoPayloadItem {
+  repositoryId: number;
+  role: "FRONTEND" | "BACKEND" | "FULLSTACK" | "DOCS" | "OTHER" | string;
+}
+
+export interface ProjectJiraConnectResponse {
+  authorizationUrl: string;
+  state: string;
+}
+
+export interface ProjectJiraSiteItem {
+  id: string;
+  url: string;
+  name: string;
+}
+
+export interface ProjectJiraProjectItem {
+  id: string;
+  key: string;
+  name: string;
+}
+
+export interface ProjectJiraBoardItem {
+  id: string;
+  name: string;
+  type: string;
+}
+
+export interface UpdateProjectJiraPayload {
+  cloudId: string;
+  jiraProjectId: string;
+  boardId?: string | null;
 }
 

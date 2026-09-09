@@ -15,6 +15,7 @@ interface ProjectJiraSectionProps {
   jira?: ProjectJiraIntegration | null;
   isLeader: boolean;
   isConnectingJira?: boolean;
+  isDisconnectingJira?: boolean;
   syncingId?: string | null;
   onConnectJira?: () => void;
   onSyncJira?: () => void;
@@ -25,12 +26,15 @@ export function ProjectJiraSection({
   jira,
   isLeader,
   isConnectingJira = false,
+  isDisconnectingJira = false,
   syncingId,
   onConnectJira,
   onSyncJira,
   onDisconnectJira,
 }: ProjectJiraSectionProps) {
-  const isConnected = Boolean(jira && jira.projectKey && jira.projectKey.trim() !== "");
+  const isRevoked = jira?.status === "REVOKED";
+  const isActive = jira?.status === "ACTIVE";
+  const hasData = Boolean(jira && jira.projectKey && jira.projectKey.trim() !== "");
 
   const siteUrl = jira?.siteName
     ? jira.siteName.startsWith("http")
@@ -53,9 +57,13 @@ export function ProjectJiraSection({
                 <h4 className="text-xs sm:text-sm font-bold text-foreground">
                   Jira Project của nhóm
                 </h4>
-                {isConnected ? (
+                {isActive ? (
                   <Badge className="bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-0 text-[10px] font-semibold">
-                    Đã kết nối
+                    Đang kết nối
+                  </Badge>
+                ) : isRevoked ? (
+                  <Badge variant="outline" className="text-[10px] text-rose-500 border-rose-500/30 bg-rose-500/10 font-semibold">
+                    Đã ngắt kết nối
                   </Badge>
                 ) : (
                   <Badge variant="outline" className="text-[10px] text-muted-foreground border-border">
@@ -85,14 +93,14 @@ export function ProjectJiraSection({
               ) : (
                 <>
                   <ExternalLinkIcon className="w-3 h-3" />
-                  <span>{isConnected ? "Đổi Jira" : "+ Kết nối Jira"}</span>
+                  <span>{isActive ? "Đổi Jira" : isRevoked ? "Kết nối lại" : "Kết nối Jira"}</span>
                 </>
               )}
             </Button>
           )}
         </div>
 
-        {!isConnected ? (
+        {!hasData ? (
           <div className="p-4 rounded-xl border border-dashed border-border/80 bg-muted/15 text-center space-y-2">
             <div className="w-8 h-8 rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center mx-auto">
               <CheckSquareIcon className="w-4 h-4" />
@@ -117,7 +125,7 @@ export function ProjectJiraSection({
             )}
           </div>
         ) : (
-          <div className="p-4 rounded-xl bg-card border border-border/70 space-y-3 shadow-2xs">
+          <div className={`p-4 rounded-xl bg-card border space-y-3 shadow-2xs ${isRevoked ? "border-rose-500/30 opacity-90" : "border-border/70"}`}>
             <div className="flex items-center justify-between gap-2 flex-wrap">
               <div className="flex items-center gap-2 flex-wrap">
                 <span className="text-sm font-bold text-foreground font-mono">
@@ -135,7 +143,7 @@ export function ProjectJiraSection({
                 )}
               </div>
 
-              {onSyncJira && (
+              {isActive && onSyncJira && (
                 <Button
                   type="button"
                   variant="outline"
@@ -173,17 +181,27 @@ export function ProjectJiraSection({
         )}
       </div>
 
-      {isLeader && isConnected && onDisconnectJira && (
+      {isLeader && isActive && onDisconnectJira && (
         <div className="pt-2 flex justify-end">
           <Button
             type="button"
             variant="ghost"
             size="sm"
             onClick={onDisconnectJira}
+            disabled={isDisconnectingJira}
             className="h-7 px-2.5 text-xs text-rose-500 hover:text-rose-600 hover:bg-rose-500/10 rounded-lg gap-1 cursor-pointer"
           >
-            <UnlinkIcon className="w-3 h-3" />
-            <span>Ngắt kết nối Jira</span>
+            {isDisconnectingJira ? (
+              <>
+                <LoaderCircleIcon className="w-3 h-3 animate-spin" />
+                <span>Đang ngắt kết nối...</span>
+              </>
+            ) : (
+              <>
+                <UnlinkIcon className="w-3 h-3" />
+                <span>Ngắt kết nối Jira</span>
+              </>
+            )}
           </Button>
         </div>
       )}

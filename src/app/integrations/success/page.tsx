@@ -42,7 +42,9 @@ function SuccessContent() {
       } finally {
         if (isMounted) {
           setIsSyncing(false);
-          router.replace("/profile/integrations");
+          const returnParam = searchParams.get("returnPath") || searchParams.get("returnUrl");
+          const target = returnParam || (user?.role === "STUDENT" ? "/student/project-info" : "/profile/integrations");
+          router.replace(target);
         }
       }
     }
@@ -52,7 +54,7 @@ function SuccessContent() {
     return () => {
       isMounted = false;
     };
-  }, [queryClient, router, user?.role]);
+  }, [queryClient, router, searchParams, user?.role]);
 
   return (
     <div className="w-full max-w-xl mx-auto space-y-6">
