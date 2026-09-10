@@ -16,6 +16,7 @@ import { ProjectGithubSection } from "./integrations/project-github-section";
 import { ProjectDisconnectDialog } from "./integrations/project-disconnect-dialog";
 import { ProjectAvailableReposDialog } from "./integrations/project-available-repos-dialog";
 import { ProjectJiraConfigDialog } from "./integrations/project-jira-config-dialog";
+import { ProjectGitHubInstallationsDialog } from "./integrations/project-github-installations-dialog";
 
 interface ProjectIntegrationsCardProps {
   projectId: string;
@@ -27,6 +28,7 @@ export function ProjectIntegrationsCard({ projectId, isLeader }: ProjectIntegrat
   const [syncingId, setSyncingId] = useState<string | null>(null);
   const [disconnectModalType, setDisconnectModalType] = useState<"jira" | "github" | null>(null);
   const [isReposModalOpen, setIsReposModalOpen] = useState(false);
+  const [isGitHubInstallationsModalOpen, setIsGitHubInstallationsModalOpen] = useState(false);
   const [isJiraModalOpen, setIsJiraModalOpen] = useState(() => {
     if (typeof window === "undefined") return false;
     const urlParams = new URLSearchParams(window.location.search);
@@ -106,7 +108,17 @@ export function ProjectIntegrationsCard({ projectId, isLeader }: ProjectIntegrat
       if (result.authorizationUrl && typeof window !== "undefined") {
         window.location.href = result.authorizationUrl;
       }
-    } catch {
+    } catch (error: unknown) {
+      const err = error as { code?: string; status?: number; data?: { code?: string } };
+      if (
+        err?.code === "GITHUB_INSTALLATION_SELECTION_REQUIRED" ||
+        err?.data?.code === "GITHUB_INSTALLATION_SELECTION_REQUIRED" ||
+        err?.status === 409
+      ) {
+        toast.dismiss("github-connect");
+        setIsGitHubInstallationsModalOpen(true);
+        return;
+      }
       toast.error("Lỗi khi kết nối GitHub với dự án. Vui lòng thử lại sau.", { id: "github-connect" });
     }
   };
@@ -250,6 +262,12 @@ export function ProjectIntegrationsCard({ projectId, isLeader }: ProjectIntegrat
           void handleRedirectGitHubConnect();
         }}
         isConnecting={connectGitHubMutation.isPending}
+      />
+
+      <ProjectGitHubInstallationsDialog
+        open={isGitHubInstallationsModalOpen}
+        onOpenChange={setIsGitHubInstallationsModalOpen}
+        projectId={projectId}
       />
 
       <ProjectJiraConfigDialog

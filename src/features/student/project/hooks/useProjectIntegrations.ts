@@ -3,6 +3,7 @@ import { StudentProjectService } from "../api/student-project-service";
 import type {
   ProjectIntegrationsResponse,
   ProjectGitHubSetupCallbackParams,
+  ConnectProjectGitHubOptions,
 } from "../types/student-project";
 
 export const PROJECT_INTEGRATIONS_QUERY_KEYS = {
@@ -10,6 +11,8 @@ export const PROJECT_INTEGRATIONS_QUERY_KEYS = {
     ["projects", projectId, "integrations"] as const,
   availableGitHubRepositories: (projectId?: string | null) =>
     ["projects", projectId, "integrations", "github", "repositories"] as const,
+  githubReconnectCandidates: (projectId?: string | null) =>
+    ["projects", projectId, "integrations", "github", "reconnect-candidates"] as const,
   jiraSites: (projectId?: string | null) =>
     ["projects", projectId, "integrations", "jira", "sites"] as const,
   jiraProjects: (projectId?: string | null, cloudId?: string | null) =>
@@ -73,8 +76,23 @@ export function useDisconnectProjectGitHub() {
 
 export function useConnectProjectGitHub() {
   return useMutation({
-    mutationFn: ({ projectId, returnPath }: { projectId: string; returnPath?: string }) =>
-      StudentProjectService.connectProjectGitHub(projectId, returnPath),
+    mutationFn: ({
+      projectId,
+      ...options
+    }: { projectId: string } & ConnectProjectGitHubOptions) =>
+      StudentProjectService.connectProjectGitHub(projectId, options),
+  });
+}
+
+export function useProjectGitHubReconnectCandidates(
+  projectId?: string | null,
+  options?: { enabled?: boolean }
+) {
+  return useQuery({
+    queryKey: PROJECT_INTEGRATIONS_QUERY_KEYS.githubReconnectCandidates(projectId),
+    queryFn: () => StudentProjectService.getProjectGitHubReconnectCandidates(projectId!),
+    enabled: (options?.enabled ?? true) && Boolean(projectId && projectId.trim()),
+    staleTime: 1000 * 30,
   });
 }
 
