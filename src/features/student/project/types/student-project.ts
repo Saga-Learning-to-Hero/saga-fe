@@ -126,6 +126,26 @@ export interface ProjectGitHubConnectResponse {
   state: string;
 }
 
+export interface ConnectProjectGitHubOptions {
+  returnPath?: string;
+  installationId?: number | string;
+  mode?: "install_new" | string;
+}
+
+export interface GitHubInstallationCandidateItem {
+  id?: number | string;
+  installationId?: number | string;
+  accountLogin?: string;
+  accountName?: string;
+  login?: string;
+  avatarUrl?: string;
+  accountType?: string;
+  targetType?: string;
+  repositorySelection?: string;
+  repositoriesCount?: number;
+  [key: string]: unknown;
+}
+
 export interface ProjectAvailableGitHubRepositoryItem {
   id: number;
   name: string;

@@ -5,6 +5,8 @@ import type {
   CreateStudentProjectRequest,
   ProjectIntegrationsResponse,
   ProjectGitHubConnectResponse,
+  ConnectProjectGitHubOptions,
+  GitHubInstallationCandidateItem,
   ProjectAvailableGitHubRepositoryItem,
   ProjectGitHubSetupCallbackParams,
   SelectProjectGitHubRepoPayloadItem,
@@ -78,11 +80,32 @@ export class StudentProjectService {
 
   static async connectProjectGitHub(
     projectId: string,
-    returnPath?: string
+    options?: string | ConnectProjectGitHubOptions
   ): Promise<ProjectGitHubConnectResponse> {
     if (!projectId || projectId.trim() === "") throw new Error("Throw ValidationException: Project ID is required");
     const cleanProjectId = projectId.trim();
-    const params = returnPath ? { returnPath: returnPath.trim() } : undefined;
+
+    let params: Record<string, string> | undefined = undefined;
+    if (typeof options === "string") {
+      if (options.trim()) {
+        params = { returnPath: options.trim() };
+      }
+    } else if (options) {
+      const p: Record<string, string> = {};
+      if (options.returnPath?.trim()) {
+        p.returnPath = options.returnPath.trim();
+      }
+      if (options.installationId !== undefined && options.installationId !== null && String(options.installationId).trim()) {
+        p.installationId = String(options.installationId).trim();
+      }
+      if (options.mode?.trim()) {
+        p.mode = options.mode.trim();
+      }
+      if (Object.keys(p).length > 0) {
+        params = p;
+      }
+    }
+
     const res = await apiClient.post<ProjectGitHubConnectResponse>(
       `/api/projects/${encodeURIComponent(cleanProjectId)}/integrations/github/connect`,
       null,
@@ -91,6 +114,19 @@ export class StudentProjectService {
     return res.data;
   }
 
+  /** Lấy danh sách các cài đặt GitHub có thể kết nối lại: GET /api/projects/{projectId}/integrations/github/reconnect/candidates */
+  static async getProjectGitHubReconnectCandidates(
+    projectId: string
+  ): Promise<GitHubInstallationCandidateItem[]> {
+    if (!projectId || projectId.trim() === "") throw new Error("Throw ValidationException: Project ID is required");
+    const cleanProjectId = projectId.trim();
+    const res = await apiClient.get<GitHubInstallationCandidateItem[]>(
+      `/api/projects/${encodeURIComponent(cleanProjectId)}/integrations/github/reconnect/candidates`
+    );
+    return res.data || [];
+  }
+
+  /** Lấy danh sách repository khả dụng: GET /api/projects/{projectId}/integrations/github/repositories */
   static async getProjectAvailableGitHubRepositories(
     projectId: string
   ): Promise<ProjectAvailableGitHubRepositoryItem[]> {
