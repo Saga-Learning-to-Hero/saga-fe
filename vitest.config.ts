@@ -5,6 +5,7 @@ export default defineConfig({
   test: {
     environment: "jsdom",
     globals: true,
+    setupFiles: ["./vitest.setup.ts"],
     reporters: ["default", "./src/testing/fpt-reporter.ts"],
     coverage: {
       provider: "v8",

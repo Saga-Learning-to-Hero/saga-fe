@@ -3,6 +3,7 @@ import { persist } from "zustand/middleware";
 import type { Role, User } from "@/types/auth";
 import type { StudentCourse } from "@/features/student/courses/types/student-course";
 import { AuthService } from "../api/auth-service";
+import { isUnauthorizedError } from "@/lib/api-error";
 
 interface AuthState {
   isAuthenticated: boolean;
@@ -94,11 +95,15 @@ export const useAuthStore = create<AuthState>()(
             }
             return null;
           }
-        } catch {
-          if (get().isAuthenticated || get().user) {
-            set({ isAuthenticated: false, user: null, passwordSetupRequired: false, selectedCourse: null });
+        } catch (error) {
+          // authenticated=false đã xử lý phía trên; 401 mới xóa phiên, lỗi mạng/5xx giữ danh tính.
+          if (isUnauthorizedError(error)) {
+            if (get().isAuthenticated || get().user) {
+              set({ isAuthenticated: false, user: null, passwordSetupRequired: false, selectedCourse: null });
+            }
+            return null;
           }
-          return null;
+          throw error;
         }
       },
 

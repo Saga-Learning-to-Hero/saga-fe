@@ -13,7 +13,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useLecturerRoster, useLecturerCourseAccess } from "../hooks/use-lecturer-courses";
+import { useLecturerRoster } from "../hooks/use-lecturer-courses";
 import { CourseQueryError } from "./course-query-error";
 
 interface CourseRosterProps {
@@ -22,7 +22,6 @@ interface CourseRosterProps {
 
 export function CourseRoster({ courseId }: CourseRosterProps) {
   const { data, isLoading, isError, error, refetch } = useLecturerRoster(courseId);
-  const { isAccessDenied } = useLecturerCourseAccess(isError, error);
   const [searchQuery, setSearchQuery] = useState("");
   const deferredQuery = useDeferredValue(searchQuery);
 
@@ -46,16 +45,14 @@ export function CourseRoster({ courseId }: CourseRosterProps) {
     );
   }
 
-  if (isAccessDenied) {
-    return (
-      <div className="rounded-2xl border border-dashed border-border p-8 text-center text-sm text-muted-foreground">
-        Đang chuyển về danh sách lớp...
-      </div>
-    );
-  }
-
   if (isError) {
-    return <CourseQueryError error={error} onRetry={() => void refetch()} />;
+    return (
+      <CourseQueryError
+        title="Không tải được danh sách sinh viên đang học"
+        error={error}
+        onRetry={() => void refetch()}
+      />
+    );
   }
 
   return (
@@ -95,12 +92,12 @@ export function CourseRoster({ courseId }: CourseRosterProps) {
           </p>
         </Card>
       ) : (
-        <div className="overflow-hidden rounded-2xl border border-border bg-card">
+        <div className="overflow-x-auto rounded-2xl border border-border bg-card">
           <Table>
             <TableHeader className="bg-muted/40">
               <TableRow>
                 <TableHead className="text-xs font-bold">Mã SV</TableHead>
-                <TableHead className="text-xs font-bold">Họ và tên</TableHead>
+                <TableHead className="sticky left-0 z-10 bg-muted/40 text-xs font-bold">Họ và tên</TableHead>
                 <TableHead className="text-xs font-bold">Email</TableHead>
                 <TableHead className="text-xs font-bold">Lớp sinh viên niên khóa</TableHead>
               </TableRow>
@@ -109,7 +106,7 @@ export function CourseRoster({ courseId }: CourseRosterProps) {
               {filteredEntries.map((entry) => (
                 <TableRow key={entry.courseEnrollmentId}>
                   <TableCell className="font-mono text-xs font-bold">{entry.studentCode}</TableCell>
-                  <TableCell className="text-xs font-medium">{entry.fullName}</TableCell>
+                  <TableCell className="sticky left-0 z-10 bg-card text-xs font-medium">{entry.fullName}</TableCell>
                   <TableCell className="font-mono text-xs text-muted-foreground">
                     {entry.email}
                   </TableCell>

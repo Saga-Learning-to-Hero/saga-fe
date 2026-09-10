@@ -1,200 +1,272 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useEffect, useMemo } from "react";
+import Link from "next/link";
 import {
   CalendarIcon,
-  ShieldAlertIcon,
+  InfoIcon,
   LockIcon,
-  CheckCircle2Icon,
-  SparklesIcon,
+  SendIcon,
+  UsersIcon,
 } from "lucide-react";
-import {
-  MOCK_ASSESSMENT_SPRINTS,
-  MOCK_TEAM_MEMBERS_ASSESSMENT,
-  INITIAL_MOCK_RECORDS,
-} from "../data/mock-peer-assessment-data";
-import type {
-  PeerReviewMember,
-  PeerReviewRecord,
-} from "../types/peer-assessment";
-import { PeerAssessmentHeader } from "./peer-assessment-header";
-import { PeerMemberCard } from "./peer-member-card";
-import { PeerReviewModal } from "./peer-review-modal";
-import { useAuthStore } from "@/features/auth/store/useAuthStore";
 import { Badge } from "@/components/ui/badge";
-import { CustomSelect, type CustomSelectOption } from "@/components/common/custom-select";
+import { Button, buttonVariants } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { CustomSelect } from "@/components/common/custom-select";
+import { Label } from "@/components/ui/label";
+import { useAuthStore } from "@/features/auth/store/useAuthStore";
+import {
+  useRefreshStudentCourses,
+  useStudentCourses,
+  useStudentMyTeam,
+} from "@/features/student/courses/hooks/use-student-courses";
+import {
+  mapStudentCourseResponse,
+  sortStudentTeamMembers,
+} from "@/features/student/courses/types/student-course";
+import { getApiErrorCode, getApiErrorMessage } from "@/lib/api-error";
+import { cn } from "@/lib/utils";
+import { PeerAssessmentHeader } from "./peer-assessment-header";
 
 export function PeerAssessmentView() {
-  const authUser = useAuthStore((state) => state.user);
-  const currentUserStudentCode = authUser?.studentCode || "HE170504";
+  const { user, selectedCourse, setSelectedCourse } = useAuthStore();
+  const refreshCourses = useRefreshStudentCourses();
+  const { data: apiCourses = [], isLoading: isCoursesLoading } = useStudentCourses({
+    enabled: user?.role === "STUDENT" && !selectedCourse,
+  });
 
-  const [selectedSprintId, setSelectedSprintId] = useState<string>("sprint-02");
-  const selectedSprint = useMemo(() => {
+  const effectiveCourse = useMemo(() => {
+    if (selectedCourse) return selectedCourse;
+    if (apiCourses.length > 0) return mapStudentCourseResponse(apiCourses[0]);
+    return null;
+  }, [selectedCourse, apiCourses]);
+
+  useEffect(() => {
+    if (!selectedCourse && effectiveCourse) setSelectedCourse(effectiveCourse);
+  }, [selectedCourse, effectiveCourse, setSelectedCourse]);
+
+  const courseId = effectiveCourse?.courseId || effectiveCourse?.id || "";
+  const {
+    data: team,
+    isLoading: isTeamLoading,
+    isError: isTeamError,
+    error: teamError,
+    refetch: refetchTeam,
+    isWaitingForTeam,
+  } = useStudentMyTeam(courseId, { enabled: Boolean(courseId) });
+
+  const forbidden = getApiErrorCode(teamError) === "STUDENT_COURSE_FORBIDDEN";
+  useEffect(() => {
+    if (forbidden) void refreshCourses();
+  }, [forbidden, refreshCourses]);
+
+  const teamMembers = useMemo(
+    () => sortStudentTeamMembers(team?.members ?? []),
+    [team?.members],
+  );
+
+  if (!courseId && isCoursesLoading) {
     return (
-      MOCK_ASSESSMENT_SPRINTS.find((s) => s.id === selectedSprintId) ||
-      MOCK_ASSESSMENT_SPRINTS[0]
+      <div className="mx-auto max-w-[1600px] space-y-4 pb-12">
+        <div className="h-16 animate-pulse rounded-2xl bg-muted/60" />
+        <div className="h-48 animate-pulse rounded-2xl bg-muted/60" />
+      </div>
     );
-  }, [selectedSprintId]);
+  }
 
-  const isSprintLocked = selectedSprint.status !== "COMPLETED";
-
-  const sprintOptions: CustomSelectOption[] = useMemo(() => {
-    return MOCK_ASSESSMENT_SPRINTS.map((s) => ({
-      value: s.id,
-      label: `${s.name} - ${s.status === "COMPLETED" ? "Đã đóng" : "Đang mở"}`,
-      subLabel: s.status === "COMPLETED" ? "Đã hoàn thành · Mở form đánh giá chéo" : "Đang diễn ra · Chưa đóng sprint",
-    }));
-  }, []);
-
-  const [records, setRecords] = useState<PeerReviewRecord[]>(INITIAL_MOCK_RECORDS);
-
-  const [targetMemberForModal, setTargetMemberForModal] = useState<PeerReviewMember | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
-
-  const membersToReview = useMemo(() => {
-    return MOCK_TEAM_MEMBERS_ASSESSMENT.filter(
-      (m) => m.studentCode !== currentUserStudentCode
+  if (!courseId) {
+    return (
+      <div className="mx-auto max-w-[1600px] space-y-6 pb-12">
+        <PeerAssessmentHeader />
+        <Card className="rounded-2xl border border-dashed border-border p-8 text-center">
+          <p className="text-sm font-semibold">Chưa chọn lớp học phần</p>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Hãy chọn lớp đang học trước khi xem đánh giá chéo theo Sprint.
+          </p>
+          <Link
+            href="/student/courses"
+            prefetch={true}
+            className={cn(buttonVariants({ size: "sm" }), "mt-4 text-xs")}
+          >
+            Chọn lớp học phần
+          </Link>
+        </Card>
+      </div>
     );
-  }, [currentUserStudentCode]);
+  }
 
-  const completedReviewsCount = useMemo(() => {
-    return membersToReview.filter((member) => {
-      const rec = records.find(
-        (r) =>
-          r.sprintId === selectedSprintId &&
-          r.targetStudentCode === member.studentCode
-      );
-      return rec?.isCompleted;
-    }).length;
-  }, [membersToReview, records, selectedSprintId]);
+  if (isTeamLoading) {
+    return (
+      <div className="mx-auto max-w-[1600px] space-y-4 pb-12">
+        <PeerAssessmentHeader courseCode={effectiveCourse?.code} />
+        <div className="h-24 animate-pulse rounded-2xl bg-muted/60" />
+        <div className="h-48 animate-pulse rounded-2xl bg-muted/60" />
+      </div>
+    );
+  }
 
-  const handleOpenReviewModal = (member: PeerReviewMember) => {
-    if (isSprintLocked) return;
-    setTargetMemberForModal(member);
-    setIsModalOpen(true);
-  };
+  if (isWaitingForTeam) {
+    return (
+      <div className="mx-auto max-w-[1600px] space-y-6 pb-12">
+        <PeerAssessmentHeader courseCode={effectiveCourse?.code} />
+        <Card className="rounded-2xl border border-dashed border-border p-8 text-center">
+          <UsersIcon className="mx-auto mb-3 size-8 text-muted-foreground/40" />
+          <p className="text-sm font-semibold">Đang chờ giảng viên phân nhóm</p>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Bạn đã ghi danh nhưng chưa được gán vào nhóm. Đây không phải lỗi hệ thống.
+          </p>
+        </Card>
+      </div>
+    );
+  }
 
-  const handleSaveRecord = (savedRecord: PeerReviewRecord) => {
-    setRecords((prev) => {
-      const exists = prev.some(
-        (r) =>
-          r.sprintId === savedRecord.sprintId &&
-          r.targetStudentCode === savedRecord.targetStudentCode &&
-          r.evaluatorStudentCode === savedRecord.evaluatorStudentCode
-      );
-      if (exists) {
-        return prev.map((r) =>
-          r.sprintId === savedRecord.sprintId &&
-            r.targetStudentCode === savedRecord.targetStudentCode &&
-            r.evaluatorStudentCode === savedRecord.evaluatorStudentCode
-            ? savedRecord
-            : r
-        );
-      }
-      return [...prev, savedRecord];
-    });
-  };
+  if (forbidden) {
+    return (
+      <div className="mx-auto max-w-[1600px] space-y-6 pb-12">
+        <PeerAssessmentHeader />
+        <Card className="rounded-2xl border border-dashed border-destructive/30 p-8 text-center">
+          <p className="text-sm font-semibold">Bạn không thuộc lớp học phần này</p>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Danh sách lớp sẽ được làm mới. Không thử ID của sinh viên khác.
+          </p>
+          <Link
+            href="/student/courses"
+            prefetch={true}
+            className={cn(buttonVariants({ size: "sm", variant: "outline" }), "mt-4 text-xs")}
+          >
+            Về danh sách lớp
+          </Link>
+        </Card>
+      </div>
+    );
+  }
+
+  if (isTeamError) {
+    return (
+      <div className="mx-auto max-w-[1600px] space-y-6 pb-12">
+        <PeerAssessmentHeader courseCode={effectiveCourse?.code} />
+        <Card className="rounded-2xl border border-dashed border-destructive/30 p-8 text-center">
+          <p className="text-sm font-semibold">Không tải được nhóm</p>
+          <p className="mt-1 text-xs text-muted-foreground">
+            {getApiErrorMessage(teamError, "Vui lòng thử lại.")}
+          </p>
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            className="mt-4 cursor-pointer text-xs"
+            onClick={() => void refetchTeam()}
+          >
+            Thử lại
+          </Button>
+        </Card>
+      </div>
+    );
+  }
 
   return (
-    <div className="space-y-6 max-w-[1600px] mx-auto pb-12">
+    <div className="mx-auto max-w-[1600px] space-y-6 pb-12">
       <PeerAssessmentHeader
-        completedCount={completedReviewsCount}
-        totalMembersToReview={membersToReview.length}
-        currentSprintName={selectedSprint.name}
+        teamName={team?.teamName}
+        courseCode={effectiveCourse?.code}
       />
 
-      <div className="p-4 rounded-2xl bg-card border border-border/80 shadow-2xs space-y-3">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div className="flex items-center gap-3 flex-wrap">
-            <div className="space-y-1.5 min-w-[280px] sm:min-w-[380px] md:min-w-[440px]">
-              <label className="text-[11px] font-semibold text-muted-foreground flex items-center gap-1">
-                <CalendarIcon className="w-3.5 h-3.5 text-primary" />
-                Chọn Sprint để đánh giá chéo:
-              </label>
-
-              <CustomSelect
-                value={selectedSprintId}
-                onChange={(val) => setSelectedSprintId(val)}
-                options={sprintOptions}
-                placeholder="Chọn Sprint..."
-              />
-            </div>
-
-            {selectedSprint.status === "COMPLETED" ? (
-              <Badge className="bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 font-bold text-xs gap-1 hidden md:flex self-end mb-0.5">
-                <CheckCircle2Icon className="w-3.5 h-3.5" />
-                Sprint đã hoàn thành · Mở form đánh giá
-              </Badge>
-            ) : (
-              <Badge variant="outline" className="bg-amber-500/15 text-amber-900 dark:text-amber-300 border-amber-500/30 font-bold text-xs gap-1 hidden md:flex self-end mb-0.5">
-                <LockIcon className="w-3.5 h-3.5 text-amber-700 dark:text-amber-400" />
-                Sprint đang mở · Chưa kết thúc
-              </Badge>
-            )}
-          </div>
-
-          <div className="text-xs text-muted-foreground text-right hidden lg:block">
-            <span className="font-semibold text-foreground">Thời gian kết thúc Sprint:</span> {selectedSprint.endDate}
-          </div>
-        </div>
-      </div>
-
-      {isSprintLocked && (
-        <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-950 dark:text-amber-200 text-xs font-semibold flex items-center gap-3 animate-in fade-in-0 shadow-2xs">
-          <ShieldAlertIcon className="w-5 h-5 shrink-0 text-amber-600 dark:text-amber-400" />
+      <Card className="rounded-2xl border-amber-500/30 bg-amber-500/10 p-4">
+        <div className="flex items-start gap-3">
+          <InfoIcon className="mt-0.5 size-5 shrink-0 text-amber-700 dark:text-amber-300" />
           <div>
-            <strong className="block text-sm font-bold">Sprint này đang diễn ra và chưa kết thúc!</strong>
-            <span>
-              Theo quy định, đánh giá chéo đồng đội chỉ được thực hiện sau khi Sprint đã hoàn thành và được Trưởng nhóm đóng chính thức. Vui lòng chọn Sprint 1 hoặc Sprint 2 để tiến hành chấm điểm.
-            </span>
+            <p className="text-sm font-semibold">Tính năng đang chờ kết nối dữ liệu đánh giá chéo</p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Máy chủ chưa cung cấp dữ liệu Sprint và chức năng gửi đánh giá chéo. Trang này giữ quy trình ba bước
+              để tích hợp sau, không lưu đánh giá mẫu và không gửi dữ liệu giả.
+            </p>
           </div>
         </div>
-      )}
+      </Card>
 
-      <div className="space-y-3">
-        <div className="flex items-center justify-between">
-          <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
-            <SparklesIcon className="w-4 h-4 text-purple-500" />
-            Danh sách thành viên nhóm cần đánh giá ({membersToReview.length} thành viên)
-          </h2>
+      <ol className="grid gap-4 lg:grid-cols-3">
+        <li className="rounded-2xl border border-border bg-card p-4">
+          <p className="text-[11px] font-bold tracking-wide text-muted-foreground uppercase">Bước 1</p>
+          <h2 className="mt-1 text-sm font-bold">Chọn Sprint đã hoàn thành</h2>
+          <div className="mt-3 space-y-2">
+            <Label htmlFor="peer-sprint" className="text-xs">
+              <span className="inline-flex items-center gap-1">
+                <CalendarIcon className="size-3.5 text-primary" />
+                Sprint
+              </span>
+            </Label>
+            <CustomSelect
+              id="peer-sprint"
+              value=""
+              onChange={() => undefined}
+              disabled
+              placeholder="Chưa có dữ liệu Sprint từ máy chủ"
+              options={[]}
+            />
+          </div>
+        </li>
+        <li className="rounded-2xl border border-border bg-card p-4">
+          <p className="text-[11px] font-bold tracking-wide text-muted-foreground uppercase">Bước 2</p>
+          <h2 className="mt-1 text-sm font-bold">Xác định thành viên cần đánh giá</h2>
+          <p className="mt-2 text-xs text-muted-foreground">
+            Biểu mẫu chấm điểm sẽ mở khi máy chủ có Sprint hoàn thành và xác định được người cần đánh giá.
+          </p>
+        </li>
+        <li className="rounded-2xl border border-border bg-card p-4">
+          <p className="text-[11px] font-bold tracking-wide text-muted-foreground uppercase">Bước 3</p>
+          <h2 className="mt-1 text-sm font-bold">Gửi đánh giá</h2>
+          <Button type="button" size="sm" className="mt-3 cursor-not-allowed text-xs" disabled>
+            <SendIcon className="mr-2 size-3.5" />
+            Gửi đánh giá
+          </Button>
+        </li>
+      </ol>
+
+      <Card className="rounded-2xl border border-border p-5">
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+          <div>
+            <h2 className="text-sm font-bold">{team?.teamName || "Nhóm của tôi"}</h2>
+            <p className="font-mono text-[11px] text-muted-foreground">Mã nhóm {team?.teamNo ?? "—"}</p>
+          </div>
+          <Badge variant="outline" className="text-[10px]">
+            {team?.myRole === "LEADER" ? "Trưởng nhóm" : "Thành viên"}
+          </Badge>
         </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 gap-5">
-          {membersToReview.map((member) => {
-            const record = records.find(
-              (r) =>
-                r.sprintId === selectedSprintId &&
-                r.targetStudentCode === member.studentCode &&
-                r.evaluatorStudentCode === currentUserStudentCode
-            );
-
-            return (
-              <PeerMemberCard
-                key={member.id}
-                member={member}
-                record={record}
-                isSelf={false}
-                isSprintLocked={isSprintLocked}
-                onOpenReviewModal={handleOpenReviewModal}
-              />
-            );
-          })}
-        </div>
-      </div>
-
-      <PeerReviewModal
-        isOpen={isModalOpen}
-        targetMember={targetMemberForModal}
-        currentSprintName={selectedSprint.name}
-        existingRecord={records.find(
-          (r) =>
-            r.sprintId === selectedSprintId &&
-            r.targetStudentCode === targetMemberForModal?.studentCode &&
-            r.evaluatorStudentCode === currentUserStudentCode
+        <p className="mb-3 text-xs text-muted-foreground">
+          Danh sách này chỉ dùng để tham khảo. Người cần đánh giá sẽ được xác định khi máy chủ cung cấp đủ dữ liệu.
+        </p>
+        {teamMembers.length === 0 ? (
+          <p className="text-xs text-muted-foreground">
+            Nhóm chưa có dữ liệu thành viên.
+          </p>
+        ) : (
+          <ul className="space-y-2">
+            {teamMembers.map((member) => (
+              <li
+                key={`${member.studentCode}-${member.role}`}
+                className="flex items-center justify-between rounded-xl bg-muted/40 px-3 py-2"
+              >
+                <div>
+                  <p className="text-xs font-semibold">{member.fullName}</p>
+                  <p className="font-mono text-[11px] text-muted-foreground">{member.studentCode}</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Badge variant="outline" className="text-[10px]">
+                    {member.role === "LEADER" ? "Trưởng nhóm" : "Thành viên"}
+                  </Badge>
+                  <Badge
+                    variant="outline"
+                    className="border-amber-500/30 bg-amber-500/15 text-[10px] text-amber-700 dark:text-amber-300"
+                  >
+                    <LockIcon className="mr-1 size-3" />
+                    Chưa mở chấm điểm
+                  </Badge>
+                </div>
+              </li>
+            ))}
+          </ul>
         )}
-        onClose={() => setIsModalOpen(false)}
-        onSaveRecord={handleSaveRecord}
-      />
+      </Card>
     </div>
   );
 }

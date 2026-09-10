@@ -38,7 +38,6 @@ interface TeamImportDialogProps {
   courseCode?: string;
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
-  onForbidden?: () => void;
 }
 
 export function TeamImportDialog({
@@ -46,7 +45,6 @@ export function TeamImportDialog({
   courseCode,
   isOpen,
   onOpenChange,
-  onForbidden,
 }: TeamImportDialogProps) {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewData, setPreviewData] = useState<TeamPreviewResponse | null>(null);
@@ -54,6 +52,7 @@ export function TeamImportDialog({
   const downloadMutation = useDownloadTeamTemplate();
   const previewMutation = usePreviewTeamImport();
   const confirmMutation = useConfirmTeamImport();
+  const isBusy = downloadMutation.isPending || previewMutation.isPending || confirmMutation.isPending;
 
   const resetPreviewState = () => {
     setSelectedFile(null);
@@ -63,27 +62,16 @@ export function TeamImportDialog({
   };
 
   const handleClose = () => {
+    if (isBusy) return;
     resetPreviewState();
     onOpenChange(false);
-  };
-
-  const handleForbidden = (error: unknown) => {
-    if (getApiErrorCode(error) === "LECTURER_COURSE_FORBIDDEN") {
-      toast.error(getTeamImportErrorMessage(error));
-      handleClose();
-      onForbidden?.();
-      return true;
-    }
-    return false;
   };
 
   const handleDownloadTemplate = async () => {
     try {
       await downloadMutation.mutateAsync(courseId);
     } catch (error) {
-      if (!handleForbidden(error)) {
-        toast.error(getTeamImportErrorMessage(error));
-      }
+      toast.error(getTeamImportErrorMessage(error));
     }
   };
 
@@ -101,9 +89,7 @@ export function TeamImportDialog({
       toast.success(`Đã phân tích ${preview.summary.totalRows} dòng từ file Excel.`);
     } catch (error) {
       setPreviewData(null);
-      if (!handleForbidden(error)) {
-        toast.error(getTeamImportErrorMessage(error));
-      }
+      toast.error(getTeamImportErrorMessage(error));
     }
   };
 
@@ -115,10 +101,9 @@ export function TeamImportDialog({
         courseId,
         data: { previewToken: previewData.previewToken },
       });
-      handleClose();
+      resetPreviewState();
+      onOpenChange(false);
     } catch (error) {
-      if (handleForbidden(error)) return;
-
       const code = getApiErrorCode(error);
       toast.error(getTeamImportErrorMessage(error));
 
@@ -136,23 +121,28 @@ export function TeamImportDialog({
   const confirmEnabled = canConfirmTeamImport(previewData) && !confirmMutation.isPending;
 
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => (!open ? handleClose() : onOpenChange(true))}>
-      <DialogContent className="flex max-h-[92vh] max-w-5xl flex-col overflow-hidden rounded-3xl p-0">
+    <Dialog
+      open={isOpen}
+      onOpenChange={(open) => {
+        if (!open) handleClose();
+        else onOpenChange(true);
+      }}
+    >
+      <DialogContent
+        className="flex max-h-[92vh] w-[calc(100vw-2rem)] max-w-5xl flex-col overflow-hidden rounded-3xl p-0"
+        showCloseButton={!isBusy}
+      >
         <DialogHeader className="shrink-0 space-y-0 border-b border-border bg-muted/20 p-5 text-left">
-          <div className="flex items-start justify-between gap-3 pr-8">
+          <div className="flex flex-col gap-3 pr-8 sm:flex-row sm:items-start sm:justify-between">
             <div className="flex items-center gap-3">
               <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
                 <FileSpreadsheetIcon className="size-5" />
               </div>
               <div>
-                <DialogTitle className="text-base font-extrabold">
-                  Phân nhóm bằng Excel
-                </DialogTitle>
+                <DialogTitle className="text-base font-extrabold">Phân nhóm bằng Excel</DialogTitle>
                 <DialogDescription className="text-xs">
                   Lớp học phần:{" "}
-                  <strong className="font-mono text-foreground">
-                    {courseCode || courseId}
-                  </strong>
+                  <strong className="font-mono text-foreground">{courseCode || "Đang tải"}</strong>
                 </DialogDescription>
               </div>
             </div>
@@ -160,8 +150,8 @@ export function TeamImportDialog({
               variant="outline"
               size="sm"
               onClick={() => void handleDownloadTemplate()}
-              disabled={downloadMutation.isPending}
-              className="h-8 cursor-pointer gap-1.5 text-xs"
+              disabled={downloadMutation.isPending || confirmMutation.isPending}
+              className="h-8 w-fit cursor-pointer gap-1.5 text-xs"
             >
               <DownloadIcon className="size-3.5" />
               {downloadMutation.isPending ? "Đang tải..." : `Tải ${TEAM_TEMPLATE_FILENAME}`}
@@ -171,12 +161,14 @@ export function TeamImportDialog({
 
         <div className="flex-1 space-y-4 overflow-y-auto p-5">
           <div className="rounded-2xl border border-border bg-muted/20 p-3 text-xs text-muted-foreground">
-            <p className="font-semibold text-foreground">Quy tắc file mẫu backend</p>
+            <p className="font-semibold text-foreground">Quy tắc file mẫu</p>
             <ul className="mt-2 list-disc space-y-1 pl-4">
-              <li>Sheet phải tên đúng <span className="font-mono">Team_Assignment</span>.</li>
+              <li>
+                Sheet phải tên đúng <span className="font-mono">Team_Assignment</span>.
+              </li>
               <li>Chỉ sửa ba cột: TeamNo (số nguyên dương), TeamName, TeamRole (Leader hoặc Member).</li>
               <li>Không sửa Class, FullName, StudentCode, Email. Không dùng MENTOR.</li>
-              <li>Mọi sinh viên ACTIVE phải xuất hiện đúng một lần; mỗi TeamNo đúng một Leader.</li>
+              <li>Mọi sinh viên đang học phải xuất hiện đúng một lần; mỗi TeamNo đúng một Leader.</li>
               <li>Một sinh viên chỉ thuộc một nhóm. Workflow: tải mẫu → preview → xác nhận.</li>
             </ul>
           </div>
@@ -186,7 +178,7 @@ export function TeamImportDialog({
               <UploadCloudIcon className="mb-3 size-10 text-muted-foreground" />
               <p className="text-sm font-bold">Tải file Excel đã điền TeamNo / TeamName / TeamRole</p>
               <p className="mt-1 max-w-md text-xs text-muted-foreground">
-                Kết quả hợp lệ do backend quyết định. Giới hạn dung lượng hiện tại là 2 MB.
+                Máy chủ kiểm tra file theo mẫu chính thức. Giới hạn dung lượng hiện tại là 2 MB.
               </p>
               <label className="mt-4">
                 <div className="inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-xl bg-primary px-3 text-xs font-semibold text-primary-foreground">
@@ -197,7 +189,7 @@ export function TeamImportDialog({
                   type="file"
                   accept=".xlsx,.xls"
                   onChange={(event) => void handleFileChange(event)}
-                  disabled={previewMutation.isPending}
+                  disabled={previewMutation.isPending || confirmMutation.isPending}
                   className="hidden"
                 />
               </label>
@@ -213,6 +205,7 @@ export function TeamImportDialog({
                   variant="ghost"
                   size="sm"
                   onClick={resetPreviewState}
+                  disabled={isBusy}
                   className="h-7 cursor-pointer text-xs"
                 >
                   <XIcon className="mr-1 size-3.5" />
@@ -225,7 +218,13 @@ export function TeamImportDialog({
         </div>
 
         <DialogFooter className="m-0 shrink-0 rounded-none">
-          <Button variant="outline" size="sm" onClick={handleClose} className="cursor-pointer text-xs">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleClose}
+            disabled={isBusy}
+            className="cursor-pointer text-xs"
+          >
             Đóng
           </Button>
           <Button

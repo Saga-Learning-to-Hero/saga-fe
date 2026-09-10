@@ -24,6 +24,10 @@ export function getApiErrorMessage(error: unknown, fallback: string): string {
   return message?.trim() ? message : fallback;
 }
 
+export function isUnauthorizedError(error: unknown): boolean {
+  return getApiErrorStatus(error) === 401;
+}
+
 export function requireCourseId(courseId: string): string {
   if (!courseId || !courseId.trim()) {
     throw new Error("Throw ValidationException: Course ID is required");

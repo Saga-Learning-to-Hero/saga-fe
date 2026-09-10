@@ -32,6 +32,7 @@ export function useContributionSliceWeights(courseId: string, options?: { enable
     queryFn: () => LecturerWeightsService.getSliceWeights(courseId),
     enabled: (options?.enabled ?? true) && Boolean(courseId && courseId.trim()),
     staleTime: 1000 * 30,
+    refetchOnWindowFocus: true,
   });
 }
 
@@ -41,6 +42,7 @@ export function useContributionTeamWeights(courseId: string, options?: { enabled
     queryFn: () => LecturerWeightsService.getTeamWeights(courseId),
     enabled: (options?.enabled ?? true) && Boolean(courseId && courseId.trim()),
     staleTime: 1000 * 30,
+    refetchOnWindowFocus: true,
   });
 }
 
@@ -88,6 +90,7 @@ export function useUpdateContributionConfigMode(courseId: string) {
     onSuccess: async (data) => {
       queryClient.setQueryData(CONTRIBUTION_QUERY_KEYS.sliceWeights(courseId), data);
       await Promise.all([
+        queryClient.invalidateQueries({ queryKey: CONTRIBUTION_QUERY_KEYS.sliceWeights(courseId) }),
         queryClient.invalidateQueries({ queryKey: CONTRIBUTION_QUERY_KEYS.teamWeights(courseId) }),
         queryClient.invalidateQueries({ queryKey: CONTRIBUTION_QUERY_KEYS.evaluations }),
       ]);
@@ -120,6 +123,7 @@ export function useUpdateProjectGroupWeights(context: {
     onSuccess: async (data) => {
       queryClient.setQueryData(CONTRIBUTION_QUERY_KEYS.groupWeights(projectId), data);
       await Promise.all([
+        queryClient.invalidateQueries({ queryKey: CONTRIBUTION_QUERY_KEYS.groupWeights(projectId) }),
         queryClient.invalidateQueries({ queryKey: CONTRIBUTION_QUERY_KEYS.teamWeights(courseId) }),
         queryClient.invalidateQueries({ queryKey: CONTRIBUTION_QUERY_KEYS.evaluation(teamId) }),
       ]);

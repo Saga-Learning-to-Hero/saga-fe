@@ -1,3 +1,4 @@
+import { getApiErrorStatus } from "@/lib/api-error";
 import type {
   ContributionConfigMode,
   ContributionSliceWeightValues,
@@ -101,15 +102,54 @@ export function hasInvalidSliceWeight(weights: ContributionSliceWeightValues): b
   });
 }
 
-export function canEditProjectGroupWeights(
-  mode: ContributionConfigMode,
-  projectId: string | null | undefined
-): boolean {
-  return mode === "PROJECT_GROUP" && Boolean(projectId && projectId.trim());
+export function canEditProjectGroupWeights(projectId: string | null | undefined): boolean {
+  return Boolean(projectId && projectId.trim());
 }
 
 export function contributionModeLabel(mode: ContributionConfigMode): string {
-  return mode === "PROJECT_GROUP" ? "Thiết lập riêng theo từng dự án nhóm" : "Dùng chung cho cả lớp";
+  return mode === "PROJECT_GROUP" ? "Riêng theo từng nhóm" : "Dùng chung cho lớp";
+}
+
+export function appliedContributionModeLabel(mode: ContributionConfigMode): string {
+  return `Đang áp dụng: ${contributionModeLabel(mode)}`;
+}
+
+export function isGroupWeightsNotConfigured(error: unknown): boolean {
+  return getApiErrorStatus(error) === 404;
+}
+
+export function pickDefaultGradesTeamId(
+  teams: Array<{ teamId: string; teamNo?: number }>
+): string | null {
+  const valid = teams.filter((team) => Boolean(team.teamId && team.teamId.trim()));
+  if (valid.length === 0) return null;
+  const sorted = [...valid].sort((a, b) => (a.teamNo ?? 0) - (b.teamNo ?? 0));
+  return sorted[0].teamId;
+}
+
+export function getProjectTeams<T extends { projectId?: string | null }>(teams: T[]): T[] {
+  return teams.filter((team) => Boolean(team.projectId && String(team.projectId).trim()));
+}
+
+export function getIncompleteProjectTeams<T extends { projectId?: string | null; configured: boolean }>(
+  teams: T[]
+): T[] {
+  return getProjectTeams(teams).filter((team) => !team.configured);
+}
+
+export function canApplyProjectGroupMode<T extends { projectId?: string | null; configured: boolean }>(
+  teams: T[]
+): boolean {
+  const projectTeams = getProjectTeams(teams);
+  return projectTeams.length > 0 && projectTeams.every((team) => team.configured);
+}
+
+export function canFetchContributionEvaluation(
+  teamsLoaded: boolean,
+  teamId: string,
+  teams: Array<{ teamId: string }>
+): boolean {
+  return teamsLoaded && Boolean(teamId.trim()) && teams.some((team) => team.teamId === teamId);
 }
 
 export function contributionRoleLabel(role: string): string {

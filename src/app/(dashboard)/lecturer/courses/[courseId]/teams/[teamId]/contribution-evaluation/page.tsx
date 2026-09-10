@@ -1,17 +1,11 @@
-import { Metadata } from "next";
-import { ContributionEvaluationPage } from "@/features/lecturer/contribution/components/contribution-evaluation-page";
+import { redirect } from "next/navigation";
+import { lecturerCourseGradesPath } from "@/features/lecturer/courses/lib/course-routes";
 
-export const metadata: Metadata = {
-  title: "Đánh giá đóng góp nhóm - SAGA",
-};
-
-export default async function LecturerContributionEvaluationRoute({
-  params,
-}: {
+interface Props {
   params: Promise<{ courseId: string; teamId: string }>;
-}) {
+}
+
+export default async function LecturerLegacyContributionEvaluationRoute({ params }: Props) {
   const { courseId, teamId } = await params;
-  return (
-    <ContributionEvaluationPage key={`${courseId}-${teamId}`} courseId={courseId} teamId={teamId} />
-  );
+  redirect(lecturerCourseGradesPath(courseId, teamId));
 }

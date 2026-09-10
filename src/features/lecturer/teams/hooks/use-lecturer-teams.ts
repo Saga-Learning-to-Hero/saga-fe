@@ -27,6 +27,7 @@ export function useLecturerTeams(courseId: string, options?: { enabled?: boolean
     queryFn: () => LecturerTeamService.getTeams(courseId),
     enabled: (options?.enabled ?? true) && Boolean(courseId && courseId.trim()),
     staleTime: 1000 * 30,
+    refetchOnWindowFocus: true,
   });
 }
 
@@ -39,9 +40,6 @@ export function useDownloadTeamTemplate() {
     },
     onSuccess: () => {
       toast.success("Đã tải file mẫu Team_Assignment.xlsx.");
-    },
-    onError: (error: unknown) => {
-      toast.error(getApiErrorMessage(error, "Không thể tải file mẫu phân nhóm."));
     },
   });
 }
@@ -148,7 +146,7 @@ export function getTeamImportErrorMessage(error: unknown): string {
     case "TEAM_FILE_INVALID":
       return "File Excel không đúng mẫu. Hãy tải lại mẫu chính thức Team_Assignment.xlsx.";
     case "TEAM_FILE_TOO_LARGE":
-      return "File vượt giới hạn backend hiện tại (2 MB). Hãy giảm dung lượng rồi thử lại.";
+      return "File vượt giới hạn máy chủ hiện tại (2 MB). Hãy giảm dung lượng rồi thử lại.";
     case "LECTURER_COURSE_FORBIDDEN":
       return "Bạn không có quyền thao tác trên lớp học phần này.";
     default:

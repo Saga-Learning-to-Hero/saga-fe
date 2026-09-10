@@ -22,10 +22,10 @@ describe("ProjectWeightsService", () => {
   const groupWeights = {
     projectId: mockProjectId,
     teamId: mockTeamId,
-    codeWeight: 30,
-    testWeight: 30,
-    documentWeight: 20,
-    researchWeight: 20,
+    codeWeight: 0.3,
+    testWeight: 0.3,
+    documentWeight: 0.2,
+    researchWeight: 0.2,
     note: "Thỏa thuận nhóm",
   };
 
@@ -58,17 +58,17 @@ describe("ProjectWeightsService", () => {
       const putSpy = vi.spyOn(apiClient, "put").mockResolvedValueOnce({ data: groupWeights });
       const payload = {
         teamId: mockTeamId,
-        codeWeight: 30,
-        testWeight: 30,
-        documentWeight: 20,
-        researchWeight: 20,
+        codeWeight: 0.3,
+        testWeight: 0.3,
+        documentWeight: 0.2,
+        researchWeight: 0.2,
         note: "Thỏa thuận nhóm",
       };
 
       const res = await ProjectWeightsService.updateGroupWeights(mockProjectId, payload);
 
       expect(putSpy).toHaveBeenCalledWith(`/api/projects/${mockProjectId}/group-weights`, payload);
-      expect(res.codeWeight).toBe(30);
+      expect(res.codeWeight).toBe(0.3);
     }
   );
 
@@ -105,10 +105,10 @@ describe("ProjectWeightsService", () => {
 
       await expect(
         ProjectWeightsService.updateGroupWeights(mockProjectId, {
-          codeWeight: 25,
-          testWeight: 25,
-          documentWeight: 25,
-          researchWeight: 25,
+          codeWeight: 0.25,
+          testWeight: 0.25,
+          documentWeight: 0.25,
+          researchWeight: 0.25,
         })
       ).rejects.toMatchObject({
         code: "NOT_TEAM_LEADER",
@@ -178,10 +178,10 @@ describe("ProjectWeightsService", () => {
         data: { ...groupWeights, note: "" },
       });
       const payload = {
-        codeWeight: 25,
-        testWeight: 25,
-        documentWeight: 25,
-        researchWeight: 25,
+        codeWeight: 0.25,
+        testWeight: 0.25,
+        documentWeight: 0.25,
+        researchWeight: 0.25,
       };
 
       await ProjectWeightsService.updateGroupWeights(mockProjectId, payload);
@@ -200,10 +200,10 @@ describe("ProjectWeightsService", () => {
     async () => {
       await expect(
         ProjectWeightsService.updateGroupWeights("   ", {
-          codeWeight: 25,
-          testWeight: 25,
-          documentWeight: 25,
-          researchWeight: 25,
+          codeWeight: 0.25,
+          testWeight: 0.25,
+          documentWeight: 0.25,
+          researchWeight: 0.25,
         })
       ).rejects.toThrow("Throw ValidationException: Project ID is required");
     }
@@ -232,6 +232,29 @@ describe("ProjectWeightsService", () => {
 
       expect(res.note).toBe("");
       expect(res.codeWeight).toBe(0);
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID11",
+      type: "B",
+      executedDate: "10/09/2026",
+      description: "Khong gui group-weights neu co trong so nam ngoai khoang 0-1",
+    },
+    async () => {
+      const putSpy = vi.spyOn(apiClient, "put");
+
+      await expect(
+        ProjectWeightsService.updateGroupWeights(mockProjectId, {
+          codeWeight: 25,
+          testWeight: 0.25,
+          documentWeight: 0.25,
+          researchWeight: 0.25,
+        })
+      ).rejects.toThrow("Trọng số gửi lên máy chủ phải nằm trong khoảng từ 0 đến 1.");
+
+      expect(putSpy).not.toHaveBeenCalled();
     }
   );
 });

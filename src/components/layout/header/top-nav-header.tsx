@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import {
-  BellIcon,
   ChevronDownIcon,
   LogOutIcon,
   MoonIcon,
@@ -28,6 +27,7 @@ import {
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
 import { useLogout } from "@/features/auth/hooks/useAuth";
+import { getRoleHomePath } from "@/features/auth/lib/role-routes";
 import {
   ROLE_COLORS,
   ROLE_LABELS,
@@ -111,7 +111,10 @@ export function TopNavHeader() {
             </Button>
           )}
 
-          <Link href="/" className="flex items-center hover:opacity-90 transition-opacity shrink-0">
+          <Link
+            href={getRoleHomePath(user.role)}
+            className="flex items-center hover:opacity-90 transition-opacity shrink-0"
+          >
             <SagaLogo size="sm" showText={true} showSubtitle={false} />
           </Link>
 
@@ -142,19 +145,6 @@ export function TopNavHeader() {
             </TooltipTrigger>
             <TooltipContent side="bottom" sideOffset={8}>
               {isDark ? "Chuyển sang giao diện sáng" : "Chuyển sang giao diện tối"}
-            </TooltipContent>
-          </Tooltip>
-
-          <Tooltip>
-            <TooltipTrigger
-              className="relative flex items-center justify-center size-8.5 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-colors cursor-pointer border border-transparent hover:border-border"
-              aria-label="Thông báo"
-            >
-              <BellIcon className="size-4" />
-              <span className="absolute right-1.5 top-1.5 size-2 rounded-full bg-destructive ring-2 ring-background" />
-            </TooltipTrigger>
-            <TooltipContent side="bottom" sideOffset={8}>
-              Thông báo hệ thống (3 mới)
             </TooltipContent>
           </Tooltip>
 
@@ -284,18 +274,20 @@ export function TopNavHeader() {
               <UserIcon className="size-3.5 mr-2 text-primary" />
               Hồ sơ cá nhân
             </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                setMobileOpen(false);
-                router.push("/profile/integrations");
-              }}
-              className="w-full justify-start text-xs rounded-xl"
-            >
-              <Link2Icon className="size-3.5 mr-2 text-primary" />
-              Tích hợp Jira & GitHub
-            </Button>
+            {user.role === "STUDENT" ? (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setMobileOpen(false);
+                  router.push("/profile/integrations");
+                }}
+                className="w-full justify-start text-xs rounded-xl"
+              >
+                <Link2Icon className="size-3.5 mr-2 text-primary" />
+                Tích hợp Jira & GitHub
+              </Button>
+            ) : null}
             <Button
               variant="destructive"
               size="sm"

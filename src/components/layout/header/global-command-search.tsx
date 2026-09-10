@@ -142,7 +142,7 @@ export function GlobalCommandSearch() {
                 className="flex items-center gap-2.5 cursor-pointer py-2 px-3 text-xs"
               >
                 <UserCheckIcon className="size-4 text-amber-500" />
-                <span>Đánh giá chéo đồng đẳng</span>
+                <span>Đánh giá chéo theo Sprint</span>
               </CommandItem>
               <CommandItem
                 onSelect={() => runCommand(() => router.push("/student/contribution"))}
