@@ -28,22 +28,25 @@ export function ReplaceTeamLeaderDialog({
   onConfirm,
 }: ReplaceTeamLeaderDialogProps) {
   return (
-    <AlertDialog open={open} onOpenChange={onOpenChange}>
+    <AlertDialog
+      open={open}
+      onOpenChange={(next) => {
+        if (isSaving && !next) return;
+        onOpenChange(next);
+      }}
+    >
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>Đặt làm trưởng nhóm?</AlertDialogTitle>
           <AlertDialogDescription>
             {member
-              ? `${member.fullName} (${member.studentCode}) sẽ trở thành trưởng nhóm. Trưởng nhóm hiện tại sẽ được chuyển thành thành viên theo hợp đồng máy chủ.`
+              ? `${member.fullName} (${member.studentCode}) sẽ trở thành trưởng nhóm. Trưởng nhóm hiện tại sẽ được chuyển thành thành viên.`
               : "Chọn một thành viên để đổi trưởng nhóm."}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>Hủy</AlertDialogCancel>
-          <AlertDialogAction
-            disabled={!member?.teamMemberId || isSaving}
-            onClick={onConfirm}
-          >
+          <AlertDialogCancel disabled={isSaving}>Hủy</AlertDialogCancel>
+          <AlertDialogAction disabled={!member?.teamMemberId || isSaving} onClick={onConfirm}>
             {isSaving ? "Đang lưu..." : "Xác nhận đổi"}
           </AlertDialogAction>
         </AlertDialogFooter>

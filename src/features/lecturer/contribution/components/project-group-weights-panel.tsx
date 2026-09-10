@@ -1,17 +1,14 @@
 "use client";
 
 import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { CourseQueryError } from "@/features/lecturer/courses/components/course-query-error";
-import { getApiErrorStatus } from "@/lib/api-error";
-import {
-  useContributionSliceWeights,
-  useProjectGroupWeights,
-  useUpdateProjectGroupWeights,
-} from "../hooks/use-lecturer-contribution";
-import { EMPTY_SLICE_WEIGHTS } from "../types/contribution";
+import { useProjectGroupWeights, useUpdateProjectGroupWeights } from "../hooks/use-lecturer-contribution";
+import type { ContributionConfigMode, ContributionSliceWeightValues } from "../types/contribution";
 import {
   canEditProjectGroupWeights,
   detectSliceWeightScale,
+  isGroupWeightsNotConfigured,
   toApiSliceWeights,
   toDisplaySliceWeights,
 } from "../lib/contribution-utils";
@@ -20,19 +17,26 @@ import { SliceWeightsForm } from "./slice-weights-form";
 interface ProjectGroupWeightsPanelProps {
   courseId: string;
   teamId: string;
+  teamName?: string;
   projectId: string | null;
+  serverMode: ContributionConfigMode;
+  fallbackWeights: ContributionSliceWeightValues;
+  queryEnabled?: boolean;
 }
 
 export function ProjectGroupWeightsPanel({
   courseId,
   teamId,
+  teamName,
   projectId,
+  serverMode,
+  fallbackWeights,
+  queryEnabled = true,
 }: ProjectGroupWeightsPanelProps) {
-  const hasProject = Boolean(projectId && projectId.trim());
-  const sliceQuery = useContributionSliceWeights(courseId);
-  const mode = sliceQuery.data?.mode ?? "COURSE";
-  const canEdit = canEditProjectGroupWeights(mode, projectId);
-  const groupQuery = useProjectGroupWeights(projectId ?? "", { enabled: canEdit });
+  const hasProject = canEditProjectGroupWeights(projectId);
+  const groupQuery = useProjectGroupWeights(projectId ?? "", {
+    enabled: queryEnabled && hasProject,
+  });
   const updateMutation = useUpdateProjectGroupWeights({
     courseId,
     projectId: projectId ?? "",
@@ -42,79 +46,68 @@ export function ProjectGroupWeightsPanel({
   if (!hasProject) {
     return (
       <Card className="rounded-2xl border border-dashed border-border p-5">
-        <h2 className="text-sm font-bold">Trọng số dự án nhóm</h2>
-        <p className="mt-2 text-xs text-muted-foreground">
-          Nhóm chưa có dự án nhóm để thiết lập trọng số.
+        <h2 className="text-sm font-bold">{teamName || "Nhóm đã chọn"}</h2>
+        <p className="mt-2 text-sm text-muted-foreground">Nhóm chưa khởi tạo dự án</p>
+        <p className="mt-1 text-xs text-muted-foreground">
+          Không mở biểu mẫu và không gọi trọng số nhóm khi dự án chưa được khởi tạo.
         </p>
       </Card>
     );
   }
 
-  if (sliceQuery.isError) {
-    return <CourseQueryError error={sliceQuery.error} onRetry={() => void sliceQuery.refetch()} />;
-  }
-
-  if (sliceQuery.isLoading) {
-    return <div className="h-36 animate-pulse rounded-2xl bg-muted/60" />;
-  }
-
-  if (mode === "COURSE") {
-    const scale = sliceQuery.data ? detectSliceWeightScale(sliceQuery.data) : 100;
-    const displayWeights = sliceQuery.data
-      ? toDisplaySliceWeights(sliceQuery.data, scale)
-      : EMPTY_SLICE_WEIGHTS;
-
+  const missingConfig = isGroupWeightsNotConfigured(groupQuery.error);
+  if (groupQuery.isError && !missingConfig) {
     return (
-      <div className="space-y-3">
-        <div>
-          <h2 className="text-sm font-bold">Trọng số dự án nhóm</h2>
-          <p className="mt-1 text-xs text-muted-foreground">
-            Lớp đang dùng bộ trọng số chung. Không lưu trọng số riêng khi mode là dùng chung cho cả lớp.
-          </p>
-        </div>
-        <SliceWeightsForm
-          key={`course-${sliceQuery.dataUpdatedAt}`}
-          initialWeights={displayWeights}
-          disabled
-          hideSave
-          onSave={() => undefined}
-        />
-      </div>
+      <CourseQueryError
+        title="Không tải được trọng số nhóm"
+        error={groupQuery.error}
+        onRetry={() => void groupQuery.refetch()}
+      />
     );
   }
 
-  const missingConfig = getApiErrorStatus(groupQuery.error) === 404;
-  if (groupQuery.isError && !missingConfig) {
-    return <CourseQueryError error={groupQuery.error} onRetry={() => void groupQuery.refetch()} />;
+  if (queryEnabled && groupQuery.isLoading) {
+    return <div className="h-72 animate-pulse rounded-2xl bg-muted/60" />;
   }
 
-  if (groupQuery.isLoading) {
-    return <div className="h-36 animate-pulse rounded-2xl bg-muted/60" />;
-  }
-
-  const source = groupQuery.data ?? EMPTY_SLICE_WEIGHTS;
-  const scale = detectSliceWeightScale(source);
-  const displayWeights = toDisplaySliceWeights(source, scale);
+  const source = groupQuery.data ?? fallbackWeights;
+  const scale = groupQuery.data ? detectSliceWeightScale(groupQuery.data) : 100;
+  const displayWeights = groupQuery.data
+    ? toDisplaySliceWeights(source, scale)
+    : { ...fallbackWeights };
 
   return (
     <div className="space-y-3">
-      <div>
-        <h2 className="text-sm font-bold">Trọng số riêng của dự án nhóm</h2>
-        <p className="mt-1 text-xs text-muted-foreground">
-          {missingConfig
-            ? "Nhóm chưa có cấu hình riêng. Lưu bốn tiêu chí tổng 100% để tạo bộ trọng số này."
-            : "Chỉnh bốn tiêu chí và ghi chú. Máy chủ là nguồn tính đóng góp sau khi lưu."}
-        </p>
+      <div className="flex flex-wrap items-center gap-2">
+        <h2 className="text-sm font-bold">{teamName || "Trọng số riêng của nhóm"}</h2>
+        {serverMode === "COURSE" ? (
+          <Badge variant="outline" className="text-[10px]">
+            Đang chuẩn bị — áp dụng khi lớp chuyển sang cấu hình riêng
+          </Badge>
+        ) : null}
+        {missingConfig ? (
+          <Badge
+            variant="outline"
+            className="border-amber-500/30 bg-amber-500/15 text-[10px] text-amber-700 dark:text-amber-300"
+          >
+            Chưa cấu hình
+          </Badge>
+        ) : null}
       </div>
+      <p className="text-xs text-muted-foreground">
+        {missingConfig
+          ? "Nhóm chưa có cấu hình riêng. Biểu mẫu được điền sẵn trọng số chung của lớp để chỉnh sửa. Chỉ đánh dấu đã cấu hình sau khi lưu thành công."
+          : "Chỉnh bốn tiêu chí tổng 100%. Máy chủ nhận tỷ lệ 0–1 sau khi lưu."}
+      </p>
       <SliceWeightsForm
-        key={`${projectId}-${groupQuery.dataUpdatedAt}-${missingConfig ? "new" : "edit"}`}
+        key={`${teamId}-${String(groupQuery.dataUpdatedAt)}-${missingConfig ? "new" : "saved"}`}
         initialWeights={displayWeights}
         initialNote={groupQuery.data?.note ?? ""}
         showNote
         isSaving={updateMutation.isPending}
-        saveLabel="Lưu trọng số dự án nhóm"
+        saveLabel="Lưu trọng số nhóm"
         onSave={(weights, extras) => {
-          const apiWeights = toApiSliceWeights(weights, scale);
+          const apiWeights = toApiSliceWeights(weights, 1);
           updateMutation.mutate({
             teamId,
             ...apiWeights,

@@ -22,12 +22,19 @@ export default function DashboardLayout({
   const router = useRouter();
   const pathname = usePathname();
   const { isAuthenticated, user, passwordSetupRequired, hasHydrated } = useAuthStore();
-  const { isPending: isSessionLoading } = useSession();
+  const {
+    isPending: isSessionLoading,
+    isError: isSessionError,
+    isFetching: isSessionFetching,
+    refetch: refetchSession,
+  } = useSession();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
 
   useEffect(() => {
     if (!hasHydrated || isSessionLoading) return;
+    // Lỗi mạng/5xx không được hiểu thành hết phiên — giữ danh tính và hiện màn thử lại.
+    if (isSessionError) return;
 
     if (!isAuthenticated || !user) {
       router.replace(`/login?next=${encodeURIComponent(pathname)}`);
@@ -42,7 +49,16 @@ export default function DashboardLayout({
     if (!isPathAllowedForRole(pathname, user.role)) {
       router.replace(getRoleHomePath(user.role));
     }
-  }, [hasHydrated, isSessionLoading, isAuthenticated, user, passwordSetupRequired, router, pathname]);
+  }, [
+    hasHydrated,
+    isSessionLoading,
+    isSessionError,
+    isAuthenticated,
+    user,
+    passwordSetupRequired,
+    router,
+    pathname,
+  ]);
 
   if (!hasHydrated || (isSessionLoading && !user)) {
     return (
@@ -50,6 +66,36 @@ export default function DashboardLayout({
         <div className="flex flex-col items-center gap-4">
           <SagaLogo size="md" showText={true} showSubtitle={false} />
           <LoaderCircleIcon className="w-6 h-6 animate-spin text-primary" />
+        </div>
+      </div>
+    );
+  }
+
+  if (isSessionError) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background p-6">
+        <div className="w-full max-w-md space-y-4 rounded-2xl border border-dashed border-border bg-card p-8 text-center shadow-xs">
+          <SagaLogo size="sm" showText={true} showSubtitle={false} />
+          <div className="space-y-1">
+            <h1 className="text-base font-bold">Không thể kết nối máy chủ</h1>
+            <p className="text-sm text-muted-foreground">
+              Phiên làm việc chưa được xác nhận vì lỗi mạng hoặc máy chủ tạm thời. Tài khoản của bạn vẫn được giữ, hãy thử lại.
+            </p>
+          </div>
+          <Button
+            className="cursor-pointer"
+            disabled={isSessionFetching}
+            onClick={() => void refetchSession()}
+          >
+            {isSessionFetching ? (
+              <>
+                <LoaderCircleIcon className="size-4 animate-spin" aria-hidden />
+                Đang thử lại...
+              </>
+            ) : (
+              "Thử lại"
+            )}
+          </Button>
         </div>
       </div>
     );

@@ -79,7 +79,7 @@ export function CourseContextSwitcher({
 
     return (
       <DropdownMenu>
-        <DropdownMenuTrigger className="group flex max-w-[280px] cursor-pointer items-center gap-2 rounded-xl border border-border/80 bg-muted/50 px-3 py-1.5 text-foreground outline-none transition-all hover:border-primary/40 hover:bg-muted sm:max-w-[360px]">
+        <DropdownMenuTrigger className="group flex max-w-[9.5rem] cursor-pointer items-center gap-2 rounded-xl border border-border/80 bg-muted/50 px-2 py-1.5 text-foreground outline-none transition-all hover:border-primary/40 hover:bg-muted sm:max-w-[280px] sm:px-3 md:max-w-[360px]">
           <div className="flex size-6 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
             <BookOpenIcon className="size-3.5" />
           </div>
@@ -89,12 +89,12 @@ export function CourseContextSwitcher({
                 {courseCode}
               </span>
               {currentCourse?.classCode && (
-                <span className="rounded bg-primary/15 px-1.5 font-mono text-[10px] font-semibold text-primary">
+                <span className="hidden rounded bg-primary/15 px-1.5 font-mono text-[10px] font-semibold text-primary sm:inline">
                   {currentCourse.classCode}
                 </span>
               )}
             </div>
-            <span className="w-full truncate text-[11px] text-muted-foreground">{courseName}</span>
+            <span className="hidden w-full truncate text-[11px] text-muted-foreground sm:block">{courseName}</span>
           </div>
           <ChevronDownIcon className="size-3.5 shrink-0 text-muted-foreground transition-transform duration-200 group-hover:text-foreground group-data-[state=open]:rotate-180" />
         </DropdownMenuTrigger>
@@ -174,7 +174,7 @@ export function CourseContextSwitcher({
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger className="group flex max-w-[280px] cursor-pointer items-center gap-2 rounded-xl border border-border/80 bg-muted/50 px-3 py-1.5 text-foreground outline-none transition-all hover:border-primary/40 hover:bg-muted sm:max-w-[360px]">
+      <DropdownMenuTrigger className="group flex max-w-[9.5rem] cursor-pointer items-center gap-2 rounded-xl border border-border/80 bg-muted/50 px-2 py-1.5 text-foreground outline-none transition-all hover:border-primary/40 hover:bg-muted sm:max-w-[280px] sm:px-3 md:max-w-[360px]">
         <div className="flex size-6 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
           <GraduationCapIcon className="size-3.5" />
         </div>
@@ -183,11 +183,11 @@ export function CourseContextSwitcher({
             <span className="truncate font-mono text-xs font-bold text-foreground transition-colors group-hover:text-primary">
               {activeStudentCourse.subjectCode}
             </span>
-            <span className="rounded bg-primary/15 px-1.5 font-semibold text-[10px] text-primary">
+            <span className="hidden rounded bg-primary/15 px-1.5 font-semibold text-[10px] text-primary sm:inline">
               {activeStudentCourse.adminClassCode}
             </span>
           </div>
-          <span className="w-full truncate text-[11px] text-muted-foreground">
+          <span className="hidden w-full truncate text-[11px] text-muted-foreground sm:block">
             {activeStudentCourse.teamName || "Chưa có nhóm"} · {activeStudentCourse.subjectName}
           </span>
         </div>

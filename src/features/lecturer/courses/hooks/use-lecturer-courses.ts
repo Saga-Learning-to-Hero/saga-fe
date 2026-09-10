@@ -58,6 +58,7 @@ export function useLecturerRoster(courseId: string, options?: { enabled?: boolea
     queryFn: () => LecturerCourseService.getRoster(courseId),
     enabled: (options?.enabled ?? true) && Boolean(courseId && courseId.trim()),
     staleTime: 1000 * 30,
+    refetchOnWindowFocus: true,
   });
 }
 
@@ -94,9 +95,13 @@ export function useLecturerCourseAccess(isError: boolean, error: unknown) {
     if (!isError || !isAccessDenied) return;
 
     if (errorCode === "LECTURER_COURSE_FORBIDDEN") {
-      toast.error("Bạn không có quyền truy cập lớp học phần này.");
+      toast.error("Bạn không có quyền truy cập lớp học phần này.", {
+        id: "lecturer-course-forbidden",
+      });
     } else {
-      toast.error("Lớp học phần không còn tồn tại.");
+      toast.error("Lớp học phần không còn tồn tại.", {
+        id: "lecturer-course-not-found",
+      });
     }
     router.replace(lecturerCoursesPath());
   }, [errorCode, isAccessDenied, isError, router]);

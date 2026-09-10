@@ -34,6 +34,15 @@ export function ContributionOverrideDialog({
   const [percentageRaw, setPercentageRaw] = useState("");
   const [reason, setReason] = useState("");
 
+  const handleOpenChange = (next: boolean) => {
+    if (isSaving && !next) return;
+    if (!next) {
+      setPercentageRaw("");
+      setReason("");
+    }
+    onOpenChange(next);
+  };
+
   const percentage = Number(percentageRaw);
   const canSubmit =
     Boolean(member?.studentProfileId) &&
@@ -44,17 +53,11 @@ export function ContributionOverrideDialog({
     !isSaving;
 
   return (
-    <Dialog
-      open={open}
-      onOpenChange={(next) => {
-        if (!next) {
-          setPercentageRaw("");
-          setReason("");
-        }
-        onOpenChange(next);
-      }}
-    >
-      <DialogContent className="flex max-h-[92vh] max-w-lg flex-col overflow-hidden p-0">
+    <Dialog open={open} onOpenChange={handleOpenChange}>
+      <DialogContent
+        className="flex max-h-[92vh] w-[calc(100vw-2rem)] max-w-lg flex-col overflow-hidden p-0"
+        showCloseButton={!isSaving}
+      >
         <DialogHeader className="shrink-0 border-b border-border p-5">
           <DialogTitle>Điều chỉnh tỷ lệ đóng góp</DialogTitle>
           <DialogDescription>
@@ -73,6 +76,7 @@ export function ContributionOverrideDialog({
               min={0}
               className="font-mono"
               value={percentageRaw}
+              disabled={isSaving}
               onChange={(event) => setPercentageRaw(event.target.value)}
             />
           </div>
@@ -82,17 +86,24 @@ export function ContributionOverrideDialog({
               id="override-reason"
               rows={4}
               value={reason}
+              disabled={isSaving}
               onChange={(event) => setReason(event.target.value)}
               placeholder="Nhập căn cứ, biên bản thỏa thuận hoặc lý do điều chỉnh."
             />
             <p className="text-[11px] text-muted-foreground">
-              Lý do bắt buộc để truy vết. Định danh gửi lên máy chủ là studentProfileId, không dùng teamMemberId.
+              Lý do bắt buộc để truy vết điều chỉnh đóng góp.
             </p>
           </div>
         </div>
 
         <DialogFooter className="mx-0 mb-0 shrink-0">
-          <Button type="button" variant="outline" className="cursor-pointer" onClick={() => onOpenChange(false)}>
+          <Button
+            type="button"
+            variant="outline"
+            className="cursor-pointer"
+            disabled={isSaving}
+            onClick={() => handleOpenChange(false)}
+          >
             Hủy
           </Button>
           <Button

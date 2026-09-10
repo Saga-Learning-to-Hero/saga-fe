@@ -2,8 +2,12 @@ import { describe, expect } from "vitest";
 import { fptTest } from "@/testing/fpt-test-helper";
 import {
   areSliceWeightsEqual,
+  canApplyProjectGroupMode,
   canEditProjectGroupWeights,
+  canFetchContributionEvaluation,
   detectSliceWeightScale,
+  isGroupWeightsNotConfigured,
+  pickDefaultGradesTeamId,
   hasInvalidSliceWeight,
   isDisplayPercentSumValid,
   sumSliceWeights,
@@ -122,11 +126,11 @@ describe("contribution-utils", () => {
     {
       id: "UTCID07",
       type: "N",
-      executedDate: "09/09/2026",
-      description: "Chi cho phep PUT group-weights khi mode PROJECT_GROUP va co projectId",
+      executedDate: "10/09/2026",
+      description: "Cho phep luu trong so nhom khi da co projectId, ke ca luc lop dang COURSE",
     },
     () => {
-      expect(canEditProjectGroupWeights("PROJECT_GROUP", "11111111-1111-1111-1111-111111111111")).toBe(true);
+      expect(canEditProjectGroupWeights("11111111-1111-1111-1111-111111111111")).toBe(true);
     }
   );
 
@@ -134,13 +138,143 @@ describe("contribution-utils", () => {
     {
       id: "UTCID08",
       type: "B",
-      executedDate: "09/09/2026",
-      description: "Khong mo form luu khi mode COURSE hoac thieu projectId",
+      executedDate: "10/09/2026",
+      description: "Khong mo form luu khi thieu projectId",
     },
     () => {
-      expect(canEditProjectGroupWeights("COURSE", "11111111-1111-1111-1111-111111111111")).toBe(false);
-      expect(canEditProjectGroupWeights("PROJECT_GROUP", null)).toBe(false);
-      expect(canEditProjectGroupWeights("PROJECT_GROUP", "")).toBe(false);
+      expect(canEditProjectGroupWeights(null)).toBe(false);
+      expect(canEditProjectGroupWeights("")).toBe(false);
+      expect(canEditProjectGroupWeights("   ")).toBe(false);
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID09",
+      type: "N",
+      executedDate: "10/09/2026",
+      description: "Mo nut ap dung cau hinh rieng khi moi nhom co du an da configured",
+    },
+    () => {
+      expect(
+        canApplyProjectGroupMode([
+          { projectId: "p1", configured: true },
+          { projectId: "p2", configured: true },
+          { projectId: null, configured: false },
+        ])
+      ).toBe(true);
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID10",
+      type: "A",
+      executedDate: "10/09/2026",
+      description: "Khoa ap dung khi con nhom co du an chua cau hinh",
+    },
+    () => {
+      expect(
+        canApplyProjectGroupMode([
+          { projectId: "p1", configured: true },
+          { projectId: "p2", configured: false },
+        ])
+      ).toBe(false);
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID11",
+      type: "B",
+      executedDate: "10/09/2026",
+      description: "Khong ap dung khi chua co nhom nao khoi tao du an",
+    },
+    () => {
+      expect(canApplyProjectGroupMode([{ projectId: null, configured: false }])).toBe(false);
+      expect(canApplyProjectGroupMode([])).toBe(false);
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID12",
+      type: "A",
+      executedDate: "10/09/2026",
+      description: "Khong goi API danh gia khi teamId khong thuoc danh sach nhom cua lop",
+    },
+    () => {
+      expect(canFetchContributionEvaluation(true, "team-a", [{ teamId: "team-b" }])).toBe(false);
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID13",
+      type: "N",
+      executedDate: "10/09/2026",
+      description: "Chi enable evaluation khi teams da tai va tim thay teamId",
+    },
+    () => {
+      expect(canFetchContributionEvaluation(true, "team-a", [{ teamId: "team-a" }])).toBe(true);
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID14",
+      type: "B",
+      executedDate: "10/09/2026",
+      description: "Khong enable evaluation khi teams chua tai xong hoac teamId rong",
+    },
+    () => {
+      expect(canFetchContributionEvaluation(false, "team-a", [{ teamId: "team-a" }])).toBe(false);
+      expect(canFetchContributionEvaluation(true, "", [{ teamId: "team-a" }])).toBe(false);
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID15",
+      type: "N",
+      executedDate: "10/09/2026",
+      description: "Mac dinh chon nhom hop le dau tien theo teamNo",
+    },
+    () => {
+      expect(
+        pickDefaultGradesTeamId([
+          { teamId: "team-b", teamNo: 2 },
+          { teamId: "team-a", teamNo: 1 },
+        ])
+      ).toBe("team-a");
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID16",
+      type: "B",
+      executedDate: "10/09/2026",
+      description: "Danh sach nhom rong hoac thieu teamId khong chon mac dinh",
+    },
+    () => {
+      expect(pickDefaultGradesTeamId([])).toBeNull();
+      expect(pickDefaultGradesTeamId([{ teamId: "   ", teamNo: 1 }])).toBeNull();
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID17",
+      type: "A",
+      executedDate: "10/09/2026",
+      description: "GET group-weights 404 duoc hieu la chua cau hinh",
+    },
+    () => {
+      const error = new Error("Not found") as Error & { status?: number };
+      error.status = 404;
+      expect(isGroupWeightsNotConfigured(error)).toBe(true);
+      expect(isGroupWeightsNotConfigured(new Error("Network"))).toBe(false);
     }
   );
 });

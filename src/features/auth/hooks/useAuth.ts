@@ -6,8 +6,8 @@ import { useRouter } from "next/navigation";
 import { toast } from "@/components/ui/sonner";
 import { AuthService } from "../api/auth-service";
 import { useAuthStore } from "../store/useAuthStore";
-import { getSafeRedirectUrl } from "../lib/role-routes";
 import { ensureCsrfToken } from "@/lib/axios";
+import { isUnauthorizedError } from "@/lib/api-error";
 import type { LoginRequest, RegisterRequest, PasswordSetupRequest, AuthMeResponse } from "../types/auth-dto";
 import type { User } from "@/types/auth";
 
@@ -38,26 +38,29 @@ export function useSession() {
         }
         setHasHydrated(true);
         return res;
-      } catch {
-        setUser(null);
+      } catch (error) {
         setHasHydrated(true);
-        return {
-          authenticated: false,
-          passwordSetupRequired: false,
-          user: null,
-        };
+        // Chỉ xóa phiên khi máy chủ xác nhận 401; lỗi mạng/5xx giữ danh tính đã persist.
+        if (isUnauthorizedError(error)) {
+          setUser(null);
+          return {
+            authenticated: false,
+            passwordSetupRequired: false,
+            user: null,
+          };
+        }
+        throw error;
       }
     },
     staleTime: 1000 * 60 * 10,
     gcTime: 1000 * 60 * 30,
     refetchOnWindowFocus: false,
-    retry: false,
+    retry: 1,
   });
 }
 
 export function useLogin() {
   const queryClient = useQueryClient();
-  const router = useRouter();
   const { setUser } = useAuthStore();
 
   return useMutation({
@@ -81,14 +84,7 @@ export function useLogin() {
           id: "auth-login-success",
           description: `Chào mừng ${res.user.fullName || res.user.email} quay trở lại hệ thống SAGA.`,
         });
-
-        if (res.passwordSetupRequired) {
-          router.replace("/auth/setup-password");
-        } else {
-          const searchParams = typeof window !== "undefined" ? new URLSearchParams(window.location.search) : null;
-          const nextUrl = searchParams ? searchParams.get("next") : null;
-          router.replace(getSafeRedirectUrl(nextUrl, res.user.role));
-        }
+        // Điều hướng do LoginForm thực hiện một lần cho cả mật khẩu và Google.
       }
     },
     onError: (err: unknown) => {

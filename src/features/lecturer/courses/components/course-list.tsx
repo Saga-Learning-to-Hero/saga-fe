@@ -122,7 +122,7 @@ export function CourseList() {
   }, [courses, deferredQuery]);
 
   return (
-    <div className="mx-auto max-w-[1400px] space-y-8 pb-12">
+    <div className="mx-auto max-w-[1600px] space-y-8 pb-12">
       <div className="relative overflow-hidden rounded-2xl border border-primary/20 bg-gradient-to-br from-primary to-primary/70 px-7 py-8 text-white shadow-lg">
         <div className="pointer-events-none absolute -right-16 -top-16 size-64 rounded-full bg-white/10 blur-2xl" />
         <div className="relative flex flex-col gap-6 md:flex-row md:items-center md:justify-between">

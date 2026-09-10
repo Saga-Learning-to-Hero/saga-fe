@@ -7,5 +7,5 @@ export default async function LecturerTeamSelectPage({
   params: Promise<{ courseId: string }>;
 }) {
   const { courseId } = await params;
-  redirect(lecturerCourseTeamsPath(courseId));
+  redirect(lecturerCourseTeamsPath(courseId, "teams"));
 }

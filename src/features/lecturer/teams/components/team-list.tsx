@@ -2,18 +2,16 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { FolderKanbanIcon, UsersIcon } from "lucide-react";
+import { FolderKanbanIcon, RefreshCwIcon, UsersIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { useLecturerCourseAccess } from "@/features/lecturer/courses/hooks/use-lecturer-courses";
 import { CourseQueryError } from "@/features/lecturer/courses/components/course-query-error";
 import {
-  lecturerCourseTeamEvaluationPath,
+  lecturerCourseGradesPath,
   lecturerCourseTeamPath,
-  lecturerCoursesPath,
 } from "@/features/lecturer/courses/lib/course-routes";
+import { formatQueryUpdatedAt } from "@/features/lecturer/courses/lib/format-query-updated-at";
 import { useLecturerTeams } from "../hooks/use-lecturer-teams";
 import { sortTeamMembers, teamRoleLabel } from "../types/lecturer-team";
 import { TeamImportDialog } from "./team-import-dialog";
@@ -22,14 +20,12 @@ import { cn } from "@/lib/utils";
 interface TeamListProps {
   courseId: string;
   courseCode?: string;
-  onForbidden?: () => void;
 }
 
 export function TeamList({ courseId, courseCode }: TeamListProps) {
-  const router = useRouter();
-  const { data, isLoading, isError, error, refetch } = useLecturerTeams(courseId);
-  const { isAccessDenied } = useLecturerCourseAccess(isError, error);
+  const { data, isLoading, isError, error, refetch, dataUpdatedAt, isFetching } = useLecturerTeams(courseId);
   const [importOpen, setImportOpen] = useState(false);
+  const updatedAt = formatQueryUpdatedAt([dataUpdatedAt]);
 
   const sortedTeams = useMemo(
     () =>
@@ -50,16 +46,14 @@ export function TeamList({ courseId, courseCode }: TeamListProps) {
     );
   }
 
-  if (isAccessDenied) {
-    return (
-      <div className="rounded-2xl border border-dashed border-border p-8 text-center text-sm text-muted-foreground">
-        Đang chuyển về danh sách lớp...
-      </div>
-    );
-  }
-
   if (isError) {
-    return <CourseQueryError error={error} onRetry={() => void refetch()} />;
+    return (
+      <CourseQueryError
+        title="Không tải được danh sách nhóm"
+        error={error}
+        onRetry={() => void refetch()}
+      />
+    );
   }
 
   return (
@@ -71,13 +65,29 @@ export function TeamList({ courseId, courseCode }: TeamListProps) {
             Phân nhóm bằng Excel. Giảng viên không tạo dự án hộ nhóm.
           </p>
         </div>
-        <Button
-          size="sm"
-          onClick={() => setImportOpen(true)}
-          className="h-8 cursor-pointer text-xs font-semibold"
-        >
-          Phân nhóm bằng Excel
-        </Button>
+        <div className="flex flex-wrap items-center gap-2">
+          {updatedAt ? (
+            <p className="text-[11px] text-muted-foreground">Cập nhật lúc {updatedAt}</p>
+          ) : null}
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            className="h-8 cursor-pointer text-xs"
+            disabled={isFetching}
+            onClick={() => void refetch()}
+          >
+            <RefreshCwIcon className={cn("size-3.5", isFetching && "animate-spin")} />
+            Làm mới
+          </Button>
+          <Button
+            size="sm"
+            onClick={() => setImportOpen(true)}
+            className="h-8 cursor-pointer text-xs font-semibold"
+          >
+            Phân nhóm bằng Excel
+          </Button>
+        </div>
       </div>
 
       {sortedTeams.length === 0 ? (
@@ -107,14 +117,14 @@ export function TeamList({ courseId, courseCode }: TeamListProps) {
                       : "border-amber-500/30 bg-amber-500/15 text-amber-700 dark:text-amber-300"
                   }
                 >
-                  {team.projectId ? "Đã có dự án nhóm" : "Chưa có dự án nhóm"}
+                  {team.projectId ? "Đã có dự án nhóm" : "Nhóm chưa khởi tạo dự án"}
                 </Badge>
               </div>
 
               {team.projectId ? null : (
                 <div className="mb-3 space-y-1 rounded-xl bg-muted/40 px-3 py-2 text-xs text-muted-foreground">
                   <p className="font-semibold text-foreground">Nhóm đã được phân công.</p>
-                  <p>Chưa có dự án nhóm.</p>
+                  <p>Nhóm chưa khởi tạo dự án.</p>
                   <p>Trưởng nhóm cần đăng nhập bằng tài khoản sinh viên để khởi tạo dự án nhóm.</p>
                 </div>
               )}
@@ -154,11 +164,11 @@ export function TeamList({ courseId, courseCode }: TeamListProps) {
                 </p>
                 <div className="flex shrink-0 flex-wrap justify-end gap-2">
                   <Link
-                    href={lecturerCourseTeamEvaluationPath(courseId, team.teamId)}
+                    href={lecturerCourseGradesPath(courseId, team.teamId)}
                     prefetch={true}
                     className={cn(buttonVariants({ size: "sm", variant: "outline" }), "h-8 text-xs font-semibold")}
                   >
-                    Đánh giá đóng góp
+                    Xem bảng điểm nhóm
                   </Link>
                   <Link
                     href={lecturerCourseTeamPath(courseId, team.teamId)}
@@ -186,7 +196,6 @@ export function TeamList({ courseId, courseCode }: TeamListProps) {
         courseCode={courseCode}
         isOpen={importOpen}
         onOpenChange={setImportOpen}
-        onForbidden={() => router.replace(lecturerCoursesPath())}
       />
     </div>
   );

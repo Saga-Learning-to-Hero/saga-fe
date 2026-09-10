@@ -2,9 +2,9 @@ import { Metadata } from "next";
 import { LecturerMonitoringPreview } from "@/features/lecturer/courses/components/lecturer-monitoring-preview";
 
 export const metadata: Metadata = {
-  title: "Giám sát đồ thị nhóm & SNA | Giảng viên SAGA",
+  title: "Liên kết công việc và commit | Giảng viên SAGA",
   description:
-    "Trung tâm giám sát toàn bộ các dự án nhóm, theo dõi Traceability và phân tích mạng lưới SNA cho giảng viên.",
+    "Theo dõi liên kết công việc và commit của các dự án nhóm trong lớp học phần.",
 };
 
 export default async function LecturerGraphPage({

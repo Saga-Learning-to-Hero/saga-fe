@@ -5,7 +5,7 @@ interface AwaitingServerDataBadgeProps {
 }
 
 export function AwaitingServerDataBadge({
-  label = "Dữ liệu đang chờ kết nối",
+  label = "Dữ liệu chưa sẵn sàng",
 }: AwaitingServerDataBadgeProps) {
   return (
     <Badge

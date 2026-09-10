@@ -42,19 +42,22 @@ export function MoveTeamMemberDialog({
       subLabel: `TeamNo ${team.teamNo}`,
     }));
 
+  const handleOpenChange = (next: boolean) => {
+    if (isSaving && !next) return;
+    if (!next) setTargetTeamId("");
+    onOpenChange(next);
+  };
+
   return (
-    <Dialog
-      open={open}
-      onOpenChange={(next) => {
-        if (!next) setTargetTeamId("");
-        onOpenChange(next);
-      }}
-    >
-      <DialogContent className="flex max-h-[92vh] max-w-lg flex-col overflow-hidden p-0">
+    <Dialog open={open} onOpenChange={handleOpenChange}>
+      <DialogContent
+        className="flex max-h-[92vh] w-[calc(100vw-2rem)] max-w-lg flex-col overflow-hidden p-0"
+        showCloseButton={!isSaving}
+      >
         <DialogHeader className="shrink-0 border-b border-border p-5">
           <DialogTitle>Chuyển thành viên sang nhóm khác</DialogTitle>
           <DialogDescription>
-            Thành phần nhóm và kết quả đánh giá đóng góp sẽ thay đổi. Không tự chặn luật nghiệp vụ ngoài hợp đồng máy chủ.
+            Thành phần nhóm và kết quả đánh giá đóng góp sẽ thay đổi sau khi xác nhận.
           </DialogDescription>
         </DialogHeader>
 
@@ -76,7 +79,7 @@ export function MoveTeamMemberDialog({
               onChange={setTargetTeamId}
               options={targetOptions}
               placeholder="Chọn nhóm khác trong lớp"
-              disabled={targetOptions.length === 0}
+              disabled={targetOptions.length === 0 || isSaving}
             />
             {targetOptions.length === 0 ? (
               <p className="text-[11px] text-muted-foreground">Chưa có nhóm đích khác trong lớp học phần này.</p>
@@ -85,7 +88,13 @@ export function MoveTeamMemberDialog({
         </div>
 
         <DialogFooter className="mx-0 mb-0 shrink-0">
-          <Button type="button" variant="outline" className="cursor-pointer" onClick={() => onOpenChange(false)}>
+          <Button
+            type="button"
+            variant="outline"
+            className="cursor-pointer"
+            disabled={isSaving}
+            onClick={() => handleOpenChange(false)}
+          >
             Hủy
           </Button>
           <Button

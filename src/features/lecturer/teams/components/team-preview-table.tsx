@@ -81,8 +81,7 @@ export function TeamPreviewTable({ preview }: TeamPreviewTableProps) {
           <div>
             <p className="font-semibold">Không thể xác nhận vì còn lỗi chặn.</p>
             <p className="mt-1 text-muted-foreground">
-              Hãy sửa file Excel theo mẫu backend rồi tải lên lại. Không dùng kết quả tự tính phía
-              trình duyệt.
+              Hãy sửa file Excel theo mẫu chính thức rồi tải lên lại.
             </p>
             {preview.blockingErrors.length > 0 && (
               <ul className="mt-2 list-disc space-y-0.5 pl-4">
