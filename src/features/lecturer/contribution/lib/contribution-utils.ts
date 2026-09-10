@@ -44,10 +44,6 @@ export function sumSliceWeights(weights: ContributionSliceWeightValues): number 
   );
 }
 
-/**
- * Đơn vị trọng số lấy theo response BE: tổng ≤ 1 → tỷ lệ 0–1, còn lại → phần trăm.
- * Không giả định cứng 0–100 khi máy chủ đang dùng 0–1.
- */
 export function detectSliceWeightScale(weights: ContributionSliceWeightValues): SliceWeightScale {
   const total = sumSliceWeights(weights);
   if (total > 0 && total <= RATIO_SUM + RATIO_EPSILON) return 1;

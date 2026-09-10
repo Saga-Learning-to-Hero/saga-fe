@@ -104,7 +104,6 @@ export function SprintBoardView({
             onDrop={(e) => handleDrop(e, col.id)}
             className={`rounded-2xl border ${col.color} p-3.5 flex flex-col transition-all max-h-[calc(100vh-220px)] min-h-[540px]`}
           >
-            {/* Column Header */}
             <div className="flex items-center justify-between pb-2.5 mb-2.5 border-b border-border/50 shrink-0">
               <div className="flex items-center gap-2">
                 <h3 className="text-xs font-bold tracking-wider text-foreground">
@@ -119,7 +118,6 @@ export function SprintBoardView({
               </span>
             </div>
 
-            {/* Cards List (Cuộn độc lập khi nhiều task) */}
             <div className="space-y-2.5 flex-1 overflow-y-auto pr-1.5 scrollbar-thin scrollbar-thumb-border hover:scrollbar-thumb-muted-foreground/30 min-h-[350px]">
               {colIssues.length === 0 ? (
                 <div className="h-28 flex items-center justify-center rounded-xl border border-dashed border-border/50 text-[11px] text-muted-foreground/60 select-none">
@@ -127,94 +125,89 @@ export function SprintBoardView({
                 </div>
               ) : null}
               {colIssues.map((issue) => {
-                  const canDrag = isTeamLeader || issue.assignee.studentCode === currentUserStudentCode;
+                const canDrag = isTeamLeader || issue.assignee.studentCode === currentUserStudentCode;
 
-                  return (
-                    <div
-                      key={issue.id}
-                      draggable={canDrag}
-                      onDragStart={(e) => handleDragStart(e, issue)}
-                      onClick={() => onIssueClick(issue)}
-                      className={`p-3.5 rounded-xl bg-card border border-border/70 shadow-2xs hover:shadow-xs transition-all space-y-2.5 group ${
-                        canDrag
-                          ? "cursor-grab active:cursor-grabbing hover:border-primary/50 hover:scale-[1.01]"
-                          : "cursor-pointer opacity-90 border-dashed"
+                return (
+                  <div
+                    key={issue.id}
+                    draggable={canDrag}
+                    onDragStart={(e) => handleDragStart(e, issue)}
+                    onClick={() => onIssueClick(issue)}
+                    className={`p-3.5 rounded-xl bg-card border border-border/70 shadow-2xs hover:shadow-xs transition-all space-y-2.5 group ${canDrag
+                        ? "cursor-grab active:cursor-grabbing hover:border-primary/50 hover:scale-[1.01]"
+                        : "cursor-pointer opacity-90 border-dashed"
                       }`}
-                    >
-                      {/* Issue Key & Epic */}
-                      <div className="flex items-center justify-between gap-2">
-                        <div className="flex items-center gap-1.5">
-                          {renderTypeIcon(issue.type)}
-                          <span className="text-xs font-mono font-bold text-muted-foreground group-hover:text-primary transition-colors">
-                            {issue.key}
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-1.5">
+                        {renderTypeIcon(issue.type)}
+                        <span className="text-xs font-mono font-bold text-muted-foreground group-hover:text-primary transition-colors">
+                          {issue.key}
+                        </span>
+                        {!canDrag && (
+                          <span title="Chỉ đọc (Task của thành viên khác)">
+                            <LockIcon className="w-3 h-3 text-muted-foreground/70 shrink-0" />
                           </span>
-                          {!canDrag && (
-                            <span title="Chỉ đọc (Task của thành viên khác)">
-                              <LockIcon className="w-3 h-3 text-muted-foreground/70 shrink-0" />
-                            </span>
-                          )}
-                        </div>
-
-                        {issue.epic && (
-                          <Badge
-                            style={{ backgroundColor: `${issue.epic.color}15`, color: issue.epic.color }}
-                            className="border-0 text-[10px] font-bold px-2 py-0.2 truncate max-w-[110px]"
-                          >
-                            {issue.epic.name}
-                          </Badge>
                         )}
                       </div>
 
-                      {/* Summary */}
-                      <p className="text-xs font-semibold text-foreground line-clamp-2 leading-snug">
-                        {issue.summary}
-                      </p>
-
-                      {/* Labels Badges */}
-                      {issue.labels && issue.labels.length > 0 && (
-                        <div className="flex flex-wrap items-center gap-1 pt-0.5">
-                          {issue.labels.map((lbl, idx) => (
-                            <Badge
-                              key={idx}
-                              variant="secondary"
-                              className="text-[9px] font-mono px-1.5 py-0 bg-muted/70 text-muted-foreground border-border/50"
-                            >
-                              #{lbl}
-                            </Badge>
-                          ))}
-                        </div>
+                      {issue.epic && (
+                        <Badge
+                          style={{ backgroundColor: `${issue.epic.color}15`, color: issue.epic.color }}
+                          className="border-0 text-[10px] font-bold px-2 py-0.2 truncate max-w-[110px]"
+                        >
+                          {issue.epic.name}
+                        </Badge>
                       )}
+                    </div>
 
-                      {/* Bottom Metadata Bar */}
-                      <div className="flex items-center justify-between pt-1 border-t border-border/40 text-[11px] text-muted-foreground">
-                        <div className="flex items-center gap-2">
-                          {renderPriorityIcon(issue.priority)}
+                    <p className="text-xs font-semibold text-foreground line-clamp-2 leading-snug">
+                      {issue.summary}
+                    </p>
 
-                          {issue.githubCommitCount ? (
-                            <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-mono text-[10px] font-semibold">
-                              <GitCommitIcon className="w-3 h-3" />
-                              {issue.githubCommitCount}
-                            </span>
-                          ) : null}
-                        </div>
-
-                        <div className="flex items-center gap-2">
-                          <Badge variant="outline" className="font-mono text-[10px] px-1.5 py-0">
-                            {issue.storyPoints} SP
+                    {issue.labels && issue.labels.length > 0 && (
+                      <div className="flex flex-wrap items-center gap-1 pt-0.5">
+                        {issue.labels.map((lbl, idx) => (
+                          <Badge
+                            key={idx}
+                            variant="secondary"
+                            className="text-[9px] font-mono px-1.5 py-0 bg-muted/70 text-muted-foreground border-border/50"
+                          >
+                            #{lbl}
                           </Badge>
+                        ))}
+                      </div>
+                    )}
 
-                          <Avatar className="w-5 h-5 border shadow-2xs">
-                            <AvatarImage src={issue.assignee.avatar} alt={issue.assignee.name} />
-                            <AvatarFallback className="text-[9px] bg-primary/20 text-primary font-bold">
-                              {issue.assignee.name.slice(0, 2).toUpperCase()}
-                            </AvatarFallback>
-                          </Avatar>
-                        </div>
+                    <div className="flex items-center justify-between pt-1 border-t border-border/40 text-[11px] text-muted-foreground">
+                      <div className="flex items-center gap-2">
+                        {renderPriorityIcon(issue.priority)}
+
+                        {issue.githubCommitCount ? (
+                          <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-mono text-[10px] font-semibold">
+                            <GitCommitIcon className="w-3 h-3" />
+                            {issue.githubCommitCount}
+                          </span>
+                        ) : null}
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <Badge variant="outline" className="font-mono text-[10px] px-1.5 py-0">
+                          {issue.storyPoints} SP
+                        </Badge>
+
+                        <Avatar className="w-5 h-5 border shadow-2xs">
+                          <AvatarImage src={issue.assignee.avatar} alt={issue.assignee.name} />
+                          <AvatarFallback className="text-[9px] bg-primary/20 text-primary font-bold">
+                            {issue.assignee.name.slice(0, 2).toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
                       </div>
                     </div>
-                  );
-                })}
-              </div>
+                  </div>
+                );
+              })}
+            </div>
           </div>
         );
       })}

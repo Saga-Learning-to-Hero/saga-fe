@@ -3,7 +3,6 @@
 import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useQueryClient } from "@tanstack/react-query";
 import {
   CheckCircle2Icon,
   ArrowRightIcon,
@@ -17,12 +16,12 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
 import { getRoleHomePath } from "@/features/auth/lib/role-routes";
-import { USER_INTEGRATIONS_QUERY_KEY } from "@/features/integrations/hooks/useUserIntegrations";
+import { useRefreshUserIntegrations } from "@/features/integrations/hooks/useUserIntegrations";
 
 function SuccessContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const queryClient = useQueryClient();
+  const refreshIntegrations = useRefreshUserIntegrations();
   const { isAuthenticated, user } = useAuthStore();
   const [isSyncing, setIsSyncing] = useState<boolean>(true);
 
@@ -37,8 +36,7 @@ function SuccessContent() {
 
     async function syncIntegrationsAndNavigate() {
       try {
-        await queryClient.invalidateQueries({ queryKey: USER_INTEGRATIONS_QUERY_KEY });
-        await queryClient.refetchQueries({ queryKey: USER_INTEGRATIONS_QUERY_KEY });
+        await refreshIntegrations();
       } finally {
         if (isMounted) {
           setIsSyncing(false);
@@ -54,7 +52,7 @@ function SuccessContent() {
     return () => {
       isMounted = false;
     };
-  }, [queryClient, router, searchParams, user?.role]);
+  }, [refreshIntegrations, router, searchParams, user?.role]);
 
   return (
     <div className="w-full max-w-xl mx-auto space-y-6">

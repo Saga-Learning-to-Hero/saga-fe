@@ -75,11 +75,9 @@ export function TopNavHeader() {
 
   const displayName = user.fullName || user.name || (user.role === "STUDENT" ? "Sinh viên" : "Giảng viên");
 
-  // Trích xuất courseId đối với Giảng viên
   const courseMatch = pathname.match(/^\/lecturer\/courses\/([^/]+)(?:\/|$)/);
   const lecturerCourseId = courseMatch ? decodeURIComponent(courseMatch[1]) : null;
 
-  // Xác định danh sách Nav Tabs ngang (chỉ hiển thị khi đang trong không gian học phần/khóa học)
   let navItems: NavItem[] = [];
   if (user.role === "LECTURER" && lecturerCourseId) {
     navItems = getLecturerNavItems(lecturerCourseId);
@@ -99,11 +97,8 @@ export function TopNavHeader() {
 
   return (
     <header className="sticky top-0 z-30 flex flex-col w-full bg-card/95 backdrop-blur-md border-b border-border shadow-saga-xs">
-      {/* ── TẦNG 1: Main Header Bar (56px) ── */}
       <div className="flex h-14 items-center justify-between px-4 sm:px-6 gap-4">
-        {/* ── Left: Mobile Menu Button + SAGA Logo + Course Switcher ── */}
         <div className="flex items-center gap-3 min-w-0">
-          {/* Nút mở Menu trên Mobile */}
           {hasSubNav && (
             <Button
               variant="ghost"
@@ -128,14 +123,11 @@ export function TopNavHeader() {
           )}
         </div>
 
-        {/* ── Center: Global Command Search (Ctrl + K) ── */}
         <div className="hidden md:flex items-center justify-center flex-1 max-w-xs lg:max-w-sm">
           <GlobalCommandSearch />
         </div>
 
-        {/* ── Right: Theme Toggle + Notifications + User Avatar Dropdown ── */}
         <div className="flex items-center gap-2 shrink-0">
-          {/* Nút chuyển Theme Sáng / Tối */}
           <Tooltip>
             <TooltipTrigger
               onClick={toggleTheme}
@@ -153,7 +145,6 @@ export function TopNavHeader() {
             </TooltipContent>
           </Tooltip>
 
-          {/* Nút chuông thông báo */}
           <Tooltip>
             <TooltipTrigger
               className="relative flex items-center justify-center size-8.5 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-colors cursor-pointer border border-transparent hover:border-border"
@@ -169,7 +160,6 @@ export function TopNavHeader() {
 
           <div className="h-5 w-px bg-border mx-1" />
 
-          {/* User Profile Dropdown Menu */}
           <DropdownMenu>
             <DropdownMenuTrigger className="flex items-center gap-2.5 rounded-xl p-1.5 hover:bg-muted/80 transition-all border border-transparent hover:border-border cursor-pointer outline-none group">
               <Avatar className="size-8 rounded-lg border border-border shadow-xs">
@@ -192,7 +182,6 @@ export function TopNavHeader() {
             </DropdownMenuTrigger>
 
             <DropdownMenuContent align="end" sideOffset={10} className="w-68 rounded-2xl p-1.5 shadow-xl border-border">
-              {/* Header thông tin người dùng */}
               <div className="flex items-center gap-3 p-3 border-b border-border/80 bg-muted/30 rounded-xl mb-1">
                 <Avatar className="size-10 rounded-xl border border-border">
                   <AvatarImage src={user.avatar} alt={displayName} />
@@ -243,14 +232,12 @@ export function TopNavHeader() {
         </div>
       </div>
 
-      {/* ── TẦNG 2: Subnav Tabs Bar (Chỉ hiển thị khi đang trong Ngữ cảnh Môn/Lớp học) ── */}
       {hasSubNav && (
         <div className="hidden md:block border-t border-border/60 bg-card/60">
           <TopNavTabs items={navItems} />
         </div>
       )}
 
-      {/* ── Mobile Navigation Drawer (Sheet) ── */}
       <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
         <SheetContent side="left" className="w-72 p-0 flex flex-col">
           <SheetHeader className="p-4 border-b border-border">

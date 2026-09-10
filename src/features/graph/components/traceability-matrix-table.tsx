@@ -62,7 +62,6 @@ export function TraceabilityMatrixTable() {
 
                 return (
                   <tr key={task.id} className="hover:bg-muted/30 transition-colors">
-                    {/* Task Info */}
                     <td className="p-4 align-top">
                       <div className="space-y-1">
                         <div className="flex items-center gap-2">
@@ -77,7 +76,6 @@ export function TraceabilityMatrixTable() {
                       </div>
                     </td>
 
-                    {/* Assignee */}
                     <td className="p-4 align-top">
                       <div className="flex items-center gap-2.5">
                         <Avatar className="h-7 w-7 border border-border">
@@ -91,7 +89,6 @@ export function TraceabilityMatrixTable() {
                       </div>
                     </td>
 
-                    {/* Weight & Story Points */}
                     <td className="p-4 align-top text-center">
                       <div className="space-y-0.5">
                         <span className="font-mono font-bold text-foreground block">{task.storyPoints} SP</span>
@@ -101,7 +98,6 @@ export function TraceabilityMatrixTable() {
                       </div>
                     </td>
 
-                    {/* Linked Commits */}
                     <td className="p-4 align-top">
                       {linkedCommits.length > 0 ? (
                         <div className="space-y-1.5 max-w-sm">
@@ -126,7 +122,6 @@ export function TraceabilityMatrixTable() {
                       )}
                     </td>
 
-                    {/* Code Diff */}
                     <td className="p-4 align-top text-center font-mono text-xs">
                       {linkedCommits.length > 0 ? (
                         <div className="space-y-0.5">
@@ -138,7 +133,6 @@ export function TraceabilityMatrixTable() {
                       )}
                     </td>
 
-                    {/* Audit Status */}
                     <td className="p-4 align-top text-right">
                       {task.isMSRAnomaly ? (
                         <Badge className="bg-red-500/15 text-red-600 dark:text-red-400 border border-red-500/30 gap-1 font-bold animate-pulse text-[11px]">

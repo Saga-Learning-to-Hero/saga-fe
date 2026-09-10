@@ -43,9 +43,6 @@ export function ContributionTable({ members, currentStudentCode }: ContributionT
     return MOCK_SPRINT_CONTRIBUTIONS[selectedSprintId] || members || MOCK_CONTRIBUTION_MEMBERS;
   }, [selectedSprintId, members]);
 
-  // Chuẩn hoá progress bar theo % đóng góp lớn nhất trong nhóm
-  // để thanh bar luôn phản ánh đúng tương quan giữa các thành viên,
-  // không bị clamp về 100% khi ai đó vượt chuẩn 20%.
   const maxContribution = Math.max(1, ...activeMembers.map((m) => m.contributionPercentage));
 
   const activeSprintInfo = COMPLETED_SPRINTS.find((s) => s.id === selectedSprintId);
@@ -120,7 +117,6 @@ export function ContributionTable({ members, currentStudentCode }: ContributionT
                   className={`transition-colors ${isSelf ? "bg-primary/5 hover:bg-primary/10" : "hover:bg-muted/30"
                     }`}
                 >
-                  {/* Member Info */}
                   <td className="py-3.5 px-4">
                     <div className="flex items-center gap-3">
                       <Avatar className="w-9 h-9 border border-background shadow-xs shrink-0">
@@ -151,7 +147,6 @@ export function ContributionTable({ members, currentStudentCode }: ContributionT
                     </div>
                   </td>
 
-                  {/* Jira Tasks */}
                   <td className="py-3.5 px-3">
                     <div className="space-y-0.5 font-mono">
                       <span className="font-bold text-foreground text-xs block">
@@ -163,7 +158,6 @@ export function ContributionTable({ members, currentStudentCode }: ContributionT
                     </div>
                   </td>
 
-                  {/* GitHub Commits & Diff */}
                   <td className="py-3.5 px-3">
                     <div className="space-y-0.5 font-mono">
                       <span className="font-bold text-foreground text-xs block">
@@ -176,7 +170,6 @@ export function ContributionTable({ members, currentStudentCode }: ContributionT
                     </div>
                   </td>
 
-                  {/* Peer Review Score */}
                   <td className="py-3.5 px-3 text-center">
                     <div className="inline-flex items-center gap-1 font-mono font-bold text-amber-500 bg-amber-500/10 px-2 py-0.5 rounded-lg text-xs">
                       <StarIcon className="w-3 h-3 fill-current" />
@@ -184,21 +177,19 @@ export function ContributionTable({ members, currentStudentCode }: ContributionT
                     </div>
                   </td>
 
-                  {/* Traceability Rate */}
                   <td className="py-3.5 px-3 text-center">
                     <span
                       className={`font-mono font-bold text-xs ${m.metrics.traceabilityRate >= 90
-                          ? "text-emerald-600 dark:text-emerald-400"
-                          : m.metrics.traceabilityRate >= 75
-                            ? "text-blue-600 dark:text-blue-400"
-                            : "text-rose-600 dark:text-rose-400"
+                        ? "text-emerald-600 dark:text-emerald-400"
+                        : m.metrics.traceabilityRate >= 75
+                          ? "text-blue-600 dark:text-blue-400"
+                          : "text-rose-600 dark:text-rose-400"
                         }`}
                     >
                       {m.metrics.traceabilityRate}%
                     </span>
                   </td>
 
-                  {/* Contribution % Progress */}
                   <td className="py-3.5 px-4">
                     <div className="space-y-1">
                       <div className="flex items-center justify-between text-[11px]">
@@ -212,12 +203,12 @@ export function ContributionTable({ members, currentStudentCode }: ContributionT
                       <div className="h-2 rounded-full bg-muted overflow-hidden">
                         <div
                           className={`h-full rounded-full transition-all duration-500 ${m.statusTag === "EXCEEDED"
-                              ? "bg-emerald-500"
-                              : m.statusTag === "BALANCED"
-                                ? "bg-blue-500"
-                                : m.statusTag === "BEHIND"
-                                  ? "bg-amber-500"
-                                  : "bg-rose-500"
+                            ? "bg-emerald-500"
+                            : m.statusTag === "BALANCED"
+                              ? "bg-blue-500"
+                              : m.statusTag === "BEHIND"
+                                ? "bg-amber-500"
+                                : "bg-rose-500"
                             }`}
                           style={{
                             width: `${Math.min((m.contributionPercentage / maxContribution) * 100, 100)}%`,

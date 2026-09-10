@@ -5,7 +5,7 @@ export type SprintStatus = "ACTIVE" | "PLANNED" | "COMPLETED";
 
 export interface SprintIssue {
   id: string;
-  key: string; // VD: SAGA-101
+  key: string;
   summary: string;
   description?: string;
   type: IssueType;
@@ -23,7 +23,7 @@ export interface SprintIssue {
     name: string;
     color: string;
   };
-  labels?: string[]; // VD: ["Frontend", "UI/UX"]
+  labels?: string[];
   sprintId: string;
   dueDate?: string;
   githubCommitCount?: number;
@@ -32,7 +32,7 @@ export interface SprintIssue {
 
 export interface Sprint {
   id: string;
-  name: string; // VD: Sprint 3 - Core Graph Engine
+  name: string;
   goal: string;
   status: SprintStatus;
   startDate: string;
@@ -43,8 +43,8 @@ export interface Sprint {
 
 export interface Epic {
   id: string;
-  key: string; // VD: EPIC-01
-  name: string; // VD: Graph Visualization
+  key: string;
+  name: string;
   color: string;
   description: string;
   progressPercent: number;

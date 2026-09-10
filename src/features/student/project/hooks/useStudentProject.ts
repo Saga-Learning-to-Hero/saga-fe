@@ -9,29 +9,22 @@ import type {
   StudentTeamProjectResponse,
   ProjectTypeItem,
   CreateStudentProjectRequest,
-  StudentCourseTeamResponse,
 } from "../types/student-project";
 
 export const STUDENT_PROJECT_QUERY_KEY = (courseId?: string | null) =>
   ["student", "courses", courseId, "project"] as const;
 
-export const STUDENT_TEAM_QUERY_KEY = STUDENT_COURSE_QUERY_KEYS.studentMyTeam;
-
 export const PROJECT_TYPES_QUERY_KEY = ["student", "project-types"] as const;
 
-/**
- * Hook truy vấn thông tin nhóm và danh sách thành viên của sinh viên theo courseId
- * GET /api/student/courses/{courseId}/team
- */
-export function useStudentTeam(courseId?: string | null) {
-  return useQuery<StudentCourseTeamResponse | null, Error>({
-    queryKey: STUDENT_TEAM_QUERY_KEY(courseId),
+export function useStudentProject(courseId?: string | null) {
+  return useQuery<StudentTeamProjectResponse | null, Error>({
+    queryKey: STUDENT_PROJECT_QUERY_KEY(courseId),
     queryFn: async () => {
       if (!courseId) {
         throw new Error("Course ID is not available");
       }
       try {
-        return await StudentProjectService.getStudentTeam(courseId);
+        return await StudentProjectService.getStudentTeamProject(courseId);
       } catch (error: unknown) {
         const status =
           (error as { status?: number })?.status ??
@@ -48,55 +41,16 @@ export function useStudentTeam(courseId?: string | null) {
   });
 }
 
-/**
- * Hook truy vấn thông tin dự án nhóm của sinh viên theo courseId
- *
- * @param courseId UUID của môn học / lớp học phần
- */
-export function useStudentProject(courseId?: string | null) {
-  return useQuery<StudentTeamProjectResponse | null, Error>({
-    queryKey: STUDENT_PROJECT_QUERY_KEY(courseId),
-    queryFn: async () => {
-      if (!courseId) {
-        throw new Error("Course ID is not available");
-      }
-      try {
-        return await StudentProjectService.getStudentTeamProject(courseId);
-      } catch (error: unknown) {
-        const status =
-          (error as { status?: number })?.status ??
-          (isAxiosError(error) ? error.response?.status : undefined);
-        // Nếu backend trả về 404 (chưa có dự án), trả về null thay vì ném lỗi để cache và phản hồi ngay lập tức
-        if (status === 404) {
-          return null;
-        }
-        throw error;
-      }
-    },
-    enabled: Boolean(courseId && courseId.trim() !== ""),
-    staleTime: 1000 * 60 * 5, // Caching 5 phút
-    retry: false, // Không retry để phản hồi UI ngay lập tức
-  });
-}
-
-/**
- * Hook truy vấn danh sách loại dự án (Seed Data)
- * GET /api/student/project-types
- */
 export function useProjectTypes() {
   return useQuery<ProjectTypeItem[], Error>({
     queryKey: PROJECT_TYPES_QUERY_KEY,
     queryFn: async () => {
       return await StudentProjectService.getProjectTypes();
     },
-    staleTime: 1000 * 60 * 30, // Dữ liệu danh mục hạt giống, cache 30 phút
+    staleTime: 1000 * 60 * 30,
   });
 }
 
-/**
- * Hook tạo mới dự án nhóm cho môn học (Team Leader only)
- * POST /api/student/courses/{courseId}/project
- */
 export function useCreateStudentProject() {
   const queryClient = useQueryClient();
 

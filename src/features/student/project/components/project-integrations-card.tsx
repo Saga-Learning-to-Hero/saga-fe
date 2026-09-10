@@ -43,7 +43,7 @@ export function ProjectIntegrationsCard({ projectId, isLeader }: ProjectIntegrat
   const connectGitHubMutation = useConnectProjectGitHub();
   const connectJiraMutation = useConnectProjectJira();
   const setupCallbackMutation = useProjectGitHubSetupCallback();
-
+  const mutateSetupCallback = setupCallbackMutation.mutate;
 
   useEffect(() => {
     if (typeof window === "undefined" || !projectId) return;
@@ -61,7 +61,7 @@ export function ProjectIntegrationsCard({ projectId, isLeader }: ProjectIntegrat
 
     if (state && installationId) {
       toast.loading("Đang hoàn tất kết nối GitHub cho dự án...", { id: "github-setup-callback" });
-      setupCallbackMutation.mutate(
+      mutateSetupCallback(
         { projectId, state, installation_id: installationId, code },
         {
           onSuccess: () => {
@@ -73,7 +73,7 @@ export function ProjectIntegrationsCard({ projectId, isLeader }: ProjectIntegrat
         }
       );
     }
-  }, [projectId, setupCallbackMutation, refetch]);
+  }, [projectId, mutateSetupCallback, refetch]);
 
   const handleRedirectJiraConnect = async () => {
     try {

@@ -148,7 +148,6 @@ export function UserTable({ users, onToggleStatus }: UserTableProps) {
                 key={user.id}
                 className="hover:bg-muted/30 transition-colors duration-100"
               >
-                {/* Avatar + Name + Email */}
                 <TableCell className="py-3 px-4">
                   <div className="flex items-center gap-3 min-w-[200px]">
                     <Avatar className="w-9 h-9 rounded-xl shrink-0">
@@ -168,7 +167,6 @@ export function UserTable({ users, onToggleStatus }: UserTableProps) {
                   </div>
                 </TableCell>
 
-                {/* Student Code / Lecturer Code */}
                 <TableCell className="py-3 px-4">
                   {user.studentCode ? (
                     <span className="font-mono text-xs font-semibold px-2 py-0.5 rounded-md bg-muted text-foreground/90" title="Mã số sinh viên (MSSV)">
@@ -183,7 +181,6 @@ export function UserTable({ users, onToggleStatus }: UserTableProps) {
                   )}
                 </TableCell>
 
-                {/* Department */}
                 <TableCell className="py-3 px-4 text-muted-foreground font-medium">
                   {user.department || "—"}
                 </TableCell>
@@ -200,15 +197,12 @@ export function UserTable({ users, onToggleStatus }: UserTableProps) {
                   )}
                 </TableCell>
 
-                {/* Status Badge */}
                 <TableCell className="py-3 px-4">{renderStatusBadge(user)}</TableCell>
 
-                {/* Last Active */}
                 <TableCell className="py-3 px-4 text-muted-foreground">
                   {formatDate(user.lastActiveAt)}
                 </TableCell>
 
-                {/* Action Button */}
                 <TableCell className="py-3 px-4 text-right">
                   <Button
                     variant={isBanned ? "default" : "outline"}
@@ -238,7 +232,6 @@ export function UserTable({ users, onToggleStatus }: UserTableProps) {
         </TableBody>
       </Table>
 
-      {/* Pagination Footer */}
       <div className="flex items-center justify-between px-4 py-3 border-t border-border bg-muted/20 text-xs text-muted-foreground">
         <span>
           Trang <strong className="text-foreground">{currentPage}</strong> / {totalPages} (Tổng {users.length} người dùng)

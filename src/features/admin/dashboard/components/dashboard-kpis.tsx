@@ -56,7 +56,6 @@ export function DashboardKPIsSection({ kpis }: DashboardKPIsProps) {
         </CardContent>
       </Card>
 
-      {/* KPI 3: Traceability Index */}
       <Card className="rounded-2xl border border-border/80 shadow-xs bg-card hover:border-success/40 hover:shadow-md transition-all duration-200 relative overflow-hidden group">
         <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-success to-success/40 opacity-0 group-hover:opacity-100 transition-opacity" />
         <CardContent className="p-4 flex items-center justify-between">
@@ -78,7 +77,6 @@ export function DashboardKPIsSection({ kpis }: DashboardKPIsProps) {
         </CardContent>
       </Card>
 
-      {/* KPI 4: Webhook Events 24h */}
       <Card className="rounded-2xl border border-border/80 shadow-xs bg-card hover:border-warning/40 hover:shadow-md transition-all duration-200 relative overflow-hidden group">
         <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-warning to-warning/40 opacity-0 group-hover:opacity-100 transition-opacity" />
         <CardContent className="p-4 flex items-center justify-between">

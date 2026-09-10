@@ -57,14 +57,11 @@ export default function DashboardLayout({
 
   if (!isAuthenticated || !user) return null;
 
-  // ── 1. GIAO DIỆN GIẢNG VIÊN & SINH VIÊN: TOP HEADER NAVIGATION (NO SIDEBAR) ──
   if (user.role === "LECTURER" || user.role === "STUDENT") {
     return (
       <div className="flex min-h-screen flex-col bg-background text-foreground">
-        {/* Header điều hướng 2 tầng chuẩn Academic Tech */}
         <TopNavHeader />
 
-        {/* Khung nội dung chiếm trọn 100% chiều ngang màn hình */}
         <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
           {children}
         </main>
@@ -74,24 +71,19 @@ export default function DashboardLayout({
     );
   }
 
-  // ── 2. GIAO DIỆN QUẢN TRỊ VIÊN (ADMIN): SIDEBAR DỌC CỔ ĐIỂN ──────────────
   return (
     <div className="flex h-screen overflow-hidden bg-background">
-      {/* Sidebar — desktop */}
       <div className="hidden md:flex">
         <Sidebar collapsed={collapsed} onToggle={() => setCollapsed((v) => !v)} />
       </div>
 
-      {/* Sidebar — mobile (Sheet) */}
       <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
         <SheetContent side="left" className="p-0 w-64">
           <Sidebar collapsed={false} onToggle={() => setMobileOpen(false)} />
         </SheetContent>
       </Sheet>
 
-      {/* Main area */}
       <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
-        {/* Mobile top bar */}
         <div className="flex items-center md:hidden px-4 h-14 border-b border-border gap-3 bg-background shrink-0">
           <Button
             variant="ghost"

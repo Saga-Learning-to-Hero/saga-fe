@@ -80,7 +80,6 @@ export function TraceabilityGraphView() {
 
   return (
     <div className="space-y-4">
-      {/* ── Tiêu đề tinh gọn ── */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-1 border-b border-border/40">
         <div className="flex items-center gap-3">
           <div className="w-9 h-9 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shrink-0">
@@ -100,7 +99,6 @@ export function TraceabilityGraphView() {
       </div>
 
       <div className="space-y-4 animate-in fade-in-0 duration-200">
-        {/* ── Thanh điều khiển tinh gọn 1 hàng tích hợp bộ lọc thu gọn ── */}
         <GraphFilterBar
           groupSelector={projectInfoNode}
           selectedStudentId={selectedStudentId}
@@ -116,7 +114,6 @@ export function TraceabilityGraphView() {
           onSelectViewMode={setViewMode}
         />
 
-        {/* ── Đồ thị hiển thị ngay đầu tiên làm trung tâm ── */}
         {viewMode === "GRAPH" ? (
           <CytoscapeGraphCanvas
             nodes={filteredGraphData.nodes}
@@ -133,7 +130,6 @@ export function TraceabilityGraphView() {
           />
         )}
 
-        {/* ── Bảng tóm tắt & Ma trận đối soát phía dưới ── */}
         <GraphStatsSummary
           totalNodes={filteredGraphData.nodes.length}
           totalEdges={filteredGraphData.edges.length}

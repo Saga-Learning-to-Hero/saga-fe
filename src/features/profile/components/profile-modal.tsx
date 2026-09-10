@@ -30,7 +30,6 @@ export function ProfileModal() {
           </DialogDescription>
         </DialogHeader>
 
-        {/* Scrollable Container if viewport is very short */}
         <div className="flex-1 overflow-y-auto pr-1 -mr-1 scrollbar-thin">
           <ProfileView user={user} compact={true} />
         </div>

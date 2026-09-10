@@ -35,10 +35,25 @@ export function CytoscapeGraphCanvas({
 }: CytoscapeGraphCanvasProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const cyRef = useRef<Core | null>(null);
+  const onSelectNodeRef = useRef(onSelectNode);
+
+  useEffect(() => {
+    onSelectNodeRef.current = onSelectNode;
+  }, [onSelectNode]);
+
   const [currentLayout, setCurrentLayout] = useState<string>(layoutName);
   const [hoveredLabel, setHoveredLabel] = useState<string | null>(null);
   const [showEdgeLabels, setShowEdgeLabels] = useState<boolean>(false);
   const [isLegendOpen, setIsLegendOpen] = useState<boolean>(true);
+
+  useEffect(() => {
+    return () => {
+      if (cyRef.current) {
+        cyRef.current.destroy();
+        cyRef.current = null;
+      }
+    };
+  }, []);
 
   const applyLayout = useCallback((cyInstance: Core, layout: string) => {
     if (layout === "breadthfirst") {
@@ -241,6 +256,16 @@ export function CytoscapeGraphCanvas({
       })),
     ];
 
+    if (cyRef.current) {
+      const cy = cyRef.current;
+      cy.batch(() => {
+        cy.elements().remove();
+        cy.add(elements);
+      });
+      applyLayout(cy, currentLayout);
+      return;
+    }
+
     const cy = cytoscape({
       container: containerRef.current,
       elements,
@@ -440,16 +465,12 @@ export function CytoscapeGraphCanvas({
     cy.on("tap", "node", (evt: EventObject) => {
       const nodeData = evt.target.data("originalData");
       if (nodeData) {
-        onSelectNode(nodeData);
+        onSelectNodeRef.current?.(nodeData);
       }
     });
 
     cyRef.current = cy;
-
-    return () => {
-      cy.destroy();
-    };
-  }, [nodes, edges, currentLayout, showEdgeLabels, applyLayout, onSelectNode]);
+  }, [nodes, edges, currentLayout, showEdgeLabels, applyLayout]);
 
   const handleZoomIn = () => cyRef.current?.zoom(cyRef.current.zoom() * 1.25);
   const handleZoomOut = () => cyRef.current?.zoom(cyRef.current.zoom() * 0.8);

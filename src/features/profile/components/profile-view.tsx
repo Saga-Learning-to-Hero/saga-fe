@@ -40,7 +40,6 @@ export function ProfileView({ user, compact = false }: ProfileViewProps) {
 
   return (
     <div className="max-w-4xl lg:max-w-5xl mx-auto space-y-4">
-      {/* Nút quay lại */}
       <div className="flex items-center">
         <Button
           variant="ghost"
@@ -53,10 +52,8 @@ export function ProfileView({ user, compact = false }: ProfileViewProps) {
         </Button>
       </div>
 
-      {/* Banner thông tin cá nhân & Tích hợp ở trên */}
       <ProfileHeader user={user} compact={false} />
 
-      {/* Form thông tin cá nhân ở dưới */}
       <ProfileInfoForm user={user} compact={false} />
     </div>
   );

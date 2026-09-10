@@ -40,7 +40,6 @@ export default function AdminAuditLogPage() {
 
   const filteredLogs = useMemo(() => {
     return logs.filter((log) => {
-      // 1. Search (Actor, email, IP, target name, description)
       if (filters.search) {
         const q = filters.search.toLowerCase();
         const matchSearch =
@@ -53,17 +52,14 @@ export default function AdminAuditLogPage() {
         if (!matchSearch) return false;
       }
 
-      // 2. Category
       if (filters.category !== "ALL" && log.category !== filters.category) {
         return false;
       }
 
-      // 3. Severity
       if (filters.severity !== "ALL" && log.severity !== filters.severity) {
         return false;
       }
 
-      // 4. Time range
       if (filters.timeRange !== "ALL") {
         const logDate = new Date(log.timestamp).getTime();
         const now = new Date("2026-08-26T12:00:00Z").getTime();
@@ -111,10 +107,8 @@ export default function AdminAuditLogPage() {
         </div>
       </div>
 
-      {/* Stats Cards */}
       <AuditStats logs={logs} />
 
-      {/* Toolbar / Filters */}
       <AuditToolbar
         filters={filters}
         onFilterChange={handleFilterChange}
@@ -123,10 +117,8 @@ export default function AdminAuditLogPage() {
         totalCount={logs.length}
       />
 
-      {/* Table */}
       <AuditTable logs={filteredLogs} onSelectLog={setSelectedLog} />
 
-      {/* Detail Dialog */}
       <AuditDetailDialog
         log={selectedLog}
         isOpen={!!selectedLog}

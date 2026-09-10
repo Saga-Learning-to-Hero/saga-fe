@@ -80,10 +80,8 @@ export function SprintBacklogView({
     setDraggedIssueId(null);
   };
 
-  // Lọc chỉ hiển thị các Sprint chưa hoàn thành (ACTIVE hoặc PLANNED) theo chuẩn Jira Backlog
   const backlogSprints = sprints.filter((s) => s.status !== "COMPLETED");
 
-  // Danh sách công việc thuộc Product Backlog (chưa gán vào bất kỳ Sprint nào đang mở)
   const productBacklogIssues = issues.filter(
     (i) => !i.sprintId || i.sprintId === "backlog" || !sprints.some((s) => s.id === i.sprintId)
   );
@@ -92,7 +90,6 @@ export function SprintBacklogView({
 
   return (
     <div className="space-y-5">
-      {/* Backlog Top Bar with + Tạo Sprint mới (Leader Only) */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-2xl bg-muted/40 border border-border/60">
         <div className="flex items-center gap-2">
           <SparklesIcon className="w-5 h-5 text-purple-600 dark:text-purple-400" />
@@ -104,7 +101,6 @@ export function SprintBacklogView({
           </span>
         </div>
 
-        {/* Create Sprint Button - Leader Only */}
         {isTeamLeader ? (
           <Button
             type="button"
@@ -122,7 +118,6 @@ export function SprintBacklogView({
         )}
       </div>
 
-      {/* Sprints List (Active & Planned Only) */}
       {backlogSprints.length === 0 ? (
         <Card className="rounded-2xl border border-dashed border-border/80 p-6 text-center bg-muted/20">
           <p className="text-sm font-bold text-foreground">Không có Sprint nào đang mở hoặc trong kế hoạch</p>
@@ -146,7 +141,6 @@ export function SprintBacklogView({
               onDrop={(e) => handleDrop(e, sprint.id)}
               className="rounded-2xl border border-border/80 shadow-xs bg-card overflow-hidden transition-all"
             >
-              {/* Sprint Header */}
               <CardHeader className="p-4 sm:p-5 bg-muted/30 border-b border-border/60">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <div className="flex items-center gap-3">
@@ -196,7 +190,6 @@ export function SprintBacklogView({
                     </div>
                   </div>
 
-                  {/* Right side stats & Lifecycle Buttons */}
                   <div className="flex flex-wrap items-center gap-2 shrink-0">
                     <div className="text-right text-xs font-mono mr-2">
                       <span className="text-muted-foreground">Tiến độ SP: </span>
@@ -204,7 +197,6 @@ export function SprintBacklogView({
                       <span className="text-muted-foreground">/{totalSP} SP</span>
                     </div>
 
-                    {/* Lifecycle Action Buttons - Leader Only */}
                     {isTeamLeader && (
                       <>
                         {sprint.status === "PLANNED" && (
@@ -244,7 +236,6 @@ export function SprintBacklogView({
                       </>
                     )}
 
-                    {/* Add Task into this Sprint */}
                     <Button
                       type="button"
                       variant="outline"
@@ -259,7 +250,6 @@ export function SprintBacklogView({
                 </div>
               </CardHeader>
 
-              {/* Sprint Issues Content */}
               {!isCollapsed && (
                 <CardContent className="p-0 max-h-[500px] overflow-y-auto divide-y divide-border/60 scrollbar-thin scrollbar-thumb-border hover:scrollbar-thumb-muted-foreground/30">
                   {sprintIssues.length === 0 ? (
@@ -276,11 +266,9 @@ export function SprintBacklogView({
                           draggable={canDrag}
                           onDragStart={(e) => handleDragStart(e, issue)}
                           onClick={() => onIssueClick(issue)}
-                          className={`p-3 sm:px-5 hover:bg-muted/40 transition-colors flex items-center justify-between gap-4 group ${
-                            canDrag ? "cursor-grab active:cursor-grabbing" : "cursor-pointer opacity-90"
-                          }`}
+                          className={`p-3 sm:px-5 hover:bg-muted/40 transition-colors flex items-center justify-between gap-4 group ${canDrag ? "cursor-grab active:cursor-grabbing" : "cursor-pointer opacity-90"
+                            }`}
                         >
-                          {/* Left: Issue Key, Type, Summary & Labels */}
                           <div className="flex items-center gap-3 min-w-0 flex-1">
                             {renderTypeIcon(issue.type)}
 
@@ -298,7 +286,6 @@ export function SprintBacklogView({
                               {issue.summary}
                             </span>
 
-                            {/* Labels Badges */}
                             {issue.labels && issue.labels.length > 0 && (
                               <div className="hidden sm:flex items-center gap-1 shrink-0">
                                 {issue.labels.map((lbl, idx) => (
@@ -323,7 +310,6 @@ export function SprintBacklogView({
                             )}
                           </div>
 
-                          {/* Right: Priority, Status, SP, Assignee */}
                           <div className="flex items-center gap-3 shrink-0 text-xs">
                             {renderPriorityIcon(issue.priority)}
 
@@ -369,13 +355,11 @@ export function SprintBacklogView({
         })
       )}
 
-      {/* ── PRODUCT BACKLOG SECTION (CHƯA XẾP VÀO SPRINT) ── */}
       <Card
         onDragOver={handleDragOver}
         onDrop={(e) => handleDrop(e, "backlog")}
         className="rounded-2xl border border-border/80 shadow-xs bg-card overflow-hidden transition-all"
       >
-        {/* Backlog Header */}
         <CardHeader className="p-4 sm:p-5 bg-muted/40 border-b border-border/60">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="flex items-center gap-3">
@@ -410,7 +394,6 @@ export function SprintBacklogView({
               </div>
             </div>
 
-            {/* Right side stats & Add Issue Button */}
             <div className="flex items-center gap-2.5 shrink-0">
               <div className="text-right text-xs font-mono mr-2">
                 <span className="text-muted-foreground">Tổng SP: </span>
@@ -432,7 +415,6 @@ export function SprintBacklogView({
           </div>
         </CardHeader>
 
-        {/* Backlog Issues Content */}
         {!isBacklogCollapsed && (
           <CardContent className="p-0 max-h-[500px] overflow-y-auto divide-y divide-border/60 scrollbar-thin scrollbar-thumb-border hover:scrollbar-thumb-muted-foreground/30">
             {productBacklogIssues.length === 0 ? (
@@ -449,11 +431,9 @@ export function SprintBacklogView({
                     draggable={canDrag}
                     onDragStart={(e) => handleDragStart(e, issue)}
                     onClick={() => onIssueClick(issue)}
-                    className={`p-3 sm:px-5 hover:bg-muted/40 transition-colors flex items-center justify-between gap-4 group ${
-                      canDrag ? "cursor-grab active:cursor-grabbing" : "cursor-pointer opacity-90"
-                    }`}
+                    className={`p-3 sm:px-5 hover:bg-muted/40 transition-colors flex items-center justify-between gap-4 group ${canDrag ? "cursor-grab active:cursor-grabbing" : "cursor-pointer opacity-90"
+                      }`}
                   >
-                    {/* Left: Issue Key, Type, Summary & Labels */}
                     <div className="flex items-center gap-3 min-w-0 flex-1">
                       {renderTypeIcon(issue.type)}
 
@@ -471,7 +451,6 @@ export function SprintBacklogView({
                         {issue.summary}
                       </span>
 
-                      {/* Labels Badges */}
                       {issue.labels && issue.labels.length > 0 && (
                         <div className="hidden sm:flex items-center gap-1 shrink-0">
                           {issue.labels.map((lbl, idx) => (
@@ -496,7 +475,6 @@ export function SprintBacklogView({
                       )}
                     </div>
 
-                    {/* Right: Priority, Status, SP, Assignee */}
                     <div className="flex items-center gap-3 shrink-0 text-xs">
                       {renderPriorityIcon(issue.priority)}
 

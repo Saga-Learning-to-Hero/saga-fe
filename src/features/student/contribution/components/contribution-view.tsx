@@ -25,7 +25,6 @@ export function ContributionView() {
 
   return (
     <div className="space-y-6 max-w-[1600px] mx-auto pb-12">
-      {/* Top Banner Header */}
       <div className="space-y-4 pb-2 border-b border-border/70">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
@@ -54,13 +53,10 @@ export function ContributionView() {
         </div>
       </div>
 
-      {/* Section 1: KPI Cards */}
       <ContributionKPICards currentMember={activeCurrentMember} />
 
-      {/* Section 2: Recharts Analytics */}
       <ContributionCharts members={MOCK_CONTRIBUTION_MEMBERS} />
 
-      {/* Section 3: Detailed Member Comparison Table */}
       <ContributionTable members={MOCK_CONTRIBUTION_MEMBERS} currentStudentCode={currentStudentCode} />
     </div>
   );

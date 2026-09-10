@@ -59,9 +59,7 @@ export function ContributionWeightSimulator({ onWeightChange }: ContributionWeig
       </CardHeader>
 
       <CardContent className="p-5 space-y-5">
-        {/* Sliders Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-          {/* 1. Code Weight */}
           <div className="p-3.5 rounded-2xl bg-muted/30 border border-border/60 space-y-2">
             <div className="flex items-center justify-between text-xs">
               <span className="font-bold text-foreground">1. Mã nguồn (GitHub Commits)</span>
@@ -81,7 +79,6 @@ export function ContributionWeightSimulator({ onWeightChange }: ContributionWeig
             </p>
           </div>
 
-          {/* 2. Jira Tasks Weight */}
           <div className="p-3.5 rounded-2xl bg-muted/30 border border-border/60 space-y-2">
             <div className="flex items-center justify-between text-xs">
               <span className="font-bold text-foreground">2. Jira Tasks (Story Points)</span>
@@ -101,7 +98,6 @@ export function ContributionWeightSimulator({ onWeightChange }: ContributionWeig
             </p>
           </div>
 
-          {/* 3. Peer Assessment Weight */}
           <div className="p-3.5 rounded-2xl bg-muted/30 border border-border/60 space-y-2">
             <div className="flex items-center justify-between text-xs">
               <span className="font-bold text-foreground">3. Đánh giá Chéo (Peer Review)</span>
@@ -121,7 +117,6 @@ export function ContributionWeightSimulator({ onWeightChange }: ContributionWeig
             </p>
           </div>
 
-          {/* 4. Traceability Weight */}
           <div className="p-3.5 rounded-2xl bg-muted/30 border border-border/60 space-y-2">
             <div className="flex items-center justify-between text-xs">
               <span className="font-bold text-foreground">4. Traceability (Task & Commit)</span>
@@ -142,7 +137,6 @@ export function ContributionWeightSimulator({ onWeightChange }: ContributionWeig
           </div>
         </div>
 
-        {/* Formula Explanation Note */}
         <div className="p-3 rounded-xl bg-purple-500/10 border border-purple-500/30 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <div className="flex items-center gap-2">
             <InfoIcon className="w-4 h-4 text-purple-600 dark:text-purple-400 shrink-0" />

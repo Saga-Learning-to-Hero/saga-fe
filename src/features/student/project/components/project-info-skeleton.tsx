@@ -5,7 +5,6 @@ import { Card } from "@/components/ui/card";
 export function ProjectInfoSkeleton() {
   return (
     <div className="space-y-6">
-      {/* Skeleton Thông tin Chi tiết Dự án */}
       <Card className="rounded-3xl border border-border/80 bg-card p-6 sm:p-8 shadow-xs animate-pulse">
         <div className="space-y-6">
           <div className="flex items-center justify-between border-b border-border/60 pb-5">
@@ -25,7 +24,6 @@ export function ProjectInfoSkeleton() {
         </div>
       </Card>
 
-      {/* Skeleton Tích hợp Jira & GitHub */}
       <Card className="rounded-3xl border border-border/80 bg-card p-6 sm:p-8 shadow-xs animate-pulse">
         <div className="space-y-6">
           <div className="flex items-center justify-between border-b border-border/60 pb-5">

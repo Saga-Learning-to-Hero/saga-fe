@@ -1,6 +1,5 @@
 "use client";
 
-/** Legacy mock card — không đưa vào luồng chọn lớp API thật. */
 import Link from "next/link";
 import {
   ArrowRightIcon,
@@ -30,7 +29,6 @@ export function CourseCard({ course }: CourseCardProps) {
         "hover:border-primary/40 hover:bg-card"
       )}
     >
-      {/* ── Top Header: Mã Học kỳ & Trạng thái ────────────────────── */}
       <div className="space-y-3.5">
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2">
@@ -78,7 +76,6 @@ export function CourseCard({ course }: CourseCardProps) {
           </Badge>
         </div>
 
-        {/* ── Course Name & ID ─────────────────────────────────────── */}
         <div>
           <h3 className="text-lg font-extrabold text-foreground group-hover:text-primary transition-colors line-clamp-2 leading-snug">
             {course.name}
@@ -88,7 +85,6 @@ export function CourseCard({ course }: CourseCardProps) {
           </p>
         </div>
 
-        {/* ── Class Metrics Strip: Sinh viên & Dự án nhóm ─────────── */}
         <div className="grid grid-cols-2 gap-3 p-3.5 rounded-2xl bg-muted/40 border border-border/50 text-center">
           <div>
             <span className="text-[10px] text-muted-foreground font-semibold block uppercase tracking-wider">
@@ -108,7 +104,6 @@ export function CourseCard({ course }: CourseCardProps) {
           </div>
         </div>
 
-        {/* ── Progress Bar ─────────────────────────────────────────── */}
         <div className="space-y-1.5">
           <div className="flex items-center justify-between text-[11px] font-semibold text-muted-foreground">
             <span>Tiến độ học kỳ</span>
@@ -126,7 +121,6 @@ export function CourseCard({ course }: CourseCardProps) {
         </div>
       </div>
 
-      {/* ── Footer Action ────────────────────────────────────────────── */}
       <div className="pt-4 mt-4 border-t border-border/60">
         <Link href={`/lecturer/courses/${course.id}/dashboard`} className="block">
           <Button

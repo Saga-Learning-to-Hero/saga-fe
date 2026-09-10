@@ -34,7 +34,6 @@ export function StudentTaskCommitCharts({
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-      {/* ── Biểu đồ 1: Cường độ Commit & Tiến độ Task qua các Tuần (2 Columns) ──── */}
       <Card className="rounded-2xl border border-border/80 shadow-xs bg-card lg:col-span-2 flex flex-col justify-between overflow-hidden">
         <CardHeader className="p-4 sm:p-5 pb-3 border-b border-border/60">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -53,7 +52,6 @@ export function StudentTaskCommitCharts({
             </div>
 
             <div className="flex flex-wrap items-center gap-3">
-              {/* Chú thích riêng cho từng cột (Chart Column Legend) */}
               <div className="flex items-center gap-3 bg-muted/40 px-3 py-1.5 rounded-xl border border-border/60 text-xs">
                 <div className="flex items-center gap-1.5">
                   <span className="w-2.5 h-2.5 rounded-xs bg-primary shadow-xs" />
@@ -72,7 +70,6 @@ export function StudentTaskCommitCharts({
                 </div>
               </div>
 
-              {/* Filter Toggle */}
               <div className="flex items-center gap-1 bg-muted/60 p-1 rounded-xl border border-border/60">
                 <button
                   onClick={() => setFilterType("ALL")}
@@ -101,9 +98,7 @@ export function StudentTaskCommitCharts({
         </CardHeader>
 
         <CardContent className="p-5 space-y-4">
-          {/* Visual Bar Chart */}
           <div className="relative h-60 w-full pt-6 flex items-end">
-            {/* Grid lines */}
             <div className="absolute inset-0 flex flex-col justify-between pointer-events-none text-[10px] font-mono text-muted-foreground/50">
               <div className="flex items-center gap-2 w-full">
                 <span className="w-6 text-right">{maxVal}</span>
@@ -123,7 +118,6 @@ export function StudentTaskCommitCharts({
               </div>
             </div>
 
-            {/* Bars */}
             <div className="ml-8 w-full h-full flex items-end justify-around gap-2 sm:gap-6 relative z-10">
               {weeklyData.map((item, idx) => {
                 const commitHeight = Math.round((item.commits / maxVal) * 190);
@@ -138,12 +132,10 @@ export function StudentTaskCommitCharts({
                     onMouseLeave={() => setHoveredBar(null)}
                     className="flex-1 flex flex-col items-center justify-end h-full group relative"
                   >
-                    {/* Hover Highlight */}
                     {isWeekActive && (
                       <div className="absolute inset-x-0 bottom-0 top-0 bg-primary/5 rounded-xl pointer-events-none -z-10 animate-in fade-in-0" />
                     )}
 
-                    {/* Tooltip riêng biệt cho cột GitHub Commits */}
                     {isCommitHovered && (
                       <div className="absolute -top-24 left-1/2 -translate-x-1/2 bg-popover/95 backdrop-blur-md text-popover-foreground border border-primary/40 shadow-xl rounded-xl p-3 text-xs whitespace-nowrap z-40 pointer-events-none space-y-1.5 animate-in fade-in-0 zoom-in-95 ring-1 ring-primary/20">
                         <div className="flex items-center justify-between gap-3 border-b border-border/60 pb-1">
@@ -163,7 +155,6 @@ export function StudentTaskCommitCharts({
                       </div>
                     )}
 
-                    {/* Tooltip riêng biệt cho cột Task Jira */}
                     {isTaskHovered && (
                       <div className="absolute -top-24 left-1/2 -translate-x-1/2 bg-popover/95 backdrop-blur-md text-popover-foreground border border-cyan-500/40 shadow-xl rounded-xl p-3 text-xs whitespace-nowrap z-40 pointer-events-none space-y-1.5 animate-in fade-in-0 zoom-in-95 ring-1 ring-cyan-500/20">
                         <div className="flex items-center justify-between gap-3 border-b border-border/60 pb-1">
@@ -183,7 +174,6 @@ export function StudentTaskCommitCharts({
                       </div>
                     )}
 
-                    {/* Dual Columns */}
                     <div className="w-full flex items-end justify-center gap-1.5 pb-0.5">
                       {(filterType === "ALL" || filterType === "COMMITS") && (
                         <div
@@ -223,7 +213,6 @@ export function StudentTaskCommitCharts({
             </div>
           </div>
 
-          {/* Footer note & Column Indicator */}
           <div className="relative flex flex-col sm:flex-row items-center justify-center pt-2 border-t border-border/60 gap-2 text-xs text-muted-foreground">
             <div className="flex items-center gap-4 text-[11px]">
               <span className="inline-flex items-center gap-1.5 text-foreground font-medium">
@@ -241,7 +230,6 @@ export function StudentTaskCommitCharts({
         </CardContent>
       </Card>
 
-      {/* ── Biểu đồ 2: Trạng thái Tasks & Phân bố Mức độ công việc ──────────── */}
       <Card className="rounded-2xl border border-border/80 shadow-xs bg-card flex flex-col justify-between overflow-hidden">
         <CardHeader className="p-4 sm:p-5 pb-3 border-b border-border/60">
           <div className="flex items-center gap-2.5">
@@ -260,26 +248,22 @@ export function StudentTaskCommitCharts({
         </CardHeader>
 
         <CardContent className="p-5 space-y-5">
-          {/* Donut Chart Visual */}
           <div className="flex items-center justify-center gap-5">
             <div className="relative w-28 h-28 flex items-center justify-center shrink-0">
               <svg className="w-full h-full -rotate-90" viewBox="0 0 36 36">
                 <circle cx="18" cy="18" r="14" fill="transparent" stroke="currentColor" strokeWidth="3.5" className="text-muted/40" />
-                {/* 1. Done (Emerald) */}
                 <circle
                   cx="18" cy="18" r="14" fill="transparent" stroke="currentColor" strokeWidth="4"
                   strokeDasharray={`${Math.round((tasks.done / totalTasks) * 88)} 100`}
                   strokeDashoffset="0"
                   className="text-emerald-500 transition-all duration-500"
                 />
-                {/* 2. In Progress (Blue) */}
                 <circle
                   cx="18" cy="18" r="14" fill="transparent" stroke="currentColor" strokeWidth="4"
                   strokeDasharray={`${Math.round((tasks.inProgress / totalTasks) * 88)} 100`}
                   strokeDashoffset={`-${Math.round((tasks.done / totalTasks) * 88)}`}
                   className="text-blue-500 transition-all duration-500"
                 />
-                {/* 3. To Do (Amber) */}
                 <circle
                   cx="18" cy="18" r="14" fill="transparent" stroke="currentColor" strokeWidth="4"
                   strokeDasharray={`${Math.round((tasks.toDo / totalTasks) * 88)} 100`}
@@ -296,7 +280,6 @@ export function StudentTaskCommitCharts({
               </div>
             </div>
 
-            {/* Legend */}
             <div className="space-y-2 text-xs">
               <div className="flex items-center gap-2">
                 <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 shrink-0" />
@@ -323,7 +306,6 @@ export function StudentTaskCommitCharts({
             </div>
           </div>
 
-          {/* Mức độ công việc theo Chuyên môn (Workload Breakdown) */}
           <div className="space-y-2.5 pt-3 border-t border-border/60">
             <div className="flex items-center justify-between text-xs">
               <span className="font-semibold text-foreground flex items-center gap-1.5">

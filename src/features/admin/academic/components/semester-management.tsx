@@ -111,7 +111,6 @@ export function SemesterManagement() {
 
   return (
     <div className="space-y-4">
-      {/* ── Toolbar ── */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
         <div className="relative flex-1 max-w-sm">
           <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
@@ -125,7 +124,6 @@ export function SemesterManagement() {
         </div>
 
         <div className="flex items-center gap-2">
-          {/* View Mode Toggle */}
           <div className="flex items-center bg-muted/60 p-0.5 rounded-lg border border-border/80">
             <button
               onClick={() => setViewMode("cards")}
@@ -192,7 +190,6 @@ export function SemesterManagement() {
               className="rounded-2xl border border-border/80 hover:border-primary/40 transition-all duration-200 shadow-xs hover:shadow-md bg-card overflow-hidden group"
             >
               <CardContent className="p-5 space-y-4">
-                {/* Header: Code + Status + Dropdown */}
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex items-center gap-2.5">
                     <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0 shadow-2xs">
@@ -241,7 +238,6 @@ export function SemesterManagement() {
                   </div>
                 </div>
 
-                {/* Duration info */}
                 <div className="p-3 rounded-xl bg-muted/40 border border-border/60 space-y-1.5">
                   <div className="flex items-center justify-between text-xs">
                     <span className="text-muted-foreground flex items-center gap-1">
@@ -254,7 +250,6 @@ export function SemesterManagement() {
                   </div>
                 </div>
 
-                {/* Footer status */}
                 <div className="flex items-center justify-between pt-1 border-t border-border/50">
                   <span className="text-[11px] text-muted-foreground">Trạng thái:</span>
                   {renderStatusBadge(sem.active)}
@@ -264,7 +259,6 @@ export function SemesterManagement() {
           ))}
         </div>
       ) : (
-        /* ── DẠNG TABLE ── */
         <Card className="rounded-2xl border border-border overflow-hidden shadow-xs">
           <div className="overflow-x-auto">
             <Table className="w-full text-left text-xs border-collapse">

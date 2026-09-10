@@ -17,7 +17,7 @@ import { Textarea } from "@/components/ui/textarea";
 
 interface SprintModalProps {
   isOpen: boolean;
-  sprint: Sprint | null; // Null means creating a new sprint
+  sprint: Sprint | null;
   onClose: () => void;
   onSave: (sprint: Sprint) => void;
 }
@@ -72,7 +72,6 @@ export function SprintModal({
   return (
     <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in-0 duration-200">
       <div className="bg-card border border-border/80 rounded-3xl w-full max-w-lg shadow-xl overflow-hidden animate-in zoom-in-95 duration-200">
-        {/* Header */}
         <div className="p-5 border-b border-border/60 flex items-center justify-between bg-muted/30">
           <div className="flex items-center gap-2.5">
             <div className="w-9 h-9 rounded-xl bg-purple-600 text-white flex items-center justify-center font-bold text-sm shrink-0">
@@ -96,9 +95,7 @@ export function SprintModal({
           </button>
         </div>
 
-        {/* Body */}
         <form onSubmit={handleSubmit} className="p-5 sm:p-6 space-y-4">
-          {/* Success Feedback */}
           {successMsg && (
             <div className="p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 text-xs font-semibold flex items-center gap-2 animate-in fade-in-0">
               <CheckCircle2Icon className="w-4 h-4 shrink-0" />
@@ -106,7 +103,6 @@ export function SprintModal({
             </div>
           )}
 
-          {/* Tên Sprint */}
           <div className="space-y-1.5">
             <Label htmlFor="sprint-name" className="text-xs font-semibold">
               Tên Sprint <span className="text-destructive">*</span>
@@ -122,7 +118,6 @@ export function SprintModal({
             />
           </div>
 
-          {/* Goal */}
           <div className="space-y-1.5">
             <Label htmlFor="sprint-goal" className="text-xs font-semibold">
               Mục tiêu Sprint (Sprint Goal)
@@ -137,7 +132,6 @@ export function SprintModal({
             />
           </div>
 
-          {/* Dates */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <Label htmlFor="sprint-start" className="text-xs font-semibold">
@@ -174,7 +168,6 @@ export function SprintModal({
             </div>
           </div>
 
-          {/* Footer Actions */}
           <div className="pt-3 border-t border-border/60 flex items-center justify-end gap-2">
             <Button
               type="button"

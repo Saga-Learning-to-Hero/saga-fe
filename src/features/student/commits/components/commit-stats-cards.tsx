@@ -23,7 +23,6 @@ export function CommitStatsCards({
 }: CommitStatsCardsProps) {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-      {/* Total Commits */}
       <Card className="p-4 rounded-2xl border border-border/70 bg-card shadow-2xs space-y-2 hover:border-primary/40 transition-all">
         <div className="flex items-center justify-between">
           <span className="text-xs font-semibold text-muted-foreground">Tổng số Commits</span>
@@ -44,7 +43,6 @@ export function CommitStatsCards({
         </p>
       </Card>
 
-      {/* Active Branches */}
       <Card className="p-4 rounded-2xl border border-border/70 bg-card shadow-2xs space-y-2 hover:border-primary/40 transition-all">
         <div className="flex items-center justify-between">
           <span className="text-xs font-semibold text-muted-foreground">Nhánh đang Active</span>
@@ -65,7 +63,6 @@ export function CommitStatsCards({
         </p>
       </Card>
 
-      {/* Webhook Sync Status */}
       <Card className="p-4 rounded-2xl border border-border/70 bg-card shadow-2xs space-y-2 hover:border-primary/40 transition-all">
         <div className="flex items-center justify-between">
           <span className="text-xs font-semibold text-muted-foreground">Trạng thái Webhook</span>

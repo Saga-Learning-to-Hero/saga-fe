@@ -2,7 +2,6 @@ export function lecturerCoursesPath() {
   return "/lecturer/courses";
 }
 
-/** Root lớp: chuyển hướng sang Tổng quan. Không dùng làm đích chọn lớp. */
 export function lecturerCoursePath(courseId: string) {
   return `/lecturer/courses/${courseId}`;
 }

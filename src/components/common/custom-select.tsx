@@ -35,7 +35,6 @@ export function CustomSelect({
 
   const selectedOption = options.find((opt) => opt.value === value);
 
-  // Đóng dropdown khi click bên ngoài
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
@@ -58,7 +57,6 @@ export function CustomSelect({
 
   return (
     <div ref={containerRef} className={cn("relative w-full", className)}>
-      {/* Trigger Button */}
       <button
         id={id}
         type="button"
@@ -86,7 +84,6 @@ export function CustomSelect({
         />
       </button>
 
-      {/* Dropdown Popup */}
       {isOpen && (
         <div
           className="absolute z-50 left-0 right-0 top-[calc(100%+4px)] max-h-60 overflow-y-auto rounded-xl bg-popover p-1 border border-border shadow-lg animate-in fade-in-0 zoom-in-95 duration-150 scrollbar-thin"

@@ -1,11 +1,13 @@
 "use client";
 
+import { useEffect } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { toast } from "@/components/ui/sonner";
 import { AuthService } from "../api/auth-service";
 import { useAuthStore } from "../store/useAuthStore";
 import { getSafeRedirectUrl } from "../lib/role-routes";
+import { ensureCsrfToken } from "@/lib/axios";
 import type { LoginRequest, RegisterRequest, PasswordSetupRequest, AuthMeResponse } from "../types/auth-dto";
 import type { User } from "@/types/auth";
 
@@ -225,5 +227,11 @@ export function useGoogleLogin() {
   return {
     loginWithGoogle,
   };
+}
+
+export function useEnsureCsrf() {
+  useEffect(() => {
+    void ensureCsrfToken(true);
+  }, []);
 }
 

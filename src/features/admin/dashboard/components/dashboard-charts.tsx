@@ -32,7 +32,6 @@ export function DashboardChartsSection() {
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-      {/* Biểu đồ 1: Cường độ hoạt động Tuần (Commits vs Jira Tasks) */}
       <Card className="rounded-2xl border border-border/80 shadow-xs bg-card lg:col-span-2 flex flex-col justify-between overflow-hidden">
         <CardHeader className="p-4 pb-3 border-b border-border/60">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -50,7 +49,6 @@ export function DashboardChartsSection() {
               </div>
             </div>
 
-            {/* Filter Buttons */}
             <div className="flex items-center gap-1 bg-muted/60 p-1 rounded-xl border border-border/60">
               <Button
                 type="button"
@@ -84,9 +82,7 @@ export function DashboardChartsSection() {
         </CardHeader>
 
         <CardContent className="p-5 space-y-4">
-          {/* Chart Canvas */}
           <div className="relative h-60 w-full pt-6 flex items-end">
-            {/* Trục Y Ticks & Đường gióng */}
             <div className="absolute inset-0 flex flex-col justify-between pointer-events-none text-[10px] font-mono text-muted-foreground/60">
               <div className="flex items-center gap-2 w-full">
                 <span className="w-6 text-right">450</span>
@@ -106,7 +102,6 @@ export function DashboardChartsSection() {
               </div>
             </div>
 
-            {/* Các cột dữ liệu */}
             <div className="ml-8 w-full h-full flex items-end justify-between gap-2 sm:gap-4 relative z-10">
               {WEEKLY_DATA.map((item, idx) => {
                 const commitHeight = Math.round((item.commits / maxVal) * 190);
@@ -120,12 +115,10 @@ export function DashboardChartsSection() {
                     onMouseLeave={() => setHoveredWeek(null)}
                     className="flex-1 flex flex-col items-center justify-end h-full group relative cursor-pointer"
                   >
-                    {/* Hover Guideline */}
                     {isHovered && (
                       <div className="absolute inset-x-0 bottom-0 top-0 bg-primary/5 rounded-xl pointer-events-none -z-10 animate-in fade-in-0" />
                     )}
 
-                    {/* Tooltip nổi cao cấp */}
                     {isHovered && (
                       <div className="absolute -top-16 left-1/2 -translate-x-1/2 bg-popover/95 backdrop-blur-md text-popover-foreground border border-border shadow-xl rounded-xl p-2.5 text-[11px] whitespace-nowrap z-40 pointer-events-none animate-in fade-in-0 zoom-in-95 space-y-1">
                         <p className="font-bold text-foreground text-xs">{item.week}</p>
@@ -145,7 +138,6 @@ export function DashboardChartsSection() {
                       </div>
                     )}
 
-                    {/* Dual Columns */}
                     <div className="w-full flex items-end justify-center gap-1 sm:gap-1.5 pb-0.5">
                       {(filterType === "ALL" || filterType === "COMMITS") && (
                         <div
@@ -167,7 +159,6 @@ export function DashboardChartsSection() {
                       )}
                     </div>
 
-                    {/* Label dưới cột */}
                     <span
                       className={`text-[10px] font-mono mt-2 transition-colors truncate w-full text-center ${isHovered ? "text-primary font-bold" : "text-muted-foreground"
                         }`}
@@ -180,7 +171,6 @@ export function DashboardChartsSection() {
             </div>
           </div>
 
-          {/* Footer note */}
           <div className="flex items-center justify-between text-xs text-muted-foreground pt-1 border-t border-border/50">
             <div className="flex items-center gap-1.5 text-success font-medium">
               <TrendingUpIcon className="w-4 h-4" />
@@ -193,7 +183,6 @@ export function DashboardChartsSection() {
         </CardContent>
       </Card>
 
-      {/* Biểu đồ 2: Sức khỏe Đồ án & Tiến độ các Sprint */}
       <Card className="rounded-2xl border border-border/80 shadow-xs bg-card flex flex-col justify-between overflow-hidden">
         <CardHeader className="p-4 pb-3 border-b border-border/60">
           <div className="flex items-center gap-2.5">
@@ -212,11 +201,9 @@ export function DashboardChartsSection() {
         </CardHeader>
 
         <CardContent className="p-5 space-y-5">
-          {/* Donut Chart SVG Visual */}
           <div className="flex items-center justify-center gap-6">
             <div className="relative w-28 h-28 flex items-center justify-center">
               <svg className="w-full h-full -rotate-90" viewBox="0 0 36 36">
-                {/* Background Ring */}
                 <circle
                   cx="18"
                   cy="18"
@@ -226,7 +213,6 @@ export function DashboardChartsSection() {
                   strokeWidth="3.5"
                   className="text-muted/40"
                 />
-                {/* 1. Xanh lá: 75% = 24 nhóm */}
                 <circle
                   cx="18"
                   cy="18"
@@ -238,7 +224,6 @@ export function DashboardChartsSection() {
                   strokeDashoffset="0"
                   className="text-success transition-all duration-500"
                 />
-                {/* 2. Vàng: 15.6% = 5 nhóm */}
                 <circle
                   cx="18"
                   cy="18"
@@ -250,7 +235,6 @@ export function DashboardChartsSection() {
                   strokeDashoffset="-66"
                   className="text-warning transition-all duration-500"
                 />
-                {/* 3. Đỏ: 9.4% = 3 nhóm */}
                 <circle
                   cx="18"
                   cy="18"
@@ -264,7 +248,6 @@ export function DashboardChartsSection() {
                 />
               </svg>
 
-              {/* Center Text */}
               <div className="absolute flex flex-col items-center justify-center text-center">
                 <span className="text-xl font-extrabold text-foreground font-mono leading-none">
                   32
@@ -273,7 +256,6 @@ export function DashboardChartsSection() {
               </div>
             </div>
 
-            {/* Legend List */}
             <div className="space-y-2 text-xs">
               <div className="flex items-center gap-2">
                 <span className="w-2.5 h-2.5 rounded-full bg-success shrink-0" />
@@ -293,12 +275,10 @@ export function DashboardChartsSection() {
             </div>
           </div>
 
-          {/* Sprints Progress List */}
           <div className="space-y-2.5 pt-3 border-t border-border/60">
             <p className="text-xs font-semibold text-foreground">Tiến độ nghiệm thu các Sprint:</p>
 
             <div className="space-y-2.5 text-xs">
-              {/* Sprint 1 */}
               <div className="space-y-1">
                 <div className="flex items-center justify-between text-[11px]">
                   <span className="font-medium text-foreground">Sprint 1 (Khởi tạo & Đặc tả)</span>
@@ -309,7 +289,6 @@ export function DashboardChartsSection() {
                 </div>
               </div>
 
-              {/* Sprint 2 */}
               <div className="space-y-1">
                 <div className="flex items-center justify-between text-[11px]">
                   <span className="font-medium text-foreground">Sprint 2 (MVP & Kiến trúc)</span>
@@ -320,7 +299,6 @@ export function DashboardChartsSection() {
                 </div>
               </div>
 
-              {/* Sprint 3 */}
               <div className="space-y-1">
                 <div className="flex items-center justify-between text-[11px]">
                   <span className="font-medium text-foreground">Sprint 3 (Tích hợp & Core Logic)</span>
@@ -331,7 +309,6 @@ export function DashboardChartsSection() {
                 </div>
               </div>
 
-              {/* Sprint 4 */}
               <div className="space-y-1">
                 <div className="flex items-center justify-between text-[11px]">
                   <span className="font-medium text-foreground">Sprint 4 (Testing & Tối ưu)</span>

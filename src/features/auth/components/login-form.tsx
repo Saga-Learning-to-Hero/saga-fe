@@ -16,14 +16,13 @@ import { Separator } from "@/components/ui/separator";
 import { toast } from "@/components/ui/sonner";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
 import { getSafeRedirectUrl } from "@/features/auth/lib/role-routes";
-import { useLogin, useSession, useGoogleLogin } from "@/features/auth/hooks/useAuth";
+import { useLogin, useSession, useGoogleLogin, useEnsureCsrf } from "@/features/auth/hooks/useAuth";
 import { validateLogin, getGoogleErrorMessage } from "@/features/auth/lib/auth-validation";
 import { GoogleIcon } from "./google-icon";
-import { ensureCsrfToken } from "@/lib/axios";
 import { cn } from "@/lib/utils";
 import type { Role } from "@/types/auth";
 
-const emptySubscribe = () => () => {};
+const emptySubscribe = () => () => { };
 
 export function LoginForm() {
   const router = useRouter();
@@ -38,9 +37,7 @@ export function LoginForm() {
     () => false
   );
 
-  useEffect(() => {
-    ensureCsrfToken(true);
-  }, []);
+  useEnsureCsrf();
 
   const googleError = searchParams.get("error");
 

@@ -88,7 +88,6 @@ export function TopNavTabs({ items }: TopNavTabsProps) {
               </span>
             )}
 
-            {/* Thanh Underline Active Indicator theo phong cách Linear/GitHub */}
             {isActive && (
               <span className="absolute inset-x-1 -bottom-[1px] h-[2.5px] rounded-t-full bg-primary shadow-xs" />
             )}

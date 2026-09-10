@@ -25,11 +25,9 @@ export function SemesterTabs({
   activeSemesterCode,
   onSelectSemester,
 }: SemesterTabsProps) {
-  // Tách 5 học kỳ đầu tiên (5 kỳ mới nhất) và các học kỳ còn lại (kỳ cũ hơn)
   const topSemesters = useMemo(() => semesters.slice(0, 5), [semesters]);
   const olderSemesters = useMemo(() => semesters.slice(5), [semesters]);
 
-  // Kiểm tra xem kỳ hiện tại đang chọn có thuộc nhóm kỳ cũ hơn (trong Dropdown) không
   const activeOlderSemester = useMemo(
     () => olderSemesters.find((s) => s.code === activeSemesterCode),
     [olderSemesters, activeSemesterCode]
@@ -40,7 +38,6 @@ export function SemesterTabs({
   return (
     <div className="w-full bg-card/60 backdrop-blur-md p-1.5 rounded-2xl border border-border/80 shadow-xs">
       <nav className="flex items-center gap-1.5 overflow-x-auto no-scrollbar scroll-smooth">
-        {/* Render 5 kỳ mới nhất thành Categories Menu Tabs */}
         {topSemesters.map((sem) => {
           const isActive = sem.code === activeSemesterCode;
           return (
@@ -77,7 +74,6 @@ export function SemesterTabs({
           );
         })}
 
-        {/* Dropdown Menu cho các kỳ cũ hơn (index >= 5) */}
         {olderSemesters.length > 0 && (
           <DropdownMenu>
             <DropdownMenuTrigger

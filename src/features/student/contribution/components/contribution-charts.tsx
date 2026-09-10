@@ -29,26 +29,23 @@ interface ContributionChartsProps {
 const COLORS = ["#4F46E5", "#06B6D4", "#2563EB", "#F59E0B", "#F43F5E"];
 
 export function ContributionCharts({ members }: ContributionChartsProps) {
-  // Data for Donut Chart
   const pieData = members.map((m) => ({
     name: m.name,
     value: m.contributionPercentage,
     studentCode: m.studentCode,
   }));
 
-  // Data for Bar Chart (Normalized metrics)
   const barData = members.map((m) => ({
-    name: m.name.split(" ").slice(-1)[0], // Tên ngắn
+    name: m.name.split(" ").slice(-1)[0],
     fullName: m.name,
     Commits: m.metrics.codeCommits,
     StoryPoints: m.metrics.storyPoints,
-    PeerScore: Math.round(m.metrics.peerScore * 4), // Scale up for chart visibility
+    PeerScore: Math.round(m.metrics.peerScore * 4),
     Traceability: Math.round(m.metrics.traceabilityRate / 5),
   }));
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-      {/* ── Chart 1: Donut Chart - Tỷ lệ Phân chia Pie Đóng góp Nhóm (1 Col) ──── */}
       <Card className="rounded-2xl border border-border/80 shadow-2xs bg-card flex flex-col justify-between overflow-hidden">
         <CardHeader className="p-4 sm:p-5 pb-3 border-b border-border/60">
           <div className="flex items-center gap-2.5">
@@ -99,14 +96,12 @@ export function ContributionCharts({ members }: ContributionChartsProps) {
               </PieChart>
             </ResponsiveContainer>
 
-            {/* Center Label */}
             <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none text-center">
               <span className="text-xs text-muted-foreground font-semibold">100% Total</span>
               <span className="text-sm font-extrabold text-foreground font-mono">5 Thành viên</span>
             </div>
           </div>
 
-          {/* Custom Legend */}
           <div className="space-y-1.5 text-xs pt-2 border-t border-border/60">
             {members.map((m, idx) => (
               <div key={m.id} className="flex items-center justify-between text-xs">
@@ -126,7 +121,6 @@ export function ContributionCharts({ members }: ContributionChartsProps) {
         </CardContent>
       </Card>
 
-      {/* ── Chart 2: Grouped Bar Chart - So sánh 4 Trụ cột Đóng góp (2 Cols) ── */}
       <Card className="rounded-2xl border border-border/80 shadow-2xs bg-card lg:col-span-2 flex flex-col justify-between overflow-hidden">
         <CardHeader className="p-4 sm:p-5 pb-3 border-b border-border/60">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">

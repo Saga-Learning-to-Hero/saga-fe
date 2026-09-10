@@ -35,7 +35,6 @@ export function SagaLogo({
 
   return (
     <div className={cn("inline-flex items-center gap-2.5 select-none", className)}>
-      {/* ── Vector Icon: S-Graph Nexus ── */}
       <div
         className={cn(
           "relative flex items-center justify-center shrink-0 rounded-xl transition-transform",
@@ -67,7 +66,6 @@ export function SagaLogo({
             </linearGradient>
           </defs>
 
-          {/* Đường liên kết phụ mờ */}
           <path
             d="M12 12L28 28"
             stroke={isOnDark ? "#818CF8" : "#FFFFFF"}
@@ -76,7 +74,6 @@ export function SagaLogo({
             strokeDasharray="2.5 2.5"
           />
 
-          {/* Đường chữ S chính */}
           <path
             d="M28 11C28 8 25 6 20 6C14 6 11 9 11 14C11 21 29 19 29 26C29 31 26 34 20 34C14 34 11 31 11 28"
             stroke="url(#sLogoGrad)"
@@ -85,20 +82,16 @@ export function SagaLogo({
             strokeLinejoin="round"
           />
 
-          {/* Node 1: Đỉnh trên */}
           <circle cx="28" cy="11" r="3.8" fill={isOnDark ? "#06B6D4" : "#22D3EE"} />
           <circle cx="28" cy="11" r="1.5" fill="#FFFFFF" />
 
-          {/* Node 2: Trung tâm */}
           <circle cx="20" cy="20" r="3" fill={isOnDark ? "#4F46E5" : "#FFFFFF"} />
 
-          {/* Node 3: Đích dưới */}
           <circle cx="11" cy="28" r="3.8" fill={isOnDark ? "#4F46E5" : "#818CF8"} />
           <circle cx="11" cy="28" r="1.5" fill="#FFFFFF" />
         </svg>
       </div>
 
-      {/* ── Brand Typography: SAGA (Gradient Tím - Cyan rực rỡ, không bao giờ bị mờ) ── */}
       {showText && (
         <div className="flex flex-col min-w-0 leading-none">
           <div className="flex items-center gap-1.5">

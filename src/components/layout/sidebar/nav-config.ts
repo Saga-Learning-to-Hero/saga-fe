@@ -8,8 +8,6 @@ import {
   lecturerCourseTeamsPath,
 } from "@/features/lecturer/courses/lib/course-routes";
 
-// ── Types ──────────────────────────────────────────────────────────────
-
 export type NavMatchMode = "exact" | "prefix";
 
 export interface NavItem {
@@ -28,13 +26,6 @@ export interface NavGroup {
   items: NavItem[];
 }
 
-// ── Helpers ────────────────────────────────────────────────────────────
-
-/**
- * Kiểm tra NavItem có đang active không dựa trên pathname.
- * - "exact": chỉ active khi pathname === href
- * - "prefix": active khi pathname bắt đầu bằng href (có `/` phân cách)
- */
 export function isNavItemActive(pathname: string, item: NavItem): boolean {
   if (item.match === "prefix") {
     return pathname === item.href || pathname.startsWith(`${item.href}/`);
@@ -70,8 +61,6 @@ export const ADMIN_NAV: NavGroup[] = [
     ],
   },
 ];
-
-// ── Lecturer Nav Items (Dành cho Top Header Navigation) ────────────────
 
 export function getLecturerNavItems(courseId: string): NavItem[] {
   return [
@@ -112,8 +101,6 @@ export function getLecturerNavItems(courseId: string): NavItem[] {
     },
   ];
 }
-
-// ── Student Nav Items (Dành cho Top Header Navigation) ─────────────────
 
 export function getStudentNavItems(): NavItem[] {
   return [
@@ -169,8 +156,6 @@ export function getStudentNavItems(): NavItem[] {
   ];
 }
 
-// ── Legacy / Generic getNavGroups (Tương thích Sidebar) ────────────────
-
 export function getNavGroups(
   role: Role,
   courseId: string | null,
@@ -213,7 +198,6 @@ export function getNavGroups(
     ];
   }
 
-  // Student
   if (pathname === "/student/courses") {
     return [
       {
@@ -249,8 +233,6 @@ export function getNavGroups(
   ];
 }
 
-// ── Shared utilities ───────────────────────────────────────────────────
-
 export const ROLE_LABELS: Record<Role, string> = {
   ADMIN: "Quản trị viên",
   LECTURER: "Giảng viên",
@@ -266,7 +248,6 @@ export const ROLE_COLORS: Record<Role, string> = {
 export function getInitials(name?: string | null): string {
   if (!name || typeof name !== "string") return "U";
 
-  // Loại bỏ các phần chú thích trong ngoặc đơn hoặc ngoặc vuông (vd: "(K17 HCM)", "[Admin]")
   const cleanName = name
     .replace(/\([^)]*\)/g, "")
     .replace(/\[[^\]]*\]/g, "")
@@ -285,7 +266,6 @@ export function getInitials(name?: string | null): string {
     return words[0].slice(0, Math.min(2, words[0].length)).toUpperCase();
   }
 
-  // Chữ cái đầu của chữ đầu và chữ cái đầu của chữ cuối của tên
   const firstChar = words[0][0];
   const lastChar = words[words.length - 1][0];
 
