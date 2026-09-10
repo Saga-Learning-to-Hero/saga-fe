@@ -23,7 +23,6 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
         collapsed ? "w-[68px]" : "w-64"
       )}
     >
-      {/* ── Header: Logo SAGA & Nút thu gọn thanh thoát ── */}
       <div
         className={cn(
           "flex items-center h-15 px-3.5 shrink-0 border-b border-sidebar-border",
@@ -65,10 +64,8 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
         )}
       </div>
 
-      {/* ── Thân Sidebar: Danh sách Menu Navigation (flex-1) ── */}
       <SidebarNav collapsed={collapsed} />
 
-      {/* ── Đáy Sidebar: User Profile làm chân đế vững chắc ── */}
       <SidebarUserProfile collapsed={collapsed} />
     </aside>
   );

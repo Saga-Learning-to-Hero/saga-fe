@@ -65,7 +65,6 @@ export function UserStatusDialog({
           </div>
         </DialogHeader>
 
-        {/* User Info Box */}
         <div className="bg-muted/50 border border-border rounded-xl p-3.5 space-y-1.5 text-xs">
           <div className="flex justify-between">
             <span className="text-muted-foreground">Họ và tên:</span>
@@ -89,7 +88,6 @@ export function UserStatusDialog({
           </div>
         </div>
 
-        {/* Reason Input (Khi Khóa tài khoản) */}
         {isBanning && (
           <div className="space-y-1.5">
             <label className="text-xs font-medium text-foreground flex items-center gap-1">
@@ -105,7 +103,6 @@ export function UserStatusDialog({
           </div>
         )}
 
-        {/* Footer Actions */}
         <DialogFooter className="gap-2 sm:gap-0 pt-2">
           <Button variant="outline" size="sm" onClick={onClose} className="text-xs">
             Hủy bỏ

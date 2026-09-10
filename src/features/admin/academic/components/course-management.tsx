@@ -137,7 +137,6 @@ export function CourseManagement() {
 
   return (
     <div className="space-y-4">
-      {/* ── Toolbar ── */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
         <div className="relative flex-1 max-w-sm">
           <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
@@ -151,7 +150,6 @@ export function CourseManagement() {
         </div>
 
         <div className="flex items-center gap-2">
-          {/* View Mode Toggle */}
           <div className="flex items-center bg-muted/60 p-0.5 rounded-lg border border-border/80">
             <button
               onClick={() => setViewMode("cards")}
@@ -230,7 +228,6 @@ export function CourseManagement() {
             >
               <CardContent className="p-5 space-y-3.5 flex-1 flex flex-col justify-between">
                 <div>
-                  {/* Header: Course Code + Dropdown */}
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex items-center gap-2.5">
                       <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0 shadow-2xs">
@@ -268,7 +265,6 @@ export function CourseManagement() {
                     </DropdownMenu>
                   </div>
 
-                  {/* Metadata Chips */}
                   <div className="space-y-2 pt-3">
                     <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                       <BookOpenIcon className="w-3.5 h-3.5 text-primary shrink-0" />
@@ -300,7 +296,6 @@ export function CourseManagement() {
                   </div>
                 </div>
 
-                {/* Footer Action: Vào quản trị lớp */}
                 <div className="pt-3 border-t border-border/50">
                   <Link
                     href={`/admin/academic/courses/${crs.id}`}
@@ -317,7 +312,6 @@ export function CourseManagement() {
           ))}
         </div>
       ) : (
-        /* ── DẠNG TABLE ── */
         <Card className="rounded-2xl border border-border overflow-hidden shadow-xs">
           <div className="overflow-x-auto">
             <Table className="w-full text-left text-xs border-collapse">

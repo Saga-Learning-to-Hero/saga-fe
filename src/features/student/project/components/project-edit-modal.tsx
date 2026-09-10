@@ -32,7 +32,6 @@ export function ProjectEditModal({
   onClose,
   onSave,
 }: ProjectEditModalProps) {
-  // Lấy danh sách loại dự án thực tế từ API: GET /api/student/project-types
   const { data: projectTypes, isLoading: isLoadingTypes } = useProjectTypes();
   const createProjectMutation = useCreateStudentProject();
 
@@ -57,7 +56,6 @@ export function ProjectEditModal({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Nếu có courseId, gọi API Backend: POST /api/student/courses/{courseId}/project
     if (courseId) {
       try {
         const createdProject = await createProjectMutation.mutateAsync({
@@ -93,7 +91,6 @@ export function ProjectEditModal({
       }
     }
 
-    // Fallback cập nhật local nếu không có courseId
     const selectedType = projectTypes?.find((pt) => pt.id === effectiveProjectTypeId);
     onSave({
       name: form.name,
@@ -115,7 +112,6 @@ export function ProjectEditModal({
   return (
     <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in-0 duration-200">
       <div className="bg-card border border-border/80 rounded-3xl w-full max-w-2xl shadow-xl max-h-[92vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
-        {/* Header */}
         <div className="p-5 border-b border-border/60 flex items-center justify-between bg-muted/30 shrink-0">
           <div className="flex items-center gap-2.5">
             <div className="w-9 h-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
@@ -142,9 +138,7 @@ export function ProjectEditModal({
           </button>
         </div>
 
-        {/* Content Form */}
         <form onSubmit={handleSubmit} className="p-5 sm:p-6 space-y-4 overflow-y-auto flex-1 scrollbar-thin">
-          {/* Tên dự án */}
           <div className="space-y-1.5">
             <Label htmlFor="proj-name" className="text-xs font-semibold">
               Tên dự án <span className="text-destructive">*</span>
@@ -160,7 +154,6 @@ export function ProjectEditModal({
             />
           </div>
 
-          {/* Loại dự án */}
           <div className="space-y-1.5">
             <Label htmlFor="proj-category" className="text-xs font-semibold">
               Loại dự án (Danh mục từ hệ thống) <span className="text-destructive">*</span>
@@ -178,7 +171,6 @@ export function ProjectEditModal({
             />
           </div>
 
-          {/* Mô tả dự án */}
           <div className="space-y-1.5">
             <Label htmlFor="proj-desc" className="text-xs font-semibold flex items-center gap-1.5">
               <FileTextIcon className="w-3.5 h-3.5 text-primary" />
@@ -195,7 +187,6 @@ export function ProjectEditModal({
             />
           </div>
 
-          {/* Footer Actions */}
           <div className="pt-3 border-t border-border/60 flex items-center justify-end gap-2">
             <Button
               type="button"

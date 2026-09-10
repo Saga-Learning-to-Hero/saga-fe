@@ -72,7 +72,6 @@ export function TopHeader() {
 
   return (
     <header className="flex h-15 shrink-0 items-center justify-between border-b border-border bg-card/95 backdrop-blur-md px-5 sm:px-6 shadow-saga-xs z-20">
-      {/* ── Left: Logo + App Context Badge ── */}
       <div className="flex items-center gap-3">
         <Link href="/" className="flex items-center hover:opacity-90 transition-opacity">
           <SagaLogo size="sm" showText={true} showSubtitle={false} />
@@ -86,9 +85,7 @@ export function TopHeader() {
         </span>
       </div>
 
-      {/* ── Right: Theme Toggle + Notification Bell + User Dropdown Profile ── */}
       <div className="flex items-center gap-2">
-        {/* Nút chuyển theme Sáng / Tối */}
         <Tooltip>
           <TooltipTrigger
             onClick={toggleTheme}
@@ -106,7 +103,6 @@ export function TopHeader() {
           </TooltipContent>
         </Tooltip>
 
-        {/* Nút chuông thông báo */}
         <Tooltip>
           <TooltipTrigger
             className="relative flex items-center justify-center size-9 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-colors cursor-pointer border border-transparent hover:border-border"
@@ -122,7 +118,6 @@ export function TopHeader() {
 
         <div className="h-6 w-px bg-border mx-1" />
 
-        {/* User Profile Dropdown Menu với Nút Đăng Xuất */}
         <DropdownMenu>
           <DropdownMenuTrigger className="flex items-center gap-2.5 rounded-xl p-1.5 hover:bg-muted/80 transition-all border border-transparent hover:border-border cursor-pointer outline-none group">
             <Avatar className="size-8.5 rounded-lg border border-border shadow-xs">
@@ -145,7 +140,6 @@ export function TopHeader() {
           </DropdownMenuTrigger>
 
           <DropdownMenuContent align="end" sideOffset={10} className="w-68 rounded-2xl p-1.5 shadow-xl border-border">
-            {/* Header thông tin người dùng */}
             <div className="flex items-center gap-3 p-3 border-b border-border/80 bg-muted/30 rounded-xl mb-1">
               <Avatar className="size-10 rounded-xl border border-border">
                 <AvatarImage src={user.avatar} alt={displayName} />
@@ -162,7 +156,6 @@ export function TopHeader() {
               </div>
             </div>
 
-            {/* Profile & Cài đặt */}
             <div className="p-1 space-y-0.5">
               <DropdownMenuItem
                 onClick={openProfileModal}
@@ -174,7 +167,6 @@ export function TopHeader() {
 
               <DropdownMenuSeparator />
 
-              {/* Nút Đăng xuất */}
               <DropdownMenuItem
                 onClick={handleLogout}
                 className="text-xs cursor-pointer py-2 px-2.5 rounded-lg flex items-center gap-2 text-destructive focus:text-destructive hover:bg-destructive/10 font-semibold transition-colors"

@@ -16,11 +16,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "@/components/ui/sonner";
-import { useSetupPassword, useSession, useGoogleLogin } from "@/features/auth/hooks/useAuth";
+import { useSetupPassword, useSession, useGoogleLogin, useEnsureCsrf } from "@/features/auth/hooks/useAuth";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
 import { validatePasswordSetup } from "@/features/auth/lib/auth-validation";
 import { getRoleHomePath } from "@/features/auth/lib/role-routes";
-import { ensureCsrfToken } from "@/lib/axios";
 import { GoogleIcon } from "./google-icon";
 import { cn } from "@/lib/utils";
 
@@ -31,8 +30,9 @@ export function SetupPasswordForm() {
   const { mutate: setupPassword, isPending: isLoading } = useSetupPassword();
   const { loginWithGoogle } = useGoogleLogin();
 
+  useEnsureCsrf();
+
   useEffect(() => {
-    ensureCsrfToken(true);
     refetch();
   }, [refetch]);
 

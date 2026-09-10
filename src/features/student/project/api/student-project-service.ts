@@ -3,7 +3,6 @@ import type {
   StudentTeamProjectResponse,
   ProjectTypeItem,
   CreateStudentProjectRequest,
-  StudentCourseTeamResponse,
   ProjectIntegrationsResponse,
   ProjectGitHubConnectResponse,
   ProjectAvailableGitHubRepositoryItem,
@@ -17,7 +16,6 @@ import type {
 } from "../types/student-project";
 
 export class StudentProjectService {
-  /** Lấy thông tin dự án nhóm của sinh viên: GET /api/student/courses/{courseId}/project */
   static async getStudentTeamProject(courseId: string): Promise<StudentTeamProjectResponse> {
     if (!courseId || courseId.trim() === "") {
       throw new Error("Throw ValidationException: Course ID is required");
@@ -29,25 +27,11 @@ export class StudentProjectService {
     return res.data;
   }
 
-  /** Lấy thông tin nhóm và thành viên: GET /api/student/courses/{courseId}/team */
-  static async getStudentTeam(courseId: string): Promise<StudentCourseTeamResponse> {
-    if (!courseId || courseId.trim() === "") {
-      throw new Error("Throw ValidationException: Course ID is required");
-    }
-    const cleanCourseId = courseId.trim();
-    const res = await apiClient.get<StudentCourseTeamResponse>(
-      `/api/student/courses/${encodeURIComponent(cleanCourseId)}/team`
-    );
-    return res.data;
-  }
-
-  /** Lấy danh mục Loại dự án: GET /api/student/project-types */
   static async getProjectTypes(): Promise<ProjectTypeItem[]> {
     const res = await apiClient.get<ProjectTypeItem[]>("/api/student/project-types");
     return res.data;
   }
 
-  /** Tạo dự án nhóm mới (Trưởng nhóm): POST /api/student/courses/{courseId}/project */
   static async createStudentProject(
     courseId: string,
     payload: CreateStudentProjectRequest
@@ -69,7 +53,6 @@ export class StudentProjectService {
     return res.data;
   }
 
-  /** Lấy thông tin tích hợp Jira/GitHub: GET /api/projects/{projectId}/integrations */
   static async getProjectIntegrations(projectId: string): Promise<ProjectIntegrationsResponse> {
     if (!projectId || projectId.trim() === "") {
       throw new Error("Throw ValidationException: Project ID is required");
@@ -81,21 +64,18 @@ export class StudentProjectService {
     return res.data;
   }
 
-  /** Ngắt kết nối Jira: DELETE /api/projects/{projectId}/integrations/jira */
   static async disconnectProjectJira(projectId: string): Promise<void> {
     if (!projectId || projectId.trim() === "") throw new Error("Throw ValidationException: Project ID is required");
     const cleanProjectId = projectId.trim();
     await apiClient.delete(`/api/projects/${encodeURIComponent(cleanProjectId)}/integrations/jira`);
   }
 
-  /** Ngắt kết nối GitHub: DELETE /api/projects/{projectId}/integrations/github */
   static async disconnectProjectGitHub(projectId: string): Promise<void> {
     if (!projectId || projectId.trim() === "") throw new Error("Throw ValidationException: Project ID is required");
     const cleanProjectId = projectId.trim();
     await apiClient.delete(`/api/projects/${encodeURIComponent(cleanProjectId)}/integrations/github`);
   }
 
-  /** Khởi tạo liên kết GitHub: POST /api/projects/{projectId}/integrations/github/connect */
   static async connectProjectGitHub(
     projectId: string,
     returnPath?: string
@@ -111,7 +91,6 @@ export class StudentProjectService {
     return res.data;
   }
 
-  /** Lấy danh sách repository khả dụng: GET /api/projects/{projectId}/integrations/github/repositories */
   static async getProjectAvailableGitHubRepositories(
     projectId: string
   ): Promise<ProjectAvailableGitHubRepositoryItem[]> {
@@ -123,7 +102,6 @@ export class StudentProjectService {
     return res.data;
   }
 
-  /** Xử lý callback sau khi cài đặt GitHub App: GET /api/projects/{projectId}/integrations/github/setup/callback */
   static async handleProjectGitHubSetupCallback(
     projectId: string,
     params: ProjectGitHubSetupCallbackParams
@@ -147,7 +125,6 @@ export class StudentProjectService {
     return res.data;
   }
 
-  /** Chọn danh sách repositories cho dự án (Leader): PUT /api/projects/{projectId}/integrations/github/repositories */
   static async updateProjectGitHubRepositories(
     projectId: string,
     repositories: SelectProjectGitHubRepoPayloadItem[]
@@ -161,7 +138,6 @@ export class StudentProjectService {
     return res.data;
   }
 
-  /** Khởi tạo liên kết Jira cho dự án: POST /api/projects/{projectId}/integrations/jira/connect */
   static async connectProjectJira(
     projectId: string,
     returnPath?: string
@@ -177,7 +153,6 @@ export class StudentProjectService {
     return res.data;
   }
 
-  /** Lấy danh sách Jira Sites của dự án: GET /api/projects/{projectId}/integrations/jira/sites */
   static async getProjectJiraSites(projectId: string): Promise<ProjectJiraSiteItem[]> {
     if (!projectId || projectId.trim() === "") throw new Error("Throw ValidationException: Project ID is required");
     const cleanProjectId = projectId.trim();
@@ -187,7 +162,6 @@ export class StudentProjectService {
     return res.data;
   }
 
-  /** Lấy danh sách Jira Projects theo site: GET /api/projects/{projectId}/integrations/jira/projects */
   static async getProjectJiraProjects(
     projectId: string,
     cloudId: string
@@ -202,7 +176,6 @@ export class StudentProjectService {
     return res.data;
   }
 
-  /** Lấy danh sách Jira Boards theo project: GET /api/projects/{projectId}/integrations/jira/boards */
   static async getProjectJiraBoards(
     projectId: string,
     cloudId: string,
@@ -219,7 +192,6 @@ export class StudentProjectService {
     return res.data;
   }
 
-  /** Lưu cấu hình Jira của dự án (Leader): PUT /api/projects/{projectId}/integrations/jira */
   static async updateProjectJira(
     projectId: string,
     payload: UpdateProjectJiraPayload

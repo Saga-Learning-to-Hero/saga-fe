@@ -108,12 +108,10 @@ export function AuditTable({ logs, onSelectLog }: AuditTableProps) {
             ) : (
               logs.map((log) => (
                 <TableRow key={log.id} className="hover:bg-muted/30 transition-colors">
-                  {/* Timestamp */}
                   <TableCell className="py-3 px-4 whitespace-nowrap font-mono text-[11px] text-muted-foreground">
                     {formatRelativeTime(log.timestamp)}
                   </TableCell>
 
-                  {/* Actor */}
                   <TableCell className="py-3 px-4">
                     <div className="flex items-center gap-2.5">
                       <Avatar className="w-7 h-7 rounded-lg border border-border shrink-0">
@@ -133,12 +131,10 @@ export function AuditTable({ logs, onSelectLog }: AuditTableProps) {
                     </div>
                   </TableCell>
 
-                  {/* Action Badge */}
                   <TableCell className="py-3 px-4 whitespace-nowrap">
                     {getActionBadge(log.action)}
                   </TableCell>
 
-                  {/* Target Resource */}
                   <TableCell className="py-3 px-4">
                     <div className="flex flex-col min-w-0">
                       <span className="font-medium text-foreground text-xs truncate">
@@ -150,12 +146,10 @@ export function AuditTable({ logs, onSelectLog }: AuditTableProps) {
                     </div>
                   </TableCell>
 
-                  {/* Severity */}
                   <TableCell className="py-3 px-4 whitespace-nowrap">
                     {getSeverityBadge(log.severity)}
                   </TableCell>
 
-                  {/* Status Success / Failed */}
                   <TableCell className="py-3 px-4 whitespace-nowrap">
                     {log.status === "SUCCESS" ? (
                       <span className="inline-flex items-center gap-1 text-[11px] text-success font-medium">
@@ -170,7 +164,6 @@ export function AuditTable({ logs, onSelectLog }: AuditTableProps) {
                     )}
                   </TableCell>
 
-                  {/* View Details Button */}
                   <TableCell className="py-3 px-4 text-right whitespace-nowrap">
                     <Button
                       variant="ghost"

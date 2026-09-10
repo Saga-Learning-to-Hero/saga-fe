@@ -1,19 +1,11 @@
 import type { RoleInTeam } from "@/types/auth";
 
-/**
- * Interface phản hồi từ Backend API cho Dự án Sinh viên
- * GET /api/student/courses/{courseId}/project
- */
 export interface ProjectTypeSummary {
   id: string;
   code: string;
   name: string;
 }
 
-/**
- * Interface cho danh mục Loại dự án từ API:
- * GET /api/student/project-types
- */
 export interface ProjectTypeItem {
   id: string;
   code: string;
@@ -21,10 +13,6 @@ export interface ProjectTypeItem {
   description: string;
 }
 
-/**
- * Request payload tạo dự án nhóm mới:
- * POST /api/student/courses/{courseId}/project
- */
 export interface CreateStudentProjectRequest {
   name: string;
   projectTypeId: string;
@@ -47,25 +35,6 @@ export interface StudentTeamProjectResponse {
   projectType: ProjectTypeSummary;
   createdBy: ProjectCreatorSummary;
   createdAt: string;
-}
-
-/**
- * Interface phản hồi từ Backend API cho Nhóm của Sinh viên
- * GET /api/student/courses/{courseId}/team
- */
-export interface StudentCourseTeamMember {
-  studentCode: string;
-  fullName: string;
-  role: string;
-}
-
-export interface StudentCourseTeamResponse {
-  teamId: string;
-  teamNo: number;
-  teamName: string;
-  myRole: string;
-  projectId?: string | null;
-  members: StudentCourseTeamMember[];
 }
 
 export type ProjectCategory = string;
@@ -116,8 +85,6 @@ export interface StudentProjectDetails {
   projectType: ProjectTypeSummary;
   createdBy: ProjectCreatorSummary;
   createdAt: string;
-
-  // Thuộc tính hiển thị UI & tích hợp
   category?: string;
   groupName?: string;
   members?: ProjectTeamMember[];
@@ -126,10 +93,6 @@ export interface StudentProjectDetails {
   updatedAt?: string;
 }
 
-/**
- * Interface cho phản hồi API Tích hợp Đồ án:
- * GET /api/projects/{projectId}/integrations
- */
 export interface ProjectGitHubRepositoryItem {
   id: string;
   repositoryId: number;

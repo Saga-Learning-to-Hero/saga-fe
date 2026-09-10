@@ -25,7 +25,6 @@ export function CourseSpacePage({ course }: { course: LecturerCourse }) {
 
   return (
     <div className="mx-auto max-w-[1500px] space-y-6">
-      {/* Header breadcrumb */}
       <div className="flex items-center gap-3">
         <Link
           href="/lecturer/courses"
@@ -43,7 +42,6 @@ export function CourseSpacePage({ course }: { course: LecturerCourse }) {
         </div>
       </div>
 
-      {/* Course hero */}
       <div className={cn("relative overflow-hidden rounded-2xl border border-border bg-card p-6 shadow-saga-sm")}>
         <div className={cn("absolute inset-y-0 left-0 w-1.5 rounded-l-2xl", tone.bar)} />
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
@@ -81,7 +79,6 @@ export function CourseSpacePage({ course }: { course: LecturerCourse }) {
           </div>
         </div>
 
-        {/* Progress bar */}
         <div className="mt-5 border-t border-border pt-4">
           <div className="mb-2 flex justify-between text-[10px] font-medium text-muted-foreground">
             <span>Tiến độ học kỳ</span>
@@ -96,7 +93,6 @@ export function CourseSpacePage({ course }: { course: LecturerCourse }) {
         </div>
       </div>
 
-      {/* Placeholder sections */}
       <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
         {[
           { icon: UsersIcon, label: "Danh sách sinh viên", desc: "Xem và quản lý sinh viên trong lớp" },

@@ -1,4 +1,5 @@
-import { useQuery } from "@tanstack/react-query";
+import { useCallback } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { UserIntegrationsService } from "../api/user-integrations-service";
 import type { UserIdentityItem } from "../types/user-integrations";
 
@@ -44,4 +45,12 @@ export function useUserIdentities() {
     isGitHubConnected: githubIdentities.length > 0,
     isInitialLoading: query.isLoading && !query.data,
   };
+}
+
+export function useRefreshUserIntegrations() {
+  const queryClient = useQueryClient();
+  return useCallback(async () => {
+    await queryClient.invalidateQueries({ queryKey: USER_INTEGRATIONS_QUERY_KEY });
+    await queryClient.refetchQueries({ queryKey: USER_INTEGRATIONS_QUERY_KEY });
+  }, [queryClient]);
 }

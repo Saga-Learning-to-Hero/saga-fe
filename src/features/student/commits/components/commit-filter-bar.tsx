@@ -39,9 +39,7 @@ export function CommitFilterBar({
   return (
     <div className="p-4 rounded-2xl bg-card border border-border/80 shadow-2xs space-y-3">
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
-        {/* Dropdowns Group: Repo & Branch */}
         <div className="flex flex-wrap items-center gap-3">
-          {/* Dropdown 1: Select Repository */}
           <div className="space-y-1 min-w-[240px]">
             <label className="text-[11px] font-semibold text-muted-foreground flex items-center gap-1">
               <FolderGit2Icon className="w-3.5 h-3.5 text-blue-500" />
@@ -58,7 +56,6 @@ export function CommitFilterBar({
             />
           </div>
 
-          {/* Dropdown 2: Select Branch */}
           <div className="space-y-1 min-w-[220px]">
             <label className="text-[11px] font-semibold text-muted-foreground flex items-center gap-1">
               <GitBranchIcon className="w-3.5 h-3.5 text-purple-500" />
@@ -77,9 +74,7 @@ export function CommitFilterBar({
           </div>
         </div>
 
-        {/* Right side: Search Box & My Commits Toggle */}
         <div className="flex flex-wrap items-center gap-3">
-          {/* Search Box */}
           <div className="relative w-full sm:w-64">
             <SearchIcon className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
             <Input
@@ -91,7 +86,6 @@ export function CommitFilterBar({
             />
           </div>
 
-          {/* Toggle Filter: Only My Commits */}
           <Button
             type="button"
             variant="outline"

@@ -59,7 +59,6 @@ export function SidebarUserProfile({ collapsed }: Props) {
 
   return (
     <div className="border-t border-sidebar-border p-3 space-y-2 shrink-0">
-      {/* ── Nút chuyển Theme trực tiếp ── */}
       {collapsed ? (
         <Tooltip>
           <TooltipTrigger
@@ -96,7 +95,6 @@ export function SidebarUserProfile({ collapsed }: Props) {
         </button>
       )}
 
-      {/* ── User Profile Card ── */}
       <DropdownMenu>
         <DropdownMenuTrigger
           className={cn(
@@ -139,7 +137,6 @@ export function SidebarUserProfile({ collapsed }: Props) {
           sideOffset={14}
           className="w-68"
         >
-          {/* User info header */}
           <div className="flex items-center gap-3 px-3.5 py-3.5 border-b border-border">
             <Avatar className="w-10 h-10 shrink-0 rounded-lg">
               <AvatarImage src={user.avatar} alt={displayName} />

@@ -7,11 +7,6 @@ import type {
 } from "../types/student-project";
 
 export class ProjectProjectionService {
-  /**
-   * Kích hoạt hàng đợi đồng bộ phục hồi dữ liệu Jira và GitHub (Team Leader):
-   * POST /api/projects/{projectId}/sync
-   * Phản hồi: { projectId, jira, github }
-   */
   static async syncProject(projectId: string): Promise<ProjectSyncResponse> {
     if (!projectId || projectId.trim() === "") {
       throw new Error("Throw ValidationException: Project ID is required");
@@ -23,10 +18,6 @@ export class ProjectProjectionService {
     return res.data;
   }
 
-  /**
-   * Lấy danh sách Jira tasks đã chiếu cho dự án:
-   * GET /api/projects/{projectId}/tasks
-   */
   static async getProjectTasks(projectId: string): Promise<ProjectTaskItem[]> {
     if (!projectId || projectId.trim() === "") {
       throw new Error("Throw ValidationException: Project ID is required");
@@ -38,10 +29,6 @@ export class ProjectProjectionService {
     return res.data;
   }
 
-  /**
-   * Lấy trạng thái nhật ký đồng bộ gần nhất theo từng nhà cung cấp (Jira / GitHub):
-   * GET /api/projects/{projectId}/sync-status
-   */
   static async getProjectSyncStatus(projectId: string): Promise<ProjectSyncStatusItem[]> {
     if (!projectId || projectId.trim() === "") {
       throw new Error("Throw ValidationException: Project ID is required");
@@ -53,10 +40,6 @@ export class ProjectProjectionService {
     return res.data;
   }
 
-  /**
-   * Lấy danh sách Git commits liên kết với một Jira task đã chiếu:
-   * GET /api/projects/{projectId}/tasks/{taskId}/commits
-   */
   static async getTaskCommits(
     projectId: string,
     taskId: string
@@ -75,10 +58,6 @@ export class ProjectProjectionService {
     return res.data;
   }
 
-  /**
-   * Lấy toàn bộ danh sách Git commits đã chiếu cho dự án:
-   * GET /api/projects/{projectId}/commits
-   */
   static async getProjectCommits(projectId: string): Promise<TaskLinkedCommitItem[]> {
     if (!projectId || projectId.trim() === "") {
       throw new Error("Throw ValidationException: Project ID is required");

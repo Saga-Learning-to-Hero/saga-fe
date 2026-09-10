@@ -30,7 +30,6 @@ export function AuditToolbar({
   return (
     <Card className="rounded-2xl border border-border shadow-xs bg-card">
       <CardContent className="p-3.5 space-y-3">
-        {/* Row 1: Search & Time Range */}
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
           <div className="relative flex-1 max-w-md">
             <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
@@ -51,7 +50,6 @@ export function AuditToolbar({
             )}
           </div>
 
-          {/* Time range tabs */}
           <div className="flex items-center gap-1 bg-muted/60 border border-border/80 rounded-xl p-1 shrink-0">
             {(
               [
@@ -76,10 +74,8 @@ export function AuditToolbar({
           </div>
         </div>
 
-        {/* Row 2: Category & Severity Filter Chips */}
         <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-border/60">
           <div className="flex flex-wrap items-center gap-2">
-            {/* Category Filter */}
             <div className="flex items-center gap-1 bg-muted/40 border border-border/60 rounded-xl p-1">
               {(
                 [
@@ -102,7 +98,6 @@ export function AuditToolbar({
               ))}
             </div>
 
-            {/* Severity Filter */}
             <div className="flex items-center gap-1 bg-muted/40 border border-border/60 rounded-xl p-1">
               {(
                 [
@@ -138,7 +133,6 @@ export function AuditToolbar({
             )}
           </div>
 
-          {/* Result Counter */}
           <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
             <FilterIcon className="w-3.5 h-3.5 text-muted-foreground" />
             <span>

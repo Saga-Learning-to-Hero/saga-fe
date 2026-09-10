@@ -91,7 +91,6 @@ export function AdminClassManagement() {
 
   return (
     <div className="space-y-4">
-      {/* ── Toolbar ── */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
         <div className="relative flex-1 max-w-sm">
           <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
@@ -105,7 +104,6 @@ export function AdminClassManagement() {
         </div>
 
         <div className="flex items-center gap-2">
-          {/* View Mode Toggle */}
           <div className="flex items-center bg-muted/60 p-0.5 rounded-lg border border-border/80">
             <button
               onClick={() => setViewMode("cards")}
@@ -232,7 +230,6 @@ export function AdminClassManagement() {
           ))}
         </div>
       ) : (
-        /* ── DẠNG TABLE ── */
         <Card className="rounded-2xl border border-border overflow-hidden shadow-xs">
           <div className="overflow-x-auto">
             <Table className="w-full text-left text-xs border-collapse">

@@ -140,26 +140,22 @@ export function SidebarNav({ collapsed }: SidebarNavProps) {
   const role = user?.role ?? "STUDENT";
   const pathname = usePathname();
 
-  // Trích xuất courseId từ pathname (chỉ cho Lecturer)
   const courseMatch = pathname.match(/^\/lecturer\/courses\/([^/]+)(?:\/|$)/);
   const courseId = courseMatch ? decodeURIComponent(courseMatch[1]) : null;
   const courseCode = courseId ?? undefined;
 
-  // Xây dựng navigation theo context — không trộn global + course
   const navGroups = getNavGroups(role, courseId, courseCode, pathname, selectedCourse);
 
   return (
     <nav className="flex-1 overflow-y-auto py-3 px-3 space-y-2">
       {navGroups.map((group, gi) => (
         <div key={group.id} className="space-y-1">
-          {/* Section label */}
           {!collapsed && group.label && (
             <p className="px-3 pt-2 pb-1 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/60 select-none">
               {group.label}
             </p>
           )}
 
-          {/* Divider khi collapsed */}
           {collapsed && gi > 0 && group.label && (
             <div className="my-2 mx-2 h-px bg-border/60" />
           )}

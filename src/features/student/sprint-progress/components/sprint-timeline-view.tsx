@@ -27,16 +27,9 @@ const WEEKS = [
   { id: "w8", label: "Tuần 8", date: "19/09 - 25/09" },
 ];
 
-/** Ngày đầu tiên của học kỳ (Tuần 1) - dùng làm mốc để tính span. */
 const SEMESTER_START_DATE = new Date("2026-08-01T00:00:00Z");
 
-/**
- * Tính vị trí cột (startCol, endCol) và màu của sprint trên timeline 8-tuần
- * dựa trên startDate / endDate thực tế, không hardcode theo sprintId.
- * Trả về fallback an toàn nếu date không hợp lệ.
- */
 function getSprintSpan(sprint: Sprint) {
-  // Mapping màu theo trạng thái sprint
   const colorByStatus: Record<Sprint["status"], string> = {
     COMPLETED: "bg-emerald-500",
     ACTIVE: "bg-blue-600 animate-pulse",
@@ -49,14 +42,12 @@ function getSprintSpan(sprint: Sprint) {
     PLANNED: "Sprint (Planned)",
   };
 
-  // Tính số tuần từ ngày đầu kỳ (1-based, làm tròn xuống)
   const toWeekCol = (isoDate: string): number => {
     const date = new Date(isoDate);
     if (Number.isNaN(date.getTime())) return 1;
     const msPerWeek = 7 * 24 * 60 * 60 * 1000;
     const diffMs = date.getTime() - SEMESTER_START_DATE.getTime();
     const weekIndex = Math.floor(diffMs / msPerWeek) + 1;
-    // Clamp về khoảng [1, WEEKS.length] để không tràn grid
     return Math.max(1, Math.min(WEEKS.length, weekIndex));
   };
 
@@ -65,10 +56,8 @@ function getSprintSpan(sprint: Sprint) {
   try {
     startCol = toWeekCol(sprint.startDate);
     endCol = toWeekCol(sprint.endDate);
-    // Đảm bảo endCol >= startCol (nếu endDate < startDate do data lỗi)
     if (endCol < startCol) endCol = startCol;
   } catch {
-    // Fallback về cột 1 nếu parse date lỗi
     startCol = 1;
     endCol = 1;
   }
@@ -119,9 +108,7 @@ export function SprintTimelineView({
       </CardHeader>
 
       <CardContent className="p-5 overflow-x-auto space-y-6">
-        {/* Timeline Grid Table */}
         <div className="min-w-[800px] space-y-4">
-          {/* Header Dates Column */}
           <div className="grid grid-cols-12 gap-2 pb-2 border-b border-border/60 text-xs font-bold text-muted-foreground">
             <div className="col-span-4">Time</div>
             <div className="col-span-8 grid grid-cols-8 gap-1 text-center font-mono text-[11px]">
@@ -134,7 +121,6 @@ export function SprintTimelineView({
             </div>
           </div>
 
-          {/* Section 1: Sprints Timeline Rows */}
           <div className="space-y-3">
             <h4 className="text-xs font-bold text-foreground uppercase tracking-wider text-muted-foreground">
               Lộ trình Sprints:
@@ -173,7 +159,6 @@ export function SprintTimelineView({
             })}
           </div>
 
-          {/* Section 2: Epics Progress Rows */}
           <div className="space-y-3 pt-4 border-t border-border/60">
             <h4 className="text-xs font-bold text-foreground uppercase tracking-wider text-muted-foreground">
               Tiến độ Phân hệ (Epics):

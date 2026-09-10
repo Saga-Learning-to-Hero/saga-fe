@@ -168,7 +168,6 @@ export function CourseDialog({
           </DialogHeader>
 
           <div className="space-y-3.5 pt-1">
-            {/* Row 1: Code & Status */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold text-foreground">Mã khóa học *</label>
@@ -180,11 +179,8 @@ export function CourseDialog({
                   className="h-9 text-xs font-mono uppercase bg-muted/30 border-border/80 focus:border-primary rounded-xl"
                 />
               </div>
-
-              {/* Status removed as not in DTO */}
             </div>
 
-            {/* Row 2: Course Name */}
             <div className="space-y-1.5">
               <label className="text-xs font-semibold text-foreground">Tên Khóa học / Học phần *</label>
               <Input
@@ -196,7 +192,6 @@ export function CourseDialog({
               />
             </div>
 
-            {/* Row 3: Subject & Syllabus Version */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold text-foreground flex items-center gap-1">
@@ -256,7 +251,6 @@ export function CourseDialog({
               </div>
             )}
 
-            {/* Row 4: Semester & Academic Class */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold text-foreground flex items-center gap-1">

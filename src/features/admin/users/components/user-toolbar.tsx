@@ -39,7 +39,6 @@ export function UserToolbar({
     <Card className="rounded-2xl border border-border shadow-xs">
       <CardContent className="p-3.5 space-y-3">
         <div className="flex flex-col md:flex-row items-stretch md:items-center gap-3">
-          {/* Search input với shadcn Input */}
           <div className="relative flex-1">
             <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
             <Input
@@ -61,7 +60,6 @@ export function UserToolbar({
             )}
           </div>
 
-          {/* Filters */}
           <div className="flex flex-wrap items-center gap-2">
             <div className="flex items-center gap-1 bg-muted/50 border border-border rounded-lg p-1">
               {(
@@ -86,7 +84,6 @@ export function UserToolbar({
               ))}
             </div>
 
-            {/* Status filter tabs */}
             <div className="flex items-center gap-1 bg-muted/50 border border-border rounded-lg p-1">
               {(
                 [
@@ -112,7 +109,6 @@ export function UserToolbar({
               ))}
             </div>
 
-            {/* Reset filter */}
             {isFiltered && (
               <Button
                 variant="ghost"
@@ -127,7 +123,6 @@ export function UserToolbar({
           </div>
         </div>
 
-        {/* Result count indicator */}
         <div className="flex items-center justify-between text-xs text-muted-foreground pt-1 border-t border-border/60">
           <span className="flex items-center gap-1.5">
             <FilterIcon className="w-3.5 h-3.5" />

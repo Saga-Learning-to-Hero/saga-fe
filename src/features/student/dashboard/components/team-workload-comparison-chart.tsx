@@ -26,7 +26,6 @@ interface TeamWorkloadComparisonChartProps {
   onSelectMember: (memberId: string) => void;
 }
 
-// Danh sách TẤT CẢ các Sprint trong kỳ (Active, Completed, Planned)
 const SPRINT_OPTIONS: CustomSelectOption[] = [
   {
     value: "all-sprints",
@@ -148,7 +147,6 @@ export function TeamWorkloadComparisonChart({
   const isAll = selectedSprint === "all-sprints";
   const activeSprintInfo = !isAll ? SPRINT_DETAILS[selectedSprint] : null;
 
-  // Tính toán số liệu từng thành viên theo Sprint được chọn
   const memberDisplayData = useMemo(() => {
     return members.map((m) => {
       if (!isAll && activeSprintInfo && activeSprintInfo.memberMetrics[m.id]) {
@@ -163,7 +161,6 @@ export function TeamWorkloadComparisonChart({
         };
       }
 
-      // Mặc định: All Sprints (Toàn bộ đồ án)
       const tasksDone = m.tasksStatus.done;
       const totalTasks =
         m.tasksStatus.done + m.tasksStatus.inProgress + m.tasksStatus.toDo + m.tasksStatus.blocked;
@@ -186,7 +183,6 @@ export function TeamWorkloadComparisonChart({
     <Card className="rounded-2xl border border-border/80 shadow-xs bg-card overflow-hidden">
       <CardHeader className="p-4 sm:p-5 pb-3 border-b border-border/60">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-          {/* Title & Badge */}
           <div className="flex items-center gap-2.5">
             <div className="w-9 h-9 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
               <UsersIcon className="w-5 h-5" />
@@ -206,7 +202,6 @@ export function TeamWorkloadComparisonChart({
             </div>
           </div>
 
-          {/* Sprint Filter Dropdown */}
           <div className="flex items-center gap-2.5 w-full sm:w-auto">
             <span className="text-xs font-semibold text-muted-foreground shrink-0 hidden sm:inline">
               Lọc theo Sprint:
@@ -224,7 +219,6 @@ export function TeamWorkloadComparisonChart({
       </CardHeader>
 
       <CardContent className="p-5 space-y-4">
-        {/* Sprint Status Context Banner */}
         <div className="bg-muted/30 border border-border/70 rounded-xl p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 text-xs">
           <div className="flex items-center gap-2 min-w-0">
             {activeSprintInfo?.status === "COMPLETED" && (
@@ -282,7 +276,6 @@ export function TeamWorkloadComparisonChart({
           </div>
         </div>
 
-        {/* Visual comparison list for each team member */}
         <div className="space-y-3">
           {memberDisplayData.map(({ member: m, commits, tasksDone, totalTasks, traceabilityScore, contributionPercentage }) => {
             const isSelected = selectedMemberId === m.id;
@@ -299,7 +292,6 @@ export function TeamWorkloadComparisonChart({
                   : "bg-card/60 hover:bg-muted/40 border-border/70"
                   }`}
               >
-                {/* Member Info */}
                 <div className="flex items-center gap-3 min-w-[220px]">
                   <Avatar className="h-9 w-9 border border-background shadow-xs shrink-0">
                     <AvatarImage src={m.avatar} alt={m.name} />
@@ -323,9 +315,7 @@ export function TeamWorkloadComparisonChart({
                   </div>
                 </div>
 
-                {/* Metrics Breakdown Bar */}
                 <div className="flex-1 grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
-                  {/* Commits */}
                   <div className="space-y-1">
                     <div className="flex items-center justify-between text-[11px]">
                       <span className="text-muted-foreground flex items-center gap-1">
@@ -342,7 +332,6 @@ export function TeamWorkloadComparisonChart({
                     </div>
                   </div>
 
-                  {/* Tasks Done */}
                   <div className="space-y-1">
                     <div className="flex items-center justify-between text-[11px]">
                       <span className="text-muted-foreground flex items-center gap-1">
@@ -361,7 +350,6 @@ export function TeamWorkloadComparisonChart({
                     </div>
                   </div>
 
-                  {/* Traceability Score */}
                   <div className="space-y-1">
                     <div className="flex items-center justify-between text-[11px]">
                       <span className="text-muted-foreground flex items-center gap-1">
@@ -380,7 +368,6 @@ export function TeamWorkloadComparisonChart({
                     </div>
                   </div>
 
-                  {/* Contribution % */}
                   <div className="space-y-1">
                     <div className="flex items-center justify-between text-[11px]">
                       <span className="text-muted-foreground flex items-center gap-1">
@@ -400,7 +387,6 @@ export function TeamWorkloadComparisonChart({
                   </div>
                 </div>
 
-                {/* Select button indicator */}
                 <div className="shrink-0 flex items-center gap-1 text-xs font-semibold text-primary">
                   {isSelected ? (
                     <Badge className="bg-primary text-primary-foreground border-0 text-[10px]">

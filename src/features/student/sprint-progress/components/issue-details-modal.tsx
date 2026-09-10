@@ -160,7 +160,6 @@ export function IssueDetailsModal({
   return (
     <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in-0 duration-200">
       <div className="bg-card border border-border/80 rounded-3xl w-full max-w-2xl shadow-xl max-h-[92vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
-        {/* Modal Header */}
         <div className="p-5 border-b border-border/60 flex items-center justify-between bg-muted/30 shrink-0">
           <div className="flex items-center gap-2.5">
             <div className="w-9 h-9 rounded-xl bg-blue-600 text-white flex items-center justify-center font-bold text-sm shrink-0">
@@ -191,9 +190,7 @@ export function IssueDetailsModal({
           </button>
         </div>
 
-        {/* Form Body */}
         <form onSubmit={handleSubmit} className="p-5 sm:p-6 space-y-4 overflow-y-auto flex-1 scrollbar-thin">
-          {/* Read-Only Warning Banner if viewing another member's task */}
           {!canEdit && (
             <div className="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-700 dark:text-amber-300 text-xs font-semibold flex items-center gap-2 animate-in fade-in-0">
               <LockIcon className="w-4 h-4 shrink-0 text-amber-500" />
@@ -203,7 +200,6 @@ export function IssueDetailsModal({
             </div>
           )}
 
-          {/* Feedback Alert */}
           {successMsg && (
             <div className="p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 text-xs font-semibold flex items-center gap-2 animate-in fade-in-0">
               <CheckCircle2Icon className="w-4 h-4 shrink-0" />
@@ -211,7 +207,6 @@ export function IssueDetailsModal({
             </div>
           )}
 
-          {/* Summary / Title */}
           <div className="space-y-1.5">
             <Label htmlFor="issue-summary" className="text-xs font-semibold">
               Tên công việc (Summary) <span className="text-destructive">*</span>
@@ -228,9 +223,7 @@ export function IssueDetailsModal({
             />
           </div>
 
-          {/* Grid 2 Columns: Metadata */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {/* Type */}
             <div className="space-y-1.5">
               <Label htmlFor="issue-type" className="text-xs font-semibold">
                 Loại thẻ (Issue Type)
@@ -249,7 +242,6 @@ export function IssueDetailsModal({
               />
             </div>
 
-            {/* Status */}
             <div className="space-y-1.5">
               <Label htmlFor="issue-status" className="text-xs font-semibold">
                 Trạng thái (Status)
@@ -268,7 +260,6 @@ export function IssueDetailsModal({
               />
             </div>
 
-            {/* Priority */}
             <div className="space-y-1.5">
               <Label htmlFor="issue-priority" className="text-xs font-semibold">
                 Mức ưu tiên (Priority)
@@ -287,7 +278,6 @@ export function IssueDetailsModal({
               />
             </div>
 
-            {/* Story Points */}
             <div className="space-y-1.5">
               <Label htmlFor="issue-sp" className="text-xs font-semibold">
                 Story Points (Ước lượng khối lượng)
@@ -304,7 +294,6 @@ export function IssueDetailsModal({
               />
             </div>
 
-            {/* Assignee */}
             <div className="space-y-1.5">
               <Label htmlFor="issue-assignee" className="text-xs font-semibold">
                 Người thực hiện (Assignee)
@@ -326,7 +315,6 @@ export function IssueDetailsModal({
               />
             </div>
 
-            {/* Sprint */}
             <div className="space-y-1.5">
               <Label htmlFor="issue-sprint" className="text-xs font-semibold">
                 Sprint thuộc về
@@ -352,7 +340,6 @@ export function IssueDetailsModal({
             </div>
           </div>
 
-          {/* Labels Field */}
           <div className="space-y-1.5">
             <Label htmlFor="issue-labels" className="text-xs font-semibold flex items-center gap-1.5">
               <TagIcon className="w-3.5 h-3.5 text-blue-500" />
@@ -369,7 +356,6 @@ export function IssueDetailsModal({
             />
           </div>
 
-          {/* Description */}
           <div className="space-y-1.5">
             <Label htmlFor="issue-desc" className="text-xs font-semibold flex items-center gap-1.5">
               <FileTextIcon className="w-3.5 h-3.5 text-primary" />
@@ -404,7 +390,6 @@ export function IssueDetailsModal({
             </>
           )}
 
-          {/* Modal Footer */}
           <div className="pt-3 border-t border-border/60 flex items-center justify-between">
             {canEdit && isEditing && onDelete ? (
               <Button

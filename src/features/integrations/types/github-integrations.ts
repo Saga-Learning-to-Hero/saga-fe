@@ -1,12 +1,3 @@
-/**
- * Kiểu dữ liệu tích hợp GitHub cá nhân
- * APIs:
- * - POST /api/integrations/github/link
- * - PATCH /api/integrations/github/{identityId}/primary
- * - GET /api/integrations/github/oauth/callback
- * - DELETE /api/integrations/github/{identityId}
- */
-
 export interface GitHubLinkResponse {
   authorizationUrl: string;
   state: string;

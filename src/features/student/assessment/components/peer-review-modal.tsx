@@ -83,7 +83,6 @@ export function PeerReviewModal({
   return (
     <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in-0 duration-200">
       <div className="bg-card border border-border/80 rounded-3xl w-full max-w-xl shadow-xl overflow-hidden animate-in zoom-in-95 duration-200">
-        {/* Header */}
         <div className="p-5 border-b border-border/60 flex items-center justify-between bg-muted/30">
           <div className="flex items-center gap-3">
             <Avatar className="w-10 h-10 border border-background shadow-xs shrink-0">
@@ -111,9 +110,7 @@ export function PeerReviewModal({
           </button>
         </div>
 
-        {/* Form Body */}
         <form onSubmit={handleSubmit} className="p-5 sm:p-6 space-y-5">
-          {/* Feedback message */}
           {successMsg && (
             <div className="p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 text-xs font-semibold flex items-center gap-2 animate-in fade-in-0">
               <CheckCircle2Icon className="w-4 h-4 shrink-0" />
@@ -121,7 +118,6 @@ export function PeerReviewModal({
             </div>
           )}
 
-          {/* Criteria Ratings List */}
           <div className="space-y-4">
             {MOCK_PEER_CRITERIA.map((criteria) => {
               const currentRating = scores[criteria.id] || 5;
@@ -141,7 +137,6 @@ export function PeerReviewModal({
                       </p>
                     </div>
 
-                    {/* Star Selector */}
                     <div className="flex items-center gap-1 shrink-0 pt-1 sm:pt-0">
                       {[1, 2, 3, 4, 5].map((star) => (
                         <button
@@ -151,11 +146,10 @@ export function PeerReviewModal({
                           className="p-1 hover:scale-110 transition-transform cursor-pointer"
                         >
                           <StarIcon
-                            className={`w-5 h-5 ${
-                              star <= currentRating
+                            className={`w-5 h-5 ${star <= currentRating
                                 ? "text-amber-400 fill-amber-400"
                                 : "text-muted-foreground/30"
-                            }`}
+                              }`}
                           />
                         </button>
                       ))}
@@ -169,7 +163,6 @@ export function PeerReviewModal({
             })}
           </div>
 
-          {/* Feedback Comment Textarea */}
           <div className="space-y-1.5">
             <Label htmlFor="review-comment" className="text-xs font-semibold flex items-center gap-1.5">
               <MessageSquareIcon className="w-3.5 h-3.5 text-purple-500" />
@@ -185,7 +178,6 @@ export function PeerReviewModal({
             />
           </div>
 
-          {/* Footer Actions */}
           <div className="pt-3 border-t border-border/60 flex items-center justify-end gap-2">
             <Button
               type="button"

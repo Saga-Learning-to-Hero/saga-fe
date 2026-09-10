@@ -34,7 +34,6 @@ export function GraphNodeDetailsModal({ nodeData, onClose }: GraphNodeDetailsMod
   return (
     <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in-0 duration-200">
       <div className="bg-card border border-border/80 rounded-3xl w-full max-w-lg shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
-        {/* ── Modal Header ── */}
         <div className="p-5 border-b border-border/60 flex items-center justify-between bg-muted/30">
           <div className="flex items-center gap-3">
             <div
@@ -67,9 +66,7 @@ export function GraphNodeDetailsModal({ nodeData, onClose }: GraphNodeDetailsMod
           </button>
         </div>
 
-        {/* ── Modal Body ── */}
         <div className="p-6 space-y-4">
-          {/* 1. STUDENT DETAIL */}
           {student && (
             <div className="space-y-4">
               <div className="flex items-center gap-4 p-3 rounded-2xl bg-muted/40 border border-border/60">
@@ -85,7 +82,6 @@ export function GraphNodeDetailsModal({ nodeData, onClose }: GraphNodeDetailsMod
                 </div>
               </div>
 
-              {/* KPI Score Cards */}
               <div className="grid grid-cols-3 gap-3">
                 <div className="p-3 rounded-xl bg-blue-500/10 border border-blue-500/20 text-center">
                   <span className="text-[10px] text-muted-foreground font-semibold uppercase block">Commits</span>
@@ -112,7 +108,6 @@ export function GraphNodeDetailsModal({ nodeData, onClose }: GraphNodeDetailsMod
             </div>
           )}
 
-          {/* 2. JIRA TASK DETAIL */}
           {task && (
             <div className="space-y-4">
               <div className="p-4 rounded-2xl bg-muted/40 border border-border/60 space-y-2">
@@ -130,7 +125,6 @@ export function GraphNodeDetailsModal({ nodeData, onClose }: GraphNodeDetailsMod
                 </div>
               </div>
 
-              {/* MSR Anomaly Alert */}
               {task.isMSRAnomaly ? (
                 <div className="p-4 rounded-2xl bg-red-500/10 border border-red-500/30 text-red-700 dark:text-red-400 text-xs space-y-1.5 animate-pulse">
                   <div className="flex items-center gap-2 font-bold text-sm text-red-600 dark:text-red-300">
@@ -150,7 +144,6 @@ export function GraphNodeDetailsModal({ nodeData, onClose }: GraphNodeDetailsMod
             </div>
           )}
 
-          {/* 3. COMMIT DETAIL */}
           {commit && (
             <div className="space-y-4">
               <div className="p-4 rounded-2xl bg-muted/40 border border-border/60 space-y-2.5">
@@ -181,7 +174,6 @@ export function GraphNodeDetailsModal({ nodeData, onClose }: GraphNodeDetailsMod
           )}
         </div>
 
-        {/* ── Modal Footer ── */}
         <div className="p-4 border-t border-border/60 flex items-center justify-end bg-muted/20">
           <Button onClick={onClose} size="sm" className="h-9 text-xs rounded-xl px-5 cursor-pointer">
             Đóng

@@ -15,11 +15,9 @@ export default function AdminUsersPage() {
   const [roleFilter, setRoleFilter] = useState<"ALL" | ManagedRole>("ALL");
   const [statusFilter, setStatusFilter] = useState<"ALL" | UserAccountStatus>("ALL");
 
-  // Dialog State
   const [selectedUser, setSelectedUser] = useState<ManagedUser | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  // Filtered list
   const filteredUsers = useMemo(() => {
     return users.filter((u) => {
       const matchSearch =
@@ -36,13 +34,11 @@ export default function AdminUsersPage() {
     });
   }, [users, search, roleFilter, statusFilter]);
 
-  // Handle Action Trigger
   const handleOpenStatusDialog = (user: ManagedUser) => {
     setSelectedUser(user);
     setIsDialogOpen(true);
   };
 
-  // Handle Confirm Ban/Unban
   const handleConfirmStatusChange = (
     userId: string,
     newStatus: "ACTIVE" | "BANNED",
@@ -82,7 +78,6 @@ export default function AdminUsersPage() {
 
       <UserStats users={users} />
 
-      {/* ── Search & Filter Toolbar ── */}
       <UserToolbar
         search={search}
         onSearchChange={setSearch}
@@ -94,13 +89,11 @@ export default function AdminUsersPage() {
         totalOriginal={users.length}
       />
 
-      {/* ── Data Table ── */}
       <UserTable
         users={filteredUsers}
         onToggleStatus={handleOpenStatusDialog}
       />
 
-      {/* ── Status Confirmation Dialog ── */}
       <UserStatusDialog
         user={selectedUser}
         isOpen={isDialogOpen}

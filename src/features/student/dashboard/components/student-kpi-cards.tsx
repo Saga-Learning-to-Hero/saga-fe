@@ -26,7 +26,6 @@ export function StudentKPICards({
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-      {/* KPI Card 1: Tiến độ & Tỷ lệ hoàn thành Task */}
       <div className="bg-card border border-border/80 rounded-2xl p-4 shadow-xs relative overflow-hidden flex flex-col justify-between group hover:border-primary/40 transition-all">
         <div className="flex items-center justify-between">
           <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
@@ -59,7 +58,6 @@ export function StudentKPICards({
         </div>
       </div>
 
-      {/* KPI Card 2: Cường độ Commit & Hoạt động Mã nguồn */}
       <div className="bg-card border border-border/80 rounded-2xl p-4 shadow-xs relative overflow-hidden flex flex-col justify-between group hover:border-primary/40 transition-all">
         <div className="flex items-center justify-between">
           <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">

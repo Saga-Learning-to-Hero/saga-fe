@@ -2,7 +2,6 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
-import { MOCK_STUDENT_PROJECT } from "../data/mock-student-project";
 import type {
   StudentProjectDetails,
   ProjectCategory,
@@ -106,24 +105,26 @@ export function ProjectInfoView() {
     const roleLabel = isLeader ? "Leader" : (team?.myRole === "MEMBER" ? "Member" : "");
 
     const base: StudentProjectDetails = {
-      ...MOCK_STUDENT_PROJECT,
+      id: apiProject?.projectId || team?.projectId || "",
+      projectId: apiProject?.projectId || team?.projectId || "",
+      courseId: apiProject?.courseId || courseId,
+      teamId: team?.teamId || apiProject?.teamId || effectiveCourse?.teamId || "",
+      teamNo: teamNo,
+      teamName: teamName,
+      name: apiProject?.name || "Chưa có dự án",
+      description: apiProject?.description || "Dự án nhóm học phần",
+      category: (apiProject?.projectType?.name as ProjectCategory) || "",
+      projectType: apiProject?.projectType || { id: "", code: "", name: "" },
+      createdBy: apiProject?.createdBy || { userId: "", fullName: "" },
+      createdAt: apiProject?.createdAt || new Date().toISOString(),
       jiraConfig: undefined,
       githubRepositories: [],
       members: [],
       groupName: teamName ? `Nhóm ${teamNo || 1} · ${teamName}${roleLabel ? ` · ${roleLabel}` : ""}` : (hasTeam ? `Nhóm ${teamNo || 1}` : "Chưa có nhóm"),
-      teamId: team?.teamId || apiProject?.teamId || effectiveCourse?.teamId || "",
-      teamNo: teamNo,
-      teamName: teamName,
-      ...(apiProject ? {
-        id: apiProject.projectId, projectId: apiProject.projectId, courseId: apiProject.courseId,
-        name: apiProject.name, description: apiProject.description, category: (apiProject.projectType?.name as ProjectCategory) || "",
-        projectType: apiProject.projectType, createdBy: apiProject.createdBy, createdAt: apiProject.createdAt,
-      } : {}),
-      ...(team?.projectId ? { id: team.projectId, projectId: team.projectId } : {}),
     };
 
     return { ...base, ...localOverrides, members: [] };
-  }, [apiProject, effectiveCourse, hasTeam, isLeader, localOverrides, team]);
+  }, [apiProject, courseId, effectiveCourse, hasTeam, isLeader, localOverrides, team]);
 
   const handleUpdateProject = (fields: Partial<StudentProjectDetails>) =>
     setLocalOverrides((p) => ({ ...p, ...fields, updatedAt: new Date().toISOString() }));

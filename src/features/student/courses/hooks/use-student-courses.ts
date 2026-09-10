@@ -18,7 +18,7 @@ export function useStudentCourses(options?: { enabled?: boolean }) {
 }
 
 export function useStudentMyTeam(courseId: string, options?: { enabled?: boolean }) {
-  return useQuery({
+  const query = useQuery({
     queryKey: STUDENT_COURSE_QUERY_KEYS.studentMyTeam(courseId),
     queryFn: () => StudentCourseService.getMyTeam(courseId),
     enabled: (options?.enabled ?? true) && Boolean(courseId && courseId.trim()),
@@ -31,7 +31,14 @@ export function useStudentMyTeam(courseId: string, options?: { enabled?: boolean
       return failureCount < 1;
     },
   });
+
+  return {
+    ...query,
+    isWaitingForTeam: query.isError && StudentCourseService.isTeamNotFound(query.error),
+  };
 }
+
+export const isStudentTeamNotFound = StudentCourseService.isTeamNotFound;
 
 export function useRefreshStudentCourses() {
   const queryClient = useQueryClient();

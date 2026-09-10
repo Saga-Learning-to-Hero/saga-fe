@@ -138,7 +138,6 @@ export function LecturerGraphView() {
     subLabel: `Độ tin cậy: ${g.traceabilityRate}% · ${g.msrCount} Task thiếu commit · ${g.ghostingCount} Ghosting`,
   }));
 
-  // Khối chọn nhóm tinh gọn lồng vào thanh công cụ
   const groupSelectorNode = (
     <div className="flex items-center gap-2 w-full">
       <div className="w-full max-w-[260px] sm:max-w-[300px]">
@@ -177,7 +176,6 @@ export function LecturerGraphView() {
     </div>
   );
 
-  // Khối chọn nhanh nhóm nằm trong ngăn kéo bộ lọc thu gọn
   const extraCollapsibleNode = (
     <div className="pt-2 border-t border-border/60 flex items-center gap-2 overflow-x-auto pb-1 text-xs">
       <span className="text-[11px] font-bold text-muted-foreground shrink-0 flex items-center gap-1">
@@ -202,7 +200,6 @@ export function LecturerGraphView() {
 
   return (
     <div className="space-y-4">
-      {/* ── Tiêu đề & Điều hướng Tab tinh gọn ── */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-1 border-b border-border/40">
         <div className="flex items-center gap-3">
           <div className="w-9 h-9 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shrink-0">
@@ -248,7 +245,6 @@ export function LecturerGraphView() {
 
       {activeTab === "TRACEABILITY" ? (
         <div className="space-y-4 animate-in fade-in-0 duration-200">
-          {/* ── 1. Thanh điều khiển tinh gọn 1 hàng tích hợp bộ lọc thu gọn ── */}
           <GraphFilterBar
             groupSelector={groupSelectorNode}
             extraCollapsibleContent={extraCollapsibleNode}
@@ -269,7 +265,6 @@ export function LecturerGraphView() {
             onSelectViewMode={setViewMode}
           />
 
-          {/* ── 2. ĐỒ THỊ TRUNG TÂM (Centerpiece Canvas - Hiển thị ngay đầu tiên) ── */}
           {viewMode === "GRAPH" ? (
             <CytoscapeGraphCanvas
               nodes={filteredGraphData.nodes}
@@ -286,7 +281,6 @@ export function LecturerGraphView() {
             />
           )}
 
-          {/* ── 3. Thống kê & Bảng ma trận đối soát nguồn gốc ── */}
           <GraphStatsSummary
             totalNodes={filteredGraphData.nodes.length}
             totalEdges={filteredGraphData.edges.length}

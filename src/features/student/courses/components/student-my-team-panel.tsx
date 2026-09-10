@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useRefreshStudentCourses, useStudentMyTeam } from "../hooks/use-student-courses";
 import { getApiErrorCode, getApiErrorMessage } from "@/lib/api-error";
-import { StudentCourseService } from "../api/student-course-service";
 
 interface StudentMyTeamPanelProps {
   courseId: string | null;
@@ -17,12 +16,11 @@ interface StudentMyTeamPanelProps {
 export function StudentMyTeamPanel({ courseId, onClose }: StudentMyTeamPanelProps) {
   const refreshCourses = useRefreshStudentCourses();
   const enabled = Boolean(courseId);
-  const { data: team, isLoading, isError, error, refetch } = useStudentMyTeam(courseId ?? "", {
+  const { data: team, isLoading, isError, error, refetch, isWaitingForTeam: waitingForTeam } = useStudentMyTeam(courseId ?? "", {
     enabled,
   });
 
   const errorCode = getApiErrorCode(error);
-  const waitingForTeam = isError && StudentCourseService.isTeamNotFound(error);
   const forbidden = errorCode === "STUDENT_COURSE_FORBIDDEN";
 
   useEffect(() => {

@@ -34,25 +34,21 @@ export function PeerMemberCard({
 }: PeerMemberCardProps) {
   const isReviewed = Boolean(record?.isCompleted);
 
-  // Calculate average score if reviewed
   const avgScore = isReviewed && record?.scores
     ? (Object.values(record.scores).reduce((a, b) => a + b, 0) / Object.keys(record.scores).length).toFixed(1)
     : null;
 
   return (
     <Card
-      className={`rounded-2xl border transition-all duration-200 overflow-hidden p-4 sm:p-5 flex flex-col justify-between h-full space-y-4 ${
-        isSelf
+      className={`rounded-2xl border transition-all duration-200 overflow-hidden p-4 sm:p-5 flex flex-col justify-between h-full space-y-4 ${isSelf
           ? "bg-muted/30 border-border/60 opacity-80"
           : isReviewed
-          ? "bg-card border-emerald-500/30 shadow-xs hover:border-emerald-500/50"
-          : "bg-card border-border/80 shadow-xs hover:border-primary/40"
-      }`}
+            ? "bg-card border-emerald-500/30 shadow-xs hover:border-emerald-500/50"
+            : "bg-card border-border/80 shadow-xs hover:border-primary/40"
+        }`}
     >
       <div className="space-y-3 flex-1 flex flex-col justify-between">
-        {/* Top Content: Header & Stats */}
         <div className="space-y-3">
-          {/* Top Header: Member Avatar, Name & Status Badge */}
           <div className="flex items-start justify-between gap-2">
             <div className="flex items-center gap-2.5 min-w-0">
               <Avatar className="w-10 h-10 border border-background shadow-xs shrink-0">
@@ -78,7 +74,6 @@ export function PeerMemberCard({
               </div>
             </div>
 
-            {/* Status Badge */}
             <div className="shrink-0">
               {isSelf ? (
                 <Badge variant="secondary" className="text-[9px] font-bold px-1.5 py-0.5 gap-1 bg-muted text-muted-foreground">
@@ -99,7 +94,6 @@ export function PeerMemberCard({
             </div>
           </div>
 
-          {/* Sprint Contribution Stats */}
           <div className="grid grid-cols-3 gap-1.5 p-2 rounded-xl bg-muted/40 border border-border/50 text-[11px] font-mono text-center">
             <div>
               <span className="text-[9px] text-muted-foreground flex items-center justify-center gap-0.5">
@@ -133,7 +127,6 @@ export function PeerMemberCard({
           </div>
         </div>
 
-        {/* Review Comment Snippet if evaluated or Placeholder hint if not */}
         {isReviewed && record?.comment ? (
           <div className="p-2.5 rounded-xl bg-emerald-500/5 border border-emerald-500/20 text-xs text-muted-foreground space-y-1 mt-auto">
             <span className="text-[10px] font-bold text-emerald-600 block uppercase">Nhận xét của bạn:</span>
@@ -151,7 +144,6 @@ export function PeerMemberCard({
         ) : null}
       </div>
 
-      {/* Action Button */}
       <div className="pt-1 shrink-0">
         {isSelf ? (
           <Button

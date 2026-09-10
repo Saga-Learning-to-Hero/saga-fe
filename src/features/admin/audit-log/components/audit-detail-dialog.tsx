@@ -77,7 +77,6 @@ export function AuditDetailDialog({ log, isOpen, onClose }: AuditDetailDialogPro
         </DialogHeader>
 
         <div className="space-y-4 pt-2 text-xs">
-          {/* Status Alert */}
           {log.status === "FAILED" ? (
             <div className="flex items-start gap-2.5 p-3 rounded-xl bg-danger-muted/50 border border-danger/20 text-danger">
               <XCircleIcon className="w-4 h-4 shrink-0 mt-0.5" />
@@ -93,7 +92,6 @@ export function AuditDetailDialog({ log, isOpen, onClose }: AuditDetailDialogPro
             </div>
           )}
 
-          {/* Actor & Request Metadata */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-muted/40 border border-border/60 p-3.5 rounded-xl">
             <div className="space-y-1">
               <p className="font-semibold text-foreground flex items-center gap-1.5">
@@ -125,7 +123,6 @@ export function AuditDetailDialog({ log, isOpen, onClose }: AuditDetailDialogPro
             </div>
           </div>
 
-          {/* Description & Target */}
           <div className="space-y-2">
             <p className="font-semibold text-foreground">Nội dung chi tiết sự kiện:</p>
             <div className="p-3 rounded-xl bg-muted/30 border border-border/60 text-xs text-foreground leading-relaxed">
@@ -133,7 +130,6 @@ export function AuditDetailDialog({ log, isOpen, onClose }: AuditDetailDialogPro
             </div>
           </div>
 
-          {/* Target Resource */}
           <div className="flex items-center justify-between p-3 rounded-xl bg-muted/20 border border-border/60">
             <div>
               <p className="text-[11px] text-muted-foreground">Đối tượng bị tác động (Target)</p>
@@ -144,7 +140,6 @@ export function AuditDetailDialog({ log, isOpen, onClose }: AuditDetailDialogPro
             </Badge>
           </div>
 
-          {/* Changes / Diff Table (nếu có) */}
           {log.changes && log.changes.length > 0 && (
             <div className="space-y-2">
               <p className="font-semibold text-foreground flex items-center gap-1.5">

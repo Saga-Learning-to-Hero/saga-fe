@@ -130,7 +130,6 @@ export function ProfileHeader({ user, compact = false }: ProfileHeaderProps) {
       />
 
       <div className="relative flex flex-col md:flex-row md:items-center justify-between gap-5">
-        {/* Thông tin cá nhân bên trái */}
         <div className="flex items-center gap-4.5 min-w-0">
           <Avatar className="w-16 h-16 sm:w-18 sm:h-18 rounded-2xl border-2 border-white/40 shadow-md shrink-0">
             <AvatarImage src={user.avatar} alt={user.name} />
@@ -164,7 +163,6 @@ export function ProfileHeader({ user, compact = false }: ProfileHeaderProps) {
           </div>
         </div>
 
-        {/* 2 Thẻ tích hợp Jira / GitHub cho Sinh viên bên phải */}
         {isStudent && (
           <div className="flex flex-col sm:flex-row md:flex-col gap-2 shrink-0">
             <div className="bg-white/15 backdrop-blur-md border border-white/20 rounded-2xl p-2.5 px-3.5 text-white flex items-center justify-between gap-3 min-w-[200px]">

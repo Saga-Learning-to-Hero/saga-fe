@@ -71,16 +71,13 @@ export function GraphFilterBar({
 
   return (
     <div className="space-y-2.5">
-      {/* ── Thanh điều khiển tinh gọn 1 hàng (Unified Control Bar) ── */}
       <div className="p-2 sm:p-2.5 rounded-2xl bg-card border border-border/80 shadow-xs flex flex-wrap items-center justify-between gap-2.5">
-        {/* Khối bên trái: Group selector hoặc Project Info */}
         {groupSelector && (
           <div className="flex items-center gap-2 flex-1 min-w-[240px] max-w-md">
             {groupSelector}
           </div>
         )}
 
-        {/* Khối bên phải: Chuyển đổi đồ thị, Lọc cảnh báo, Nút mở rộng bộ lọc, Thao tác */}
         <div className="flex flex-wrap items-center gap-2 ml-auto">
           {onSelectViewMode && (
             <div className="flex items-center gap-1 p-1 bg-primary/10 rounded-xl border border-primary/20 text-xs">
@@ -177,7 +174,6 @@ export function GraphFilterBar({
         </div>
       </div>
 
-      {/* ── Bảng Bộ Lọc Thu Gọn (Collapsible Filter Panel) ── */}
       {isFilterOpen && (
         <div className="p-4 rounded-2xl bg-card border border-primary/20 shadow-xs space-y-3 animate-in fade-in-0 slide-in-from-top-2 duration-200">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
@@ -224,7 +220,6 @@ export function GraphFilterBar({
         </div>
       )}
 
-      {/* ── Chip gắn nhãn bộ lọc đang áp dụng (khi thu gọn) ── */}
       {!isFilterOpen && activeFiltersCount > 0 && (
         <div className="flex items-center gap-2 flex-wrap text-xs px-1">
           <span className="text-[11px] font-bold text-muted-foreground">Đang lọc theo:</span>
