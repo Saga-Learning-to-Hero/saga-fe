@@ -45,11 +45,13 @@ export function ProjectGroupWeightsPanel({
 
   if (!hasProject) {
     return (
-      <Card className="rounded-2xl border border-dashed border-border p-5">
-        <h2 className="text-sm font-bold">{teamName || "Nhóm đã chọn"}</h2>
-        <p className="mt-2 text-sm text-muted-foreground">Nhóm chưa khởi tạo dự án</p>
-        <p className="mt-1 text-xs text-muted-foreground">
-          Không mở biểu mẫu và không gọi trọng số nhóm khi dự án chưa được khởi tạo.
+      <Card className="rounded-2xl border border-dashed border-border/80 p-8 text-center shadow-xs">
+        <h3 className="text-base font-bold text-foreground">{teamName || "Nhóm đã chọn"}</h3>
+        <p className="mt-2 text-sm font-semibold text-amber-600 dark:text-amber-400">
+          Nhóm chưa khởi tạo dự án
+        </p>
+        <p className="mx-auto mt-1 max-w-md text-xs text-muted-foreground">
+          Trưởng nhóm cần khởi tạo dự án trên hệ thống trước khi giảng viên có thể thiết lập trọng số riêng.
         </p>
       </Card>
     );
@@ -59,7 +61,7 @@ export function ProjectGroupWeightsPanel({
   if (groupQuery.isError && !missingConfig) {
     return (
       <CourseQueryError
-        title="Không tải được trọng số nhóm"
+        title="Không tải được trọng số của nhóm"
         error={groupQuery.error}
         onRetry={() => void groupQuery.refetch()}
       />
@@ -77,35 +79,49 @@ export function ProjectGroupWeightsPanel({
     : { ...fallbackWeights };
 
   return (
-    <div className="space-y-3">
-      <div className="flex flex-wrap items-center gap-2">
-        <h2 className="text-sm font-bold">{teamName || "Trọng số riêng của nhóm"}</h2>
-        {serverMode === "COURSE" ? (
-          <Badge variant="outline" className="text-[10px]">
-            Đang chuẩn bị — áp dụng khi lớp chuyển sang cấu hình riêng
+    <div className="space-y-4">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div className="flex items-center gap-2">
+          <h3 className="text-base font-extrabold text-foreground">
+            {teamName || "Cấu hình trọng số Slicing Pie của nhóm"}
+          </h3>
+          {missingConfig ? (
+            <Badge
+              variant="outline"
+              className="border-amber-500/30 bg-amber-500/15 font-mono text-[10px] font-bold text-amber-700 dark:text-amber-300"
+            >
+              Chưa lưu cấu hình riêng
+            </Badge>
+          ) : (
+            <Badge
+              variant="outline"
+              className="border-emerald-500/30 bg-emerald-500/15 font-mono text-[10px] font-bold text-emerald-600 dark:text-emerald-400"
+            >
+              Đã tùy biến riêng
+            </Badge>
+          )}
+        </div>
+
+        {serverMode === "COURSE" && (
+          <Badge variant="secondary" className="text-[11px]">
+            Đang soạn trước — có hiệu lực khi chuyển sang chế độ riêng
           </Badge>
-        ) : null}
-        {missingConfig ? (
-          <Badge
-            variant="outline"
-            className="border-amber-500/30 bg-amber-500/15 text-[10px] text-amber-700 dark:text-amber-300"
-          >
-            Chưa cấu hình
-          </Badge>
-        ) : null}
+        )}
       </div>
+
       <p className="text-xs text-muted-foreground">
         {missingConfig
-          ? "Nhóm chưa có cấu hình riêng. Biểu mẫu được điền sẵn trọng số chung của lớp để chỉnh sửa. Chỉ đánh dấu đã cấu hình sau khi lưu thành công."
-          : "Chỉnh bốn tiêu chí tổng 100%. Máy chủ nhận tỷ lệ 0–1 sau khi lưu."}
+          ? "Nhóm hiện đang kế thừa trọng số chung của lớp. Bạn có thể điều chỉnh các thanh trượt bên dưới và bấm Lưu để lưu cấu hình riêng cho nhóm này."
+          : "Điều chỉnh tỷ lệ % của 4 tiêu chí SE sao cho tổng bằng 100% rồi bấm Lưu."}
       </p>
+
       <SliceWeightsForm
         key={`${teamId}-${String(groupQuery.dataUpdatedAt)}-${missingConfig ? "new" : "saved"}`}
         initialWeights={displayWeights}
         initialNote={groupQuery.data?.note ?? ""}
         showNote
         isSaving={updateMutation.isPending}
-        saveLabel="Lưu trọng số nhóm"
+        saveLabel="Lưu trọng số Slicing Pie nhóm"
         onSave={(weights, extras) => {
           const apiWeights = toApiSliceWeights(weights, 1);
           updateMutation.mutate({

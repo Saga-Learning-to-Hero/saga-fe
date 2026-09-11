@@ -5,13 +5,14 @@ import {
   UsersIcon,
   GitGraphIcon,
   FolderKanbanIcon,
-  GraduationCapIcon,
   AlertTriangleIcon,
   ShieldAlertIcon,
   CheckCircle2Icon,
 } from "lucide-react";
+import { toast } from "sonner";
 import { CustomSelect } from "@/components/common/custom-select";
 import { Badge } from "@/components/ui/badge";
+import { useLecturerTeams } from "@/features/lecturer/teams/hooks/use-lecturer-teams";
 import { CytoscapeGraphCanvas } from "./cytoscape-graph-canvas";
 import { TraceabilityFlowCanvas } from "./traceability-flow-canvas";
 import { GraphFilterBar } from "./graph-filter-bar";
@@ -75,8 +76,43 @@ const MOCK_LECTURER_GROUPS = [
   },
 ];
 
-export function LecturerGraphView() {
-  const [selectedGroupId, setSelectedGroupId] = useState<string>("g1");
+interface LecturerGraphViewProps {
+  courseId?: string;
+  initialTeamId?: string;
+}
+
+export function LecturerGraphView({ courseId, initialTeamId }: LecturerGraphViewProps = {}) {
+  const { data: teamsData } = useLecturerTeams(courseId || "", {
+    enabled: Boolean(courseId),
+  });
+
+  const teams = teamsData?.teams;
+  const lecturerGroups = useMemo(() => {
+    if (teams && teams.length > 0) {
+      return teams.map((t, idx) => {
+        const mockMatch = MOCK_LECTURER_GROUPS[idx % MOCK_LECTURER_GROUPS.length];
+        return {
+          id: t.teamId,
+          name: t.teamName ? `Nhóm ${t.teamNo} - ${t.teamName}` : `Nhóm ${t.teamNo}`,
+          projectTopic: t.projectId ? "Đồ án Kỹ thuật phần mềm" : "Chưa khởi tạo dự án",
+          memberCount: t.members?.length ?? 0,
+          traceabilityRate: mockMatch?.traceabilityRate ?? 92.0,
+          msrCount: mockMatch?.msrCount ?? 0,
+          ghostingCount: mockMatch?.ghostingCount ?? 0,
+          status: (mockMatch?.status ?? "HEALTHY") as "HEALTHY" | "WARNING" | "CRITICAL",
+        };
+      });
+    }
+    return MOCK_LECTURER_GROUPS;
+  }, [teams]);
+
+  const [selectedGroupIdState, setSelectedGroupId] = useState<string>("");
+  const selectedGroupId =
+    initialTeamId ||
+    (selectedGroupIdState && lecturerGroups.some((g) => g.id === selectedGroupIdState)
+      ? selectedGroupIdState
+      : lecturerGroups[0]?.id || "g1");
+
   const [activeTab, setActiveTab] = useState<"TRACEABILITY" | "SNA">("TRACEABILITY");
   const [viewMode, setViewMode] = useState<"FLOW" | "GRAPH">("GRAPH");
 
@@ -87,8 +123,8 @@ export function LecturerGraphView() {
   const [selectedNode, setSelectedNode] = useState<GraphNodeData | null>(null);
 
   const currentGroup = useMemo(
-    () => MOCK_LECTURER_GROUPS.find((g) => g.id === selectedGroupId) || MOCK_LECTURER_GROUPS[0],
-    [selectedGroupId]
+    () => lecturerGroups.find((g) => g.id === selectedGroupId) || lecturerGroups[0] || MOCK_LECTURER_GROUPS[0],
+    [lecturerGroups, selectedGroupId]
   );
 
   const initialData = useMemo(() => getMockTraceabilityGraphData(), []);
@@ -132,7 +168,7 @@ export function LecturerGraphView() {
     };
   }, [initialData, selectedStudentId, selectedSprint, filterType]);
 
-  const groupSelectOptions = MOCK_LECTURER_GROUPS.map((g) => ({
+  const groupSelectOptions = lecturerGroups.map((g) => ({
     value: g.id,
     label: g.name,
     subLabel: `Độ tin cậy: ${g.traceabilityRate}% · ${g.msrCount} Task thiếu commit · ${g.ghostingCount} Ghosting`,
@@ -182,7 +218,7 @@ export function LecturerGraphView() {
         <FolderKanbanIcon className="w-3.5 h-3.5 text-blue-500" />
         Chọn nhanh nhóm:
       </span>
-      {MOCK_LECTURER_GROUPS.map((g) => (
+      {lecturerGroups.map((g) => (
         <button
           key={g.id}
           onClick={() => setSelectedGroupId(g.id)}
@@ -199,30 +235,31 @@ export function LecturerGraphView() {
   );
 
   return (
-    <div className="space-y-4">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-1 border-b border-border/40">
+    <div className="space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-2xl border border-border/80 bg-card/90 shadow-xs backdrop-blur-md">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shrink-0">
-            <GraduationCapIcon className="w-4.5 h-4.5" />
+          <div className="w-10 h-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shrink-0">
+            <GitGraphIcon className="w-5 h-5" />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-[10px] font-extrabold uppercase tracking-wider text-primary">
-                Giám sát Đa nhóm
-              </span>
-              <span className="text-muted-foreground/40">•</span>
-              <span className="text-[10px] font-mono text-muted-foreground">Traceability & SNA</span>
+              <h1 className="text-base font-bold tracking-tight text-foreground sm:text-lg">
+                Đồ thị giám sát & Mạng lưới tương tác
+              </h1>
+              <Badge variant="outline" className="border-primary/20 bg-primary/10 font-mono text-[10px] font-bold text-primary">
+                Traceability & SNA
+              </Badge>
             </div>
-            <h1 className="text-xl sm:text-2xl font-black tracking-tight text-foreground">
-              Giám sát Đồ thị Traceability & Mạng lưới SNA
-            </h1>
+            <p className="text-xs text-muted-foreground">
+              Đối soát liên kết công việc - commit, nhận diện bất thường MSR và phân tích mạng lưới tương tác xã hội.
+            </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-1.5 p-1 bg-muted/60 rounded-2xl border border-border/60 self-start sm:self-auto shrink-0 shadow-2xs">
+        <div className="flex items-center gap-1.5 p-1 bg-muted/60 rounded-xl border border-border/60 self-start sm:self-auto shrink-0 shadow-2xs">
           <button
             onClick={() => setActiveTab("TRACEABILITY")}
-            className={`flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-extrabold transition-all cursor-pointer ${activeTab === "TRACEABILITY"
+            className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-extrabold transition-all cursor-pointer ${activeTab === "TRACEABILITY"
                 ? "bg-card text-foreground shadow-xs border border-border/80"
                 : "text-muted-foreground hover:text-foreground"
               }`}
@@ -232,7 +269,7 @@ export function LecturerGraphView() {
           </button>
           <button
             onClick={() => setActiveTab("SNA")}
-            className={`flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-extrabold transition-all cursor-pointer ${activeTab === "SNA"
+            className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-extrabold transition-all cursor-pointer ${activeTab === "SNA"
                 ? "bg-card text-foreground shadow-xs border border-border/80"
                 : "text-muted-foreground hover:text-foreground"
               }`}
@@ -254,7 +291,7 @@ export function LecturerGraphView() {
             onSelectSprint={setSelectedSprint}
             filterType={filterType}
             onSelectFilterType={setFilterType}
-            onExport={() => alert("Đã xuất dữ liệu giám sát của nhóm thành công!")}
+            onExport={() => toast.success("Đã xuất dữ liệu giám sát của nhóm thành công!")}
             onReset={() => {
               setSelectedStudentId("ALL");
               setSelectedSprint("ALL");

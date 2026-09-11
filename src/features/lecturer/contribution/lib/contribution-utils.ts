@@ -15,22 +15,29 @@ export const SLICE_WEIGHT_FIELDS = [
 
 export type SliceWeightField = (typeof SLICE_WEIGHT_FIELDS)[number];
 
-export const SLICE_WEIGHT_LABELS: Record<SliceWeightField, { title: string; description: string }> = {
+export const SLICE_WEIGHT_LABELS: Record<
+  SliceWeightField,
+  { title: string; shortTitle: string; description: string }
+> = {
   codeWeight: {
-    title: "Phát triển",
-    description: "Đóng góp mã nguồn và phát triển tính năng",
+    title: "Code",
+    shortTitle: "Code",
+    description: "Đóng góp mã nguồn và lập trình tính năng",
   },
   testWeight: {
-    title: "Kiểm thử",
-    description: "Đóng góp kiểm thử và đảm bảo chất lượng",
+    title: "Testing",
+    shortTitle: "Testing",
+    description: "Đóng góp viết unit tests và kiểm thử",
   },
   documentWeight: {
-    title: "Tài liệu",
-    description: "Đóng góp tài liệu kỹ thuật và hướng dẫn",
+    title: "Document",
+    shortTitle: "Document",
+    description: "Đóng góp viết tài liệu SRS, SDS và báo cáo",
   },
   researchWeight: {
-    title: "Nghiên cứu",
-    description: "Đóng góp khảo sát, nghiên cứu và thử nghiệm",
+    title: "Research",
+    shortTitle: "Research",
+    description: "Đóng góp nghiên cứu giải pháp và công nghệ",
   },
 };
 
@@ -167,6 +174,45 @@ export function formatContributionNumber(value: number | null | undefined): stri
 export function formatContributionPercent(value: number | null | undefined): string {
   if (value == null || Number.isNaN(value)) return "—";
   return `${formatContributionNumber(value)}%`;
+}
+
+export function formatContributionWarning(warning: string): {
+  title: string;
+  description: string;
+  severity: "high" | "medium" | "low";
+} {
+  switch (warning) {
+    case "NO_EVIDENCE":
+      return {
+        title: "Chưa có minh chứng hợp lệ",
+        description: "Thành viên chưa có Task Jira hoàn thành, chưa đính kèm tài liệu/link nộp và chưa có đánh giá chéo.",
+        severity: "high",
+      };
+    case "INSUFFICIENT_EVIDENCE":
+      return {
+        title: "Minh chứng chưa tương xứng",
+        description: "Tỷ lệ đóng góp cao nhưng chưa đủ đa dạng các nguồn minh chứng kiểm định.",
+        severity: "medium",
+      };
+    case "NO_PEER_REVIEW":
+      return {
+        title: "Chưa có đánh giá đồng đẳng",
+        description: "Thành viên chưa nhận được lượt đánh giá chéo từ các thành viên khác trong nhóm.",
+        severity: "medium",
+      };
+    case "LOW_PEER_REVIEW":
+      return {
+        title: "Điểm đánh giá đồng đẳng thấp",
+        description: "Hệ số đánh giá chéo từ đồng đội ở mức thấp (≤ 0.60), cần giảng viên đối soát kỹ.",
+        severity: "high",
+      };
+    default:
+      return {
+        title: warning,
+        description: "Cần giảng viên kiểm tra và đối soát lại dữ liệu công sức.",
+        severity: "low",
+      };
+  }
 }
 
 function roundDisplay(value: number): number {

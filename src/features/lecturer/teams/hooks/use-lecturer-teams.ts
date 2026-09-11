@@ -26,8 +26,7 @@ export function useLecturerTeams(courseId: string, options?: { enabled?: boolean
     queryKey: LECTURER_TEAM_QUERY_KEYS.lecturerTeams(courseId),
     queryFn: () => LecturerTeamService.getTeams(courseId),
     enabled: (options?.enabled ?? true) && Boolean(courseId && courseId.trim()),
-    staleTime: 1000 * 30,
-    refetchOnWindowFocus: true,
+    staleTime: 1000 * 60 * 3,
   });
 }
 

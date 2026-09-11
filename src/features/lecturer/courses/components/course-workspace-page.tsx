@@ -9,7 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CourseRoster } from "./course-roster";
 import { TeamList } from "@/features/lecturer/teams/components/team-list";
 import { useLecturerCourse } from "../hooks/use-lecturer-courses";
-import { lecturerCourseDashboardPath, lecturerCourseTeamsPath, lecturerCoursesPath, resolveLecturerWorkspaceView } from "../lib/course-routes";
+import { lecturerCourseTeamsPath, resolveLecturerWorkspaceView } from "../lib/course-routes";
 import { formatQueryUpdatedAt } from "../lib/format-query-updated-at";
 import { LecturerPageShell } from "./lecturer-page-shell";
 import { cn } from "@/lib/utils";
@@ -37,13 +37,8 @@ export function CourseWorkspacePage({ courseId }: CourseWorkspacePageProps) {
 
   return (
     <LecturerPageShell
-      breadcrumbItems={[
-        { label: "Lớp học phần", href: lecturerCoursesPath() },
-        { label: course?.courseCode || "Mã lớp", href: lecturerCourseDashboardPath(courseId) },
-        { label: "Dự án nhóm" },
-      ]}
-      title={course?.subjectName || course?.name || "Dự án nhóm"}
-      description={`${course?.subjectCode || "Môn học"} · Danh sách sinh viên đang học và phân nhóm bằng Excel.`}
+      title="Quản lý Sinh viên & Phân nhóm đồ án"
+      description={`${course?.subjectCode || "Môn học"} · Danh sách sinh viên đang học và phân nhóm đồ án bằng Excel.`}
       badges={
         <>
           <Badge
@@ -88,10 +83,13 @@ export function CourseWorkspacePage({ courseId }: CourseWorkspacePageProps) {
           <TabsTrigger value="members">Sinh viên đang học</TabsTrigger>
           <TabsTrigger value="teams">Phân nhóm</TabsTrigger>
         </TabsList>
-        <TabsContent value="members">
-          <CourseRoster courseId={courseId} />
+        <TabsContent value="members" keepMounted>
+          <CourseRoster
+            courseId={courseId}
+            onSwitchToTeams={() => handleViewChange("teams")}
+          />
         </TabsContent>
-        <TabsContent value="teams">
+        <TabsContent value="teams" keepMounted>
           <TeamList courseId={courseId} courseCode={course?.courseCode} />
         </TabsContent>
       </Tabs>

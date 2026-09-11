@@ -1,10 +1,10 @@
 import { Metadata } from "next";
-import { LecturerMonitoringPreview } from "@/features/lecturer/courses/components/lecturer-monitoring-preview";
+import { LecturerGraphView } from "@/features/graph/components/lecturer-graph-view";
 
 export const metadata: Metadata = {
-  title: "Liên kết công việc và commit | Giảng viên SAGA",
+  title: "Đồ thị & Mạng lưới SNA | Giảng viên SAGA",
   description:
-    "Theo dõi liên kết công việc và commit của các dự án nhóm trong lớp học phần.",
+    "Theo dõi liên kết công việc, commit, đối soát nguồn gốc và mạng lưới tương tác SNA của các dự án nhóm trong lớp học phần.",
 };
 
 export default async function LecturerGraphPage({
@@ -13,5 +13,9 @@ export default async function LecturerGraphPage({
   params: Promise<{ courseId: string }>;
 }) {
   const { courseId } = await params;
-  return <LecturerMonitoringPreview key={courseId} courseId={courseId} kind="graph" />;
+  return (
+    <div className="mx-auto w-full max-w-[1600px] space-y-6 pb-12">
+      <LecturerGraphView courseId={courseId} />
+    </div>
+  );
 }

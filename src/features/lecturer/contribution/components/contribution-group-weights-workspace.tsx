@@ -1,8 +1,9 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { CheckCircle2Icon, ClockIcon, FolderKanbanIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Card } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { CustomSelect } from "@/components/common/custom-select";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
@@ -49,19 +50,20 @@ export function ContributionGroupWeightsWorkspace({
 
   if (isLoadingTeams) {
     return (
-      <div className="grid gap-4 lg:grid-cols-[280px_minmax(0,1fr)]">
-        <div className="h-72 animate-pulse rounded-2xl bg-muted/60" />
-        <div className="h-72 animate-pulse rounded-2xl bg-muted/60" />
+      <div className="grid gap-4 lg:grid-cols-[300px_minmax(0,1fr)]">
+        <div className="h-80 animate-pulse rounded-2xl bg-muted/60" />
+        <div className="h-80 animate-pulse rounded-2xl bg-muted/60" />
       </div>
     );
   }
 
   if (sortedTeams.length === 0) {
     return (
-      <Card className="rounded-2xl border border-dashed border-border p-8 text-center">
-        <p className="text-sm font-semibold">Chưa có nhóm trong lớp học phần</p>
+      <Card className="rounded-2xl border border-dashed border-border/80 p-8 text-center shadow-xs">
+        <FolderKanbanIcon className="mx-auto mb-3 size-8 text-muted-foreground/40" />
+        <p className="text-sm font-bold text-foreground">Chưa có nhóm nào trong lớp học phần</p>
         <p className="mt-1 text-xs text-muted-foreground">
-          Hãy phân nhóm bằng Excel trước khi cấu hình trọng số riêng cho từng nhóm.
+          Hãy hoàn tất phân nhóm trước khi cấu hình trọng số Slicing Pie riêng cho từng nhóm.
         </p>
       </Card>
     );
@@ -69,21 +71,37 @@ export function ContributionGroupWeightsWorkspace({
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <p className="text-sm font-semibold">
-          Tiến độ cấu hình:{" "}
-          <span className="font-mono">
-            {configuredCount}/{projectTeams.length}
-          </span>{" "}
-          nhóm có dự án
-        </p>
-        {projectTeams.length === 0 ? (
-          <p className="text-xs text-muted-foreground">Chưa có nhóm khởi tạo dự án.</p>
-        ) : null}
-      </div>
+      <Card className="rounded-2xl border border-border/80 bg-card p-4 shadow-xs">
+        <CardContent className="flex flex-wrap items-center justify-between gap-3 p-0 text-xs">
+          <div className="flex items-center gap-2">
+            <span className="font-semibold text-muted-foreground">Tiến độ tùy biến trọng số:</span>
+            <span className="font-mono text-sm font-black text-foreground">
+              {configuredCount}/{projectTeams.length}
+            </span>
+            <span className="text-muted-foreground">nhóm có dự án</span>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <Badge
+              variant="outline"
+              className="border-emerald-500/30 bg-emerald-500/10 font-mono text-[10px] text-emerald-600 dark:text-emerald-400"
+            >
+              {configuredCount} đã cấu hình
+            </Badge>
+            <Badge
+              variant="outline"
+              className="border-amber-500/30 bg-amber-500/10 font-mono text-[10px] text-amber-600 dark:text-amber-400"
+            >
+              {projectTeams.length - configuredCount} chờ cấu hình
+            </Badge>
+          </div>
+        </CardContent>
+      </Card>
 
       <div className="space-y-2 lg:hidden">
-        <Label htmlFor="group-weight-team">Chọn nhóm</Label>
+        <Label htmlFor="group-weight-team" className="text-xs font-bold text-foreground">
+          Chọn nhóm đồ án
+        </Label>
         <CustomSelect
           id="group-weight-team"
           value={resolvedTeamId}
@@ -97,9 +115,12 @@ export function ContributionGroupWeightsWorkspace({
         />
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-[280px_minmax(0,1fr)]">
-        <Card className="hidden overflow-hidden rounded-2xl border border-border lg:block">
-          <ul className="max-h-[32rem] overflow-y-auto p-2">
+      <div className="grid gap-5 lg:grid-cols-[300px_minmax(0,1fr)]">
+        <Card className="hidden overflow-hidden rounded-2xl border border-border/80 bg-card shadow-xs lg:block">
+          <div className="border-b border-border/60 bg-muted/30 px-4 py-3">
+            <span className="text-xs font-bold text-foreground">Danh sách nhóm đồ án</span>
+          </div>
+          <ul className="max-h-[36rem] overflow-y-auto p-2 space-y-1">
             {sortedTeams.map((team) => {
               const hasProject = canEditProjectGroupWeights(team.projectId);
               const selected = team.teamId === resolvedTeamId;
@@ -109,37 +130,42 @@ export function ContributionGroupWeightsWorkspace({
                     type="button"
                     onClick={() => setSelectedTeamId(team.teamId)}
                     className={cn(
-                      "flex w-full cursor-pointer flex-col gap-1 rounded-xl px-3 py-2.5 text-left transition-colors",
-                      selected ? "bg-primary/10 text-foreground" : "hover:bg-muted/70"
+                      "flex w-full cursor-pointer flex-col gap-1 rounded-xl p-3 text-left transition-all",
+                      selected
+                        ? "bg-primary/10 border border-primary/30 text-foreground shadow-xs"
+                        : "border border-transparent hover:bg-muted/40 text-muted-foreground hover:text-foreground"
                     )}
                   >
-                    <span className="text-sm font-semibold">
+                    <div className="flex items-center justify-between gap-1">
+                      <span className="font-mono text-[11px] font-extrabold text-primary">
+                        Team #{team.teamNo}
+                      </span>
+                      {team.configured ? (
+                        <span className="flex items-center text-[10px] font-bold text-emerald-600 dark:text-emerald-400">
+                          <CheckCircle2Icon className="mr-0.5 size-3" />
+                          Đã lưu
+                        </span>
+                      ) : (
+                        <span className="text-[10px] text-muted-foreground">Mặc định</span>
+                      )}
+                    </div>
+
+                    <span className="line-clamp-1 text-xs font-bold text-foreground">
                       {team.teamName || `Nhóm ${team.teamNo}`}
                     </span>
-                    <span className="font-mono text-[11px] text-muted-foreground">
-                      Mã nhóm {team.teamNo}
-                    </span>
-                    <div className="mt-1 flex flex-wrap gap-1">
-                      <Badge
-                        variant="outline"
-                        className={
-                          hasProject
-                            ? "border-emerald-500/30 bg-emerald-500/15 text-[10px] text-emerald-700 dark:text-emerald-300"
-                            : "border-amber-500/30 bg-amber-500/15 text-[10px] text-amber-700 dark:text-amber-300"
-                        }
-                      >
-                        {hasProject ? "Đã có dự án" : "Chưa khởi tạo dự án"}
-                      </Badge>
-                      <Badge
-                        variant="outline"
-                        className={
-                          team.configured
-                            ? "border-emerald-500/30 bg-emerald-500/15 text-[10px] text-emerald-700 dark:text-emerald-300"
-                            : "text-[10px]"
-                        }
-                      >
-                        {team.configured ? "Đã cấu hình" : "Chưa cấu hình"}
-                      </Badge>
+
+                    <div className="mt-1 flex items-center gap-1.5">
+                      {hasProject ? (
+                        <span className="flex items-center font-mono text-[10px] text-emerald-600 dark:text-emerald-400">
+                          <CheckCircle2Icon className="mr-1 size-2.5" />
+                          Đã có dự án
+                        </span>
+                      ) : (
+                        <span className="flex items-center font-mono text-[10px] text-amber-600 dark:text-amber-400">
+                          <ClockIcon className="mr-1 size-2.5" />
+                          Chờ dự án
+                        </span>
+                      )}
                     </div>
                   </button>
                 </li>
@@ -159,8 +185,8 @@ export function ContributionGroupWeightsWorkspace({
             queryEnabled={queryEnabled && canEditProjectGroupWeights(selectedTeam.projectId)}
           />
         ) : (
-          <Card className="rounded-2xl border border-dashed border-border p-8 text-center text-sm text-muted-foreground">
-            Chọn một nhóm để xem hoặc lưu trọng số.
+          <Card className="rounded-2xl border border-dashed border-border/80 p-8 text-center text-xs text-muted-foreground shadow-xs">
+            Chọn một nhóm từ danh sách để xem và tùy biến trọng số Slicing Pie.
           </Card>
         )}
       </div>
@@ -171,7 +197,7 @@ export function ContributionGroupWeightsWorkspace({
 function teamStatusLabel(team: ContributionTeamSummary): string {
   const project = canEditProjectGroupWeights(team.projectId)
     ? "Đã có dự án"
-    : "Chưa khởi tạo dự án";
-  const configured = team.configured ? "Đã cấu hình" : "Chưa cấu hình";
-  return `Mã nhóm ${team.teamNo} · ${project} · ${configured}`;
+    : "Chờ khởi tạo dự án";
+  const configured = team.configured ? "Đã cấu hình riêng" : "Theo chuẩn chung";
+  return `Team #${team.teamNo} · ${project} · ${configured}`;
 }

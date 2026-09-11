@@ -73,23 +73,23 @@ export function getLecturerNavItems(courseId: string): NavItem[] {
     },
     {
       id: "course-teams",
-      title: "Dự án nhóm",
+      title: "Dự án & Nhóm",
       href: lecturerCourseTeamsPath(courseId),
       icon: "Users",
       match: "prefix",
-    },
-    {
-      id: "course-grades",
-      title: "Bảng điểm",
-      href: lecturerCourseGradesPath(courseId),
-      icon: "ScrollText",
-      match: "exact",
     },
     {
       id: "course-graph",
       title: "Đồ thị",
       href: lecturerCourseGraphPath(courseId),
       icon: "GitGraph",
+      match: "exact",
+    },
+    {
+      id: "course-grades",
+      title: "Đánh giá & Bảng điểm",
+      href: lecturerCourseGradesPath(courseId),
+      icon: "ScrollText",
       match: "exact",
     },
     {

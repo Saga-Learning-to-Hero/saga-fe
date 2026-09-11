@@ -5,6 +5,8 @@ import { toast } from "sonner";
 import { LecturerCourseService } from "../api/lecturer-course-service";
 import type { LecturerCourseResponse } from "../types/lecturer-course";
 import { LecturerTeamService } from "@/features/lecturer/teams/api/lecturer-team-service";
+import { LecturerWeightsService } from "@/features/lecturer/contribution/api/lecturer-weights-service";
+import { CONTRIBUTION_QUERY_KEYS } from "@/features/lecturer/contribution/hooks/use-lecturer-contribution";
 import { getApiErrorCode } from "@/lib/api-error";
 import { lecturerCoursesPath } from "../lib/course-routes";
 
@@ -21,7 +23,7 @@ export function prefetchLecturerCourses(queryClient: QueryClient) {
       queryFn: () => LecturerCourseService.getCourses(),
       staleTime: 1000 * 60 * 5,
     })
-    .catch(() => {});
+    .catch(() => { });
 }
 
 export function useLecturerCourses(options?: { enabled?: boolean }) {
@@ -57,8 +59,7 @@ export function useLecturerRoster(courseId: string, options?: { enabled?: boolea
     queryKey: LECTURER_COURSE_QUERY_KEYS.lecturerRoster(courseId),
     queryFn: () => LecturerCourseService.getRoster(courseId),
     enabled: (options?.enabled ?? true) && Boolean(courseId && courseId.trim()),
-    staleTime: 1000 * 30,
-    refetchOnWindowFocus: true,
+    staleTime: 1000 * 60 * 3,
   });
 }
 
@@ -75,12 +76,22 @@ export function usePrefetchLecturerCourse() {
     void queryClient.prefetchQuery({
       queryKey: LECTURER_COURSE_QUERY_KEYS.lecturerRoster(courseId),
       queryFn: () => LecturerCourseService.getRoster(courseId),
-      staleTime: 1000 * 30,
+      staleTime: 1000 * 60 * 3,
     });
     void queryClient.prefetchQuery({
       queryKey: ["lecturerTeams", courseId] as const,
       queryFn: () => LecturerTeamService.getTeams(courseId),
-      staleTime: 1000 * 30,
+      staleTime: 1000 * 60 * 3,
+    });
+    void queryClient.prefetchQuery({
+      queryKey: CONTRIBUTION_QUERY_KEYS.teamWeights(courseId),
+      queryFn: () => LecturerWeightsService.getTeamWeights(courseId),
+      staleTime: 1000 * 60 * 3,
+    });
+    void queryClient.prefetchQuery({
+      queryKey: CONTRIBUTION_QUERY_KEYS.sliceWeights(courseId),
+      queryFn: () => LecturerWeightsService.getSliceWeights(courseId),
+      staleTime: 1000 * 60 * 3,
     });
   };
 }

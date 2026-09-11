@@ -191,7 +191,7 @@ export function DashboardChartsSection() {
             </div>
             <div>
               <CardTitle className="text-sm font-bold text-foreground">
-                Sức khỏe & Tiến độ đồ án
+                Tình trạng & Tiến độ đồ án
               </CardTitle>
               <CardDescription className="text-[11px] text-muted-foreground">
                 Phân bố tình trạng 32 nhóm đồ án kỳ này

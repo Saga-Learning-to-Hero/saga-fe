@@ -31,8 +31,7 @@ export function useContributionSliceWeights(courseId: string, options?: { enable
     queryKey: CONTRIBUTION_QUERY_KEYS.sliceWeights(courseId),
     queryFn: () => LecturerWeightsService.getSliceWeights(courseId),
     enabled: (options?.enabled ?? true) && Boolean(courseId && courseId.trim()),
-    staleTime: 1000 * 30,
-    refetchOnWindowFocus: true,
+    staleTime: 1000 * 60 * 3,
   });
 }
 
@@ -41,8 +40,7 @@ export function useContributionTeamWeights(courseId: string, options?: { enabled
     queryKey: CONTRIBUTION_QUERY_KEYS.teamWeights(courseId),
     queryFn: () => LecturerWeightsService.getTeamWeights(courseId),
     enabled: (options?.enabled ?? true) && Boolean(courseId && courseId.trim()),
-    staleTime: 1000 * 30,
-    refetchOnWindowFocus: true,
+    staleTime: 1000 * 60 * 3,
   });
 }
 
