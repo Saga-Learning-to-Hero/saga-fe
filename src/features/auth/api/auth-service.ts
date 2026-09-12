@@ -6,6 +6,9 @@ import type {
   RegisterRequest,
   RegisterResponse,
   PasswordSetupRequest,
+  ForgotPasswordResponse,
+  ResetPasswordRequest,
+  ResetPasswordResponse,
 } from "../types/auth-dto";
 
 export class AuthService {
@@ -78,6 +81,30 @@ export class AuthService {
 
   static async logout(): Promise<void> {
     await apiClient.post<void>("/api/auth/logout", {});
+  }
+
+  static async forgotPassword(email: string): Promise<ForgotPasswordResponse> {
+    if (!email || email.trim() === "") {
+      throw new Error("Throw ValidationException: Email is required");
+    }
+
+    const response = await apiClient.post<ForgotPasswordResponse>("/api/auth/password/forgot", {
+      email: email.trim(),
+    });
+    return response.data;
+  }
+
+  static async resetPassword(payload: ResetPasswordRequest): Promise<ResetPasswordResponse> {
+    if (!payload.token || payload.token.trim() === "") {
+      throw new Error("Throw ValidationException: Token is required");
+    }
+
+    if (!payload.newPassword || payload.newPassword.length < 10) {
+      throw new Error("Throw ValidationException: New password must be at least 10 characters (PASSWORD_POLICY_VIOLATION)");
+    }
+
+    const response = await apiClient.post<ResetPasswordResponse>("/api/auth/password/reset", payload);
+    return response.data;
   }
 
   static getGoogleLoginUrl(): string {
