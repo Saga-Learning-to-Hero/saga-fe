@@ -18,6 +18,7 @@ interface CustomSelectProps {
   options: CustomSelectOption[];
   placeholder?: string;
   className?: string;
+  dropdownClassName?: string;
   disabled?: boolean;
 }
 
@@ -28,9 +29,11 @@ export function CustomSelect({
   options,
   placeholder = "Chọn một mục...",
   className,
+  dropdownClassName,
   disabled = false,
 }: CustomSelectProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [openUpward, setOpenUpward] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
   const selectedOption = options.find((opt) => opt.value === value);
@@ -55,13 +58,23 @@ export function CustomSelect({
     setIsOpen(false);
   };
 
+  const handleToggle = () => {
+    if (disabled) return;
+    if (!isOpen && containerRef.current) {
+      const rect = containerRef.current.getBoundingClientRect();
+      const spaceBelow = window.innerHeight - rect.bottom;
+      setOpenUpward(spaceBelow < 220 && rect.top > 220);
+    }
+    setIsOpen(!isOpen);
+  };
+
   return (
     <div ref={containerRef} className={cn("relative w-full", className)}>
       <button
         id={id}
         type="button"
         disabled={disabled}
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={handleToggle}
         className={cn(
           "w-full h-9 px-3 text-xs rounded-xl bg-background border border-border text-foreground transition-all duration-150 flex items-center justify-between gap-2 outline-none cursor-pointer select-none",
           isOpen ? "border-primary ring-2 ring-primary/15 shadow-xs" : "hover:border-border/80",
@@ -86,7 +99,11 @@ export function CustomSelect({
 
       {isOpen && (
         <div
-          className="absolute z-50 left-0 right-0 top-[calc(100%+4px)] max-h-60 overflow-y-auto rounded-xl bg-popover p-1 border border-border shadow-lg animate-in fade-in-0 zoom-in-95 duration-150 scrollbar-thin"
+          className={cn(
+            "absolute z-50 left-0 right-0 max-h-60 overflow-y-auto rounded-xl bg-popover p-1 border border-border shadow-lg animate-in fade-in-0 zoom-in-95 duration-150 scrollbar-thin",
+            openUpward ? "bottom-[calc(100%+4px)]" : "top-[calc(100%+4px)]",
+            dropdownClassName
+          )}
         >
           {options.length === 0 ? (
             <div className="p-2 text-center text-xs text-muted-foreground">
@@ -106,16 +123,16 @@ export function CustomSelect({
                       : "text-foreground hover:bg-muted/70"
                   )}
                 >
-                  <div className="flex items-center gap-2 truncate">
+                  <div className="flex items-center gap-2 truncate min-w-0 flex-1">
                     {option.icon && (
                       <span className={cn("shrink-0", isSelected ? "text-primary" : "text-muted-foreground")}>
                         {option.icon}
                       </span>
                     )}
-                    <div className="flex flex-col truncate">
+                    <div className="flex flex-col truncate min-w-0 flex-1">
                       <span className="truncate">{option.label}</span>
                       {option.subLabel && (
-                        <span className="text-[11px] text-muted-foreground/80 truncate font-normal">
+                        <span className="text-[11px] text-muted-foreground/80 truncate font-normal leading-tight">
                           {option.subLabel}
                         </span>
                       )}

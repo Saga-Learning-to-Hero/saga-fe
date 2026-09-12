@@ -42,7 +42,13 @@ function SuccessContent() {
           setIsSyncing(false);
           const returnParam = searchParams.get("returnPath") || searchParams.get("returnUrl");
           const target = returnParam || (user?.role === "STUDENT" ? "/student/project-info" : "/profile/integrations");
-          router.replace(target);
+          const codeParam = searchParams.get("code");
+          let finalTarget = target;
+          if (codeParam) {
+            const separator = finalTarget.includes("?") ? "&" : "?";
+            finalTarget = `${finalTarget}${separator}code=${encodeURIComponent(codeParam)}`;
+          }
+          router.replace(finalTarget);
         }
       }
     }

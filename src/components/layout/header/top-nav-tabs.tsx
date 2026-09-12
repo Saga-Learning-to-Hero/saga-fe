@@ -19,16 +19,10 @@ import {
   UserCogIcon,
   Link2Icon,
 } from "lucide-react";
-import { useQueryClient } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
 import { isNavItemActive } from "@/components/layout/sidebar/nav-config";
 import type { NavItem } from "@/components/layout/sidebar/nav-config";
-import { LecturerCourseService } from "@/features/lecturer/courses/api/lecturer-course-service";
-import { LecturerTeamService } from "@/features/lecturer/teams/api/lecturer-team-service";
-import { LecturerWeightsService } from "@/features/lecturer/contribution/api/lecturer-weights-service";
-import { LECTURER_COURSE_QUERY_KEYS } from "@/features/lecturer/courses/hooks/use-lecturer-courses";
-import { LECTURER_TEAM_QUERY_KEYS } from "@/features/lecturer/teams/hooks/use-lecturer-teams";
-import { CONTRIBUTION_QUERY_KEYS } from "@/features/lecturer/contribution/hooks/use-lecturer-contribution";
+import { usePrefetchLecturerCourse } from "@/features/lecturer/courses/hooks/use-lecturer-courses";
 
 const ICON_MAP: Record<string, React.ElementType> = {
   LayoutDashboard: LayoutDashboardIcon,
@@ -50,6 +44,7 @@ const ICON_MAP: Record<string, React.ElementType> = {
 interface TopNavTabsProps {
   items: NavItem[];
 }
+
 export function TopNavTabs({ items }: TopNavTabsProps) {
   const pathname = usePathname();
 
@@ -71,6 +66,7 @@ export function TopNavTabs({ items }: TopNavTabsProps) {
     </nav>
   );
 }
+
 function TopNavTabLink({
   item,
   isActive,
@@ -81,7 +77,7 @@ function TopNavTabLink({
   Icon: React.ElementType;
 }) {
   const linkRef = useRef<HTMLAnchorElement>(null);
-  const queryClient = useQueryClient();
+  const prefetchLecturerCourse = usePrefetchLecturerCourse();
 
   useEffect(() => {
     if (!isActive) return;
@@ -92,51 +88,7 @@ function TopNavTabLink({
     const courseMatch = item.href.match(/^\/lecturer\/courses\/([^/]+)/);
     if (!courseMatch) return;
     const courseId = decodeURIComponent(courseMatch[1]);
-
-    if (item.href.includes("/teams")) {
-      void queryClient.prefetchQuery({
-        queryKey: LECTURER_COURSE_QUERY_KEYS.lecturerRoster(courseId),
-        queryFn: () => LecturerCourseService.getRoster(courseId),
-        staleTime: 1000 * 60 * 3,
-      });
-      void queryClient.prefetchQuery({
-        queryKey: LECTURER_TEAM_QUERY_KEYS.lecturerTeams(courseId),
-        queryFn: () => LecturerTeamService.getTeams(courseId),
-        staleTime: 1000 * 60 * 3,
-      });
-    } else if (item.href.includes("/contribution-configuration")) {
-      void queryClient.prefetchQuery({
-        queryKey: CONTRIBUTION_QUERY_KEYS.sliceWeights(courseId),
-        queryFn: () => LecturerWeightsService.getSliceWeights(courseId),
-        staleTime: 1000 * 60 * 3,
-      });
-      void queryClient.prefetchQuery({
-        queryKey: CONTRIBUTION_QUERY_KEYS.teamWeights(courseId),
-        queryFn: () => LecturerWeightsService.getTeamWeights(courseId),
-        staleTime: 1000 * 60 * 3,
-      });
-    } else if (item.href.includes("/dashboard")) {
-      void queryClient.prefetchQuery({
-        queryKey: LECTURER_COURSE_QUERY_KEYS.lecturerCourse(courseId),
-        queryFn: () => LecturerCourseService.getCourseById(courseId),
-        staleTime: 1000 * 60 * 5,
-      });
-      void queryClient.prefetchQuery({
-        queryKey: LECTURER_COURSE_QUERY_KEYS.lecturerRoster(courseId),
-        queryFn: () => LecturerCourseService.getRoster(courseId),
-        staleTime: 1000 * 60 * 3,
-      });
-      void queryClient.prefetchQuery({
-        queryKey: LECTURER_TEAM_QUERY_KEYS.lecturerTeams(courseId),
-        queryFn: () => LecturerTeamService.getTeams(courseId),
-        staleTime: 1000 * 60 * 3,
-      });
-      void queryClient.prefetchQuery({
-        queryKey: CONTRIBUTION_QUERY_KEYS.teamWeights(courseId),
-        queryFn: () => LecturerWeightsService.getTeamWeights(courseId),
-        staleTime: 1000 * 60 * 3,
-      });
-    }
+    prefetchLecturerCourse(courseId);
   };
 
   return (

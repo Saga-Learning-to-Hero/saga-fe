@@ -11,6 +11,7 @@ import {
   EqualIcon,
   GitCommitIcon,
   LockIcon,
+  AlertTriangleIcon,
 } from "lucide-react";
 import type { SprintIssue, IssueStatus, IssueType, IssuePriority } from "../types/sprint-progress";
 import { Badge } from "@/components/ui/badge";
@@ -24,36 +25,88 @@ interface SprintBoardViewProps {
   currentUserStudentCode: string;
 }
 
-const COLUMNS: { id: IssueStatus; title: string; color: string }[] = [
-  { id: "TODO", title: "CẦN LÀM (TO DO)", color: "border-slate-500/40 bg-slate-500/5" },
-  { id: "IN_PROGRESS", title: "ĐANG LÀM (IN PROGRESS)", color: "border-blue-500/40 bg-blue-500/5" },
-  { id: "IN_REVIEW", title: "ĐANG KIỂM THỬ (IN REVIEW)", color: "border-purple-500/40 bg-purple-500/5" },
-  { id: "DONE", title: "HOÀN THÀNH (DONE)", color: "border-emerald-500/40 bg-emerald-500/5" },
+const COLUMNS: { id: IssueStatus; title: string; color: string; barColor: string }[] = [
+  {
+    id: "TODO",
+    title: "CẦN LÀM (TO DO)",
+    color: "border-slate-500/30 bg-slate-500/5",
+    barColor: "bg-slate-400",
+  },
+  {
+    id: "IN_PROGRESS",
+    title: "ĐANG LÀM (IN PROGRESS)",
+    color: "border-blue-500/30 bg-blue-500/5",
+    barColor: "bg-blue-500",
+  },
+  {
+    id: "IN_REVIEW",
+    title: "ĐANG KIỂM THỬ (IN REVIEW)",
+    color: "border-purple-500/30 bg-purple-500/5",
+    barColor: "bg-purple-500",
+  },
+  {
+    id: "DONE",
+    title: "HOÀN THÀNH (DONE)",
+    color: "border-emerald-500/30 bg-emerald-500/5",
+    barColor: "bg-emerald-500",
+  },
 ];
 
 export function renderTypeIcon(type: IssueType) {
   switch (type) {
     case "STORY":
-      return <span title="User Story"><BookOpenIcon className="w-3.5 h-3.5 text-emerald-500 shrink-0" /></span>;
+      return (
+        <span title="User Story">
+          <BookOpenIcon className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+        </span>
+      );
     case "TASK":
-      return <span title="Task"><CheckSquareIcon className="w-3.5 h-3.5 text-blue-500 shrink-0" /></span>;
+      return (
+        <span title="Task">
+          <CheckSquareIcon className="w-3.5 h-3.5 text-blue-500 shrink-0" />
+        </span>
+      );
     case "BUG":
-      return <span title="Bug"><BugIcon className="w-3.5 h-3.5 text-rose-500 shrink-0" /></span>;
+      return (
+        <span title="Bug">
+          <BugIcon className="w-3.5 h-3.5 text-rose-500 shrink-0" />
+        </span>
+      );
     case "SUBTASK":
-      return <span title="Subtask"><GitBranchIcon className="w-3.5 h-3.5 text-purple-500 shrink-0" /></span>;
+      return (
+        <span title="Subtask">
+          <GitBranchIcon className="w-3.5 h-3.5 text-purple-500 shrink-0" />
+        </span>
+      );
   }
 }
 
 export function renderPriorityIcon(priority: IssuePriority) {
   switch (priority) {
     case "HIGHEST":
-      return <span title="Highest Priority"><ArrowUpIcon className="w-3.5 h-3.5 text-rose-600 font-bold shrink-0" /></span>;
+      return (
+        <span title="Highest Priority">
+          <ArrowUpIcon className="w-3.5 h-3.5 text-rose-600 font-bold shrink-0" />
+        </span>
+      );
     case "HIGH":
-      return <span title="High Priority"><ArrowUpIcon className="w-3.5 h-3.5 text-orange-500 shrink-0" /></span>;
+      return (
+        <span title="High Priority">
+          <ArrowUpIcon className="w-3.5 h-3.5 text-orange-500 shrink-0" />
+        </span>
+      );
     case "MEDIUM":
-      return <span title="Medium Priority"><EqualIcon className="w-3.5 h-3.5 text-amber-500 shrink-0" /></span>;
+      return (
+        <span title="Medium Priority">
+          <EqualIcon className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+        </span>
+      );
     case "LOW":
-      return <span title="Low Priority"><ArrowDownIcon className="w-3.5 h-3.5 text-blue-500 shrink-0" /></span>;
+      return (
+        <span title="Low Priority">
+          <ArrowDownIcon className="w-3.5 h-3.5 text-blue-500 shrink-0" />
+        </span>
+      );
   }
 }
 
@@ -65,6 +118,8 @@ export function SprintBoardView({
   currentUserStudentCode,
 }: SprintBoardViewProps) {
   const [draggedIssueId, setDraggedIssueId] = useState<string | null>(null);
+
+  const totalSprintSP = issues.reduce((sum, i) => sum + (i.storyPoints || 0), 0);
 
   const handleDragStart = (e: React.DragEvent, issue: SprintIssue) => {
     const canDrag = isTeamLeader || issue.assignee.studentCode === currentUserStudentCode;
@@ -95,37 +150,47 @@ export function SprintBoardView({
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-start">
       {COLUMNS.map((col) => {
         const colIssues = issues.filter((i) => i.status === col.id);
-        const totalSP = colIssues.reduce((sum, i) => sum + (i.storyPoints || 0), 0);
+        const colSP = colIssues.reduce((sum, i) => sum + (i.storyPoints || 0), 0);
+        const percentSP = totalSprintSP > 0 ? Math.round((colSP / totalSprintSP) * 100) : 0;
 
         return (
           <div
             key={col.id}
             onDragOver={handleDragOver}
             onDrop={(e) => handleDrop(e, col.id)}
-            className={`rounded-2xl border ${col.color} p-3.5 flex flex-col transition-all max-h-[calc(100vh-220px)] min-h-[540px]`}
+            className={`rounded-2xl border ${col.color} p-3.5 flex flex-col transition-all max-h-[calc(100vh-250px)] min-h-[500px]`}
           >
-            <div className="flex items-center justify-between pb-2.5 mb-2.5 border-b border-border/50 shrink-0">
-              <div className="flex items-center gap-2">
-                <h3 className="text-xs font-bold tracking-wider text-foreground">
-                  {col.title}
-                </h3>
-                <Badge variant="secondary" className="font-mono text-[10px] px-1.5 py-0.2">
-                  {colIssues.length}
-                </Badge>
+            <div className="pb-2.5 mb-2.5 border-b border-border/50 shrink-0 space-y-1.5">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <h3 className="text-xs font-bold tracking-wider text-foreground">
+                    {col.title}
+                  </h3>
+                  <Badge variant="secondary" className="font-mono text-[10px] px-1.5 py-0.2">
+                    {colIssues.length}
+                  </Badge>
+                </div>
+                <span className="text-[11px] font-mono text-muted-foreground font-semibold">
+                  {colSP} SP
+                </span>
               </div>
-              <span className="text-[11px] font-mono text-muted-foreground font-semibold">
-                {totalSP} SP
-              </span>
+              <div className="w-full bg-muted/60 h-1 rounded-full overflow-hidden">
+                <div
+                  className={`h-full ${col.barColor} transition-all duration-300`}
+                  style={{ width: `${percentSP}%` }}
+                />
+              </div>
             </div>
 
-            <div className="space-y-2.5 flex-1 overflow-y-auto pr-1.5 scrollbar-thin scrollbar-thumb-border hover:scrollbar-thumb-muted-foreground/30 min-h-[350px]">
+            <div className="space-y-2.5 flex-1 overflow-y-auto pr-1.5 scrollbar-thin scrollbar-thumb-border hover:scrollbar-thumb-muted-foreground/30 min-h-[300px]">
               {colIssues.length === 0 ? (
-                <div className="h-28 flex items-center justify-center rounded-xl border border-dashed border-border/50 text-[11px] text-muted-foreground/60 select-none">
+                <div className="h-24 flex items-center justify-center rounded-xl border border-dashed border-border/50 text-[11px] text-muted-foreground/60 select-none">
                   Chưa có công việc nào
                 </div>
               ) : null}
               {colIssues.map((issue) => {
                 const canDrag = isTeamLeader || issue.assignee.studentCode === currentUserStudentCode;
+                const isMsrAnomaly = issue.status === "DONE" && (issue.githubCommitCount ?? 0) === 0;
 
                 return (
                   <div
@@ -133,7 +198,10 @@ export function SprintBoardView({
                     draggable={canDrag}
                     onDragStart={(e) => handleDragStart(e, issue)}
                     onClick={() => onIssueClick(issue)}
-                    className={`p-3.5 rounded-xl bg-card border border-border/70 shadow-2xs hover:shadow-xs transition-all space-y-2.5 group ${canDrag
+                    className={`p-3.5 rounded-xl bg-card border shadow-2xs hover:shadow-xs transition-all space-y-2.5 group ${isMsrAnomaly
+                        ? "border-amber-500/40 dark:border-amber-500/30"
+                        : "border-border/70"
+                      } ${canDrag
                         ? "cursor-grab active:cursor-grabbing hover:border-primary/50 hover:scale-[1.01]"
                         : "cursor-pointer opacity-90 border-dashed"
                       }`}
@@ -183,17 +251,25 @@ export function SprintBoardView({
                       <div className="flex items-center gap-2">
                         {renderPriorityIcon(issue.priority)}
 
-                        {issue.githubCommitCount ? (
+                        {issue.githubCommitCount && issue.githubCommitCount > 0 ? (
                           <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-mono text-[10px] font-semibold">
                             <GitCommitIcon className="w-3 h-3" />
                             {issue.githubCommitCount}
+                          </span>
+                        ) : isMsrAnomaly ? (
+                          <span
+                            title="Task hoàn thành nhưng chưa có commit liên kết (MSR Anomaly)"
+                            className="flex items-center gap-1 text-amber-600 dark:text-amber-400 font-mono text-[10px] font-semibold"
+                          >
+                            <AlertTriangleIcon className="w-3 h-3" />
+                            0 commit
                           </span>
                         ) : null}
                       </div>
 
                       <div className="flex items-center gap-2">
                         <Badge variant="outline" className="font-mono text-[10px] px-1.5 py-0">
-                          {issue.storyPoints} SP
+                          {issue.storyPoints > 0 ? `${issue.storyPoints} SP` : "0 SP"}
                         </Badge>
 
                         <Avatar className="w-5 h-5 border shadow-2xs">

@@ -75,12 +75,24 @@ export function useDisconnectProjectGitHub() {
 }
 
 export function useConnectProjectGitHub() {
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({
       projectId,
       ...options
     }: { projectId: string } & ConnectProjectGitHubOptions) =>
       StudentProjectService.connectProjectGitHub(projectId, options),
+    onSuccess: async (_, { projectId }) => {
+      await queryClient.invalidateQueries({
+        queryKey: PROJECT_INTEGRATIONS_QUERY_KEYS.projectIntegrations(projectId),
+      });
+      await queryClient.invalidateQueries({
+        queryKey: PROJECT_INTEGRATIONS_QUERY_KEYS.availableGitHubRepositories(projectId),
+      });
+      await queryClient.invalidateQueries({
+        queryKey: PROJECT_INTEGRATIONS_QUERY_KEYS.githubReconnectCandidates(projectId),
+      });
+    },
   });
 }
 

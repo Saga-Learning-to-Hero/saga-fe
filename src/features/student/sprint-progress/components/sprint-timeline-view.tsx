@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import {
   GanttChartSquareIcon,
   SparklesIcon,
@@ -16,66 +17,72 @@ interface SprintTimelineViewProps {
   onCreateSprintClick?: () => void;
 }
 
-const WEEKS = [
-  { id: "w1", label: "Tuần 1", date: "01/08 - 07/08" },
-  { id: "w2", label: "Tuần 2", date: "08/08 - 14/08" },
-  { id: "w3", label: "Tuần 3", date: "15/08 - 21/08" },
-  { id: "w4", label: "Tuần 4", date: "22/08 - 28/08" },
-  { id: "w5", label: "Tuần 5", date: "29/08 - 04/09" },
-  { id: "w6", label: "Tuần 6", date: "05/09 - 11/09" },
-  { id: "w7", label: "Tuần 7", date: "12/09 - 18/09" },
-  { id: "w8", label: "Tuần 8", date: "19/09 - 25/09" },
-];
-
-const SEMESTER_START_DATE = new Date("2026-08-01T00:00:00Z");
-
-function getSprintSpan(sprint: Sprint) {
-  const colorByStatus: Record<Sprint["status"], string> = {
-    COMPLETED: "bg-emerald-500",
-    ACTIVE: "bg-blue-600 animate-pulse",
-    PLANNED: "bg-slate-400",
-  };
-
-  const labelByStatus: Record<Sprint["status"], string> = {
-    COMPLETED: "Sprint (Done)",
-    ACTIVE: "Sprint (Active)",
-    PLANNED: "Sprint (Planned)",
-  };
-
-  const toWeekCol = (isoDate: string): number => {
-    const date = new Date(isoDate);
-    if (Number.isNaN(date.getTime())) return 1;
-    const msPerWeek = 7 * 24 * 60 * 60 * 1000;
-    const diffMs = date.getTime() - SEMESTER_START_DATE.getTime();
-    const weekIndex = Math.floor(diffMs / msPerWeek) + 1;
-    return Math.max(1, Math.min(WEEKS.length, weekIndex));
-  };
-
-  let startCol = 1;
-  let endCol = 1;
-  try {
-    startCol = toWeekCol(sprint.startDate);
-    endCol = toWeekCol(sprint.endDate);
-    if (endCol < startCol) endCol = startCol;
-  } catch {
-    startCol = 1;
-    endCol = 1;
-  }
-
-  return {
-    startCol,
-    endCol,
-    color: colorByStatus[sprint.status] ?? "bg-primary",
-    label: `${sprint.name} (${labelByStatus[sprint.status] ?? ""})`.trim(),
-  };
-}
-
 export function SprintTimelineView({
   sprints,
   epics,
   isTeamLeader,
   onCreateSprintClick,
 }: SprintTimelineViewProps) {
+  const baseStartDate = useMemo(() => {
+    const validDates = sprints
+      .map((s) => (s.startDate ? new Date(s.startDate).getTime() : NaN))
+      .filter((t) => !Number.isNaN(t));
+    if (validDates.length > 0) {
+      return new Date(Math.min(...validDates));
+    }
+    return new Date();
+  }, [sprints]);
+
+  const dynamicWeeks = useMemo(() => {
+    const msPerWeek = 7 * 24 * 60 * 60 * 1000;
+    return Array.from({ length: 8 }).map((_, idx) => {
+      const start = new Date(baseStartDate.getTime() + idx * msPerWeek);
+      const end = new Date(start.getTime() + 6 * 24 * 60 * 60 * 1000);
+      const format = (d: Date) =>
+        `${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}`;
+      return {
+        id: `w${idx + 1}`,
+        label: `Tuần ${idx + 1}`,
+        date: `${format(start)} - ${format(end)}`,
+      };
+    });
+  }, [baseStartDate]);
+
+  const toWeekCol = (isoDate?: string): number => {
+    if (!isoDate) return 1;
+    const date = new Date(isoDate);
+    if (Number.isNaN(date.getTime())) return 1;
+    const msPerWeek = 7 * 24 * 60 * 60 * 1000;
+    const diffMs = date.getTime() - baseStartDate.getTime();
+    const weekIndex = Math.floor(diffMs / msPerWeek) + 1;
+    return Math.max(1, Math.min(dynamicWeeks.length, weekIndex));
+  };
+
+  const getSprintSpan = (sprint: Sprint) => {
+    const colorByStatus: Record<Sprint["status"], string> = {
+      COMPLETED: "bg-emerald-500",
+      ACTIVE: "bg-blue-600 animate-pulse",
+      PLANNED: "bg-slate-400",
+    };
+
+    let startCol = 1;
+    let endCol = 1;
+    try {
+      startCol = toWeekCol(sprint.startDate);
+      endCol = toWeekCol(sprint.endDate);
+      if (endCol < startCol) endCol = startCol;
+    } catch {
+      startCol = 1;
+      endCol = 1;
+    }
+
+    return {
+      startCol,
+      endCol,
+      color: colorByStatus[sprint.status] ?? "bg-primary",
+    };
+  };
+
   return (
     <Card className="rounded-2xl border border-border/80 shadow-xs bg-card">
       <CardHeader className="p-5 border-b border-border/60">
@@ -110,9 +117,9 @@ export function SprintTimelineView({
       <CardContent className="p-5 overflow-x-auto space-y-6">
         <div className="min-w-[800px] space-y-4">
           <div className="grid grid-cols-12 gap-2 pb-2 border-b border-border/60 text-xs font-bold text-muted-foreground">
-            <div className="col-span-4">Time</div>
+            <div className="col-span-4">Sprint / Mốc thời gian</div>
             <div className="col-span-8 grid grid-cols-8 gap-1 text-center font-mono text-[11px]">
-              {WEEKS.map((w) => (
+              {dynamicWeeks.map((w) => (
                 <div key={w.id} className="p-1 bg-muted/40 rounded-lg">
                   <div>{w.label}</div>
                   <div className="text-[9px] text-muted-foreground font-normal">{w.date}</div>
@@ -122,7 +129,7 @@ export function SprintTimelineView({
           </div>
 
           <div className="space-y-3">
-            <h4 className="text-xs font-bold text-foreground uppercase tracking-wider text-muted-foreground">
+            <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
               Lộ trình Sprints:
             </h4>
 
@@ -160,7 +167,7 @@ export function SprintTimelineView({
           </div>
 
           <div className="space-y-3 pt-4 border-t border-border/60">
-            <h4 className="text-xs font-bold text-foreground uppercase tracking-wider text-muted-foreground">
+            <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
               Tiến độ Phân hệ (Epics):
             </h4>
 

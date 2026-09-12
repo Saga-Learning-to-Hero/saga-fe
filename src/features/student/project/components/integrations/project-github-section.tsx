@@ -8,6 +8,7 @@ import {
   Code2Icon,
   ShieldCheckIcon,
   UnlinkIcon,
+  RotateCcwIcon,
 } from "lucide-react";
 import type { ProjectGitHubIntegration } from "../../types/student-project";
 import { Badge } from "@/components/ui/badge";
@@ -20,6 +21,7 @@ interface ProjectGithubSectionProps {
   isDisconnectingGitHub?: boolean;
   onAddRepo?: () => void;
   onDisconnectGitHub?: () => void;
+  onChangeInstallation?: () => void;
 }
 
 export function ProjectGithubSection({
@@ -29,6 +31,7 @@ export function ProjectGithubSection({
   isDisconnectingGitHub = false,
   onAddRepo,
   onDisconnectGitHub,
+  onChangeInstallation,
 }: ProjectGithubSectionProps) {
   const repositories = github?.repositories || [];
   const hasRepos = repositories.length > 0;
@@ -63,7 +66,7 @@ export function ProjectGithubSection({
             </div>
           </div>
 
-          {isLeader && onAddRepo && (
+          {isLeader && onAddRepo && hasRepos && (
             <Button
               type="button"
               size="sm"
@@ -79,7 +82,7 @@ export function ProjectGithubSection({
               ) : (
                 <>
                   <PlusIcon className="w-3 h-3" />
-                  <span>{isConnected ? " Thêm Repo" : "Kết nối GitHub"}</span>
+                  <span>Thêm Repo</span>
                 </>
               )}
             </Button>
@@ -106,7 +109,7 @@ export function ProjectGithubSection({
                 className="h-7.5 px-3 text-[11px] font-bold rounded-lg gap-1.5 bg-purple-600 hover:bg-purple-700 text-white cursor-pointer shadow-2xs"
               >
                 <PlusIcon className="w-3 h-3" />
-                <span>Thêm GitHub Repository</span>
+                <span>{isConnected ? "Thêm GitHub Repository" : "Kết nối GitHub"}</span>
               </Button>
             )}
           </div>
@@ -145,11 +148,25 @@ export function ProjectGithubSection({
       </div>
 
       {github?.accountLogin && (
-        <div className="pt-3 border-t border-purple-500/15 flex items-center justify-between text-[11px] text-muted-foreground">
-          <span>Tài khoản GitHub liên kết:</span>
-          <Badge variant="secondary" className="font-mono text-[10px]">
-            @{github.accountLogin}
-          </Badge>
+        <div className="pt-3 border-t border-purple-500/15 flex items-center justify-between text-[11px] text-muted-foreground flex-wrap gap-2">
+          <div className="flex items-center gap-2">
+            <span>Tài khoản GitHub liên kết:</span>
+            <Badge variant="secondary" className="font-mono text-[10px]">
+              @{github.accountLogin}
+            </Badge>
+          </div>
+          {isLeader && onChangeInstallation && (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={onChangeInstallation}
+              className="h-6 px-2 text-[10px] font-semibold text-purple-600 dark:text-purple-400 border-purple-500/30 hover:bg-purple-500/10 rounded-md gap-1 cursor-pointer"
+            >
+              <RotateCcwIcon className="w-2.5 h-2.5" />
+              <span>Đổi tài khoản / Cài đặt mới</span>
+            </Button>
+          )}
         </div>
       )}
 

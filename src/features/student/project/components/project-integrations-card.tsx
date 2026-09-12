@@ -28,7 +28,11 @@ export function ProjectIntegrationsCard({ projectId, isLeader }: ProjectIntegrat
   const [syncingId, setSyncingId] = useState<string | null>(null);
   const [disconnectModalType, setDisconnectModalType] = useState<"jira" | "github" | null>(null);
   const [isReposModalOpen, setIsReposModalOpen] = useState(false);
-  const [isGitHubInstallationsModalOpen, setIsGitHubInstallationsModalOpen] = useState(false);
+  const [isGitHubInstallationsModalOpen, setIsGitHubInstallationsModalOpen] = useState(() => {
+    if (typeof window === "undefined") return false;
+    const urlParams = new URLSearchParams(window.location.search);
+    return urlParams.get("code") === "GITHUB_INSTALLATION_SELECTION_REQUIRED";
+  });
   const [isJiraModalOpen, setIsJiraModalOpen] = useState(() => {
     if (typeof window === "undefined") return false;
     const urlParams = new URLSearchParams(window.location.search);
@@ -61,6 +65,10 @@ export function ProjectIntegrationsCard({ projectId, isLeader }: ProjectIntegrat
       void refetch();
     }
 
+    if (code === "GITHUB_INSTALLATION_SELECTION_REQUIRED") {
+      window.history.replaceState({}, "", window.location.pathname);
+    }
+
     if (state && installationId) {
       toast.loading("Đang hoàn tất kết nối GitHub cho dự án...", { id: "github-setup-callback" });
       mutateSetupCallback(
@@ -70,6 +78,7 @@ export function ProjectIntegrationsCard({ projectId, isLeader }: ProjectIntegrat
             window.history.replaceState({}, "", window.location.pathname);
             toast.success("Kết nối GitHub với dự án nhóm thành công!", { id: "github-setup-callback" });
             void refetch();
+            setIsReposModalOpen(true);
           },
           onError: () => toast.error("Lỗi khi kết nối GitHub với dự án. Vui lòng thử lại.", { id: "github-setup-callback" }),
         }
@@ -124,8 +133,11 @@ export function ProjectIntegrationsCard({ projectId, isLeader }: ProjectIntegrat
   };
 
   const handleConnectGitHub = () => {
-    const hasRepos = (integrations?.github?.repositories || []).length > 0;
-    if (hasRepos) {
+    const isConfigured = Boolean(
+      integrations?.github?.accountLogin ||
+      (integrations?.github?.repositories || []).length > 0
+    );
+    if (isConfigured) {
       setIsReposModalOpen(true);
     } else {
       void handleRedirectGitHubConnect();
@@ -239,6 +251,7 @@ export function ProjectIntegrationsCard({ projectId, isLeader }: ProjectIntegrat
               isDisconnectingGitHub={disconnectGitHubMutation.isPending}
               onAddRepo={handleConnectGitHub}
               onDisconnectGitHub={() => setDisconnectModalType("github")}
+              onChangeInstallation={() => setIsGitHubInstallationsModalOpen(true)}
             />
           </div>
         )}
@@ -268,6 +281,7 @@ export function ProjectIntegrationsCard({ projectId, isLeader }: ProjectIntegrat
         open={isGitHubInstallationsModalOpen}
         onOpenChange={setIsGitHubInstallationsModalOpen}
         projectId={projectId}
+        onSuccessConnect={() => setIsReposModalOpen(true)}
       />
 
       <ProjectJiraConfigDialog

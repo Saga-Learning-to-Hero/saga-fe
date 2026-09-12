@@ -26,11 +26,19 @@ import { Textarea } from "@/components/ui/textarea";
 import { CustomSelect } from "@/components/common/custom-select";
 import { TaskLinkedCommitsList } from "./task-linked-commits-list";
 import { TaskEvidencePanel } from "./task-evidence-panel";
+import {
+  useCreateProjectTask,
+  usePatchProjectTask,
+  useDeleteProjectTask,
+  useTransitionTask,
+  useTaskOptions,
+} from "../hooks/use-project-tasks";
 
 interface IssueDetailsModalProps {
   isOpen: boolean;
   issue: SprintIssue | null;
   projectId?: string;
+  isJiraConnected?: boolean;
   defaultSprintId?: string;
   sprints: Sprint[];
   teamMembers: { id: string; name: string; avatar: string; studentCode: string }[];
@@ -45,6 +53,7 @@ export function IssueDetailsModal({
   isOpen,
   issue,
   projectId,
+  isJiraConnected = true,
   defaultSprintId,
   sprints,
   teamMembers,
@@ -58,6 +67,14 @@ export function IssueDetailsModal({
   const isOwner = issue ? issue.assignee.studentCode === currentUserStudentCode : true;
   const canEdit = isTeamLeader || isOwner;
 
+  const { data: taskOptions } = useTaskOptions(projectId, {
+    enabled: Boolean(isOpen && projectId && isJiraConnected),
+  });
+  const createTaskMutation = useCreateProjectTask();
+  const patchTaskMutation = usePatchProjectTask();
+  const deleteTaskMutation = useDeleteProjectTask();
+  const transitionTaskMutation = useTransitionTask();
+
   const [form, setForm] = useState({
     key: issue?.key || "SAGA-NEW",
     summary: issue?.summary || "",
@@ -65,9 +82,9 @@ export function IssueDetailsModal({
     type: issue?.type || ("STORY" as IssueType),
     priority: issue?.priority || ("MEDIUM" as IssuePriority),
     status: issue?.status || ("TODO" as IssueStatus),
-    storyPoints: issue?.storyPoints || 3,
+    storyPoints: typeof issue?.storyPoints === "number" ? issue.storyPoints : 0,
     assignee: issue?.assignee || teamMembers[0],
-    labels: issue?.labels ? issue.labels.join(", ") : "Frontend, UI/UX",
+    labels: issue?.labels ? issue.labels.join(", ") : "",
     sprintId: issue?.sprintId || defaultSprintId || sprints[0]?.id,
   });
 
@@ -118,43 +135,99 @@ export function IssueDetailsModal({
 
   if (!isOpen) return null;
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
     if (!canEdit) return;
 
     setIsSubmitting(true);
     setSuccessMsg("");
-    await new Promise((r) => setTimeout(r, 600));
 
     const labelsArray = form.labels
       .split(",")
       .map((l) => l.trim())
       .filter(Boolean);
 
-    const finalIssue: SprintIssue = {
-      id: issue?.id || `issue-${Date.now()}`,
-      key: form.key || `SAGA-199`,
-      summary: form.summary || "Nhiệm vụ mới",
-      description: form.description,
-      type: form.type as IssueType,
-      priority: form.priority as IssuePriority,
-      status: form.status as IssueStatus,
-      storyPoints: Number(form.storyPoints) || 1,
-      assignee: form.assignee || teamMembers[0],
-      labels: labelsArray,
-      sprintId: form.sprintId || sprints[0]?.id,
-      createdAt: issue?.createdAt || new Date().toISOString(),
-      githubCommitCount: issue?.githubCommitCount || 0,
-    };
+    let savedKey = form.key || "SAGA-NEW";
 
-    onSave(finalIssue);
+    try {
+      if (projectId) {
+        if (isEditing && issue) {
+          if (form.status !== issue.status && isTeamLeader) {
+            try {
+              await transitionTaskMutation.mutateAsync({
+                projectId,
+                taskId: issue.id,
+                data: { targetStatus: form.status },
+              });
+            } catch { }
+          }
 
-    setIsSubmitting(false);
-    setSuccessMsg(isEditing ? "Cập nhật công việc thành công!" : "Đã tạo task mới thành công!");
-    setTimeout(() => {
-      setSuccessMsg("");
+          const res = await patchTaskMutation.mutateAsync({
+            projectId,
+            taskId: issue.id,
+            data: {
+              summary: form.summary,
+              description: form.description || undefined,
+              storyPoints: Number(form.storyPoints) || undefined,
+              sprintExternalId: form.sprintId === "backlog" ? undefined : form.sprintId,
+              moveToBacklog: form.sprintId === "backlog",
+            },
+          });
+          savedKey = res.externalKey || savedKey;
+        } else {
+          const res = await createTaskMutation.mutateAsync({
+            projectId,
+            data: {
+              summary: form.summary,
+              description: form.description || undefined,
+              storyPoints: Number(form.storyPoints) || undefined,
+              sprintExternalId: form.sprintId === "backlog" ? undefined : form.sprintId,
+            },
+          });
+          savedKey = res.externalKey || savedKey;
+        }
+      }
+
+      const finalIssue: SprintIssue = {
+        id: issue?.id || `issue-${Date.now()}`,
+        key: savedKey,
+        summary: form.summary || "Nhiệm vụ mới",
+        description: form.description,
+        type: form.type as IssueType,
+        priority: form.priority as IssuePriority,
+        status: form.status as IssueStatus,
+        storyPoints: Number(form.storyPoints) || 1,
+        assignee: form.assignee || teamMembers[0],
+        labels: labelsArray,
+        sprintId: form.sprintId || sprints[0]?.id,
+        createdAt: issue?.createdAt || new Date().toISOString(),
+        githubCommitCount: issue?.githubCommitCount || 0,
+      };
+
+      onSave(finalIssue);
+      setSuccessMsg(isEditing ? "Cập nhật công việc thành công!" : "Đã tạo task mới thành công!");
+      setTimeout(() => {
+        setSuccessMsg("");
+        onClose();
+      }, 800);
+    } catch {
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleDeleteTask = async () => {
+    if (!issue) return;
+    if (projectId) {
+      try {
+        await deleteTaskMutation.mutateAsync({ projectId, taskId: issue.id });
+        onDelete?.(issue.id);
+        onClose();
+      } catch { }
+    } else {
+      onDelete?.(issue.id);
       onClose();
-    }, 1000);
+    }
   };
 
   return (
@@ -190,7 +263,7 @@ export function IssueDetailsModal({
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-5 sm:p-6 space-y-4 overflow-y-auto flex-1 scrollbar-thin">
+        <div className="p-5 sm:p-6 space-y-4 overflow-y-auto flex-1 scrollbar-thin">
           {!canEdit && (
             <div className="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-700 dark:text-amber-300 text-xs font-semibold flex items-center gap-2 animate-in fade-in-0">
               <LockIcon className="w-4 h-4 shrink-0 text-amber-500" />
@@ -208,16 +281,22 @@ export function IssueDetailsModal({
           )}
 
           <div className="space-y-1.5">
-            <Label htmlFor="issue-summary" className="text-xs font-semibold">
-              Tên công việc (Summary) <span className="text-destructive">*</span>
+            <Label htmlFor="issue-title" className="text-xs font-semibold">
+              Tên công việc / Tóm tắt Jira <span className="text-destructive">*</span>
             </Label>
             <Input
-              id="issue-summary"
+              id="issue-title"
               type="text"
               required
               disabled={!canEdit}
               value={form.summary}
               onChange={(e) => setForm((f) => ({ ...f, summary: e.target.value }))}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  void handleSubmit();
+                }
+              }}
               placeholder="Nhập tên nhiệm vụ Jira..."
               className="h-9 text-xs rounded-xl bg-card font-semibold disabled:opacity-80"
             />
@@ -233,12 +312,34 @@ export function IssueDetailsModal({
                 disabled={!canEdit}
                 value={form.type}
                 onChange={(val) => setForm((f) => ({ ...f, type: val as IssueType }))}
-                options={[
-                  { value: "STORY", label: "User Story", icon: renderTypeIcon("STORY") },
-                  { value: "TASK", label: "Task", icon: renderTypeIcon("TASK") },
-                  { value: "BUG", label: "Bug", icon: renderTypeIcon("BUG") },
-                  { value: "SUBTASK", label: "Sub-task", icon: renderTypeIcon("SUBTASK") },
-                ]}
+                options={
+                  taskOptions?.issueTypes && taskOptions.issueTypes.length > 0
+                    ? taskOptions.issueTypes.map((t) => ({
+                      value: t.name.toUpperCase().includes("STORY")
+                        ? "STORY"
+                        : t.name.toUpperCase().includes("BUG")
+                          ? "BUG"
+                          : t.name.toUpperCase().includes("SUB")
+                            ? "SUBTASK"
+                            : "TASK",
+                      label: t.name,
+                      icon: renderTypeIcon(
+                        t.name.toUpperCase().includes("STORY")
+                          ? "STORY"
+                          : t.name.toUpperCase().includes("BUG")
+                            ? "BUG"
+                            : t.name.toUpperCase().includes("SUB")
+                              ? "SUBTASK"
+                              : "TASK"
+                      ),
+                    }))
+                    : [
+                      { value: "STORY", label: "User Story", icon: renderTypeIcon("STORY") },
+                      { value: "TASK", label: "Task", icon: renderTypeIcon("TASK") },
+                      { value: "BUG", label: "Bug", icon: renderTypeIcon("BUG") },
+                      { value: "SUBTASK", label: "Sub-task", icon: renderTypeIcon("SUBTASK") },
+                    ]
+                }
               />
             </div>
 
@@ -351,8 +452,8 @@ export function IssueDetailsModal({
               disabled={!canEdit}
               value={form.labels}
               onChange={(e) => setForm((f) => ({ ...f, labels: e.target.value }))}
-              placeholder="Frontend, UI/UX, API, Security"
-              className="h-9 text-xs rounded-xl bg-card font-mono disabled:opacity-80"
+              placeholder="VD: Frontend, Backend, UI/UX"
+              className="h-9 text-xs rounded-xl bg-card disabled:opacity-80"
             />
           </div>
 
@@ -367,16 +468,16 @@ export function IssueDetailsModal({
               disabled={!canEdit}
               value={form.description}
               onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
-              placeholder="Nhập ghi chú hoặc yêu cầu chi tiết của task..."
+              placeholder="Nhập chi tiết yêu cầu kỹ thuật, tiêu chí chấp nhận Acceptance Criteria..."
               className="text-xs rounded-xl bg-card resize-none disabled:opacity-80"
             />
           </div>
 
-          {isEditing && issue?.id && (
+          {issue && (
             <>
               <TaskLinkedCommitsList
-                projectId={projectId}
                 taskId={issue.id}
+                projectId={projectId}
                 onSelectCommit={handleToggleCommitSha}
                 onSelectAllCommits={handleSelectAllCommitShas}
                 selectedShas={selectedShasList}
@@ -396,10 +497,7 @@ export function IssueDetailsModal({
                 type="button"
                 variant="ghost"
                 size="sm"
-                onClick={() => {
-                  if (issue) onDelete(issue.id);
-                  onClose();
-                }}
+                onClick={handleDeleteTask}
                 className="h-9 text-xs text-destructive hover:bg-destructive/10 rounded-xl gap-1 cursor-pointer"
               >
                 <Trash2Icon className="w-4 h-4" />
@@ -422,7 +520,8 @@ export function IssueDetailsModal({
 
               {canEdit && (
                 <Button
-                  type="submit"
+                  type="button"
+                  onClick={() => void handleSubmit()}
                   disabled={isSubmitting}
                   className="h-9 text-xs font-bold rounded-xl gap-2 cursor-pointer shadow-xs bg-blue-600 hover:bg-blue-700 text-white px-5"
                 >
@@ -441,7 +540,7 @@ export function IssueDetailsModal({
               )}
             </div>
           </div>
-        </form>
+        </div>
       </div>
     </div>
   );

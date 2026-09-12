@@ -29,8 +29,8 @@ const REPO_ROLE_OPTIONS = [
   { value: "FRONTEND", label: "Frontend", subLabel: "Giao diện Web / App" },
   { value: "BACKEND", label: "Backend", subLabel: "API & Cơ sở dữ liệu" },
   { value: "FULLSTACK", label: "Fullstack", subLabel: "Frontend & Backend" },
-  { value: "DOCS", label: "Tài liệu", subLabel: "Tài liệu kiến trúc & SRS" },
-  { value: "OTHER", label: "Khác", subLabel: "Kho lưu trữ phụ trợ" },
+  { value: "DOCS", label: "Tài liệu", subLabel: "Kiến trúc & SRS" },
+  { value: "OTHER", label: "Khác", subLabel: "Kho lưu trữ phụ" },
 ];
 
 interface ProjectAvailableReposDialogProps {
@@ -124,8 +124,8 @@ export function ProjectAvailableReposDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="max-w-2xl bg-card border border-border/80 rounded-2xl shadow-xl p-5 space-y-4">
-        <DialogHeader className="space-y-1.5 text-left border-b border-border/60 pb-3">
+      <DialogContent className="max-w-2xl bg-card border border-border/80 rounded-2xl shadow-2xl p-0 overflow-hidden flex flex-col max-h-[85vh]">
+        <DialogHeader className="p-5 border-b border-border/60 bg-muted/20 shrink-0 text-left">
           <div className="flex items-center justify-between gap-3 pr-8">
             <div className="flex items-center gap-2.5">
               <div className="w-9 h-9 rounded-xl bg-purple-600 text-white flex items-center justify-center shrink-0 shadow-xs">
@@ -143,7 +143,7 @@ export function ProjectAvailableReposDialog({
           </div>
         </DialogHeader>
 
-        <div className="space-y-2 max-h-[300px] overflow-y-auto pr-1">
+        <div className="p-5 overflow-y-auto flex-1 space-y-2.5 min-h-[300px]">
           {isLoading ? (
             <div className="py-12 flex flex-col items-center justify-center gap-2 text-xs text-muted-foreground animate-pulse">
               <Loader2Icon className="w-5 h-5 animate-spin text-purple-600" />
@@ -162,7 +162,7 @@ export function ProjectAvailableReposDialog({
               return (
                 <div
                   key={repo.id}
-                  className={`p-3 rounded-xl border transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs ${isSelected ? "bg-purple-500/10 border-purple-500/40" : "bg-muted/20 border-border/70 hover:border-purple-500/30"
+                  className={`p-3.5 rounded-xl border transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs relative ${isSelected ? "bg-purple-500/10 border-purple-500/40 z-10" : "bg-muted/20 border-border/70 hover:border-purple-500/30"
                     }`}
                 >
                   <div className="flex items-center gap-3 min-w-0">
@@ -197,13 +197,14 @@ export function ProjectAvailableReposDialog({
                   </div>
 
                   {isSelected && (
-                    <div className="w-full sm:w-44 shrink-0 animate-in fade-in-0">
+                    <div className="w-full sm:w-56 shrink-0 animate-in fade-in-0">
                       <CustomSelect
                         id={`role-${repo.id}`}
                         value={currentRole}
                         onChange={(val) => handleRoleChange(repo.id, val)}
                         options={REPO_ROLE_OPTIONS}
                         className="text-xs"
+                        dropdownClassName="min-w-full sm:min-w-[220px] right-0"
                       />
                     </div>
                   )}
@@ -213,7 +214,7 @@ export function ProjectAvailableReposDialog({
           )}
         </div>
 
-        <div className="border-t border-border/60 pt-3 flex flex-col sm:flex-row items-center justify-between gap-2.5">
+        <div className="p-4 border-t border-border/60 flex flex-col sm:flex-row items-center justify-between gap-2.5 shrink-0 bg-muted/20">
           <Button
             type="button"
             variant="outline"

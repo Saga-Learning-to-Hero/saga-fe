@@ -32,12 +32,14 @@ interface ProjectGitHubInstallationsDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   projectId: string;
+  onSuccessConnect?: () => void;
 }
 
 export function ProjectGitHubInstallationsDialog({
   open,
   onOpenChange,
   projectId,
+  onSuccessConnect,
 }: ProjectGitHubInstallationsDialogProps) {
   const {
     data: candidates = [],
@@ -67,6 +69,7 @@ export function ProjectGitHubInstallationsDialog({
       } else {
         toast.success("Kết nối GitHub thành công!", { id: "github-select-connect" });
         onOpenChange(false);
+        onSuccessConnect?.();
       }
     } catch {
       toast.error("Lỗi khi kết nối tài khoản GitHub đã chọn. Vui lòng thử lại sau.", { id: "github-select-connect" });
@@ -84,6 +87,7 @@ export function ProjectGitHubInstallationsDialog({
       } else {
         toast.success("Đã hoàn tất cài đặt!", { id: "github-install-new" });
         onOpenChange(false);
+        onSuccessConnect?.();
       }
     } catch {
       toast.error("Lỗi khi mở trang cài đặt GitHub mới. Vui lòng thử lại sau.", { id: "github-install-new" });
@@ -96,7 +100,7 @@ export function ProjectGitHubInstallationsDialog({
     <Dialog open={open} onOpenChange={(val) => !isPending && onOpenChange(val)}>
       <DialogContent className="max-w-xl bg-card border border-border/80 rounded-2xl shadow-2xl p-0 overflow-hidden flex flex-col max-h-[85vh]">
         <DialogHeader className="p-5 border-b border-border/60 bg-muted/20 shrink-0">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between gap-3 pr-9">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
                 <GitBranchIcon className="w-5 h-5" />
@@ -115,7 +119,7 @@ export function ProjectGitHubInstallationsDialog({
               size="icon"
               disabled={isLoading || isRefetching}
               onClick={() => void refetch()}
-              className="h-8 w-8 text-muted-foreground hover:text-foreground cursor-pointer"
+              className="h-8 w-8 text-muted-foreground hover:text-foreground cursor-pointer shrink-0"
               title="Tải lại danh sách"
             >
               <RefreshCwIcon className={`w-3.5 h-3.5 ${isRefetching ? "animate-spin" : ""}`} />
@@ -154,11 +158,10 @@ export function ProjectGitHubInstallationsDialog({
                   <div
                     key={String(candidateId)}
                     onClick={() => setSelectedIdState(candidateId)}
-                    className={`flex items-center justify-between p-3.5 rounded-xl border transition-all cursor-pointer ${
-                      isSelected
+                    className={`flex items-center justify-between p-3.5 rounded-xl border transition-all cursor-pointer ${isSelected
                         ? "border-primary bg-primary/5 shadow-xs"
                         : "border-border/70 hover:border-border hover:bg-muted/30"
-                    }`}
+                      }`}
                   >
                     <div className="flex items-center gap-3 min-w-0">
                       <div className="shrink-0 text-primary">

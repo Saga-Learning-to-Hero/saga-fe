@@ -14,10 +14,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { useCreateSprint, usePatchSprint } from "../hooks/use-project-sprints";
 
 interface SprintModalProps {
   isOpen: boolean;
   sprint: Sprint | null;
+  projectId?: string;
   onClose: () => void;
   onSave: (sprint: Sprint) => void;
 }
@@ -25,20 +27,31 @@ interface SprintModalProps {
 export function SprintModal({
   isOpen,
   sprint,
+  projectId,
   onClose,
   onSave,
 }: SprintModalProps) {
   const isEditing = Boolean(sprint);
 
-  const [form, setForm] = useState({
-    name: sprint?.name || "Sprint Mới",
-    goal: sprint?.goal || "",
-    startDate: sprint?.startDate || "2026-09-01",
-    endDate: sprint?.endDate || "2026-09-15",
+  const [form, setForm] = useState(() => {
+    const today = new Date();
+    const todayStr = today.toISOString().split("T")[0];
+    const twoWeeks = new Date(today.getTime() + 14 * 24 * 60 * 60 * 1000);
+    const defaultEndDateStr = twoWeeks.toISOString().split("T")[0];
+
+    return {
+      name: sprint?.name || "Sprint Mới",
+      goal: sprint?.goal || "",
+      startDate: sprint?.startDate || todayStr,
+      endDate: sprint?.endDate || defaultEndDateStr,
+    };
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successMsg, setSuccessMsg] = useState("");
+
+  const createSprintMutation = useCreateSprint();
+  const patchSprintMutation = usePatchSprint();
 
   if (!isOpen) return null;
 
@@ -46,27 +59,76 @@ export function SprintModal({
     e.preventDefault();
     setIsSubmitting(true);
     setSuccessMsg("");
-    await new Promise((r) => setTimeout(r, 600));
 
-    const finalSprint: Sprint = {
-      id: sprint?.id || `sprint-${Date.now()}`,
-      name: form.name,
-      goal: form.goal || "Mục tiêu Sprint nâng cao tiến độ đồ án",
-      status: sprint?.status || "PLANNED",
-      startDate: form.startDate,
-      endDate: form.endDate,
-      totalStoryPoints: sprint?.totalStoryPoints || 0,
-      completedStoryPoints: sprint?.completedStoryPoints || 0,
-    };
+    try {
+      if (projectId) {
+        if (isEditing && sprint) {
+          const res = await patchSprintMutation.mutateAsync({
+            projectId,
+            sprintId: sprint.id,
+            data: {
+              name: form.name,
+              goal: form.goal || undefined,
+              startDate: form.startDate || undefined,
+              endDate: form.endDate || undefined,
+            },
+          });
+          const finalSprint: Sprint = {
+            id: res.id,
+            name: res.name,
+            goal: res.goal || form.goal,
+            status: sprint.status,
+            startDate: res.startDate || form.startDate,
+            endDate: res.endDate || form.endDate,
+            totalStoryPoints: sprint.totalStoryPoints || 0,
+            completedStoryPoints: sprint.completedStoryPoints || 0,
+          };
+          onSave(finalSprint);
+        } else {
+          const res = await createSprintMutation.mutateAsync({
+            projectId,
+            data: {
+              name: form.name,
+              goal: form.goal || undefined,
+              startDate: form.startDate || undefined,
+              endDate: form.endDate || undefined,
+            },
+          });
+          const finalSprint: Sprint = {
+            id: res.id,
+            name: res.name,
+            goal: res.goal || form.goal,
+            status: "PLANNED",
+            startDate: res.startDate || form.startDate,
+            endDate: res.endDate || form.endDate,
+            totalStoryPoints: 0,
+            completedStoryPoints: 0,
+          };
+          onSave(finalSprint);
+        }
+      } else {
+        const finalSprint: Sprint = {
+          id: sprint?.id || `sprint-${Date.now()}`,
+          name: form.name,
+          goal: form.goal || "Mục tiêu Sprint nâng cao tiến độ đồ án",
+          status: sprint?.status || "PLANNED",
+          startDate: form.startDate,
+          endDate: form.endDate,
+          totalStoryPoints: sprint?.totalStoryPoints || 0,
+          completedStoryPoints: sprint?.completedStoryPoints || 0,
+        };
+        onSave(finalSprint);
+      }
 
-    onSave(finalSprint);
-
-    setIsSubmitting(false);
-    setSuccessMsg(isEditing ? "Đã cập nhật Sprint!" : "Tạo Sprint mới thành công!");
-    setTimeout(() => {
-      setSuccessMsg("");
-      onClose();
-    }, 1000);
+      setSuccessMsg(isEditing ? "Đã cập nhật Sprint trên Jira!" : "Tạo Sprint mới trên Jira thành công!");
+      setTimeout(() => {
+        setSuccessMsg("");
+        onClose();
+      }, 800);
+    } catch {
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -82,7 +144,7 @@ export function SprintModal({
                 {isEditing ? "Chỉnh sửa thông tin Sprint" : "Tạo Sprint mới"}
               </h3>
               <p className="text-xs text-muted-foreground">
-                Khởi tạo mốc thời gian và mục tiêu Sprint (Sprint Goal)
+                Khởi tạo mốc thời gian và mục tiêu Sprint đồng bộ với Jira
               </p>
             </div>
           </div>
@@ -174,6 +236,7 @@ export function SprintModal({
               variant="ghost"
               size="sm"
               onClick={onClose}
+              disabled={isSubmitting}
               className="h-9 text-xs rounded-xl"
             >
               Hủy
