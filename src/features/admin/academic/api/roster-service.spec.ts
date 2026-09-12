@@ -339,5 +339,152 @@ describe("RosterService", () => {
       );
     }
   );
+
+  fptTest(
+    {
+      id: "UTCID15",
+      type: "N",
+      executedDate: "12/09/2026",
+      description: "Rut ten sinh vien da co tai khoan khoi lop thanh cong",
+    },
+    async () => {
+      const mockResult = {
+        kind: "ENROLLMENT",
+        id: "enr-1",
+        enrollmentId: "enr-1",
+        studentCode: "SE170504",
+        fullName: "Le Hoang Hai",
+        email: "hailhse170504@fpt.edu.vn",
+        enrollmentStatus: "WITHDRAWN",
+      };
+
+      vi.spyOn(apiClient, "delete").mockResolvedValueOnce({ data: mockResult });
+
+      const res = await RosterService.removeEnrollment(mockCourseId, "enr-1");
+
+      expect(res.enrollmentStatus).toBe("WITHDRAWN");
+      expect(res.enrollmentId).toBe("enr-1");
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID16",
+      type: "A",
+      executedDate: "12/09/2026",
+      description: "Nem ValidationException khi courseId hoac enrollmentId bi rong khi rut ten",
+    },
+    async () => {
+      await expect(RosterService.removeEnrollment("", "enr-1")).rejects.toThrow(
+        "Throw ValidationException: Course ID is required"
+      );
+
+      await expect(RosterService.removeEnrollment("   ", "enr-1")).rejects.toThrow(
+        "Throw ValidationException: Course ID is required"
+      );
+
+      await expect(RosterService.removeEnrollment(mockCourseId, "")).rejects.toThrow(
+        "Throw ValidationException: Enrollment ID is required"
+      );
+
+      await expect(RosterService.removeEnrollment(mockCourseId, "   ")).rejects.toThrow(
+        "Throw ValidationException: Enrollment ID is required"
+      );
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID17",
+      type: "A",
+      executedDate: "12/09/2026",
+      description: "Nem loi khi Backend tra ve ma loi TEAM_LEADER_REMOVAL_REQUIRES_REASSIGNMENT",
+    },
+    async () => {
+      vi.spyOn(apiClient, "delete").mockRejectedValueOnce(
+        new Error("TEAM_LEADER_REMOVAL_REQUIRES_REASSIGNMENT")
+      );
+
+      await expect(RosterService.removeEnrollment(mockCourseId, "enr-leader")).rejects.toThrow(
+        "TEAM_LEADER_REMOVAL_REQUIRES_REASSIGNMENT"
+      );
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID18",
+      type: "N",
+      executedDate: "12/09/2026",
+      description: "Huy thu moi sinh vien chua dang ky tham gia lop thanh cong",
+    },
+    async () => {
+      const mockResult = {
+        kind: "INVITATION",
+        id: "inv-1",
+        invitationId: "inv-1",
+        studentCode: "SE180001",
+        fullName: "Nguyen Van A",
+        email: "anvse180001@fpt.edu.vn",
+        invitationStatus: "CANCELLED",
+      };
+
+      vi.spyOn(apiClient, "delete").mockResolvedValueOnce({ data: mockResult });
+
+      const res = await RosterService.cancelInvitation(mockCourseId, "inv-1");
+
+      expect(res.invitationStatus).toBe("CANCELLED");
+      expect(res.invitationId).toBe("inv-1");
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID19",
+      type: "A",
+      executedDate: "12/09/2026",
+      description: "Nem ValidationException khi courseId hoac invitationId bi rong khi huy thu moi",
+    },
+    async () => {
+      await expect(RosterService.cancelInvitation("", "inv-1")).rejects.toThrow(
+        "Throw ValidationException: Course ID is required"
+      );
+
+      await expect(RosterService.cancelInvitation("   ", "inv-1")).rejects.toThrow(
+        "Throw ValidationException: Course ID is required"
+      );
+
+      await expect(RosterService.cancelInvitation(mockCourseId, "")).rejects.toThrow(
+        "Throw ValidationException: Invitation ID is required"
+      );
+
+      await expect(RosterService.cancelInvitation(mockCourseId, "   ")).rejects.toThrow(
+        "Throw ValidationException: Invitation ID is required"
+      );
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID20",
+      type: "B",
+      executedDate: "12/09/2026",
+      description: "Trim khoang trang o courseId, enrollmentId va invitationId truoc khi goi API",
+    },
+    async () => {
+      const deleteSpy = vi.spyOn(apiClient, "delete").mockResolvedValue({ data: {} });
+
+      await RosterService.removeEnrollment(`  ${mockCourseId}  `, "  enr-99  ");
+      expect(deleteSpy).toHaveBeenCalledWith(
+        `/api/admin/courses/${mockCourseId}/roster/enrollments/enr-99`
+      );
+
+      await RosterService.cancelInvitation(`  ${mockCourseId}  `, "  inv-99  ");
+      expect(deleteSpy).toHaveBeenCalledWith(
+        `/api/admin/courses/${mockCourseId}/roster/invitations/inv-99`
+      );
+    }
+  );
 });
+
 

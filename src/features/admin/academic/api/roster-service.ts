@@ -211,4 +211,39 @@ export class RosterService {
     );
     return response.data;
   }
+
+  static async removeEnrollment(
+    courseId: string,
+    enrollmentId: string
+  ): Promise<CourseRosterEntry> {
+    if (!courseId || !courseId.trim()) {
+      throw new Error("Throw ValidationException: Course ID is required");
+    }
+    if (!enrollmentId || !enrollmentId.trim()) {
+      throw new Error("Throw ValidationException: Enrollment ID is required");
+    }
+
+    const response = await apiClient.delete<CourseRosterEntry>(
+      `/api/admin/courses/${encodeURIComponent(courseId.trim())}/roster/enrollments/${encodeURIComponent(enrollmentId.trim())}`
+    );
+    return response.data;
+  }
+
+  static async cancelInvitation(
+    courseId: string,
+    invitationId: string
+  ): Promise<CourseRosterEntry> {
+    if (!courseId || !courseId.trim()) {
+      throw new Error("Throw ValidationException: Course ID is required");
+    }
+    if (!invitationId || !invitationId.trim()) {
+      throw new Error("Throw ValidationException: Invitation ID is required");
+    }
+
+    const response = await apiClient.delete<CourseRosterEntry>(
+      `/api/admin/courses/${encodeURIComponent(courseId.trim())}/roster/invitations/${encodeURIComponent(invitationId.trim())}`
+    );
+    return response.data;
+  }
 }
+

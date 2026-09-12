@@ -428,3 +428,70 @@ export function useAdminLecturers(
   });
 }
 
+export function useRemoveEnrollment() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      courseId,
+      enrollmentId,
+    }: {
+      courseId: string;
+      enrollmentId: string;
+    }) => RosterService.removeEnrollment(courseId, enrollmentId),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: ACADEMIC_QUERY_KEYS.roster(variables.courseId),
+      });
+      queryClient.invalidateQueries({ queryKey: ["academic", "courses"] });
+      toast.success("Đã rút tên sinh viên khỏi lớp học phần (bảo lưu lịch sử đóng góp).");
+    },
+    onError: (error: unknown) => {
+      const err = error as { response?: { data?: { code?: string; message?: string } }; message?: string };
+      const code = err.response?.data?.code;
+      if (code === "TEAM_LEADER_REMOVAL_REQUIRES_REASSIGNMENT") {
+        toast.error("Sinh viên đang là Trưởng nhóm. Vui lòng chuyển quyền Trưởng nhóm cho thành viên khác trước khi xóa.");
+      } else if (code === "ROSTER_STUDENT_ALREADY_REMOVED") {
+        toast.error("Sinh viên này đã được rút tên trước đó.");
+      } else if (code === "ROSTER_STUDENT_NOT_FOUND") {
+        toast.error("Không tìm thấy thông tin sinh viên trong lớp học phần này.");
+      } else {
+        toast.error(err.response?.data?.message || err.message || "Không thể rút tên sinh viên khỏi lớp học phần.");
+      }
+    },
+  });
+}
+
+export function useCancelInvitation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      courseId,
+      invitationId,
+    }: {
+      courseId: string;
+      invitationId: string;
+    }) => RosterService.cancelInvitation(courseId, invitationId),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: ACADEMIC_QUERY_KEYS.roster(variables.courseId),
+      });
+      queryClient.invalidateQueries({ queryKey: ["academic", "courses"] });
+      toast.success("Đã hủy thư mời tham gia lớp học phần.");
+    },
+    onError: (error: unknown) => {
+      const err = error as { response?: { data?: { code?: string; message?: string } }; message?: string };
+      const code = err.response?.data?.code;
+      if (code === "ROSTER_STUDENT_ALREADY_REMOVED") {
+        toast.error("Thư mời này đã được xử lý hoặc hủy trước đó.");
+      } else if (code === "ROSTER_STUDENT_NOT_FOUND") {
+        toast.error("Không tìm thấy thông tin thư mời trong lớp học phần này.");
+      } else {
+        toast.error(err.response?.data?.message || err.message || "Không thể hủy thư mời tham gia lớp học phần.");
+      }
+    },
+  });
+}
+
+

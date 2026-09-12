@@ -20,6 +20,7 @@ import {
   TableIcon,
   MailIcon,
   UserPlusIcon,
+  UserMinusIcon,
   MoreHorizontalIcon,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
@@ -43,6 +44,7 @@ import {
 } from "@/components/ui/table";
 import { ImportStudentsDialog } from "@/features/admin/academic/components/import-students-dialog";
 import { AddStudentDialog } from "@/features/admin/academic/components/add-student-dialog";
+import { RemoveStudentDialog } from "@/features/admin/academic/components/remove-student-dialog";
 import {
   useCourseDetail,
   useRoster,
@@ -70,6 +72,13 @@ export default function AdminCourseDetailPage({ params }: PageProps) {
   const [statusFilter, setStatusFilter] = useState<"ALL" | RosterEnrollmentStatus>("ALL");
   const [isImportOpen, setIsImportOpen] = useState(false);
   const [isAddStudentOpen, setIsAddStudentOpen] = useState(false);
+  const [selectedStudentForRemoval, setSelectedStudentForRemoval] = useState<CourseRosterEntry | null>(null);
+  const [isRemoveOpen, setIsRemoveOpen] = useState(false);
+
+  const handleOpenRemoveDialog = (student: CourseRosterEntry) => {
+    setSelectedStudentForRemoval(student);
+    setIsRemoveOpen(true);
+  };
 
   const downloadMutation = useDownloadRosterTemplate();
 
@@ -543,7 +552,20 @@ export default function AdminCourseDetailPage({ params }: PageProps) {
 
                 <div className="pt-2 border-t border-border/50 flex items-center justify-between">
                   <span className="text-[11px] text-muted-foreground">Trạng thái:</span>
-                  {renderStatusBadge(sv)}
+                  <div className="flex items-center gap-1.5">
+                    {renderStatusBadge(sv)}
+                    {sv.status !== "DROPPED" && sv.enrollmentStatus !== "WITHDRAWN" && sv.invitationStatus !== "CANCELLED" && (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-6 w-6 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-md cursor-pointer"
+                        title={sv.kind === "ENROLLMENT" ? "Rút tên sinh viên" : "Hủy thư mời"}
+                        onClick={() => handleOpenRemoveDialog(sv)}
+                      >
+                        <UserMinusIcon className="w-3.5 h-3.5" />
+                      </Button>
+                    )}
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -566,6 +588,9 @@ export default function AdminCourseDetailPage({ params }: PageProps) {
                   </TableHead>
                   <TableHead className="py-3 px-4 text-xs font-semibold whitespace-nowrap text-right min-w-[120px]">
                     Tài khoản
+                  </TableHead>
+                  <TableHead className="py-3 px-4 text-xs font-semibold whitespace-nowrap text-right min-w-[80px]">
+                    Thao tác
                   </TableHead>
                 </TableRow>
               </TableHeader>
@@ -607,6 +632,20 @@ export default function AdminCourseDetailPage({ params }: PageProps) {
                         {sv.accountState === "REGISTERED" ? "Đã kích hoạt" : "Chưa kích hoạt"}
                       </span>
                     </TableCell>
+
+                    <TableCell className="py-3 px-4 text-right whitespace-nowrap">
+                      {sv.status !== "DROPPED" && sv.enrollmentStatus !== "WITHDRAWN" && sv.invitationStatus !== "CANCELLED" && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg cursor-pointer"
+                          title={sv.kind === "ENROLLMENT" ? "Rút tên sinh viên" : "Hủy thư mời"}
+                          onClick={() => handleOpenRemoveDialog(sv)}
+                        >
+                          <UserMinusIcon className="w-3.5 h-3.5" />
+                        </Button>
+                      )}
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -628,6 +667,18 @@ export default function AdminCourseDetailPage({ params }: PageProps) {
         courseCode={course?.courseCode}
         isOpen={isAddStudentOpen}
         onClose={() => setIsAddStudentOpen(false)}
+      />
+
+      <RemoveStudentDialog
+        courseId={courseId}
+        courseCode={course?.courseCode}
+        student={selectedStudentForRemoval}
+        isOpen={isRemoveOpen}
+        onClose={() => {
+          setIsRemoveOpen(false);
+          setSelectedStudentForRemoval(null);
+        }}
+        onSuccess={() => refetchRoster()}
       />
     </div>
   );
