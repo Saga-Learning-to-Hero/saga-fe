@@ -17,6 +17,8 @@ import { ProjectDisconnectDialog } from "./integrations/project-disconnect-dialo
 import { ProjectAvailableReposDialog } from "./integrations/project-available-repos-dialog";
 import { ProjectJiraConfigDialog } from "./integrations/project-jira-config-dialog";
 import { ProjectGitHubInstallationsDialog } from "./integrations/project-github-installations-dialog";
+import { useProjectRealtime } from "../hooks/use-project-realtime";
+import { ProjectRealtimeBadge } from "./project-realtime-badge";
 
 interface ProjectIntegrationsCardProps {
   projectId: string;
@@ -179,6 +181,13 @@ export function ProjectIntegrationsCard({ projectId, isLeader }: ProjectIntegrat
     }
   };
 
+  const {
+    status: realtimeStatus,
+    lastEventTime,
+    lastEvent,
+    reconnect: reconnectRealtime,
+  } = useProjectRealtime(projectId, { enabled: Boolean(projectId) });
+
   const isConnectingRepo = connectGitHubMutation.isPending || setupCallbackMutation.isPending;
 
   return (
@@ -205,16 +214,27 @@ export function ProjectIntegrationsCard({ projectId, isLeader }: ProjectIntegrat
               </CardDescription>
             </div>
           </div>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => void refetch()}
-            disabled={isLoading || isRefetching}
-            className="h-8 px-2.5 text-xs rounded-xl gap-1.5 cursor-pointer shrink-0"
-          >
-            <RefreshCwIcon className={`w-3.5 h-3.5 ${isRefetching ? "animate-spin text-primary" : ""}`} />
-            <span>{isRefetching ? "Đang đồng bộ..." : "Làm mới"}</span>
-          </Button>
+          <div className="flex items-center gap-2 self-start sm:self-auto shrink-0">
+            <ProjectRealtimeBadge
+              status={realtimeStatus}
+              lastEventTime={lastEventTime}
+              lastEvent={lastEvent}
+              onReconnect={reconnectRealtime}
+            />
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                reconnectRealtime();
+                void refetch();
+              }}
+              disabled={isLoading || isRefetching}
+              className="h-8 px-2.5 text-xs rounded-xl gap-1.5 cursor-pointer"
+            >
+              <RefreshCwIcon className={`w-3.5 h-3.5 ${isRefetching ? "animate-spin text-primary" : ""}`} />
+              <span>{isRefetching ? "Đang đồng bộ..." : "Làm mới"}</span>
+            </Button>
+          </div>
         </div>
       </CardHeader>
 

@@ -23,6 +23,7 @@ import {
 } from "../hooks/use-project-sprints";
 import { useTransitionTask } from "../hooks/use-project-tasks";
 import { useProjectIntegrations } from "@/features/student/project/hooks/useProjectIntegrations";
+import { useProjectRealtime } from "@/features/student/project/hooks/use-project-realtime";
 import { toast } from "sonner";
 
 export function SprintProgressView() {
@@ -38,6 +39,15 @@ export function SprintProgressView() {
     enabled: Boolean(projectId),
   });
   const isJiraConnected = projectIntegrations?.jira?.status === "ACTIVE";
+
+  const {
+    status: realtimeStatus,
+    lastEventTime,
+    lastEvent,
+    reconnect: reconnectRealtime,
+  } = useProjectRealtime(projectId, {
+    enabled: Boolean(projectId && isJiraConnected),
+  });
 
   const {
     data: projectTasks = [],
@@ -209,8 +219,15 @@ export function SprintProgressView() {
         courseCode={courseCode}
         projectName={projectName}
         totalTasksCount={filteredIssues.length}
-        onRefreshTasks={() => void refetchTasks()}
+        onRefreshTasks={() => {
+          reconnectRealtime();
+          void refetchTasks();
+        }}
         isRefreshingTasks={isRefetchingTasks}
+        realtimeStatus={realtimeStatus}
+        lastEventTime={lastEventTime}
+        lastEvent={lastEvent}
+        onReconnectRealtime={reconnectRealtime}
       />
 
       {isLoadingTasks && (

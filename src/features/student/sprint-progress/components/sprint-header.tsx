@@ -16,6 +16,8 @@ import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { CustomSelect } from "@/components/common/custom-select";
+import { ProjectRealtimeBadge } from "@/features/student/project/components/project-realtime-badge";
+import type { SSEConnectionStatus, ProjectRealtimeEvent } from "@/features/student/project/types/project-realtime-types";
 
 interface SprintHeaderProps {
   sprints: Sprint[];
@@ -35,6 +37,10 @@ interface SprintHeaderProps {
   totalTasksCount?: number;
   onRefreshTasks?: () => void;
   isRefreshingTasks?: boolean;
+  realtimeStatus?: SSEConnectionStatus;
+  lastEventTime?: Date | null;
+  lastEvent?: ProjectRealtimeEvent | null;
+  onReconnectRealtime?: () => void;
 }
 
 export function SprintHeader({
@@ -55,6 +61,10 @@ export function SprintHeader({
   totalTasksCount,
   onRefreshTasks,
   isRefreshingTasks = false,
+  realtimeStatus,
+  lastEventTime,
+  lastEvent,
+  onReconnectRealtime,
 }: SprintHeaderProps) {
   const hasActiveFilters = Boolean(searchQuery.trim() || selectedAssigneeId);
 
@@ -100,8 +110,8 @@ export function SprintHeader({
             size="sm"
             onClick={onToggleTeamLeader}
             className={`h-9 text-xs font-bold rounded-xl gap-1.5 cursor-pointer shadow-2xs border transition-all ${isTeamLeader
-                ? "bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/40 hover:bg-amber-500/20"
-                : "bg-muted text-muted-foreground border-border hover:bg-muted/80"
+              ? "bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/40 hover:bg-amber-500/20"
+              : "bg-muted text-muted-foreground border-border hover:bg-muted/80"
               }`}
           >
             {isTeamLeader ? (
@@ -124,8 +134,8 @@ export function SprintHeader({
           <button
             onClick={() => onSelectView("BOARD")}
             className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer select-none ${activeView === "BOARD"
-                ? "bg-card text-foreground shadow-xs"
-                : "text-muted-foreground hover:text-foreground"
+              ? "bg-card text-foreground shadow-xs"
+              : "text-muted-foreground hover:text-foreground"
               }`}
           >
             <KanbanSquareIcon className="w-4 h-4 text-blue-500" />
@@ -135,8 +145,8 @@ export function SprintHeader({
           <button
             onClick={() => onSelectView("BACKLOG")}
             className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer select-none ${activeView === "BACKLOG"
-                ? "bg-card text-foreground shadow-xs"
-                : "text-muted-foreground hover:text-foreground"
+              ? "bg-card text-foreground shadow-xs"
+              : "text-muted-foreground hover:text-foreground"
               }`}
           >
             <ListTodoIcon className="w-4 h-4 text-purple-500" />
@@ -146,8 +156,8 @@ export function SprintHeader({
           <button
             onClick={() => onSelectView("TIMELINE")}
             className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer select-none ${activeView === "TIMELINE"
-                ? "bg-card text-foreground shadow-xs"
-                : "text-muted-foreground hover:text-foreground"
+              ? "bg-card text-foreground shadow-xs"
+              : "text-muted-foreground hover:text-foreground"
               }`}
           >
             <GanttChartSquareIcon className="w-4 h-4 text-emerald-500" />
@@ -155,7 +165,15 @@ export function SprintHeader({
           </button>
         </div>
 
-        <div className="flex items-center gap-3 shrink-0">
+        <div className="flex items-center gap-2.5 shrink-0 flex-wrap">
+          {realtimeStatus && (
+            <ProjectRealtimeBadge
+              status={realtimeStatus}
+              lastEventTime={lastEventTime}
+              lastEvent={lastEvent}
+              onReconnect={onReconnectRealtime}
+            />
+          )}
           {typeof totalTasksCount === "number" && (
             <span className="text-xs font-semibold text-muted-foreground font-mono">
               Tổng cộng: {totalTasksCount} đầu việc Jira
@@ -224,8 +242,8 @@ export function SprintHeader({
             <button
               onClick={() => onSelectAssignee(null)}
               className={`text-[11px] font-bold px-2.5 py-1 rounded-lg transition-all cursor-pointer ${selectedAssigneeId === null
-                  ? "bg-primary text-primary-foreground shadow-xs"
-                  : "bg-muted text-muted-foreground hover:text-foreground"
+                ? "bg-primary text-primary-foreground shadow-xs"
+                : "bg-muted text-muted-foreground hover:text-foreground"
                 }`}
             >
               Tất cả
