@@ -180,7 +180,7 @@ export function LoginForm() {
             <Label htmlFor="password" className="text-xs font-semibold text-foreground/90">
               Mật khẩu
             </Label>
-            <Link href="#" className="text-xs text-primary hover:underline font-medium">
+            <Link href="/forgot-password" className="text-xs text-primary hover:underline font-medium">
               Quên mật khẩu?
             </Link>
           </div>

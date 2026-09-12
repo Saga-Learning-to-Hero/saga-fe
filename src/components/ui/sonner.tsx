@@ -14,7 +14,7 @@ type ToasterProps = React.ComponentProps<typeof SonnerToaster>;
 export function Toaster({ ...props }: ToasterProps) {
   return (
     <SonnerToaster
-      position="top-right"
+      position="bottom-right"
       richColors
       closeButton
       expand={false}

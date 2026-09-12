@@ -574,4 +574,145 @@ describe("LoginWithGoogleOAuth", () => {
       process.env.NEXT_PUBLIC_API_URL = originalEnv;
     }
   );
+
+  fptTest(
+    {
+      id: "UTCID29",
+      type: "N",
+      executedDate: "12/09/2026",
+      description: "forgotPassword gui POST /api/auth/password/forgot voi email hop le",
+    },
+    async () => {
+      const postSpy = vi.spyOn(apiClient, "post").mockResolvedValueOnce({
+        data: { message: "Nếu email tồn tại, hướng dẫn đặt lại mật khẩu đã được gửi." },
+      });
+
+      const res = await AuthService.forgotPassword("user@fpt.edu.vn");
+
+      expect(postSpy).toHaveBeenCalledWith("/api/auth/password/forgot", {
+        email: "user@fpt.edu.vn",
+      });
+      expect(res.message).toContain("hướng dẫn đặt lại mật khẩu đã được gửi");
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID30",
+      type: "A",
+      executedDate: "12/09/2026",
+      description: "forgotPassword nem loi khi email rong hoac chi toan khoang trang",
+    },
+    async () => {
+      await expect(AuthService.forgotPassword("")).rejects.toThrow("Email is required");
+      await expect(AuthService.forgotPassword("   ")).rejects.toThrow("Email is required");
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID31",
+      type: "N",
+      executedDate: "12/09/2026",
+      description: "resetPassword gui POST /api/auth/password/reset voi token va newPassword hop le",
+    },
+    async () => {
+      const postSpy = vi.spyOn(apiClient, "post").mockResolvedValueOnce({
+        data: { message: "Mật khẩu đã được cập nhật. Vui lòng đăng nhập lại." },
+      });
+
+      const res = await AuthService.resetPassword({
+        token: "token-reset-123",
+        newPassword: "SuperSecurePassword123",
+      });
+
+      expect(postSpy).toHaveBeenCalledWith("/api/auth/password/reset", {
+        token: "token-reset-123",
+        newPassword: "SuperSecurePassword123",
+      });
+      expect(res.message).toContain("Mật khẩu đã được cập nhật");
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID32",
+      type: "A",
+      executedDate: "12/09/2026",
+      description: "resetPassword nem loi khi token rong hoac chi toan khoang trang",
+    },
+    async () => {
+      await expect(
+        AuthService.resetPassword({
+          token: "",
+          newPassword: "SuperSecurePassword123",
+        })
+      ).rejects.toThrow("Token is required");
+
+      await expect(
+        AuthService.resetPassword({
+          token: "   ",
+          newPassword: "SuperSecurePassword123",
+        })
+      ).rejects.toThrow("Token is required");
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID33",
+      type: "A",
+      executedDate: "12/09/2026",
+      description: "resetPassword nem loi khi newPassword ngan hon 10 ky tu",
+    },
+    async () => {
+      await expect(
+        AuthService.resetPassword({
+          token: "valid-token-123",
+          newPassword: "short",
+        })
+      ).rejects.toThrow("New password must be at least 10 characters");
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID34",
+      type: "A",
+      executedDate: "12/09/2026",
+      description: "resetPassword nem loi khi Server tra ve loi token het han hoac khong hop le",
+    },
+    async () => {
+      vi.spyOn(apiClient, "post").mockRejectedValueOnce(
+        new Error("PASSWORD_RESET_TOKEN_EXPIRED")
+      );
+
+      await expect(
+        AuthService.resetPassword({
+          token: "expired-token",
+          newPassword: "SuperSecurePassword123",
+        })
+      ).rejects.toThrow("PASSWORD_RESET_TOKEN_EXPIRED");
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID35",
+      type: "B",
+      executedDate: "12/09/2026",
+      description: "forgotPassword tu dong trim khoang trang dau cuoi o dia chi email",
+    },
+    async () => {
+      const postSpy = vi.spyOn(apiClient, "post").mockResolvedValueOnce({
+        data: { message: "Success" },
+      });
+
+      await AuthService.forgotPassword("   user.trim@fpt.edu.vn   ");
+
+      expect(postSpy).toHaveBeenCalledWith("/api/auth/password/forgot", {
+        email: "user.trim@fpt.edu.vn",
+      });
+    }
+  );
 });
