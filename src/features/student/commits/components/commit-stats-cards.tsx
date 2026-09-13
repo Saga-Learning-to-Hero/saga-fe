@@ -68,17 +68,15 @@ export function CommitStatsCards({
           </Badge>
         </div>
         <div className="flex items-center justify-between text-[11px] text-muted-foreground pt-0.5">
-          <span className="truncate max-w-[140px]">
+          <span className="truncate">
             Repo <strong className="text-foreground font-medium">{selectedRepoName}</strong>
           </span>
-          {stats.totalAdditions !== null && stats.totalDeletions !== null ? (
+          {stats.totalAdditions !== null && stats.totalDeletions !== null && (
             <span className="font-mono text-[10px] shrink-0">
               <span className="text-emerald-600 font-bold">+{stats.totalAdditions}</span>
               {" / "}
               <span className="text-rose-600 font-bold">-{stats.totalDeletions}</span>
             </span>
-          ) : (
-            <span className="text-[10px] text-muted-foreground">Chưa có dữ liệu diff</span>
           )}
         </div>
       </div>

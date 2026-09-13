@@ -178,14 +178,12 @@ export function CommitListTimeline({
                     </div>
 
                     <div className="flex items-center gap-2.5 shrink-0 self-end sm:self-center pt-2 sm:pt-0 border-t sm:border-t-0 border-border/40">
-                      {commit.additions !== null && commit.deletions !== null ? (
+                      {commit.additions !== null && commit.deletions !== null && (
                         <div className="font-mono text-[11px] font-bold text-right shrink-0">
                           <span className="text-emerald-600">+{commit.additions}</span>
                           <span className="text-muted-foreground mx-1">/</span>
                           <span className="text-rose-600">-{commit.deletions}</span>
                         </div>
-                      ) : (
-                        <span className="text-[10px] text-muted-foreground">Chưa có dữ liệu diff</span>
                       )}
 
                       <button
