@@ -15,6 +15,10 @@ import {
   useStudentCourseContext,
 } from "@/features/student/courses/hooks/use-student-course-context";
 import { mapProjectTaskToSprintIssue } from "../lib/task-mapper";
+import {
+  getTopLevelSprintIssues,
+  mergeProjectedAndLocalIssues,
+} from "../lib/issue-collection";
 import { Loader2Icon, AlertCircleIcon } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -48,15 +52,6 @@ export function SprintProgressView() {
   const isJiraConnected = projectIntegrations?.jira?.status === "ACTIVE";
 
   const {
-    status: realtimeStatus,
-    lastEventTime,
-    lastEvent,
-    reconnect: reconnectRealtime,
-  } = useProjectRealtime(projectId, {
-    enabled: Boolean(projectId && isJiraConnected),
-  });
-
-  const {
     data: projectTasks = [],
     isLoading: isLoadingTasks,
     isError: isTasksError,
@@ -75,11 +70,22 @@ export function SprintProgressView() {
   });
   const { data: syncJobs = [] } = useProjectSyncStatus(projectId, {
     enabled: Boolean(projectId),
-    refetchInterval: (query) =>
-      query.state.data?.some((job) => job.status === "ENQUEUED" || job.status === "RUNNING")
-        ? 5000
-        : false,
   });
+  const hasActiveSyncJob = useMemo(
+    () =>
+      syncJobs.some((job) =>
+        ["ENQUEUED", "IN_PROGRESS", "RUNNING", "SYNCING"].includes(
+          (job.status || "").toUpperCase()
+        )
+      ),
+    [syncJobs]
+  );
+  const lastSyncedAt = useMemo(() => {
+    return syncJobs
+      .map((job) => job.completedAt)
+      .filter((completedAt): completedAt is string => Boolean(completedAt))
+      .sort((left, right) => new Date(right).getTime() - new Date(left).getTime())[0] || null;
+  }, [syncJobs]);
   const transitionTaskMutation = useTransitionTask();
   const assignTaskToSprintMutation = useAssignTaskToSprint();
   const patchSprintMutation = usePatchSprint();
@@ -93,7 +99,8 @@ export function SprintProgressView() {
     id: m.studentCode,
     studentCode: m.studentCode,
     name: m.fullName,
-    avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(m.fullName || m.studentCode)}`,
+    // Sprint renders text avatars so every assignee stays recognisable without an external image request.
+    avatar: "",
   }));
 
   const [userSelectedSprintId, setUserSelectedSprintId] = useState<string | null>(null);
@@ -103,6 +110,32 @@ export function SprintProgressView() {
 
   const [localTaskOverrides, setLocalTaskOverrides] = useState<Record<string, Partial<SprintIssue>>>({});
   const [localCustomIssues, setLocalCustomIssues] = useState<SprintIssue[]>([]);
+  const {
+    status: realtimeStatus,
+    lastEventTime,
+    lastEvent,
+    reconnect: reconnectRealtime,
+  } = useProjectRealtime(projectId, {
+    enabled: Boolean(
+      projectId &&
+        (isJiraConnected || projectIntegrations?.github?.status === "ACTIVE")
+    ),
+    onEvent: (event) => {
+      if (event.type !== "TASKS_CHANGED" && event.type !== "SPRINTS_CHANGED") return;
+
+      // Server data is authoritative once BE tells us it changed. Remove only the
+      // affected optimistic value when available; a sprint-wide update clears all.
+      setLocalTaskOverrides((previous) => {
+        if (event.entityId) {
+          if (!(event.entityId in previous)) return previous;
+          const remaining = { ...previous };
+          delete remaining[event.entityId];
+          return remaining;
+        }
+        return Object.keys(previous).length > 0 ? {} : previous;
+      });
+    },
+  });
 
   const rawIssues: SprintIssue[] = useMemo(() => {
     const fromApi = projectTasks.map((t) => {
@@ -110,8 +143,10 @@ export function SprintProgressView() {
       const override = localTaskOverrides[t.id];
       return override ? { ...mapped, ...override } : mapped;
     });
-    return [...fromApi, ...localCustomIssues];
+    return mergeProjectedAndLocalIssues(fromApi, localCustomIssues);
   }, [projectTasks, teamMembers, localTaskOverrides, localCustomIssues]);
+
+  const topLevelIssues = useMemo(() => getTopLevelSprintIssues(rawIssues), [rawIssues]);
 
   const sprints: Sprint[] = useMemo(() => {
     if (!apiSprints || apiSprints.length === 0) {
@@ -119,7 +154,7 @@ export function SprintProgressView() {
     }
     return apiSprints.map((s) => {
       const sId = String(s.id);
-      const sprintIssues = rawIssues.filter((i) => i.sprintId === sId);
+      const sprintIssues = topLevelIssues.filter((i) => i.sprintId === sId);
       const completedIssues = sprintIssues.filter((i) => i.status === "DONE");
       const totalPoints = sprintIssues.reduce((acc, i) => acc + (i.storyPoints || 0), 0);
       const completedPoints = completedIssues.reduce((acc, i) => acc + (i.storyPoints || 0), 0);
@@ -135,7 +170,7 @@ export function SprintProgressView() {
         completedStoryPoints: completedPoints,
       };
     });
-  }, [apiSprints, rawIssues]);
+  }, [apiSprints, topLevelIssues]);
 
   const epics: Epic[] = useMemo(() => {
     const epicMap = new Map<string, Epic>();
@@ -163,10 +198,10 @@ export function SprintProgressView() {
   }, [rawIssues]);
 
   const productBacklogCount = useMemo(() => {
-    return rawIssues.filter(
+    return topLevelIssues.filter(
       (i) => !i.sprintId || i.sprintId === "backlog" || !sprints.some((s) => s.id === i.sprintId)
     ).length;
-  }, [rawIssues, sprints]);
+  }, [topLevelIssues, sprints]);
 
   const selectedSprintId = useMemo(() => {
     if (userSelectedSprintId) {
@@ -201,6 +236,8 @@ export function SprintProgressView() {
       return true;
     });
   }, [rawIssues, activeView, selectedSprintId, searchQuery, selectedAssigneeId]);
+
+  const boardIssues = useMemo(() => getTopLevelSprintIssues(filteredIssues), [filteredIssues]);
 
   const handleMoveTaskStatus = async (issueId: string, newStatus: IssueStatus) => {
     const previousOverride = localTaskOverrides[issueId];
@@ -255,14 +292,18 @@ export function SprintProgressView() {
     if (!projectId) return;
     try {
       await syncProjectMutation.mutateAsync(projectId);
-      toast.success("Đã gửi yêu cầu đồng bộ từ Jira. Dữ liệu sẽ tự động cập nhật.");
+      toast.success("Đã gửi yêu cầu đồng bộ Jira & GitHub. Dữ liệu sẽ tự động cập nhật.");
     } catch {
       toast.error("Không thể kích hoạt đồng bộ từ Jira.");
     }
   };
 
   const handleSaveIssue = (savedIssue: SprintIssue) => {
+    const isProjectedTask = projectTasks.some((task) => task.id === savedIssue.id);
     setLocalCustomIssues((prev) => {
+      if (isProjectedTask) {
+        return prev.filter((issue) => issue.id !== savedIssue.id);
+      }
       const idx = prev.findIndex((i) => i.id === savedIssue.id);
       if (idx >= 0) return prev.map((i) => (i.id === savedIssue.id ? savedIssue : i));
       return [savedIssue, ...prev];
@@ -294,11 +335,12 @@ export function SprintProgressView() {
         isTeamLeader={isTeamLeader}
         courseCode={courseCode}
         projectName={projectName}
-        totalTasksCount={filteredIssues.length}
-        totalProjectTasksCount={rawIssues.length}
+        totalTasksCount={activeView === "BOARD" ? boardIssues.length : filteredIssues.length}
+        totalProjectTasksCount={topLevelIssues.length}
         productBacklogCount={productBacklogCount}
         onSyncJira={handleSyncJira}
-        isSyncingJira={syncProjectMutation.isPending}
+        isSyncingJira={syncProjectMutation.isPending || hasActiveSyncJob}
+        lastSyncedAt={lastSyncedAt}
         realtimeStatus={realtimeStatus}
         lastEventTime={lastEventTime}
         lastEvent={lastEvent}
@@ -378,7 +420,7 @@ export function SprintProgressView() {
         </div>
       )}
 
-      {syncJobs.some((job) => job.status === "ENQUEUED" || job.status === "RUNNING") && (
+      {hasActiveSyncJob && (
         <div className="flex items-center gap-2 rounded-2xl border border-primary/20 bg-primary/5 px-3.5 py-3 text-xs text-primary">
           <Loader2Icon className="size-4 animate-spin shrink-0" />
           <span>Dữ liệu Jira/GitHub đang được đồng bộ. Bảng tiến độ sẽ tự làm mới khi hoàn tất.</span>
@@ -387,7 +429,7 @@ export function SprintProgressView() {
 
       {!isTasksError && !isSprintsError && activeView === "BOARD" && (
         <SprintBoardView
-          issues={filteredIssues}
+          issues={boardIssues}
           onIssueClick={handleOpenIssueModal}
           onMoveTaskStatus={handleMoveTaskStatus}
           isTeamLeader={isTeamLeader}

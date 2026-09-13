@@ -1,4 +1,4 @@
-export type IssueType = "STORY" | "TASK" | "BUG" | "SUBTASK";
+export type IssueType = "EPIC" | "STORY" | "TASK" | "BUG" | "SUBTASK";
 export type IssuePriority = "HIGHEST" | "HIGH" | "MEDIUM" | "LOW";
 export type IssueStatus = "TODO" | "IN_PROGRESS" | "IN_REVIEW" | "DONE";
 export type SprintStatus = "ACTIVE" | "PLANNED" | "COMPLETED";
@@ -17,6 +17,11 @@ export interface SprintIssue {
     name: string;
     avatar: string;
     studentCode: string;
+  };
+  /** Jira parent identity. Present for subtasks and, depending on Jira project type, epic children. */
+  parent?: {
+    externalId?: string | null;
+    externalKey?: string | null;
   };
   epic?: {
     id: string;

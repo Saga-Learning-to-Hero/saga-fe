@@ -15,29 +15,31 @@ export function mapProjectTaskToSprintIssue(
   members: SimpleTeamMember[] = [],
   defaultSprintId?: string
 ): SprintIssue {
+  const taskResponse = task as ProjectTaskResponse;
   const rawType = (task.issueTypeName || "").toUpperCase();
   let type: IssueType = "TASK";
-  if (rawType.includes("STORY")) type = "STORY";
+  if (rawType.includes("EPIC")) type = "EPIC";
+  else if (rawType.includes("STORY")) type = "STORY";
   else if (rawType.includes("BUG")) type = "BUG";
   else if (rawType.includes("SUB")) type = "SUBTASK";
 
+  const jiraStatus = (taskResponse.jiraStatusName || "").toUpperCase();
   const rawStatus = (task.status || "").toUpperCase();
   let status: IssueStatus = "TODO";
-  if (["DONE", "COMPLETED", "RESOLVED", "CLOSED"].some((s) => rawStatus.includes(s))) {
+  if (["DONE", "COMPLETED", "RESOLVED", "CLOSED"].some((s) => jiraStatus.includes(s) || rawStatus.includes(s))) {
     status = "DONE";
-  } else if (["REVIEW", "TEST", "QA"].some((s) => rawStatus.includes(s))) {
+  } else if (["REVIEW", "TEST", "QA", "PREVIEW"].some((s) => jiraStatus.includes(s) || rawStatus.includes(s))) {
     status = "IN_REVIEW";
-  } else if (["IN_PROGRESS", "IN PROGRESS", "DOING"].some((s) => rawStatus.includes(s))) {
+  } else if (["IN_PROGRESS", "IN PROGRESS", "DOING"].some((s) => jiraStatus.includes(s) || rawStatus.includes(s))) {
     status = "IN_PROGRESS";
   }
 
-  const rawPriority = ((task as ProjectTaskResponse).priority || "").toUpperCase();
+  const rawPriority = (taskResponse.priority || "").toUpperCase();
   let priority: IssuePriority = "MEDIUM";
   if (rawPriority.includes("HIGHEST") || rawPriority.includes("BLOCKER")) priority = "HIGHEST";
   else if (rawPriority.includes("HIGH") || rawPriority.includes("CRITICAL")) priority = "HIGH";
   else if (rawPriority.includes("LOW") || rawPriority.includes("TRIVIAL")) priority = "LOW";
 
-  const taskResponse = task as ProjectTaskResponse;
   const member = members.find(
     (m) =>
       (task.assigneeStudentId && m.id === task.assigneeStudentId) ||
@@ -53,9 +55,6 @@ export function mapProjectTaskToSprintIssue(
   const displayName =
     memberName ||
     (task.assigneeExternalId ? `Jira (${task.assigneeExternalId.slice(0, 8)})` : "Chưa phân công");
-  const avatarUrl =
-    member?.avatar ||
-    `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(displayName)}`;
 
   const resolvedSprintId =
     taskResponse.sprint?.id ??
@@ -79,9 +78,16 @@ export function mapProjectTaskToSprintIssue(
     assignee: {
       id: member?.id || task.assigneeStudentId || task.assigneeExternalId || "unassigned",
       name: displayName,
-      avatar: avatarUrl,
+      // Sprint uses a deterministic text avatar from the real assignee name.
+      avatar: "",
       studentCode: member?.studentCode || "",
     },
+    parent: taskResponse.parent
+      ? {
+        externalId: taskResponse.parent.externalId,
+        externalKey: taskResponse.parent.externalKey,
+      }
+      : undefined,
     sprintId: taskSprintId,
     githubCommitCount: task.linkedCommitCount || 0,
     createdAt: task.createdAt,

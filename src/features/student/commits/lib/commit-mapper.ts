@@ -75,9 +75,10 @@ export function mapProjectCommitToCommitItem(
     filesChanged: null,
     jiraKey,
     isSyncedToJira: Boolean(jiraKey),
-    commitUrl: commit.repositoryFullName && commit.sha
-      ? `https://github.com/${commit.repositoryFullName}/commit/${commit.sha}`
-      : "#",
+    commitUrl:
+      commit.repositoryFullName && commit.sha
+        ? `https://github.com/${commit.repositoryFullName}/commit/${commit.sha}`
+        : undefined,
   };
 }
 

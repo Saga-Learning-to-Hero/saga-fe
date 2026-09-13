@@ -36,7 +36,7 @@ export interface CommitItem {
   filesChanged: number | null;
   jiraKey?: string; // VD: SAGA-105
   isSyncedToJira: boolean;
-  commitUrl: string;
+  commitUrl?: string;
 }
 
 export interface CommitStats {

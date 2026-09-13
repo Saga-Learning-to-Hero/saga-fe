@@ -13,13 +13,43 @@ interface CommitStatsCardsProps {
   stats: CommitStats;
   selectedRepoName: string;
   selectedBranchName: string;
+  githubSyncStatus?: string | null;
+  isGitHubSyncing?: boolean;
+  isGitHubSyncFailed?: boolean;
 }
 
 export function CommitStatsCards({
   stats,
   selectedRepoName,
   selectedBranchName,
+  githubSyncStatus,
+  isGitHubSyncing = false,
+  isGitHubSyncFailed = false,
 }: CommitStatsCardsProps) {
+  const syncLabel = isGitHubSyncing
+    ? "Đang đồng bộ"
+    : isGitHubSyncFailed
+      ? "Đồng bộ lỗi"
+      : githubSyncStatus
+        ? "Đã đồng bộ"
+        : "Chưa đồng bộ";
+
+  const syncColor = isGitHubSyncing
+    ? "text-amber-600 dark:text-amber-400"
+    : isGitHubSyncFailed
+      ? "text-destructive"
+      : githubSyncStatus
+        ? "text-emerald-600 dark:text-emerald-400"
+        : "text-muted-foreground";
+
+  const syncDotColor = isGitHubSyncing
+    ? "bg-amber-500 animate-pulse"
+    : isGitHubSyncFailed
+      ? "bg-destructive"
+      : githubSyncStatus
+        ? "bg-emerald-500"
+        : "bg-muted-foreground/50";
+
   return (
     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
       <div className="p-4 rounded-2xl border border-border/70 bg-card/60 backdrop-blur-xs shadow-2xs space-y-2 hover:border-primary/50 transition-all group">
@@ -34,7 +64,7 @@ export function CommitStatsCards({
             {stats.totalCommits}
           </span>
           <Badge variant="secondary" className="font-mono text-[10px] px-1.5 py-0.2">
-            {selectedBranchName}
+            {selectedBranchName === "all" ? "Tất cả nhánh" : selectedBranchName}
           </Badge>
         </div>
         <div className="flex items-center justify-between text-[11px] text-muted-foreground pt-0.5">
@@ -69,20 +99,20 @@ export function CommitStatsCards({
           </Badge>
         </div>
         <p className="text-[11px] text-muted-foreground truncate pt-0.5">
-          Tự động lọc theo nhánh được chọn
+          {selectedBranchName === "all" ? "Đang hiển thị tất cả nhánh" : "Tự động lọc theo nhánh được chọn"}
         </p>
       </div>
 
       <div className="p-4 rounded-2xl border border-border/70 bg-card/60 backdrop-blur-xs shadow-2xs space-y-2 hover:border-primary/50 transition-all group">
         <div className="flex items-center justify-between">
-          <span className="text-xs font-semibold text-muted-foreground">Trạng thái Webhook</span>
+          <span className="text-xs font-semibold text-muted-foreground">Đồng bộ GitHub</span>
           <div className="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
             <CheckCircle2Icon className="w-4 h-4" />
           </div>
         </div>
-        <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 font-bold text-sm">
-          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-          <span>Đồng bộ tự động</span>
+        <div className={`flex items-center gap-2 font-bold text-sm ${syncColor}`}>
+          <span className={`w-2 h-2 rounded-full ${syncDotColor}`} />
+          <span>{syncLabel}</span>
         </div>
         <p className="text-[11px] text-muted-foreground flex items-center gap-1 truncate pt-0.5">
           <RefreshCwIcon className="w-3 h-3 text-muted-foreground shrink-0" />

@@ -208,6 +208,10 @@ export interface ProjectTaskItem {
   title: string;
   status: string;
   issueTypeName: string;
+  parent?: {
+    externalId?: string | null;
+    externalKey?: string | null;
+  } | null;
   assigneeExternalId: string | null;
   assigneeStudentId: string | null;
   linkedCommitCount: number;
@@ -341,6 +345,14 @@ export interface ProjectMemberProgressResponse {
   evidenceSummary: ProjectProgressEvidenceSummary;
 }
 
+export interface ProjectGitBranchItem {
+  name: string;
+  isDefault: boolean;
+}
 
-
-
+export interface ProjectGitBranchListResponse {
+  repoId: string;
+  repositoryFullName: string;
+  branchCount: number;
+  branches: ProjectGitBranchItem[];
+}

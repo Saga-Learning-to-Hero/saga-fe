@@ -15,6 +15,8 @@ export const PROJECT_PROJECTION_QUERY_KEYS = {
   progress: (projectId?: string | null) => [...PROJECT_PROJECTION_QUERY_KEYS.all, "progress", projectId] as const,
   memberProgress: (projectId?: string | null, studentId?: string | null) =>
     [...PROJECT_PROJECTION_QUERY_KEYS.all, "member-progress", projectId, studentId] as const,
+  repositoryBranches: (projectId?: string | null, repoId?: string | null) =>
+    [...PROJECT_PROJECTION_QUERY_KEYS.all, "repository-branches", projectId, repoId] as const,
 };
 
 export function useSyncProject() {
@@ -41,6 +43,9 @@ export function useSyncProject() {
       });
       await queryClient.invalidateQueries({
         queryKey: [...PROJECT_PROJECTION_QUERY_KEYS.all, "member-progress", projectId],
+      });
+      await queryClient.invalidateQueries({
+        queryKey: [...PROJECT_PROJECTION_QUERY_KEYS.all, "repository-branches", projectId],
       });
       await queryClient.invalidateQueries({
         queryKey: ["jira-sprint"],
@@ -122,5 +127,17 @@ export function useMemberProgress(
   });
 }
 
-
-
+export function useProjectRepositoryBranches(
+  projectId?: string | null,
+  repoId?: string | null,
+  options?: { enabled?: boolean }
+) {
+  return useQuery({
+    queryKey: PROJECT_PROJECTION_QUERY_KEYS.repositoryBranches(projectId, repoId),
+    queryFn: () => ProjectProjectionService.getRepositoryBranches(projectId!, repoId!),
+    enabled:
+      (options?.enabled ?? true) &&
+      Boolean(projectId && projectId.trim() && repoId && repoId.trim() && repoId !== "all"),
+    staleTime: 1000 * 60,
+  });
+}

@@ -19,9 +19,10 @@ import {
 } from "lucide-react";
 import type { SprintIssue, IssueStatus, IssueType, IssuePriority } from "../types/sprint-progress";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { getAssigneeAvatarClass, getAssigneeInitials } from "../lib/assignee-avatar";
 
 interface SprintBoardViewProps {
   issues: SprintIssue[];
@@ -63,6 +64,12 @@ const COLUMNS: { id: IssueStatus; title: string; dotColor: string; barColor: str
 
 export function renderTypeIcon(type: IssueType) {
   switch (type) {
+    case "EPIC":
+      return (
+        <span title="Epic">
+          <LayersIcon className="w-3.5 h-3.5 text-violet-500 shrink-0" />
+        </span>
+      );
     case "STORY":
       return (
         <span title="User Story">
@@ -382,10 +389,9 @@ export function SprintBoardView({
                             {issue.storyPoints > 0 ? `${issue.storyPoints} SP` : "0 SP"}
                           </Badge>
 
-                          <Avatar className="w-5 h-5 border shadow-2xs">
-                            <AvatarImage src={issue.assignee.avatar} alt={issue.assignee.name} />
-                            <AvatarFallback className="text-[9px] bg-primary/20 text-primary font-bold">
-                              {issue.assignee.name.slice(0, 2).toUpperCase()}
+                          <Avatar title={issue.assignee.name} className="w-5 h-5 border shadow-2xs">
+                            <AvatarFallback className={`text-[8px] font-bold ${getAssigneeAvatarClass(issue.assignee.id)}`}>
+                              {getAssigneeInitials(issue.assignee.name)}
                             </AvatarFallback>
                           </Avatar>
                         </div>

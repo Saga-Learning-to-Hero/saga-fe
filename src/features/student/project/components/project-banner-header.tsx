@@ -39,14 +39,6 @@ export function ProjectBannerHeader({
 
   const { data: syncStatuses = [] } = useProjectSyncStatus(projectId, {
     enabled: Boolean(projectId && projectId.trim()),
-    refetchInterval: (query) => {
-      const data = query.state.data;
-      const hasActive = data?.some((item) => {
-        const s = (item.status || "").toUpperCase();
-        return s === "IN_PROGRESS" || s === "RUNNING" || s === "SYNCING";
-      });
-      return hasActive ? 3000 : false;
-    },
   });
 
   const hasActiveJob = useMemo(() => {

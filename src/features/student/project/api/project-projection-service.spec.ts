@@ -257,4 +257,92 @@ describe("ProjectProjectionService", () => {
       ).rejects.toThrow("Throw ValidationException: Student ID is required");
     }
   );
+
+  fptTest(
+    {
+      id: "UTCID16",
+      type: "N",
+      executedDate: "13/09/2026",
+      description: "getRepositoryBranches goi GET voi projectId va repoId hop le",
+    },
+    async () => {
+      const mockBranchResponse = {
+        repoId: "repo-001",
+        repositoryFullName: "Saga-Learning-to-Hero/saga-fe",
+        branchCount: 3,
+        branches: [
+          { name: "main", isDefault: true },
+          { name: "dev", isDefault: false },
+          { name: "feat/SAGA-66", isDefault: false },
+        ],
+      };
+      vi.mocked(apiClient.get).mockResolvedValueOnce({ data: mockBranchResponse });
+
+      const result = await ProjectProjectionService.getRepositoryBranches(
+        mockProjectId,
+        "repo-001"
+      );
+
+      expect(apiClient.get).toHaveBeenCalledWith(
+        "/api/projects/proj-123/repos/repo-001/branches"
+      );
+      expect(result).toEqual(mockBranchResponse);
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID17",
+      type: "A",
+      executedDate: "13/09/2026",
+      description: "getRepositoryBranches nem loi khi projectId rong",
+    },
+    async () => {
+      await expect(
+        ProjectProjectionService.getRepositoryBranches("", "repo-001")
+      ).rejects.toThrow("Throw ValidationException: Project ID is required");
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID18",
+      type: "A",
+      executedDate: "13/09/2026",
+      description: "getRepositoryBranches nem loi khi repoId rong",
+    },
+    async () => {
+      await expect(
+        ProjectProjectionService.getRepositoryBranches(mockProjectId, "  ")
+      ).rejects.toThrow("Throw ValidationException: Repo ID is required");
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID19",
+      type: "B",
+      executedDate: "13/09/2026",
+      description: "getRepositoryBranches cat khoang trang o hai dau cua projectId va repoId",
+    },
+    async () => {
+      const mockBranchResponse = {
+        repoId: "repo-001",
+        repositoryFullName: "Saga-Learning-to-Hero/saga-fe",
+        branchCount: 1,
+        branches: [{ name: "main", isDefault: true }],
+      };
+      vi.mocked(apiClient.get).mockResolvedValueOnce({ data: mockBranchResponse });
+
+      const result = await ProjectProjectionService.getRepositoryBranches(
+        "  proj-123  ",
+        "  repo-001  "
+      );
+
+      expect(apiClient.get).toHaveBeenCalledWith(
+        "/api/projects/proj-123/repos/repo-001/branches"
+      );
+      expect(result).toEqual(mockBranchResponse);
+    }
+  );
 });

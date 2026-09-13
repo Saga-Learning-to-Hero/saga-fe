@@ -22,6 +22,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ConfirmDeleteDialog } from "@/components/common/confirm-delete-dialog";
+import { toast } from "sonner";
+import { useProjectCommits } from "@/features/student/project/hooks/useProjectSync";
 import {
   useTaskWebLinks,
   useTaskFiles,
@@ -36,8 +38,13 @@ import {
 } from "../hooks/use-task-evidence";
 import type { TaskWebLinkItem, TaskFileItem } from "../types/task-evidence";
 
+type TaskEvidenceSection = "all" | "documents" | "contribution";
+
 interface TaskEvidencePanelProps {
   taskId: string;
+  projectId?: string;
+  taskKey?: string;
+  section?: TaskEvidenceSection;
   isOwnerOrLeader?: boolean;
   externalCommitShas?: string;
   onConfirmCommitsChange?: (shas: string) => void;
@@ -58,17 +65,117 @@ function formatSeconds(totalSec: number): string {
   return [h, m, s].map((v) => (v < 10 ? `0${v}` : `${v}`)).join(":");
 }
 
+interface TaskWorkSessionControlProps {
+  taskId: string;
+  isOwnerOrLeader?: boolean;
+}
+
+/** A compact, immediately available work-session control for the task drawer header. */
+export function TaskWorkSessionControl({
+  taskId,
+  isOwnerOrLeader = true,
+}: TaskWorkSessionControlProps) {
+  const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
+  const [isSessionRunning, setIsSessionRunning] = useState(false);
+  const [elapsedSeconds, setElapsedSeconds] = useState(0);
+  const startSessionMutation = useStartWorkSession(taskId);
+  const stopSessionMutation = useStopWorkSession(taskId);
+  const isSessionLoading = startSessionMutation.isPending || stopSessionMutation.isPending;
+
+  useEffect(() => {
+    if (!isSessionRunning) return;
+
+    const interval = window.setInterval(() => {
+      setElapsedSeconds((previous) => previous + 1);
+    }, 1000);
+
+    return () => window.clearInterval(interval);
+  }, [isSessionRunning]);
+
+  const handleStartSession = async () => {
+    try {
+      const session = await startSessionMutation.mutateAsync();
+      setActiveSessionId(session.id);
+      setIsSessionRunning(true);
+      setElapsedSeconds(0);
+      toast.success("Đã bắt đầu bấm giờ phiên làm việc.");
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : "Không thể bắt đầu phiên làm việc.");
+    }
+  };
+
+  const handleStopSession = async () => {
+    if (!activeSessionId) return;
+
+    try {
+      await stopSessionMutation.mutateAsync(activeSessionId);
+      setIsSessionRunning(false);
+      toast.success("Đã lưu thời lượng phiên làm việc.");
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : "Không thể dừng phiên làm việc.");
+    }
+  };
+
+  return (
+    <div className="hidden sm:flex items-center gap-1.5">
+      <div
+        className={`flex items-center gap-1.5 rounded-lg border px-2 py-1 font-mono text-xs font-bold tabular-nums ${
+          isSessionRunning
+            ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"
+            : "border-border/60 bg-background text-muted-foreground"
+        }`}
+        title={isSessionRunning ? "Đang bấm giờ" : "Chưa bấm giờ"}
+      >
+        <TimerIcon className="w-3.5 h-3.5" />
+        {formatSeconds(elapsedSeconds)}
+      </div>
+
+      {isOwnerOrLeader &&
+        (!isSessionRunning ? (
+          <Button
+            type="button"
+            size="sm"
+            disabled={isSessionLoading}
+            onClick={handleStartSession}
+            className="h-8 rounded-lg bg-emerald-600 px-2.5 text-xs font-semibold text-white hover:bg-emerald-700"
+          >
+            {isSessionLoading ? (
+              <Loader2Icon className="w-3.5 h-3.5 animate-spin" />
+            ) : (
+              <PlayIcon className="w-3.5 h-3.5" />
+            )}
+            Bắt đầu
+          </Button>
+        ) : (
+          <Button
+            type="button"
+            size="sm"
+            disabled={isSessionLoading}
+            onClick={handleStopSession}
+            className="h-8 rounded-lg bg-rose-600 px-2.5 text-xs font-semibold text-white hover:bg-rose-700"
+          >
+            {isSessionLoading ? (
+              <Loader2Icon className="w-3.5 h-3.5 animate-spin" />
+            ) : (
+              <SquareIcon className="w-3.5 h-3.5" />
+            )}
+            Dừng
+          </Button>
+        ))}
+    </div>
+  );
+}
+
 export function TaskEvidencePanel({
   taskId,
+  projectId,
+  taskKey,
+  section = "all",
   isOwnerOrLeader = true,
   externalCommitShas,
   onConfirmCommitsChange,
 }: TaskEvidencePanelProps) {
   const confirmSectionRef = useRef<HTMLDivElement>(null);
-  const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
-  const [isSessionRunning, setIsSessionRunning] = useState(false);
-  const [elapsedSeconds, setElapsedSeconds] = useState(0);
-  const [sessionMessage, setSessionMessage] = useState<string | null>(null);
 
   const [newUrl, setNewUrl] = useState("");
   const [newTitle, setNewTitle] = useState("");
@@ -87,59 +194,25 @@ export function TaskEvidencePanel({
     state: string;
   } | null>(null);
   const [confirmError, setConfirmError] = useState<string | null>(null);
+  const [isBrowsingOtherCommits, setIsBrowsingOtherCommits] = useState(false);
+  const [otherCommitQuery, setOtherCommitQuery] = useState("");
+  const [visibleOtherCommitCount, setVisibleOtherCommitCount] = useState(20);
 
   const [deletingLink, setDeletingLink] = useState<TaskWebLinkItem | null>(null);
   const [deletingFile, setDeletingFile] = useState<TaskFileItem | null>(null);
 
-  useEffect(() => {
-    let interval: NodeJS.Timeout | null = null;
-    if (isSessionRunning) {
-      interval = setInterval(() => {
-        setElapsedSeconds((prev) => prev + 1);
-      }, 1000);
-    }
-    return () => {
-      if (interval) clearInterval(interval);
-    };
-  }, [isSessionRunning]);
-
   const { data: links = [], isLoading: isLinksLoading } = useTaskWebLinks(taskId);
   const { data: files = [], isLoading: isFilesLoading } = useTaskFiles(taskId);
+  const { data: projectCommits = [], isLoading: isProjectCommitsLoading } = useProjectCommits(projectId, {
+    enabled: Boolean(projectId && (section === "all" || section === "contribution")),
+  });
 
-  const startSessionMutation = useStartWorkSession(taskId);
-  const stopSessionMutation = useStopWorkSession(taskId);
   const addLinkMutation = useAddTaskWebLink(taskId);
   const deleteLinkMutation = useDeleteTaskWebLink(taskId);
   const uploadFileMutation = useUploadTaskFile(taskId);
   const downloadFileMutation = useDownloadTaskFile(taskId);
   const deleteFileMutation = useDeleteTaskFile(taskId);
   const confirmContributionMutation = useConfirmContribution(taskId);
-
-  const handleStartSession = async () => {
-    setSessionMessage(null);
-    try {
-      const res = await startSessionMutation.mutateAsync();
-      setActiveSessionId(res.id);
-      setIsSessionRunning(true);
-      setElapsedSeconds(0);
-      setSessionMessage("Đã bắt đầu bấm giờ phiên làm việc");
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : "Không thể bắt đầu phiên làm việc";
-      setSessionMessage(msg);
-    }
-  };
-
-  const handleStopSession = async () => {
-    if (!activeSessionId) return;
-    try {
-      await stopSessionMutation.mutateAsync(activeSessionId);
-      setIsSessionRunning(false);
-      setSessionMessage("Đã lưu lại thời lượng phiên làm việc thành công");
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : "Không thể dừng phiên làm việc";
-      setSessionMessage(msg);
-    }
-  };
 
   const handleAddLink = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -206,6 +279,42 @@ export function TaskEvidencePanel({
     }
   };
 
+  const updateConfirmedShas = (shas: string[]) => {
+    const value = Array.from(new Set(shas.map((sha) => sha.trim()).filter(Boolean))).join(", ");
+    setInternalCommits(value);
+    onConfirmCommitsChange?.(value);
+  };
+
+  const toggleConfirmedSha = (sha: string) => {
+    const currentShas = confirmCommits
+      .split(",")
+      .map((value) => value.trim())
+      .filter(Boolean);
+    updateConfirmedShas(
+      currentShas.includes(sha)
+        ? currentShas.filter((currentSha) => currentSha !== sha)
+        : [...currentShas, sha]
+    );
+  };
+
+  const normalizedTaskKey = taskKey?.trim().toUpperCase() || "";
+  const syncedCommits = projectCommits.filter((commit) => Boolean(commit.sha));
+  const matchingTaskCommits = syncedCommits.filter((commit) =>
+    normalizedTaskKey
+      ? `${commit.message || ""} ${commit.headRef || ""}`.toUpperCase().includes(normalizedTaskKey)
+      : false
+  );
+  const otherSyncedCommits = syncedCommits.filter((commit) => !matchingTaskCommits.includes(commit));
+  const normalizedOtherQuery = otherCommitQuery.trim().toUpperCase();
+  const filteredOtherCommits = otherSyncedCommits.filter((commit) =>
+    normalizedOtherQuery
+      ? `${commit.sha} ${commit.message || ""} ${commit.headRef || ""} ${commit.repositoryFullName || ""}`
+        .toUpperCase()
+        .includes(normalizedOtherQuery)
+      : true
+  );
+  const visibleOtherCommits = filteredOtherCommits.slice(0, visibleOtherCommitCount);
+
   const handleConfirmContribution = async (e: React.FormEvent) => {
     e.preventDefault();
     setConfirmError(null);
@@ -233,87 +342,36 @@ export function TaskEvidencePanel({
     }
   };
 
-  const isSessionLoading =
-    startSessionMutation.isPending || stopSessionMutation.isPending;
+  const renderSelectableCommit = (commit: (typeof syncedCommits)[number]) => {
+    const isSelected = confirmCommits
+      .split(",")
+      .map((sha) => sha.trim())
+      .includes(commit.sha);
+
+    return (
+      <Button
+        key={commit.id}
+        type="button"
+        variant="outline"
+        onClick={() => toggleConfirmedSha(commit.sha)}
+        className={`w-full h-auto min-h-9 justify-start px-2.5 py-2 text-left gap-2 rounded-lg border ${
+          isSelected
+            ? "border-violet-500/60 bg-violet-500/10 text-foreground"
+            : "border-border/60 bg-background hover:bg-muted/50"
+        }`}
+      >
+        <span className="font-mono text-[10px] font-bold text-primary shrink-0">
+          {commit.sha.slice(0, 7)}
+        </span>
+        <span className="text-[11px] truncate flex-1">{commit.message}</span>
+        {isSelected && <CheckCircle2Icon className="w-3.5 h-3.5 text-violet-600 shrink-0" />}
+      </Button>
+    );
+  };
 
   return (
-    <div className="space-y-6 pt-4 border-t border-border/70">
-      <div className="bg-card border border-border/80 rounded-2xl p-4 shadow-xs">
-        <div className="flex items-center justify-between gap-3 mb-3">
-          <div className="flex items-center gap-2">
-            <TimerIcon className="w-4 h-4 text-primary" />
-            <h4 className="text-xs font-bold uppercase tracking-wider text-foreground">
-              Bấm giờ làm việc (Work Sessions)
-            </h4>
-          </div>
-          <span
-            className={`text-xs px-2.5 py-0.5 rounded-full font-medium border ${isSessionRunning
-              ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30"
-              : "bg-muted text-muted-foreground border-border"
-              }`}
-          >
-            {isSessionRunning ? "Đang bấm giờ" : "Chưa kích hoạt"}
-          </span>
-        </div>
-
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-muted/30 rounded-xl p-3 border border-border/40">
-          <div className="flex items-center gap-3">
-            <div className="text-2xl font-mono font-bold tracking-widest text-foreground">
-              {formatSeconds(elapsedSeconds)}
-            </div>
-            {activeSessionId && (
-              <span className="text-[11px] font-mono text-muted-foreground bg-muted px-2 py-0.5 rounded-md truncate max-w-[140px]">
-                ID: {activeSessionId}
-              </span>
-            )}
-          </div>
-
-          {isOwnerOrLeader && (
-            <div className="flex items-center gap-2 w-full sm:w-auto">
-              {!isSessionRunning ? (
-                <Button
-                  type="button"
-                  size="sm"
-                  disabled={isSessionLoading}
-                  onClick={handleStartSession}
-                  className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl gap-1.5 text-xs font-semibold cursor-pointer"
-                >
-                  {isSessionLoading ? (
-                    <Loader2Icon className="w-3.5 h-3.5 animate-spin" />
-                  ) : (
-                    <PlayIcon className="w-3.5 h-3.5" />
-                  )}
-                  Bắt đầu làm việc
-                </Button>
-              ) : (
-                <Button
-                  type="button"
-                  size="sm"
-                  disabled={isSessionLoading}
-                  onClick={handleStopSession}
-                  className="w-full sm:w-auto bg-rose-600 hover:bg-rose-700 text-white rounded-xl gap-1.5 text-xs font-semibold cursor-pointer"
-                >
-                  {isSessionLoading ? (
-                    <Loader2Icon className="w-3.5 h-3.5 animate-spin" />
-                  ) : (
-                    <SquareIcon className="w-3.5 h-3.5" />
-                  )}
-                  Dừng phiên làm việc
-                </Button>
-              )}
-            </div>
-          )}
-        </div>
-
-        {sessionMessage && (
-          <div className="mt-2 text-xs flex items-center gap-1.5 text-muted-foreground">
-            <CheckCircle2Icon className="w-3.5 h-3.5 text-emerald-500" />
-            <span>{sessionMessage}</span>
-          </div>
-        )}
-      </div>
-
-      <div className="bg-card border border-border/80 rounded-2xl p-4 shadow-xs space-y-4">
+    <div className={section === "all" ? "space-y-6 pt-4 border-t border-border/70" : "space-y-4"}>
+      <div className={`${section === "all" || section === "documents" ? "" : "hidden"} bg-card border border-border/80 rounded-2xl p-4 shadow-xs space-y-4`}>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Link2Icon className="w-4 h-4 text-sky-500" />
@@ -433,7 +491,7 @@ export function TaskEvidencePanel({
         )}
       </div>
 
-      <div className="bg-card border border-border/80 rounded-2xl p-4 shadow-xs space-y-4">
+      <div className={`${section === "all" || section === "documents" ? "" : "hidden"} bg-card border border-border/80 rounded-2xl p-4 shadow-xs space-y-4`}>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <FileIcon className="w-4 h-4 text-emerald-500" />
@@ -542,7 +600,10 @@ export function TaskEvidencePanel({
         )}
       </div>
 
-      <div ref={confirmSectionRef} className="bg-card border border-border/80 rounded-2xl p-4 shadow-xs space-y-4">
+      <div
+        ref={confirmSectionRef}
+        className={`${section === "all" || section === "contribution" ? "" : "hidden"} bg-card border border-border/80 rounded-2xl p-4 shadow-xs space-y-4`}
+      >
         <div className="flex items-center gap-2">
           <ShieldCheckIcon className="w-4 h-4 text-violet-500" />
           <h4 className="text-xs font-bold uppercase tracking-wider text-foreground">
@@ -556,11 +617,95 @@ export function TaskEvidencePanel({
 
         {isOwnerOrLeader && (
           <form onSubmit={handleConfirmContribution} className="space-y-3 bg-muted/20 p-3 rounded-xl border border-border/50">
+            {projectId && (
+              <div className="space-y-3">
+                <div className="flex items-center justify-between gap-2">
+                  <Label className="text-[11px] font-medium text-muted-foreground flex items-center gap-1">
+                    <GitCommitIcon className="w-3 h-3 text-violet-500" />
+                    Commit khớp {taskKey || "task"}
+                  </Label>
+                  <span className="text-[10px] text-muted-foreground">
+                    {matchingTaskCommits.length} commit
+                  </span>
+                </div>
+
+                {isProjectCommitsLoading ? (
+                  <div className="flex items-center gap-2 text-[11px] text-muted-foreground py-2">
+                    <Loader2Icon className="w-3.5 h-3.5 animate-spin text-primary" />
+                    Đang tải commits đã đồng bộ...
+                  </div>
+                ) : !normalizedTaskKey ? (
+                  <p className="text-[11px] text-muted-foreground rounded-lg border border-dashed border-border/70 p-2.5">
+                    Chưa xác định được mã Jira của task để đề xuất commit phù hợp.
+                  </p>
+                ) : matchingTaskCommits.length === 0 ? (
+                  <p className="text-[11px] text-muted-foreground rounded-lg border border-dashed border-border/70 p-2.5">
+                    Chưa có commit đã đồng bộ khớp <strong>{taskKey}</strong>. Hãy đồng bộ lại trước; nếu vẫn thiếu, bạn có thể tìm commit khác hoặc bổ sung SHA/PR bên dưới.
+                  </p>
+                ) : (
+                  <div className="max-h-40 overflow-y-auto space-y-1.5 pr-1 scrollbar-thin">
+                    {matchingTaskCommits.map(renderSelectableCommit)}
+                  </div>
+                )}
+
+                <div className="border-t border-border/50 pt-2.5">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setIsBrowsingOtherCommits((current) => !current)}
+                    className="h-7 px-1.5 text-[11px] text-muted-foreground hover:text-foreground cursor-pointer"
+                  >
+                    {isBrowsingOtherCommits
+                      ? "Ẩn commit khác"
+                      : `Tìm commit khác đã đồng bộ (${otherSyncedCommits.length})`}
+                  </Button>
+
+                  {isBrowsingOtherCommits && (
+                    <div className="space-y-2 pt-2">
+                      <Input
+                        type="search"
+                        value={otherCommitQuery}
+                        onChange={(event) => {
+                          setOtherCommitQuery(event.target.value);
+                          setVisibleOtherCommitCount(20);
+                        }}
+                        placeholder="Tìm theo SHA, message, branch hoặc repository..."
+                        className="h-8 text-xs rounded-lg"
+                      />
+
+                      {filteredOtherCommits.length === 0 ? (
+                        <p className="text-[11px] text-muted-foreground rounded-lg border border-dashed border-border/70 p-2.5">
+                          Không tìm thấy commit phù hợp.
+                        </p>
+                      ) : (
+                        <div className="max-h-48 overflow-y-auto space-y-1.5 pr-1 scrollbar-thin">
+                          {visibleOtherCommits.map(renderSelectableCommit)}
+                        </div>
+                      )}
+
+                      {visibleOtherCommits.length < filteredOtherCommits.length && (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setVisibleOtherCommitCount((count) => count + 20)}
+                          className="h-7 text-[11px] rounded-lg cursor-pointer"
+                        >
+                          Xem thêm {Math.min(20, filteredOtherCommits.length - visibleOtherCommits.length)} commit
+                        </Button>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
             <div className="space-y-1">
               <div className="flex items-center justify-between">
                 <Label htmlFor="confirm-commit-shas" className="text-[11px] font-medium text-muted-foreground flex items-center gap-1">
                   <GitCommitIcon className="w-3 h-3 text-violet-500" />
-                  Mã Commit SHA (phân cách bằng dấu phẩy)
+                  Bổ sung Commit SHA thủ công (phân cách bằng dấu phẩy)
                 </Label>
                 {confirmCommits && (
                   <span className="text-[10px] text-violet-600 dark:text-violet-400 font-mono font-semibold">
@@ -573,10 +718,7 @@ export function TaskEvidencePanel({
                 type="text"
                 placeholder="VD: a1b2c3d, e4f5g6h..."
                 value={confirmCommits}
-                onChange={(e) => {
-                  setInternalCommits(e.target.value);
-                  onConfirmCommitsChange?.(e.target.value);
-                }}
+                onChange={(e) => updateConfirmedShas(e.target.value.split(","))}
                 className="h-8 text-xs rounded-lg font-mono"
               />
             </div>

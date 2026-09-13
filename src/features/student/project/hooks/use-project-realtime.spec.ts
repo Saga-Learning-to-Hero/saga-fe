@@ -5,7 +5,8 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { fptTest } from "@/testing/fpt-test-helper";
 import { useProjectRealtime } from "./use-project-realtime";
 import { JIRA_SPRINT_QUERY_KEYS } from "@/features/student/sprint-progress/hooks/use-sprint-data";
-import { PROJECT_INTEGRATIONS_QUERY_KEYS } from "@/features/student/project/hooks/useProjectIntegrations";
+import { PROJECT_PROJECTION_QUERY_KEYS } from "./useProjectSync";
+import { TASK_EVIDENCE_QUERY_KEYS } from "@/features/student/sprint-progress/hooks/use-task-evidence";
 
 class MockEventSource {
   static instances: MockEventSource[] = [];
@@ -154,7 +155,12 @@ describe("useProjectRealtime Hook", () => {
         expect.objectContaining({ type: "READY", projectId: "project-456" })
       );
       expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ["projects", "project-456"] });
-      expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: JIRA_SPRINT_QUERY_KEYS.all });
+      expect(invalidateSpy).toHaveBeenCalledWith({
+        queryKey: JIRA_SPRINT_QUERY_KEYS.tasks("project-456"),
+      });
+      expect(invalidateSpy).toHaveBeenCalledWith({
+        queryKey: PROJECT_PROJECTION_QUERY_KEYS.commits("project-456"),
+      });
     }
   );
 
@@ -184,10 +190,6 @@ describe("useProjectRealtime Hook", () => {
       expect(invalidateSpy).toHaveBeenCalledWith({
         queryKey: JIRA_SPRINT_QUERY_KEYS.tasks("project-789"),
       });
-      expect(invalidateSpy).toHaveBeenCalledWith({
-        queryKey: JIRA_SPRINT_QUERY_KEYS.sprints("project-789"),
-      });
-
       act(() => {
         es.emitEvent("SPRINTS_CHANGED", {
           type: "SPRINTS_CHANGED",
@@ -232,10 +234,6 @@ describe("useProjectRealtime Hook", () => {
       });
 
       expect(invalidateSpy).toHaveBeenCalledWith({
-        queryKey: PROJECT_INTEGRATIONS_QUERY_KEYS.projectIntegrations("project-999"),
-        exact: true,
-      });
-      expect(invalidateSpy).toHaveBeenCalledWith({
         queryKey: ["projects", "project-999", "sync-status"],
       });
     }
@@ -273,11 +271,12 @@ describe("useProjectRealtime Hook", () => {
         es.emitEvent("TASK_EVIDENCE_CHANGED", {
           type: "TASK_EVIDENCE_CHANGED",
           projectId: "project-111",
+          entityId: "task-111",
         });
       });
 
       expect(invalidateSpy).toHaveBeenCalledWith({
-        queryKey: JIRA_SPRINT_QUERY_KEYS.tasks("project-111"),
+        queryKey: TASK_EVIDENCE_QUERY_KEYS.webLinks("task-111"),
       });
     }
   );
@@ -313,7 +312,7 @@ describe("useProjectRealtime Hook", () => {
       id: "UTCID07",
       type: "A",
       executedDate: "12/09/2026",
-      description: "Chuyen status thanh ERROR va dong ket noi khi xay ra onerror",
+      description: "Chuyen status thanh ERROR va giu EventSource de native reconnect khi xay ra onerror",
     },
     () => {
       const wrapper = createWrapper();
@@ -325,7 +324,7 @@ describe("useProjectRealtime Hook", () => {
       });
 
       expect(result.current.status).toBe("ERROR");
-      expect(es.closed).toBe(true);
+      expect(es.closed).toBe(false);
     }
   );
 
@@ -364,9 +363,10 @@ describe("useProjectRealtime Hook", () => {
       id: "UTCID09",
       type: "B",
       executedDate: "12/09/2026",
-      description: "Goi reconnect thu cong tao EventSource moi",
+      description: "Goi reconnect thu cong tao EventSource moi va READY refetch lai du lieu",
     },
     () => {
+      const invalidateSpy = vi.spyOn(queryClient, "invalidateQueries");
       const wrapper = createWrapper();
       const { result } = renderHook(() => useProjectRealtime("project-recon"), { wrapper });
 
@@ -380,6 +380,12 @@ describe("useProjectRealtime Hook", () => {
       expect(firstEs.closed).toBe(true);
       expect(MockEventSource.instances).toHaveLength(2);
       expect(result.current.status).toBe("CONNECTING");
+
+      act(() => {
+        MockEventSource.instances[1].emitEvent("READY", { type: "READY", projectId: "other-project" });
+      });
+
+      expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ["projects", "project-recon"] });
     }
   );
 

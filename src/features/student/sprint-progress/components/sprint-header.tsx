@@ -15,11 +15,13 @@ import {
 import type { Sprint } from "../types/sprint-progress";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { CustomSelect } from "@/components/common/custom-select";
 import { ProjectRealtimeBadge } from "@/features/student/project/components/project-realtime-badge";
 import type { SSEConnectionStatus, ProjectRealtimeEvent } from "@/features/student/project/types/project-realtime-types";
+import { formatVietnamDateTime } from "@/lib/utils";
+import { getAssigneeAvatarClass, getAssigneeInitials } from "../lib/assignee-avatar";
 
 interface SprintHeaderProps {
   sprints: Sprint[];
@@ -40,6 +42,7 @@ interface SprintHeaderProps {
   productBacklogCount?: number;
   onSyncJira?: () => void;
   isSyncingJira?: boolean;
+  lastSyncedAt?: string | null;
   realtimeStatus?: SSEConnectionStatus;
   lastEventTime?: Date | null;
   lastEvent?: ProjectRealtimeEvent | null;
@@ -65,6 +68,7 @@ export function SprintHeader({
   productBacklogCount,
   onSyncJira,
   isSyncingJira = false,
+  lastSyncedAt,
   realtimeStatus,
   lastEventTime,
   lastEvent,
@@ -185,16 +189,26 @@ export function SprintHeader({
           )}
 
           {onSyncJira && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={onSyncJira}
-              disabled={isSyncingJira}
-              className="h-8.5 px-3 text-xs font-bold rounded-xl gap-1.5 cursor-pointer shadow-2xs border-blue-500/30 text-blue-600 dark:text-blue-400 bg-blue-500/10 hover:bg-blue-500/20"
-            >
-              <RefreshCwIcon className={`w-3.5 h-3.5 ${isSyncingJira ? "animate-spin text-blue-500" : ""}`} />
-              <span>{isSyncingJira ? "Đang đồng bộ..." : "Đồng bộ Jira"}</span>
-            </Button>
+            <div className="flex items-center gap-2 shrink-0">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={onSyncJira}
+                disabled={isSyncingJira}
+                className="h-8.5 px-3 text-xs font-bold rounded-xl gap-1.5 cursor-pointer shadow-2xs border-blue-500/30 text-blue-600 dark:text-blue-400 bg-blue-500/10 hover:bg-blue-500/20"
+              >
+                <RefreshCwIcon className={`w-3.5 h-3.5 ${isSyncingJira ? "animate-spin text-blue-500" : ""}`} />
+                <span>{isSyncingJira ? "Đang đồng bộ..." : "Đồng bộ Jira & GitHub"}</span>
+              </Button>
+              <div className="hidden 2xl:flex h-8.5 items-center gap-1.5 rounded-xl border border-border/60 bg-muted/40 px-2.5 text-[10px] text-muted-foreground whitespace-nowrap">
+                <CalendarIcon className="w-3.5 h-3.5 text-primary" />
+                <span>
+                  {lastSyncedAt
+                    ? `Lần cuối: ${formatVietnamDateTime(lastSyncedAt)}`
+                    : "Chưa có lượt đồng bộ"}
+                </span>
+              </div>
+            </div>
           )}
         </div>
       </div>
@@ -309,9 +323,8 @@ export function SprintHeader({
                         }`}
                     >
                       <Avatar className="w-6.5 h-6.5 border border-border/80">
-                        <AvatarImage src={m.avatar} alt={m.name} />
-                        <AvatarFallback className="text-[9px] bg-primary/20 text-primary font-bold">
-                          {m.name.slice(0, 2).toUpperCase()}
+                        <AvatarFallback className={`text-[9px] font-bold ${getAssigneeAvatarClass(m.id)}`}>
+                          {getAssigneeInitials(m.name)}
                         </AvatarFallback>
                       </Avatar>
                     </button>

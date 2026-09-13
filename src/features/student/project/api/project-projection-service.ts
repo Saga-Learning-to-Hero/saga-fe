@@ -6,6 +6,7 @@ import type {
   TaskLinkedCommitItem,
   ProjectProgressResponse,
   ProjectMemberProgressResponse,
+  ProjectGitBranchListResponse,
 } from "../types/student-project";
 
 export class ProjectProjectionService {
@@ -71,6 +72,24 @@ export class ProjectProjectionService {
     return res.data;
   }
 
+  static async getRepositoryBranches(
+    projectId: string,
+    repoId: string
+  ): Promise<ProjectGitBranchListResponse> {
+    if (!projectId || projectId.trim() === "") {
+      throw new Error("Throw ValidationException: Project ID is required");
+    }
+    if (!repoId || repoId.trim() === "") {
+      throw new Error("Throw ValidationException: Repo ID is required");
+    }
+    const cleanProjectId = projectId.trim();
+    const cleanRepoId = repoId.trim();
+    const res = await apiClient.get<ProjectGitBranchListResponse>(
+      `/api/projects/${encodeURIComponent(cleanProjectId)}/repos/${encodeURIComponent(cleanRepoId)}/branches`
+    );
+    return res.data;
+  }
+
   static async getProjectProgress(projectId: string): Promise<ProjectProgressResponse> {
     if (!projectId || projectId.trim() === "") {
       throw new Error("Throw ValidationException: Project ID is required");
@@ -100,6 +119,3 @@ export class ProjectProjectionService {
     return res.data;
   }
 }
-
-
-

@@ -69,7 +69,7 @@ export function TaskLinkedCommitsList({
         <div className="flex items-center gap-2">
           <GitCommitIcon className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
           <h4 className="text-xs font-bold text-foreground">
-            Git Commits Đối Soát (Task Links)
+            Git commits đã tự động liên kết
           </h4>
           <Badge
             variant="outline"
@@ -92,7 +92,7 @@ export function TaskLinkedCommitsList({
                 }`}
             >
               <ShieldCheckIcon className="w-3 h-3" />
-              <span>{isAllSelected ? "Bỏ gắn tất cả" : `Gắn tất cả (${validShas.length})`}</span>
+              <span>{isAllSelected ? "Bỏ chọn tất cả" : `Dùng tất cả (${validShas.length})`}</span>
             </Button>
           )}
 
@@ -117,9 +117,9 @@ export function TaskLinkedCommitsList({
         </div>
       ) : commits.length === 0 ? (
         <div className="p-4 rounded-xl bg-muted/20 border border-dashed border-border/80 text-center space-y-1 text-xs text-muted-foreground">
-          <p className="font-semibold text-foreground">Chưa có Git Commit nào liên kết</p>
+          <p className="font-semibold text-foreground">Chưa có commit nào được tự động liên kết</p>
           <p className="text-[11px]">
-            Hệ thống tự động liên kết commit khi message chứa mã Task Jira (ví dụ: <code className="font-mono text-primary font-bold">feat: [FE][SAGA-xx] ...</code>).
+            Hệ thống tự động liên kết khi đợt đồng bộ đã nhận được commit có mã Jira (ví dụ: <code className="font-mono text-primary font-bold">feat: [FE][SAGA-xx] ...</code>). Bạn vẫn có thể chọn commit đã đồng bộ tại tab Đóng góp.
           </p>
         </div>
       ) : (
@@ -166,12 +166,12 @@ export function TaskLinkedCommitsList({
                         {isSelected ? (
                           <>
                             <CheckIcon className="w-3 h-3" />
-                            <span>Đã gắn</span>
+                            <span>Đã chọn</span>
                           </>
                         ) : (
                           <>
                             <PlusIcon className="w-3 h-3" />
-                            <span>Gắn SHA</span>
+                            <span>Dùng làm minh chứng</span>
                           </>
                         )}
                       </Button>

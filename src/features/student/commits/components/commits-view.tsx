@@ -12,20 +12,27 @@ import type { CommitStats, CommitItem } from "../types/commits";
 import { CommitStatsCards } from "./commit-stats-cards";
 import { CommitFilterBar } from "./commit-filter-bar";
 import { CommitListTimeline } from "./commit-list-timeline";
-import { useAuthStore } from "@/features/auth/store/useAuthStore";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useStudentMyTeam } from "@/features/student/courses/hooks/use-student-courses";
 import { useStudentCourseContext } from "@/features/student/courses/hooks/use-student-course-context";
-import { useProjectCommits } from "@/features/student/project/hooks/useProjectSync";
+import {
+  useProjectCommits,
+  useProjectRepositoryBranches,
+  useProjectSyncStatus,
+  useSyncProject,
+} from "@/features/student/project/hooks/useProjectSync";
+import { useProjectIntegrations } from "@/features/student/project/hooks/useProjectIntegrations";
+import { useProjectRealtime } from "@/features/student/project/hooks/use-project-realtime";
 import { getApiErrorMessage } from "@/lib/api-error";
+import { formatVietnamDateTime } from "@/lib/utils";
+import { toast } from "sonner";
 import {
   mapProjectCommitToCommitItem,
   extractReposAndBranches,
 } from "../lib/commit-mapper";
 
 export function CommitsView() {
-  const { user: authUser } = useAuthStore();
   const {
     course: effectiveCourse,
     courseId,
@@ -37,6 +44,14 @@ export function CommitsView() {
   const { data: team } = useStudentMyTeam(courseId, { enabled: Boolean(courseId) });
   const projectId = team?.projectId || effectiveCourse?.projectId || "";
 
+  const { data: integrations, refetch: refetchIntegrations } = useProjectIntegrations(projectId, {
+    enabled: Boolean(projectId),
+  });
+
+  useProjectRealtime(projectId, {
+    enabled: Boolean(projectId && integrations?.github?.status === "ACTIVE"),
+  });
+
   const {
     data: rawCommits = [],
     isLoading: isLoadingCommits,
@@ -46,7 +61,33 @@ export function CommitsView() {
     refetch: refetchCommits,
   } = useProjectCommits(projectId, { enabled: Boolean(projectId) });
 
-  const currentUserStudentCode = authUser?.studentCode ?? "";
+  const {
+    data: syncStatuses = [],
+    refetch: refetchSyncStatuses,
+  } = useProjectSyncStatus(projectId, { enabled: Boolean(projectId) });
+  const syncProjectMutation = useSyncProject();
+
+  const githubSyncStatus = useMemo(() => {
+    return syncStatuses
+      .filter((status) => (status.provider || "").toUpperCase() === "GITHUB")
+      .sort(
+        (left, right) =>
+          new Date(right.completedAt || right.startedAt || 0).getTime() -
+          new Date(left.completedAt || left.startedAt || 0).getTime()
+      )[0];
+  }, [syncStatuses]);
+
+  const hasActiveSync = useMemo(
+    () =>
+      syncStatuses.some((status) =>
+        ["ENQUEUED", "IN_PROGRESS", "RUNNING", "SYNCING"].includes(
+          (status.status || "").toUpperCase()
+        )
+      ),
+    [syncStatuses]
+  );
+  const isGitHubSyncFailed = (githubSyncStatus?.status || "").toUpperCase() === "FAILED";
+  const lastGitHubSyncedAt = githubSyncStatus?.completedAt || null;
 
   const teamMembers = useMemo(
     () =>
@@ -66,7 +107,31 @@ export function CommitsView() {
 
   const { repositories, branches: repoBranchesMap } = useMemo(() => {
     const res = extractReposAndBranches(rawCommits);
-    if (res.repositories.length === 0) {
+    const activeIntegrationRepos = integrations?.github?.repositories || [];
+
+    const repoList = [...res.repositories];
+    activeIntegrationRepos.forEach((ar) => {
+      const existing = repoList.find(
+        (r) => r.id === ar.id || r.fullPath.toLowerCase() === ar.fullName.toLowerCase()
+      );
+      if (existing) {
+        existing.id = ar.id;
+        existing.fullPath = ar.fullName;
+        existing.name = ar.fullName.split("/").pop() || ar.fullName;
+      } else {
+        repoList.push({
+          id: ar.id,
+          name: ar.fullName.split("/").pop() || ar.fullName,
+          fullPath: ar.fullName,
+          isDefault: repoList.length === 0,
+          totalCommits: 0,
+          activeBranchesCount: 1,
+          defaultBranch: "main",
+        });
+      }
+    });
+
+    if (repoList.length === 0) {
       return {
         repositories: [
           {
@@ -84,61 +149,120 @@ export function CommitsView() {
         },
       };
     }
-    return res;
-  }, [rawCommits]);
+    return { repositories: repoList, branches: res.branches };
+  }, [rawCommits, integrations?.github?.repositories]);
 
   const [selectedRepoId, setSelectedRepoId] = useState<string>("");
-  const selectedRepo = repositories.find((r) => r.id === selectedRepoId) || repositories[0];
+  const selectedRepo =
+    repositories.find((r) => r.id === selectedRepoId) || repositories[0];
+  const selectedRepoFullPath = selectedRepo?.fullPath || "";
+
+  const activeRepoId =
+    selectedRepo && selectedRepo.id !== "all" ? selectedRepo.id : null;
+
+  const {
+    data: liveBranchesData,
+    isLoading: isLoadingBranches,
+    isRefetching: isRefetchingBranches,
+    refetch: refetchBranches,
+  } = useProjectRepositoryBranches(projectId, activeRepoId, {
+    enabled: Boolean(projectId && activeRepoId),
+  });
+
+  const liveBranches = liveBranchesData?.branches;
 
   const currentRepoBranches = useMemo(() => {
-    return repoBranchesMap[selectedRepo.name] || [
-      { name: "main", isDefault: true, commitCount: 0, lastCommitDate: "" },
-    ];
-  }, [repoBranchesMap, selectedRepo.name]);
+    if (liveBranches && liveBranches.length > 0) {
+      return liveBranches.map((b) => ({
+        name: b.name,
+        isDefault: b.isDefault,
+        commitCount: allCommits.filter((c) => c.branchName === b.name).length,
+        lastCommitDate: "",
+      }));
+    }
+    return (
+      repoBranchesMap[selectedRepo.name] || [
+        { name: "main", isDefault: true, commitCount: 0, lastCommitDate: "" },
+      ]
+    );
+  }, [liveBranches, allCommits, repoBranchesMap, selectedRepo.name]);
 
-  const [selectedBranchName, setSelectedBranchName] = useState<string>("");
-  const effectiveSelectedBranchName = currentRepoBranches.some(
-    (branch) => branch.name === selectedBranchName
-  )
-    ? selectedBranchName
-    : currentRepoBranches[0]?.name || "";
+  const [selectedBranchName, setSelectedBranchName] = useState<string>("all");
+  const effectiveSelectedBranchName =
+    selectedBranchName === "all" ||
+      currentRepoBranches.some((branch) => branch.name === selectedBranchName)
+      ? selectedBranchName
+      : "all";
   const [searchQuery, setSearchQuery] = useState<string>("");
-  const [onlyMyCommits, setOnlyMyCommits] = useState<boolean>(false);
 
   const handleSelectRepo = (repoId: string) => {
     setSelectedRepoId(repoId);
-    const targetRepo = repositories.find((r) => r.id === repoId);
-    if (targetRepo) {
-      const branches = repoBranchesMap[targetRepo.name];
-      if (branches && branches.length > 0) {
-        setSelectedBranchName(branches[0].name);
-      }
+    setSelectedBranchName("all");
+  };
+
+  const handleRefresh = async () => {
+    await Promise.all([
+      refetchCommits(),
+      refetchBranches(),
+      refetchSyncStatuses(),
+      refetchIntegrations(),
+    ]);
+  };
+
+  const handleSync = async () => {
+    if (!projectId) return;
+
+    try {
+      const result = await syncProjectMutation.mutateAsync(projectId);
+      toast.info("Đã gửi yêu cầu đồng bộ Jira & GitHub.", {
+        description: `Hàng đợi: Jira [${result.jira}], GitHub [${result.github}]. Dữ liệu sẽ tự cập nhật khi hoàn tất.`,
+      });
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Không thể kích hoạt đồng bộ dự án.");
     }
   };
 
   const filteredCommits = useMemo(() => {
     return allCommits.filter((commit) => {
-      if (repositories.length > 1 && selectedRepo.id !== "all" && commit.repoName !== selectedRepo.name) {
+      if (
+        repositories.length > 1 &&
+        selectedRepo.id !== "all" &&
+        commit.repoName !== selectedRepo.name &&
+        commit.repoName !== selectedRepo.fullPath
+      ) {
         return false;
       }
-      if (effectiveSelectedBranchName && commit.branchName !== effectiveSelectedBranchName) {
+      if (
+        effectiveSelectedBranchName !== "all" &&
+        commit.branchName !== effectiveSelectedBranchName
+      ) {
         return false;
       }
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase();
         const matchMessage = commit.message.toLowerCase().includes(q);
-        const matchHash = commit.shortHash.toLowerCase().includes(q) || commit.hash.toLowerCase().includes(q);
+        const matchHash =
+          commit.shortHash.toLowerCase().includes(q) ||
+          commit.hash.toLowerCase().includes(q);
         const matchAuthor =
-          commit.author.name.toLowerCase().includes(q) || commit.author.studentCode.toLowerCase().includes(q);
+          commit.author.name.toLowerCase().includes(q) ||
+          commit.author.studentCode.toLowerCase().includes(q);
         const matchJira = commit.jiraKey?.toLowerCase().includes(q);
         if (!matchMessage && !matchHash && !matchAuthor && !matchJira) return false;
       }
-      if (onlyMyCommits && currentUserStudentCode && commit.author.studentCode !== currentUserStudentCode) {
-        return false;
-      }
       return true;
     });
-  }, [allCommits, repositories.length, selectedRepo.id, selectedRepo.name, effectiveSelectedBranchName, searchQuery, onlyMyCommits, currentUserStudentCode]);
+  }, [
+    allCommits,
+    repositories.length,
+    selectedRepo.id,
+    selectedRepo.name,
+    selectedRepo.fullPath,
+    effectiveSelectedBranchName,
+    searchQuery,
+  ]);
+
+  const liveBranchCount = liveBranchesData?.branchCount;
 
   const stats: CommitStats = useMemo(() => {
     const totalCommits = filteredCommits.length;
@@ -151,15 +275,35 @@ export function CommitsView() {
     const totalDeletions = hasDiffStats
       ? filteredCommits.reduce((sum, commit) => sum + (commit.deletions || 0), 0)
       : null;
+    const activeBranchesCount =
+      liveBranchCount ?? currentRepoBranches.length;
+
     return {
       totalCommits,
       totalAdditions,
       totalDeletions,
-      netLines: totalAdditions !== null && totalDeletions !== null ? totalAdditions - totalDeletions : null,
-      activeBranches: currentRepoBranches.length,
-      lastSyncedAt: rawCommits.length > 0 ? "Vừa cập nhật" : "Chưa có dữ liệu",
+      netLines:
+        totalAdditions !== null && totalDeletions !== null
+          ? totalAdditions - totalDeletions
+          : null,
+      activeBranches: activeBranchesCount,
+      lastSyncedAt: lastGitHubSyncedAt
+        ? formatVietnamDateTime(lastGitHubSyncedAt)
+        : "Chưa có lượt đồng bộ",
     };
-  }, [filteredCommits, currentRepoBranches.length, rawCommits.length]);
+  }, [
+    filteredCommits,
+    liveBranchCount,
+    currentRepoBranches.length,
+    lastGitHubSyncedAt,
+  ]);
+
+  const githubRepositoryUrl = useMemo(() => {
+    const repositoryFullName = selectedRepoFullPath.trim();
+    return repositoryFullName && /^[\w.-]+\/[\w.-]+$/.test(repositoryFullName)
+      ? `https://github.com/${repositoryFullName}`
+      : null;
+  }, [selectedRepoFullPath]);
 
   return (
     <div className="space-y-6 max-w-[1600px] mx-auto pb-12">
@@ -188,18 +332,35 @@ export function CommitsView() {
         <div className="flex items-center gap-2 shrink-0">
           <Button
             type="button"
-            variant="outline"
             size="sm"
-            onClick={() => void refetchCommits()}
-            disabled={isLoadingCommits || isRefetchingCommits}
-            className="h-8.5 text-xs font-bold rounded-xl gap-1.5 cursor-pointer shadow-2xs border-border hover:bg-muted"
+            onClick={() => void handleSync()}
+            disabled={!projectId || syncProjectMutation.isPending || hasActiveSync}
+            className="h-8.5 text-xs font-bold rounded-xl gap-1.5 cursor-pointer shadow-2xs bg-blue-600 text-white hover:bg-blue-700"
           >
-            <RotateCwIcon className={`w-3.5 h-3.5 ${isRefetchingCommits ? "animate-spin text-primary" : ""}`} />
-            <span>Làm mới</span>
+            <RotateCwIcon className={`w-3.5 h-3.5 ${syncProjectMutation.isPending || hasActiveSync ? "animate-spin" : ""}`} />
+            <span>
+              {syncProjectMutation.isPending
+                ? "Đang gửi..."
+                : hasActiveSync
+                  ? "Đang đồng bộ..."
+                  : "Đồng bộ Jira & GitHub"}
+            </span>
           </Button>
 
-          {selectedRepo.fullPath && !selectedRepo.fullPath.includes("Chưa kết nối") && (
-            <a href={`https://github.com/${selectedRepo.fullPath}`} target="_blank" rel="noreferrer">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => void handleRefresh()}
+            disabled={isLoadingCommits || isRefetchingCommits || isRefetchingBranches || isLoadingBranches}
+            className="h-8.5 text-xs font-bold rounded-xl gap-1.5 cursor-pointer shadow-2xs border-border hover:bg-muted"
+          >
+            <RotateCwIcon className={`w-3.5 h-3.5 ${isRefetchingCommits || isRefetchingBranches ? "animate-spin text-primary" : ""}`} />
+            <span>Tải lại</span>
+          </Button>
+
+          {githubRepositoryUrl && (
+            <a href={githubRepositoryUrl} target="_blank" rel="noreferrer">
               <Button type="button" variant="outline" size="sm" className="h-8.5 text-xs font-bold rounded-xl gap-1.5 cursor-pointer shadow-2xs border-border hover:bg-muted">
                 <FolderGit2Icon className="w-3.5 h-3.5 text-primary" />
                 <span>Mở GitHub</span>
@@ -254,7 +415,14 @@ export function CommitsView() {
 
       {!isCommitsError && !isInvalidCourse && (
         <>
-          <CommitStatsCards stats={stats} selectedRepoName={selectedRepo.fullPath} selectedBranchName={effectiveSelectedBranchName} />
+          <CommitStatsCards
+            stats={stats}
+            selectedRepoName={selectedRepo.fullPath}
+            selectedBranchName={effectiveSelectedBranchName}
+            githubSyncStatus={githubSyncStatus?.status}
+            isGitHubSyncing={syncProjectMutation.isPending || hasActiveSync}
+            isGitHubSyncFailed={isGitHubSyncFailed}
+          />
 
           <CommitFilterBar
             repositories={repositories}
@@ -265,8 +433,6 @@ export function CommitsView() {
             onSelectBranch={setSelectedBranchName}
             searchQuery={searchQuery}
             onSearchChange={setSearchQuery}
-            onlyMyCommits={onlyMyCommits}
-            onToggleOnlyMyCommits={() => setOnlyMyCommits((prev) => !prev)}
           />
 
           <CommitListTimeline commits={filteredCommits} selectedRepoName={selectedRepo.fullPath} selectedBranchName={effectiveSelectedBranchName} />

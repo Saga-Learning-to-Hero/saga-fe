@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef, useCallback } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { JIRA_SPRINT_QUERY_KEYS } from "@/features/student/sprint-progress/hooks/use-sprint-data";
-import { PROJECT_INTEGRATIONS_QUERY_KEYS } from "@/features/student/project/hooks/useProjectIntegrations";
+import { TASK_EVIDENCE_QUERY_KEYS } from "@/features/student/sprint-progress/hooks/use-task-evidence";
 import { PROJECT_PROJECTION_QUERY_KEYS } from "@/features/student/project/hooks/useProjectSync";
 import type {
   ProjectRealtimeEvent,
@@ -31,11 +31,9 @@ export function useProjectRealtime(
   const [connectionStatus, setConnectionStatus] = useState<"CONNECTING" | "OPEN" | "ERROR">("CONNECTING");
   const [lastEvent, setLastEvent] = useState<ProjectRealtimeEvent | null>(null);
   const [lastEventTime, setLastEventTime] = useState<Date | null>(null);
-  const [retryCount, setRetryCount] = useState(0);
   const [reconnectKey, setReconnectKey] = useState(0);
 
   const eventSourceRef = useRef<EventSource | null>(null);
-  const retryTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const optionsRef = useRef(options);
 
   useEffect(() => {
@@ -46,41 +44,68 @@ export function useProjectRealtime(
   const cleanProjectId = projectId?.trim() || "";
 
   const invalidateForEvent = useCallback(
-    (type: ProjectRealtimeEventType, pid: string) => {
+    (type: ProjectRealtimeEventType, pid: string, entityId?: string) => {
+      const invalidateTasks = () => {
+        void queryClient.invalidateQueries({ queryKey: JIRA_SPRINT_QUERY_KEYS.tasks(pid) });
+        void queryClient.invalidateQueries({ queryKey: PROJECT_PROJECTION_QUERY_KEYS.tasks(pid) });
+      };
+      const invalidateSprints = () => {
+        void queryClient.invalidateQueries({ queryKey: JIRA_SPRINT_QUERY_KEYS.sprints(pid) });
+      };
+      const invalidateCommits = () => {
+        void queryClient.invalidateQueries({ queryKey: ["projects", pid, "commits"] });
+        void queryClient.invalidateQueries({ queryKey: PROJECT_PROJECTION_QUERY_KEYS.commits(pid) });
+      };
+      const invalidateTaskDetails = () => {
+        void queryClient.invalidateQueries({ queryKey: [...JIRA_SPRINT_QUERY_KEYS.all, "task", pid] });
+      };
+      const invalidateTaskCommitLinks = () => {
+        void queryClient.invalidateQueries({
+          queryKey: [...PROJECT_PROJECTION_QUERY_KEYS.all, "task-commits", pid],
+        });
+      };
+      const invalidateSyncStatus = () => {
+        void queryClient.invalidateQueries({ queryKey: ["projects", pid, "sync-status"] });
+        void queryClient.invalidateQueries({ queryKey: PROJECT_PROJECTION_QUERY_KEYS.syncStatus(pid) });
+      };
+
       switch (type) {
         case "READY":
+          // READY is also emitted after an EventSource reconnect. The stream contains no canonical data.
           void queryClient.invalidateQueries({ queryKey: ["projects", pid] });
-          void queryClient.invalidateQueries({ queryKey: JIRA_SPRINT_QUERY_KEYS.all });
+          invalidateTasks();
+          invalidateSprints();
+          invalidateCommits();
+          invalidateTaskCommitLinks();
+          invalidateSyncStatus();
+          void queryClient.invalidateQueries({ queryKey: PROJECT_PROJECTION_QUERY_KEYS.progress(pid) });
           break;
         case "TASKS_CHANGED":
-          void queryClient.invalidateQueries({ queryKey: JIRA_SPRINT_QUERY_KEYS.tasks(pid) });
-          void queryClient.invalidateQueries({ queryKey: JIRA_SPRINT_QUERY_KEYS.sprints(pid) });
+          invalidateTasks();
           break;
         case "SPRINTS_CHANGED":
-          void queryClient.invalidateQueries({ queryKey: JIRA_SPRINT_QUERY_KEYS.sprints(pid) });
-          void queryClient.invalidateQueries({ queryKey: JIRA_SPRINT_QUERY_KEYS.tasks(pid) });
+          invalidateSprints();
           break;
         case "COMMITS_CHANGED":
-          void queryClient.invalidateQueries({ queryKey: ["projects", pid, "commits"] });
-          void queryClient.invalidateQueries({ queryKey: PROJECT_PROJECTION_QUERY_KEYS.commits(pid) });
+          invalidateCommits();
           break;
         case "TASK_LINKS_CHANGED":
-          void queryClient.invalidateQueries({ queryKey: JIRA_SPRINT_QUERY_KEYS.tasks(pid) });
-          void queryClient.invalidateQueries({ queryKey: ["projects", pid, "commits"] });
-          void queryClient.invalidateQueries({ queryKey: PROJECT_PROJECTION_QUERY_KEYS.commits(pid) });
+          invalidateTasks();
+          invalidateTaskDetails();
+          invalidateTaskCommitLinks();
+          invalidateCommits();
           break;
         case "TASK_EVIDENCE_CHANGED":
-          void queryClient.invalidateQueries({ queryKey: JIRA_SPRINT_QUERY_KEYS.tasks(pid) });
+          invalidateTaskDetails();
+          if (entityId) {
+            void queryClient.invalidateQueries({ queryKey: TASK_EVIDENCE_QUERY_KEYS.webLinks(entityId) });
+            void queryClient.invalidateQueries({ queryKey: TASK_EVIDENCE_QUERY_KEYS.files(entityId) });
+          } else {
+            void queryClient.invalidateQueries({ queryKey: ["tasks"] });
+          }
           break;
         case "SYNC_STATUS_CHANGED":
-          void queryClient.invalidateQueries({
-            queryKey: PROJECT_INTEGRATIONS_QUERY_KEYS.projectIntegrations(pid),
-            exact: true,
-          });
-          void queryClient.invalidateQueries({ queryKey: ["projects", pid, "sync-status"] });
-          void queryClient.invalidateQueries({
-            queryKey: PROJECT_PROJECTION_QUERY_KEYS.syncStatus(pid),
-          });
+          invalidateSyncStatus();
           break;
       }
     },
@@ -92,10 +117,6 @@ export function useProjectRealtime(
       return;
     }
 
-    if (retryTimeoutRef.current) {
-      clearTimeout(retryTimeoutRef.current);
-      retryTimeoutRef.current = null;
-    }
     if (eventSourceRef.current) {
       eventSourceRef.current.close();
       eventSourceRef.current = null;
@@ -113,44 +134,33 @@ export function useProjectRealtime(
 
       es.onopen = () => {
         setConnectionStatus("OPEN");
-        setRetryCount(0);
       };
 
       es.onerror = () => {
         setConnectionStatus("ERROR");
-        if (eventSourceRef.current) {
-          eventSourceRef.current.close();
-          eventSourceRef.current = null;
-        }
-
-        if (retryCount < 5) {
-          const delay = Math.min(1000 * Math.pow(2, retryCount) + Math.random() * 1000, 30000);
-          retryTimeoutRef.current = setTimeout(() => {
-            setRetryCount((prev) => prev + 1);
-            setReconnectKey((prev) => prev + 1);
-          }, delay);
-        }
+        // Keep the source open: native EventSource reconnects and BE will emit READY again.
       };
 
       REALTIME_EVENT_NAMES.forEach((eventName) => {
         es.addEventListener(eventName, (e: MessageEvent) => {
+          let payload: { entityId?: string; occurredAt?: string } = {};
           try {
-            const parsed = typeof e.data === "string" ? JSON.parse(e.data) : e.data;
-            const parsedEvent: ProjectRealtimeEvent = {
-              type: (parsed?.type || eventName) as ProjectRealtimeEventType,
-              projectId: parsed?.projectId || cleanProjectId,
-              entityId: parsed?.entityId,
-              occurredAt: parsed?.occurredAt || new Date().toISOString(),
-            };
-
-            setLastEvent(parsedEvent);
-            setLastEventTime(new Date());
-
-            invalidateForEvent(parsedEvent.type, parsedEvent.projectId);
-            optionsRef.current?.onEvent?.(parsedEvent);
+            payload = typeof e.data === "string" ? JSON.parse(e.data) : e.data || {};
           } catch {
-            invalidateForEvent(eventName, cleanProjectId);
+            // Event names are authoritative invalidation signals; a malformed payload is ignored.
           }
+
+          const realtimeEvent: ProjectRealtimeEvent = {
+            type: eventName,
+            projectId: cleanProjectId,
+            entityId: typeof payload.entityId === "string" ? payload.entityId : undefined,
+            occurredAt: typeof payload.occurredAt === "string" ? payload.occurredAt : new Date().toISOString(),
+          };
+
+          setLastEvent(realtimeEvent);
+          setLastEventTime(new Date());
+          invalidateForEvent(eventName, cleanProjectId, realtimeEvent.entityId);
+          optionsRef.current?.onEvent?.(realtimeEvent);
         });
       });
     } catch {
@@ -160,19 +170,14 @@ export function useProjectRealtime(
     }
 
     return () => {
-      if (retryTimeoutRef.current) {
-        clearTimeout(retryTimeoutRef.current);
-        retryTimeoutRef.current = null;
-      }
       if (eventSourceRef.current) {
         eventSourceRef.current.close();
         eventSourceRef.current = null;
       }
     };
-  }, [cleanProjectId, isEnabled, reconnectKey, retryCount, invalidateForEvent]);
+  }, [cleanProjectId, isEnabled, reconnectKey, invalidateForEvent]);
 
   const reconnect = useCallback(() => {
-    setRetryCount(0);
     setConnectionStatus("CONNECTING");
     setReconnectKey((prev) => prev + 1);
   }, []);

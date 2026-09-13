@@ -4,12 +4,14 @@ import { useState, useMemo } from "react";
 import {
   XIcon,
   SaveIcon,
-  CheckCircle2Icon,
   LoaderCircleIcon,
   FileTextIcon,
   Trash2Icon,
   TagIcon,
   LockIcon,
+  GitCommitIcon,
+  PaperclipIcon,
+  ShieldCheckIcon,
 } from "lucide-react";
 import type {
   SprintIssue,
@@ -24,8 +26,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { CustomSelect } from "@/components/common/custom-select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TaskLinkedCommitsList } from "./task-linked-commits-list";
-import { TaskEvidencePanel } from "./task-evidence-panel";
+import { TaskEvidencePanel, TaskWorkSessionControl } from "./task-evidence-panel";
 import {
   useCreateProjectTask,
   usePatchProjectTask,
@@ -41,6 +44,15 @@ function parseIssueStatus(status?: string | null, jiraStatusName?: string | null
   if (["REVIEW", "TEST", "QA"].some((s) => combined.includes(s))) return "IN_REVIEW";
   if (["IN_PROGRESS", "IN PROGRESS", "DOING", "PROGRESS", "DEVELOPMENT"].some((s) => combined.includes(s))) return "IN_PROGRESS";
   return "TODO";
+}
+
+function normalizeIssueType(name: string): IssueType {
+  const upperName = name.toUpperCase();
+  if (upperName.includes("EPIC")) return "EPIC";
+  if (upperName.includes("STORY")) return "STORY";
+  if (upperName.includes("BUG")) return "BUG";
+  if (upperName.includes("SUB")) return "SUBTASK";
+  return "TASK";
 }
 
 interface IssueDetailsModalProps {
@@ -86,6 +98,33 @@ export function IssueDetailsModal({
   const patchTaskMutation = usePatchProjectTask();
   const deleteTaskMutation = useDeleteProjectTask();
   const transitionTaskMutation = useTransitionTask();
+  const issueTypes = taskOptions?.issueTypes;
+
+  const issueTypeOptions = useMemo(() => {
+    if (!issueTypes?.length) {
+      return [
+        { value: "TASK", label: "Task", icon: renderTypeIcon("TASK"), type: "TASK" as const, issueTypeId: undefined },
+        { value: "EPIC", label: "Epic", icon: renderTypeIcon("EPIC"), type: "EPIC" as const, issueTypeId: undefined },
+        { value: "STORY", label: "User Story", icon: renderTypeIcon("STORY"), type: "STORY" as const, issueTypeId: undefined },
+        { value: "BUG", label: "Bug", icon: renderTypeIcon("BUG"), type: "BUG" as const, issueTypeId: undefined },
+        { value: "SUBTASK", label: "Sub-task", icon: renderTypeIcon("SUBTASK"), type: "SUBTASK" as const, issueTypeId: undefined },
+      ];
+    }
+
+    const seenIds = new Set<string>();
+    return issueTypes.flatMap((issueType) => {
+      if (seenIds.has(issueType.id)) return [];
+      seenIds.add(issueType.id);
+      const value = normalizeIssueType(issueType.name);
+      return [{
+        value: issueType.id,
+        label: issueType.name,
+        icon: renderTypeIcon(value),
+        type: value,
+        issueTypeId: issueType.id,
+      }];
+    });
+  }, [issueTypes]);
 
   const matchedAssignee = useMemo(() => {
     if (!issue?.assignee) return teamMembers[0];
@@ -111,7 +150,8 @@ export function IssueDetailsModal({
       key: issue?.key || "SAGA-NEW",
       summary: issue?.summary || "",
       description: issue?.description || "",
-      type: issue?.type || ("STORY" as IssueType),
+      type: issue?.type || ("TASK" as IssueType),
+      issueTypeId: undefined as string | undefined,
       priority: issue?.priority || ("MEDIUM" as IssuePriority),
       status: initialStatus,
       storyPoints: typeof issue?.storyPoints === "number" ? issue.storyPoints : 0,
@@ -143,8 +183,8 @@ export function IssueDetailsModal({
   }
 
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [successMsg, setSuccessMsg] = useState("");
   const [selectedCommitShas, setSelectedCommitShas] = useState("");
+  const [activeEvidenceTab, setActiveEvidenceTab] = useState("commits");
 
   const handleToggleCommitSha = (sha: string) => {
     setSelectedCommitShas((prev) => {
@@ -194,7 +234,6 @@ export function IssueDetailsModal({
     if (!canEdit) return;
 
     setIsSubmitting(true);
-    setSuccessMsg("");
 
     const labelsArray = form.labels
       .split(",")
@@ -202,6 +241,10 @@ export function IssueDetailsModal({
       .filter(Boolean);
 
     let savedKey = form.key || "SAGA-NEW";
+    const selectedIssueType =
+      issueTypeOptions.find((option) => option.value === form.issueTypeId) ||
+      issueTypeOptions.find((option) => option.type === form.type);
+    const selectedIssueTypeId = form.issueTypeId || selectedIssueType?.issueTypeId;
 
     try {
       if (projectId) {
@@ -227,6 +270,7 @@ export function IssueDetailsModal({
           const patchData: {
             summary?: string;
             description?: string;
+            issueTypeId?: string;
             storyPoints?: number;
             sprintExternalId?: string;
             moveToBacklog?: boolean;
@@ -237,6 +281,10 @@ export function IssueDetailsModal({
           const currentDesc = taskDetail?.description ?? issue.description ?? "";
           if (form.description.trim() !== currentDesc.trim()) {
             patchData.description = form.description.trim();
+          }
+
+          if (selectedIssueTypeId && form.type !== issue.type) {
+            patchData.issueTypeId = selectedIssueTypeId;
           }
 
           const currentPoints =
@@ -289,6 +337,7 @@ export function IssueDetailsModal({
             data: {
               summary: form.summary.trim(),
               description: form.description?.trim() || undefined,
+              issueTypeId: selectedIssueTypeId,
               storyPoints: Number(form.storyPoints) > 0 ? Number(form.storyPoints) : undefined,
               sprintExternalId: sprintExtId,
             },
@@ -314,11 +363,7 @@ export function IssueDetailsModal({
       };
 
       onSave(finalIssue);
-      setSuccessMsg(isEditing ? "Cập nhật task thành công!" : "Đã tạo task mới thành công!");
-      setTimeout(() => {
-        setSuccessMsg("");
-        onClose();
-      }, 800);
+      onClose();
     } catch {
     } finally {
       setIsSubmitting(false);
@@ -342,11 +387,17 @@ export function IssueDetailsModal({
   return (
     <div
       onClick={onClose}
-      className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex justify-end animate-in fade-in-0 duration-300"
+      className={`fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex animate-in fade-in-0 duration-300 ${
+        isEditing ? "justify-end" : "items-center justify-center p-4"
+      }`}
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="bg-card border-l border-border/80 w-full sm:max-w-2xl md:max-w-3xl lg:max-w-4xl xl:max-w-5xl h-screen shadow-2xl flex flex-col overflow-hidden animate-in slide-in-from-right duration-300"
+        className={`bg-card border-border/80 shadow-2xl flex flex-col overflow-hidden animate-in duration-300 ${
+          isEditing
+            ? "border-l w-full sm:max-w-2xl md:max-w-3xl lg:max-w-4xl xl:max-w-5xl h-screen slide-in-from-right"
+            : "w-full max-w-3xl max-h-[calc(100vh-2rem)] rounded-3xl border slide-in-from-bottom-4"
+        }`}
       >
         <div className="p-4 sm:p-5 border-b border-border/60 flex items-center justify-between bg-muted/30 shrink-0">
           <div className="flex items-center gap-3">
@@ -372,29 +423,27 @@ export function IssueDetailsModal({
             </div>
           </div>
 
-          <button
-            type="button"
-            onClick={onClose}
-            className="w-8 h-8 rounded-xl flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted cursor-pointer transition-colors border border-border/50"
-          >
-            <XIcon className="w-4 h-4" />
-          </button>
+          <div className="flex items-center gap-2">
+            {isEditing && issue && (
+              <TaskWorkSessionControl taskId={issue.id} isOwnerOrLeader={canEdit} />
+            )}
+            <button
+              type="button"
+              onClick={onClose}
+              className="w-8 h-8 rounded-xl flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted cursor-pointer transition-colors border border-border/50"
+            >
+              <XIcon className="w-4 h-4" />
+            </button>
+          </div>
         </div>
 
-        <div className="p-4 sm:p-6 overflow-y-auto flex-1 scrollbar-thin space-y-5">
+        <div className={`p-4 sm:p-6 overflow-y-auto scrollbar-thin space-y-5 ${isEditing ? "flex-1" : ""}`}>
           {!canEdit && (
             <div className="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-700 dark:text-amber-300 text-xs font-semibold flex items-center gap-2 animate-in fade-in-0">
               <LockIcon className="w-4 h-4 shrink-0 text-amber-500" />
               <span>
                 Bạn đang xem task của thành viên <strong>{issue?.assignee.name} ({issue?.assignee.studentCode})</strong>. Bạn chỉ có quyền xem thông tin (Chỉ đọc).
               </span>
-            </div>
-          )}
-
-          {successMsg && (
-            <div className="p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 text-xs font-semibold flex items-center gap-2 animate-in fade-in-0">
-              <CheckCircle2Icon className="w-4 h-4 shrink-0" />
-              <span>{successMsg}</span>
             </div>
           )}
 
@@ -420,8 +469,8 @@ export function IssueDetailsModal({
             />
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-            <div className="lg:col-span-7 xl:col-span-8 space-y-5">
+          <div className="space-y-5">
+            <div className="space-y-1.5">
               <div className="space-y-1.5">
                 <Label htmlFor="issue-desc" className="text-xs font-semibold flex items-center gap-1.5">
                   <FileTextIcon className="w-3.5 h-3.5 text-primary" />
@@ -437,28 +486,18 @@ export function IssueDetailsModal({
                   className="text-xs rounded-xl bg-card resize-none disabled:opacity-80 border-border/80 leading-relaxed"
                 />
               </div>
-
-              {issue && (
-                <>
-                  <TaskLinkedCommitsList
-                    taskId={issue.id}
-                    projectId={projectId}
-                    onSelectCommit={handleToggleCommitSha}
-                    onSelectAllCommits={handleSelectAllCommitShas}
-                    selectedShas={selectedShasList}
-                  />
-                  <TaskEvidencePanel
-                    taskId={issue.id}
-                    isOwnerOrLeader={canEdit}
-                    externalCommitShas={selectedCommitShas}
-                    onConfirmCommitsChange={setSelectedCommitShas}
-                  />
-                </>
-              )}
             </div>
 
-            <div className="lg:col-span-5 xl:col-span-4 space-y-4 p-4 rounded-2xl bg-muted/20 border border-border/60">
-              <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground pb-1 border-b border-border/40">
+            <div
+              className={`grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 rounded-2xl bg-muted/20 border border-border/60 ${
+                isEditing ? "md:grid-cols-4" : ""
+              }`}
+            >
+              <h4
+                className={`text-xs font-bold uppercase tracking-wider text-muted-foreground pb-1 border-b border-border/40 ${
+                  isEditing ? "sm:col-span-2 md:col-span-4" : "sm:col-span-2"
+                }`}
+              >
                 Thuộc tính Task
               </h4>
 
@@ -501,7 +540,7 @@ export function IssueDetailsModal({
                 />
               </div>
 
-              <div className="space-y-1.5">
+              <div className={`space-y-1.5 sm:col-span-2 ${isEditing ? "md:col-span-2" : ""}`}>
                 <Label htmlFor="issue-sprint" className="text-xs font-semibold">
                   Sprint thuộc về
                 </Label>
@@ -525,7 +564,7 @@ export function IssueDetailsModal({
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className={`grid grid-cols-2 gap-3 sm:col-span-2 ${isEditing ? "md:col-span-2" : ""}`}>
                 <div className="space-y-1.5">
                   <Label htmlFor="issue-sp" className="text-xs font-semibold">
                     Story Points
@@ -568,36 +607,21 @@ export function IssueDetailsModal({
                 <CustomSelect
                   id="issue-type"
                   disabled={!canEdit}
-                  value={form.type}
-                  onChange={(val) => setForm((f) => ({ ...f, type: val as IssueType }))}
-                  options={
-                    taskOptions?.issueTypes && taskOptions.issueTypes.length > 0
-                      ? taskOptions.issueTypes.map((t) => ({
-                        value: t.name.toUpperCase().includes("STORY")
-                          ? "STORY"
-                          : t.name.toUpperCase().includes("BUG")
-                            ? "BUG"
-                            : t.name.toUpperCase().includes("SUB")
-                              ? "SUBTASK"
-                              : "TASK",
-                        label: t.name,
-                        icon: renderTypeIcon(
-                          t.name.toUpperCase().includes("STORY")
-                            ? "STORY"
-                            : t.name.toUpperCase().includes("BUG")
-                              ? "BUG"
-                              : t.name.toUpperCase().includes("SUB")
-                                ? "SUBTASK"
-                                : "TASK"
-                        ),
-                      }))
-                      : [
-                        { value: "STORY", label: "User Story", icon: renderTypeIcon("STORY") },
-                        { value: "TASK", label: "Task", icon: renderTypeIcon("TASK") },
-                        { value: "BUG", label: "Bug", icon: renderTypeIcon("BUG") },
-                        { value: "SUBTASK", label: "Sub-task", icon: renderTypeIcon("SUBTASK") },
-                      ]
+                  value={
+                    issueTypeOptions.find((option) => option.value === form.issueTypeId)?.value ||
+                    issueTypeOptions.find((option) => option.type === form.type)?.value ||
+                    form.type
                   }
+                  onChange={(value) => {
+                    const selected = issueTypeOptions.find((option) => option.value === value);
+                    if (!selected) return;
+                    setForm((current) => ({
+                      ...current,
+                      type: selected.type,
+                      issueTypeId: selected.issueTypeId,
+                    }));
+                  }}
+                  options={issueTypeOptions}
                 />
               </div>
 
@@ -618,6 +642,56 @@ export function IssueDetailsModal({
               </div>
             </div>
           </div>
+
+          {issue && (
+            <Tabs value={activeEvidenceTab} onValueChange={setActiveEvidenceTab} className="space-y-4 pt-1">
+              <TabsList className="w-full h-auto min-h-10 justify-start overflow-x-auto rounded-xl bg-muted/60">
+                <TabsTrigger value="commits" className="shrink-0 text-xs font-semibold">
+                  <GitCommitIcon className="w-3.5 h-3.5" />
+                  Commits
+                </TabsTrigger>
+                <TabsTrigger value="documents" className="shrink-0 text-xs font-semibold">
+                  <PaperclipIcon className="w-3.5 h-3.5" />
+                  Tài liệu
+                </TabsTrigger>
+                <TabsTrigger value="contribution" className="shrink-0 text-xs font-semibold">
+                  <ShieldCheckIcon className="w-3.5 h-3.5" />
+                  Đóng góp
+                </TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="commits">
+                <TaskLinkedCommitsList
+                  taskId={issue.id}
+                  projectId={projectId}
+                  onSelectCommit={handleToggleCommitSha}
+                  onSelectAllCommits={handleSelectAllCommitShas}
+                  selectedShas={selectedShasList}
+                />
+              </TabsContent>
+
+              <TabsContent value="documents">
+                <TaskEvidencePanel
+                  taskId={issue.id}
+                  projectId={projectId}
+                  section="documents"
+                  isOwnerOrLeader={canEdit}
+                />
+              </TabsContent>
+
+              <TabsContent value="contribution">
+                <TaskEvidencePanel
+                  taskId={issue.id}
+                  projectId={projectId}
+                  taskKey={issue.key}
+                  section="contribution"
+                  isOwnerOrLeader={canEdit}
+                  externalCommitShas={selectedCommitShas}
+                  onConfirmCommitsChange={setSelectedCommitShas}
+                />
+              </TabsContent>
+            </Tabs>
+          )}
         </div>
 
         <div className="p-4 sm:p-5 border-t border-border/60 flex items-center justify-between bg-muted/30 shrink-0">
