@@ -121,11 +121,10 @@ export function TaskWorkSessionControl({
   return (
     <div className="hidden sm:flex items-center gap-1.5">
       <div
-        className={`flex items-center gap-1.5 rounded-lg border px-2 py-1 font-mono text-xs font-bold tabular-nums ${
-          isSessionRunning
+        className={`flex items-center gap-1.5 rounded-lg border px-2 py-1 font-mono text-xs font-bold tabular-nums ${isSessionRunning
             ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"
             : "border-border/60 bg-background text-muted-foreground"
-        }`}
+          }`}
         title={isSessionRunning ? "Đang bấm giờ" : "Chưa bấm giờ"}
       >
         <TimerIcon className="w-3.5 h-3.5" />
@@ -356,11 +355,10 @@ export function TaskEvidencePanel({
         type="button"
         variant="outline"
         onClick={() => toggleConfirmedSha(commit.sha)}
-        className={`w-full h-auto min-h-9 justify-start px-2.5 py-2 text-left gap-2 rounded-lg border ${
-          isSelected
+        className={`w-full h-auto min-h-9 justify-start px-2.5 py-2 text-left gap-2 rounded-lg border ${isSelected
             ? "border-violet-500/60 bg-violet-500/10 text-foreground"
             : "border-border/60 bg-background hover:bg-muted/50"
-        }`}
+          }`}
       >
         <span className="font-mono text-[10px] font-bold text-primary shrink-0">
           {commit.sha.slice(0, 7)}

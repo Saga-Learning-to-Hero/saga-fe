@@ -61,6 +61,9 @@ export function ProjectIntegrationsCard({ projectId, isLeader }: ProjectIntegrat
       window.history.replaceState({}, "", window.location.pathname);
       toast.success("Đã ủy quyền Atlassian thành công! Vui lòng chọn Site, Project và Board.");
       void refetch();
+      setTimeout(() => {
+        setIsJiraModalOpen(true);
+      }, 0);
     }
 
     if (code === "GITHUB_INSTALLATION_SELECTION_REQUIRED") {
@@ -212,6 +215,7 @@ export function ProjectIntegrationsCard({ projectId, isLeader }: ProjectIntegrat
               isConnectingJira={connectJiraMutation.isPending}
               isDisconnectingJira={disconnectJiraMutation.isPending}
               onConnectJira={handleConnectJira}
+              onConfigureJira={() => setIsJiraModalOpen(true)}
               onDisconnectJira={() => setDisconnectModalType("jira")}
             />
             <ProjectGithubSection

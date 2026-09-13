@@ -4,6 +4,7 @@ import {
   CheckSquareIcon,
   ExternalLinkIcon,
   LoaderCircleIcon,
+  Settings2Icon,
   UnlinkIcon,
 } from "lucide-react";
 import type { ProjectJiraIntegration } from "../../types/student-project";
@@ -17,6 +18,7 @@ interface ProjectJiraSectionProps {
   isDisconnectingJira?: boolean;
   onConnectJira?: () => void;
   onDisconnectJira?: () => void;
+  onConfigureJira?: () => void;
 }
 
 export function ProjectJiraSection({
@@ -26,6 +28,7 @@ export function ProjectJiraSection({
   isDisconnectingJira = false,
   onConnectJira,
   onDisconnectJira,
+  onConfigureJira,
 }: ProjectJiraSectionProps) {
   const isRevoked = jira?.status === "REVOKED";
   const isActive = jira?.status === "ACTIVE";
@@ -72,26 +75,42 @@ export function ProjectJiraSection({
             </div>
           </div>
 
-          {isLeader && onConnectJira && (
-            <Button
-              type="button"
-              size="sm"
-              onClick={onConnectJira}
-              disabled={isConnectingJira}
-              className="h-7.5 px-2.5 text-[11px] font-bold rounded-lg gap-1.5 bg-blue-600 hover:bg-blue-700 text-white cursor-pointer shadow-2xs self-start sm:self-auto shrink-0"
-            >
-              {isConnectingJira ? (
-                <>
-                  <LoaderCircleIcon className="w-3 h-3 animate-spin" />
-                  <span>Đang xử lý...</span>
-                </>
-              ) : (
-                <>
-                  <ExternalLinkIcon className="w-3 h-3" />
-                  <span>{isActive ? "Đổi Jira" : isRevoked ? "Kết nối lại" : "Kết nối Jira"}</span>
-                </>
+          {isLeader && (
+            <div className="flex items-center gap-2 self-start sm:self-auto shrink-0 flex-wrap">
+              {onConfigureJira && (isActive || isRevoked || hasData) && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={onConfigureJira}
+                  className="h-7.5 px-2.5 text-[11px] font-bold rounded-lg gap-1.5 border-blue-500/30 text-blue-600 dark:text-blue-400 hover:bg-blue-500/10 cursor-pointer shadow-2xs"
+                >
+                  <Settings2Icon className="w-3 h-3" />
+                  <span>Cấu hình Site & Board</span>
+                </Button>
               )}
-            </Button>
+              {onConnectJira && (
+                <Button
+                  type="button"
+                  size="sm"
+                  onClick={onConnectJira}
+                  disabled={isConnectingJira}
+                  className="h-7.5 px-2.5 text-[11px] font-bold rounded-lg gap-1.5 bg-blue-600 hover:bg-blue-700 text-white cursor-pointer shadow-2xs"
+                >
+                  {isConnectingJira ? (
+                    <>
+                      <LoaderCircleIcon className="w-3 h-3 animate-spin" />
+                      <span>Đang xử lý...</span>
+                    </>
+                  ) : (
+                    <>
+                      <ExternalLinkIcon className="w-3 h-3" />
+                      <span>{isActive ? "Ủy quyền lại" : isRevoked ? "Kết nối lại" : "Kết nối Jira"}</span>
+                    </>
+                  )}
+                </Button>
+              )}
+            </div>
           )}
         </div>
 
