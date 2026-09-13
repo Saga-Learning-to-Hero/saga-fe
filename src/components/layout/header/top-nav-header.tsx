@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useRouter, usePathname } from "next/navigation";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import {
   ChevronDownIcon,
   LogOutIcon,
@@ -41,10 +41,12 @@ import { cn } from "@/lib/utils";
 import { CourseContextSwitcher } from "./course-context-switcher";
 import { TopNavTabs } from "./top-nav-tabs";
 import { GlobalCommandSearch } from "./global-command-search";
+import { studentCoursePath } from "@/features/student/courses/hooks/use-student-course-context";
 
 export function TopNavHeader() {
   const router = useRouter();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const { user } = useAuthStore();
   const { mutate: logout } = useLogout();
   const [isDark, setIsDark] = useState(false);
@@ -90,6 +92,7 @@ export function TopNavHeader() {
   }
 
   const hasSubNav = navItems.length > 0;
+  const studentCourseId = searchParams.get("courseId")?.trim() || "";
 
   const handleLogout = () => {
     logout();
@@ -245,7 +248,7 @@ export function TopNavHeader() {
               return (
                 <Link
                   key={item.id}
-                  href={item.href}
+                  href={user.role === "STUDENT" && studentCourseId ? studentCoursePath(item.href, studentCourseId) : item.href}
                   prefetch={true}
                   onClick={() => setMobileOpen(false)}
                   className={cn(

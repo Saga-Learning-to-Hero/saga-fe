@@ -30,9 +30,10 @@ export interface CommitItem {
   branchName: string;
   createdAt: string; // ISO String
   relativeTime: string; // VD: "2 giờ trước"
-  additions: number;
-  deletions: number;
-  filesChanged: number;
+  /** Backend projection hiện chưa cung cấp thống kê diff. */
+  additions: number | null;
+  deletions: number | null;
+  filesChanged: number | null;
   jiraKey?: string; // VD: SAGA-105
   isSyncedToJira: boolean;
   commitUrl: string;
@@ -40,9 +41,9 @@ export interface CommitItem {
 
 export interface CommitStats {
   totalCommits: number;
-  totalAdditions: number;
-  totalDeletions: number;
-  netLines: number;
+  totalAdditions: number | null;
+  totalDeletions: number | null;
+  netLines: number | null;
   activeBranches: number;
   lastSyncedAt: string;
 }

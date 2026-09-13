@@ -233,6 +233,7 @@ describe("useProjectRealtime Hook", () => {
 
       expect(invalidateSpy).toHaveBeenCalledWith({
         queryKey: PROJECT_INTEGRATIONS_QUERY_KEYS.projectIntegrations("project-999"),
+        exact: true,
       });
       expect(invalidateSpy).toHaveBeenCalledWith({
         queryKey: ["projects", "project-999", "sync-status"],

@@ -22,19 +22,28 @@ export function useProjectTasksData(projectId?: string | null) {
   });
 }
 
+export function useProjectTaskDetail(
+  projectId?: string | null,
+  taskId?: string | null,
+  options?: { enabled?: boolean }
+) {
+  return useQuery({
+    queryKey: JIRA_SPRINT_QUERY_KEYS.taskDetail(projectId, taskId),
+    queryFn: () => ProjectTaskService.getTask(projectId!, taskId!),
+    enabled:
+      Boolean(projectId && projectId.trim() && taskId && taskId.trim()) &&
+      (options?.enabled ?? true),
+    staleTime: 1000 * 30,
+  });
+}
+
 export function useTaskOptions(projectId?: string | null, options?: { enabled?: boolean }) {
   return useQuery({
     queryKey: JIRA_SPRINT_QUERY_KEYS.taskOptions(projectId),
     queryFn: () => ProjectTaskService.getTaskOptions(projectId!),
     enabled: Boolean(projectId && projectId.trim()) && (options?.enabled ?? true),
     staleTime: 1000 * 60 * 5,
-    retry: (failureCount, error) => {
-      const code = getApiErrorCode(error);
-      if (code === "INTEGRATION_REVOKED" || code === "INTEGRATION_NOT_FOUND") {
-        return false;
-      }
-      return failureCount < 1;
-    },
+    retry: false,
   });
 }
 
@@ -160,8 +169,12 @@ export function usePatchProjectTask() {
       toast.success(`Đã cập nhật task [${res.externalKey}] thành công.`);
     },
     onError: (error: unknown) => {
-      const err = error as { response?: { data?: { message?: string } }; message?: string };
-      toast.error(err.response?.data?.message || err.message || "Không thể cập nhật task.");
+      const err = error as { response?: { data?: { code?: string; message?: string } }; message?: string };
+      const msg =
+        err.response?.data?.code === "JIRA_FIELD_INVALID"
+          ? "Jira từ chối cập nhật Task (do cấu hình màn hình Edit Screen hoặc quyền hạn trên Jira)."
+          : err.response?.data?.message || err.message || "Không thể cập nhật task.";
+      toast.error(msg);
     },
   });
 }

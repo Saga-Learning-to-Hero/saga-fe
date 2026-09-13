@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   SearchIcon,
   LayoutDashboardIcon,
@@ -33,11 +33,13 @@ import { lecturerCourseDashboardPath } from "@/features/lecturer/courses/lib/cou
 import { useLecturerCourses } from "@/features/lecturer/courses/hooks/use-lecturer-courses";
 import { useStudentCourses } from "@/features/student/courses/hooks/use-student-courses";
 import { mapStudentCourseResponse } from "@/features/student/courses/types/student-course";
+import { studentCoursePath } from "@/features/student/courses/hooks/use-student-course-context";
 
 export function GlobalCommandSearch() {
   const [open, setOpen] = useState(false);
   const router = useRouter();
-  const { user, setSelectedCourse } = useAuthStore();
+  const searchParams = useSearchParams();
+  const { user, selectedCourse, setSelectedCourse } = useAuthStore();
   const { mutate: logout } = useLogout();
   const lecturerCoursesQuery = useLecturerCourses({
     enabled: user?.role === "LECTURER",
@@ -48,6 +50,10 @@ export function GlobalCommandSearch() {
 
   const lecturerCourses = lecturerCoursesQuery.data ?? [];
   const studentCourses = (studentCoursesQuery.data ?? []).map(mapStudentCourseResponse);
+  const selectedStudentCourseId =
+    searchParams.get("courseId")?.trim() || selectedCourse?.courseId || selectedCourse?.id || "";
+  const studentPath = (pathname: string) =>
+    selectedStudentCourseId ? studentCoursePath(pathname, selectedStudentCourseId) : pathname;
 
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
@@ -103,49 +109,49 @@ export function GlobalCommandSearch() {
           {user.role === "STUDENT" && (
             <CommandGroup heading="Điều hướng học phần">
               <CommandItem
-                onSelect={() => runCommand(() => router.push("/student/dashboard"))}
+                onSelect={() => runCommand(() => router.push(studentPath("/student/dashboard")))}
                 className="flex items-center gap-2.5 cursor-pointer py-2 px-3 text-xs"
               >
                 <LayoutDashboardIcon className="size-4 text-primary" />
                 <span>Dashboard tổng quan</span>
               </CommandItem>
               <CommandItem
-                onSelect={() => runCommand(() => router.push("/student/project-info"))}
+                onSelect={() => runCommand(() => router.push(studentPath("/student/project-info")))}
                 className="flex items-center gap-2.5 cursor-pointer py-2 px-3 text-xs"
               >
                 <FolderKanbanIcon className="size-4 text-blue-500" />
                 <span>Thông tin dự án nhóm</span>
               </CommandItem>
               <CommandItem
-                onSelect={() => runCommand(() => router.push("/student/graph"))}
+                onSelect={() => runCommand(() => router.push(studentPath("/student/graph")))}
                 className="flex items-center gap-2.5 cursor-pointer py-2 px-3 text-xs"
               >
                 <GitGraphIcon className="size-4 text-accent" />
                 <span>Đồ thị Traceability</span>
               </CommandItem>
               <CommandItem
-                onSelect={() => runCommand(() => router.push("/student/sprint-progress"))}
+                onSelect={() => runCommand(() => router.push(studentPath("/student/sprint-progress")))}
                 className="flex items-center gap-2.5 cursor-pointer py-2 px-3 text-xs"
               >
                 <KanbanSquareIcon className="size-4 text-purple-500" />
                 <span>Tiến độ công việc Agile Kanban</span>
               </CommandItem>
               <CommandItem
-                onSelect={() => runCommand(() => router.push("/student/commits"))}
+                onSelect={() => runCommand(() => router.push(studentPath("/student/commits")))}
                 className="flex items-center gap-2.5 cursor-pointer py-2 px-3 text-xs"
               >
                 <GitCommitIcon className="size-4 text-emerald-500" />
                 <span>Lịch sử Commit Git</span>
               </CommandItem>
               <CommandItem
-                onSelect={() => runCommand(() => router.push("/student/assessment"))}
+                onSelect={() => runCommand(() => router.push(studentPath("/student/assessment")))}
                 className="flex items-center gap-2.5 cursor-pointer py-2 px-3 text-xs"
               >
                 <UserCheckIcon className="size-4 text-amber-500" />
                 <span>Đánh giá chéo theo Sprint</span>
               </CommandItem>
               <CommandItem
-                onSelect={() => runCommand(() => router.push("/student/contribution"))}
+                onSelect={() => runCommand(() => router.push(studentPath("/student/contribution")))}
                 className="flex items-center gap-2.5 cursor-pointer py-2 px-3 text-xs"
               >
                 <PieChartIcon className="size-4 text-indigo-500" />
@@ -186,7 +192,7 @@ export function GlobalCommandSearch() {
                   onSelect={() =>
                     runCommand(() => {
                       setSelectedCourse(c);
-                      router.push("/student/dashboard");
+                      router.push(studentCoursePath("/student/dashboard", c.courseId || c.id));
                     })
                   }
                   className="flex items-center gap-2.5 cursor-pointer py-2 px-3 text-xs"

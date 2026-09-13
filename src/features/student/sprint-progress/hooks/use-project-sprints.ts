@@ -71,8 +71,12 @@ export function usePatchSprint() {
       toast.success(`Đã cập nhật ${res.name} thành công.`);
     },
     onError: (error: unknown) => {
-      const err = error as { response?: { data?: { message?: string } }; message?: string };
-      toast.error(err.response?.data?.message || err.message || "Không thể cập nhật Sprint.");
+      const err = error as { response?: { data?: { code?: string; message?: string } }; message?: string };
+      const msg =
+        err.response?.data?.code === "JIRA_FIELD_INVALID"
+          ? "Jira từ chối cập nhật Sprint (do ràng buộc trạng thái hoặc quyền hạn trên Jira)."
+          : err.response?.data?.message || err.message || "Không thể cập nhật Sprint.";
+      toast.error(msg);
     },
   });
 }

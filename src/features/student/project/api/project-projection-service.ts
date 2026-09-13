@@ -4,6 +4,8 @@ import type {
   ProjectTaskItem,
   ProjectSyncStatusItem,
   TaskLinkedCommitItem,
+  ProjectProgressResponse,
+  ProjectMemberProgressResponse,
 } from "../types/student-project";
 
 export class ProjectProjectionService {
@@ -65,6 +67,35 @@ export class ProjectProjectionService {
     const cleanProjectId = projectId.trim();
     const res = await apiClient.get<TaskLinkedCommitItem[]>(
       `/api/projects/${encodeURIComponent(cleanProjectId)}/commits`
+    );
+    return res.data;
+  }
+
+  static async getProjectProgress(projectId: string): Promise<ProjectProgressResponse> {
+    if (!projectId || projectId.trim() === "") {
+      throw new Error("Throw ValidationException: Project ID is required");
+    }
+    const cleanProjectId = projectId.trim();
+    const res = await apiClient.get<ProjectProgressResponse>(
+      `/api/projects/${encodeURIComponent(cleanProjectId)}/progress`
+    );
+    return res.data;
+  }
+
+  static async getMemberProgress(
+    projectId: string,
+    studentId: string
+  ): Promise<ProjectMemberProgressResponse> {
+    if (!projectId || projectId.trim() === "") {
+      throw new Error("Throw ValidationException: Project ID is required");
+    }
+    if (!studentId || studentId.trim() === "") {
+      throw new Error("Throw ValidationException: Student ID is required");
+    }
+    const cleanProjectId = projectId.trim();
+    const cleanStudentId = studentId.trim();
+    const res = await apiClient.get<ProjectMemberProgressResponse>(
+      `/api/projects/${encodeURIComponent(cleanProjectId)}/progress/members/${encodeURIComponent(cleanStudentId)}`
     );
     return res.data;
   }

@@ -1,6 +1,7 @@
 import { apiClient } from "@/lib/axios";
 import { requireCourseId } from "@/lib/api-error";
 import type {
+  LecturerCourseProgressResponse,
   LecturerCourseResponse,
   LecturerRosterResponse,
 } from "../types/lecturer-course";
@@ -27,6 +28,17 @@ export class LecturerCourseService {
       classCode: data?.classCode || "",
       enrolledCount: data?.enrolledCount ?? (Array.isArray(data?.entries) ? data.entries.length : 0),
       entries: Array.isArray(data?.entries) ? data.entries : [],
+    };
+  }
+
+  static async getCourseProgress(courseId: string): Promise<LecturerCourseProgressResponse> {
+    const id = requireCourseId(courseId);
+    const response = await apiClient.get<LecturerCourseProgressResponse>(`/api/lecturer/courses/${id}/progress`);
+    const data = response.data;
+
+    return {
+      courseId: data?.courseId || id,
+      teams: Array.isArray(data?.teams) ? data.teams : [],
     };
   }
 }

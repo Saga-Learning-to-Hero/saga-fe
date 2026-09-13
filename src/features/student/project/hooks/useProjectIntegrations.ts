@@ -50,6 +50,7 @@ export function useDisconnectProjectJira() {
       );
       await queryClient.invalidateQueries({
         queryKey: PROJECT_INTEGRATIONS_QUERY_KEYS.projectIntegrations(projectId),
+        exact: true,
       });
     },
   });
@@ -69,6 +70,7 @@ export function useDisconnectProjectGitHub() {
       );
       await queryClient.invalidateQueries({
         queryKey: PROJECT_INTEGRATIONS_QUERY_KEYS.projectIntegrations(projectId),
+        exact: true,
       });
     },
   });
@@ -85,6 +87,7 @@ export function useConnectProjectGitHub() {
     onSuccess: async (_, { projectId }) => {
       await queryClient.invalidateQueries({
         queryKey: PROJECT_INTEGRATIONS_QUERY_KEYS.projectIntegrations(projectId),
+        exact: true,
       });
       await queryClient.invalidateQueries({
         queryKey: PROJECT_INTEGRATIONS_QUERY_KEYS.availableGitHubRepositories(projectId),
@@ -131,6 +134,7 @@ export function useProjectGitHubSetupCallback() {
     onSuccess: async (_, { projectId }) => {
       await queryClient.invalidateQueries({
         queryKey: PROJECT_INTEGRATIONS_QUERY_KEYS.projectIntegrations(projectId),
+        exact: true,
       });
       await queryClient.invalidateQueries({
         queryKey: PROJECT_INTEGRATIONS_QUERY_KEYS.availableGitHubRepositories(projectId),
@@ -152,6 +156,7 @@ export function useUpdateProjectGitHubRepositories() {
     onSuccess: async (_, { projectId }) => {
       await queryClient.invalidateQueries({
         queryKey: PROJECT_INTEGRATIONS_QUERY_KEYS.projectIntegrations(projectId),
+        exact: true,
       });
       await queryClient.invalidateQueries({
         queryKey: PROJECT_INTEGRATIONS_QUERY_KEYS.availableGitHubRepositories(projectId),
@@ -176,6 +181,7 @@ export function useProjectJiraSites(
     queryFn: () => StudentProjectService.getProjectJiraSites(projectId!),
     enabled: (options?.enabled ?? true) && Boolean(projectId && projectId.trim()),
     staleTime: 1000 * 30,
+    retry: false,
   });
 }
 
@@ -192,6 +198,7 @@ export function useProjectJiraProjects(
       Boolean(projectId && projectId.trim()) &&
       Boolean(cloudId && cloudId.trim()),
     staleTime: 1000 * 30,
+    retry: false,
   });
 }
 
@@ -211,6 +218,7 @@ export function useProjectJiraBoards(
       Boolean(cloudId && cloudId.trim()) &&
       Boolean(jiraProjectId && jiraProjectId.trim()),
     staleTime: 1000 * 30,
+    retry: false,
   });
 }
 
@@ -225,8 +233,12 @@ export function useUpdateProjectJira() {
       payload: import("../types/student-project").UpdateProjectJiraPayload;
     }) => StudentProjectService.updateProjectJira(projectId, payload),
     onSuccess: async (_, { projectId }) => {
+      queryClient.removeQueries({
+        queryKey: ["projects", projectId, "integrations", "jira"],
+      });
       await queryClient.invalidateQueries({
         queryKey: PROJECT_INTEGRATIONS_QUERY_KEYS.projectIntegrations(projectId),
+        exact: true,
       });
     },
   });

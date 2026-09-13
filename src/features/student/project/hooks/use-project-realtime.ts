@@ -4,6 +4,7 @@ import { useEffect, useState, useRef, useCallback } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { JIRA_SPRINT_QUERY_KEYS } from "@/features/student/sprint-progress/hooks/use-sprint-data";
 import { PROJECT_INTEGRATIONS_QUERY_KEYS } from "@/features/student/project/hooks/useProjectIntegrations";
+import { PROJECT_PROJECTION_QUERY_KEYS } from "@/features/student/project/hooks/useProjectSync";
 import type {
   ProjectRealtimeEvent,
   ProjectRealtimeEventType,
@@ -61,10 +62,12 @@ export function useProjectRealtime(
           break;
         case "COMMITS_CHANGED":
           void queryClient.invalidateQueries({ queryKey: ["projects", pid, "commits"] });
+          void queryClient.invalidateQueries({ queryKey: PROJECT_PROJECTION_QUERY_KEYS.commits(pid) });
           break;
         case "TASK_LINKS_CHANGED":
           void queryClient.invalidateQueries({ queryKey: JIRA_SPRINT_QUERY_KEYS.tasks(pid) });
           void queryClient.invalidateQueries({ queryKey: ["projects", pid, "commits"] });
+          void queryClient.invalidateQueries({ queryKey: PROJECT_PROJECTION_QUERY_KEYS.commits(pid) });
           break;
         case "TASK_EVIDENCE_CHANGED":
           void queryClient.invalidateQueries({ queryKey: JIRA_SPRINT_QUERY_KEYS.tasks(pid) });
@@ -72,8 +75,12 @@ export function useProjectRealtime(
         case "SYNC_STATUS_CHANGED":
           void queryClient.invalidateQueries({
             queryKey: PROJECT_INTEGRATIONS_QUERY_KEYS.projectIntegrations(pid),
+            exact: true,
           });
           void queryClient.invalidateQueries({ queryKey: ["projects", pid, "sync-status"] });
+          void queryClient.invalidateQueries({
+            queryKey: PROJECT_PROJECTION_QUERY_KEYS.syncStatus(pid),
+          });
           break;
       }
     },

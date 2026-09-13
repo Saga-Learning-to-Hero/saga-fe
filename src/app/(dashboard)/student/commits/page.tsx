@@ -1,4 +1,5 @@
 import { Metadata } from "next";
+import { Suspense } from "react";
 import { CommitsView } from "@/features/student/commits/components/commits-view";
 
 export const metadata: Metadata = {
@@ -7,5 +8,9 @@ export const metadata: Metadata = {
 };
 
 export default function StudentCommitsPage() {
-  return <CommitsView />;
+  return (
+    <Suspense fallback={<div className="min-h-48 animate-pulse rounded-2xl bg-muted" />}>
+      <CommitsView />
+    </Suspense>
+  );
 }

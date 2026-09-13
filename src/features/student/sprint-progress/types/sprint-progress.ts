@@ -32,6 +32,7 @@ export interface SprintIssue {
 
 export interface Sprint {
   id: string;
+  externalSprintId?: string | number | null;
   name: string;
   goal: string;
   status: SprintStatus;

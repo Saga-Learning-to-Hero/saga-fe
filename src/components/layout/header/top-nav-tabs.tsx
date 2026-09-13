@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import {
   LayoutDashboardIcon,
   GitGraphIcon,
@@ -23,6 +23,8 @@ import { cn } from "@/lib/utils";
 import { isNavItemActive } from "@/components/layout/sidebar/nav-config";
 import type { NavItem } from "@/components/layout/sidebar/nav-config";
 import { usePrefetchLecturerCourse } from "@/features/lecturer/courses/hooks/use-lecturer-courses";
+import { useAuthStore } from "@/features/auth/store/useAuthStore";
+import { studentCoursePath } from "@/features/student/courses/hooks/use-student-course-context";
 
 const ICON_MAP: Record<string, React.ElementType> = {
   LayoutDashboard: LayoutDashboardIcon,
@@ -47,6 +49,9 @@ interface TopNavTabsProps {
 
 export function TopNavTabs({ items }: TopNavTabsProps) {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const user = useAuthStore((state) => state.user);
+  const studentCourseId = searchParams.get("courseId")?.trim() || "";
 
   if (!items || items.length === 0) return null;
 
@@ -60,7 +65,13 @@ export function TopNavTabs({ items }: TopNavTabsProps) {
         const Icon = ICON_MAP[item.icon] ?? LayoutDashboardIcon;
 
         return (
-          <TopNavTabLink key={item.id} item={item} isActive={isActive} Icon={Icon} />
+          <TopNavTabLink
+            key={item.id}
+            item={item}
+            href={user?.role === "STUDENT" && studentCourseId ? studentCoursePath(item.href, studentCourseId) : item.href}
+            isActive={isActive}
+            Icon={Icon}
+          />
         );
       })}
     </nav>
@@ -69,10 +80,12 @@ export function TopNavTabs({ items }: TopNavTabsProps) {
 
 function TopNavTabLink({
   item,
+  href,
   isActive,
   Icon,
 }: {
   item: NavItem;
+  href: string;
   isActive: boolean;
   Icon: React.ElementType;
 }) {
@@ -94,7 +107,7 @@ function TopNavTabLink({
   return (
     <Link
       ref={linkRef}
-      href={item.href}
+      href={href}
       prefetch={true}
       onMouseEnter={handleMouseEnter}
       className={cn(

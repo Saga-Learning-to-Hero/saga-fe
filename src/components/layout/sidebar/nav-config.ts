@@ -127,14 +127,14 @@ export function getStudentNavItems(): NavItem[] {
     },
     {
       id: "student-sprint",
-      title: "Công việc",
+      title: "Tasks",
       href: "/student/sprint-progress",
       icon: "Kanban",
       match: "exact",
     },
     {
       id: "student-commits",
-      title: "Commit",
+      title: "Commits",
       href: "/student/commits",
       icon: "GitCommit",
       match: "exact",

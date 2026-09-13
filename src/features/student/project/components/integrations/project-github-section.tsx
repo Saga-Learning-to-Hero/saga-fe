@@ -9,6 +9,7 @@ import {
   ShieldCheckIcon,
   UnlinkIcon,
   RotateCcwIcon,
+  AlertCircleIcon,
 } from "lucide-react";
 import type { ProjectGitHubIntegration } from "../../types/student-project";
 import { Badge } from "@/components/ui/badge";
@@ -34,6 +35,7 @@ export function ProjectGithubSection({
   onChangeInstallation,
 }: ProjectGithubSectionProps) {
   const repositories = github?.repositories || [];
+  const activeCount = repositories.filter((r) => (r.status || "").toUpperCase() === "ACTIVE").length;
   const hasRepos = repositories.length > 0;
   const isConnected = Boolean(github && (hasRepos || github.accountLogin));
 
@@ -50,9 +52,17 @@ export function ProjectGithubSection({
                 <h4 className="text-xs sm:text-sm font-bold text-foreground">
                   GitHub Repositories của nhóm
                 </h4>
-                {isConnected ? (
+                {activeCount > 0 ? (
                   <Badge className="bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-0 text-[10px] font-semibold">
-                    Đang kết nối ({repositories.length} repo)
+                    Đang kết nối ({activeCount} repo)
+                  </Badge>
+                ) : hasRepos ? (
+                  <Badge className="bg-amber-500/15 text-amber-700 dark:text-amber-400 border border-amber-500/30 text-[10px] font-semibold">
+                    Chưa kích hoạt ({repositories.length} repo)
+                  </Badge>
+                ) : isConnected ? (
+                  <Badge className="bg-blue-500/15 text-blue-600 dark:text-blue-400 border-0 text-[10px] font-semibold">
+                    Đã ủy quyền GitHub
                   </Badge>
                 ) : (
                   <Badge variant="outline" className="text-[10px] text-muted-foreground border-border">
@@ -137,10 +147,17 @@ export function ProjectGithubSection({
                     </Badge>
                   )}
                 </div>
-                <Badge className="bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-0 text-[10px] font-semibold shrink-0">
-                  <ShieldCheckIcon className="w-3 h-3 mr-1" />
-                  ACTIVE
-                </Badge>
+                {(r.status || "").toUpperCase() === "ACTIVE" ? (
+                  <Badge className="bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-0 text-[10px] font-semibold shrink-0">
+                    <ShieldCheckIcon className="w-3 h-3 mr-1" />
+                    ACTIVE
+                  </Badge>
+                ) : (
+                  <Badge className="bg-amber-500/15 text-amber-700 dark:text-amber-400 border border-amber-500/30 text-[10px] font-semibold shrink-0">
+                    <AlertCircleIcon className="w-3 h-3 mr-1" />
+                    {r.status || "REVOKED"}
+                  </Badge>
+                )}
               </div>
             ))}
           </div>

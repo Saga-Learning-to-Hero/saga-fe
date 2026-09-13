@@ -1,16 +1,14 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Link2Icon, CrownIcon, CheckCircle2Icon, RefreshCwIcon, Loader2Icon } from "lucide-react";
+import { Link2Icon, CrownIcon, Loader2Icon } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/sonner";
 import {
   useProjectIntegrations, useDisconnectProjectJira, useDisconnectProjectGitHub,
   useConnectProjectGitHub, useConnectProjectJira, useProjectGitHubSetupCallback,
 } from "../hooks/useProjectIntegrations";
-import { useSyncProject } from "../hooks/useProjectSync";
 import { ProjectJiraSection } from "./integrations/project-jira-section";
 import { ProjectGithubSection } from "./integrations/project-github-section";
 import { ProjectDisconnectDialog } from "./integrations/project-disconnect-dialog";
@@ -26,8 +24,6 @@ interface ProjectIntegrationsCardProps {
 }
 
 export function ProjectIntegrationsCard({ projectId, isLeader }: ProjectIntegrationsCardProps) {
-  const [feedbackMsg, setFeedbackMsg] = useState("");
-  const [syncingId, setSyncingId] = useState<string | null>(null);
   const [disconnectModalType, setDisconnectModalType] = useState<"jira" | "github" | null>(null);
   const [isReposModalOpen, setIsReposModalOpen] = useState(false);
   const [isGitHubInstallationsModalOpen, setIsGitHubInstallationsModalOpen] = useState(() => {
@@ -41,7 +37,7 @@ export function ProjectIntegrationsCard({ projectId, isLeader }: ProjectIntegrat
     return urlParams.get("jira_setup") === "true";
   });
 
-  const { data: integrations, isLoading, isRefetching, refetch } = useProjectIntegrations(
+  const { data: integrations, isLoading, refetch } = useProjectIntegrations(
     projectId,
     { enabled: Boolean(projectId) }
   );
@@ -103,12 +99,7 @@ export function ProjectIntegrationsCard({ projectId, isLeader }: ProjectIntegrat
   };
 
   const handleConnectJira = () => {
-    const isConfigured = integrations?.jira?.status === "ACTIVE";
-    if (isConfigured) {
-      setIsJiraModalOpen(true);
-    } else {
-      void handleRedirectJiraConnect();
-    }
+    void handleRedirectJiraConnect();
   };
 
   const handleRedirectGitHubConnect = async () => {
@@ -143,24 +134,6 @@ export function ProjectIntegrationsCard({ projectId, isLeader }: ProjectIntegrat
       setIsReposModalOpen(true);
     } else {
       void handleRedirectGitHubConnect();
-    }
-  };
-
-  const syncMutation = useSyncProject();
-  const handleSyncJira = async () => {
-    setSyncingId("jira");
-    try {
-      const res = await syncMutation.mutateAsync(projectId);
-      setFeedbackMsg(`Đã kích hoạt đồng bộ! (Jira: ${res.jira} · GitHub: ${res.github})`);
-      toast.success("Đã đưa yêu cầu đồng bộ Jira & GitHub vào hàng đợi!", {
-        description: `Jira: ${res.jira} · GitHub: ${res.github}`,
-      });
-      await refetch();
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Lỗi khi kích hoạt đồng bộ");
-    } finally {
-      setSyncingId(null);
-      setTimeout(() => setFeedbackMsg(""), 4500);
     }
   };
 
@@ -221,32 +194,11 @@ export function ProjectIntegrationsCard({ projectId, isLeader }: ProjectIntegrat
               lastEvent={lastEvent}
               onReconnect={reconnectRealtime}
             />
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                reconnectRealtime();
-                void refetch();
-              }}
-              disabled={isLoading || isRefetching}
-              className="h-8 px-2.5 text-xs rounded-xl gap-1.5 cursor-pointer"
-            >
-              <RefreshCwIcon className={`w-3.5 h-3.5 ${isRefetching ? "animate-spin text-primary" : ""}`} />
-              <span>{isRefetching ? "Đang đồng bộ..." : "Làm mới"}</span>
-            </Button>
           </div>
         </div>
       </CardHeader>
 
       <CardContent className="p-4 sm:p-5 space-y-3.5">
-
-        {feedbackMsg && (
-          <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 text-xs font-semibold flex items-center gap-2 animate-in fade-in-0">
-            <CheckCircle2Icon className="w-4 h-4 shrink-0" />
-            <span>{feedbackMsg}</span>
-          </div>
-        )}
-
         {isLoading ? (
           <div className="py-8 flex items-center justify-center gap-2 text-xs text-muted-foreground animate-pulse">
             <Loader2Icon className="w-4 h-4 animate-spin text-primary" />
@@ -259,9 +211,7 @@ export function ProjectIntegrationsCard({ projectId, isLeader }: ProjectIntegrat
               isLeader={isLeader}
               isConnectingJira={connectJiraMutation.isPending}
               isDisconnectingJira={disconnectJiraMutation.isPending}
-              syncingId={syncingId}
               onConnectJira={handleConnectJira}
-              onSyncJira={handleSyncJira}
               onDisconnectJira={() => setDisconnectModalType("jira")}
             />
             <ProjectGithubSection

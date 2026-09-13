@@ -8,6 +8,7 @@ import {
 import type { StudentProjectDetails } from "../types/student-project";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { formatVietnamDate } from "@/lib/utils";
 
 interface ProjectDetailsCardProps {
   project: StudentProjectDetails;
@@ -65,7 +66,7 @@ export function ProjectDetailsCard({
                 Khởi tạo bởi: <strong className="text-foreground">{project.createdBy.fullName}</strong>
                 {project.createdAt && (
                   <span className="ml-1.5 font-mono text-[10px]">
-                    ({new Date(project.createdAt).toLocaleDateString("vi-VN")})
+                    ({formatVietnamDate(project.createdAt)})
                   </span>
                 )}
               </span>

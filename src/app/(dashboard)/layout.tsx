@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { Suspense, useState, useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { MenuIcon, LoaderCircleIcon } from "lucide-react";
 import { Sidebar } from "@/components/layout/sidebar";
@@ -106,7 +106,9 @@ export default function DashboardLayout({
   if (user.role === "LECTURER" || user.role === "STUDENT") {
     return (
       <div className="flex min-h-screen flex-col bg-background text-foreground">
-        <TopNavHeader />
+        <Suspense fallback={<div className="h-16 border-b border-border bg-background" />}>
+          <TopNavHeader />
+        </Suspense>
 
         <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
           {children}

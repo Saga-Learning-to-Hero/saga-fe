@@ -14,6 +14,7 @@ export const LECTURER_COURSE_QUERY_KEYS = {
   lecturerCourses: ["lecturerCourses"] as const,
   lecturerCourse: (courseId: string) => ["lecturerCourse", courseId] as const,
   lecturerRoster: (courseId: string) => ["lecturerRoster", courseId] as const,
+  lecturerCourseProgress: (courseId: string) => ["lecturerCourseProgress", courseId] as const,
 };
 
 export function prefetchLecturerCourses(queryClient: QueryClient) {
@@ -118,4 +119,13 @@ export function useLecturerCourseAccess(isError: boolean, error: unknown) {
   }, [errorCode, isAccessDenied, isError, router]);
 
   return { errorCode, isAccessDenied };
+}
+
+export function useLecturerCourseProgress(courseId: string, options?: { enabled?: boolean }) {
+  return useQuery({
+    queryKey: LECTURER_COURSE_QUERY_KEYS.lecturerCourseProgress(courseId),
+    queryFn: () => LecturerCourseService.getCourseProgress(courseId),
+    enabled: (options?.enabled ?? true) && Boolean(courseId && courseId.trim()),
+    staleTime: 1000 * 30,
+  });
 }

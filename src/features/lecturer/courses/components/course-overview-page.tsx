@@ -13,11 +13,16 @@ import {
   RefreshCwIcon,
   SlidersHorizontalIcon,
   UsersIcon,
+  ActivityIcon,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { useLecturerCourse, useLecturerRoster } from "../hooks/use-lecturer-courses";
+import {
+  useLecturerCourse,
+  useLecturerRoster,
+  useLecturerCourseProgress,
+} from "../hooks/use-lecturer-courses";
 import { useLecturerTeams } from "@/features/lecturer/teams/hooks/use-lecturer-teams";
 import { useContributionTeamWeights } from "@/features/lecturer/contribution/hooks/use-lecturer-contribution";
 import {
@@ -46,6 +51,7 @@ export function CourseOverviewPage({ courseId }: CourseOverviewPageProps) {
   const rosterQuery = useLecturerRoster(courseId);
   const teamsQuery = useLecturerTeams(courseId);
   const weightsQuery = useContributionTeamWeights(courseId);
+  const progressQuery = useLecturerCourseProgress(courseId);
 
   const [activeTab, setActiveTab] = useState<"attention" | "all">("attention");
 
@@ -62,6 +68,23 @@ export function CourseOverviewPage({ courseId }: CourseOverviewPageProps) {
     () => new Map((weightsQuery.data?.teams ?? []).map((t) => [t.teamId, t.configured])),
     [weightsQuery.data?.teams]
   );
+
+  const progressById = useMemo(
+    () => new Map((progressQuery.data?.teams ?? []).map((p) => [p.teamId, p])),
+    [progressQuery.data?.teams]
+  );
+
+  const totalClassTasks = useMemo(
+    () => (progressQuery.data?.teams ?? []).reduce((acc, t) => acc + t.totalTasks, 0),
+    [progressQuery.data?.teams]
+  );
+  const completedClassTasks = useMemo(
+    () => (progressQuery.data?.teams ?? []).reduce((acc, t) => acc + t.completedTasks, 0),
+    [progressQuery.data?.teams]
+  );
+  const classCompletionPercent = totalClassTasks > 0
+    ? Math.round((completedClassTasks / totalClassTasks) * 100)
+    : 0;
 
   const attentionTeams = useMemo(() => {
     return teams.filter(
@@ -84,6 +107,7 @@ export function CourseOverviewPage({ courseId }: CourseOverviewPageProps) {
     rosterQuery.dataUpdatedAt,
     teamsQuery.dataUpdatedAt,
     weightsQuery.dataUpdatedAt,
+    progressQuery.dataUpdatedAt,
   ]);
 
   const handleRefresh = () => {
@@ -92,6 +116,7 @@ export function CourseOverviewPage({ courseId }: CourseOverviewPageProps) {
       rosterQuery.refetch(),
       teamsQuery.refetch(),
       weightsQuery.refetch(),
+      progressQuery.refetch(),
     ]);
   };
 
@@ -99,7 +124,8 @@ export function CourseOverviewPage({ courseId }: CourseOverviewPageProps) {
     courseQuery.isFetching ||
     rosterQuery.isFetching ||
     teamsQuery.isFetching ||
-    weightsQuery.isFetching;
+    weightsQuery.isFetching ||
+    progressQuery.isFetching;
 
   return (
     <LecturerPageShell
@@ -143,7 +169,7 @@ export function CourseOverviewPage({ courseId }: CourseOverviewPageProps) {
       }
       isLoading={!course && courseQuery.isLoading}
     >
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
         <OverviewStatCard
           icon={<UsersIcon className="size-5" />}
           iconBoxClass="bg-primary/10 text-primary"
@@ -185,6 +211,22 @@ export function CourseOverviewPage({ courseId }: CourseOverviewPageProps) {
           loading={teamsQuery.isLoading}
         />
         <OverviewStatCard
+          icon={<ActivityIcon className="size-5" />}
+          iconBoxClass="bg-indigo-500/10 text-indigo-600 dark:text-indigo-400"
+          label="Tiến độ công việc cả lớp"
+          value={completedClassTasks}
+          subValue={`/ ${totalClassTasks} tasks`}
+          badge={
+            <Badge
+              variant="outline"
+              className="border-indigo-500/30 bg-indigo-500/10 font-mono text-[11px] font-bold text-indigo-600 dark:text-indigo-400"
+            >
+              {classCompletionPercent}%
+            </Badge>
+          }
+          loading={progressQuery.isLoading}
+        />
+        <OverviewStatCard
           icon={<SlidersHorizontalIcon className="size-5" />}
           iconBoxClass="bg-purple-500/10 text-purple-600 dark:text-purple-400"
           label="Cấu hình trọng số riêng"
@@ -211,7 +253,7 @@ export function CourseOverviewPage({ courseId }: CourseOverviewPageProps) {
               Bảng quản trị tình trạng & Rủi ro nhóm
             </h2>
             <p className="text-xs text-muted-foreground">
-              Đối soát tình trạng khởi tạo dự án và mức độ cấu hình trọng số đánh giá của các nhóm.
+              Đối soát tình trạng khởi tạo dự án, tiến độ tasks Jira và mức độ cấu hình trọng số đánh giá của các nhóm.
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
@@ -274,6 +316,7 @@ export function CourseOverviewPage({ courseId }: CourseOverviewPageProps) {
                 <tr className="border-b border-border/60 bg-muted/30 text-muted-foreground">
                   <th className="px-4 py-3 font-semibold">Mã nhóm & Tên</th>
                   <th className="px-4 py-3 font-semibold">Trạng thái dự án</th>
+                  <th className="px-4 py-3 font-semibold">Tiến độ Tasks & Sprint</th>
                   <th className="px-4 py-3 font-semibold">Trọng số Slicing Pie</th>
                   <th className="px-4 py-3 font-semibold">Mức độ rủi ro</th>
                   <th className="px-4 py-3 text-right font-semibold">Hành động</th>
@@ -283,6 +326,7 @@ export function CourseOverviewPage({ courseId }: CourseOverviewPageProps) {
                 {displayedTeams.map((team) => {
                   const isConfigured = configuredById.get(team.teamId) ?? false;
                   const hasProject = Boolean(team.projectId);
+                  const prog = progressById.get(team.teamId);
 
                   let healthStatus: "healthy" | "warning" | "critical" = "healthy";
                   let healthLabel = "Hoạt động tốt";
@@ -297,6 +341,11 @@ export function CourseOverviewPage({ courseId }: CourseOverviewPageProps) {
                   } else if (!isConfigured) {
                     healthStatus = "warning";
                     healthLabel = "Chưa cấu hình trọng số";
+                    healthBadgeClass =
+                      "bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/30";
+                  } else if (prog && prog.totalTasks > 0 && (prog.taskCompletionPercent ?? 0) < 20) {
+                    healthStatus = "warning";
+                    healthLabel = "Tiến độ chậm";
                     healthBadgeClass =
                       "bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/30";
                   }
@@ -331,6 +380,28 @@ export function CourseOverviewPage({ courseId }: CourseOverviewPageProps) {
                           >
                             Chờ khởi tạo
                           </Badge>
+                        )}
+                      </td>
+                      <td className="px-4 py-3.5">
+                        {!hasProject || !prog ? (
+                          <span className="font-mono text-xs text-muted-foreground">—</span>
+                        ) : (
+                          <div className="space-y-1 max-w-[170px]">
+                            <div className="flex items-center justify-between gap-1 text-[11px]">
+                              <span className="font-bold text-foreground truncate max-w-[105px]" title={prog.currentSprintName || "Chưa có Sprint"}>
+                                {prog.currentSprintName || "Chưa có Sprint"}
+                              </span>
+                              <span className="font-mono text-muted-foreground font-semibold shrink-0">
+                                {prog.completedTasks}/{prog.totalTasks}
+                              </span>
+                            </div>
+                            <div className="w-full bg-muted/80 h-1.5 rounded-full overflow-hidden">
+                              <div
+                                className="bg-primary h-full rounded-full transition-all duration-300"
+                                style={{ width: `${Math.min(100, Math.max(0, Math.round(prog.taskCompletionPercent ?? 0)))}%` }}
+                              />
+                            </div>
+                          </div>
                         )}
                       </td>
                       <td className="px-4 py-3.5">

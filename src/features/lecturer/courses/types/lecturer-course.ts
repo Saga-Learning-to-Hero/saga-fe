@@ -38,3 +38,20 @@ export interface LecturerRosterResponse {
   enrolledCount: number;
   entries: LecturerRosterEntry[];
 }
+
+export interface LecturerCourseProgressTeamEntry {
+  teamId: string;
+  teamNo: number;
+  teamName: string;
+  projectId: string | null;
+  totalTasks: number;
+  completedTasks: number;
+  taskCompletionPercent: number | null;
+  currentSprintName: string | null;
+  lastActivityAt: string | null;
+}
+
+export interface LecturerCourseProgressResponse {
+  courseId: string;
+  teams: LecturerCourseProgressTeamEntry[];
+}

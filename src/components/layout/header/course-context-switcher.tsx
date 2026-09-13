@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   BookOpenIcon,
   ChevronDownIcon,
@@ -24,6 +24,7 @@ import { lecturerCourseDashboardPath } from "@/features/lecturer/courses/lib/cou
 import { useLecturerCourses } from "@/features/lecturer/courses/hooks/use-lecturer-courses";
 import { useStudentCourses } from "@/features/student/courses/hooks/use-student-courses";
 import { mapStudentCourseResponse } from "@/features/student/courses/types/student-course";
+import { studentCoursePath } from "@/features/student/courses/hooks/use-student-course-context";
 
 interface CourseContextSwitcherProps {
   courseId: string | null;
@@ -35,6 +36,7 @@ export function CourseContextSwitcher({
   pathname,
 }: CourseContextSwitcherProps) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { user, selectedCourse, setSelectedCourse } = useAuthStore();
   const lecturerCoursesQuery = useLecturerCourses({
     enabled: user?.role === "LECTURER",
@@ -160,8 +162,10 @@ export function CourseContextSwitcher({
   }
 
   const studentCourses = (studentCoursesQuery.data ?? []).map(mapStudentCourseResponse);
-  const activeStudentCourse =
-    selectedCourse ?? studentCourses.find((course) => course.id === courseId) ?? studentCourses[0];
+  const requestedStudentCourseId = searchParams.get("courseId")?.trim() || "";
+  const activeStudentCourse = requestedStudentCourseId
+    ? studentCourses.find((course) => course.id === requestedStudentCourseId) ?? null
+    : selectedCourse ?? null;
 
   if (!activeStudentCourse) {
     return (
@@ -201,13 +205,13 @@ export function CourseContextSwitcher({
         <DropdownMenuSeparator />
         <DropdownMenuGroup className="max-h-64 space-y-0.5 overflow-y-auto p-1">
           {studentCourses.map((course) => {
-            const isSelected = (selectedCourse?.id ?? activeStudentCourse.id) === course.id;
+            const isSelected = activeStudentCourse.id === course.id;
             return (
               <DropdownMenuItem
                 key={course.id}
                 onClick={() => {
                   setSelectedCourse(course);
-                  router.push("/student/dashboard");
+                  router.push(studentCoursePath("/student/dashboard", course.id));
                 }}
                 className={cn(
                   "flex cursor-pointer items-center justify-between rounded-xl p-2.5 text-xs",

@@ -67,12 +67,12 @@ export function mapProjectCommitToCommitItem(
       avatar,
     },
     repoName,
-    branchName: "main",
+    branchName: commit.headRef?.trim() || "Không xác định",
     createdAt: commit.committedAt || commit.createdAt || new Date().toISOString(),
     relativeTime: formatRelativeTime(commit.committedAt || commit.createdAt),
-    additions: 0,
-    deletions: 0,
-    filesChanged: 1,
+    additions: null,
+    deletions: null,
+    filesChanged: null,
     jiraKey,
     isSyncedToJira: Boolean(jiraKey),
     commitUrl: commit.repositoryFullName && commit.sha
@@ -112,16 +112,35 @@ export function extractReposAndBranches(
 
   const repositories = Array.from(repoMap.values());
   const branches: Record<string, Branch[]> = {};
+  const branchMapByRepo = new Map<string, Map<string, Branch>>();
+
+  commits.forEach((commit) => {
+    const fullPath = commit.repositoryFullName || "default/project-repo";
+    const repoName = fullPath.split("/").pop() || fullPath;
+    const branchName = commit.headRef?.trim() || "Không xác định";
+    const branchesForRepo = branchMapByRepo.get(repoName) || new Map<string, Branch>();
+    const existing = branchesForRepo.get(branchName);
+
+    branchesForRepo.set(branchName, {
+      name: branchName,
+      isDefault: branchName === "main" || branchName === "master",
+      commitCount: (existing?.commitCount || 0) + 1,
+      lastCommitDate:
+        !existing?.lastCommitDate || (commit.committedAt || "") > existing.lastCommitDate
+          ? commit.committedAt || ""
+          : existing.lastCommitDate,
+    });
+    branchMapByRepo.set(repoName, branchesForRepo);
+  });
 
   repositories.forEach((repo) => {
-    branches[repo.name] = [
-      {
-        name: "main",
-        isDefault: true,
-        commitCount: repo.totalCommits,
-        lastCommitDate: new Date().toISOString(),
-      },
-    ];
+    const repoBranches = Array.from(branchMapByRepo.get(repo.name)?.values() || []);
+    branches[repo.name] = repoBranches.sort((a, b) => {
+      if (a.isDefault !== b.isDefault) return a.isDefault ? -1 : 1;
+      return b.commitCount - a.commitCount || a.name.localeCompare(b.name, "vi");
+    });
+    repo.activeBranchesCount = repoBranches.length;
+    repo.defaultBranch = repoBranches.find((branch) => branch.isDefault)?.name || repoBranches[0]?.name || "";
   });
 
   return { repositories, branches };

@@ -125,6 +125,7 @@ Không redirect giảng viên thẳng vào dashboard lớp khi chưa chọn lớ
 - Với lecturer, tab con chỉ xuất hiện khi URL chứa `/lecturer/courses/[courseId]/...`; khi chưa chọn lớp, chỉ hiện trang chọn lớp.
 - Navigation nằm tại `src/components/layout/sidebar/nav-config.ts`. Dùng helper `course-routes.ts`, không nối chuỗi route rải rác. Link sidebar/header/card dùng `prefetch={true}`.
 - Khi thêm page động, xử lý đủ loading, invalid ID, 403 và 404; không fallback sang `courses` chỉ vì state Zustand chưa hydrate. URL chứa `courseId` là nguồn ngữ cảnh bền qua reload.
+- Với các màn Student dùng chung route, truyền ngữ cảnh bằng `?courseId=<uuid>`. `useStudentCourseContext` đồng bộ URL với Zustand nhưng không được tự lấy `apiCourses[0]`; course trong URL là nguồn sự thật khi có mặt.
 
 ## 5. Bản đồ route hiện hữu
 

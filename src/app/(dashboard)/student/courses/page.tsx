@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
 import { StudentCourseSelection } from "@/features/student/courses/components/student-course-selection";
 import type { StudentCourse } from "@/features/student/courses/types/student-course";
+import { studentCoursePath } from "@/features/student/courses/hooks/use-student-course-context";
 
 export default function StudentCoursesSelectionPage() {
   const router = useRouter();
@@ -11,7 +12,7 @@ export default function StudentCoursesSelectionPage() {
 
   const handleSelectCourse = (course: StudentCourse) => {
     setSelectedCourse(course);
-    router.push("/student/dashboard");
+    router.push(studentCoursePath("/student/dashboard", course.courseId || course.id));
   };
 
   return (

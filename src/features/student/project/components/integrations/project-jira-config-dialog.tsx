@@ -63,9 +63,9 @@ export function ProjectJiraConfigDialog({
     try {
       const payload: UpdateProjectJiraPayload = { cloudId: selectedSiteId, jiraProjectId: selectedProjectId };
       if (selectedBoardId && selectedBoardId !== "NONE") payload.boardId = selectedBoardId;
+      handleOpenChange(false);
       await updateJiraMutation.mutateAsync({ projectId, payload });
       toast.success("Lưu cấu hình Jira cho dự án thành công!");
-      handleOpenChange(false);
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Không thể lưu cấu hình Jira");
     }

@@ -234,11 +234,112 @@ export interface TaskLinkedCommitItem {
   message: string;
   authorExternalId?: string | null;
   authorStudentId?: string | null;
+  /** Git ref do backend chiếu từ GitHub; không phải lúc nào cũng có. */
+  headRef?: string | null;
   committedAt: string;
   createdAt: string;
 }
 
 export type ProjectCommitItem = TaskLinkedCommitItem;
+
+export interface ProjectProgressTaskSummary {
+  total: number;
+  todo: number;
+  inProgress: number;
+  inReview: number;
+  done: number;
+  blocked: number;
+  completionPercent: number | null;
+}
+
+export interface ProjectProgressSprintSummary {
+  id: string;
+  externalSprintId: string;
+  name: string;
+  state: string;
+  startDate: string | null;
+  endDate: string | null;
+  totalTasks: number;
+  completedTasks: number;
+}
+
+export interface ProjectProgressCommitSummary {
+  total: number;
+  linked: number;
+  lastCommitAt: string | null;
+}
+
+export interface ProjectProgressEvidenceSummary {
+  workSessions: number;
+  files: number;
+  webLinks: number;
+  confirmations: number;
+}
+
+export interface ProjectProgressTaskAttribution {
+  assignedTotal: number;
+  completed: number;
+  inProgress: number;
+  blocked: number;
+}
+
+export interface ProjectProgressCommitAttribution {
+  total: number;
+  linkedToTasks: number;
+  lastCommittedAt: string | null;
+}
+
+export interface ProjectProgressMemberSummary {
+  studentId: string;
+  userId: string;
+  fullName: string;
+  studentCode: string;
+  teamRole: string;
+  tasks: ProjectProgressTaskAttribution;
+  commits: ProjectProgressCommitAttribution;
+  evidenceConfirmations: number;
+}
+
+export interface ProjectProgressSyncSummary {
+  jiraStatus: string | null;
+  jiraLastSyncedAt: string | null;
+  githubStatus: string | null;
+  githubLastSyncedAt: string | null;
+}
+
+export interface ProjectProgressResponse {
+  projectId: string;
+  teamId: string;
+  teamNo: number;
+  teamName: string;
+  taskSummary: ProjectProgressTaskSummary;
+  currentSprint: ProjectProgressSprintSummary | null;
+  commitSummary: ProjectProgressCommitSummary;
+  evidenceSummary: ProjectProgressEvidenceSummary;
+  memberProgress: ProjectProgressMemberSummary[];
+  sync: ProjectProgressSyncSummary;
+  lastActivityAt: string | null;
+}
+
+export interface ProjectMemberProgressAssignedTask {
+  id: string;
+  externalKey: string;
+  title: string;
+  status: string;
+  externalUpdatedAt: string | null;
+}
+
+export interface ProjectMemberProgressResponse {
+  studentId: string;
+  userId: string;
+  fullName: string;
+  studentCode: string;
+  teamRole: string;
+  taskSummary: ProjectProgressTaskAttribution;
+  assignedTasks: ProjectMemberProgressAssignedTask[];
+  commitSummary: ProjectProgressCommitAttribution;
+  evidenceSummary: ProjectProgressEvidenceSummary;
+}
 
 
 

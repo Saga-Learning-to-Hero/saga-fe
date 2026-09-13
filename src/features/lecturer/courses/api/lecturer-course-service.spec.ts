@@ -228,4 +228,93 @@ describe("LecturerCourseService", () => {
       );
     }
   );
+
+  fptTest(
+    {
+      id: "UTCID11",
+      type: "N",
+      executedDate: "13/09/2026",
+      description: "GET course progress tra ve dung tien do cac nhom",
+    },
+    async () => {
+      const mockProgress = {
+        courseId: mockCourseId,
+        teams: [
+          {
+            teamId: "team-uuid-1",
+            teamNo: 1,
+            teamName: "SAGA Team",
+            projectId: "proj-uuid-1",
+            totalTasks: 15,
+            completedTasks: 10,
+            taskCompletionPercent: 66.67,
+            currentSprintName: "Sprint 1",
+            lastActivityAt: "2026-09-13T10:00:00",
+          },
+        ],
+      };
+      const getSpy = vi.spyOn(apiClient, "get").mockResolvedValueOnce({ data: mockProgress });
+
+      const res = await LecturerCourseService.getCourseProgress(mockCourseId);
+
+      expect(getSpy).toHaveBeenCalledWith(`/api/lecturer/courses/${mockCourseId}/progress`);
+      expect(res.courseId).toBe(mockCourseId);
+      expect(res.teams).toHaveLength(1);
+      expect(res.teams[0].completedTasks).toBe(10);
+      expect(res.teams[0].taskCompletionPercent).toBe(66.67);
+      expect(res.teams[0].currentSprintName).toBe("Sprint 1");
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID12",
+      type: "A",
+      executedDate: "13/09/2026",
+      description: "Throw ValidationException khi courseId rong luc lay tien do lop",
+    },
+    async () => {
+      await expect(LecturerCourseService.getCourseProgress("")).rejects.toThrow(
+        "Throw ValidationException: Course ID is required"
+      );
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID13",
+      type: "A",
+      executedDate: "13/09/2026",
+      description: "Khong nuot loi khi server tra ve HTTP 500 khi doc tien do",
+    },
+    async () => {
+      vi.spyOn(apiClient, "get").mockRejectedValueOnce(
+        apiError("Lỗi hệ thống", "INTERNAL_SERVER_ERROR", 500)
+      );
+
+      await expect(LecturerCourseService.getCourseProgress(mockCourseId)).rejects.toMatchObject({
+        code: "INTERNAL_SERVER_ERROR",
+        status: 500,
+      });
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID14",
+      type: "B",
+      executedDate: "13/09/2026",
+      description: "Xử lý biên an toàn khi backend trả về teams null hoặc mảng rỗng",
+    },
+    async () => {
+      vi.spyOn(apiClient, "get").mockResolvedValueOnce({
+        data: { courseId: mockCourseId, teams: null },
+      });
+
+      const res = await LecturerCourseService.getCourseProgress(mockCourseId);
+
+      expect(res.courseId).toBe(mockCourseId);
+      expect(res.teams).toEqual([]);
+    }
+  );
 });

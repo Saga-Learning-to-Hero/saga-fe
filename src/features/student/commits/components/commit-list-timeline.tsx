@@ -6,12 +6,12 @@ import {
   CopyIcon,
   CheckIcon,
   ExternalLinkIcon,
-  CheckCircle2Icon,
-  GitBranchIcon,
   CalendarIcon,
+  NetworkIcon,
+  FolderGit2Icon,
 } from "lucide-react";
+import Link from "next/link";
 import type { CommitItem } from "../types/commits";
-import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
@@ -36,17 +36,19 @@ export function CommitListTimeline({
 
   if (commits.length === 0) {
     return (
-      <Card className="p-8 text-center rounded-2xl border border-dashed border-border/80 bg-card/60 space-y-3">
-        <div className="w-12 h-12 rounded-2xl bg-muted flex items-center justify-center mx-auto text-muted-foreground">
+      <div className="p-8 sm:p-12 text-center rounded-3xl border border-dashed border-border/80 bg-card/40 space-y-4 max-w-2xl mx-auto shadow-2xs">
+        <div className="w-12 h-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center mx-auto shadow-xs">
           <GitCommitIcon className="w-6 h-6" />
         </div>
-        <div>
-          <h3 className="text-sm font-bold text-foreground">Không tìm thấy Commit nào</h3>
-          <p className="text-xs text-muted-foreground mt-1">
-            Không có commit nào khớp với bộ lọc repository <strong>{selectedRepoName}</strong> và nhánh <strong>{selectedBranchName}</strong>.
+        <div className="space-y-1.5">
+          <h3 className="text-base font-extrabold text-foreground tracking-tight">
+            Không tìm thấy Commit nào
+          </h3>
+          <p className="text-xs text-muted-foreground max-w-md mx-auto leading-relaxed">
+            Chưa có commit nào khớp với bộ lọc repository <strong className="text-foreground">{selectedRepoName}</strong> và nhánh <strong className="text-foreground font-mono">{selectedBranchName}</strong>.
           </p>
         </div>
-      </Card>
+      </div>
     );
   }
 
@@ -104,19 +106,19 @@ export function CommitListTimeline({
               </Badge>
             </div>
 
-            <Card className="rounded-2xl border border-border/80 bg-card overflow-hidden divide-y divide-border/60 shadow-xs max-h-[380px] overflow-y-auto scrollbar-thin scrollbar-thumb-border hover:scrollbar-thumb-muted-foreground/30">
+            <div className="rounded-2xl border border-border/70 bg-card/60 backdrop-blur-xs overflow-hidden divide-y divide-border/50 shadow-2xs">
               {groupCommits.map((commit) => {
                 const isCopied = copiedHash === commit.shortHash;
 
                 return (
                   <div
                     key={commit.id}
-                    className="p-4 sm:px-5 hover:bg-muted/40 transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-4 group"
+                    className="p-3.5 sm:px-4.5 hover:bg-muted/40 transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-3 group"
                   >
                     <div className="space-y-1.5 min-w-0 flex-1">
-                      <div className="flex items-start gap-2">
-                        <div className="w-6 h-6 rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0 mt-0.5">
-                          <GitCommitIcon className="w-3.5 h-3.5" />
+                      <div className="flex items-start gap-2.5">
+                        <div className="w-7 h-7 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0 mt-0.5">
+                          <GitCommitIcon className="w-4 h-4" />
                         </div>
 
                         <div className="space-y-1 min-w-0 flex-1">
@@ -134,7 +136,7 @@ export function CommitListTimeline({
 
                           <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
                             <div className="flex items-center gap-1.5">
-                              <Avatar className="w-4 h-4 border">
+                              <Avatar className="w-4.5 h-4.5 border">
                                 <AvatarImage src={commit.author.avatar} alt={commit.author.name} />
                                 <AvatarFallback className="text-[8px] bg-primary/20 text-primary font-bold">
                                   {commit.author.name.slice(0, 2).toUpperCase()}
@@ -151,74 +153,84 @@ export function CommitListTimeline({
                               </span>
                             </div>
 
-                            <span>•</span>
-                            <span className="text-[11px] font-medium">{commit.relativeTime}</span>
+                            <span className="text-border">•</span>
 
-                            <span>•</span>
-                            <span className="flex items-center gap-1 font-mono text-[11px]">
-                              <GitBranchIcon className="w-3 h-3 text-purple-500" />
-                              {commit.branchName}
+                            <span className="text-[11px] font-mono text-muted-foreground">
+                              {new Date(commit.createdAt).toLocaleTimeString("vi-VN", {
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              })}{" "}
+                              - {new Date(commit.createdAt).toLocaleDateString("vi-VN")}
                             </span>
+
+                            {commit.repoName && (
+                              <>
+                                <span className="text-border">•</span>
+                                <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground">
+                                  <FolderGit2Icon className="w-3 h-3 text-muted-foreground/70" />
+                                  {commit.repoName}
+                                </span>
+                              </>
+                            )}
                           </div>
                         </div>
                       </div>
                     </div>
 
-                    <div className="flex items-center justify-between sm:justify-end gap-3 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-border/40">
-                      <div className="flex items-center gap-2 text-xs font-mono">
-                        <span className="text-emerald-600 dark:text-emerald-400 font-bold">
-                          +{commit.additions}
-                        </span>
-                        <span className="text-rose-500 font-bold">
-                          -{commit.deletions}
-                        </span>
-                        <span className="text-[11px] text-muted-foreground hidden sm:inline">
-                          ({commit.filesChanged} file)
-                        </span>
-                      </div>
-
-                      {commit.isSyncedToJira && (
-                        <Badge
-                          variant="outline"
-                          className="bg-emerald-500/10 text-emerald-600 border-emerald-500/30 text-[10px] font-semibold gap-1 hidden md:flex"
-                        >
-                          <CheckCircle2Icon className="w-3 h-3" />
-                          GitHub Sync
-                        </Badge>
+                    <div className="flex items-center gap-2.5 shrink-0 self-end sm:self-center pt-2 sm:pt-0 border-t sm:border-t-0 border-border/40">
+                      {commit.additions !== null && commit.deletions !== null ? (
+                        <div className="font-mono text-[11px] font-bold text-right shrink-0">
+                          <span className="text-emerald-600">+{commit.additions}</span>
+                          <span className="text-muted-foreground mx-1">/</span>
+                          <span className="text-rose-600">-{commit.deletions}</span>
+                        </div>
+                      ) : (
+                        <span className="text-[10px] text-muted-foreground">Chưa có dữ liệu diff</span>
                       )}
 
-                      <div className="flex items-center gap-1 bg-muted/60 p-1 rounded-xl border border-border/60">
-                        <span className="font-mono text-xs font-bold px-2 text-foreground">
-                          {commit.shortHash}
-                        </span>
+                      <button
+                        type="button"
+                        onClick={() => handleCopyHash(commit.shortHash)}
+                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl bg-muted/60 hover:bg-muted border border-border/60 text-[11px] font-mono font-bold text-foreground transition-all cursor-pointer shadow-2xs"
+                        title="Sao chép mã hash commit"
+                      >
+                        {isCopied ? (
+                          <>
+                            <CheckIcon className="w-3 h-3 text-emerald-500" />
+                            <span className="text-emerald-600">Đã chép</span>
+                          </>
+                        ) : (
+                          <>
+                            <CopyIcon className="w-3 h-3 text-muted-foreground" />
+                            <span>{commit.shortHash}</span>
+                          </>
+                        )}
+                      </button>
 
-                        <button
-                          onClick={() => handleCopyHash(commit.shortHash)}
-                          title="Sao chép mã Short Hash"
-                          className="p-1 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted cursor-pointer transition-colors"
-                        >
-                          {isCopied ? (
-                            <CheckIcon className="w-3.5 h-3.5 text-emerald-500" />
-                          ) : (
-                            <CopyIcon className="w-3.5 h-3.5" />
-                          )}
-                        </button>
+                      <Link
+                        href={`/student/graph?commitHash=${commit.hash}`}
+                        title="Xem nhánh minh chứng trên Đồ thị Neo4j"
+                        className="p-1.5 rounded-xl border border-border/60 bg-muted/40 hover:bg-muted text-muted-foreground hover:text-primary transition-all shadow-2xs"
+                      >
+                        <NetworkIcon className="w-3.5 h-3.5" />
+                      </Link>
 
+                      {commit.commitUrl && (
                         <a
                           href={commit.commitUrl}
                           target="_blank"
-                          rel="noreferrer"
+                          rel="noopener noreferrer"
+                          className="p-1.5 rounded-xl border border-border/60 bg-muted/40 hover:bg-muted text-muted-foreground hover:text-foreground transition-all shadow-2xs"
                           title="Xem trên GitHub"
-                          className="p-1 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted cursor-pointer transition-colors"
                         >
                           <ExternalLinkIcon className="w-3.5 h-3.5" />
                         </a>
-                      </div>
+                      )}
                     </div>
                   </div>
                 );
               })}
-            </Card>
+            </div>
           </div>
         );
       })}

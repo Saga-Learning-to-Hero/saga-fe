@@ -3,7 +3,6 @@
 import {
   CheckSquareIcon,
   ExternalLinkIcon,
-  RefreshCwIcon,
   LoaderCircleIcon,
   UnlinkIcon,
 } from "lucide-react";
@@ -16,9 +15,7 @@ interface ProjectJiraSectionProps {
   isLeader: boolean;
   isConnectingJira?: boolean;
   isDisconnectingJira?: boolean;
-  syncingId?: string | null;
   onConnectJira?: () => void;
-  onSyncJira?: () => void;
   onDisconnectJira?: () => void;
 }
 
@@ -27,9 +24,7 @@ export function ProjectJiraSection({
   isLeader,
   isConnectingJira = false,
   isDisconnectingJira = false,
-  syncingId,
   onConnectJira,
-  onSyncJira,
   onDisconnectJira,
 }: ProjectJiraSectionProps) {
   const isRevoked = jira?.status === "REVOKED";
@@ -142,20 +137,6 @@ export function ProjectJiraSection({
                   </Badge>
                 )}
               </div>
-
-              {isActive && onSyncJira && (
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={onSyncJira}
-                  disabled={syncingId === "jira"}
-                  className="h-7 px-2.5 text-xs font-semibold rounded-lg gap-1 cursor-pointer"
-                >
-                  <RefreshCwIcon className={`w-3 h-3 ${syncingId === "jira" ? "animate-spin text-primary" : ""}`} />
-                  <span>Đồng bộ</span>
-                </Button>
-              )}
             </div>
 
             <div className="flex items-center gap-3 text-xs text-muted-foreground font-mono truncate pt-1 border-t border-border/60">

@@ -18,6 +18,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
+import { useStudentCourseContext } from "@/features/student/courses/hooks/use-student-course-context";
 import { StudentKPICards } from "./student-kpi-cards";
 import { StudentTaskCommitCharts } from "./student-task-commit-charts";
 import { TeamWorkloadComparisonChart } from "./team-workload-comparison-chart";
@@ -33,8 +34,10 @@ export function StudentDashboardAnalytics({
 }: StudentDashboardAnalyticsProps) {
   const authUser = useAuthStore((state) => state.user);
   const selectedCourse = useAuthStore((state) => state.selectedCourse);
+  const { course: urlCourse } = useStudentCourseContext();
+  const effectiveCourse = urlCourse ?? selectedCourse;
 
-  const roleInTeam = initialRole || (selectedCourse?.myGroup?.role?.toUpperCase() === "LEADER" ? "LEADER" : "MEMBER");
+  const roleInTeam = initialRole || (effectiveCourse?.myGroup?.role?.toUpperCase() === "LEADER" ? "LEADER" : "MEMBER");
   const isLeader = roleInTeam === "LEADER";
 
   const [selectedMemberId, setSelectedMemberId] = useState<string>("sv-01");

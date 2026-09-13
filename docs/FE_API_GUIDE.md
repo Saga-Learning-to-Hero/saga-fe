@@ -431,11 +431,14 @@ Giao diện sinh viên được điều hướng động dựa trên trạng th�
       "message": "feat: [FE][SAGA-15] Complete Traceability Graph Canvas",
       "authorExternalId": "github-username",
       "authorStudentId": "uuid-student",
+      "headRef": "feature/saga-66",
       "committedAt": "2026-09-08T14:25:00Z",
       "createdAt": "2026-09-08T14:26:00Z"
     }
   ]
   ```
+
+> `headRef` là nhánh Git được backend chiếu (có thể rỗng với dữ liệu lịch sử). Contract hiện chưa trả `additions`, `deletions` hoặc `filesChanged`; UI không được hiển thị số liệu diff giả.
 
 ---
 

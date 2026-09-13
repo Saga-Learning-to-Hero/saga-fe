@@ -10,9 +10,8 @@ import { useStudentProject } from "../hooks/useStudentProject";
 import {
   useRefreshStudentCourses,
   useStudentMyTeam,
-  useStudentCourses,
 } from "@/features/student/courses/hooks/use-student-courses";
-import { mapStudentCourseResponse } from "@/features/student/courses/types/student-course";
+import { useStudentCourseContext } from "@/features/student/courses/hooks/use-student-course-context";
 import { getApiErrorCode } from "@/lib/api-error";
 import { Loader2Icon, FolderKanbanIcon, PlusIcon } from "lucide-react";
 import type { RoleInTeam } from "@/types/auth";
@@ -21,31 +20,21 @@ import { ProjectBannerHeader } from "./project-banner-header";
 import { TeamMembersCard } from "./team-members-card";
 import { ProjectDetailsCard } from "./project-details-card";
 import { ProjectIntegrationsCard } from "./project-integrations-card";
-import { ProjectSyncStatusCard } from "./project-sync-status-card";
 import { ProjectEditModal } from "./project-edit-modal";
 import { ProjectInfoSkeleton } from "./project-info-skeleton";
 
 export function ProjectInfoView() {
-  const { user, selectedCourse, setSelectedCourse } = useAuthStore();
+  const { user, setSelectedCourse } = useAuthStore();
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [localOverrides, setLocalOverrides] = useState<Partial<StudentProjectDetails>>({});
   const refreshCourses = useRefreshStudentCourses();
 
-  const { data: apiCourses = [], isLoading: isCoursesLoading } = useStudentCourses({
-    enabled: user?.role === "STUDENT" && !selectedCourse,
-  });
-
-  const effectiveCourse = useMemo(() => {
-    if (selectedCourse) return selectedCourse;
-    if (apiCourses.length > 0) return mapStudentCourseResponse(apiCourses[0]);
-    return null;
-  }, [selectedCourse, apiCourses]);
-
-  useEffect(() => {
-    if (!selectedCourse && effectiveCourse) setSelectedCourse(effectiveCourse);
-  }, [selectedCourse, effectiveCourse, setSelectedCourse]);
-
-  const courseId = effectiveCourse?.courseId || effectiveCourse?.id || "";
+  const {
+    course: effectiveCourse,
+    courseId,
+    isLoading: isCoursesLoading,
+    isInvalidCourse,
+  } = useStudentCourseContext();
 
   const { data: apiProject, isLoading: isProjectLoading } = useStudentProject(courseId);
   const {
@@ -128,6 +117,17 @@ export function ProjectInfoView() {
 
   const handleUpdateProject = (fields: Partial<StudentProjectDetails>) =>
     setLocalOverrides((p) => ({ ...p, ...fields, updatedAt: new Date().toISOString() }));
+
+  if (isInvalidCourse) {
+    return (
+      <div className="mx-auto max-w-[1600px] pb-12">
+        <div className="rounded-3xl border border-dashed border-amber-500/40 bg-amber-500/5 p-8 text-center shadow-2xs">
+          <p className="text-sm font-bold text-foreground">Lớp học phần không còn khả dụng</p>
+          <p className="mt-1 text-xs text-muted-foreground">Hãy chọn lại lớp học phần trước khi xem dự án nhóm.</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="mx-auto max-w-[1600px] space-y-6 pb-12">
@@ -226,10 +226,6 @@ export function ProjectInfoView() {
                 />
               </div>
             </div>
-
-            <ProjectSyncStatusCard
-              projectId={projectId || project.projectId || project.id || ""}
-            />
           </div>
         )}
       </div>

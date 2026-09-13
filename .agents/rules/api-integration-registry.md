@@ -2,7 +2,7 @@
 
 > ⚠️ **QUY ĐỊNH BẮT BUỘC CHO MỌI LẬP TRÌNH VIÊN & AI AGENT**:
 > - Mọi thành viên trong nhóm phát triển (Dev 1, Dev 2, Dev 3) và bất kỳ AI Agent nào khi tham gia dự án **BẮT BUỘC PHẢI ĐỌC FILE NÀY TRƯỚC TIÊN**.
-> - Trước khi bắt tay viết code gọi bất kỳ API nào, phải đối chiếu với tài liệu gốc [FE_API_GUIDE.md](file:///d:/Capstone/saga%20workspace/saga-fe/docs/FE_API_GUIDE.md) và sổ bộ 97 API chi tiết [API_INTEGRATION_REGISTRY.md](file:///d:/Capstone/saga%20workspace/saga-fe/docs/API_INTEGRATION_REGISTRY.md).
+> - Trước khi bắt tay viết code gọi bất kỳ API nào, phải đối chiếu với tài liệu gốc [FE_API_GUIDE.md](file:///d:/Capstone/saga%20workspace/saga-fe/docs/FE_API_GUIDE.md) và sổ bộ 127 API chi tiết [API_INTEGRATION_REGISTRY.md](file:///d:/Capstone/saga%20workspace/saga-fe/docs/API_INTEGRATION_REGISTRY.md).
 > - Sau khi hoàn thành tích hợp bất kỳ API nào, **BẮT BUỘC PHẢI CẬP NHẬT TRẠNG THÁI** vào tài liệu để bảo toàn ngữ cảnh xuyên suốt mọi phiên làm việc tiếp theo.
 
 ---
@@ -71,20 +71,23 @@ $$\text{projectId} \xrightarrow{\text{Tích hợp}} \text{GitHub Repositories} +
 
 ---
 
-## 4. Bảng Tổng Hợp Tiến Độ 97 API Hệ Thống (Master API Status Matrix)
+## 4. Bảng Tổng Hợp Tiến Độ 127 API Hệ Thống (Master API Status Matrix)
 
-> 📖 **Tra cứu chi tiết từng endpoint trong 97 API:** Xem tại [API_INTEGRATION_REGISTRY.md](file:///d:/Capstone/saga%20workspace/saga-fe/docs/API_INTEGRATION_REGISTRY.md).
+> 📖 **Tra cứu chi tiết từng endpoint trong 127 API:** Xem tại [API_INTEGRATION_REGISTRY.md](file:///d:/Capstone/saga%20workspace/saga-fe/docs/API_INTEGRATION_REGISTRY.md).
 
-| Phân Hệ Nghiệp Vụ | Tổng Số Endpoints | Phụ Trách | Service File Chính Phía Frontend | Tình Trạng Tích Hợp |
+| Phân Hệ Nghiệp Vụ | Tổng Số Endpoints | Phụ Trách | Service File / Component Chính Phía Frontend | Tình Trạng Tích Hợp |
 | :--- | :---: | :---: | :--- | :---: |
-| **1. Xác thực & Phiên làm việc (Auth)** | 7 | Core | [auth-service.ts](file:///d:/Capstone/saga%20workspace/saga-fe/src/features/auth/api/auth-service.ts) | ✅ **7/7 ĐÃ TÍCH HỢP** |
-| **2. Quản trị viên (Admin Academic & Roster)** | 32 | Dev 1 | [subject-service.ts](file:///d:/Capstone/saga%20workspace/saga-fe/src/features/admin/subjects/api/subject-service.ts), [syllabus-service.ts](file:///d:/Capstone/saga%20workspace/saga-fe/src/features/admin/subjects/api/syllabus-service.ts), [academic-service.ts](file:///d:/Capstone/saga%20workspace/saga-fe/src/features/admin/academic/api/academic-service.ts), [course-service.ts](file:///d:/Capstone/saga%20workspace/saga-fe/src/features/admin/academic/api/course-service.ts), [roster-service.ts](file:///d:/Capstone/saga%20workspace/saga-fe/src/features/admin/academic/api/roster-service.ts) | ✅ **32/32 ĐÃ TÍCH HỢP** |
-| **3. Giảng viên & Tổ chức Nhóm (Courses & Teams)** | 11 | Dev 2 | [lecturer-course-service.ts](file:///d:/Capstone/saga%20workspace/saga-fe/src/features/lecturer/courses/api/lecturer-course-service.ts), [lecturer-team-service.ts](file:///d:/Capstone/saga%20workspace/saga-fe/src/features/lecturer/teams/api/lecturer-team-service.ts), [student-course-service.ts](file:///d:/Capstone/saga%20workspace/saga-fe/src/features/student/courses/api/student-course-service.ts) | ✅ **11/11 ĐÃ TÍCH HỢP** |
-| **4. Trọng số Slicing Pie & Đóng góp Nhóm (Weights & Eval)** | 8 | Dev 2 | [lecturer-weights-service.ts](file:///d:/Capstone/saga%20workspace/saga-fe/src/features/lecturer/contribution/api/lecturer-weights-service.ts), [project-weights-service.ts](file:///d:/Capstone/saga%20workspace/saga-fe/src/features/lecturer/contribution/api/project-weights-service.ts), [team-contribution-service.ts](file:///d:/Capstone/saga%20workspace/saga-fe/src/features/lecturer/contribution/api/team-contribution-service.ts) | ✅ **8/8 ĐÃ TÍCH HỢP (kể cả UI PUT group-weights)** |
-| **5. Dự án & Tích hợp GitHub/Jira (Project & Tools)** | 24 | Dev 3 + Dev 2 | [student-project-service.ts](file:///d:/Capstone/saga%20workspace/saga-fe/src/features/student/project/api/student-project-service.ts), [github-integrations-service.ts](file:///d:/Capstone/saga%20workspace/saga-fe/src/features/integrations/api/github-integrations-service.ts), [jira-integrations-service.ts](file:///d:/Capstone/saga%20workspace/saga-fe/src/features/integrations/api/jira-integrations-service.ts), [user-integrations-service.ts](file:///d:/Capstone/saga%20workspace/saga-fe/src/features/integrations/api/user-integrations-service.ts), [project-weights-service.ts](file:///d:/Capstone/saga%20workspace/saga-fe/src/features/lecturer/contribution/api/project-weights-service.ts) | ✅ **24/24 ĐÃ TÍCH HỢP**<br>*(22 API do Dev 3 thực hiện, 2 API group-weights do Dev 2 thực hiện)* |
-| **6. Chiếu Dữ liệu Dự án & Đồng bộ Ngầm (Projections)** | 5 | Dev 3 | [project-projection-service.ts](file:///d:/Capstone/saga%20workspace/saga-fe/src/features/student/project/api/project-projection-service.ts) | ✅ **5/5 ĐÃ TÍCH HỢP** |
-| **7. Thu thập Chứng cứ Phiên làm việc (Task Evidence)** | 10 | Dev 1 | [task-evidence-service.ts](file:///d:/Capstone/saga%20workspace/saga-fe/src/features/student/sprint-progress/api/task-evidence-service.ts) | ✅ **10/10 ĐÃ TÍCH HỢP** |
-| **TỔNG CỘNG TOÀN HỆ THỐNG** | **97** | **3 Devs** | **Đầy đủ Service Classes + Unit Test Specs** | **97/97 ĐÃ TÍCH HỢP** |
+| **1. Xác thực & Phiên làm việc (Auth)** | 11 | Core | [auth-service.ts](file:///d:/Capstone/saga%20workspace/saga-fe/src/features/auth/api/auth-service.ts) | ✅ **9/11 ĐÃ TÍCH HỢP**<br>(2 API Re-auth Step-up thuộc hạ tầng BE) |
+| **2. Hồ sơ cá nhân (User Profile)** | 2 | Dev 3 | [user-profile-service.ts](file:///d:/Capstone/saga%20workspace/saga-fe/src/features/profile/api/user-profile-service.ts) | ✅ **2/2 ĐÃ TÍCH HỢP** |
+| **3. Quản trị viên (Admin Academic & Roster)** | 34 | Dev 1 | [subject-service.ts](file:///d:/Capstone/saga%20workspace/saga-fe/src/features/admin/subjects/api/subject-service.ts), [syllabus-service.ts](file:///d:/Capstone/saga%20workspace/saga-fe/src/features/admin/subjects/api/syllabus-service.ts), [academic-service.ts](file:///d:/Capstone/saga%20workspace/saga-fe/src/features/admin/academic/api/academic-service.ts), [course-service.ts](file:///d:/Capstone/saga%20workspace/saga-fe/src/features/admin/academic/api/course-service.ts), [roster-service.ts](file:///d:/Capstone/saga%20workspace/saga-fe/src/features/admin/academic/api/roster-service.ts), [admin-lecturer-service.ts](file:///d:/Capstone/saga%20workspace/saga-fe/src/features/admin/academic/api/admin-lecturer-service.ts) | ✅ **33/34 ĐÃ TÍCH HỢP**<br>(1 API Dev email-test thuộc hạ tầng BE) |
+| **4. Giảng viên & Tổ chức Nhóm (Courses, Teams & Weights)** | 18 | Dev 2 | [lecturer-course-service.ts](file:///d:/Capstone/saga%20workspace/saga-fe/src/features/lecturer/courses/api/lecturer-course-service.ts), [lecturer-team-service.ts](file:///d:/Capstone/saga%20workspace/saga-fe/src/features/lecturer/teams/api/lecturer-team-service.ts), [student-course-service.ts](file:///d:/Capstone/saga%20workspace/saga-fe/src/features/student/courses/api/student-course-service.ts), [lecturer-weights-service.ts](file:///d:/Capstone/saga%20workspace/saga-fe/src/features/lecturer/contribution/api/lecturer-weights-service.ts), [team-contribution-service.ts](file:///d:/Capstone/saga%20workspace/saga-fe/src/features/lecturer/contribution/api/team-contribution-service.ts) | ✅ **18/18 ĐÃ TÍCH HỢP**<br>(Đã tích hợp API mới `GET .../progress`) |
+| **5. Dự án & Tích hợp GitHub/Jira (Project & Integrations)** | 29 | Dev 3 + Dev 2 | [student-project-service.ts](file:///d:/Capstone/saga%20workspace/saga-fe/src/features/student/project/api/student-project-service.ts), [github-integrations-service.ts](file:///d:/Capstone/saga%20workspace/saga-fe/src/features/integrations/api/github-integrations-service.ts), [jira-integrations-service.ts](file:///d:/Capstone/saga%20workspace/saga-fe/src/features/integrations/api/jira-integrations-service.ts), [user-integrations-service.ts](file:///d:/Capstone/saga%20workspace/saga-fe/src/features/integrations/api/user-integrations-service.ts), [project-weights-service.ts](file:///d:/Capstone/saga%20workspace/saga-fe/src/features/lecturer/contribution/api/project-weights-service.ts) | ✅ **27/29 ĐÃ TÍCH HỢP**<br>(2 API OAuth System Callback thuộc hạ tầng BE) |
+| **6. Quản lý Jira Sprints (Sprint Lifecycle)** | 5 | Dev 3 | [project-sprint-service.ts](file:///d:/Capstone/saga%20workspace/saga-fe/src/features/student/sprint-progress/api/project-sprint-service.ts) | ✅ **5/5 ĐÃ TÍCH HỢP** |
+| **7. Quản lý Jira Tasks & Kanban Board** | 10 | Dev 3 | [project-task-service.ts](file:///d:/Capstone/saga%20workspace/saga-fe/src/features/student/sprint-progress/api/project-task-service.ts), [project-projection-service.ts](file:///d:/Capstone/saga%20workspace/saga-fe/src/features/student/project/api/project-projection-service.ts) | ✅ **10/10 ĐÃ TÍCH HỢP** |
+| **8. Chiếu Dữ Liệu, Tiến Độ & Realtime Stream** | 6 | Dev 3 | [project-projection-service.ts](file:///d:/Capstone/saga%20workspace/saga-fe/src/features/student/project/api/project-projection-service.ts), [use-project-realtime.ts](file:///d:/Capstone/saga%20workspace/saga-fe/src/features/student/project/hooks/use-project-realtime.ts) | ✅ **6/6 ĐÃ TÍCH HỢP** |
+| **9. Thu thập Chứng cứ Phiên làm việc (Task Evidence)** | 10 | Dev 1 | [task-evidence-service.ts](file:///d:/Capstone/saga%20workspace/saga-fe/src/features/student/sprint-progress/api/task-evidence-service.ts) | ✅ **10/10 ĐÃ TÍCH HỢP** |
+| **10. Hạ Tầng Webhooks Nhà Cung Cấp (Provider Webhooks)** | 2 | Core | `Backend Ingestion Controller` | ⚙️ **2/2 HẠ TẦNG BE**<br>(GitHub & Jira Webhooks) |
+| **TỔNG CỘNG TOÀN HỆ THỐNG** | **127** | **Core + 3 Devs** | **Đầy đủ Service Classes + Unit Test Specs** | ✅ **120/127 ĐÃ TÍCH HỢP PHÍA FE**<br>(7/127 API Hạ tầng Webhooks/Callbacks/Re-auth phía BE) |
 
 ---
 
@@ -110,10 +113,11 @@ $$\text{projectId} \xrightarrow{\text{Tích hợp}} \text{GitHub Repositories} +
 ## 6. Danh Mục Tính Năng Tuyệt Đối Không Được Gọi (Out-of-Scope Guardrails)
 
 > 🚫 **CẢNH BÁO CHO MỌI DEV & AGENT**:
-> Backend **chưa triển khai** các tính năng dưới đây. Tuyệt đối không tự ý bịa endpoint, không dựng mock call, và không gọi thử nghiệm:
-> 1. **Quên mật khẩu / Gửi email khôi phục** (`/api/auth/forgot-password` - Chưa có).
-> 2. **Chỉnh sửa / Xóa Project** (`PATCH` hoặc `DELETE /api/student/courses/{id}/project` - Chưa có).
-> 3. **Webhook endpoints** (`/api/webhooks/**` là endpoint nội bộ nhận event từ GitHub/Atlassian, FE không gọi).
-> 4. **SSE Realtime Event Stream / WebSocket** đẩy realtime (Chưa có).
-> 5. **Neo4j Graph Snapshot / Delta API** (Đang tính toán ở phân hệ Graph Engine tiếp theo).
-> 6. **Assessment Scoring tự động** (Đang thiết kế ở pha đánh giá đồ án cuối kỳ).
+> Các trường hợp dưới đây thuộc hạ tầng Backend hoặc ngoài phạm vi gọi trực tiếp của Frontend client:
+> 1. **Chỉnh sửa / Xóa Project** (`PATCH` hoặc `DELETE /api/student/courses/{id}/project` - Backend chưa cung cấp).
+> 2. **Provider Webhook endpoints** (`/api/webhooks/github`, `/api/webhooks/jira` - là endpoint tiếp nhận ngầm sự kiện từ Atlassian/GitHub webhook, client không gọi).
+> 3. **Provider OAuth System Callbacks** (`/api/integrations/github/setup/callback`, `/api/integrations/jira/team/callback` - do máy chủ Backend xử lý chuyển hướng trực tiếp từ Provider).
+> 4. **Step-up Re-auth** (`/api/auth/reauth/*` - chức năng Sudo mode dự phòng của Backend).
+> 5. **Dev Smoke Test Email** (`/api/admin/dev/email-test` - kiểm thử nội bộ Backend).
+> 6. **Neo4j Graph Snapshot / Delta API** (Đang tính toán ở phân hệ Graph Engine tiếp theo).
+> 7. **Assessment Scoring tự động** (Đang thiết kế ở pha đánh giá đồ án cuối kỳ).

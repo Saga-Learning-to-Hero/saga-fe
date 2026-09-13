@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useEffect, useRef } from "react";
 import {
   FolderKanbanIcon,
   SparklesIcon,
@@ -9,12 +9,13 @@ import {
   UserCheck2Icon,
   RefreshCwIcon,
 } from "lucide-react";
-import type { StudentProjectDetails, ProjectSyncResponse } from "../types/student-project";
+import type { StudentProjectDetails } from "../types/student-project";
 import type { StudentCourse } from "@/features/student/courses/types/student-course";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/sonner";
-import { useSyncProject } from "../hooks/useProjectSync";
+import { useSyncProject, useProjectSyncStatus } from "../hooks/useProjectSync";
+import { formatVietnamDateTime } from "@/lib/utils";
 
 interface ProjectBannerHeaderProps {
   project: StudentProjectDetails;
@@ -32,10 +33,61 @@ export function ProjectBannerHeader({
   isRoleLoading = false,
 }: ProjectBannerHeaderProps) {
   const syncMutation = useSyncProject();
-  const [syncResult, setSyncResult] = useState<ProjectSyncResponse | null>(null);
 
   const categoryLabel = project.projectType?.name || project.category;
   const projectId = project.projectId || project.id || "";
+
+  const { data: syncStatuses = [] } = useProjectSyncStatus(projectId, {
+    enabled: Boolean(projectId && projectId.trim()),
+    refetchInterval: (query) => {
+      const data = query.state.data;
+      const hasActive = data?.some((item) => {
+        const s = (item.status || "").toUpperCase();
+        return s === "IN_PROGRESS" || s === "RUNNING" || s === "SYNCING";
+      });
+      return hasActive ? 3000 : false;
+    },
+  });
+
+  const hasActiveJob = useMemo(() => {
+    return syncStatuses.some((item) => {
+      const s = (item.status || "").toUpperCase();
+      return s === "IN_PROGRESS" || s === "RUNNING" || s === "SYNCING";
+    });
+  }, [syncStatuses]);
+
+  const hasFailure = useMemo(() => {
+    return syncStatuses.some((item) => (item.status || "").toUpperCase() === "FAILED");
+  }, [syncStatuses]);
+
+  const prevActiveRef = useRef(hasActiveJob);
+  useEffect(() => {
+    if (prevActiveRef.current && !hasActiveJob) {
+      if (hasFailure) {
+        toast.error("Quá trình đồng bộ dữ liệu gặp lỗi từ phía Jira hoặc GitHub.");
+      } else {
+        toast.success("Đồng bộ Jira & GitHub hoàn tất! Dữ liệu đã được cập nhật mới nhất.");
+      }
+    }
+    prevActiveRef.current = hasActiveJob;
+  }, [hasActiveJob, hasFailure]);
+
+  const latestCompletedAt = useMemo(() => {
+    if (!syncStatuses.length) return null;
+    const completedTimes = syncStatuses
+      .map((s) => s.completedAt)
+      .filter((t): t is string => Boolean(t))
+      .sort((a, b) => new Date(b).getTime() - new Date(a).getTime());
+    return completedTimes[0] || null;
+  }, [syncStatuses]);
+
+  const jiraStatus = useMemo(() => {
+    return syncStatuses.find((s) => (s.provider || "").toUpperCase() === "JIRA");
+  }, [syncStatuses]);
+
+  const githubStatus = useMemo(() => {
+    return syncStatuses.find((s) => (s.provider || "").toUpperCase() === "GITHUB");
+  }, [syncStatuses]);
 
   const handleSync = async () => {
     if (!projectId) {
@@ -44,9 +96,8 @@ export function ProjectBannerHeader({
     }
     try {
       const res = await syncMutation.mutateAsync(projectId);
-      setSyncResult(res);
-      toast.success("Đã đưa yêu cầu đồng bộ Jira & GitHub vào hàng đợi!", {
-        description: `Trạng thái: Jira [${res.jira}], GitHub [${res.github}]`,
+      toast.info("Đã gửi yêu cầu đồng bộ. Máy chủ đang tải dữ liệu trong nền...", {
+        description: `Trạng thái hàng đợi: Jira [${res.jira}], GitHub [${res.github}]. Nút sẽ tự dừng xoay khi xong.`,
       });
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Không thể kích hoạt đồng bộ dự án.");
@@ -150,24 +201,74 @@ export function ProjectBannerHeader({
           </div>
         </div>
 
-        {projectId && isLeader && (
+        {projectId && (
           <div className="flex flex-col items-start md:items-end gap-2 shrink-0">
-            <Button
-              type="button"
-              size="sm"
-              onClick={() => void handleSync()}
-              disabled={syncMutation.isPending}
-              className="h-9 px-3.5 rounded-xl bg-white/20 hover:bg-white/30 text-white border border-white/20 text-xs font-semibold backdrop-blur-md gap-2 shadow-xs transition-all cursor-pointer active:scale-95"
-            >
-              <RefreshCwIcon className={`w-3.5 h-3.5 ${syncMutation.isPending ? "animate-spin text-amber-300" : ""}`} />
-              <span>{syncMutation.isPending ? "Đang gửi yêu cầu..." : "Đồng bộ Jira & GitHub"}</span>
-            </Button>
-            {syncResult && (
-              <div className="text-[11px] text-white/95 bg-black/25 px-2.5 py-1 rounded-lg border border-white/10 flex items-center gap-2 font-mono backdrop-blur-sm animate-in fade-in-0">
-                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+            {isLeader && (
+              <Button
+                type="button"
+                size="sm"
+                onClick={() => void handleSync()}
+                disabled={syncMutation.isPending || hasActiveJob}
+                className="h-9 px-3.5 rounded-xl bg-white/20 hover:bg-white/30 text-white border border-white/20 text-xs font-semibold backdrop-blur-md gap-2 shadow-xs transition-all cursor-pointer active:scale-95"
+              >
+                <RefreshCwIcon
+                  className={`w-3.5 h-3.5 ${syncMutation.isPending || hasActiveJob ? "animate-spin text-amber-300" : ""
+                    }`}
+                />
                 <span>
-                  Jira: <strong className="text-emerald-300">{syncResult.jira}</strong> · GitHub: <strong className="text-sky-300">{syncResult.github}</strong>
+                  {syncMutation.isPending
+                    ? "Đang gửi yêu cầu..."
+                    : hasActiveJob
+                      ? "Đang đồng bộ..."
+                      : "Đồng bộ Jira & GitHub"}
                 </span>
+              </Button>
+            )}
+
+            <div className="text-[11px] text-white/95 bg-black/25 px-2.5 py-1 rounded-lg border border-white/10 flex items-center gap-2 font-mono backdrop-blur-sm shadow-2xs">
+              {hasActiveJob ? (
+                <>
+                  <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
+                  <span className="font-sans text-amber-200 font-medium">Đang đồng bộ dữ liệu...</span>
+                </>
+              ) : latestCompletedAt ? (
+                <>
+                  <span
+                    className={`w-2 h-2 rounded-full ${hasFailure ? "bg-red-400" : "bg-emerald-400"
+                      }`}
+                  />
+                  <span className="font-sans text-white/80">Lần cuối:</span>
+                  <span className="text-white font-medium">
+                    {formatVietnamDateTime(latestCompletedAt)}
+                  </span>
+                </>
+              ) : (
+                <>
+                  <span className="w-2 h-2 rounded-full bg-white/40" />
+                  <span className="font-sans text-white/70">Chưa có lượt đồng bộ</span>
+                </>
+              )}
+            </div>
+
+            {(jiraStatus?.completedAt || githubStatus?.completedAt) && !hasActiveJob && (
+              <div className="text-[10px] text-white/75 flex items-center gap-2 font-mono">
+                {jiraStatus?.completedAt && (
+                  <span>
+                    Jira:{" "}
+                    <span className="text-white font-medium">
+                      {formatVietnamDateTime(jiraStatus.completedAt).split(" ")[0]}
+                    </span>
+                  </span>
+                )}
+                {jiraStatus?.completedAt && githubStatus?.completedAt && <span>•</span>}
+                {githubStatus?.completedAt && (
+                  <span>
+                    GitHub:{" "}
+                    <span className="text-white font-medium">
+                      {formatVietnamDateTime(githubStatus.completedAt).split(" ")[0]}
+                    </span>
+                  </span>
+                )}
               </div>
             )}
           </div>

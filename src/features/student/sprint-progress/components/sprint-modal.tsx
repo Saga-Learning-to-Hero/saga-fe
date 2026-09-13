@@ -60,18 +60,42 @@ export function SprintModal({
     setIsSubmitting(true);
     setSuccessMsg("");
 
+    const toIsoDateString = (dateStr?: string) => {
+      if (!dateStr || !dateStr.trim()) return undefined;
+      const trimmed = dateStr.trim();
+      if (trimmed.includes("T")) return trimmed;
+      return `${trimmed}T00:00:00.000Z`;
+    };
+
     try {
       if (projectId) {
         if (isEditing && sprint) {
+          const isPlanned = sprint.status === "PLANNED";
+          const startChanged = Boolean(form.startDate && form.startDate !== sprint.startDate);
+          const endChanged = Boolean(form.endDate && form.endDate !== sprint.endDate);
+
+          const patchPayload: {
+            name?: string;
+            goal?: string;
+            startDate?: string;
+            endDate?: string;
+          } = {
+            name: form.name.trim(),
+          };
+
+          if (form.goal !== undefined) {
+            patchPayload.goal = form.goal.trim() || undefined;
+          }
+
+          if (!isPlanned && (startChanged || endChanged)) {
+            if (form.startDate) patchPayload.startDate = toIsoDateString(form.startDate);
+            if (form.endDate) patchPayload.endDate = toIsoDateString(form.endDate);
+          }
+
           const res = await patchSprintMutation.mutateAsync({
             projectId,
             sprintId: sprint.id,
-            data: {
-              name: form.name,
-              goal: form.goal || undefined,
-              startDate: form.startDate || undefined,
-              endDate: form.endDate || undefined,
-            },
+            data: patchPayload,
           });
           const finalSprint: Sprint = {
             id: res.id,
@@ -88,10 +112,10 @@ export function SprintModal({
           const res = await createSprintMutation.mutateAsync({
             projectId,
             data: {
-              name: form.name,
-              goal: form.goal || undefined,
-              startDate: form.startDate || undefined,
-              endDate: form.endDate || undefined,
+              name: form.name.trim(),
+              goal: form.goal?.trim() || undefined,
+              startDate: toIsoDateString(form.startDate),
+              endDate: toIsoDateString(form.endDate),
             },
           });
           const finalSprint: Sprint = {
@@ -196,35 +220,44 @@ export function SprintModal({
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <Label htmlFor="sprint-start" className="text-xs font-semibold">
-                Ngày bắt đầu <span className="text-destructive">*</span>
-              </Label>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="sprint-start" className="text-xs font-semibold">
+                  Ngày bắt đầu {!isEditing && <span className="text-destructive">*</span>}
+                </Label>
+                {isEditing && sprint?.status === "PLANNED" && (
+                  <span className="text-[11px] text-muted-foreground italic">
+                    (Áp dụng khi kích hoạt Sprint)
+                  </span>
+                )}
+              </div>
               <div className="relative">
                 <CalendarIcon className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
                 <Input
                   id="sprint-start"
                   type="date"
-                  required
+                  disabled={isEditing && sprint?.status === "PLANNED"}
                   value={form.startDate}
                   onChange={(e) => setForm((f) => ({ ...f, startDate: e.target.value }))}
-                  className="pl-9 h-9 text-xs rounded-xl bg-card font-mono"
+                  className="pl-9 h-9 text-xs rounded-xl bg-card font-mono disabled:opacity-60"
                 />
               </div>
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="sprint-end" className="text-xs font-semibold">
-                Ngày kết thúc <span className="text-destructive">*</span>
-              </Label>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="sprint-end" className="text-xs font-semibold">
+                  Ngày kết thúc {!isEditing && <span className="text-destructive">*</span>}
+                </Label>
+              </div>
               <div className="relative">
                 <CalendarIcon className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
                 <Input
                   id="sprint-end"
                   type="date"
-                  required
+                  disabled={isEditing && sprint?.status === "PLANNED"}
                   value={form.endDate}
                   onChange={(e) => setForm((f) => ({ ...f, endDate: e.target.value }))}
-                  className="pl-9 h-9 text-xs rounded-xl bg-card font-mono"
+                  className="pl-9 h-9 text-xs rounded-xl bg-card font-mono disabled:opacity-60"
                 />
               </div>
             </div>

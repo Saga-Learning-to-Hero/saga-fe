@@ -14,20 +14,25 @@ import { CommitFilterBar } from "./commit-filter-bar";
 import { CommitListTimeline } from "./commit-list-timeline";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
 import { Button } from "@/components/ui/button";
-import { useStudentCourses, useStudentMyTeam } from "@/features/student/courses/hooks/use-student-courses";
+import { Badge } from "@/components/ui/badge";
+import { useStudentMyTeam } from "@/features/student/courses/hooks/use-student-courses";
+import { useStudentCourseContext } from "@/features/student/courses/hooks/use-student-course-context";
 import { useProjectCommits } from "@/features/student/project/hooks/useProjectSync";
+import { getApiErrorMessage } from "@/lib/api-error";
 import {
   mapProjectCommitToCommitItem,
   extractReposAndBranches,
 } from "../lib/commit-mapper";
 
 export function CommitsView() {
-  const { user: authUser, selectedCourse } = useAuthStore();
-  const { data: apiCourses = [] } = useStudentCourses({
-    enabled: authUser?.role === "STUDENT" && !selectedCourse,
-  });
-  const effectiveCourse = selectedCourse || apiCourses[0];
-  const courseId = effectiveCourse?.courseId || (effectiveCourse as unknown as { id?: string })?.id || "";
+  const { user: authUser } = useAuthStore();
+  const {
+    course: effectiveCourse,
+    courseId,
+    isLoading: isCoursesLoading,
+    isInvalidCourse,
+  } = useStudentCourseContext();
+  const courseCode = effectiveCourse?.code || "";
 
   const { data: team } = useStudentMyTeam(courseId, { enabled: Boolean(courseId) });
   const projectId = team?.projectId || effectiveCourse?.projectId || "";
@@ -35,6 +40,8 @@ export function CommitsView() {
   const {
     data: rawCommits = [],
     isLoading: isLoadingCommits,
+    isError: isCommitsError,
+    error: commitsError,
     isRefetching: isRefetchingCommits,
     refetch: refetchCommits,
   } = useProjectCommits(projectId, { enabled: Boolean(projectId) });
@@ -89,7 +96,12 @@ export function CommitsView() {
     ];
   }, [repoBranchesMap, selectedRepo.name]);
 
-  const [selectedBranchName, setSelectedBranchName] = useState<string>("main");
+  const [selectedBranchName, setSelectedBranchName] = useState<string>("");
+  const effectiveSelectedBranchName = currentRepoBranches.some(
+    (branch) => branch.name === selectedBranchName
+  )
+    ? selectedBranchName
+    : currentRepoBranches[0]?.name || "";
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [onlyMyCommits, setOnlyMyCommits] = useState<boolean>(false);
 
@@ -109,6 +121,9 @@ export function CommitsView() {
       if (repositories.length > 1 && selectedRepo.id !== "all" && commit.repoName !== selectedRepo.name) {
         return false;
       }
+      if (effectiveSelectedBranchName && commit.branchName !== effectiveSelectedBranchName) {
+        return false;
+      }
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase();
         const matchMessage = commit.message.toLowerCase().includes(q);
@@ -123,17 +138,24 @@ export function CommitsView() {
       }
       return true;
     });
-  }, [allCommits, repositories.length, selectedRepo.id, selectedRepo.name, searchQuery, onlyMyCommits, currentUserStudentCode]);
+  }, [allCommits, repositories.length, selectedRepo.id, selectedRepo.name, effectiveSelectedBranchName, searchQuery, onlyMyCommits, currentUserStudentCode]);
 
   const stats: CommitStats = useMemo(() => {
     const totalCommits = filteredCommits.length;
-    const totalAdditions = filteredCommits.reduce((sum, c) => sum + c.additions, 0);
-    const totalDeletions = filteredCommits.reduce((sum, c) => sum + c.deletions, 0);
+    const hasDiffStats = filteredCommits.some(
+      (commit) => commit.additions !== null && commit.deletions !== null
+    );
+    const totalAdditions = hasDiffStats
+      ? filteredCommits.reduce((sum, commit) => sum + (commit.additions || 0), 0)
+      : null;
+    const totalDeletions = hasDiffStats
+      ? filteredCommits.reduce((sum, commit) => sum + (commit.deletions || 0), 0)
+      : null;
     return {
       totalCommits,
       totalAdditions,
       totalDeletions,
-      netLines: totalAdditions - totalDeletions,
+      netLines: totalAdditions !== null && totalDeletions !== null ? totalAdditions - totalDeletions : null,
       activeBranches: currentRepoBranches.length,
       lastSyncedAt: rawCommits.length > 0 ? "Vừa cập nhật" : "Chưa có dữ liệu",
     };
@@ -141,17 +163,24 @@ export function CommitsView() {
 
   return (
     <div className="space-y-6 max-w-[1600px] mx-auto pb-12">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-2 border-b border-border/70">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3.5 bg-card/60 p-4 rounded-3xl border border-border/70 backdrop-blur-xs shadow-2xs">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900 flex items-center justify-center shrink-0 shadow-xs font-bold">
+          <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-slate-900 to-slate-800 text-white dark:from-slate-100 dark:to-slate-200 dark:text-slate-900 flex items-center justify-center shrink-0 shadow-xs font-bold">
             <GitCommitIcon className="w-5 h-5" />
           </div>
           <div>
-            <h1 className="text-xl sm:text-2xl font-extrabold text-foreground tracking-tight">
-              Lịch Sử Git Commits (GitHub)
-            </h1>
+            <div className="flex flex-wrap items-center gap-2">
+              <h1 className="text-lg sm:text-xl font-extrabold text-foreground tracking-tight">
+                Nhật Ký Git Commits
+              </h1>
+              {courseCode && (
+                <Badge variant="outline" className="font-mono text-[11px] font-bold border-primary/30 bg-primary/10 text-primary">
+                  {courseCode}
+                </Badge>
+              )}
+            </div>
             <p className="text-xs text-muted-foreground">
-              Nhật ký commits thực tế được chiếu tự động từ GitHub Repositories của dự án.
+              Nhật ký commits thực tế được chiếu tự động từ GitHub Repositories của dự án
             </p>
           </div>
         </div>
@@ -163,7 +192,7 @@ export function CommitsView() {
             size="sm"
             onClick={() => void refetchCommits()}
             disabled={isLoadingCommits || isRefetchingCommits}
-            className="h-9 text-xs font-semibold rounded-xl gap-1.5 cursor-pointer shadow-2xs border-border"
+            className="h-8.5 text-xs font-bold rounded-xl gap-1.5 cursor-pointer shadow-2xs border-border hover:bg-muted"
           >
             <RotateCwIcon className={`w-3.5 h-3.5 ${isRefetchingCommits ? "animate-spin text-primary" : ""}`} />
             <span>Làm mới</span>
@@ -171,10 +200,10 @@ export function CommitsView() {
 
           {selectedRepo.fullPath && !selectedRepo.fullPath.includes("Chưa kết nối") && (
             <a href={`https://github.com/${selectedRepo.fullPath}`} target="_blank" rel="noreferrer">
-              <Button type="button" variant="outline" size="sm" className="h-9 text-xs font-bold rounded-xl gap-1.5 cursor-pointer shadow-2xs border-border">
-                <FolderGit2Icon className="w-4 h-4 text-primary" />
+              <Button type="button" variant="outline" size="sm" className="h-8.5 text-xs font-bold rounded-xl gap-1.5 cursor-pointer shadow-2xs border-border hover:bg-muted">
+                <FolderGit2Icon className="w-3.5 h-3.5 text-primary" />
                 <span>Mở GitHub</span>
-                <ExternalLinkIcon className="w-3.5 h-3.5 text-muted-foreground ml-1" />
+                <ExternalLinkIcon className="w-3 h-3 text-muted-foreground ml-0.5" />
               </Button>
             </a>
           )}
@@ -188,7 +217,19 @@ export function CommitsView() {
         </div>
       )}
 
-      {!isLoadingCommits && !projectId && (
+      {isCoursesLoading && (
+        <div className="h-36 animate-pulse rounded-2xl bg-muted/60" />
+      )}
+
+      {isInvalidCourse && (
+        <div className="p-6 rounded-2xl border border-dashed border-amber-500/40 bg-amber-500/5 text-center space-y-2">
+          <AlertCircleIcon className="w-6 h-6 text-amber-500 mx-auto" />
+          <p className="text-sm font-bold text-foreground">Lớp học phần không còn khả dụng</p>
+          <p className="text-xs text-muted-foreground">Hãy chọn lại lớp học phần trước khi xem lịch sử commit.</p>
+        </div>
+      )}
+
+      {!isCoursesLoading && !isInvalidCourse && !isLoadingCommits && !projectId && (
         <div className="p-6 rounded-2xl border border-dashed border-amber-500/40 bg-amber-500/5 text-center space-y-2">
           <AlertCircleIcon className="w-6 h-6 text-amber-500 mx-auto" />
           <p className="text-sm font-bold text-foreground">Chưa xác định dự án nhóm</p>
@@ -196,22 +237,41 @@ export function CommitsView() {
         </div>
       )}
 
-      <CommitStatsCards stats={stats} selectedRepoName={selectedRepo.fullPath} selectedBranchName={selectedBranchName} />
+      {!isLoadingCommits && Boolean(projectId) && isCommitsError && (
+        <div className="p-6 rounded-2xl border border-dashed border-destructive/40 bg-destructive/5 text-center space-y-3">
+          <AlertCircleIcon className="w-6 h-6 text-destructive mx-auto" />
+          <div>
+            <p className="text-sm font-bold text-foreground">Không tải được lịch sử commit</p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              {getApiErrorMessage(commitsError, "Vui lòng thử lại hoặc kiểm tra kết nối GitHub của dự án.")}
+            </p>
+          </div>
+          <Button type="button" size="sm" variant="outline" onClick={() => void refetchCommits()} className="cursor-pointer text-xs">
+            Thử lại
+          </Button>
+        </div>
+      )}
 
-      <CommitFilterBar
-        repositories={repositories}
-        selectedRepoId={selectedRepo.id}
-        onSelectRepo={handleSelectRepo}
-        branches={currentRepoBranches}
-        selectedBranchName={selectedBranchName}
-        onSelectBranch={setSelectedBranchName}
-        searchQuery={searchQuery}
-        onSearchChange={setSearchQuery}
-        onlyMyCommits={onlyMyCommits}
-        onToggleOnlyMyCommits={() => setOnlyMyCommits((prev) => !prev)}
-      />
+      {!isCommitsError && !isInvalidCourse && (
+        <>
+          <CommitStatsCards stats={stats} selectedRepoName={selectedRepo.fullPath} selectedBranchName={effectiveSelectedBranchName} />
 
-      <CommitListTimeline commits={filteredCommits} selectedRepoName={selectedRepo.fullPath} selectedBranchName={selectedBranchName} />
+          <CommitFilterBar
+            repositories={repositories}
+            selectedRepoId={selectedRepo.id}
+            onSelectRepo={handleSelectRepo}
+            branches={currentRepoBranches}
+            selectedBranchName={effectiveSelectedBranchName}
+            onSelectBranch={setSelectedBranchName}
+            searchQuery={searchQuery}
+            onSearchChange={setSearchQuery}
+            onlyMyCommits={onlyMyCommits}
+            onToggleOnlyMyCommits={() => setOnlyMyCommits((prev) => !prev)}
+          />
+
+          <CommitListTimeline commits={filteredCommits} selectedRepoName={selectedRepo.fullPath} selectedBranchName={effectiveSelectedBranchName} />
+        </>
+      )}
     </div>
   );
 }
