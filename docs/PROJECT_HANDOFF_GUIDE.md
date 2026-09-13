@@ -261,7 +261,6 @@ Phần chart/dashboard/đánh giá/graph UI có thể vẫn dùng mock. Không c
 Theo tài liệu phân công, không tạo request/mock-API giả cho:
 
 - dashboard webhook/task board tự đồng bộ;
-- SSE realtime event stream;
 - graph snapshot/Neo4j delta;
 - assessment/continuous scoring;
 - quên mật khẩu, xác minh email, WebAuthn.

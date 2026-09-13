@@ -127,5 +127,6 @@ export function useLecturerCourseProgress(courseId: string, options?: { enabled?
     queryFn: () => LecturerCourseService.getCourseProgress(courseId),
     enabled: (options?.enabled ?? true) && Boolean(courseId && courseId.trim()),
     staleTime: 1000 * 30,
+    refetchOnWindowFocus: true,
   });
 }

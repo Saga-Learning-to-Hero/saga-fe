@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { Metadata } from "next";
 import { TraceabilityGraphView } from "@/features/graph/components/traceability-graph-view";
 
@@ -7,5 +8,9 @@ export const metadata: Metadata = {
 };
 
 export default function StudentGraphPage() {
-  return <TraceabilityGraphView />;
+  return (
+    <Suspense fallback={<div className="min-h-64 animate-pulse rounded-2xl bg-muted" />}>
+      <TraceabilityGraphView />
+    </Suspense>
+  );
 }

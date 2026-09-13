@@ -30,6 +30,7 @@
 24. [Sprint CRUD](#24-sprint-crud)
 25. [GitHub Commits / Task-Commit Links](#25-github-commits--task-commit-links)
 26. [Project Sync](#26-project-sync)
+26a. [Team / Project Progress](#26a-team--project-progress)
 27. [SSE Realtime](#27-sse-realtime)
 28. [Contribution / Evidence APIs](#28-contribution--evidence-apis)
 29. [Error Handling](#29-error-handling)
@@ -960,6 +961,61 @@ Giá trị `jira`/`github` có thể là: `QUEUED`, `SKIPPED_NOT_CONFIGURED`, `S
 
 ---
 
+## 26a. Team / Project Progress
+
+Ba endpoint tiến độ đã có trên backend. FE dùng đúng DTO máy chủ trả về, không tự cộng từ `/tasks`, `/commits` hay `/sprints`.
+
+```
+GET /api/lecturer/courses/{courseId}/progress
+GET /api/projects/{projectId}/progress
+GET /api/projects/{projectId}/progress/members/{studentId}
+```
+
+### Quyền
+
+| Actor | Course progress | Project progress | Member progress |
+|---|---|---|---|
+| Lecturer được phân công course | Được | Được | Được |
+| ACTIVE Team Leader của đúng project | Không (không cần gọi) | Được | Được |
+| Ordinary Team Member | Không | Không (403) | Không (403) |
+| Student ngoài lớp | Không | Không | Không |
+| ADMIN | Không trên endpoint analytics này | Không | Không |
+
+`studentId` phải là thành viên ACTIVE của đúng team sở hữu project. Nếu không thuộc team / đã WITHDRAWN, backend trả `TEAM_NOT_FOUND`.
+
+### Màn hình FE đang dùng
+
+- Course overview giảng viên: `GET /api/lecturer/courses/{courseId}/progress`. Không có course-wide SSE — refetch khi vào trang, khi cửa sổ lấy lại focus, và nút Làm mới. Không polling.
+- Dashboard sinh viên (`/student/dashboard`): chỉ Leader gọi `GET /api/projects/{projectId}/progress`. Member thường không phát request.
+- Chi tiết nhóm giảng viên: gọi project progress khi đã có `projectId`.
+- Drill-down thành viên: `GET .../progress/members/{studentId}` từ bảng thành viên.
+
+### DTO cần hiện
+
+Project progress: `taskSummary` (total/TODO/IN_PROGRESS/IN_REVIEW/DONE/BLOCKED/`completionPercent`), `currentSprint` (null nếu không có sprint active), `commitSummary`, `evidenceSummary`, `memberProgress[]`, `sync.jiraStatus`/`githubStatus`.
+
+`completionPercent = null` khi chưa có task → hiện "Chưa có dữ liệu task". Đây là tỉ lệ hoàn thành task, **không phải điểm**.
+
+Không assume `jira`/`github` object khác null nghĩa là đang kết nối. Phải nhìn `ACTIVE` / `REVOKED`. Status `REVOKED` hiện badge "Mất kết nối · dữ liệu ghi nhận lần cuối".
+
+Progress dashboard **khác** `GET /api/teams/{teamId}/contribution-evaluation`.
+
+### SSE → refetch progress
+
+Khi đang ở trang project progress, mở `GET /api/projects/{projectId}/events`. REST response mới là dữ liệu chuẩn.
+
+| Sự kiện | Refetch |
+|---|---|
+| `READY` | progress + member detail nếu đang mở |
+| `TASKS_CHANGED` | progress + member detail nếu đang mở |
+| `SPRINTS_CHANGED` | progress |
+| `COMMITS_CHANGED` | progress + member detail nếu đang mở |
+| `TASK_LINKS_CHANGED` | progress + member detail nếu đang mở |
+| `TASK_EVIDENCE_CHANGED` | progress + member detail nếu đang mở |
+| `SYNC_STATUS_CHANGED` | progress |
+
+---
+
 ## 27. SSE Realtime
 
 ```
@@ -989,13 +1045,13 @@ SYNC_STATUS_CHANGED
 
 | Sự kiện nhận được | FE nên làm |
 |---|---|
-| `READY` | Gửi ngay khi vừa kết nối SSE thành công (kể cả sau khi reconnect) — coi như tín hiệu "làm mới toàn bộ dữ liệu project hiện tại" |
-| `TASKS_CHANGED` | Refetch danh sách task |
-| `SPRINTS_CHANGED` | Refetch danh sách sprint (và task nếu màn hình đang hiển thị theo sprint) |
-| `COMMITS_CHANGED` | Refetch danh sách commit |
-| `TASK_LINKS_CHANGED` | Refetch `linkedCommitCount` / danh sách commit của task đang mở |
-| `TASK_EVIDENCE_CHANGED` | Refetch dữ liệu evidence/work-session/contribution của task đang mở |
-| `SYNC_STATUS_CHANGED` | Refetch `GET /sync-status` |
+| `READY` | Gửi ngay khi vừa kết nối SSE thành công (kể cả sau khi reconnect) — coi như tín hiệu "làm mới toàn bộ dữ liệu project hiện tại", gồm `GET .../progress` và member progress nếu đang mở |
+| `TASKS_CHANGED` | Refetch danh sách task + project progress + member progress nếu đang mở |
+| `SPRINTS_CHANGED` | Refetch danh sách sprint (và task nếu màn hình đang hiển thị theo sprint) + project progress |
+| `COMMITS_CHANGED` | Refetch danh sách commit + project progress + member progress nếu đang mở |
+| `TASK_LINKS_CHANGED` | Refetch `linkedCommitCount` / danh sách commit của task đang mở + project progress + member progress nếu đang mở |
+| `TASK_EVIDENCE_CHANGED` | Refetch dữ liệu evidence/work-session/contribution của task đang mở + project progress + member progress nếu đang mở |
+| `SYNC_STATUS_CHANGED` | Refetch `GET /sync-status` + project progress |
 
 Server gửi heartbeat (comment SSE, không phải event có tên) mỗi ~25 giây để giữ kết nối — FE không cần xử lý riêng, `EventSource` tự bỏ qua comment. Nếu `EventSource` tự reconnect (mất mạng tạm thời), sự kiện `READY` sẽ được gửi lại ngay khi kết nối lại thành công — dùng đây làm điểm neo để refetch toàn bộ.
 
@@ -1527,10 +1583,17 @@ export function subscribeProjectEvents(
 | POST | `/api/projects/{projectId}/sync` | Leader |
 | GET | `/api/projects/{projectId}/sync-status` | thành viên |
 
+### PROGRESS
+| Method | Path | Role |
+|---|---|---|
+| GET | `/api/lecturer/courses/{courseId}/progress` | Lecturer được phân công |
+| GET | `/api/projects/{projectId}/progress` | Lecturer được phân công hoặc ACTIVE Leader |
+| GET | `/api/projects/{projectId}/progress/members/{studentId}` | Lecturer được phân công hoặc ACTIVE Leader |
+
 ### SSE
 | Method | Path | Role |
 |---|---|---|
-| GET | `/api/projects/{projectId}/events` | thành viên |
+| GET | `/api/projects/{projectId}/events` | thành viên (dùng để refetch REST, gồm progress) |
 
 ### EVIDENCE / CONTRIBUTION
 | Method | Path | Role |

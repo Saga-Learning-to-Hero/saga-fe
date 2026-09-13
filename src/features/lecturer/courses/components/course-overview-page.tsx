@@ -343,7 +343,12 @@ export function CourseOverviewPage({ courseId }: CourseOverviewPageProps) {
                     healthLabel = "Chưa cấu hình trọng số";
                     healthBadgeClass =
                       "bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/30";
-                  } else if (prog && prog.totalTasks > 0 && (prog.taskCompletionPercent ?? 0) < 20) {
+                  } else if (
+                    prog &&
+                    prog.totalTasks > 0 &&
+                    prog.taskCompletionPercent !== null &&
+                    prog.taskCompletionPercent < 20
+                  ) {
                     healthStatus = "warning";
                     healthLabel = "Tiến độ chậm";
                     healthBadgeClass =
@@ -388,19 +393,23 @@ export function CourseOverviewPage({ courseId }: CourseOverviewPageProps) {
                         ) : (
                           <div className="space-y-1 max-w-[170px]">
                             <div className="flex items-center justify-between gap-1 text-[11px]">
-                              <span className="font-bold text-foreground truncate max-w-[105px]" title={prog.currentSprintName || "Chưa có Sprint"}>
-                                {prog.currentSprintName || "Chưa có Sprint"}
+                              <span className="font-bold text-foreground truncate max-w-[105px]" title={prog.currentSprintName || "Chưa có Sprint đang hoạt động"}>
+                                {prog.currentSprintName || "Chưa có Sprint đang hoạt động"}
                               </span>
                               <span className="font-mono text-muted-foreground font-semibold shrink-0">
-                                {prog.completedTasks}/{prog.totalTasks}
+                                {prog.totalTasks === 0 || prog.taskCompletionPercent === null
+                                  ? "Chưa có dữ liệu task"
+                                  : `${prog.completedTasks}/${prog.totalTasks}`}
                               </span>
                             </div>
-                            <div className="w-full bg-muted/80 h-1.5 rounded-full overflow-hidden">
-                              <div
-                                className="bg-primary h-full rounded-full transition-all duration-300"
-                                style={{ width: `${Math.min(100, Math.max(0, Math.round(prog.taskCompletionPercent ?? 0)))}%` }}
-                              />
-                            </div>
+                            {prog.totalTasks > 0 && prog.taskCompletionPercent !== null ? (
+                              <div className="w-full bg-muted/80 h-1.5 rounded-full overflow-hidden">
+                                <div
+                                  className="bg-primary h-full rounded-full transition-all duration-300"
+                                  style={{ width: `${Math.min(100, Math.max(0, Math.round(prog.taskCompletionPercent)))}%` }}
+                                />
+                              </div>
+                            ) : null}
                           </div>
                         )}
                       </td>

@@ -535,13 +535,14 @@ Giao diện sinh viên được điều hướng động dựa trên trạng th�
 - Team Leader khởi tạo dự án.
 - Tích hợp GitHub App (Chọn Repo với Role) & Jira Software (Chọn Site, Project, Board).
 - **Quản lý danh tính cá nhân:** `GET /api/integrations/me`, liên kết và hủy liên kết GitHub/Jira cá nhân.
-- **Chiếu dữ liệu dự án (Project Projections):** Đồng bộ backfill (`POST .../sync`), xem trạng thái sync (`GET .../sync-status`), danh sách Jira Tasks (`GET .../tasks`), danh sách Commits (`GET .../commits`), và liên kết Task-Commit (`GET .../tasks/{taskId}/commits`).
+- **Chiếu dữ liệu dự án (Project Projections):** Đồng bộ backfill (`POST .../sync`), xem trạng thái sync (`GET .../sync-status`), danh sách Jira Tasks (`GET .../tasks`), danh sách Commits (`GET .../commits`), liên kết Task-Commit (`GET .../tasks/{taskId}/commits`), tiến độ dự án (`GET .../progress`), tiến độ thành viên (`GET .../progress/members/{studentId}`), và SSE `GET .../events`.
+- **Tiến độ lớp giảng viên:** `GET /api/lecturer/courses/{courseId}/progress` (chỉ Lecturer được phân công; không có course-wide SSE).
 
 ### 6.2. Các tính năng **CHƯA triển khai** (Backend chưa có endpoint - Không tự ý bịa API)
 - Quên mật khẩu / Gửi mail khôi phục mật khẩu.
 - Sinh viên chỉnh sửa hoặc xóa Project (`PATCH`/`DELETE .../project` - Không có).
 - Webhook nhận dữ liệu từ GitHub/Jira (`/api/webhooks/**` là endpoint nội bộ nhận event từ GitHub/Atlassian, không gọi từ giao diện FE).
-- SSE Stream hoặc WebSocket đẩy realtime.
+- WebSocket đẩy realtime ngoài SSE `GET /api/projects/{projectId}/events` đã tích hợp.
 - Đồ thị Cytoscape SNA thuật toán mạng xã hội phức tạp và Bảng chấm điểm tổng kết tự động (Đang tính toán ở tầng Graph Engine tiếp theo).
 
 ### 6.3. Endpoint có trong Swagger nhưng chưa thuộc luồng sản phẩm FE

@@ -14,6 +14,7 @@ interface GraphStatsSummaryProps {
   totalEdges: number;
   traceabilityRate: number;
   msrCount: number;
+  demoNotice?: string;
 }
 
 export function GraphStatsSummary({
@@ -21,9 +22,15 @@ export function GraphStatsSummary({
   totalEdges,
   traceabilityRate,
   msrCount,
+  demoNotice,
 }: GraphStatsSummaryProps) {
   return (
-    <div className="p-3 px-4 sm:px-5 rounded-2xl bg-card/95 backdrop-blur-md border border-border/80 shadow-2xs flex flex-wrap items-center justify-between gap-y-3 gap-x-6 text-xs">
+    <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3 rounded-2xl border border-border/80 bg-card/95 p-3 px-4 text-xs shadow-2xs backdrop-blur-md sm:px-5">
+      {demoNotice ? (
+        <Badge variant="outline" className="w-full border-amber-500/40 bg-amber-500/10 text-[10px] font-bold text-amber-800 dark:text-amber-200">
+          {demoNotice}
+        </Badge>
+      ) : null}
       <div className="flex items-center gap-3 min-w-[200px]">
         <div className="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
           <ShieldCheckIcon className="w-4 h-4" />
