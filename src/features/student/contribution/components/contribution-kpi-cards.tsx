@@ -1,134 +1,103 @@
 "use client";
 
 import {
-  PieChartIcon,
-  AwardIcon,
-  ScaleIcon,
-  GitGraphIcon,
-  TrendingUpIcon,
-  CheckCircle2Icon,
+  Code2Icon,
+  FlaskConicalIcon,
+  FileTextIcon,
+  BrainCircuitIcon,
 } from "lucide-react";
-import type { MemberContribution } from "../types/contribution";
-import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
+import {
+  SLICE_WEIGHT_FIELDS,
+  SLICE_WEIGHT_LABELS,
+  type SliceWeightField,
+  formatContributionPercent,
+} from "@/features/lecturer/contribution/lib/contribution-utils";
+import type { ContributionSliceWeightValues } from "../types/contribution";
+import { cn } from "@/lib/utils";
 
 interface ContributionKPICardsProps {
-  currentMember: MemberContribution;
+  sliceWeights: ContributionSliceWeightValues;
 }
 
-export function ContributionKPICards({ currentMember }: ContributionKPICardsProps) {
+function getSliceIcon(field: SliceWeightField) {
+  switch (field) {
+    case "codeWeight":
+      return <Code2Icon className="size-4.5" />;
+    case "testWeight":
+      return <FlaskConicalIcon className="size-4.5" />;
+    case "documentWeight":
+      return <FileTextIcon className="size-4.5" />;
+    case "researchWeight":
+      return <BrainCircuitIcon className="size-4.5" />;
+  }
+}
+
+function getSliceBoxStyle(field: SliceWeightField) {
+  switch (field) {
+    case "codeWeight":
+      return {
+        boxClass: "bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20",
+        borderClass: "border-blue-500/20",
+      };
+    case "testWeight":
+      return {
+        boxClass: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20",
+        borderClass: "border-emerald-500/20",
+      };
+    case "documentWeight":
+      return {
+        boxClass: "bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20",
+        borderClass: "border-amber-500/20",
+      };
+    case "researchWeight":
+      return {
+        boxClass: "bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20",
+        borderClass: "border-purple-500/20",
+      };
+  }
+}
+
+export function ContributionKPICards({ sliceWeights }: ContributionKPICardsProps) {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-      <Card className="rounded-2xl border border-border/80 bg-card p-4 sm:p-5 shadow-2xs space-y-3">
-        <div className="flex items-center justify-between">
-          <span className="text-xs font-semibold text-muted-foreground flex items-center gap-1.5">
-            <PieChartIcon className="w-4 h-4 text-primary" />
-            Tỷ lệ Đóng góp Cá nhân
-          </span>
-          <Badge className="bg-primary/15 text-primary border-primary/30 font-mono font-bold text-[10px]">
-            Chuẩn: 20.0%
-          </Badge>
-        </div>
-
-        <div className="flex items-baseline justify-between">
-          <div>
-            <span className="text-2xl sm:text-3xl font-extrabold text-foreground font-mono">
-              {currentMember.contributionPercentage}%
-            </span>
-            <p className="text-[11px] text-muted-foreground mt-0.5 flex items-center gap-1">
-              <TrendingUpIcon className="w-3 h-3 text-emerald-500" />
-              Cao hơn trung bình +{(currentMember.contributionPercentage - 20).toFixed(1)}%
-            </p>
-          </div>
-
-          <Badge className="bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 text-xs font-bold">
-            Vượt chỉ tiêu
-          </Badge>
-        </div>
-      </Card>
-
-      <Card className="rounded-2xl border border-border/80 bg-card p-4 sm:p-5 shadow-2xs space-y-3">
-        <div className="flex items-center justify-between">
-          <span className="text-xs font-semibold text-muted-foreground flex items-center gap-1.5">
-            <AwardIcon className="w-4 h-4 text-purple-500" />
-            Điểm Đóng góp Quy đổi
-          </span>
-          <Badge variant="outline" className="text-[10px] font-mono font-bold">
-            Thang 10
-          </Badge>
-        </div>
-
-        <div className="flex items-baseline justify-between">
-          <div>
-            <span className="text-2xl sm:text-3xl font-extrabold text-purple-600 dark:text-purple-400 font-mono">
-              {currentMember.weightedScore}
-            </span>
-            <span className="text-xs text-muted-foreground font-mono font-semibold"> / 10.0</span>
-            <p className="text-[11px] text-muted-foreground mt-0.5">
-              Dựa trên Slicing Pie multi-source
-            </p>
-          </div>
-
-          <Badge className="bg-purple-500/15 text-purple-600 dark:text-purple-400 border-purple-500/30 text-xs font-bold">
-            Xuất sắc
-          </Badge>
-        </div>
-      </Card>
-
-      <Card className="rounded-2xl border border-border/80 bg-card p-4 sm:p-5 shadow-2xs space-y-3">
-        <div className="flex items-center justify-between">
-          <span className="text-xs font-semibold text-muted-foreground flex items-center gap-1.5">
-            <ScaleIcon className="w-4 h-4 text-blue-500" />
-            Độ Cân bằng Nhóm
-          </span>
-          <Badge className="bg-blue-500/15 text-blue-600 dark:text-blue-400 border-blue-500/30 text-[10px] font-mono font-bold">
-            Gini: 0.12
-          </Badge>
-        </div>
-
-        <div className="flex items-baseline justify-between">
-          <div>
-            <span className="text-lg sm:text-xl font-bold text-foreground">
-              Khá cân bằng
-            </span>
-            <p className="text-[11px] text-muted-foreground mt-0.5">
-              4/5 thành viên đóng góp tốt
-            </p>
-          </div>
-
-          <Badge variant="outline" className="bg-blue-500/10 text-blue-600 border-blue-500/30 text-xs font-bold">
-            Ổn định
-          </Badge>
-        </div>
-      </Card>
-
-      <Card className="rounded-2xl border border-border/80 bg-card p-4 sm:p-5 shadow-2xs space-y-3">
-        <div className="flex items-center justify-between">
-          <span className="text-xs font-semibold text-muted-foreground flex items-center gap-1.5">
-            <GitGraphIcon className="w-4 h-4 text-emerald-500" />
-            Độ phủ Traceability
-          </span>
-          <Badge className="bg-emerald-500/15 text-emerald-600 border-emerald-500/30 text-[10px] font-mono font-bold">
-            Verified
-          </Badge>
-        </div>
-
-        <div className="flex items-baseline justify-between">
-          <div>
-            <span className="text-2xl sm:text-3xl font-extrabold text-emerald-600 dark:text-emerald-400 font-mono">
-              {currentMember.metrics.traceabilityRate}%
-            </span>
-            <p className="text-[11px] text-muted-foreground mt-0.5 flex items-center gap-1">
-              <CheckCircle2Icon className="w-3 h-3 text-emerald-500" />
-              98% Task có Git Commit liên kết
-            </p>
-          </div>
-
-          <Badge className="bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 text-xs font-bold">
-            Tin cậy
-          </Badge>
-        </div>
-      </Card>
+    <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+      {SLICE_WEIGHT_FIELDS.map((field) => {
+        const style = getSliceBoxStyle(field);
+        const info = SLICE_WEIGHT_LABELS[field];
+        return (
+          <Card
+            key={field}
+            className={cn(
+              "rounded-2xl border bg-card p-4 shadow-xs transition-all hover:shadow-md hover:-translate-y-0.5",
+              style.borderClass
+            )}
+          >
+            <CardContent className="space-y-3 p-0">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-foreground">
+                  {info.title}
+                </span>
+                <div
+                  className={cn(
+                    "flex size-8 items-center justify-center rounded-xl",
+                    style.boxClass
+                  )}
+                >
+                  {getSliceIcon(field)}
+                </div>
+              </div>
+              <div>
+                <span className="font-mono text-2xl font-black text-foreground">
+                  {formatContributionPercent(sliceWeights?.[field])}
+                </span>
+                <p className="mt-0.5 text-[11px] text-muted-foreground">
+                  {info.description}
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        );
+      })}
     </div>
   );
 }

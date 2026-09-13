@@ -21,7 +21,9 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
 import { ConfirmDeleteDialog } from "@/components/common/confirm-delete-dialog";
+import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { useProjectCommits } from "@/features/student/project/hooks/useProjectSync";
 import {
@@ -412,6 +414,17 @@ export function TaskEvidencePanel({
                   </a>
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
+                  <Badge
+                    variant="outline"
+                    className={cn(
+                      "text-[9px] font-mono font-bold px-1.5 py-0",
+                      link.source === "JIRA"
+                        ? "bg-blue-500/10 text-blue-600 border-blue-500/30"
+                        : "bg-emerald-500/10 text-emerald-600 border-emerald-500/30"
+                    )}
+                  >
+                    {link.source || "SAGA"}
+                  </Badge>
                   <span className="text-[10px] text-muted-foreground font-mono">
                     {new Date(link.createdAt).toLocaleDateString("vi-VN")}
                   </span>
@@ -420,9 +433,10 @@ export function TaskEvidencePanel({
                       type="button"
                       variant="ghost"
                       size="icon"
-                      disabled={deleteLinkMutation.isPending}
+                      disabled={deleteLinkMutation.isPending || link.source === "JIRA"}
+                      title={link.source === "JIRA" ? "Minh chứng đồng bộ từ Jira không thể xóa trực tiếp" : "Xóa liên kết"}
                       onClick={() => setDeletingLink(link)}
-                      className="w-7 h-7 text-muted-foreground hover:text-destructive rounded-lg cursor-pointer"
+                      className="w-7 h-7 text-muted-foreground hover:text-destructive rounded-lg cursor-pointer disabled:opacity-40"
                     >
                       <Trash2Icon className="w-3.5 h-3.5" />
                     </Button>
@@ -528,7 +542,18 @@ export function TaskEvidencePanel({
                     </p>
                   </div>
                 </div>
-                <div className="flex items-center gap-1 shrink-0">
+                <div className="flex items-center gap-1.5 shrink-0">
+                  <Badge
+                    variant="outline"
+                    className={cn(
+                      "text-[9px] font-mono font-bold px-1.5 py-0 mr-0.5",
+                      file.source === "JIRA"
+                        ? "bg-blue-500/10 text-blue-600 border-blue-500/30"
+                        : "bg-emerald-500/10 text-emerald-600 border-emerald-500/30"
+                    )}
+                  >
+                    {file.source || "SAGA"}
+                  </Badge>
                   <span className="text-[10px] text-muted-foreground font-mono mr-1">
                     {new Date(file.createdAt).toLocaleDateString("vi-VN")}
                   </span>
@@ -547,9 +572,10 @@ export function TaskEvidencePanel({
                       type="button"
                       variant="ghost"
                       size="icon"
-                      disabled={deleteFileMutation.isPending}
+                      disabled={deleteFileMutation.isPending || file.source === "JIRA"}
+                      title={file.source === "JIRA" ? "Tệp minh chứng đồng bộ từ Jira không thể xóa trực tiếp" : "Xóa tệp"}
                       onClick={() => setDeletingFile(file)}
-                      className="w-7 h-7 text-muted-foreground hover:text-destructive rounded-lg cursor-pointer"
+                      className="w-7 h-7 text-muted-foreground hover:text-destructive rounded-lg cursor-pointer disabled:opacity-40"
                     >
                       <Trash2Icon className="w-3.5 h-3.5" />
                     </Button>

@@ -51,6 +51,9 @@ export function useAddTaskWebLink(taskId: string) {
       void queryClient.invalidateQueries({
         queryKey: TASK_EVIDENCE_QUERY_KEYS.webLinks(taskId),
       });
+      void queryClient.invalidateQueries({
+        queryKey: ["contributionEvaluation"],
+      });
     },
   });
 }
@@ -65,6 +68,9 @@ export function useDeleteTaskWebLink(taskId: string) {
       void queryClient.invalidateQueries({
         queryKey: TASK_EVIDENCE_QUERY_KEYS.webLinks(taskId),
       });
+      void queryClient.invalidateQueries({
+        queryKey: ["contributionEvaluation"],
+      });
     },
   });
 }
@@ -77,6 +83,9 @@ export function useUploadTaskFile(taskId: string) {
     onSuccess: () => {
       void queryClient.invalidateQueries({
         queryKey: TASK_EVIDENCE_QUERY_KEYS.files(taskId),
+      });
+      void queryClient.invalidateQueries({
+        queryKey: ["contributionEvaluation"],
       });
     },
   });
@@ -106,6 +115,9 @@ export function useDeleteTaskFile(taskId: string) {
     onSuccess: () => {
       void queryClient.invalidateQueries({
         queryKey: TASK_EVIDENCE_QUERY_KEYS.files(taskId),
+      });
+      void queryClient.invalidateQueries({
+        queryKey: ["contributionEvaluation"],
       });
     },
   });
