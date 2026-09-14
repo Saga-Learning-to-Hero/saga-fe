@@ -12,6 +12,7 @@ import {
 import type { StudentProjectDetails } from "../types/student-project";
 import type { StudentCourse } from "@/features/student/courses/types/student-course";
 import { Badge } from "@/components/ui/badge";
+import { MemberRoleBadge } from "@/components/common/leader-badge";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/sonner";
 import { useSyncProject, useProjectSyncStatus } from "../hooks/useProjectSync";
@@ -155,15 +156,7 @@ export function ProjectBannerHeader({
                 Chưa có nhóm
               </Badge>
             ) : isLeader !== undefined ? (
-              <Badge
-                className={
-                  isLeader
-                    ? "bg-amber-300 text-amber-950 font-bold border-0 text-[11px] px-2 py-0.5 shadow-xs"
-                    : "bg-white/20 text-white font-medium border-0 text-[11px] px-2 py-0.5 backdrop-blur-md"
-                }
-              >
-                {isLeader ? "Trưởng nhóm (Leader)" : "Thành viên (Member)"}
-              </Badge>
+              <MemberRoleBadge role={isLeader ? "LEADER" : "MEMBER"} showEnglish theme="solid" />
             ) : null}
           </div>
 

@@ -5,7 +5,6 @@ import {
   ListTodoIcon,
   GanttChartSquareIcon,
   SearchIcon,
-  CrownIcon,
   RefreshCwIcon,
   XIcon,
   CalendarIcon,
@@ -14,6 +13,7 @@ import {
 } from "lucide-react";
 import type { Sprint } from "../types/sprint-progress";
 import { Badge } from "@/components/ui/badge";
+import { LeaderBadge } from "@/components/common/leader-badge";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -134,15 +134,7 @@ export function SprintHeader({
                   {projectName}
                 </Badge>
               )}
-              {isTeamLeader && (
-                <Badge
-                  variant="outline"
-                  className="text-amber-700 dark:text-amber-300 border-amber-500/40 bg-amber-500/10 text-[11px] font-bold gap-1 py-0.5 px-2"
-                >
-                  <CrownIcon className="w-3 h-3 text-amber-500" />
-                  <span>Leader</span>
-                </Badge>
-              )}
+              {isTeamLeader && <LeaderBadge size="sm" />}
             </div>
             <p className="text-xs text-muted-foreground truncate">
               Quản lý đầu việc Scrum, Kanban và đối soát minh chứng commit kỹ thuật

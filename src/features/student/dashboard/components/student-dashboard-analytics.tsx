@@ -32,6 +32,8 @@ import {
 } from "@/features/progress/lib/progress-format";
 import { StudentTaskCommitCharts } from "./student-task-commit-charts";
 import { TeamWorkloadComparisonChart } from "./team-workload-comparison-chart";
+import { StudentDashboardSkeleton } from "./student-dashboard-skeleton";
+import { LeaderBadge } from "@/components/common/leader-badge";
 
 export function StudentDashboardAnalytics() {
   const { course, courseId, isLoading: isCoursesLoading, isInvalidCourse } = useStudentCourseContext();
@@ -69,7 +71,7 @@ export function StudentDashboardAnalytics() {
   }
 
   if (isCoursesLoading || (Boolean(courseId) && teamQuery.isLoading && !team)) {
-    return <div className="min-h-64 animate-pulse rounded-2xl bg-muted" />;
+    return <StudentDashboardSkeleton />;
   }
 
   if (!courseId || !course) {
@@ -160,7 +162,7 @@ export function StudentDashboardAnalytics() {
   }
 
   if (progressQuery.isLoading && !progress) {
-    return <div className="min-h-64 animate-pulse rounded-2xl bg-muted" />;
+    return <StudentDashboardSkeleton />;
   }
 
   if (!progress) {
@@ -184,9 +186,7 @@ export function StudentDashboardAnalytics() {
               <h2 className="text-base font-bold tracking-tight text-foreground">
                 Bảng tiến độ dự án nhóm
               </h2>
-              <Badge className="border-0 bg-amber-500/15 text-[10px] font-semibold text-amber-900 dark:text-amber-300">
-                Trưởng nhóm
-              </Badge>
+              <LeaderBadge size="sm" />
               <Badge variant="outline" className="font-mono text-[10px]">
                 Nhóm {progress.teamNo} · {progress.teamName}
               </Badge>

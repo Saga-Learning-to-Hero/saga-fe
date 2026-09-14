@@ -1,9 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Link2Icon, CrownIcon, Loader2Icon } from "lucide-react";
+import { Link2Icon, Loader2Icon } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { MemberRoleBadge } from "@/components/common/leader-badge";
 import { toast } from "@/components/ui/sonner";
 import {
   useProjectIntegrations, useDisconnectProjectJira, useDisconnectProjectGitHub,
@@ -177,13 +177,7 @@ export function ProjectIntegrationsCard({ projectId, isLeader }: ProjectIntegrat
             <div>
               <div className="flex items-center gap-2">
                 <CardTitle className="text-base font-bold text-foreground">Jira & GitHub của Dự án Nhóm</CardTitle>
-                {isLeader ? (
-                  <Badge className="bg-amber-500/15 text-amber-700 dark:text-amber-300 border-0 text-[10px] font-semibold gap-1">
-                    <CrownIcon className="w-3 h-3" /> Trưởng nhóm
-                  </Badge>
-                ) : (
-                  <Badge variant="outline" className="text-[10px] text-muted-foreground border-border">Thành viên</Badge>
-                )}
+                <MemberRoleBadge role={isLeader ? "LEADER" : "MEMBER"} />
               </div>
               <CardDescription className="text-xs text-muted-foreground">
                 Jira Project và các GitHub Repositories chung của nhóm để theo dõi tiến độ và commit

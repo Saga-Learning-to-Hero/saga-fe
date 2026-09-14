@@ -6,7 +6,6 @@ import {
   ArrowRightIcon,
   CheckCircle2Icon,
   ClockIcon,
-  CrownIcon,
   FileSpreadsheetIcon,
   FolderKanbanIcon,
   RefreshCwIcon,
@@ -14,6 +13,7 @@ import {
 } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { LeaderBadge, MemberRoleBadge } from "@/components/common/leader-badge";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { CourseQueryError } from "@/features/lecturer/courses/components/course-query-error";
@@ -23,7 +23,7 @@ import {
 } from "@/features/lecturer/courses/lib/course-routes";
 import { formatQueryUpdatedAt } from "@/features/lecturer/courses/lib/format-query-updated-at";
 import { useLecturerTeams } from "../hooks/use-lecturer-teams";
-import { sortTeamMembers, teamRoleLabel } from "../types/lecturer-team";
+import { sortTeamMembers } from "../types/lecturer-team";
 import { TeamImportDialog } from "./team-import-dialog";
 import { cn } from "@/lib/utils";
 
@@ -260,7 +260,7 @@ export function TeamList({ courseId, courseCode }: TeamListProps) {
                                 {member.fullName}
                               </span>
                               {isLeader && (
-                                <CrownIcon className="size-3 text-amber-500 fill-amber-500" />
+                                <LeaderBadge variant="icon-only" />
                               )}
                             </div>
                             <span className="font-mono text-[11px] text-muted-foreground">
@@ -269,17 +269,7 @@ export function TeamList({ courseId, courseCode }: TeamListProps) {
                           </div>
                         </div>
 
-                        <Badge
-                          variant="outline"
-                          className={cn(
-                            "font-mono text-[10px] font-bold",
-                            isLeader
-                              ? "border-amber-500/30 bg-amber-500/15 text-amber-700 dark:text-amber-300"
-                              : "border-border/60 bg-muted/60 text-muted-foreground"
-                          )}
-                        >
-                          {teamRoleLabel(member.role)}
-                        </Badge>
+                        <MemberRoleBadge role={member.role} />
                       </div>
                     );
                   })}

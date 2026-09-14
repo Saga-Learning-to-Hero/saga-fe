@@ -15,6 +15,7 @@ import {
   ShieldCheckIcon,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { MemberRoleBadge } from "@/components/common/leader-badge";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { CustomSelect } from "@/components/common/custom-select";
 import { Label } from "@/components/ui/label";
@@ -325,17 +326,7 @@ export function PeerAssessmentView() {
               </p>
             </div>
           </div>
-          <Badge
-            variant="outline"
-            className={cn(
-              "text-[11px] font-semibold self-start sm:self-auto",
-              team?.myRole === "LEADER"
-                ? "border-purple-500/30 bg-purple-500/10 text-purple-600 dark:text-purple-400"
-                : "border-border/80 text-muted-foreground"
-            )}
-          >
-            {team?.myRole === "LEADER" ? "Trưởng nhóm" : "Thành viên"}
-          </Badge>
+          <MemberRoleBadge role={team?.myRole} size="sm" />
         </div>
 
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
@@ -374,17 +365,7 @@ export function PeerAssessmentView() {
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <Badge
-                    variant="outline"
-                    className={cn(
-                      "text-[10px] font-semibold",
-                      member.role === "LEADER"
-                        ? "border-purple-500/30 bg-purple-500/10 text-purple-600 dark:text-purple-400"
-                        : "border-border/70 text-muted-foreground"
-                    )}
-                  >
-                    {member.role === "LEADER" ? "Trưởng nhóm" : "Thành viên"}
-                  </Badge>
+                  <MemberRoleBadge role={member.role} size="sm" />
                   <Badge
                     variant="outline"
                     className="border-border/70 bg-muted/60 text-[10px] font-medium text-muted-foreground gap-1"

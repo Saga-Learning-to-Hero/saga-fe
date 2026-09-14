@@ -22,7 +22,7 @@ export function useStudentMyTeam(courseId: string, options?: { enabled?: boolean
     queryKey: STUDENT_COURSE_QUERY_KEYS.studentMyTeam(courseId),
     queryFn: () => StudentCourseService.getMyTeam(courseId),
     enabled: (options?.enabled ?? true) && Boolean(courseId && courseId.trim()),
-    staleTime: 1000 * 30,
+    staleTime: 1000 * 60 * 5,
     retry: (failureCount, error) => {
       const code = getApiErrorCode(error);
       if (code === "TEAM_NOT_FOUND" || code === "STUDENT_COURSE_FORBIDDEN") {
@@ -36,6 +36,21 @@ export function useStudentMyTeam(courseId: string, options?: { enabled?: boolean
     ...query,
     isWaitingForTeam: query.isError && StudentCourseService.isTeamNotFound(query.error),
   };
+}
+
+export function usePrefetchStudentTeam() {
+  const queryClient = useQueryClient();
+  return useCallback(
+    (courseId: string) => {
+      if (!courseId || !courseId.trim()) return;
+      void queryClient.prefetchQuery({
+        queryKey: STUDENT_COURSE_QUERY_KEYS.studentMyTeam(courseId),
+        queryFn: () => StudentCourseService.getMyTeam(courseId),
+        staleTime: 1000 * 60 * 5,
+      });
+    },
+    [queryClient]
+  );
 }
 
 export const isStudentTeamNotFound = StudentCourseService.isTeamNotFound;

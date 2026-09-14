@@ -23,8 +23,16 @@ import { cn } from "@/lib/utils";
 import { isNavItemActive } from "@/components/layout/sidebar/nav-config";
 import type { NavItem } from "@/components/layout/sidebar/nav-config";
 import { usePrefetchLecturerCourse } from "@/features/lecturer/courses/hooks/use-lecturer-courses";
+import {
+  usePrefetchStudentTeam,
+  STUDENT_COURSE_QUERY_KEYS,
+} from "@/features/student/courses/hooks/use-student-courses";
+import { PROJECT_PROJECTION_QUERY_KEYS } from "@/features/student/project/hooks/useProjectSync";
+import { ProjectProjectionService } from "@/features/student/project/api/project-projection-service";
+import { useQueryClient } from "@tanstack/react-query";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
 import { studentCoursePath } from "@/features/student/courses/hooks/use-student-course-context";
+import type { StudentCourseResponse } from "@/features/student/courses/types/student-course";
 
 const ICON_MAP: Record<string, React.ElementType> = {
   LayoutDashboard: LayoutDashboardIcon,
@@ -71,6 +79,7 @@ export function TopNavTabs({ items }: TopNavTabsProps) {
             href={user?.role === "STUDENT" && studentCourseId ? studentCoursePath(item.href, studentCourseId) : item.href}
             isActive={isActive}
             Icon={Icon}
+            studentCourseId={studentCourseId}
           />
         );
       })}
@@ -83,14 +92,18 @@ function TopNavTabLink({
   href,
   isActive,
   Icon,
+  studentCourseId,
 }: {
   item: NavItem;
   href: string;
   isActive: boolean;
   Icon: React.ElementType;
+  studentCourseId?: string;
 }) {
   const linkRef = useRef<HTMLAnchorElement>(null);
   const prefetchLecturerCourse = usePrefetchLecturerCourse();
+  const prefetchStudentTeam = usePrefetchStudentTeam();
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     if (!isActive) return;
@@ -99,9 +112,30 @@ function TopNavTabLink({
 
   const handleMouseEnter = () => {
     const courseMatch = item.href.match(/^\/lecturer\/courses\/([^/]+)/);
-    if (!courseMatch) return;
-    const courseId = decodeURIComponent(courseMatch[1]);
-    prefetchLecturerCourse(courseId);
+    if (courseMatch) {
+      const courseId = decodeURIComponent(courseMatch[1]);
+      prefetchLecturerCourse(courseId);
+      return;
+    }
+    if (studentCourseId) {
+      prefetchStudentTeam(studentCourseId);
+      const cachedTeam = queryClient.getQueryData<{ projectId?: string | null }>(
+        STUDENT_COURSE_QUERY_KEYS.studentMyTeam(studentCourseId)
+      );
+      const cachedCourses = queryClient.getQueryData<StudentCourseResponse[]>(
+        STUDENT_COURSE_QUERY_KEYS.studentCourses
+      );
+      const projectId =
+        cachedTeam?.projectId ||
+        cachedCourses?.find((c) => c.courseId === studentCourseId)?.projectId;
+      if (projectId) {
+        void queryClient.prefetchQuery({
+          queryKey: PROJECT_PROJECTION_QUERY_KEYS.progress(projectId),
+          queryFn: () => ProjectProjectionService.getProjectProgress(projectId),
+          staleTime: 1000 * 30,
+        });
+      }
+    }
   };
 
   return (

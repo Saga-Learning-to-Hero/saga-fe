@@ -6,10 +6,8 @@ import {
   AlertTriangleIcon,
   ArrowUpRightIcon,
   ChevronDownIcon,
-  CrownIcon,
   NetworkIcon,
   ShieldAlertIcon,
-  UserIcon,
 } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -23,6 +21,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { MemberRoleBadge } from "@/components/common/leader-badge";
 import {
   formatContributionNumber,
   formatContributionPercent,
@@ -231,27 +230,7 @@ function TableRowGroup({
           </div>
         </TableCell>
         <TableCell>
-          <Badge
-            variant="outline"
-            className={cn(
-              "font-mono text-[10px] font-bold gap-1",
-              isLeader
-                ? "border-amber-500/30 bg-amber-500/15 text-amber-700 dark:text-amber-300"
-                : "border-border/60 bg-muted/60 text-muted-foreground"
-            )}
-          >
-            {isLeader ? (
-              <>
-                <CrownIcon className="size-2.5 text-amber-500" />
-                Trưởng nhóm
-              </>
-            ) : (
-              <>
-                <UserIcon className="size-2.5" />
-                Thành viên
-              </>
-            )}
-          </Badge>
+          <MemberRoleBadge role={member.roleInTeam} />
         </TableCell>
         <TableCell className="text-right font-mono text-xs font-bold text-foreground">
           {formatContributionNumber(member.sliceScore)}

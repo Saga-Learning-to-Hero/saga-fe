@@ -8,7 +8,6 @@ import {
   InfoIcon,
   CrownIcon,
   SparklesIcon,
-  UserIcon,
 } from "lucide-react";
 import {
   ResponsiveContainer,
@@ -20,6 +19,7 @@ import {
 import type { ContributionMember } from "../types/contribution";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { MemberRoleBadge } from "@/components/common/leader-badge";
 import {
   formatContributionNumber,
   formatContributionPercent,
@@ -405,7 +405,6 @@ export function ContributionCharts({ members }: ContributionChartsProps) {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {members.map((member) => {
               const cleanedName = cleanMemberName(member.fullName) || member.studentCode;
-              const isLeader = member.roleInTeam === "LEADER";
               const codePct = Number(member.codeContributionPercentage) || 0;
               const testPct = Number(member.testContributionPercentage) || 0;
               const docPct = Number(member.documentContributionPercentage) || 0;
@@ -425,27 +424,7 @@ export function ContributionCharts({ members }: ContributionChartsProps) {
                         {member.studentCode}
                       </span>
                     </div>
-                    <Badge
-                      variant="outline"
-                      className={cn(
-                        "text-[9px] font-mono font-bold gap-1 shrink-0",
-                        isLeader
-                          ? "border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-300"
-                          : "border-border/60 bg-muted/40 text-muted-foreground"
-                      )}
-                    >
-                      {isLeader ? (
-                        <>
-                          <CrownIcon className="size-2.5 text-amber-500" />
-                          Trưởng nhóm
-                        </>
-                      ) : (
-                        <>
-                          <UserIcon className="size-2.5" />
-                          Thành viên
-                        </>
-                      )}
-                    </Badge>
+                    <MemberRoleBadge role={member.roleInTeam} />
                   </div>
 
                   <div className="space-y-2 text-xs">

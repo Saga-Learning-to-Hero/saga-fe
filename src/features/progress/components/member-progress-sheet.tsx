@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { MemberRoleBadge } from "@/components/common/leader-badge";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -25,7 +26,6 @@ import { cn } from "@/lib/utils";
 import {
   formatDateTime,
   formatLinkedCommitRatio,
-  teamRoleLabel,
 } from "../lib/progress-format";
 
 interface MemberProgressSheetProps {
@@ -112,15 +112,7 @@ export function MemberProgressSheet({
                   <Badge variant="outline" className="font-mono text-[10px] px-1.5 py-0">
                     {data?.studentCode || "..."}
                   </Badge>
-                  <Badge
-                    variant="secondary"
-                    className={`text-[10px] font-semibold px-2 py-0 ${(data?.teamRole || "").toUpperCase() === "LEADER"
-                      ? "bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/30"
-                      : "bg-muted text-muted-foreground"
-                      }`}
-                  >
-                    {data ? teamRoleLabel(data.teamRole) : "Thành viên"}
-                  </Badge>
+                  <MemberRoleBadge role={data?.teamRole} />
                 </div>
               </div>
             </div>

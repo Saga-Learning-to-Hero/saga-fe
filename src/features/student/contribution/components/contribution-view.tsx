@@ -31,6 +31,7 @@ import { groupWarningsByMember } from "../lib/contribution-view-utils";
 import { ContributionKPICards } from "./contribution-kpi-cards";
 import { ContributionCharts } from "./contribution-charts";
 import { ContributionTable } from "./contribution-table";
+import { LeaderBadge } from "@/components/common/leader-badge";
 import { cn } from "@/lib/utils";
 
 export function ContributionView() {
@@ -274,13 +275,48 @@ export function ContributionView() {
                   <Tooltip>
                     <TooltipTrigger
                       type="button"
-                      className="cursor-pointer text-muted-foreground hover:text-foreground transition-colors"
+                      className="inline-flex size-5 cursor-pointer items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
                       aria-label="Tìm hiểu khái niệm Slice score"
                     >
-                      <HelpCircleIcon className="size-4" />
+                      <HelpCircleIcon className="size-3.5" />
                     </TooltipTrigger>
-                    <TooltipContent className="max-w-xs p-3 text-xs leading-relaxed">
-                      <strong>Slice score</strong> là đơn vị công sức quy đổi chuẩn hóa trong mô hình Slicing Pie, được tính toán từ các nhiệm vụ Jira, commits mã nguồn và minh chứng nghiệm thu nhân với trọng số của từng tiêu chuẩn.
+                    <TooltipContent
+                      side="bottom"
+                      align="start"
+                      sideOffset={8}
+                      className="flex-col items-start w-84 p-3.5 bg-foreground text-background shadow-2xl rounded-2xl space-y-2.5 z-50 text-left border border-background/10"
+                    >
+                      <div className="w-full space-y-2.5 text-left">
+                        <div className="flex items-center justify-between gap-2 border-b border-background/20 pb-2">
+                          <div className="flex items-center gap-2">
+                            <div className="flex size-6 items-center justify-center rounded-lg bg-background/15 text-background shrink-0">
+                              <PieChartIcon className="size-3.5" />
+                            </div>
+                            <span className="text-xs font-bold text-background">
+                              Khái niệm Slice Score
+                            </span>
+                          </div>
+                          <span className="rounded-full bg-background/20 px-2 py-0.5 font-mono text-[10px] font-bold text-background">
+                            Slicing Pie
+                          </span>
+                        </div>
+
+                        <p className="text-xs leading-relaxed text-background/90">
+                          <strong className="font-bold text-background">Slice score</strong> là đơn vị công sức quy đổi chuẩn hóa trong mô hình Slicing Pie, được tính toán từ các nhiệm vụ Jira, commits mã nguồn và minh chứng nghiệm thu nhân với trọng số của từng tiêu chuẩn.
+                        </p>
+
+                        <div className="rounded-xl border border-background/15 bg-background/10 p-2.5 space-y-1">
+                          <div className="flex items-center justify-between text-[11px] font-semibold text-background">
+                            <span>Nguyên lý tính toán</span>
+                            <span className="font-mono font-bold text-emerald-400 dark:text-emerald-300">
+                              ∑ (Effort × Trọng số)
+                            </span>
+                          </div>
+                          <p className="text-[10px] leading-tight text-background/70">
+                            Dữ liệu đối soát khách quan từ Jira & GitHub, bảo đảm tính minh bạch và công bằng cho toàn nhóm.
+                          </p>
+                        </div>
+                      </div>
                     </TooltipContent>
                   </Tooltip>
                 </div>
@@ -295,12 +331,7 @@ export function ContributionView() {
           </div>
 
           <div className="flex items-center gap-2 self-start md:self-auto">
-            <Badge
-              variant="outline"
-              className="bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30 font-bold text-xs py-1 px-3"
-            >
-              TRƯỞNG NHÓM (LEADER)
-            </Badge>
+            <LeaderBadge size="md" showEnglish />
             <Badge
               variant="outline"
               className="bg-emerald-500/10 text-emerald-600 border-emerald-500/30 font-bold text-xs gap-1.5 py-1 px-3"

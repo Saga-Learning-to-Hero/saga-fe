@@ -4,13 +4,13 @@ import { useMemo, type ReactNode } from "react";
 import {
   CheckSquareIcon,
   ChevronRightIcon,
-  CrownIcon,
   GitCommitIcon,
   Link2Icon,
   UsersIcon,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { LeaderBadge } from "@/components/common/leader-badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { getAssigneeAvatarClass, getAssigneeInitials } from "@/features/student/sprint-progress/lib/assignee-avatar";
 import type { ProjectProgressMemberSummary } from "@/features/student/project/types/student-project";
@@ -55,9 +55,7 @@ export function TeamWorkloadComparisonChart({
               <CardTitle className="text-sm font-bold text-foreground sm:text-base">
                 Tiến độ thành viên
               </CardTitle>
-              <Badge className="border-0 bg-amber-500/15 text-[10px] font-semibold text-amber-700 dark:text-amber-300">
-                Chỉ trưởng nhóm
-              </Badge>
+              <LeaderBadge size="sm">Chỉ trưởng nhóm</LeaderBadge>
             </div>
             <CardDescription className="text-xs text-muted-foreground">
               Task, commit và tỉ lệ commit đã liên kết task. Máy chủ không trả số liệu theo từng Sprint cho từng người.
@@ -128,7 +126,7 @@ export function TeamWorkloadComparisonChart({
                       <span className="truncate text-xs font-bold text-foreground">
                         {member.fullName}
                       </span>
-                      {isLeader ? <CrownIcon className="size-3.5 shrink-0 text-amber-500" /> : null}
+                      {isLeader ? <LeaderBadge variant="icon-only" /> : null}
                     </div>
                     <span className="font-mono text-[10px] text-muted-foreground">
                       MSSV: {member.studentCode}

@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { LeaderBadge, MemberRoleBadge } from "@/components/common/leader-badge";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { MemberProgressSheet } from "@/features/progress/components/member-progress-sheet";
@@ -38,7 +39,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { LecturerPageShell } from "@/features/lecturer/courses/components/lecturer-page-shell";
 import { useLecturerCourse } from "@/features/lecturer/courses/hooks/use-lecturer-courses";
 import { useLecturerTeams, useMoveTeamMember, useReplaceTeamLeader } from "../hooks/use-lecturer-teams";
-import { sortTeamMembers, teamRoleLabel, type LecturerTeamMember } from "../types/lecturer-team";
+import { sortTeamMembers, type LecturerTeamMember } from "../types/lecturer-team";
 import {
   lecturerCourseGradesPath,
   lecturerCourseGraphPath,
@@ -204,7 +205,7 @@ export function TeamProjectDetailPage({ courseId, teamId }: TeamProjectDetailPag
                         {member.fullName}
                       </span>
                       {isLeader && (
-                        <CrownIcon className="size-3 text-amber-500 fill-amber-500" />
+                        <LeaderBadge variant="icon-only" />
                       )}
                     </div>
                     <span className="font-mono text-[11px] text-muted-foreground">
@@ -214,17 +215,7 @@ export function TeamProjectDetailPage({ courseId, teamId }: TeamProjectDetailPag
                 </div>
 
                 <div className="flex flex-wrap items-center gap-2">
-                  <Badge
-                    variant="outline"
-                    className={cn(
-                      "font-mono text-[10px] font-bold",
-                      isLeader
-                        ? "border-amber-500/30 bg-amber-500/15 text-amber-700 dark:text-amber-300"
-                        : "border-border/60 bg-muted/60 text-muted-foreground"
-                    )}
-                  >
-                    {teamRoleLabel(member.role)}
-                  </Badge>
+                  <MemberRoleBadge role={member.role} />
 
                   {isLeader && hasOtherTeams ? (
                     <Tooltip>

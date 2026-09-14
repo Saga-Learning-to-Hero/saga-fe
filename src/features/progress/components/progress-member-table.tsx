@@ -1,12 +1,12 @@
 "use client";
 
-import { CrownIcon, UsersIcon } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { UsersIcon } from "lucide-react";
+import { LeaderBadge, MemberRoleBadge } from "@/components/common/leader-badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import type { ProjectProgressMemberSummary } from "@/features/student/project/types/student-project";
 import { cn } from "@/lib/utils";
-import { formatLinkedCommitRatio, teamRoleLabel } from "../lib/progress-format";
+import { formatLinkedCommitRatio } from "../lib/progress-format";
 
 interface ProgressMemberTableProps {
   members: ProjectProgressMemberSummary[];
@@ -83,23 +83,14 @@ export function ProgressMemberTable({
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-1.5">
                           <span className="font-bold text-foreground">{member.fullName}</span>
-                          {isLeader ? <CrownIcon className="size-3 text-amber-500" /> : null}
+                          {isLeader ? <LeaderBadge variant="icon-only" /> : null}
                         </div>
                         <p className="font-mono text-[11px] text-muted-foreground">
                           {member.studentCode}
                         </p>
                       </td>
                       <td className="px-4 py-3">
-                        <Badge
-                          variant="outline"
-                          className={cn(
-                            "font-mono text-[10px]",
-                            isLeader &&
-                            "border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-300"
-                          )}
-                        >
-                          {teamRoleLabel(member.teamRole)}
-                        </Badge>
+                        <MemberRoleBadge role={member.teamRole} />
                       </td>
                       <td className="px-4 py-3 font-mono">
                         <div className="space-y-1">
