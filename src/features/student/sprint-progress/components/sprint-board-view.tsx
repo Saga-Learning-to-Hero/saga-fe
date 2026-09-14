@@ -33,6 +33,7 @@ interface SprintBoardViewProps {
   onSwitchToBacklog?: () => void;
   totalBacklogCount?: number;
   isLoading?: boolean;
+  courseId?: string;
 }
 
 const COLUMNS: { id: IssueStatus; title: string; dotColor: string; barColor: string }[] = [
@@ -133,6 +134,7 @@ export function SprintBoardView({
   onSwitchToBacklog,
   totalBacklogCount,
   isLoading = false,
+  courseId = "",
 }: SprintBoardViewProps) {
   const [draggedIssueId, setDraggedIssueId] = useState<string | null>(null);
   const [showEmptyColumnsAnyway, setShowEmptyColumnsAnyway] = useState<boolean>(false);
@@ -304,8 +306,8 @@ export function SprintBoardView({
                       onDragStart={(e) => handleDragStart(e, issue)}
                       onClick={() => onIssueClick(issue)}
                       className={`p-3 rounded-xl bg-card border shadow-2xs hover:shadow-sm transition-all duration-150 space-y-2 group ${isMsrAnomaly
-                          ? "border-amber-500/50 bg-amber-500/5 dark:border-amber-500/40 hover:border-amber-500"
-                          : "border-border/70 hover:border-primary/60"
+                        ? "border-amber-500/50 bg-amber-500/5 dark:border-amber-500/40 hover:border-amber-500"
+                        : "border-border/70 hover:border-primary/60"
                         } ${canDrag
                           ? "cursor-grab active:cursor-grabbing hover:-translate-y-0.5"
                           : "cursor-pointer opacity-90 border-dashed"
@@ -375,13 +377,27 @@ export function SprintBoardView({
                           ) : null}
 
                           <Link
-                            href={`/student/graph?taskId=${issue.key}`}
+                            href={
+                              courseId
+                                ? `/student/graph?courseId=${encodeURIComponent(courseId)}&taskId=${encodeURIComponent(issue.key)}`
+                                : `/student/graph?taskId=${encodeURIComponent(issue.key)}`
+                            }
                             onClick={(e) => e.stopPropagation()}
                             title="Xem minh chứng trên Đồ thị Neo4j"
                             className="text-muted-foreground/60 hover:text-primary transition-colors p-0.5 rounded"
                           >
                             <NetworkIcon className="w-3 h-3" />
                           </Link>
+
+                          {issue.dueDate && (
+                            <span
+                              title={`Hạn hoàn thành: ${issue.dueDate}`}
+                              className="inline-flex items-center gap-0.5 text-muted-foreground font-mono text-[10px]"
+                            >
+                              <span className="text-amber-500">📅</span>
+                              {issue.dueDate}
+                            </span>
+                          )}
                         </div>
 
                         <div className="flex items-center gap-2">

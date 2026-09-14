@@ -65,3 +65,12 @@ export interface ResetPasswordRequest {
 export interface ResetPasswordResponse {
   message: string;
 }
+
+export interface ReauthPasswordRequest {
+  password: string;
+}
+
+export interface ReauthPasswordResponse {
+  stepUp: boolean;
+  expiresAt: string;
+}

@@ -8,7 +8,13 @@ import { AuthService } from "../api/auth-service";
 import { useAuthStore } from "../store/useAuthStore";
 import { ensureCsrfToken } from "@/lib/axios";
 import { isUnauthorizedError } from "@/lib/api-error";
-import type { LoginRequest, RegisterRequest, PasswordSetupRequest, AuthMeResponse } from "../types/auth-dto";
+import type {
+  LoginRequest,
+  RegisterRequest,
+  PasswordSetupRequest,
+  AuthMeResponse,
+  ReauthPasswordRequest,
+} from "../types/auth-dto";
 import type { User } from "@/types/auth";
 
 export const AUTH_QUERY_KEY = ["auth", "session"] as const;
@@ -77,6 +83,7 @@ export function useLogin() {
           role: res.user.role,
           status: "ACTIVE",
         };
+        queryClient.clear();
         setUser(mappedUser, res.passwordSetupRequired);
         queryClient.setQueryData(AUTH_QUERY_KEY, res);
 
@@ -229,5 +236,11 @@ export function useEnsureCsrf() {
   useEffect(() => {
     void ensureCsrfToken(true);
   }, []);
+}
+
+export function useReauthPassword() {
+  return useMutation({
+    mutationFn: (payload: ReauthPasswordRequest) => AuthService.reauthPassword(payload),
+  });
 }
 

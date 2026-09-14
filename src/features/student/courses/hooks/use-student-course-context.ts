@@ -16,10 +16,32 @@ export function studentCoursePath(pathname: string, courseId: string): string {
   return `${pathname}?${params.toString()}`;
 }
 
-/**
- * Đồng bộ ngữ cảnh lớp học giữa URL và store. URL luôn quyết định khi có `courseId`;
- * không tự chọn phần tử đầu tiên của danh sách course.
- */
+export function getStudentCourseContextRedirect({
+  pathname,
+  requestedCourseId,
+  selectedCourseId,
+  availableCourseIds,
+  isCoursesReady,
+}: {
+  pathname: string;
+  requestedCourseId: string;
+  selectedCourseId: string;
+  availableCourseIds: string[];
+  isCoursesReady: boolean;
+}): string | null {
+  if (!isCoursesReady || pathname === "/student/courses") return null;
+
+  if (requestedCourseId) {
+    return availableCourseIds.includes(requestedCourseId) ? null : "/student/courses";
+  }
+
+  if (!selectedCourseId || !availableCourseIds.includes(selectedCourseId)) {
+    return "/student/courses";
+  }
+
+  return studentCoursePath(pathname, selectedCourseId);
+}
+
 export function useStudentCourseContext() {
   const router = useRouter();
   const pathname = usePathname();
@@ -44,16 +66,32 @@ export function useStudentCourseContext() {
   }, [courses, requestedCourseId, selectedCourse]);
 
   useEffect(() => {
+    const selectedCourseId = courseIdOf(selectedCourse);
+    const redirectPath = getStudentCourseContextRedirect({
+      pathname,
+      requestedCourseId,
+      selectedCourseId,
+      availableCourseIds: courses.map(courseIdOf),
+      isCoursesReady: coursesQuery.isSuccess,
+    });
+
+    if (redirectPath) {
+      if (redirectPath === "/student/courses" && selectedCourse) {
+        setSelectedCourse(null);
+      }
+      router.replace(redirectPath);
+      return;
+    }
+
     if (requestedCourseId && course && courseIdOf(selectedCourse) !== requestedCourseId) {
       setSelectedCourse(course);
       return;
     }
 
-    const selectedCourseId = courseIdOf(selectedCourse);
     if (!requestedCourseId && selectedCourseId) {
       router.replace(studentCoursePath(pathname, selectedCourseId));
     }
-  }, [course, pathname, requestedCourseId, router, selectedCourse, setSelectedCourse]);
+  }, [course, courses, coursesQuery.isSuccess, pathname, requestedCourseId, router, selectedCourse, setSelectedCourse]);
 
   const selectCourse = (nextCourse: StudentCourse, targetPath = pathname) => {
     setSelectedCourse(nextCourse);
@@ -62,9 +100,7 @@ export function useStudentCourseContext() {
 
   return {
     course,
-    // Khi URL chÆ°a Ä‘Æ°á»£c canonical hoÃ¡ sau hydrate, dÃ¹ng course Ä‘Ã£ chá»n táº¡m thá»i
-    // Ä‘á»ƒ trÃ¡nh gá»i API vá»›i id rá»—ng. URL váº«n lÃ  nguá»“n Æ°u tiÃªn khi cÃ³ courseId.
-    courseId: requestedCourseId || courseIdOf(course),
+    courseId: courseIdOf(course),
     courses,
     isLoading: coursesQuery.isLoading,
     isError: coursesQuery.isError,

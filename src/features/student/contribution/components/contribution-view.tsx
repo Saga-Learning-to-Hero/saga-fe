@@ -106,7 +106,7 @@ export function ContributionView() {
             Vui lòng liên hệ Giảng viên phụ trách để được phân nhóm trước khi truy cập bảng điểm đóng góp Slicing Pie.
           </p>
           <Link
-            href="/student/dashboard"
+            href={`/student/dashboard?courseId=${encodeURIComponent(courseId)}`}
             className={cn(buttonVariants({ variant: "outline", size: "sm" }), "mt-4 text-xs font-bold shadow-xs")}
           >
             Quay lại Tổng quan

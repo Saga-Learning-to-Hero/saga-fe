@@ -142,8 +142,22 @@ export function useCreateProjectTask() {
       });
       toast.success(`Đã tạo task [${res.externalKey}] trên Jira thành công.`);
     },
-    onError: (error: unknown) => {
-      const err = error as { response?: { data?: { message?: string } }; message?: string };
+    onError: (error: unknown, variables) => {
+      const err = error as { response?: { data?: { code?: string; message?: string } }; message?: string };
+      const code = err.response?.data?.code;
+      if (code === "JIRA_WRITE_INCOMPLETE") {
+        queryClient.invalidateQueries({
+          queryKey: JIRA_SPRINT_QUERY_KEYS.tasks(variables.projectId),
+        });
+        queryClient.invalidateQueries({
+          queryKey: JIRA_SPRINT_QUERY_KEYS.sprints(variables.projectId),
+        });
+        toast.warning(
+          err.response?.data?.message ||
+          "Task đã được tạo trên Jira nhưng một số thuộc tính phụ chưa được cập nhật đầy đủ."
+        );
+        return;
+      }
       toast.error(err.response?.data?.message || err.message || "Không thể tạo task trên Jira.");
     },
   });

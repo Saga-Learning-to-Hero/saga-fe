@@ -161,6 +161,7 @@ apiClient.interceptors.response.use(
       status === 403 &&
       isMutatingMethod &&
       code !== "PASSWORD_SETUP_REQUIRED" &&
+      code !== "STEP_UP_REQUIRED" &&
       originalRequest &&
       !originalRequest._retry &&
       !originalRequest.url?.includes("/api/auth/csrf")
@@ -176,7 +177,9 @@ apiClient.interceptors.response.use(
     const message =
       errorData?.message ||
       (status === 403
-        ? "Yêu cầu bị từ chối truy cập (403 ACCESS_DENIED). Vui lòng kiểm tra lại quyền hạn hoặc phiên làm việc."
+        ? code === "STEP_UP_REQUIRED"
+          ? "Yêu cầu xác thực nâng cao để tiếp tục thao tác."
+          : "Yêu cầu bị từ chối truy cập (403 ACCESS_DENIED). Vui lòng kiểm tra lại quyền hạn hoặc phiên làm việc."
         : status === 401
           ? "Phiên đăng nhập đã hết hạn hoặc không hợp lệ. Vui lòng đăng nhập lại."
           : error.message || "Đã có lỗi xảy ra trong quá trình kết nối đến máy chủ SAGA.");

@@ -76,7 +76,13 @@ export function TopNavTabs({ items }: TopNavTabsProps) {
           <TopNavTabLink
             key={item.id}
             item={item}
-            href={user?.role === "STUDENT" && studentCourseId ? studentCoursePath(item.href, studentCourseId) : item.href}
+            href={
+              user?.role === "STUDENT"
+                ? studentCourseId
+                  ? studentCoursePath(item.href, studentCourseId)
+                  : "/student/courses"
+                : item.href
+            }
             isActive={isActive}
             Icon={Icon}
             studentCourseId={studentCourseId}

@@ -90,8 +90,13 @@ export function ProjectIntegrationsCard({ projectId, isLeader }: ProjectIntegrat
   const handleRedirectJiraConnect = async () => {
     try {
       toast.loading("Đang chuyển hướng sang Jira Atlassian...", { id: "jira-connect" });
-      const currentPath = typeof window !== "undefined" ? window.location.pathname : "/student/project-info";
-      const returnPath = `${currentPath}?jira_setup=true`;
+      const returnPath = typeof window !== "undefined"
+        ? (() => {
+          const url = new URL(window.location.href);
+          url.searchParams.set("jira_setup", "true");
+          return `${url.pathname}${url.search}`;
+        })()
+        : "/student/project-info?jira_setup=true";
       const result = await connectJiraMutation.mutateAsync({ projectId, returnPath });
       if (result.authorizationUrl && typeof window !== "undefined") {
         window.location.href = result.authorizationUrl;
@@ -108,7 +113,9 @@ export function ProjectIntegrationsCard({ projectId, isLeader }: ProjectIntegrat
   const handleRedirectGitHubConnect = async () => {
     try {
       toast.loading("Đang chuyển hướng sang GitHub App...", { id: "github-connect" });
-      const returnPath = typeof window !== "undefined" ? window.location.pathname : "/student/project-info";
+      const returnPath = typeof window !== "undefined"
+        ? `${window.location.pathname}${window.location.search}`
+        : "/student/project-info";
       const result = await connectGitHubMutation.mutateAsync({ projectId, returnPath });
       if (result.authorizationUrl && typeof window !== "undefined") {
         window.location.href = result.authorizationUrl;

@@ -37,12 +37,12 @@ export const useAuthStore = create<AuthState>()(
       },
 
       setUser: (user, passwordSetupRequired = false) =>
-        set({
+        set((state) => ({
           isAuthenticated: Boolean(user),
           user,
           passwordSetupRequired: user ? passwordSetupRequired : false,
-          selectedCourse: user ? get().selectedCourse : null,
-        }),
+          selectedCourse: user && state.user?.id === user.id ? state.selectedCourse : null,
+        })),
 
       loginWithCredentials: async (identifier, password) => {
         const res = await AuthService.login({ identifier, password });
@@ -57,11 +57,12 @@ export const useAuthStore = create<AuthState>()(
             status: "ACTIVE",
           };
 
-          set({
+          set((state) => ({
             isAuthenticated: true,
             user: mappedUser,
             passwordSetupRequired: res.passwordSetupRequired,
-          });
+            selectedCourse: state.user?.id === mappedUser.id ? state.selectedCourse : null,
+          }));
 
           return mappedUser;
         }
@@ -82,11 +83,12 @@ export const useAuthStore = create<AuthState>()(
               status: "ACTIVE",
             };
 
-            set({
+            set((state) => ({
               isAuthenticated: true,
               user: mappedUser,
               passwordSetupRequired: res.passwordSetupRequired,
-            });
+              selectedCourse: state.user?.id === mappedUser.id ? state.selectedCourse : null,
+            }));
 
             return mappedUser;
           } else {

@@ -25,7 +25,6 @@ import { Badge } from "@/components/ui/badge";
 import { ConfirmDeleteDialog } from "@/components/common/confirm-delete-dialog";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
-import { useProjectCommits } from "@/features/student/project/hooks/useProjectSync";
 import {
   useTaskWebLinks,
   useTaskFiles,
@@ -38,18 +37,22 @@ import {
   useDeleteTaskFile,
   useConfirmContribution,
 } from "../hooks/use-task-evidence";
-import type { TaskWebLinkItem, TaskFileItem } from "../types/task-evidence";
+import { isStepUpRequiredError } from "@/lib/api-error";
+import { StepUpAuthDialog } from "@/features/auth/components/step-up-auth-dialog";
+import type {
+  TaskWebLinkItem,
+  TaskFileItem,
+  CreateContributionConfirmationPayload,
+} from "../types/task-evidence";
 
 type TaskEvidenceSection = "all" | "documents" | "contribution";
 
 interface TaskEvidencePanelProps {
   taskId: string;
-  projectId?: string;
-  taskKey?: string;
   section?: TaskEvidenceSection;
   isOwnerOrLeader?: boolean;
   externalCommitShas?: string;
-  onConfirmCommitsChange?: (shas: string) => void;
+  onRequestCommitSelection?: () => void;
 }
 
 function formatFileSize(bytes: number): string {
@@ -122,8 +125,8 @@ export function TaskWorkSessionControl({
     <div className="hidden sm:flex items-center gap-1.5">
       <div
         className={`flex items-center gap-1.5 rounded-lg border px-2 py-1 font-mono text-xs font-bold tabular-nums ${isSessionRunning
-            ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"
-            : "border-border/60 bg-background text-muted-foreground"
+          ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"
+          : "border-border/60 bg-background text-muted-foreground"
           }`}
         title={isSessionRunning ? "Đang bấm giờ" : "Chưa bấm giờ"}
       >
@@ -169,15 +172,11 @@ export function TaskWorkSessionControl({
 
 export function TaskEvidencePanel({
   taskId,
-  projectId,
-  taskKey,
   section = "all",
   isOwnerOrLeader = true,
-  externalCommitShas,
-  onConfirmCommitsChange,
+  externalCommitShas = "",
+  onRequestCommitSelection,
 }: TaskEvidencePanelProps) {
-  const confirmSectionRef = useRef<HTMLDivElement>(null);
-
   const [newUrl, setNewUrl] = useState("");
   const [newTitle, setNewTitle] = useState("");
   const [linkError, setLinkError] = useState<string | null>(null);
@@ -186,8 +185,7 @@ export function TaskEvidencePanel({
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [fileError, setFileError] = useState<string | null>(null);
 
-  const [internalCommits, setInternalCommits] = useState("");
-  const confirmCommits = externalCommitShas !== undefined ? externalCommitShas : internalCommits;
+  const [manualCommitShas, setManualCommitShas] = useState("");
   const [confirmPrs, setConfirmPrs] = useState("");
   const [confirmResult, setConfirmResult] = useState<{
     id: string;
@@ -195,18 +193,15 @@ export function TaskEvidencePanel({
     state: string;
   } | null>(null);
   const [confirmError, setConfirmError] = useState<string | null>(null);
-  const [isBrowsingOtherCommits, setIsBrowsingOtherCommits] = useState(false);
-  const [otherCommitQuery, setOtherCommitQuery] = useState("");
-  const [visibleOtherCommitCount, setVisibleOtherCommitCount] = useState(20);
+  const [isStepUpModalOpen, setIsStepUpModalOpen] = useState(false);
+  const [pendingContributionPayload, setPendingContributionPayload] =
+    useState<CreateContributionConfirmationPayload | null>(null);
 
   const [deletingLink, setDeletingLink] = useState<TaskWebLinkItem | null>(null);
   const [deletingFile, setDeletingFile] = useState<TaskFileItem | null>(null);
 
   const { data: links = [], isLoading: isLinksLoading } = useTaskWebLinks(taskId);
   const { data: files = [], isLoading: isFilesLoading } = useTaskFiles(taskId);
-  const { data: projectCommits = [], isLoading: isProjectCommitsLoading } = useProjectCommits(projectId, {
-    enabled: Boolean(projectId && (section === "all" || section === "contribution")),
-  });
 
   const addLinkMutation = useAddTaskWebLink(taskId);
   const deleteLinkMutation = useDeleteTaskWebLink(taskId);
@@ -280,93 +275,70 @@ export function TaskEvidencePanel({
     }
   };
 
-  const updateConfirmedShas = (shas: string[]) => {
-    const value = Array.from(new Set(shas.map((sha) => sha.trim()).filter(Boolean))).join(", ");
-    setInternalCommits(value);
-    onConfirmCommitsChange?.(value);
-  };
-
-  const toggleConfirmedSha = (sha: string) => {
-    const currentShas = confirmCommits
-      .split(",")
-      .map((value) => value.trim())
-      .filter(Boolean);
-    updateConfirmedShas(
-      currentShas.includes(sha)
-        ? currentShas.filter((currentSha) => currentSha !== sha)
-        : [...currentShas, sha]
-    );
-  };
-
-  const normalizedTaskKey = taskKey?.trim().toUpperCase() || "";
-  const syncedCommits = projectCommits.filter((commit) => Boolean(commit.sha));
-  const matchingTaskCommits = syncedCommits.filter((commit) =>
-    normalizedTaskKey
-      ? `${commit.message || ""} ${commit.headRef || ""}`.toUpperCase().includes(normalizedTaskKey)
-      : false
+  const selectedCommitShas = Array.from(
+    new Set(
+      externalCommitShas
+        .split(",")
+        .map((sha) => sha.trim())
+        .filter(Boolean)
+    )
   );
-  const otherSyncedCommits = syncedCommits.filter((commit) => !matchingTaskCommits.includes(commit));
-  const normalizedOtherQuery = otherCommitQuery.trim().toUpperCase();
-  const filteredOtherCommits = otherSyncedCommits.filter((commit) =>
-    normalizedOtherQuery
-      ? `${commit.sha} ${commit.message || ""} ${commit.headRef || ""} ${commit.repositoryFullName || ""}`
-        .toUpperCase()
-        .includes(normalizedOtherQuery)
-      : true
+  const enteredCommitShas = manualCommitShas
+    .split(",")
+    .map((sha) => sha.trim())
+    .filter(Boolean);
+  const confirmationCommitShas = Array.from(
+    new Set([...selectedCommitShas, ...enteredCommitShas])
   );
-  const visibleOtherCommits = filteredOtherCommits.slice(0, visibleOtherCommitCount);
+  const confirmationPullRequests = confirmPrs
+    .split(",")
+    .map((pullRequest) => pullRequest.trim())
+    .filter(Boolean);
+  const hasConfirmationEvidence =
+    confirmationCommitShas.length > 0 || confirmationPullRequests.length > 0;
+
+  const handleStepUpSuccess = async () => {
+    if (!pendingContributionPayload) return;
+    try {
+      const res = await confirmContributionMutation.mutateAsync(pendingContributionPayload);
+      setConfirmResult(res);
+      setPendingContributionPayload(null);
+      toast.success("Xác thực nâng cao và xác nhận đóng góp thành công!");
+    } catch (err: unknown) {
+      const msg = isStepUpRequiredError(err)
+        ? "Máy chủ vẫn yêu cầu xác thực lại. Yêu cầu đã được dừng để tránh gửi lặp."
+        : err instanceof Error
+          ? err.message
+          : "Xác nhận đóng góp thất bại";
+      setConfirmError(msg);
+      throw new Error(msg);
+    }
+  };
 
   const handleConfirmContribution = async (e: React.FormEvent) => {
     e.preventDefault();
     setConfirmError(null);
     setConfirmResult(null);
 
-    const shas = confirmCommits
-      .split(",")
-      .map((s) => s.trim())
-      .filter(Boolean);
-
-    const prs = confirmPrs
-      .split(",")
-      .map((s) => s.trim())
-      .filter(Boolean);
+    const payload: CreateContributionConfirmationPayload = {
+      commitShas: confirmationCommitShas,
+      pullRequests: confirmationPullRequests,
+    };
 
     try {
-      const res = await confirmContributionMutation.mutateAsync({
-        commitShas: shas,
-        pullRequests: prs,
-      });
+      const res = await confirmContributionMutation.mutateAsync(payload);
       setConfirmResult(res);
     } catch (err: unknown) {
+      if (isStepUpRequiredError(err)) {
+        setPendingContributionPayload(payload);
+        setConfirmError("Phiên xác thực bảo mật đã hết hạn. Vui lòng nhập lại mật khẩu để tiếp tục.");
+        toast.warning("Cần xác thực lại mật khẩu trước khi xác nhận đóng góp.");
+        setIsStepUpModalOpen(true);
+        return;
+      }
       const msg = err instanceof Error ? err.message : "Xác nhận đóng góp thất bại";
       setConfirmError(msg);
     }
-  };
-
-  const renderSelectableCommit = (commit: (typeof syncedCommits)[number]) => {
-    const isSelected = confirmCommits
-      .split(",")
-      .map((sha) => sha.trim())
-      .includes(commit.sha);
-
-    return (
-      <Button
-        key={commit.id}
-        type="button"
-        variant="outline"
-        onClick={() => toggleConfirmedSha(commit.sha)}
-        className={`w-full h-auto min-h-9 justify-start px-2.5 py-2 text-left gap-2 rounded-lg border ${isSelected
-            ? "border-violet-500/60 bg-violet-500/10 text-foreground"
-            : "border-border/60 bg-background hover:bg-muted/50"
-          }`}
-      >
-        <span className="font-mono text-[10px] font-bold text-primary shrink-0">
-          {commit.sha.slice(0, 7)}
-        </span>
-        <span className="text-[11px] truncate flex-1">{commit.message}</span>
-        {isSelected && <CheckCircle2Icon className="w-3.5 h-3.5 text-violet-600 shrink-0" />}
-      </Button>
-    );
   };
 
   return (
@@ -625,7 +597,6 @@ export function TaskEvidencePanel({
       </div>
 
       <div
-        ref={confirmSectionRef}
         className={`${section === "all" || section === "contribution" ? "" : "hidden"} bg-card border border-border/80 rounded-2xl p-4 shadow-xs space-y-4`}
       >
         <div className="flex items-center gap-2">
@@ -641,89 +612,70 @@ export function TaskEvidencePanel({
 
         {isOwnerOrLeader && (
           <form onSubmit={handleConfirmContribution} className="space-y-3 bg-muted/20 p-3 rounded-xl border border-border/50">
-            {projectId && (
-              <div className="space-y-3">
-                <div className="flex items-center justify-between gap-2">
-                  <Label className="text-[11px] font-medium text-muted-foreground flex items-center gap-1">
-                    <GitCommitIcon className="w-3 h-3 text-violet-500" />
-                    Commit khớp {taskKey || "task"}
-                  </Label>
-                  <span className="text-[10px] text-muted-foreground">
-                    {matchingTaskCommits.length} commit
-                  </span>
+            <div className="space-y-2.5 rounded-xl border border-violet-500/20 bg-violet-500/[0.04] p-3">
+              <div className="flex items-start justify-between gap-3">
+                <div className="space-y-0.5">
+                  <p className="flex items-center gap-1.5 text-xs font-semibold text-foreground">
+                    <GitCommitIcon className="size-3.5 text-violet-500" />
+                    Commit đã chọn từ tab Commits
+                  </p>
+                  <p className="text-[11px] text-muted-foreground">
+                    Đây mới là lựa chọn tạm. Dữ liệu chỉ được gửi khi bạn bấm Xác nhận đóng góp.
+                  </p>
                 </div>
+                <Badge
+                  variant="outline"
+                  className="shrink-0 border-violet-500/25 bg-background font-mono text-[10px] text-violet-700 dark:text-violet-300"
+                >
+                  {selectedCommitShas.length} commit
+                </Badge>
+              </div>
 
-                {isProjectCommitsLoading ? (
-                  <div className="flex items-center gap-2 text-[11px] text-muted-foreground py-2">
-                    <Loader2Icon className="w-3.5 h-3.5 animate-spin text-primary" />
-                    Đang tải commits đã đồng bộ...
-                  </div>
-                ) : !normalizedTaskKey ? (
-                  <p className="text-[11px] text-muted-foreground rounded-lg border border-dashed border-border/70 p-2.5">
-                    Chưa xác định được mã Jira của task để đề xuất commit phù hợp.
+              {selectedCommitShas.length === 0 ? (
+                <div className="flex flex-col gap-2 rounded-lg border border-dashed border-border/70 bg-background/70 p-2.5 sm:flex-row sm:items-center sm:justify-between">
+                  <p className="text-[11px] text-muted-foreground">
+                    Chưa chọn commit nào. Bạn có thể chọn ở tab Commits hoặc nhập SHA thủ công bên dưới.
                   </p>
-                ) : matchingTaskCommits.length === 0 ? (
-                  <p className="text-[11px] text-muted-foreground rounded-lg border border-dashed border-border/70 p-2.5">
-                    Chưa có commit đã đồng bộ khớp <strong>{taskKey}</strong>. Hãy đồng bộ lại trước; nếu vẫn thiếu, bạn có thể tìm commit khác hoặc bổ sung SHA/PR bên dưới.
-                  </p>
-                ) : (
-                  <div className="max-h-40 overflow-y-auto space-y-1.5 pr-1 scrollbar-thin">
-                    {matchingTaskCommits.map(renderSelectableCommit)}
-                  </div>
-                )}
-
-                <div className="border-t border-border/50 pt-2.5">
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setIsBrowsingOtherCommits((current) => !current)}
-                    className="h-7 px-1.5 text-[11px] text-muted-foreground hover:text-foreground cursor-pointer"
-                  >
-                    {isBrowsingOtherCommits
-                      ? "Ẩn commit khác"
-                      : `Tìm commit khác đã đồng bộ (${otherSyncedCommits.length})`}
-                  </Button>
-
-                  {isBrowsingOtherCommits && (
-                    <div className="space-y-2 pt-2">
-                      <Input
-                        type="search"
-                        value={otherCommitQuery}
-                        onChange={(event) => {
-                          setOtherCommitQuery(event.target.value);
-                          setVisibleOtherCommitCount(20);
-                        }}
-                        placeholder="Tìm theo SHA, message, branch hoặc repository..."
-                        className="h-8 text-xs rounded-lg"
-                      />
-
-                      {filteredOtherCommits.length === 0 ? (
-                        <p className="text-[11px] text-muted-foreground rounded-lg border border-dashed border-border/70 p-2.5">
-                          Không tìm thấy commit phù hợp.
-                        </p>
-                      ) : (
-                        <div className="max-h-48 overflow-y-auto space-y-1.5 pr-1 scrollbar-thin">
-                          {visibleOtherCommits.map(renderSelectableCommit)}
-                        </div>
-                      )}
-
-                      {visibleOtherCommits.length < filteredOtherCommits.length && (
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={() => setVisibleOtherCommitCount((count) => count + 20)}
-                          className="h-7 text-[11px] rounded-lg cursor-pointer"
-                        >
-                          Xem thêm {Math.min(20, filteredOtherCommits.length - visibleOtherCommits.length)} commit
-                        </Button>
-                      )}
-                    </div>
+                  {onRequestCommitSelection && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={onRequestCommitSelection}
+                      className="h-7 shrink-0 rounded-lg px-2.5 text-[11px]"
+                    >
+                      Chọn commit
+                    </Button>
                   )}
                 </div>
-              </div>
-            )}
+              ) : (
+                <div className="flex items-end justify-between gap-3">
+                  <div className="flex min-w-0 flex-wrap gap-1.5">
+                    {selectedCommitShas.map((sha) => (
+                      <Badge
+                        key={sha}
+                        variant="outline"
+                        title={sha}
+                        className="border-violet-500/25 bg-background font-mono text-[10px] text-violet-700 dark:text-violet-300"
+                      >
+                        {sha.slice(0, 7)}
+                      </Badge>
+                    ))}
+                  </div>
+                  {onRequestCommitSelection && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={onRequestCommitSelection}
+                      className="h-7 shrink-0 px-2 text-[11px] text-violet-700 dark:text-violet-300"
+                    >
+                      Thay đổi lựa chọn
+                    </Button>
+                  )}
+                </div>
+              )}
+            </div>
 
             <div className="space-y-1">
               <div className="flex items-center justify-between">
@@ -731,9 +683,9 @@ export function TaskEvidencePanel({
                   <GitCommitIcon className="w-3 h-3 text-violet-500" />
                   Bổ sung Commit SHA thủ công (phân cách bằng dấu phẩy)
                 </Label>
-                {confirmCommits && (
+                {enteredCommitShas.length > 0 && (
                   <span className="text-[10px] text-violet-600 dark:text-violet-400 font-mono font-semibold">
-                    {confirmCommits.split(",").filter((s) => s.trim().length > 0).length} commit SHA
+                    {enteredCommitShas.length} commit SHA
                   </span>
                 )}
               </div>
@@ -741,8 +693,8 @@ export function TaskEvidencePanel({
                 id="confirm-commit-shas"
                 type="text"
                 placeholder="VD: a1b2c3d, e4f5g6h..."
-                value={confirmCommits}
-                onChange={(e) => updateConfirmedShas(e.target.value.split(","))}
+                value={manualCommitShas}
+                onChange={(e) => setManualCommitShas(e.target.value)}
                 className="h-8 text-xs rounded-lg font-mono"
               />
             </div>
@@ -773,7 +725,7 @@ export function TaskEvidencePanel({
               <Button
                 type="submit"
                 size="sm"
-                disabled={confirmContributionMutation.isPending}
+                disabled={confirmContributionMutation.isPending || !hasConfirmationEvidence}
                 className="h-8 text-xs font-semibold rounded-lg gap-1.5 cursor-pointer bg-violet-600 hover:bg-violet-700 text-white"
               >
                 {confirmContributionMutation.isPending ? (
@@ -821,6 +773,18 @@ export function TaskEvidencePanel({
         itemType="tệp tài liệu"
         itemName={deletingFile?.filename}
         isLoading={deleteFileMutation.isPending}
+      />
+
+      <StepUpAuthDialog
+        isOpen={isStepUpModalOpen}
+        onClose={() => {
+          setIsStepUpModalOpen(false);
+          setPendingContributionPayload(null);
+        }}
+        onSuccess={handleStepUpSuccess}
+        title="Cần xác thực lại để tiếp tục"
+        description="Máy chủ đã từ chối yêu cầu xác nhận đóng góp vì phiên xác thực bảo mật đã hết hạn. Nhập mật khẩu hiện tại của tài khoản SAGA để xác minh, sau đó hệ thống sẽ gửi lại yêu cầu đúng một lần."
+        notice="Yêu cầu xác nhận vừa rồi chưa thành công (403 STEP_UP_REQUIRED). Chưa có bằng chứng nào được ghi nhận lên máy chủ."
       />
     </div>
   );
