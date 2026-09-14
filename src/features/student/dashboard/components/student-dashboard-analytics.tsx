@@ -20,7 +20,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { MemberProgressDialog } from "@/features/progress/components/member-progress-dialog";
+import { MemberProgressSheet } from "@/features/progress/components/member-progress-sheet";
 import {
   ProgressFactNote,
   ProjectProgressSummary,
@@ -38,6 +38,7 @@ import { cn } from "@/lib/utils";
 import {
   buildWeeklyCommitBuckets,
   normalizeProjectProgress,
+  teamRoleLabel,
 } from "@/features/progress/lib/progress-format";
 import { StudentKPICards } from "./student-kpi-cards";
 import { StudentTaskCommitCharts } from "./student-task-commit-charts";
@@ -101,20 +102,20 @@ export function StudentDashboardAnalytics() {
 
   const kpiCommits = isAllTeam || !selectedMember
     ? {
-        total: progress?.commitSummary.total ?? 0,
-        linked: progress?.commitSummary.linked ?? 0,
-      }
+      total: progress?.commitSummary.total ?? 0,
+      linked: progress?.commitSummary.linked ?? 0,
+    }
     : {
-        total: selectedMember.commits.total,
-        linked: selectedMember.commits.linkedToTasks,
-      };
+      total: selectedMember.commits.total,
+      linked: selectedMember.commits.linkedToTasks,
+    };
 
   const evidenceCount = isAllTeam || !selectedMember
     ? progress
       ? progress.evidenceSummary.workSessions +
-        progress.evidenceSummary.files +
-        progress.evidenceSummary.webLinks +
-        progress.evidenceSummary.confirmations
+      progress.evidenceSummary.files +
+      progress.evidenceSummary.webLinks +
+      progress.evidenceSummary.confirmations
       : 0
     : selectedMember.evidenceConfirmations;
 
@@ -301,15 +302,62 @@ export function StudentDashboardAnalytics() {
         </DropdownMenu>
       </div>
 
-      <ProjectProgressSummary progress={progress} />
-      <ProgressFactNote />
+      {isAllTeam || !selectedMember ? (
+        <>
+          <ProjectProgressSummary progress={progress} />
+          <ProgressFactNote />
+        </>
+      ) : (
+        <div className="space-y-4">
+          <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-primary/20 bg-primary/5 p-4">
+            <div className="flex items-center gap-3">
+              <div className="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-sm font-bold text-primary">
+                {selectedMember.fullName.charAt(0)}
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-bold text-foreground">{selectedMember.fullName}</span>
+                  <Badge variant="outline" className="font-mono text-[10px]">
+                    {selectedMember.studentCode}
+                  </Badge>
+                  <Badge className="border-0 bg-primary/15 text-[10px] text-primary">
+                    {teamRoleLabel(selectedMember.teamRole)}
+                  </Badge>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Đang lọc số liệu cá nhân của thành viên này
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setDetailStudentId(selectedMember.studentId)}
+                className={cn(buttonVariants({ size: "sm" }), "cursor-pointer text-xs")}
+              >
+                Mở bảng chi tiết
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setIsAllTeam(true);
+                  setSelectedStudentId(null);
+                }}
+                className={cn(buttonVariants({ size: "sm", variant: "outline" }), "cursor-pointer text-xs")}
+              >
+                Xem toàn nhóm
+              </button>
+            </div>
+          </div>
 
-      <StudentKPICards
-        tasks={kpiTasks}
-        commits={kpiCommits}
-        evidenceCount={evidenceCount}
-        isAllTeamSelected={isAllTeam || !selectedMember}
-      />
+          <StudentKPICards
+            tasks={kpiTasks}
+            commits={kpiCommits}
+            evidenceCount={evidenceCount}
+            isAllTeamSelected={false}
+          />
+        </div>
+      )}
 
       <StudentTaskCommitCharts tasks={kpiTasks} weeklyData={weeklyData} />
 
@@ -326,7 +374,7 @@ export function StudentDashboardAnalytics() {
         onSelectMember={openMemberDetail}
       />
 
-      <MemberProgressDialog
+      <MemberProgressSheet
         projectId={projectId}
         studentId={detailStudentId}
         open={Boolean(detailStudentId)}

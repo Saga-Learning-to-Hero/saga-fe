@@ -202,16 +202,60 @@ export function TraceabilityGraphView() {
         />
       );
     }
+    const projectConfigHref = courseId
+      ? `/student/project-info?courseId=${encodeURIComponent(courseId)}`
+      : "/student/project-info";
+
     if (pipeline.isLoadingMain) {
       return <div className="min-h-64 animate-pulse rounded-2xl bg-muted" />;
+    }
+    if (pipeline.isBothMissing) {
+      return (
+        <PipelineEmptyState
+          title="Chưa cấu hình Jira & GitHub cho dự án"
+          description="Dự án cần liên kết Jira Workspace và GitHub Repository để tải Task và Commit đối soát."
+          href={projectConfigHref}
+          action="Cấu hình dự án"
+        />
+      );
+    }
+    if (pipeline.isJiraMissingOnly) {
+      return (
+        <PipelineEmptyState
+          title="Chưa cấu hình Jira Software"
+          description="Dự án đã có GitHub nhưng chưa liên kết Jira Workspace để tải danh sách Task đối soát trong Pipeline."
+          href={projectConfigHref}
+          action="Cấu hình Jira"
+        />
+      );
+    }
+    if (pipeline.isGithubMissingOnly) {
+      return (
+        <PipelineEmptyState
+          title="Chưa cấu hình GitHub Repository"
+          description="Dự án đã có Jira nhưng chưa liên kết Repository để đối soát mã nguồn Commit."
+          href={projectConfigHref}
+          action="Cấu hình GitHub"
+        />
+      );
+    }
+    if (pipeline.isIntegrationsConnectedButUnsynced) {
+      return (
+        <PipelineEmptyState
+          title="Dự án chưa có dữ liệu đồng bộ"
+          description="Jira và GitHub đã kết nối thành công nhưng chưa có Task hoặc Commit. Vui lòng bấm đồng bộ để nạp dữ liệu."
+          href={projectConfigHref}
+          action="Đến trang đồng bộ"
+        />
+      );
     }
     if (pipeline.integrationsUnsynced) {
       return (
         <PipelineEmptyState
           title="Jira/GitHub chưa có dữ liệu đồng bộ"
           description="Hãy liên kết Jira và GitHub, rồi đồng bộ dự án trước khi xem Pipeline."
-          href="/student/integrations"
-          action="Mở tích hợp"
+          href={projectConfigHref}
+          action="Cấu hình dự án"
         />
       );
     }

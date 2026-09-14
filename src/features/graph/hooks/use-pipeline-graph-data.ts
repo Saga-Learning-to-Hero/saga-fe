@@ -118,10 +118,21 @@ export function usePipelineGraphData({
 
   const jiraStatus = integrationsQuery.data?.jira?.status || null;
   const githubStatus = integrationsQuery.data?.github?.status || null;
+  const isJiraActive = jiraStatus === "ACTIVE";
+  const isGithubActive = githubStatus === "ACTIVE";
+  const isBothActive = isJiraActive && isGithubActive;
+  const isBothMissing = integrationsQuery.isSuccess && !isJiraActive && !isGithubActive;
+  const isJiraMissingOnly = integrationsQuery.isSuccess && !isJiraActive && isGithubActive;
+  const isGithubMissingOnly = integrationsQuery.isSuccess && isJiraActive && !isGithubActive;
+  const isIntegrationsConnectedButUnsynced =
+    integrationsQuery.isSuccess &&
+    isBothActive &&
+    tasks.length === 0 &&
+    (commitsQuery.data || []).length === 0;
+
   const integrationsUnsynced =
     integrationsQuery.isSuccess &&
-    jiraStatus !== "ACTIVE" &&
-    githubStatus !== "ACTIVE" &&
+    !isBothActive &&
     tasks.length === 0;
 
   return {
@@ -157,6 +168,13 @@ export function usePipelineGraphData({
     integrationsUnsynced,
     jiraStatus,
     githubStatus,
+    isJiraActive,
+    isGithubActive,
+    isBothActive,
+    isBothMissing,
+    isJiraMissingOnly,
+    isGithubMissingOnly,
+    isIntegrationsConnectedButUnsynced,
     refetchTasks: tasksQuery.refetch,
     refetchCommits: commitsQuery.refetch,
     refetchTaskCommits: taskCommitsQuery.refetch,

@@ -67,7 +67,7 @@ export function useProjectSyncStatus(
   projectId?: string | null,
   options?: {
     enabled?: boolean;
-    refetchInterval?: import("@tanstack/react-query").UseQueryOptions<ProjectSyncStatusItem[]>["refetchInterval"];
+    refetchInterval?: number | false | ((query: unknown) => number | false | undefined);
   }
 ) {
   return useQuery({
@@ -75,7 +75,20 @@ export function useProjectSyncStatus(
     queryFn: () => ProjectProjectionService.getProjectSyncStatus(projectId!),
     enabled: (options?.enabled ?? true) && Boolean(projectId && projectId.trim()),
     staleTime: 1000 * 15,
-    refetchInterval: options?.refetchInterval,
+    refetchInterval: (query) => {
+      if (options?.refetchInterval !== undefined) {
+        return typeof options.refetchInterval === "function"
+          ? (options.refetchInterval as (q: unknown) => number | false | undefined)(query)
+          : options.refetchInterval;
+      }
+      const jobs = query.state.data as ProjectSyncStatusItem[] | undefined;
+      const isActivelySyncing = jobs?.some((job) =>
+        ["ENQUEUED", "IN_PROGRESS", "RUNNING", "SYNCING"].includes(
+          (job.status || "").toUpperCase()
+        )
+      );
+      return isActivelySyncing ? 3000 : 30000;
+    },
   });
 }
 

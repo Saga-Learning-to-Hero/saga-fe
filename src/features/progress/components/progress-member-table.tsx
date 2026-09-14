@@ -95,17 +95,36 @@ export function ProgressMemberTable({
                           className={cn(
                             "font-mono text-[10px]",
                             isLeader &&
-                              "border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-300"
+                            "border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-300"
                           )}
                         >
                           {teamRoleLabel(member.teamRole)}
                         </Badge>
                       </td>
                       <td className="px-4 py-3 font-mono">
-                        {member.tasks.completed}/{member.tasks.assigned}
-                        <span className="ml-1 text-muted-foreground">
-                          ({member.tasks.incomplete} chưa xong)
-                        </span>
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-1.5">
+                            <span className="font-bold text-foreground">
+                              {member.tasks.completed}/{member.tasks.assigned}
+                            </span>
+                            <span className="text-[10px] text-muted-foreground">
+                              ({member.tasks.incomplete} chưa xong)
+                            </span>
+                          </div>
+                          {member.tasks.assigned > 0 && (
+                            <div className="h-1.5 w-24 overflow-hidden rounded-full bg-muted border border-border/40">
+                              <div
+                                className="h-full rounded-full bg-emerald-500 transition-all duration-300"
+                                style={{
+                                  width: `${Math.min(
+                                    100,
+                                    Math.round((member.tasks.completed / member.tasks.assigned) * 100)
+                                  )}%`,
+                                }}
+                              />
+                            </div>
+                          )}
+                        </div>
                       </td>
                       <td className="px-4 py-3 font-mono">{member.commits.total}</td>
                       <td className="px-4 py-3 font-mono">

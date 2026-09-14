@@ -99,7 +99,6 @@ export function SprintProgressView() {
     id: m.studentCode,
     studentCode: m.studentCode,
     name: m.fullName,
-    // Sprint renders text avatars so every assignee stays recognisable without an external image request.
     avatar: "",
   }));
 
@@ -118,13 +117,11 @@ export function SprintProgressView() {
   } = useProjectRealtime(projectId, {
     enabled: Boolean(
       projectId &&
-        (isJiraConnected || projectIntegrations?.github?.status === "ACTIVE")
+      (isJiraConnected || projectIntegrations?.github?.status === "ACTIVE")
     ),
     onEvent: (event) => {
       if (event.type !== "TASKS_CHANGED" && event.type !== "SPRINTS_CHANGED") return;
 
-      // Server data is authoritative once BE tells us it changed. Remove only the
-      // affected optimistic value when available; a sprint-wide update clears all.
       setLocalTaskOverrides((previous) => {
         if (event.entityId) {
           if (!(event.entityId in previous)) return previous;
@@ -477,6 +474,7 @@ export function SprintProgressView() {
             setActiveSprintForModal(sprint);
             setIsSprintModalOpen(true);
           }}
+          updatingSprintId={patchSprintMutation.isPending ? patchSprintMutation.variables?.sprintId : null}
           isTeamLeader={isTeamLeader}
           currentUserStudentCode={currentUserStudentCode}
         />

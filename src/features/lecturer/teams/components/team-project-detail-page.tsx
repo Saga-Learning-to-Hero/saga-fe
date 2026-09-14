@@ -17,7 +17,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { MemberProgressDialog } from "@/features/progress/components/member-progress-dialog";
+import { MemberProgressSheet } from "@/features/progress/components/member-progress-sheet";
 import {
   ProgressFactNote,
   ProjectProgressSummary,
@@ -387,7 +387,7 @@ export function TeamProjectDetailPage({ courseId, teamId }: TeamProjectDetailPag
         }}
       />
 
-      <MemberProgressDialog
+      <MemberProgressSheet
         projectId={projectId}
         studentId={detailStudentId}
         open={Boolean(detailStudentId)}
