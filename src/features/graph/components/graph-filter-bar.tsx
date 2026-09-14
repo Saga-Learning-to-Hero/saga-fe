@@ -14,20 +14,24 @@ import {
   ChevronUpIcon,
   XIcon,
 } from "lucide-react";
-import { CustomSelect } from "@/components/common/custom-select";
+import { CustomSelect, type CustomSelectOption } from "@/components/common/custom-select";
 import { Button } from "@/components/ui/button";
-import { MOCK_GRAPH_STUDENTS } from "../data/mock-graph-data";
+
+export type GraphFilterType = "ALL" | "ANOMALIES_ONLY" | "TASKS_COMMITS";
 
 interface GraphFilterBarProps {
   selectedStudentId: string;
   onSelectStudent: (studentId: string) => void;
   selectedSprint: string;
   onSelectSprint: (sprint: string) => void;
-  filterType: "ALL" | "ANOMALIES_ONLY" | "TASKS_COMMITS";
-  onSelectFilterType: (type: "ALL" | "ANOMALIES_ONLY" | "TASKS_COMMITS") => void;
+  filterType: GraphFilterType;
+  onSelectFilterType: (type: GraphFilterType) => void;
   onExport: () => void;
   onReset: () => void;
   anomaliesCount: number;
+  memberOptions: CustomSelectOption[];
+  sprintOptions: CustomSelectOption[];
+  anomalyLabel?: string;
   viewMode?: "FLOW" | "GRAPH";
   onSelectViewMode?: (mode: "FLOW" | "GRAPH") => void;
   groupSelector?: React.ReactNode;
@@ -44,6 +48,9 @@ export function GraphFilterBar({
   onExport,
   onReset,
   anomaliesCount,
+  memberOptions,
+  sprintOptions,
+  anomalyLabel = "Chỉ cảnh báo",
   viewMode = "GRAPH",
   onSelectViewMode,
   groupSelector,
@@ -52,77 +59,75 @@ export function GraphFilterBar({
   const [isFilterOpen, setIsFilterOpen] = useState(false);
 
   const studentOptions = [
-    { value: "ALL", label: "Tất cả thành viên nhóm (5 người)" },
-    ...MOCK_GRAPH_STUDENTS.map((s) => ({
-      value: s.id,
-      label: s.name,
-      subLabel: `${s.studentCode} (${s.role})`,
-    })),
+    { value: "ALL", label: `Tất cả thành viên nhóm (${Math.max(memberOptions.length, 0)} người)` },
+    ...memberOptions,
   ];
 
-  const sprintOptions = [
-    { value: "ALL", label: "Tất cả các Sprint" },
-    { value: "sprint-01", label: "Sprint 1 - Foundation & Integration", subLabel: "Đã hoàn thành" },
-    { value: "sprint-02", label: "Sprint 2 - Slicing Pie & Traceability", subLabel: "Đang diễn ra" },
-  ];
+  const resolvedSprintOptions = [{ value: "ALL", label: "Tất cả các Sprint" }, ...sprintOptions];
 
   const activeFiltersCount =
     (selectedStudentId !== "ALL" ? 1 : 0) + (selectedSprint !== "ALL" ? 1 : 0);
 
   return (
     <div className="space-y-2.5">
-      <div className="p-2 sm:p-2.5 rounded-2xl bg-card border border-border/80 shadow-xs flex flex-wrap items-center justify-between gap-2.5">
+      <div className="flex flex-wrap items-center justify-between gap-2.5 rounded-2xl border border-border/80 bg-card p-2 shadow-xs sm:p-2.5">
         {groupSelector && (
-          <div className="flex items-center gap-2 flex-1 min-w-[240px] max-w-md">
+          <div className="flex min-w-[240px] max-w-md flex-1 items-center gap-2">
             {groupSelector}
           </div>
         )}
 
-        <div className="flex flex-wrap items-center gap-2 ml-auto">
+        <div className="ml-auto flex flex-wrap items-center gap-2">
           {onSelectViewMode && (
-            <div className="flex items-center gap-1 p-1 bg-primary/10 rounded-xl border border-primary/20 text-xs">
+            <div className="flex items-center gap-1 rounded-xl border border-primary/20 bg-primary/10 p-1 text-xs">
               <button
                 onClick={() => onSelectViewMode("GRAPH")}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-extrabold transition-all cursor-pointer ${viewMode === "GRAPH"
+                className={`flex cursor-pointer items-center gap-1.5 rounded-lg px-3 py-1.5 font-extrabold transition-all ${
+                  viewMode === "GRAPH"
                     ? "bg-primary text-primary-foreground shadow-xs"
                     : "text-primary hover:bg-primary/10"
-                  }`}
+                }`}
               >
-                <NetworkIcon className="w-3.5 h-3.5" />
+                <NetworkIcon className="size-3.5" />
                 <span>Neo4j Graph</span>
               </button>
               <button
                 onClick={() => onSelectViewMode("FLOW")}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-extrabold transition-all cursor-pointer ${viewMode === "FLOW"
+                className={`flex cursor-pointer items-center gap-1.5 rounded-lg px-3 py-1.5 font-extrabold transition-all ${
+                  viewMode === "FLOW"
                     ? "bg-primary text-primary-foreground shadow-xs"
                     : "text-primary hover:bg-primary/10"
-                  }`}
+                }`}
               >
-                <SparklesIcon className="w-3.5 h-3.5" />
+                <SparklesIcon className="size-3.5" />
                 <span>Pipeline Flow</span>
               </button>
             </div>
           )}
 
-          <div className="flex items-center gap-1 p-1 bg-muted/60 rounded-xl border border-border/60 text-xs">
+          <div className="flex items-center gap-1 rounded-xl border border-border/60 bg-muted/60 p-1 text-xs">
             <button
               onClick={() => onSelectFilterType("ALL")}
-              className={`px-2.5 py-1.5 rounded-lg font-bold transition-colors cursor-pointer ${filterType === "ALL"
+              className={`cursor-pointer rounded-lg px-2.5 py-1.5 font-bold transition-colors ${
+                filterType === "ALL"
                   ? "bg-card text-foreground shadow-2xs"
                   : "text-muted-foreground hover:text-foreground"
-                }`}
+              }`}
             >
               Tất cả
             </button>
             <button
               onClick={() => onSelectFilterType("ANOMALIES_ONLY")}
-              className={`px-2.5 py-1.5 rounded-lg font-bold transition-colors cursor-pointer flex items-center gap-1.5 ${filterType === "ANOMALIES_ONLY"
-                  ? "bg-red-500/20 text-red-700 dark:text-red-300 border border-red-500/40 shadow-2xs"
+              className={`flex cursor-pointer items-center gap-1.5 rounded-lg px-2.5 py-1.5 font-bold transition-colors ${
+                filterType === "ANOMALIES_ONLY"
+                  ? "border border-destructive/40 bg-destructive/15 text-destructive shadow-2xs"
                   : "text-muted-foreground hover:text-foreground"
-                }`}
+              }`}
             >
-              <AlertTriangleIcon className="w-3.5 h-3.5 text-red-500" />
-              <span>Chỉ cảnh báo ({anomaliesCount})</span>
+              <AlertTriangleIcon className="size-3.5 text-destructive" />
+              <span>
+                {anomalyLabel} ({anomaliesCount})
+              </span>
             </button>
           </div>
 
@@ -130,22 +135,23 @@ export function GraphFilterBar({
             variant="outline"
             size="sm"
             onClick={() => setIsFilterOpen(!isFilterOpen)}
-            className={`h-9 text-xs rounded-xl gap-1.5 cursor-pointer font-bold transition-all ${isFilterOpen || activeFiltersCount > 0
+            className={`h-9 cursor-pointer gap-1.5 rounded-xl text-xs font-bold transition-all ${
+              isFilterOpen || activeFiltersCount > 0
                 ? "border-primary/50 bg-primary/10 text-primary"
                 : "text-muted-foreground hover:text-foreground"
-              }`}
+            }`}
           >
-            <FilterIcon className="w-3.5 h-3.5" />
+            <FilterIcon className="size-3.5" />
             <span>Bộ lọc</span>
             {activeFiltersCount > 0 && (
-              <span className="w-4 h-4 rounded-full bg-primary text-primary-foreground text-[10px] flex items-center justify-center font-mono">
+              <span className="flex size-4 items-center justify-center rounded-full bg-primary font-mono text-[10px] text-primary-foreground">
                 {activeFiltersCount}
               </span>
             )}
             {isFilterOpen ? (
-              <ChevronUpIcon className="w-3.5 h-3.5 opacity-60" />
+              <ChevronUpIcon className="size-3.5 opacity-60" />
             ) : (
-              <ChevronDownIcon className="w-3.5 h-3.5 opacity-60" />
+              <ChevronDownIcon className="size-3.5 opacity-60" />
             )}
           </Button>
 
@@ -154,10 +160,10 @@ export function GraphFilterBar({
               variant="ghost"
               size="sm"
               onClick={onReset}
-              className="h-9 text-xs rounded-xl gap-1 cursor-pointer text-muted-foreground hover:text-foreground"
+              className="h-9 cursor-pointer gap-1 rounded-xl text-xs text-muted-foreground hover:text-foreground"
               title="Đặt lại bộ lọc"
             >
-              <RefreshCwIcon className="w-3 h-3" />
+              <RefreshCwIcon className="size-3" />
               <span className="hidden sm:inline">Đặt lại</span>
             </Button>
           )}
@@ -166,21 +172,21 @@ export function GraphFilterBar({
             variant="outline"
             size="sm"
             onClick={onExport}
-            className="h-9 text-xs rounded-xl gap-1.5 cursor-pointer font-semibold"
+            className="h-9 cursor-pointer gap-1.5 rounded-xl text-xs font-semibold"
           >
-            <DownloadIcon className="w-3.5 h-3.5 text-muted-foreground" />
+            <DownloadIcon className="size-3.5 text-muted-foreground" />
             <span className="hidden md:inline">Xuất dữ liệu</span>
           </Button>
         </div>
       </div>
 
       {isFilterOpen && (
-        <div className="p-4 rounded-2xl bg-card border border-primary/20 shadow-xs space-y-3 animate-in fade-in-0 slide-in-from-top-2 duration-200">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
-            <div className="flex flex-wrap items-center gap-3 flex-1">
-              <div className="space-y-1 min-w-[220px] flex-1 max-w-xs">
-                <label className="text-[11px] font-bold text-muted-foreground flex items-center gap-1.5">
-                  <UserIcon className="w-3.5 h-3.5 text-blue-500" />
+        <div className="animate-in fade-in-0 slide-in-from-top-2 space-y-3 rounded-2xl border border-primary/20 bg-card p-4 shadow-xs duration-200">
+          <div className="flex flex-col justify-between gap-3 md:flex-row md:items-center">
+            <div className="flex flex-1 flex-wrap items-center gap-3">
+              <div className="min-w-[220px] max-w-xs flex-1 space-y-1">
+                <label className="flex items-center gap-1.5 text-[11px] font-bold text-muted-foreground">
+                  <UserIcon className="size-3.5 text-primary" />
                   Lọc theo Thành viên:
                 </label>
                 <CustomSelect
@@ -190,15 +196,15 @@ export function GraphFilterBar({
                 />
               </div>
 
-              <div className="space-y-1 min-w-[200px] flex-1 max-w-xs">
-                <label className="text-[11px] font-bold text-muted-foreground flex items-center gap-1.5">
-                  <LayersIcon className="w-3.5 h-3.5 text-purple-500" />
+              <div className="min-w-[200px] max-w-xs flex-1 space-y-1">
+                <label className="flex items-center gap-1.5 text-[11px] font-bold text-muted-foreground">
+                  <LayersIcon className="size-3.5 text-primary" />
                   Lọc theo Sprint:
                 </label>
                 <CustomSelect
                   value={selectedSprint}
                   onChange={onSelectSprint}
-                  options={sprintOptions}
+                  options={resolvedSprintOptions}
                 />
               </div>
             </div>
@@ -208,9 +214,9 @@ export function GraphFilterBar({
                 variant="ghost"
                 size="sm"
                 onClick={onReset}
-                className="text-xs text-muted-foreground hover:text-foreground cursor-pointer self-end md:self-center"
+                className="cursor-pointer self-end text-xs text-muted-foreground hover:text-foreground md:self-center"
               >
-                <RefreshCwIcon className="w-3.5 h-3.5 mr-1" />
+                <RefreshCwIcon className="mr-1 size-3.5" />
                 Xóa bộ lọc
               </Button>
             )}
@@ -221,37 +227,37 @@ export function GraphFilterBar({
       )}
 
       {!isFilterOpen && activeFiltersCount > 0 && (
-        <div className="flex items-center gap-2 flex-wrap text-xs px-1">
+        <div className="flex flex-wrap items-center gap-2 px-1 text-xs">
           <span className="text-[11px] font-bold text-muted-foreground">Đang lọc theo:</span>
           {selectedStudentId !== "ALL" && (
-            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-primary/10 text-primary border border-primary/20 font-medium">
+            <span className="inline-flex items-center gap-1 rounded-lg border border-primary/20 bg-primary/10 px-2.5 py-1 font-medium text-primary">
               <span>
-                Thành viên: {studentOptions.find((o) => o.value === selectedStudentId)?.label.split(" (")[0]}
+                Thành viên: {studentOptions.find((o) => o.value === selectedStudentId)?.label}
               </span>
               <button
                 onClick={() => onSelectStudent("ALL")}
-                className="hover:text-foreground cursor-pointer ml-0.5"
+                className="ml-0.5 cursor-pointer hover:text-foreground"
               >
-                <XIcon className="w-3 h-3" />
+                <XIcon className="size-3" />
               </button>
             </span>
           )}
           {selectedSprint !== "ALL" && (
-            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20 font-medium">
+            <span className="inline-flex items-center gap-1 rounded-lg border border-primary/20 bg-primary/10 px-2.5 py-1 font-medium text-primary">
               <span>
-                Sprint: {sprintOptions.find((o) => o.value === selectedSprint)?.label.split(" - ")[0]}
+                Sprint: {resolvedSprintOptions.find((o) => o.value === selectedSprint)?.label}
               </span>
               <button
                 onClick={() => onSelectSprint("ALL")}
-                className="hover:text-foreground cursor-pointer ml-0.5"
+                className="ml-0.5 cursor-pointer hover:text-foreground"
               >
-                <XIcon className="w-3 h-3" />
+                <XIcon className="size-3" />
               </button>
             </span>
           )}
           <button
             onClick={onReset}
-            className="text-[11px] text-muted-foreground hover:text-foreground underline cursor-pointer ml-1"
+            className="ml-1 cursor-pointer text-[11px] text-muted-foreground underline hover:text-foreground"
           >
             Xóa tất cả
           </button>

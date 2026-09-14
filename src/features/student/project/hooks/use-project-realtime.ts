@@ -68,6 +68,14 @@ export function useProjectRealtime(
         void queryClient.invalidateQueries({ queryKey: ["projects", pid, "sync-status"] });
         void queryClient.invalidateQueries({ queryKey: PROJECT_PROJECTION_QUERY_KEYS.syncStatus(pid) });
       };
+      const invalidateProgress = () => {
+        void queryClient.invalidateQueries({ queryKey: PROJECT_PROJECTION_QUERY_KEYS.progress(pid) });
+      };
+      const invalidateMemberProgress = () => {
+        void queryClient.invalidateQueries({
+          queryKey: [...PROJECT_PROJECTION_QUERY_KEYS.all, "member-progress", pid],
+        });
+      };
 
       switch (type) {
         case "READY":
@@ -78,25 +86,35 @@ export function useProjectRealtime(
           invalidateCommits();
           invalidateTaskCommitLinks();
           invalidateSyncStatus();
-          void queryClient.invalidateQueries({ queryKey: PROJECT_PROJECTION_QUERY_KEYS.progress(pid) });
+          invalidateProgress();
+          invalidateMemberProgress();
           break;
         case "TASKS_CHANGED":
           invalidateTasks();
+          invalidateProgress();
+          invalidateMemberProgress();
           break;
         case "SPRINTS_CHANGED":
           invalidateSprints();
+          invalidateProgress();
           break;
         case "COMMITS_CHANGED":
           invalidateCommits();
+          invalidateProgress();
+          invalidateMemberProgress();
           break;
         case "TASK_LINKS_CHANGED":
           invalidateTasks();
           invalidateTaskDetails();
           invalidateTaskCommitLinks();
           invalidateCommits();
+          invalidateProgress();
+          invalidateMemberProgress();
           break;
         case "TASK_EVIDENCE_CHANGED":
           invalidateTaskDetails();
+          invalidateProgress();
+          invalidateMemberProgress();
           if (entityId) {
             void queryClient.invalidateQueries({ queryKey: TASK_EVIDENCE_QUERY_KEYS.webLinks(entityId) });
             void queryClient.invalidateQueries({ queryKey: TASK_EVIDENCE_QUERY_KEYS.files(entityId) });
@@ -106,6 +124,7 @@ export function useProjectRealtime(
           break;
         case "SYNC_STATUS_CHANGED":
           invalidateSyncStatus();
+          invalidateProgress();
           break;
       }
     },

@@ -193,7 +193,6 @@ Chia đều toàn bộ khối lượng công việc thành **3 trục nghiệp v
 Đối chiếu `docs/openapi.json` ngày 08/09/2026: không dựng mock hoặc tạo product flow cho các mục dưới đây khi chưa có yêu cầu nghiệp vụ và contract FE hoàn chỉnh.
 
 - Dashboard webhook / task board Kanban sync tự động thời gian thực (hiện dùng sync thủ công qua `/sync`).
-- SSE Realtime Event Stream.
 - Graph snapshot / Neo4j delta sync realtime API.
 - Master Gradebook / Continuous scoring API chấm điểm môn học FLM theo từng đầu điểm riêng.
 - Quên mật khẩu / Xác minh email qua token.

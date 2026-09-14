@@ -15,8 +15,18 @@ import {
 } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { buttonVariants } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { MemberProgressDialog } from "@/features/progress/components/member-progress-dialog";
+import {
+  ProgressFactNote,
+  ProjectProgressSummary,
+} from "@/features/progress/components/project-progress-summary";
+import { ProgressMemberTable } from "@/features/progress/components/progress-member-table";
+import { useProjectRealtime } from "@/features/student/project/hooks/use-project-realtime";
+import { useProjectProgress } from "@/features/student/project/hooks/useProjectSync";
+import { normalizeProjectProgress } from "@/features/progress/lib/progress-format";
+import { getApiErrorMessage } from "@/lib/api-error";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -57,12 +67,17 @@ export function TeamProjectDetailPage({ courseId, teamId }: TeamProjectDetailPag
   const moveMember = useMoveTeamMember(courseId);
   const [leaderCandidate, setLeaderCandidate] = useState<LecturerTeamMember | null>(null);
   const [movingMember, setMovingMember] = useState<LecturerTeamMember | null>(null);
+  const [detailStudentId, setDetailStudentId] = useState<string | null>(null);
 
   const teams = teamsQuery.data?.teams ?? [];
   const team = teams.find((item) => item.teamId === teamId);
   const members = sortTeamMembers(team?.members ?? []);
   const hasProject = Boolean(team?.projectId);
+  const projectId = team?.projectId ?? null;
   const hasOtherTeams = teams.some((item) => item.teamId !== team?.teamId);
+  const progressQuery = useProjectProgress(projectId, { enabled: Boolean(projectId) });
+  useProjectRealtime(projectId, { enabled: Boolean(projectId) });
+  const progress = normalizeProjectProgress(progressQuery.data);
 
   const backLink = {
     href: lecturerCourseTeamsPath(courseId, "teams"),
@@ -107,7 +122,7 @@ export function TeamProjectDetailPage({ courseId, teamId }: TeamProjectDetailPag
       title={team?.teamName ? `Chi tiết nhóm: ${team.teamName}` : "Dự án nhóm"}
       description={
         hasProject
-          ? "Nhóm đã khởi tạo dự án. Giảng viên có thể theo dõi danh sách thành viên, mở đồ thị đối soát và chấm điểm đóng góp."
+          ? "Nhóm đã khởi tạo dự án. Giảng viên theo dõi tiến độ task, commit, minh chứng và mở bảng điểm đóng góp riêng."
           : "Nhóm đã được phân công. Trưởng nhóm cần đăng nhập bằng tài khoản sinh viên để khởi tạo dự án."
       }
       badges={
@@ -256,44 +271,63 @@ export function TeamProjectDetailPage({ courseId, teamId }: TeamProjectDetailPag
         </div>
       </Card>
 
+      {hasProject ? (
+        <div className="space-y-4">
+          <div className="flex items-center gap-2 text-primary">
+            <FolderKanbanIcon className="size-5" />
+            <h2 className="text-sm font-extrabold text-foreground">Tiến độ dự án nhóm</h2>
+          </div>
+          {progressQuery.isLoading && !progressQuery.data ? (
+            <div className="h-40 animate-pulse rounded-2xl bg-muted/60" />
+          ) : progressQuery.isError ? (
+            <Card className="rounded-2xl border border-dashed border-destructive/30 p-6 text-center">
+              <p className="text-sm font-semibold">Không tải được tiến độ dự án</p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                {getApiErrorMessage(progressQuery.error, "Vui lòng thử lại.")}
+              </p>
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                className="mt-3 h-8 cursor-pointer text-xs"
+                onClick={() => void progressQuery.refetch()}
+              >
+                Thử lại
+              </Button>
+            </Card>
+          ) : progress ? (
+            <>
+              <ProjectProgressSummary progress={progress} />
+              <ProgressFactNote />
+              <ProgressMemberTable
+                members={progress.memberProgress}
+                selectedStudentId={detailStudentId}
+                onSelectMember={setDetailStudentId}
+              />
+            </>
+          ) : null}
+        </div>
+      ) : (
+        <Card className="rounded-2xl border border-dashed border-amber-500/40 bg-amber-500/5 p-6 text-center">
+          <p className="text-sm font-semibold">Nhóm chưa khởi tạo dự án</p>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Bảng tiến độ chỉ mở khi trưởng nhóm đã tạo dự án. Không gọi API progress khi chưa có projectId.
+          </p>
+        </Card>
+      )}
+
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
         <Card className="rounded-2xl border border-border/80 bg-card p-5 shadow-xs">
-          <CardContent className="space-y-4 p-0">
+          <CardContent className="space-y-3 p-0">
             <div className="flex items-center gap-2 text-primary">
               <FolderKanbanIcon className="size-5" />
-              <h2 className="text-sm font-extrabold text-foreground">
-                Thông tin & Phương pháp đồ án
-              </h2>
+              <h2 className="text-sm font-extrabold text-foreground">Trạng thái khởi tạo</h2>
             </div>
-            <div className="space-y-3 text-xs">
-              <div className="flex items-center justify-between border-b border-border/60 pb-2.5">
-                <span className="text-muted-foreground">Chủ đề đề tài:</span>
-                <span className="font-bold text-foreground">
-                  {team?.teamName ? `Đồ án ${team.teamName}` : "Kỹ thuật phần mềm Capstone"}
-                </span>
-              </div>
-              <div className="flex items-center justify-between border-b border-border/60 pb-2.5">
-                <span className="text-muted-foreground">Mô hình phát triển:</span>
-                <span className="font-bold text-foreground">Agile / Scrum Framework</span>
-              </div>
-              <div className="flex items-center justify-between border-b border-border/60 pb-2.5">
-                <span className="text-muted-foreground">Chu kỳ Sprint:</span>
-                <span className="font-mono font-bold text-foreground">2 tuần / Sprint</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-muted-foreground">Trạng thái khởi tạo:</span>
-                <Badge
-                  variant="outline"
-                  className={
-                    hasProject
-                      ? "border-emerald-500/30 bg-emerald-500/10 font-mono text-[10px] text-emerald-600 dark:text-emerald-400"
-                      : "border-amber-500/30 bg-amber-500/10 font-mono text-[10px] text-amber-600 dark:text-amber-400"
-                  }
-                >
-                  {hasProject ? "Đã sẵn sàng" : "Chờ trưởng nhóm"}
-                </Badge>
-              </div>
-            </div>
+            <p className="text-xs text-muted-foreground">
+              {hasProject
+                ? "Dự án đã sẵn sàng. Số liệu task, sprint và commit lấy từ API tiến độ, không tự suy từ mô hình Scrum."
+                : "Chờ trưởng nhóm khởi tạo dự án trước khi theo dõi tiến độ."}
+            </p>
           </CardContent>
         </Card>
 
@@ -306,7 +340,7 @@ export function TeamProjectDetailPage({ courseId, teamId }: TeamProjectDetailPag
               </h2>
             </div>
             <p className="text-xs leading-relaxed text-muted-foreground">
-              Truy cập trực tiếp đồ thị minh chứng Traceability, tương tác SNA và bảng điểm đóng góp Slicing Pie của nhóm này.
+              Đồ thị đối soát và bảng điểm đóng góp là feature riêng, khác với tỉ lệ hoàn thành task ở bảng tiến độ phía trên.
             </p>
           </CardContent>
 
@@ -350,6 +384,15 @@ export function TeamProjectDetailPage({ courseId, teamId }: TeamProjectDetailPag
             { teamId: team.teamId, teamMemberId: leaderCandidate.teamMemberId },
             { onSuccess: () => setLeaderCandidate(null) }
           );
+        }}
+      />
+
+      <MemberProgressDialog
+        projectId={projectId}
+        studentId={detailStudentId}
+        open={Boolean(detailStudentId)}
+        onOpenChange={(open) => {
+          if (!open) setDetailStudentId(null);
         }}
       />
 

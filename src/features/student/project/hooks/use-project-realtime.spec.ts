@@ -161,6 +161,12 @@ describe("useProjectRealtime Hook", () => {
       expect(invalidateSpy).toHaveBeenCalledWith({
         queryKey: PROJECT_PROJECTION_QUERY_KEYS.commits("project-456"),
       });
+      expect(invalidateSpy).toHaveBeenCalledWith({
+        queryKey: PROJECT_PROJECTION_QUERY_KEYS.progress("project-456"),
+      });
+      expect(invalidateSpy).toHaveBeenCalledWith({
+        queryKey: [...PROJECT_PROJECTION_QUERY_KEYS.all, "member-progress", "project-456"],
+      });
     }
   );
 
@@ -190,6 +196,12 @@ describe("useProjectRealtime Hook", () => {
       expect(invalidateSpy).toHaveBeenCalledWith({
         queryKey: JIRA_SPRINT_QUERY_KEYS.tasks("project-789"),
       });
+      expect(invalidateSpy).toHaveBeenCalledWith({
+        queryKey: PROJECT_PROJECTION_QUERY_KEYS.progress("project-789"),
+      });
+      expect(invalidateSpy).toHaveBeenCalledWith({
+        queryKey: [...PROJECT_PROJECTION_QUERY_KEYS.all, "member-progress", "project-789"],
+      });
       act(() => {
         es.emitEvent("SPRINTS_CHANGED", {
           type: "SPRINTS_CHANGED",
@@ -198,6 +210,9 @@ describe("useProjectRealtime Hook", () => {
       });
 
       expect(result.current.lastEvent?.type).toBe("SPRINTS_CHANGED");
+      expect(invalidateSpy).toHaveBeenCalledWith({
+        queryKey: PROJECT_PROJECTION_QUERY_KEYS.progress("project-789"),
+      });
     }
   );
 
@@ -225,6 +240,12 @@ describe("useProjectRealtime Hook", () => {
       expect(invalidateSpy).toHaveBeenCalledWith({
         queryKey: ["projects", "project-999", "commits"],
       });
+      expect(invalidateSpy).toHaveBeenCalledWith({
+        queryKey: PROJECT_PROJECTION_QUERY_KEYS.progress("project-999"),
+      });
+      expect(invalidateSpy).toHaveBeenCalledWith({
+        queryKey: [...PROJECT_PROJECTION_QUERY_KEYS.all, "member-progress", "project-999"],
+      });
 
       act(() => {
         es.emitEvent("SYNC_STATUS_CHANGED", {
@@ -235,6 +256,9 @@ describe("useProjectRealtime Hook", () => {
 
       expect(invalidateSpy).toHaveBeenCalledWith({
         queryKey: ["projects", "project-999", "sync-status"],
+      });
+      expect(invalidateSpy).toHaveBeenCalledWith({
+        queryKey: PROJECT_PROJECTION_QUERY_KEYS.progress("project-999"),
       });
     }
   );
@@ -277,6 +301,39 @@ describe("useProjectRealtime Hook", () => {
 
       expect(invalidateSpy).toHaveBeenCalledWith({
         queryKey: TASK_EVIDENCE_QUERY_KEYS.webLinks("task-111"),
+      });
+      expect(invalidateSpy).toHaveBeenCalledWith({
+        queryKey: PROJECT_PROJECTION_QUERY_KEYS.progress("project-111"),
+      });
+      expect(invalidateSpy).toHaveBeenCalledWith({
+        queryKey: [...PROJECT_PROJECTION_QUERY_KEYS.all, "member-progress", "project-111"],
+      });
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID11",
+      type: "B",
+      executedDate: "14/09/2026",
+      description: "Moi loai su kien SSE invalidate progress / member-progress dung bang api.md",
+    },
+    () => {
+      const invalidateSpy = vi.spyOn(queryClient, "invalidateQueries");
+      const wrapper = createWrapper();
+      renderHook(() => useProjectRealtime("project-map"), { wrapper });
+      const es = MockEventSource.instances[0];
+
+      act(() => {
+        es.emitOpen();
+        es.emitEvent("TASK_LINKS_CHANGED", { type: "TASK_LINKS_CHANGED", projectId: "project-map" });
+      });
+
+      expect(invalidateSpy).toHaveBeenCalledWith({
+        queryKey: PROJECT_PROJECTION_QUERY_KEYS.progress("project-map"),
+      });
+      expect(invalidateSpy).toHaveBeenCalledWith({
+        queryKey: [...PROJECT_PROJECTION_QUERY_KEYS.all, "member-progress", "project-map"],
       });
     }
   );

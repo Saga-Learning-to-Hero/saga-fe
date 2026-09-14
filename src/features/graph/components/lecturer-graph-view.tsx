@@ -20,8 +20,19 @@ import { GraphStatsSummary } from "./graph-stats-summary";
 import { GraphNodeDetailsModal } from "./graph-node-details-modal";
 import { TraceabilityMatrixTable } from "./traceability-matrix-table";
 import { SNANetworkView } from "./sna-network-view";
-import { getMockTraceabilityGraphData } from "../data/mock-graph-data";
+import { getMockTraceabilityGraphData, MOCK_GRAPH_STUDENTS } from "../data/mock-graph-data";
 import type { GraphNodeData } from "../types/graph";
+
+const LECTURER_MEMBER_OPTIONS = MOCK_GRAPH_STUDENTS.map((student) => ({
+  value: student.id,
+  label: student.name,
+  subLabel: `${student.studentCode} (${student.role})`,
+}));
+
+const LECTURER_SPRINT_OPTIONS = [
+  { value: "sprint-01", label: "Sprint 1 - Foundation & Integration", subLabel: "Đã hoàn thành" },
+  { value: "sprint-02", label: "Sprint 2 - Slicing Pie & Traceability", subLabel: "Đang diễn ra" },
+];
 
 const MOCK_LECTURER_GROUPS = [
   {
@@ -298,6 +309,8 @@ export function LecturerGraphView({ courseId, initialTeamId }: LecturerGraphView
               setFilterType("ALL");
             }}
             anomaliesCount={currentGroup.msrCount}
+            memberOptions={LECTURER_MEMBER_OPTIONS}
+            sprintOptions={LECTURER_SPRINT_OPTIONS}
             viewMode={viewMode}
             onSelectViewMode={setViewMode}
           />

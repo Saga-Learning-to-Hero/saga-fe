@@ -1,341 +1,157 @@
 "use client";
 
 import { useState } from "react";
-import {
-  BarChart3Icon,
-  PieChartIcon,
-  GitCommitIcon,
-  CheckSquareIcon,
-  LayersIcon,
-} from "lucide-react";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import type { MemberAnalytics, WeeklyActivity } from "../types/student-analytics";
+import { BarChart3Icon, GitCommitIcon, PieChartIcon } from "lucide-react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import type { ProgressTaskBreakdown, WeeklyCommitBucket } from "../types/student-analytics";
+import { formatCompletionPercent, NO_TASK_DATA_LABEL } from "@/features/progress/lib/progress-format";
 
 interface StudentTaskCommitChartsProps {
-  analytics: MemberAnalytics;
-  weeklyData: WeeklyActivity[];
+  tasks: ProgressTaskBreakdown;
+  weeklyData: WeeklyCommitBucket[];
 }
 
 export function StudentTaskCommitCharts({
-  analytics,
+  tasks,
   weeklyData,
 }: StudentTaskCommitChartsProps) {
-  const [hoveredBar, setHoveredBar] = useState<{
-    week: string;
-    type: "COMMITS" | "TASKS";
-    activity: WeeklyActivity;
-  } | null>(null);
-  const [filterType, setFilterType] = useState<"ALL" | "COMMITS" | "TASKS">("ALL");
-
-  const maxVal = Math.max(...weeklyData.map((d) => d.commits), 40);
-  const tasks = analytics.tasksStatus;
-  const totalTasks = tasks.done + tasks.inProgress + tasks.toDo + tasks.blocked || 1;
+  const [hoveredWeek, setHoveredWeek] = useState<string | null>(null);
+  const maxVal = Math.max(...weeklyData.map((item) => item.commits), 1);
+  const totalTasks = tasks.total || 1;
+  const completionLabel = formatCompletionPercent(tasks.completionPercent);
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-      <Card className="rounded-2xl border border-border/80 shadow-xs bg-card lg:col-span-2 flex flex-col justify-between overflow-hidden">
-        <CardHeader className="p-4 sm:p-5 pb-3 border-b border-border/60">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div className="flex items-center gap-2.5">
-              <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0">
-                <BarChart3Icon className="w-5 h-5" />
-              </div>
-              <div>
-                <CardTitle className="text-sm sm:text-base font-bold text-foreground">
-                  Cường độ Commits & Hoạt động Task theo Tuần
-                </CardTitle>
-                <CardDescription className="text-xs text-muted-foreground">
-                  Thống kê mã nguồn đẩy lên GitHub và số lượng Task Jira hoàn thành
-                </CardDescription>
-              </div>
-            </div>
-
-            <div className="flex flex-wrap items-center gap-3">
-              <div className="flex items-center gap-3 bg-muted/40 px-3 py-1.5 rounded-xl border border-border/60 text-xs">
-                <div className="flex items-center gap-1.5">
-                  <span className="w-2.5 h-2.5 rounded-xs bg-primary shadow-xs" />
-                  <span className="text-foreground font-semibold flex items-center gap-1 text-[11px]">
-                    <GitCommitIcon className="w-3.5 h-3.5 text-primary" />
-                    GitHub Commits
-                  </span>
-                </div>
-                <div className="h-3 w-px bg-border/80" />
-                <div className="flex items-center gap-1.5">
-                  <span className="w-2.5 h-2.5 rounded-xs bg-cyan-500 shadow-xs" />
-                  <span className="text-foreground font-semibold flex items-center gap-1 text-[11px]">
-                    <CheckSquareIcon className="w-3.5 h-3.5 text-cyan-500" />
-                    Task Jira Hoàn thành
-                  </span>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-1 bg-muted/60 p-1 rounded-xl border border-border/60">
-                <button
-                  onClick={() => setFilterType("ALL")}
-                  className={`px-2.5 py-1 text-[11px] font-medium rounded-lg transition-colors cursor-pointer ${filterType === "ALL" ? "bg-card text-foreground font-semibold shadow-xs" : "text-muted-foreground"
-                    }`}
-                >
-                  Tất cả
-                </button>
-                <button
-                  onClick={() => setFilterType("COMMITS")}
-                  className={`px-2.5 py-1 text-[11px] font-medium rounded-lg transition-colors cursor-pointer ${filterType === "COMMITS" ? "bg-card text-primary font-semibold shadow-xs" : "text-muted-foreground"
-                    }`}
-                >
-                  Chỉ Commits
-                </button>
-                <button
-                  onClick={() => setFilterType("TASKS")}
-                  className={`px-2.5 py-1 text-[11px] font-medium rounded-lg transition-colors cursor-pointer ${filterType === "TASKS" ? "bg-card text-cyan-500 font-semibold shadow-xs" : "text-muted-foreground"
-                    }`}
-                >
-                  Chỉ Tasks
-                </button>
-              </div>
-            </div>
-          </div>
-        </CardHeader>
-
-        <CardContent className="p-5 space-y-4">
-          <div className="relative h-60 w-full pt-6 flex items-end">
-            <div className="absolute inset-0 flex flex-col justify-between pointer-events-none text-[10px] font-mono text-muted-foreground/50">
-              <div className="flex items-center gap-2 w-full">
-                <span className="w-6 text-right">{maxVal}</span>
-                <div className="border-b border-dashed border-border/70 flex-1" />
-              </div>
-              <div className="flex items-center gap-2 w-full">
-                <span className="w-6 text-right">{Math.round(maxVal * 0.66)}</span>
-                <div className="border-b border-dashed border-border/70 flex-1" />
-              </div>
-              <div className="flex items-center gap-2 w-full">
-                <span className="w-6 text-right">{Math.round(maxVal * 0.33)}</span>
-                <div className="border-b border-dashed border-border/70 flex-1" />
-              </div>
-              <div className="flex items-center gap-2 w-full">
-                <span className="w-6 text-right">0</span>
-                <div className="border-b border-border flex-1" />
-              </div>
-            </div>
-
-            <div className="ml-8 w-full h-full flex items-end justify-around gap-2 sm:gap-6 relative z-10">
-              {weeklyData.map((item, idx) => {
-                const commitHeight = Math.round((item.commits / maxVal) * 190);
-                const taskHeight = Math.round(((item.tasksDone * 6) / maxVal) * 190);
-                const isCommitHovered = hoveredBar?.week === item.week && hoveredBar?.type === "COMMITS";
-                const isTaskHovered = hoveredBar?.week === item.week && hoveredBar?.type === "TASKS";
-                const isWeekActive = hoveredBar?.week === item.week;
-
-                return (
-                  <div
-                    key={idx}
-                    onMouseLeave={() => setHoveredBar(null)}
-                    className="flex-1 flex flex-col items-center justify-end h-full group relative"
-                  >
-                    {isWeekActive && (
-                      <div className="absolute inset-x-0 bottom-0 top-0 bg-primary/5 rounded-xl pointer-events-none -z-10 animate-in fade-in-0" />
-                    )}
-
-                    {isCommitHovered && (
-                      <div className="absolute -top-24 left-1/2 -translate-x-1/2 bg-popover/95 backdrop-blur-md text-popover-foreground border border-primary/40 shadow-xl rounded-xl p-3 text-xs whitespace-nowrap z-40 pointer-events-none space-y-1.5 animate-in fade-in-0 zoom-in-95 ring-1 ring-primary/20">
-                        <div className="flex items-center justify-between gap-3 border-b border-border/60 pb-1">
-                          <span className="font-bold text-foreground">{item.week}</span>
-                          <Badge className="bg-primary/15 text-primary border-primary/30 text-[10px] font-bold py-0 px-1.5">
-                            GitHub Commits
-                          </Badge>
-                        </div>
-                        <div className="flex items-center gap-1.5 text-primary font-bold text-sm">
-                          <GitCommitIcon className="w-4 h-4" />
-                          <span>{item.commits} Commits</span>
-                        </div>
-                        <div className="flex items-center justify-between gap-3 text-[10px] text-muted-foreground pt-0.5">
-                          <span>Mã nguồn: <strong className="text-emerald-500 font-mono">+{item.linesAdded} lines</strong></span>
-                          <span>Traceability: <strong className="text-foreground font-mono">{item.traceabilityRate}%</strong></span>
-                        </div>
-                      </div>
-                    )}
-
-                    {isTaskHovered && (
-                      <div className="absolute -top-24 left-1/2 -translate-x-1/2 bg-popover/95 backdrop-blur-md text-popover-foreground border border-cyan-500/40 shadow-xl rounded-xl p-3 text-xs whitespace-nowrap z-40 pointer-events-none space-y-1.5 animate-in fade-in-0 zoom-in-95 ring-1 ring-cyan-500/20">
-                        <div className="flex items-center justify-between gap-3 border-b border-border/60 pb-1">
-                          <span className="font-bold text-foreground">{item.week}</span>
-                          <Badge className="bg-cyan-500/15 text-cyan-600 dark:text-cyan-400 border-cyan-500/30 text-[10px] font-bold py-0 px-1.5">
-                            Task Jira
-                          </Badge>
-                        </div>
-                        <div className="flex items-center gap-1.5 text-cyan-600 dark:text-cyan-400 font-bold text-sm">
-                          <CheckSquareIcon className="w-4 h-4" />
-                          <span>{item.tasksDone} Tasks Hoàn thành</span>
-                        </div>
-                        <div className="flex items-center justify-between gap-3 text-[10px] text-muted-foreground pt-0.5">
-                          <span>Trạng thái: <strong className="text-emerald-500 font-medium">Đã nghiệm thu (Done)</strong></span>
-                          <span>Ước tính: <strong className="text-foreground font-mono">{item.tasksDone * 3} SP</strong></span>
-                        </div>
-                      </div>
-                    )}
-
-                    <div className="w-full flex items-end justify-center gap-1.5 pb-0.5">
-                      {(filterType === "ALL" || filterType === "COMMITS") && (
-                        <div
-                          onMouseEnter={() => setHoveredBar({ week: item.week, type: "COMMITS", activity: item })}
-                          style={{ height: `${commitHeight}px` }}
-                          className={`w-4 sm:w-7 rounded-t-md transition-all duration-200 cursor-pointer ${isCommitHovered
-                              ? "bg-primary shadow-lg shadow-primary/40 ring-2 ring-primary ring-offset-2 ring-offset-background scale-y-105 origin-bottom"
-                              : isTaskHovered
-                                ? "bg-primary/40"
-                                : "bg-primary/85 hover:bg-primary"
-                            }`}
-                        />
-                      )}
-                      {(filterType === "ALL" || filterType === "TASKS") && (
-                        <div
-                          onMouseEnter={() => setHoveredBar({ week: item.week, type: "TASKS", activity: item })}
-                          style={{ height: `${taskHeight}px` }}
-                          className={`w-4 sm:w-7 rounded-t-md transition-all duration-200 cursor-pointer ${isTaskHovered
-                              ? "bg-cyan-500 shadow-lg shadow-cyan-500/40 ring-2 ring-cyan-500 ring-offset-2 ring-offset-background scale-y-105 origin-bottom"
-                              : isCommitHovered
-                                ? "bg-cyan-500/40"
-                                : "bg-cyan-500/85 hover:bg-cyan-500"
-                            }`}
-                        />
-                      )}
-                    </div>
-
-                    <span
-                      className={`text-[11px] font-mono mt-2 font-semibold transition-colors ${isWeekActive ? "text-primary" : "text-muted-foreground"
-                        }`}
-                    >
-                      {item.week}
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          <div className="relative flex flex-col sm:flex-row items-center justify-center pt-2 border-t border-border/60 gap-2 text-xs text-muted-foreground">
-            <div className="flex items-center gap-4 text-[11px]">
-              <span className="inline-flex items-center gap-1.5 text-foreground font-medium">
-                <span className="w-2.5 h-2.5 rounded-xs bg-primary shadow-xs" /> GitHub Commits
-              </span>
-              <span className="inline-flex items-center gap-1.5 text-foreground font-medium">
-                <span className="w-2.5 h-2.5 rounded-xs bg-cyan-500 shadow-xs" /> Tasks Jira
-              </span>
-            </div>
-
-            <Badge variant="outline" className="font-mono text-[10px] sm:absolute sm:right-0">
-              Tỷ lệ Traceability TB: 90%
-            </Badge>
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card className="rounded-2xl border border-border/80 shadow-xs bg-card flex flex-col justify-between overflow-hidden">
-        <CardHeader className="p-4 sm:p-5 pb-3 border-b border-border/60">
+    <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
+      <Card className="flex flex-col overflow-hidden rounded-2xl border border-border/80 bg-card shadow-xs lg:col-span-2">
+        <CardHeader className="border-b border-border/60 p-4 pb-3 sm:p-5">
           <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
-              <PieChartIcon className="w-5 h-5" />
+            <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+              <BarChart3Icon className="size-5" />
             </div>
             <div>
-              <CardTitle className="text-sm sm:text-base font-bold text-foreground">
-                Kết quả & Trạng thái Task
+              <CardTitle className="text-sm font-bold text-foreground sm:text-base">
+                Commit theo tuần
               </CardTitle>
               <CardDescription className="text-xs text-muted-foreground">
-                Phân bố trạng thái Jira Tasks
+                Gom từ nhật ký commit thật theo tuần ISO. Không có số task hoàn thành theo tuần vì máy chủ chưa trả mốc đó.
               </CardDescription>
             </div>
           </div>
         </CardHeader>
 
-        <CardContent className="p-5 space-y-5">
-          <div className="flex items-center justify-center gap-5">
-            <div className="relative w-28 h-28 flex items-center justify-center shrink-0">
-              <svg className="w-full h-full -rotate-90" viewBox="0 0 36 36">
-                <circle cx="18" cy="18" r="14" fill="transparent" stroke="currentColor" strokeWidth="3.5" className="text-muted/40" />
-                <circle
-                  cx="18" cy="18" r="14" fill="transparent" stroke="currentColor" strokeWidth="4"
-                  strokeDasharray={`${Math.round((tasks.done / totalTasks) * 88)} 100`}
-                  strokeDashoffset="0"
-                  className="text-emerald-500 transition-all duration-500"
-                />
-                <circle
-                  cx="18" cy="18" r="14" fill="transparent" stroke="currentColor" strokeWidth="4"
-                  strokeDasharray={`${Math.round((tasks.inProgress / totalTasks) * 88)} 100`}
-                  strokeDashoffset={`-${Math.round((tasks.done / totalTasks) * 88)}`}
-                  className="text-blue-500 transition-all duration-500"
-                />
-                <circle
-                  cx="18" cy="18" r="14" fill="transparent" stroke="currentColor" strokeWidth="4"
-                  strokeDasharray={`${Math.round((tasks.toDo / totalTasks) * 88)} 100`}
-                  strokeDashoffset={`-${Math.round(((tasks.done + tasks.inProgress) / totalTasks) * 88)}`}
-                  className="text-amber-500 transition-all duration-500"
-                />
-              </svg>
+        <CardContent className="space-y-4 p-5">
+          {weeklyData.length === 0 ? (
+            <p className="rounded-xl border border-dashed border-border/80 p-8 text-center text-xs text-muted-foreground">
+              Chưa có commit để vẽ biểu đồ tuần.
+            </p>
+          ) : (
+            <div className="relative flex h-60 w-full items-end pt-6">
+              <div className="pointer-events-none absolute inset-0 flex flex-col justify-between font-mono text-[10px] text-muted-foreground/50">
+                {[maxVal, Math.round(maxVal * 0.66), Math.round(maxVal * 0.33), 0].map((tick) => (
+                  <div key={tick} className="flex w-full items-center gap-2">
+                    <span className="w-6 text-right">{tick}</span>
+                    <div className="flex-1 border-b border-dashed border-border/70" />
+                  </div>
+                ))}
+              </div>
 
-              <div className="absolute flex flex-col items-center justify-center text-center">
-                <span className="text-xl font-extrabold text-foreground font-mono leading-none">
-                  {tasks.done}
-                </span>
-                <span className="text-[10px] text-muted-foreground mt-0.5">Tasks Done</span>
+              <div className="relative z-10 ml-8 flex h-full w-full items-end justify-around gap-2 sm:gap-4">
+                {weeklyData.map((item) => {
+                  const height = Math.max(4, Math.round((item.commits / maxVal) * 190));
+                  const isHovered = hoveredWeek === item.weekKey;
+                  return (
+                    <div
+                      key={item.weekKey}
+                      className="group relative flex h-full flex-1 flex-col items-center justify-end"
+                      onMouseEnter={() => setHoveredWeek(item.weekKey)}
+                      onMouseLeave={() => setHoveredWeek(null)}
+                    >
+                      {isHovered ? (
+                        <div className="absolute -top-16 left-1/2 z-40 -translate-x-1/2 whitespace-nowrap rounded-xl border border-primary/40 bg-popover/95 p-2.5 text-xs shadow-xl">
+                          <p className="font-bold">{item.weekLabel}</p>
+                          <p className="mt-1 flex items-center gap-1 font-mono text-primary">
+                            <GitCommitIcon className="size-3.5" />
+                            {item.commits} commit
+                          </p>
+                        </div>
+                      ) : null}
+                      <div
+                        style={{ height: `${height}px` }}
+                        className={`w-5 cursor-pointer rounded-t-md sm:w-7 ${
+                          isHovered ? "bg-primary" : "bg-primary/85 hover:bg-primary"
+                        }`}
+                      />
+                      <span className="mt-2 font-mono text-[10px] font-semibold text-muted-foreground">
+                        {item.weekLabel.replace(" · ", "\n")}
+                      </span>
+                    </div>
+                  );
+                })}
               </div>
             </div>
+          )}
+        </CardContent>
+      </Card>
 
-            <div className="space-y-2 text-xs">
-              <div className="flex items-center gap-2">
-                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 shrink-0" />
-                <span className="text-muted-foreground">Hoàn thành:</span>
-                <strong className="text-foreground font-mono">{tasks.done}</strong>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="w-2.5 h-2.5 rounded-full bg-blue-500 shrink-0" />
-                <span className="text-muted-foreground">Đang làm:</span>
-                <strong className="text-foreground font-mono">{tasks.inProgress}</strong>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="w-2.5 h-2.5 rounded-full bg-amber-500 shrink-0" />
-                <span className="text-muted-foreground">Cần làm:</span>
-                <strong className="text-foreground font-mono">{tasks.toDo}</strong>
-              </div>
-              {tasks.blocked > 0 && (
-                <div className="flex items-center gap-2">
-                  <span className="w-2.5 h-2.5 rounded-full bg-rose-500 shrink-0" />
-                  <span className="text-muted-foreground">Bị nghẽn:</span>
-                  <strong className="text-rose-600 font-mono">{tasks.blocked}</strong>
-                </div>
-              )}
+      <Card className="flex flex-col overflow-hidden rounded-2xl border border-border/80 bg-card shadow-xs">
+        <CardHeader className="border-b border-border/60 p-4 pb-3 sm:p-5">
+          <div className="flex items-center gap-2.5">
+            <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+              <PieChartIcon className="size-5" />
+            </div>
+            <div>
+              <CardTitle className="text-sm font-bold text-foreground sm:text-base">
+                Trạng thái task
+              </CardTitle>
+              <CardDescription className="text-xs text-muted-foreground">
+                Phân bố TODO / đang làm / review / xong / chặn
+              </CardDescription>
             </div>
           </div>
-
-          <div className="space-y-2.5 pt-3 border-t border-border/60">
-            <div className="flex items-center justify-between text-xs">
-              <span className="font-semibold text-foreground flex items-center gap-1.5">
-                <LayersIcon className="w-3.5 h-3.5 text-primary" />
-                Phân bổ Mức độ Công việc (Story Points)
-              </span>
-            </div>
-
-            <div className="space-y-2.5 text-xs">
-              {analytics.workloadCategories.map((cat, idx) => (
-                <div key={idx} className="space-y-1">
-                  <div className="flex items-center justify-between text-[11px]">
-                    <span className="text-foreground font-semibold flex items-center gap-1.5">
-                      <span className={`w-2 h-2 rounded-full ${cat.color} shrink-0`} />
-                      {cat.category}
-                    </span>
-                    <span className="font-mono font-bold text-foreground">{cat.storyPoints} SP ({cat.percentage}%)</span>
-                  </div>
-                  <div className="h-1.5 rounded-full bg-muted overflow-hidden">
-                    <div
-                      className={`h-full ${cat.color} rounded-full transition-all duration-500`}
-                      style={{ width: `${cat.percentage}%` }}
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
+        </CardHeader>
+        <CardContent className="space-y-4 p-5">
+          <div className="text-center">
+            <p className="font-mono text-2xl font-black text-foreground">
+              {tasks.completionPercent === null ? NO_TASK_DATA_LABEL : completionLabel}
+            </p>
+            <p className="text-[11px] text-muted-foreground">
+              {tasks.done}/{tasks.total} task đã xong
+            </p>
+          </div>
+          <div className="space-y-2 text-xs">
+            <StatusRow label="Cần làm" value={tasks.todo} total={totalTasks} tone="bg-amber-500" />
+            <StatusRow label="Đang làm" value={tasks.inProgress} total={totalTasks} tone="bg-blue-500" />
+            <StatusRow label="Đang review" value={tasks.inReview} total={totalTasks} tone="bg-primary" />
+            <StatusRow label="Đã xong" value={tasks.done} total={totalTasks} tone="bg-emerald-500" />
+            <StatusRow label="Bị chặn" value={tasks.blocked} total={totalTasks} tone="bg-rose-500" />
           </div>
         </CardContent>
       </Card>
+    </div>
+  );
+}
+
+function StatusRow({
+  label,
+  value,
+  total,
+  tone,
+}: {
+  label: string;
+  value: number;
+  total: number;
+  tone: string;
+}) {
+  const percent = total > 0 ? Math.round((value / total) * 100) : 0;
+  return (
+    <div className="space-y-1">
+      <div className="flex items-center justify-between">
+        <span className="text-muted-foreground">{label}</span>
+        <span className="font-mono font-bold text-foreground">{value}</span>
+      </div>
+      <div className="h-1.5 overflow-hidden rounded-full bg-muted">
+        <div className={`h-full rounded-full ${tone}`} style={{ width: `${percent}%` }} />
+      </div>
     </div>
   );
 }

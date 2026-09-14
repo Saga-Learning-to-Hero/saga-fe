@@ -214,6 +214,16 @@ export interface ProjectTaskItem {
   } | null;
   assigneeExternalId: string | null;
   assigneeStudentId: string | null;
+  assigneeDisplayName?: string | null;
+  sprint?: {
+    id: string;
+    name: string;
+    state?: string;
+    externalSprintId?: string | null;
+  } | null;
+  storyPoint?: number | null;
+  priority?: string | null;
+  jiraStatusName?: string | null;
   linkedCommitCount: number;
   externalUpdatedAt: string | null;
   createdAt: string;
@@ -281,8 +291,10 @@ export interface ProjectProgressEvidenceSummary {
 }
 
 export interface ProjectProgressTaskAttribution {
+  assigned: number;
   assignedTotal: number;
   completed: number;
+  incomplete: number;
   inProgress: number;
   blocked: number;
 }
@@ -290,6 +302,8 @@ export interface ProjectProgressTaskAttribution {
 export interface ProjectProgressCommitAttribution {
   total: number;
   linkedToTasks: number;
+  tasksWithLinkedCommits: number;
+  lastCommitAt: string | null;
   lastCommittedAt: string | null;
 }
 
