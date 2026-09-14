@@ -65,9 +65,10 @@ export interface ProjectTaskResponse {
   priorityDetail?: JiraPriorityDetail | null;
   storyPoint?: number | null;
   sprint?: JiraSprintSummary | null;
-  /** Provider hierarchy from Jira. A subtask references its direct parent issue here. */
   parent?: JiraIssueParentSummary | null;
   labels?: string[];
+  dueDate?: string | null;
+  startDate?: string | null;
   linkedCommitCount: number;
   externalUpdatedAt?: string | null;
   createdAt: string;
@@ -84,6 +85,8 @@ export interface CreateProjectTaskRequest {
   sprintId?: number | string;
   sprintExternalId?: string;
   labels?: string[];
+  dueDate?: string | null;
+  startDate?: string | null;
 }
 
 export interface PatchProjectTaskRequest {
@@ -97,6 +100,10 @@ export interface PatchProjectTaskRequest {
   sprintExternalId?: string;
   moveToBacklog?: boolean;
   labels?: string[];
+  dueDate?: string | null;
+  clearDueDate?: boolean;
+  startDate?: string | null;
+  clearStartDate?: boolean;
 }
 
 export interface ProjectTaskOptionItem {

@@ -111,8 +111,8 @@ function FailureContent() {
 
   const homeHref = isAuthenticated && user ? getRoleHomePath(user.role) : "/dashboard";
   const returnParam = searchParams.get("returnPath") || searchParams.get("returnUrl");
-  const isProject = Boolean(returnParam?.includes("project") || (!returnParam && user?.role === "STUDENT"));
-  const backHref = returnParam || (isProject ? "/student/project-info" : "/profile/integrations");
+  const isProject = Boolean(returnParam?.includes("project"));
+  const backHref = returnParam || (user?.role === "STUDENT" ? "/student/courses" : "/profile/integrations");
   const backLabel = isProject ? "Quay lại Thông tin Dự án" : "Quay lại Cài đặt Tích hợp";
 
   return (

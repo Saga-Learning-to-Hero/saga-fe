@@ -9,6 +9,8 @@ import type {
   ForgotPasswordResponse,
   ResetPasswordRequest,
   ResetPasswordResponse,
+  ReauthPasswordRequest,
+  ReauthPasswordResponse,
 } from "../types/auth-dto";
 
 export class AuthService {
@@ -104,6 +106,17 @@ export class AuthService {
     }
 
     const response = await apiClient.post<ResetPasswordResponse>("/api/auth/password/reset", payload);
+    return response.data;
+  }
+
+  static async reauthPassword(payload: ReauthPasswordRequest): Promise<ReauthPasswordResponse> {
+    if (!payload.password || payload.password.trim() === "") {
+      throw new Error("Throw ValidationException: Password is required");
+    }
+
+    const response = await apiClient.post<ReauthPasswordResponse>("/api/auth/reauth/password", {
+      password: payload.password,
+    });
     return response.data;
   }
 

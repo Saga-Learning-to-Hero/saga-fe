@@ -715,4 +715,73 @@ describe("LoginWithGoogleOAuth", () => {
       });
     }
   );
+
+  fptTest(
+    {
+      id: "UTCID36",
+      type: "N",
+      executedDate: "14/09/2026",
+      description: "reauthPassword gui POST /api/auth/reauth/password voi password hop le",
+    },
+    async () => {
+      const response = {
+        stepUp: true,
+        expiresAt: "2026-09-14T14:30:00Z",
+      };
+      const postSpy = vi.spyOn(apiClient, "post").mockResolvedValueOnce({ data: response });
+
+      const result = await AuthService.reauthPassword({ password: "CorrectPassword123" });
+
+      expect(postSpy).toHaveBeenCalledWith("/api/auth/reauth/password", {
+        password: "CorrectPassword123",
+      });
+      expect(result).toEqual(response);
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID37",
+      type: "A",
+      executedDate: "14/09/2026",
+      description: "reauthPassword nem ValidationException khi password rong",
+    },
+    async () => {
+      await expect(
+        AuthService.reauthPassword({ password: "" })
+      ).rejects.toThrow("Throw ValidationException: Password is required");
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID38",
+      type: "A",
+      executedDate: "14/09/2026",
+      description: "reauthPassword nem loi khi server tra ve 401 hoac 403 INVALID_CREDENTIALS",
+    },
+    async () => {
+      vi.spyOn(apiClient, "post").mockRejectedValueOnce(
+        new Error("INVALID_CREDENTIALS")
+      );
+
+      await expect(
+        AuthService.reauthPassword({ password: "WrongPassword" })
+      ).rejects.toThrow("INVALID_CREDENTIALS");
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID39",
+      type: "B",
+      executedDate: "14/09/2026",
+      description: "reauthPassword nem ValidationException khi password chi toan khoang trang",
+    },
+    async () => {
+      await expect(
+        AuthService.reauthPassword({ password: "   " })
+      ).rejects.toThrow("Throw ValidationException: Password is required");
+    }
+  );
 });

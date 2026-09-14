@@ -493,6 +493,7 @@ export function SprintProgressView() {
           onSwitchToBacklog={() => setActiveView("BACKLOG")}
           totalBacklogCount={productBacklogCount}
           isLoading={isLoadingSprints && sprints.length === 0}
+          courseId={courseId}
         />
       )}
 
@@ -536,6 +537,8 @@ export function SprintProgressView() {
           updatingSprintId={patchSprintMutation.isPending ? patchSprintMutation.variables?.sprintId : null}
           isTeamLeader={isTeamLeader}
           currentUserStudentCode={currentUserStudentCode}
+          courseId={courseId}
+          projectId={projectId}
         />
       )}
 

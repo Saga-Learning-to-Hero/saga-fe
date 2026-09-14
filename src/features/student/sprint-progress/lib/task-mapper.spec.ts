@@ -155,4 +155,23 @@ describe("task-mapper", () => {
       expect(result.labels).toEqual([]);
     }
   );
+
+  fptTest(
+    {
+      id: "UTCID08",
+      type: "N",
+      executedDate: "14/09/2026",
+      description: "Map task chua startDate va dueDate chinh xac sang SprintIssue",
+    },
+    () => {
+      const taskWithDates: ProjectTaskResponse = {
+        ...baseTask,
+        startDate: "2026-09-15",
+        dueDate: "2026-09-22",
+      };
+      const result = mapProjectTaskToSprintIssue(taskWithDates);
+      expect(result.startDate).toBe("2026-09-15");
+      expect(result.dueDate).toBe("2026-09-22");
+    }
+  );
 });

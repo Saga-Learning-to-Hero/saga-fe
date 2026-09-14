@@ -131,6 +131,8 @@ export function mapProjectTaskToSprintIssue(
         ? task.labels
         : [],
     sprintId: taskSprintId,
+    dueDate: taskResponse.dueDate || (task as ProjectTaskItem).dueDate || undefined,
+    startDate: taskResponse.startDate || (task as ProjectTaskItem).startDate || undefined,
     githubCommitCount: task.linkedCommitCount || 0,
     createdAt: task.createdAt,
   };

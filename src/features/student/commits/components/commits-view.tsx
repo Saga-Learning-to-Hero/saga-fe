@@ -435,7 +435,12 @@ export function CommitsView() {
             onSearchChange={setSearchQuery}
           />
 
-          <CommitListTimeline commits={filteredCommits} selectedRepoName={selectedRepo.fullPath} selectedBranchName={effectiveSelectedBranchName} />
+          <CommitListTimeline
+            commits={filteredCommits}
+            selectedRepoName={selectedRepo.fullPath}
+            selectedBranchName={effectiveSelectedBranchName}
+            courseId={courseId}
+          />
         </>
       )}
     </div>

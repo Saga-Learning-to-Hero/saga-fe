@@ -32,6 +32,7 @@ export interface SprintIssue {
   labels?: string[];
   sprintId: string;
   dueDate?: string;
+  startDate?: string;
   githubCommitCount?: number;
   createdAt: string;
 }

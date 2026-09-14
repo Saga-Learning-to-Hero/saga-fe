@@ -225,6 +225,8 @@ export interface ProjectTaskItem {
   priority?: string | null;
   jiraStatusName?: string | null;
   labels?: string[];
+  dueDate?: string | null;
+  startDate?: string | null;
   linkedCommitCount: number;
   externalUpdatedAt: string | null;
   createdAt: string;

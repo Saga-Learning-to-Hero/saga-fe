@@ -17,6 +17,7 @@ interface TaskLinkedCommitsListProps {
   taskId?: string;
   onSelectCommit?: (sha: string) => void;
   onSelectAllCommits?: (shas: string[]) => void;
+  onContinueToConfirmation?: () => void;
   selectedShas?: string[];
 }
 
@@ -44,6 +45,7 @@ export function TaskLinkedCommitsList({
   taskId,
   onSelectCommit,
   onSelectAllCommits,
+  onContinueToConfirmation,
   selectedShas = [],
 }: TaskLinkedCommitsListProps) {
   const {
@@ -119,7 +121,7 @@ export function TaskLinkedCommitsList({
         <div className="p-4 rounded-xl bg-muted/20 border border-dashed border-border/80 text-center space-y-1 text-xs text-muted-foreground">
           <p className="font-semibold text-foreground">Chưa có commit nào được tự động liên kết</p>
           <p className="text-[11px]">
-            Hệ thống tự động liên kết khi đợt đồng bộ đã nhận được commit có mã Jira (ví dụ: <code className="font-mono text-primary font-bold">feat: [FE][SAGA-xx] ...</code>). Bạn vẫn có thể chọn commit đã đồng bộ tại tab Đóng góp.
+            Hệ thống tự động liên kết khi đợt đồng bộ đã nhận được commit có mã Jira (ví dụ: <code className="font-mono text-primary font-bold">feat: [FE][SAGA-xx] ...</code>). Bạn vẫn có thể bổ sung SHA hoặc Pull Request thủ công khi xác nhận đóng góp.
           </p>
         </div>
       ) : (
@@ -166,7 +168,7 @@ export function TaskLinkedCommitsList({
                         {isSelected ? (
                           <>
                             <CheckIcon className="w-3 h-3" />
-                            <span>Đã chọn</span>
+                            <span>Đã chọn làm minh chứng</span>
                           </>
                         ) : (
                           <>
@@ -192,6 +194,28 @@ export function TaskLinkedCommitsList({
               </div>
             );
           })}
+        </div>
+      )}
+
+      {selectedShas.length > 0 && onContinueToConfirmation && (
+        <div className="flex flex-col gap-2 rounded-xl border border-violet-500/25 bg-violet-500/[0.06] px-3 py-2.5 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="text-xs font-semibold text-foreground">
+              {selectedShas.length} commit đang chờ xác nhận
+            </p>
+            <p className="text-[11px] text-muted-foreground">
+              Lựa chọn này mới chỉ được lưu tạm trên màn hình, chưa gửi lên máy chủ.
+            </p>
+          </div>
+          <Button
+            type="button"
+            size="sm"
+            onClick={onContinueToConfirmation}
+            className="h-8 shrink-0 rounded-lg bg-violet-600 px-3 text-xs font-semibold text-white hover:bg-violet-700"
+          >
+            <ShieldCheckIcon className="w-3.5 h-3.5" />
+            Tiếp tục xác nhận ({selectedShas.length})
+          </Button>
         </div>
       )}
     </div>
