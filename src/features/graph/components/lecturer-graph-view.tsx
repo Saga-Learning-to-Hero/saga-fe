@@ -235,8 +235,8 @@ export function LecturerGraphView({ courseId, initialTeamId }: LecturerGraphView
           key={g.id}
           onClick={() => setSelectedGroupId(g.id)}
           className={`px-3 py-1.5 rounded-xl font-bold transition-all cursor-pointer shrink-0 flex items-center gap-1.5 ${selectedGroupId === g.id
-              ? "bg-primary text-primary-foreground shadow-xs"
-              : "bg-muted/60 text-muted-foreground hover:text-foreground hover:bg-muted"
+            ? "bg-primary text-primary-foreground shadow-xs"
+            : "bg-muted/60 text-muted-foreground hover:text-foreground hover:bg-muted"
             }`}
         >
           <span>{g.name.split(" - ")[0]}</span>
@@ -275,8 +275,8 @@ export function LecturerGraphView({ courseId, initialTeamId }: LecturerGraphView
           <button
             onClick={() => setActiveTab("TRACEABILITY")}
             className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-extrabold transition-all cursor-pointer ${activeTab === "TRACEABILITY"
-                ? "bg-card text-foreground shadow-xs border border-border/80"
-                : "text-muted-foreground hover:text-foreground"
+              ? "bg-card text-foreground shadow-xs border border-border/80"
+              : "text-muted-foreground hover:text-foreground"
               }`}
           >
             <GitGraphIcon className="w-3.5 h-3.5 text-blue-500" />
@@ -285,8 +285,8 @@ export function LecturerGraphView({ courseId, initialTeamId }: LecturerGraphView
           <button
             onClick={() => setActiveTab("SNA")}
             className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-extrabold transition-all cursor-pointer ${activeTab === "SNA"
-                ? "bg-card text-foreground shadow-xs border border-border/80"
-                : "text-muted-foreground hover:text-foreground"
+              ? "bg-card text-foreground shadow-xs border border-border/80"
+              : "text-muted-foreground hover:text-foreground"
               }`}
           >
             <UsersIcon className="w-3.5 h-3.5 text-purple-500" />

@@ -12,20 +12,11 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { MemberProgressSheet } from "@/features/progress/components/member-progress-sheet";
 import {
   ProgressFactNote,
   ProjectProgressSummary,
 } from "@/features/progress/components/project-progress-summary";
-import { ProgressMemberTable } from "@/features/progress/components/progress-member-table";
 import { useStudentCourseContext } from "@/features/student/courses/hooks/use-student-course-context";
 import { useStudentMyTeam } from "@/features/student/courses/hooks/use-student-courses";
 import { useProjectRealtime } from "@/features/student/project/hooks/use-project-realtime";
@@ -38,9 +29,7 @@ import { cn } from "@/lib/utils";
 import {
   buildWeeklyCommitBuckets,
   normalizeProjectProgress,
-  teamRoleLabel,
 } from "@/features/progress/lib/progress-format";
-import { StudentKPICards } from "./student-kpi-cards";
 import { StudentTaskCommitCharts } from "./student-task-commit-charts";
 import { TeamWorkloadComparisonChart } from "./team-workload-comparison-chart";
 
@@ -56,72 +45,17 @@ export function StudentDashboardAnalytics() {
   const commitsQuery = useProjectCommits(projectId, { enabled: canLoadProgress });
   useProjectRealtime(projectId, { enabled: canLoadProgress });
 
-  const [isAllTeam, setIsAllTeam] = useState(true);
-  const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
   const [detailStudentId, setDetailStudentId] = useState<string | null>(null);
 
   const progress = normalizeProjectProgress(progressQuery.data);
   const members = progress?.memberProgress ?? [];
-  const selectedMember = members.find((member) => member.studentId === selectedStudentId) ?? null;
 
   const weeklyData = useMemo(
-    () =>
-      buildWeeklyCommitBuckets(commitsQuery.data ?? [], {
-        studentId: isAllTeam ? null : selectedStudentId,
-      }),
-    [commitsQuery.data, isAllTeam, selectedStudentId]
+    () => buildWeeklyCommitBuckets(commitsQuery.data ?? []),
+    [commitsQuery.data]
   );
 
-  const kpiTasks = (() => {
-    if (!progress) {
-      return {
-        total: 0,
-        todo: 0,
-        inProgress: 0,
-        inReview: 0,
-        done: 0,
-        blocked: 0,
-        completionPercent: null,
-      };
-    }
-    if (isAllTeam || !selectedMember) {
-      return progress.taskSummary;
-    }
-    const assigned = selectedMember.tasks.assigned || selectedMember.tasks.assignedTotal || 0;
-    return {
-      total: assigned,
-      todo: selectedMember.tasks.incomplete,
-      inProgress: selectedMember.tasks.inProgress,
-      inReview: 0,
-      done: selectedMember.tasks.completed,
-      blocked: selectedMember.tasks.blocked,
-      completionPercent:
-        assigned > 0 ? Math.round((selectedMember.tasks.completed / assigned) * 100) : null,
-    };
-  })();
-
-  const kpiCommits = isAllTeam || !selectedMember
-    ? {
-      total: progress?.commitSummary.total ?? 0,
-      linked: progress?.commitSummary.linked ?? 0,
-    }
-    : {
-      total: selectedMember.commits.total,
-      linked: selectedMember.commits.linkedToTasks,
-    };
-
-  const evidenceCount = isAllTeam || !selectedMember
-    ? progress
-      ? progress.evidenceSummary.workSessions +
-      progress.evidenceSummary.files +
-      progress.evidenceSummary.webLinks +
-      progress.evidenceSummary.confirmations
-      : 0
-    : selectedMember.evidenceConfirmations;
-
   const openMemberDetail = (studentId: string) => {
-    setSelectedStudentId(studentId);
-    setIsAllTeam(false);
     setDetailStudentId(studentId);
   };
 
@@ -263,115 +197,18 @@ export function StudentDashboardAnalytics() {
           </div>
         </div>
 
-        <DropdownMenu>
-          <DropdownMenuTrigger className="flex cursor-pointer items-center gap-2 rounded-xl border border-border bg-muted/70 px-3 py-1.5 text-xs font-semibold text-foreground outline-none hover:bg-muted">
-            <UsersIcon className="size-3.5 text-primary" />
-            {isAllTeam || !selectedMember ? "Tổng quan cả nhóm" : selectedMember.fullName}
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-64 rounded-xl p-1.5">
-            <DropdownMenuLabel className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-              Phạm vi theo dõi
-            </DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem
-              onClick={() => {
-                setIsAllTeam(true);
-                setSelectedStudentId(null);
-              }}
-              className={cn("cursor-pointer rounded-lg text-xs", isAllTeam && "bg-primary/10 font-bold text-primary")}
-            >
-              Tổng quan cả nhóm
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            {members.map((member) => (
-              <DropdownMenuItem
-                key={member.studentId}
-                onClick={() => openMemberDetail(member.studentId)}
-                className={cn(
-                  "cursor-pointer rounded-lg text-xs",
-                  !isAllTeam && selectedStudentId === member.studentId && "bg-primary/10 font-bold text-primary"
-                )}
-              >
-                {member.fullName}
-                <span className="ml-auto font-mono text-[10px] text-muted-foreground">
-                  {member.studentCode}
-                </span>
-              </DropdownMenuItem>
-            ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
       </div>
 
-      {isAllTeam || !selectedMember ? (
-        <>
-          <ProjectProgressSummary progress={progress} />
-          <ProgressFactNote />
-        </>
-      ) : (
-        <div className="space-y-4">
-          <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-primary/20 bg-primary/5 p-4">
-            <div className="flex items-center gap-3">
-              <div className="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-sm font-bold text-primary">
-                {selectedMember.fullName.charAt(0)}
-              </div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-bold text-foreground">{selectedMember.fullName}</span>
-                  <Badge variant="outline" className="font-mono text-[10px]">
-                    {selectedMember.studentCode}
-                  </Badge>
-                  <Badge className="border-0 bg-primary/15 text-[10px] text-primary">
-                    {teamRoleLabel(selectedMember.teamRole)}
-                  </Badge>
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  Đang lọc số liệu cá nhân của thành viên này
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={() => setDetailStudentId(selectedMember.studentId)}
-                className={cn(buttonVariants({ size: "sm" }), "cursor-pointer text-xs")}
-              >
-                Mở bảng chi tiết
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setIsAllTeam(true);
-                  setSelectedStudentId(null);
-                }}
-                className={cn(buttonVariants({ size: "sm", variant: "outline" }), "cursor-pointer text-xs")}
-              >
-                Xem toàn nhóm
-              </button>
-            </div>
-          </div>
+      <ProjectProgressSummary progress={progress} />
+      <ProgressFactNote />
 
-          <StudentKPICards
-            tasks={kpiTasks}
-            commits={kpiCommits}
-            evidenceCount={evidenceCount}
-            isAllTeamSelected={false}
-          />
-        </div>
-      )}
-
-      <StudentTaskCommitCharts tasks={kpiTasks} weeklyData={weeklyData} />
+      <StudentTaskCommitCharts tasks={progress.taskSummary} weeklyData={weeklyData} />
 
       <TeamWorkloadComparisonChart
         members={members}
-        selectedStudentId={selectedStudentId}
+        selectedStudentId={detailStudentId}
         onSelectMember={openMemberDetail}
         currentSprintName={progress.currentSprint?.name}
-      />
-
-      <ProgressMemberTable
-        members={members}
-        selectedStudentId={selectedStudentId}
-        onSelectMember={openMemberDetail}
       />
 
       <MemberProgressSheet

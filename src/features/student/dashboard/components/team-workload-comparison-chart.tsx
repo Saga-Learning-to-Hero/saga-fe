@@ -52,7 +52,7 @@ export function TeamWorkloadComparisonChart({
           <div>
             <div className="flex flex-wrap items-center gap-2">
               <CardTitle className="text-sm font-bold text-foreground sm:text-base">
-                So sánh tiến độ thành viên
+                Tiến độ thành viên
               </CardTitle>
               <Badge className="border-0 bg-amber-500/15 text-[10px] font-semibold text-amber-700 dark:text-amber-300">
                 Chỉ trưởng nhóm

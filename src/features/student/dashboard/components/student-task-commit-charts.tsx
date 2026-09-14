@@ -77,9 +77,8 @@ export function StudentTaskCommitCharts({
                       ) : null}
                       <div
                         style={{ height: `${height}px` }}
-                        className={`w-5 cursor-pointer rounded-t-md sm:w-7 ${
-                          isHovered ? "bg-primary" : "bg-primary/85 hover:bg-primary"
-                        }`}
+                        className={`w-5 cursor-pointer rounded-t-md sm:w-7 ${isHovered ? "bg-primary" : "bg-primary/85 hover:bg-primary"
+                          }`}
                       />
                       <span className="mt-2 font-mono text-[10px] font-semibold text-muted-foreground">
                         {item.weekLabel.replace(" · ", "\n")}
@@ -101,10 +100,10 @@ export function StudentTaskCommitCharts({
             </div>
             <div>
               <CardTitle className="text-sm font-bold text-foreground sm:text-base">
-                Trạng thái task
+                Trạng thái Task Jira
               </CardTitle>
               <CardDescription className="text-xs text-muted-foreground">
-                Phân bố TODO / đang làm / review / xong / chặn
+                Phân bố công việc theo quy trình chuẩn Jira workflow.
               </CardDescription>
             </div>
           </div>
@@ -115,15 +114,23 @@ export function StudentTaskCommitCharts({
               {tasks.completionPercent === null ? NO_TASK_DATA_LABEL : completionLabel}
             </p>
             <p className="text-[11px] text-muted-foreground">
-              {tasks.done}/{tasks.total} task đã xong
+              {tasks.done}/{tasks.total} task hoàn thành
             </p>
           </div>
           <div className="space-y-2 text-xs">
-            <StatusRow label="Cần làm" value={tasks.todo} total={totalTasks} tone="bg-amber-500" />
-            <StatusRow label="Đang làm" value={tasks.inProgress} total={totalTasks} tone="bg-blue-500" />
-            <StatusRow label="Đang review" value={tasks.inReview} total={totalTasks} tone="bg-primary" />
-            <StatusRow label="Đã xong" value={tasks.done} total={totalTasks} tone="bg-emerald-500" />
-            <StatusRow label="Bị chặn" value={tasks.blocked} total={totalTasks} tone="bg-rose-500" />
+            <StatusRow label="To Do" value={tasks.todo} total={totalTasks} tone="bg-amber-500" />
+            <StatusRow label="In Progress" value={tasks.inProgress} total={totalTasks} tone="bg-blue-500" />
+            <StatusRow label="In Review" value={tasks.inReview} total={totalTasks} tone="bg-primary" />
+            <StatusRow label="Done" value={tasks.done} total={totalTasks} tone="bg-emerald-500" />
+            {tasks.blocked > 0 && (
+              <StatusRow
+                label="Blocked"
+                value={tasks.blocked}
+                total={totalTasks}
+                tone="bg-rose-500"
+                description="Trạng thái khi công việc bị tắc nghẽn hoặc gặp trở ngại."
+              />
+            )}
           </div>
         </CardContent>
       </Card>
@@ -136,17 +143,19 @@ function StatusRow({
   value,
   total,
   tone,
+  description,
 }: {
   label: string;
   value: number;
   total: number;
   tone: string;
+  description?: string;
 }) {
   const percent = total > 0 ? Math.round((value / total) * 100) : 0;
   return (
     <div className="space-y-1">
       <div className="flex items-center justify-between">
-        <span className="text-muted-foreground">{label}</span>
+        <span className="text-muted-foreground" title={description}>{label}</span>
         <span className="font-mono font-bold text-foreground">{value}</span>
       </div>
       <div className="h-1.5 overflow-hidden rounded-full bg-muted">

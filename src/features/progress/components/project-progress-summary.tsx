@@ -116,12 +116,12 @@ export function ProjectProgressSummary({ progress, className }: ProjectProgressS
 
       <Card className="rounded-2xl border border-border/80 shadow-xs">
         <CardContent className="grid grid-cols-2 gap-3 p-4 sm:grid-cols-3 lg:grid-cols-6">
-          <StatusStat label="Tổng" value={tasks.total} />
-          <StatusStat label="Cần làm" value={tasks.todo} />
-          <StatusStat label="Đang làm" value={tasks.inProgress} />
-          <StatusStat label="Đang review" value={tasks.inReview} />
-          <StatusStat label="Đã xong" value={tasks.done} />
-          <StatusStat label="Bị chặn" value={tasks.blocked} />
+          <StatusStat label="Total" value={tasks.total} />
+          <StatusStat label="To Do" value={tasks.todo} />
+          <StatusStat label="In Progress" value={tasks.inProgress} />
+          <StatusStat label="In Review" value={tasks.inReview} />
+          <StatusStat label="Done" value={tasks.done} />
+          {tasks.blocked > 0 && <StatusStat label="Blocked" value={tasks.blocked} />}
         </CardContent>
       </Card>
     </div>
