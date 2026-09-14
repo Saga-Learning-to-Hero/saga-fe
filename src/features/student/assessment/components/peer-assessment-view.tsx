@@ -189,10 +189,10 @@ export function PeerAssessmentView() {
         courseCode={effectiveCourse?.code}
       />
 
-      <div className="rounded-3xl border border-primary/25 bg-primary/5 p-4.5 backdrop-blur-xs shadow-2xs">
+      <div className="rounded-3xl border border-amber-500/25 bg-amber-500/5 p-4.5 backdrop-blur-xs shadow-2xs">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <div className="flex items-start gap-3">
-            <div className="w-8 h-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0 mt-0.5">
+            <div className="w-8 h-8 rounded-xl bg-amber-500/15 text-amber-700 dark:text-amber-400 flex items-center justify-center shrink-0 mt-0.5">
               <SparklesIcon className="w-4 h-4" />
             </div>
             <div>
@@ -200,18 +200,18 @@ export function PeerAssessmentView() {
                 <h3 className="text-xs font-bold text-foreground uppercase tracking-wide">
                   Quy trình đánh giá đồng đẳng (Peer Review Flow)
                 </h3>
-                <Badge variant="outline" className="text-[10px] font-mono border-primary/30 text-primary bg-primary/10">
-                  Đang chờ API
+                <Badge variant="outline" className="text-[10px] font-mono border-amber-500/30 text-amber-700 dark:text-amber-300 bg-amber-500/10">
+                  Tính năng sắp mở
                 </Badge>
               </div>
               <p className="mt-1 text-xs text-muted-foreground leading-relaxed">
-                Backend chưa công bố API mở biểu mẫu, nộp điểm và quản lý thời hạn đánh giá chéo. Danh sách nhóm bên dưới chỉ để tham khảo; chưa có điểm nào được ghi nhận từ màn hình này.
+                Tính năng đánh giá chéo giữa các thành viên nhóm theo từng Sprint đang trong lộ trình hoàn thiện. Biểu mẫu đánh giá và thang điểm năng lực sẽ tự động mở khi Giảng viên khởi tạo đợt nghiệm thu Sprint.
               </p>
             </div>
           </div>
           <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg border border-border/80 bg-background/80 text-[11px] font-mono text-muted-foreground shrink-0">
-            <ClockIcon className="w-3 h-3 text-primary" />
-            <span>Chưa sẵn sàng</span>
+            <ClockIcon className="w-3 h-3 text-amber-600 dark:text-amber-400" />
+            <span>Đang phát triển</span>
           </div>
         </div>
       </div>
@@ -243,7 +243,7 @@ export function PeerAssessmentView() {
                 value=""
                 onChange={() => undefined}
                 disabled
-                placeholder="Chưa có API Sprint đánh giá chéo"
+                placeholder="Chờ kích hoạt đợt đánh giá"
                 options={[]}
               />
             </div>
@@ -270,7 +270,7 @@ export function PeerAssessmentView() {
             </p>
           </div>
           <div className="mt-4 p-2.5 rounded-xl border border-dashed border-border bg-muted/20 text-center">
-            <p className="text-[11px] text-muted-foreground font-medium">Biểu mẫu sẽ khả dụng khi backend công bố API đánh giá chéo</p>
+            <p className="text-[11px] text-muted-foreground font-medium">Biểu mẫu sẽ tự động hiển thị khi mở đợt đánh giá</p>
           </div>
         </li>
 
@@ -286,7 +286,7 @@ export function PeerAssessmentView() {
             </div>
             <h2 className="mt-2.5 text-sm font-bold text-foreground">Gửi Đánh Giá Chéo</h2>
             <p className="mt-1 text-xs text-muted-foreground leading-relaxed">
-              Chức năng gửi đánh giá sẽ chỉ mở khi có contract backend về quyền riêng tư, thời hạn và dữ liệu chấm điểm.
+              Chức năng gửi đánh giá sẽ được bảo vệ bởi cơ chế kiểm soát bảo mật và tính toàn vẹn dữ liệu.
             </p>
           </div>
           <div className="mt-4 space-y-2">
@@ -297,7 +297,7 @@ export function PeerAssessmentView() {
               disabled
             >
               <SendIcon className="size-3.5" />
-              <span>Chưa thể gửi đánh giá</span>
+              <span>Chưa mở đợt đánh giá</span>
             </Button>
             <p className="text-[10px] text-muted-foreground text-center flex items-center justify-center gap-1 font-mono">
               <ShieldCheckIcon className="w-3 h-3 text-emerald-500" />
@@ -340,7 +340,7 @@ export function PeerAssessmentView() {
 
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
           <InfoIcon className="w-3.5 h-3.5 text-primary shrink-0" />
-          <span>Danh sách thành viên chỉ dùng để tham khảo. SAGA chưa mở API tạo hoặc gửi đánh giá chéo cho sinh viên.</span>
+          <span>Danh sách thành viên thuộc nhóm đồ án hiện tại. Khi đợt đánh giá mở, sinh viên sẽ thực hiện chấm điểm chéo theo từng thành viên.</span>
         </div>
 
         {teamMembers.length === 0 ? (

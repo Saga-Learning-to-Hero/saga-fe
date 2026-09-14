@@ -98,8 +98,8 @@ export function MemberProgressSheet({
                   <Badge
                     variant="secondary"
                     className={`text-[10px] font-semibold px-2 py-0 ${(data?.teamRole || "").toUpperCase() === "LEADER"
-                        ? "bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/30"
-                        : "bg-muted text-muted-foreground"
+                      ? "bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/30"
+                      : "bg-muted text-muted-foreground"
                       }`}
                   >
                     {data ? teamRoleLabel(data.teamRole) : "Thành viên"}
@@ -283,8 +283,8 @@ export function MemberProgressSheet({
                       type="button"
                       onClick={() => setTaskFilter("ALL")}
                       className={`px-2 py-0.5 text-[10px] font-semibold rounded-md transition-all cursor-pointer ${taskFilter === "ALL"
-                          ? "bg-card text-foreground shadow-2xs font-bold"
-                          : "text-muted-foreground hover:text-foreground"
+                        ? "bg-card text-foreground shadow-2xs font-bold"
+                        : "text-muted-foreground hover:text-foreground"
                         }`}
                     >
                       Tất cả
@@ -293,8 +293,8 @@ export function MemberProgressSheet({
                       type="button"
                       onClick={() => setTaskFilter("IN_PROGRESS")}
                       className={`px-2 py-0.5 text-[10px] font-semibold rounded-md transition-all cursor-pointer ${taskFilter === "IN_PROGRESS"
-                          ? "bg-card text-foreground shadow-2xs font-bold"
-                          : "text-muted-foreground hover:text-foreground"
+                        ? "bg-card text-foreground shadow-2xs font-bold"
+                        : "text-muted-foreground hover:text-foreground"
                         }`}
                     >
                       Đang làm
@@ -303,8 +303,8 @@ export function MemberProgressSheet({
                       type="button"
                       onClick={() => setTaskFilter("DONE")}
                       className={`px-2 py-0.5 text-[10px] font-semibold rounded-md transition-all cursor-pointer ${taskFilter === "DONE"
-                          ? "bg-card text-foreground shadow-2xs font-bold"
-                          : "text-muted-foreground hover:text-foreground"
+                        ? "bg-card text-foreground shadow-2xs font-bold"
+                        : "text-muted-foreground hover:text-foreground"
                         }`}
                     >
                       Đã xong
@@ -330,8 +330,8 @@ export function MemberProgressSheet({
                           <Badge
                             variant="outline"
                             className={`text-[9px] font-mono shrink-0 ${(task.status || "").toUpperCase() === "DONE"
-                                ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30"
-                                : "bg-muted text-muted-foreground"
+                              ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30"
+                              : "bg-muted text-muted-foreground"
                               }`}
                           >
                             {task.status}

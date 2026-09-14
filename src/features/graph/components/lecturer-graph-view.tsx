@@ -8,6 +8,7 @@ import {
   AlertTriangleIcon,
   ShieldAlertIcon,
   CheckCircle2Icon,
+  InfoIcon,
 } from "lucide-react";
 import { toast } from "sonner";
 import { CustomSelect } from "@/components/common/custom-select";
@@ -253,12 +254,15 @@ export function LecturerGraphView({ courseId, initialTeamId }: LecturerGraphView
             <GitGraphIcon className="w-5 h-5" />
           </div>
           <div>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <h1 className="text-base font-bold tracking-tight text-foreground sm:text-lg">
                 Đồ thị giám sát & Mạng lưới tương tác
               </h1>
               <Badge variant="outline" className="border-primary/20 bg-primary/10 font-mono text-[10px] font-bold text-primary">
                 Traceability & SNA
+              </Badge>
+              <Badge variant="outline" className="border-amber-500/40 bg-amber-500/10 text-amber-700 dark:text-amber-300 text-[10px] font-mono">
+                Dữ liệu minh họa (Mô hình Cytoscape)
               </Badge>
             </div>
             <p className="text-xs text-muted-foreground">
@@ -289,6 +293,18 @@ export function LecturerGraphView({ courseId, initialTeamId }: LecturerGraphView
             <span>Mạng lưới SNA</span>
           </button>
         </div>
+      </div>
+
+      <div className="rounded-2xl border border-amber-500/30 bg-amber-500/5 p-3.5 flex items-center justify-between gap-3 text-xs">
+        <div className="flex items-center gap-2.5">
+          <InfoIcon className="size-4 text-amber-600 dark:text-amber-400 shrink-0" />
+          <span className="text-muted-foreground">
+            <strong className="text-foreground">Lưu ý:</strong> Trung tâm Giám sát Đồ thị Mạng lưới & SNA hiện đang hiển thị cấu trúc đồ thị thực nghiệm mô phỏng quan hệ giữa các thành viên, Task Jira và Git Commit trong lúc chờ tích hợp cơ sở dữ liệu Neo4j AuraDB từ máy chủ.
+          </span>
+        </div>
+        <Badge variant="outline" className="text-[10px] font-mono text-amber-600 dark:text-amber-400 border-amber-500/30 shrink-0">
+          Demo Environment
+        </Badge>
       </div>
 
       {activeTab === "TRACEABILITY" ? (
