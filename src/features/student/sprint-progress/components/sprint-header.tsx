@@ -300,10 +300,11 @@ export function SprintHeader({
               )}
             </div>
 
-            <div className="flex items-center gap-1.5 shrink-0 bg-muted/40 p-1 rounded-xl border border-border/50">
+            <div className="flex items-center gap-1 shrink-0 bg-muted/40 p-1 rounded-xl border border-border/50">
               <button
+                type="button"
                 onClick={() => onSelectAssignee(null)}
-                className={`text-[11px] font-bold px-2 py-1 rounded-lg transition-all cursor-pointer select-none ${selectedAssigneeId === null
+                className={`text-[11px] font-bold px-2.5 py-1 rounded-lg transition-colors cursor-pointer select-none ${selectedAssigneeId === null
                   ? "bg-card text-foreground shadow-2xs font-extrabold"
                   : "text-muted-foreground hover:text-foreground"
                   }`}
@@ -311,15 +312,18 @@ export function SprintHeader({
                 Tất cả
               </button>
 
-              <div className="flex items-center gap-1 overflow-x-auto max-w-[200px] sm:max-w-none">
+              <div className="flex items-center gap-1.5 px-0.5">
                 {teamMembers.map((m) => {
                   const isSelected = selectedAssigneeId === m.id;
                   return (
                     <button
                       key={m.id}
+                      type="button"
                       onClick={() => onSelectAssignee(isSelected ? null : m.id)}
                       title={`${m.name} (${m.studentCode})`}
-                      className={`relative rounded-full transition-all cursor-pointer shrink-0 ${isSelected ? "ring-2 ring-primary ring-offset-2 ring-offset-background scale-105" : "opacity-75 hover:opacity-100"
+                      className={`relative flex items-center justify-center rounded-full p-0.5 transition-all cursor-pointer shrink-0 ${isSelected
+                        ? "ring-2 ring-primary bg-primary/15 opacity-100"
+                        : "opacity-75 hover:opacity-100 hover:bg-muted/80"
                         }`}
                     >
                       <Avatar className="w-6.5 h-6.5 border border-border/80">

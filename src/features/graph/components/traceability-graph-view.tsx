@@ -1,9 +1,11 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { NetworkIcon } from "lucide-react";
+import { GitCommitIcon, NetworkIcon, SparklesIcon, TableIcon } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { useStudentCourseContext } from "@/features/student/courses/hooks/use-student-course-context";
 import { useStudentMyTeam } from "@/features/student/courses/hooks/use-student-courses";
 import { getApiErrorMessage } from "@/lib/api-error";
@@ -16,6 +18,7 @@ import { PipelineEmptyState } from "./pipeline-empty-state";
 import { PipelineFlowView } from "./pipeline-flow-view";
 import { PipelineMatrixTable } from "./pipeline-matrix-table";
 import { PipelineStatsBar } from "./pipeline-stats-bar";
+import { PipelineTaskInspector } from "./pipeline-task-inspector";
 import { getMockTraceabilityGraphData, MOCK_GRAPH_STUDENTS } from "../data/mock-graph-data";
 import { usePipelineGraphData } from "../hooks/use-pipeline-graph-data";
 import { buildPipelineTasksCsv, downloadTextFile } from "../lib/pipeline-mapper";
@@ -50,6 +53,8 @@ export function TraceabilityGraphView() {
     anomaliesOnly: false,
   });
   const [viewMode, setViewMode] = useState<"FLOW" | "GRAPH">("GRAPH");
+  const [pipelineSubView, setPipelineSubView] = useState<"FLOW" | "MATRIX">("FLOW");
+  const [isMobileInspectorOpen, setIsMobileInspectorOpen] = useState(false);
   const [selectedNode, setSelectedNode] = useState<GraphNodeData | null>(null);
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
 
@@ -122,8 +127,19 @@ export function TraceabilityGraphView() {
   );
 
   const handleSelectTask = (taskId: string) => {
-    setSelectedTaskId((current) => (current === taskId ? null : taskId));
+    setSelectedTaskId((current) => {
+      const next = current === taskId ? null : taskId;
+      if (next && typeof window !== "undefined" && window.innerWidth < 1024) {
+        setIsMobileInspectorOpen(true);
+      }
+      return next;
+    });
   };
+
+  const selectedTask = useMemo(
+    () => pipeline.filteredTasks.find((task) => task.id === pipeline.effectiveTaskId) || null,
+    [pipeline.filteredTasks, pipeline.effectiveTaskId]
+  );
 
   const handleExport = () => {
     if (viewMode === "GRAPH") {
@@ -294,22 +310,92 @@ export function TraceabilityGraphView() {
           />
         ) : null}
         <PipelineStatsBar stats={pipeline.stats} isLoadingCommits={pipeline.isLoadingCommits} />
-        <PipelineFlowView
-          lanes={pipeline.lanes}
-          selectedTaskId={pipeline.effectiveTaskId}
-          selectedCommits={pipeline.selectedCommits}
-          isLoadingTaskCommits={pipeline.isLoadingTaskCommits}
-          taskCommitsErrorMessage={pipeline.taskCommitsErrorMessage}
-          onSelectTask={handleSelectTask}
-          onRetryTaskCommits={() => void pipeline.refetchTaskCommits()}
-        />
-        <PipelineMatrixTable
-          tasks={pipeline.filteredTasks}
-          selectedTaskId={pipeline.effectiveTaskId}
-          selectedCommits={pipeline.selectedCommits}
-          isLoadingTaskCommits={pipeline.isLoadingTaskCommits}
-          onSelectTask={handleSelectTask}
-        />
+
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border/80 bg-card p-2 shadow-2xs">
+          <div className="flex items-center gap-1 rounded-xl border border-border/60 bg-muted/60 p-1 text-xs font-bold">
+            <button
+              type="button"
+              onClick={() => setPipelineSubView("FLOW")}
+              className={`flex cursor-pointer items-center gap-1.5 rounded-lg px-3 py-1.5 transition-all ${pipelineSubView === "FLOW"
+                ? "bg-card text-foreground shadow-2xs"
+                : "text-muted-foreground hover:text-foreground"
+                }`}
+            >
+              <SparklesIcon className="size-3.5 text-primary" />
+              <span>Luồng liên kết (Flow)</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setPipelineSubView("MATRIX")}
+              className={`flex cursor-pointer items-center gap-1.5 rounded-lg px-3 py-1.5 transition-all ${pipelineSubView === "MATRIX"
+                ? "bg-card text-foreground shadow-2xs"
+                : "text-muted-foreground hover:text-foreground"
+                }`}
+            >
+              <TableIcon className="size-3.5 text-primary" />
+              <span>Ma trận đối soát (Audit matrix)</span>
+            </button>
+          </div>
+
+          {selectedTask && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setIsMobileInspectorOpen(true)}
+              className="h-8 cursor-pointer gap-1.5 rounded-xl text-xs font-bold lg:hidden"
+            >
+              <GitCommitIcon className="size-3.5 text-primary" />
+              <span>Chi tiết Task & Commit ({selectedTask.key})</span>
+            </Button>
+          )}
+        </div>
+
+        <div className="flex flex-col gap-5 lg:flex-row lg:items-start">
+          <div className="min-w-0 flex-1">
+            {pipelineSubView === "FLOW" ? (
+              <PipelineFlowView
+                lanes={pipeline.lanes}
+                selectedTaskId={pipeline.effectiveTaskId}
+                onSelectTask={handleSelectTask}
+              />
+            ) : (
+              <PipelineMatrixTable
+                tasks={pipeline.filteredTasks}
+                selectedTaskId={pipeline.effectiveTaskId}
+                onSelectTask={handleSelectTask}
+              />
+            )}
+          </div>
+
+          <aside className="hidden w-full shrink-0 self-start lg:sticky lg:top-28 lg:block lg:w-[380px] xl:w-[420px]">
+            <PipelineTaskInspector
+              selectedTask={selectedTask}
+              commits={pipeline.selectedCommits}
+              isLoadingCommits={pipeline.isLoadingTaskCommits}
+              errorMessage={pipeline.taskCommitsErrorMessage}
+              onRetry={() => void pipeline.refetchTaskCommits()}
+              onClearSelection={() => setSelectedTaskId(null)}
+            />
+          </aside>
+        </div>
+
+        <Sheet open={Boolean(selectedTask && isMobileInspectorOpen)} onOpenChange={setIsMobileInspectorOpen}>
+          <SheetContent side="right" className="w-full sm:max-w-md p-0 overflow-y-auto lg:hidden">
+            <div className="p-4">
+              <PipelineTaskInspector
+                selectedTask={selectedTask}
+                commits={pipeline.selectedCommits}
+                isLoadingCommits={pipeline.isLoadingTaskCommits}
+                errorMessage={pipeline.taskCommitsErrorMessage}
+                onRetry={() => void pipeline.refetchTaskCommits()}
+                onClearSelection={() => {
+                  setSelectedTaskId(null);
+                  setIsMobileInspectorOpen(false);
+                }}
+              />
+            </div>
+          </SheetContent>
+        </Sheet>
       </>
     );
   };

@@ -29,6 +29,7 @@ import { CustomSelect } from "@/components/common/custom-select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TaskLinkedCommitsList } from "./task-linked-commits-list";
 import { TaskEvidencePanel, TaskWorkSessionControl } from "./task-evidence-panel";
+import { LabelsMultiSelect } from "./labels-multi-select";
 import {
   useCreateProjectTask,
   usePatchProjectTask,
@@ -55,6 +56,22 @@ function normalizeIssueType(name: string): IssueType {
   return "TASK";
 }
 
+function matchJiraUserWithMember(
+  displayName: string,
+  members: { id: string; name: string; avatar: string; studentCode: string }[]
+) {
+  const cleanDisplayName = displayName.toLowerCase().trim();
+  return members.find((m) => {
+    const cleanMemberName = m.name.toLowerCase().trim();
+    return (
+      cleanDisplayName === cleanMemberName ||
+      cleanDisplayName.includes(cleanMemberName) ||
+      cleanMemberName.includes(cleanDisplayName) ||
+      (m.studentCode && cleanDisplayName.includes(m.studentCode.toLowerCase().trim()))
+    );
+  });
+}
+
 interface IssueDetailsModalProps {
   isOpen: boolean;
   issue: SprintIssue | null;
@@ -63,6 +80,7 @@ interface IssueDetailsModalProps {
   defaultSprintId?: string;
   sprints: Sprint[];
   teamMembers: { id: string; name: string; avatar: string; studentCode: string }[];
+  availableLabels?: string[];
   onClose: () => void;
   onSave: (savedIssue: SprintIssue) => void;
   onDelete?: (issueId: string) => void;
@@ -78,6 +96,7 @@ export function IssueDetailsModal({
   defaultSprintId,
   sprints,
   teamMembers,
+  availableLabels = [],
   onClose,
   onSave,
   onDelete,
@@ -138,6 +157,12 @@ export function IssueDetailsModal({
     );
   }, [issue, teamMembers]);
 
+  const initialAssigneeAccountId =
+    issue?.assignee?.accountId ||
+    taskDetail?.assignee?.accountId ||
+    taskDetail?.assigneeExternalId ||
+    "";
+
   const [form, setForm] = useState(() => {
     const initialStatus = issue ? parseIssueStatus(issue.status) : ("TODO" as IssueStatus);
     const initialSprintId = issue?.sprintId
@@ -156,7 +181,8 @@ export function IssueDetailsModal({
       status: initialStatus,
       storyPoints: typeof issue?.storyPoints === "number" ? issue.storyPoints : 0,
       assignee: matchedAssignee,
-      labels: issue?.labels ? issue.labels.join(", ") : "",
+      assigneeAccountId: initialAssigneeAccountId,
+      labels: Array.isArray(issue?.labels) ? issue.labels : [],
       sprintId: initialSprintId,
     };
   });
@@ -167,6 +193,8 @@ export function IssueDetailsModal({
     if (taskDetail) {
       const resolvedStatus = parseIssueStatus(taskDetail.status, taskDetail.jiraStatusName);
       const resolvedSprintId = taskDetail.sprint?.id ? String(taskDetail.sprint.id) : "backlog";
+      const resolvedAccountId =
+        taskDetail.assignee?.accountId || taskDetail.assigneeExternalId || "";
 
       setForm((prev) => ({
         ...prev,
@@ -178,9 +206,62 @@ export function IssueDetailsModal({
             ? taskDetail.storyPoint
             : prev.storyPoints,
         sprintId: resolvedSprintId,
+        assigneeAccountId: resolvedAccountId || prev.assigneeAccountId,
+        labels: Array.isArray(taskDetail.labels) ? taskDetail.labels : prev.labels,
       }));
     }
   }
+
+  const [hasSyncedJiraAssignee, setHasSyncedJiraAssignee] = useState(false);
+  if (!hasSyncedJiraAssignee && taskOptions?.assignableUsers && taskOptions.assignableUsers.length > 0) {
+    setHasSyncedJiraAssignee(true);
+    if (!form.assigneeAccountId) {
+      if (!isEditing) {
+        const currentMember = teamMembers.find((m) => m.studentCode === currentUserStudentCode);
+        const currentUser = taskOptions.assignableUsers.find((u) =>
+          currentMember ? matchJiraUserWithMember(u.displayName, [currentMember]) : false
+        );
+        if (currentUser) {
+          setForm((prev) => ({ ...prev, assigneeAccountId: currentUser.accountId }));
+        }
+      } else if (issue?.assignee && issue.assignee.name !== "Chưa phân công") {
+        const matched = taskOptions.assignableUsers.find((u) =>
+          matchJiraUserWithMember(u.displayName, [issue.assignee])
+        );
+        if (matched) {
+          setForm((prev) => ({ ...prev, assigneeAccountId: matched.accountId }));
+        }
+      }
+    }
+  }
+
+  const assignableUsers = taskOptions?.assignableUsers;
+  const assigneeOptions = useMemo(() => {
+    const unassignedOption = {
+      value: "",
+      label: "Chưa phân công",
+      subLabel: "Unassigned",
+    };
+
+    if (assignableUsers && assignableUsers.length > 0) {
+      const jiraOptions = assignableUsers.map((user) => {
+        const matched = matchJiraUserWithMember(user.displayName, teamMembers);
+        return {
+          value: user.accountId,
+          label: user.displayName,
+          subLabel: matched ? matched.studentCode : "Tài khoản Jira",
+        };
+      });
+      return [unassignedOption, ...jiraOptions];
+    }
+
+    const memberOptions = teamMembers.map((m) => ({
+      value: m.id,
+      label: m.name,
+      subLabel: m.studentCode,
+    }));
+    return [unassignedOption, ...memberOptions];
+  }, [assignableUsers, teamMembers]);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedCommitShas, setSelectedCommitShas] = useState("");
@@ -235,11 +316,6 @@ export function IssueDetailsModal({
 
     setIsSubmitting(true);
 
-    const labelsArray = form.labels
-      .split(",")
-      .map((l) => l.trim())
-      .filter(Boolean);
-
     let savedKey = form.key || "SAGA-NEW";
     const selectedIssueType =
       issueTypeOptions.find((option) => option.value === form.issueTypeId) ||
@@ -267,6 +343,12 @@ export function IssueDetailsModal({
             : (issue.sprintId || "backlog");
           const sprintChanged = form.sprintId !== originalSprintId;
 
+          const originalAssigneeAccountId =
+            taskDetail?.assignee?.accountId ||
+            taskDetail?.assigneeExternalId ||
+            issue.assignee?.accountId ||
+            "";
+
           const patchData: {
             summary?: string;
             description?: string;
@@ -274,9 +356,20 @@ export function IssueDetailsModal({
             storyPoints?: number;
             sprintExternalId?: string;
             moveToBacklog?: boolean;
+            assigneeAccountId?: string;
+            clearAssignee?: boolean;
+            labels?: string[];
           } = {
             summary: form.summary.trim() || issue.summary,
           };
+
+          if (form.assigneeAccountId !== originalAssigneeAccountId) {
+            if (!form.assigneeAccountId || !form.assigneeAccountId.trim()) {
+              patchData.clearAssignee = true;
+            } else {
+              patchData.assigneeAccountId = form.assigneeAccountId.trim();
+            }
+          }
 
           const currentDesc = taskDetail?.description ?? issue.description ?? "";
           if (form.description.trim() !== currentDesc.trim()) {
@@ -314,6 +407,18 @@ export function IssueDetailsModal({
             }
           }
 
+          const originalLabels = Array.isArray(taskDetail?.labels)
+            ? taskDetail.labels
+            : Array.isArray(issue.labels)
+              ? issue.labels
+              : [];
+          const labelsChanged =
+            form.labels.length !== originalLabels.length ||
+            form.labels.some((l, idx) => l !== originalLabels[idx]);
+          if (labelsChanged) {
+            patchData.labels = form.labels;
+          }
+
           if (Object.keys(patchData).length > 0) {
             const res = await patchTaskMutation.mutateAsync({
               projectId,
@@ -332,6 +437,11 @@ export function IssueDetailsModal({
                 ? String(extId)
                 : undefined;
 
+          const assigneeAccountId =
+            form.assigneeAccountId && form.assigneeAccountId.trim()
+              ? form.assigneeAccountId.trim()
+              : undefined;
+
           const res = await createTaskMutation.mutateAsync({
             projectId,
             data: {
@@ -340,11 +450,36 @@ export function IssueDetailsModal({
               issueTypeId: selectedIssueTypeId,
               storyPoints: Number(form.storyPoints) > 0 ? Number(form.storyPoints) : undefined,
               sprintExternalId: sprintExtId,
+              assigneeAccountId,
+              labels: form.labels,
             },
           });
           savedKey = res.externalKey || savedKey;
         }
       }
+
+      const matchedUser = taskOptions?.assignableUsers?.find(
+        (u) => u.accountId === form.assigneeAccountId
+      );
+      const matchedMember = matchedUser
+        ? matchJiraUserWithMember(matchedUser.displayName, teamMembers)
+        : teamMembers.find((m) => m.id === form.assigneeAccountId);
+
+      const finalAssignee = form.assigneeAccountId
+        ? {
+          id: matchedMember?.id || form.assigneeAccountId,
+          name: matchedUser?.displayName || matchedMember?.name || form.assignee?.name || "Người dùng Jira",
+          avatar: matchedMember?.avatar || "",
+          studentCode: matchedMember?.studentCode || "",
+          accountId: form.assigneeAccountId,
+        }
+        : {
+          id: "unassigned",
+          name: "Chưa phân công",
+          avatar: "",
+          studentCode: "",
+          accountId: null,
+        };
 
       const finalIssue: SprintIssue = {
         id: issue?.id || `issue-${Date.now()}`,
@@ -355,8 +490,8 @@ export function IssueDetailsModal({
         priority: form.priority as IssuePriority,
         status: form.status as IssueStatus,
         storyPoints: Number(form.storyPoints) || 0,
-        assignee: form.assignee || teamMembers[0],
-        labels: labelsArray,
+        assignee: finalAssignee,
+        labels: form.labels,
         sprintId: form.sprintId || "backlog",
         createdAt: issue?.createdAt || new Date().toISOString(),
         githubCommitCount: issue?.githubCommitCount || 0,
@@ -387,17 +522,15 @@ export function IssueDetailsModal({
   return (
     <div
       onClick={onClose}
-      className={`fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex animate-in fade-in-0 duration-300 ${
-        isEditing ? "justify-end" : "items-center justify-center p-4"
-      }`}
+      className={`fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex animate-in fade-in-0 duration-300 ${isEditing ? "justify-end" : "items-center justify-center p-4"
+        }`}
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className={`bg-card border-border/80 shadow-2xl flex flex-col overflow-hidden animate-in duration-300 ${
-          isEditing
-            ? "border-l w-full sm:max-w-2xl md:max-w-3xl lg:max-w-4xl xl:max-w-5xl h-screen slide-in-from-right"
-            : "w-full max-w-3xl max-h-[calc(100vh-2rem)] rounded-3xl border slide-in-from-bottom-4"
-        }`}
+        className={`bg-card border-border/80 shadow-2xl flex flex-col overflow-hidden animate-in duration-300 ${isEditing
+          ? "border-l w-full sm:max-w-2xl md:max-w-3xl lg:max-w-4xl xl:max-w-5xl h-screen slide-in-from-right"
+          : "w-full max-w-3xl max-h-[calc(100vh-2rem)] rounded-3xl border slide-in-from-bottom-4"
+          }`}
       >
         <div className="p-4 sm:p-5 border-b border-border/60 flex items-center justify-between bg-muted/30 shrink-0">
           <div className="flex items-center gap-3">
@@ -489,14 +622,12 @@ export function IssueDetailsModal({
             </div>
 
             <div
-              className={`grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 rounded-2xl bg-muted/20 border border-border/60 ${
-                isEditing ? "md:grid-cols-4" : ""
-              }`}
+              className={`grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 rounded-2xl bg-muted/20 border border-border/60 ${isEditing ? "md:grid-cols-4" : ""
+                }`}
             >
               <h4
-                className={`text-xs font-bold uppercase tracking-wider text-muted-foreground pb-1 border-b border-border/40 ${
-                  isEditing ? "sm:col-span-2 md:col-span-4" : "sm:col-span-2"
-                }`}
+                className={`text-xs font-bold uppercase tracking-wider text-muted-foreground pb-1 border-b border-border/40 ${isEditing ? "sm:col-span-2 md:col-span-4" : "sm:col-span-2"
+                  }`}
               >
                 Thuộc tính Task
               </h4>
@@ -526,17 +657,26 @@ export function IssueDetailsModal({
                 <CustomSelect
                   id="issue-assignee"
                   disabled={!canEdit}
-                  value={form.assignee?.id || ""}
+                  value={form.assigneeAccountId}
                   onChange={(val) => {
-                    const m = teamMembers.find((member) => member.id === val);
-                    if (m) setForm((f) => ({ ...f, assignee: m }));
+                    const matchedUser = taskOptions?.assignableUsers?.find((u) => u.accountId === val);
+                    const matchedMember = matchedUser
+                      ? matchJiraUserWithMember(matchedUser.displayName, teamMembers)
+                      : teamMembers.find((m) => m.id === val);
+                    setForm((f) => ({
+                      ...f,
+                      assigneeAccountId: val,
+                      assignee: matchedMember || (matchedUser ? {
+                        id: matchedUser.accountId,
+                        name: matchedUser.displayName,
+                        avatar: "",
+                        studentCode: "",
+                        accountId: matchedUser.accountId,
+                      } : f.assignee),
+                    }));
                   }}
-                  placeholder="Chọn thành viên..."
-                  options={teamMembers.map((m) => ({
-                    value: m.id,
-                    label: m.name,
-                    subLabel: m.studentCode,
-                  }))}
+                  placeholder="Chọn người thực hiện..."
+                  options={assigneeOptions}
                 />
               </div>
 
@@ -625,19 +765,18 @@ export function IssueDetailsModal({
                 />
               </div>
 
-              <div className="space-y-1.5">
+              <div className="space-y-1.5 sm:col-span-2 md:col-span-4">
                 <Label htmlFor="issue-labels" className="text-xs font-semibold flex items-center gap-1.5">
                   <TagIcon className="w-3.5 h-3.5 text-blue-500" />
-                  Labels (cách nhau bằng dấu phẩy)
+                  Labels (Nhãn phân loại)
                 </Label>
-                <Input
+                <LabelsMultiSelect
                   id="issue-labels"
-                  type="text"
                   disabled={!canEdit}
                   value={form.labels}
-                  onChange={(e) => setForm((f) => ({ ...f, labels: e.target.value }))}
-                  placeholder="VD: Frontend, Backend, UI/UX"
-                  className="h-9 text-xs rounded-xl bg-card disabled:opacity-80"
+                  onChange={(newLabels) => setForm((f) => ({ ...f, labels: newLabels }))}
+                  availableLabels={availableLabels}
+                  placeholder="Chọn hoặc gõ nhãn mới (nhấn Enter hoặc dấu phẩy)..."
                 />
               </div>
             </div>

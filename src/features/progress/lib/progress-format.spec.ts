@@ -195,21 +195,21 @@ describe("progress-format", () => {
       id: "UTCID11",
       type: "A",
       executedDate: "14/09/2026",
-      description: "formatSprintDue tra ve No end date khi input null hoac khong hop le",
+      description: "formatSprintDue tra ve Chua co han khi input null hoac khong hop le",
     },
     () => {
       expect(formatSprintDue(null)).toEqual({
-        label: "No end date",
+        label: "Chưa có hạn",
         diffDays: null,
         urgency: "none",
       });
       expect(formatSprintDue("")).toEqual({
-        label: "No end date",
+        label: "Chưa có hạn",
         diffDays: null,
         urgency: "none",
       });
       expect(formatSprintDue("invalid-date")).toEqual({
-        label: "No end date",
+        label: "Chưa có hạn",
         diffDays: null,
         urgency: "none",
       });
@@ -221,14 +221,14 @@ describe("progress-format", () => {
       id: "UTCID12",
       type: "N",
       executedDate: "14/09/2026",
-      description: "formatSprintDue tra ve Ends today khi end date trung ngay voi reference date",
+      description: "formatSprintDue tra ve Het han hom nay khi end date trung ngay voi reference date",
     },
     () => {
       const ref = new Date(2026, 8, 14, 9, 0, 0);
       const todayEnd = new Date(2026, 8, 14, 23, 59, 59).toISOString();
       const result = formatSprintDue(todayEnd, ref);
       expect(result).toEqual({
-        label: "Ends today",
+        label: "Hết hạn hôm nay",
         diffDays: 0,
         urgency: "warning",
       });
@@ -240,19 +240,19 @@ describe("progress-format", () => {
       id: "UTCID13",
       type: "B",
       executedDate: "14/09/2026",
-      description: "formatSprintDue tra ve 1 day hoac 2 days remaining voi muc urgency warning",
+      description: "formatSprintDue tra ve Con 1 ngay hoac Con 2 ngay voi muc urgency warning",
     },
     () => {
       const ref = new Date(2026, 8, 14, 9, 0, 0);
       const tomorrow = new Date(2026, 8, 15, 12, 0, 0).toISOString();
       const afterTomorrow = new Date(2026, 8, 16, 12, 0, 0).toISOString();
       expect(formatSprintDue(tomorrow, ref)).toEqual({
-        label: "1 day remaining",
+        label: "Còn 1 ngày",
         diffDays: 1,
         urgency: "warning",
       });
       expect(formatSprintDue(afterTomorrow, ref)).toEqual({
-        label: "2 days remaining",
+        label: "Còn 2 ngày",
         diffDays: 2,
         urgency: "warning",
       });
@@ -264,13 +264,13 @@ describe("progress-format", () => {
       id: "UTCID14",
       type: "N",
       executedDate: "14/09/2026",
-      description: "formatSprintDue tra ve N days remaining khi con hon 2 ngay",
+      description: "formatSprintDue tra ve Con N ngay khi con hon 2 ngay",
     },
     () => {
       const ref = new Date(2026, 8, 14, 9, 0, 0);
       const sixDaysLater = new Date(2026, 8, 20, 12, 0, 0).toISOString();
       expect(formatSprintDue(sixDaysLater, ref)).toEqual({
-        label: "6 days remaining",
+        label: "Còn 6 ngày",
         diffDays: 6,
         urgency: "normal",
       });
@@ -282,19 +282,19 @@ describe("progress-format", () => {
       id: "UTCID15",
       type: "B",
       executedDate: "14/09/2026",
-      description: "formatSprintDue tra ve Overdue by N days khi end date nho hon ngay hien tai",
+      description: "formatSprintDue tra ve Qua han N ngay khi end date nho hon ngay hien tai",
     },
     () => {
       const ref = new Date(2026, 8, 14, 9, 0, 0);
       const yesterday = new Date(2026, 8, 13, 12, 0, 0).toISOString();
       const fourDaysAgo = new Date(2026, 8, 10, 12, 0, 0).toISOString();
       expect(formatSprintDue(yesterday, ref)).toEqual({
-        label: "Overdue by 1 day",
+        label: "Quá hạn 1 ngày",
         diffDays: -1,
         urgency: "overdue",
       });
       expect(formatSprintDue(fourDaysAgo, ref)).toEqual({
-        label: "Overdue by 4 days",
+        label: "Quá hạn 4 ngày",
         diffDays: -4,
         urgency: "overdue",
       });
@@ -312,10 +312,10 @@ describe("progress-format", () => {
       const ref = new Date("2026-09-14T10:00:00Z");
       expect(formatRelativeTime(null)).toBe("—");
       expect(formatRelativeTime("invalid")).toBe("—");
-      expect(formatRelativeTime("2026-09-14T09:59:45Z", ref)).toBe("just now");
-      expect(formatRelativeTime("2026-09-14T09:55:00Z", ref)).toBe("5m ago");
-      expect(formatRelativeTime("2026-09-14T08:00:00Z", ref)).toBe("2h ago");
-      expect(formatRelativeTime("2026-09-11T10:00:00Z", ref)).toBe("3d ago");
+      expect(formatRelativeTime("2026-09-14T09:59:45Z", ref)).toBe("vừa xong");
+      expect(formatRelativeTime("2026-09-14T09:55:00Z", ref)).toBe("5 phút trước");
+      expect(formatRelativeTime("2026-09-14T08:00:00Z", ref)).toBe("2 giờ trước");
+      expect(formatRelativeTime("2026-09-11T10:00:00Z", ref)).toBe("3 ngày trước");
     }
   );
 
@@ -336,7 +336,7 @@ describe("progress-format", () => {
       };
       const info = getLatestSyncInfo(activeSync, { referenceDate: ref });
       expect(info.latestSyncAt).toBe("2026-09-14T09:45:00Z");
-      expect(info.relativeTime).toBe("15m ago");
+      expect(info.relativeTime).toBe("15 phút trước");
       expect(info.isStaleOrMissing).toBe(false);
       expect(info.isJiraActive).toBe(true);
       expect(info.isGitHubActive).toBe(true);

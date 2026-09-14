@@ -76,20 +76,20 @@ export function formatRelativeTime(
   const diffMs = base.getTime() - date.getTime();
 
   if (diffMs < 0) {
-    return "just now";
+    return "vừa xong";
   }
 
   const diffMinutes = Math.floor(diffMs / (60 * 1000));
-  if (diffMinutes < 1) return "just now";
-  if (diffMinutes < 60) return `${diffMinutes}m ago`;
+  if (diffMinutes < 1) return "vừa xong";
+  if (diffMinutes < 60) return `${diffMinutes} phút trước`;
 
   const diffHours = Math.floor(diffMinutes / 60);
-  if (diffHours < 24) return `${diffHours}h ago`;
+  if (diffHours < 24) return `${diffHours} giờ trước`;
 
   const diffDays = Math.floor(diffHours / 24);
-  if (diffDays < 30) return `${diffDays}d ago`;
+  if (diffDays < 30) return `${diffDays} ngày trước`;
 
-  return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  return date.toLocaleDateString("vi-VN", { day: "2-digit", month: "2-digit" });
 }
 
 export function formatSprintDue(
@@ -97,12 +97,12 @@ export function formatSprintDue(
   referenceDate?: Date
 ): SprintDueInfo {
   if (!endDateStr) {
-    return { label: "No end date", diffDays: null, urgency: "none" };
+    return { label: "Chưa có hạn", diffDays: null, urgency: "none" };
   }
 
   const targetDate = new Date(endDateStr);
   if (Number.isNaN(targetDate.getTime())) {
-    return { label: "No end date", diffDays: null, urgency: "none" };
+    return { label: "Chưa có hạn", diffDays: null, urgency: "none" };
   }
 
   const base = referenceDate ?? new Date();
@@ -114,7 +114,7 @@ export function formatSprintDue(
   if (diffDays < 0) {
     const overdueDays = Math.abs(diffDays);
     return {
-      label: `Overdue by ${overdueDays} ${overdueDays === 1 ? "day" : "days"}`,
+      label: `Quá hạn ${overdueDays} ngày`,
       diffDays,
       urgency: "overdue",
     };
@@ -122,7 +122,7 @@ export function formatSprintDue(
 
   if (diffDays === 0) {
     return {
-      label: "Ends today",
+      label: "Hết hạn hôm nay",
       diffDays: 0,
       urgency: "warning",
     };
@@ -130,14 +130,14 @@ export function formatSprintDue(
 
   if (diffDays <= 2) {
     return {
-      label: `${diffDays} ${diffDays === 1 ? "day" : "days"} remaining`,
+      label: `Còn ${diffDays} ngày`,
       diffDays,
       urgency: "warning",
     };
   }
 
   return {
-    label: `${diffDays} days remaining`,
+    label: `Còn ${diffDays} ngày`,
     diffDays,
     urgency: "normal",
   };
@@ -182,7 +182,7 @@ export function getLatestSyncInfo(
     latestTime = githubTime;
   }
 
-  const relativeTime = latestSyncAt ? formatRelativeTime(latestSyncAt, reference) : "No sync data";
+  const relativeTime = latestSyncAt ? formatRelativeTime(latestSyncAt, reference) : "Chưa có dữ liệu";
   const isOld = latestTime > 0 ? (reference.getTime() - latestTime) > staleHours * 60 * 60 * 1000 : true;
   const isStaleOrMissing = !isJiraActive || !isGitHubActive || isOld;
 

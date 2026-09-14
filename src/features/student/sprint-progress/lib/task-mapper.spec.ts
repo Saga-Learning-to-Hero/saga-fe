@@ -109,4 +109,50 @@ describe("task-mapper", () => {
       expect(result.parent).toEqual({ externalId: "10583", externalKey: "SAGA-49" });
     }
   );
+
+  fptTest(
+    {
+      id: "UTCID06",
+      type: "N",
+      executedDate: "14/09/2026",
+      description: "Map task gan voi member qua accountId va anh xa dung mang labels",
+    },
+    () => {
+      const members = [
+        {
+          id: "SE170504",
+          studentCode: "SE170504",
+          fullName: "Le Hoang Hai",
+          avatar: "",
+          accountId: "acc-user-1",
+        },
+      ];
+      const taskWithAssigneeAndLabels = {
+        ...baseTask,
+        assigneeExternalId: "acc-user-1",
+        assigneeDisplayName: "Le Hoang Hai",
+        labels: ["saga:code", "frontend"],
+      };
+
+      const result = mapProjectTaskToSprintIssue(taskWithAssigneeAndLabels, members);
+      expect(result.assignee.id).toBe("SE170504");
+      expect(result.assignee.studentCode).toBe("SE170504");
+      expect(result.assignee.name).toBe("Le Hoang Hai");
+      expect(result.labels).toEqual(["saga:code", "frontend"]);
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID07",
+      type: "B",
+      executedDate: "14/09/2026",
+      description: "Map task khi khong co labels va khong khop thanh vien tra ve unassigned va labels rong",
+    },
+    () => {
+      const result = mapProjectTaskToSprintIssue(baseTask, []);
+      expect(result.assignee.id).toBe("unassigned");
+      expect(result.labels).toEqual([]);
+    }
+  );
 });

@@ -27,7 +27,7 @@ import {
   useAssignTaskToSprint,
   usePatchSprint,
 } from "../hooks/use-project-sprints";
-import { useProjectTasksData, useTransitionTask } from "../hooks/use-project-tasks";
+import { useProjectTasksData, useTransitionTask, useTaskOptions } from "../hooks/use-project-tasks";
 import { useProjectIntegrations } from "@/features/student/project/hooks/useProjectIntegrations";
 import { useProjectRealtime } from "@/features/student/project/hooks/use-project-realtime";
 import { useProjectSyncStatus, useSyncProject } from "@/features/student/project/hooks/useProjectSync";
@@ -71,6 +71,9 @@ export function SprintProgressView() {
   const { data: syncJobs = [] } = useProjectSyncStatus(projectId, {
     enabled: Boolean(projectId),
   });
+  const { data: taskOptions } = useTaskOptions(projectId, {
+    enabled: Boolean(projectId && isJiraConnected),
+  });
   const hasActiveSyncJob = useMemo(
     () =>
       syncJobs.some((job) =>
@@ -95,12 +98,28 @@ export function SprintProgressView() {
   const isLeaderInGroup = effectiveCourse && "myGroup" in effectiveCourse && effectiveCourse.myGroup?.role === "LEADER";
   const isTeamLeader = team?.myRole === "LEADER" || Boolean(isLeaderInGroup);
 
-  const teamMembers = (team?.members || []).map((m) => ({
-    id: m.studentCode,
-    studentCode: m.studentCode,
-    name: m.fullName,
-    avatar: "",
-  }));
+  const teamMembers = useMemo(() => {
+    const assignable = taskOptions?.assignableUsers || [];
+    return (team?.members || []).map((m) => {
+      const cleanMemberName = (m.fullName || "").toLowerCase().replace(/\s+/g, " ").trim();
+      const matchedJiraUser = assignable.find((u) => {
+        const cleanDisplayName = (u.displayName || "").toLowerCase().replace(/\s+/g, " ").trim();
+        return (
+          cleanDisplayName === cleanMemberName ||
+          cleanDisplayName.includes(cleanMemberName) ||
+          cleanMemberName.includes(cleanDisplayName) ||
+          (m.studentCode && cleanDisplayName.includes(m.studentCode.toLowerCase()))
+        );
+      });
+      return {
+        id: m.studentCode,
+        studentCode: m.studentCode,
+        name: m.fullName,
+        avatar: "",
+        accountId: matchedJiraUser?.accountId || null,
+      };
+    });
+  }, [team?.members, taskOptions?.assignableUsers]);
 
   const [userSelectedSprintId, setUserSelectedSprintId] = useState<string | null>(null);
   const [activeView, setActiveView] = useState<"BOARD" | "BACKLOG" | "TIMELINE">("BOARD");
@@ -222,6 +241,32 @@ export function SprintProgressView() {
     setIsIssueModalOpen(true);
   };
 
+  const availableLabels = useMemo(() => {
+    const labelSet = new Set<string>();
+    const defaultLabels = [
+      "saga:code",
+      "saga:test",
+      "saga:doc",
+      "saga:research",
+      "frontend",
+      "backend",
+      "ui/ux",
+      "bugfix",
+      "api",
+      "database",
+      "devops",
+    ];
+    defaultLabels.forEach((l) => labelSet.add(l));
+    for (const t of rawIssues) {
+      if (Array.isArray(t.labels)) {
+        t.labels.forEach((l) => {
+          if (l && l.trim()) labelSet.add(l.trim());
+        });
+      }
+    }
+    return Array.from(labelSet);
+  }, [rawIssues]);
+
   const filteredIssues = useMemo(() => {
     return rawIssues.filter((issue) => {
       if (activeView === "BOARD" && issue.sprintId !== selectedSprintId) return false;
@@ -229,10 +274,24 @@ export function SprintProgressView() {
         const q = searchQuery.toLowerCase();
         if (!issue.key.toLowerCase().includes(q) && !issue.summary.toLowerCase().includes(q)) return false;
       }
-      if (selectedAssigneeId && issue.assignee.id !== selectedAssigneeId) return false;
+      if (selectedAssigneeId) {
+        const selectedMember = teamMembers.find((m) => m.id === selectedAssigneeId);
+        const matchesAssignee =
+          issue.assignee.id === selectedAssigneeId ||
+          issue.assignee.studentCode === selectedAssigneeId ||
+          Boolean(selectedMember?.accountId && (issue.assignee.accountId === selectedMember.accountId || issue.assignee.id === selectedMember.accountId)) ||
+          Boolean(
+            selectedMember &&
+            issue.assignee.name &&
+            (issue.assignee.name.toLowerCase().trim() === selectedMember.name.toLowerCase().trim() ||
+              issue.assignee.name.toLowerCase().includes(selectedMember.name.toLowerCase().trim()) ||
+              selectedMember.name.toLowerCase().includes(issue.assignee.name.toLowerCase().trim()))
+          );
+        if (!matchesAssignee) return false;
+      }
       return true;
     });
-  }, [rawIssues, activeView, selectedSprintId, searchQuery, selectedAssigneeId]);
+  }, [rawIssues, activeView, selectedSprintId, searchQuery, selectedAssigneeId, teamMembers]);
 
   const boardIssues = useMemo(() => getTopLevelSprintIssues(filteredIssues), [filteredIssues]);
 
@@ -440,7 +499,7 @@ export function SprintProgressView() {
       {!isTasksError && !isSprintsError && activeView === "BACKLOG" && (
         <SprintBacklogView
           sprints={sprints}
-          issues={rawIssues}
+          issues={filteredIssues}
           onIssueClick={handleOpenIssueModal}
           onCreateIssueClick={(targetSprintId) => {
             setActiveIssueForModal(null);
@@ -502,6 +561,7 @@ export function SprintProgressView() {
           defaultSprintId={defaultSprintIdForModal}
           sprints={sprints}
           teamMembers={teamMembers}
+          availableLabels={availableLabels}
           onClose={() => setIsIssueModalOpen(false)}
           onSave={handleSaveIssue}
           onDelete={handleDeleteIssue}

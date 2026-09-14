@@ -198,7 +198,7 @@ export function PeerAssessmentView() {
             <div>
               <div className="flex items-center gap-2">
                 <h3 className="text-xs font-bold text-foreground uppercase tracking-wide">
-                  Quy trình đánh giá đồng đẳng (Peer Review Flow)
+                  Quy trình đánh giá chéo (Peer Review Flow)
                 </h3>
                 <Badge variant="outline" className="text-[10px] font-mono border-amber-500/30 text-amber-700 dark:text-amber-300 bg-amber-500/10">
                   Tính năng sắp mở

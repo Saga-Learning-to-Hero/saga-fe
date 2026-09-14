@@ -54,57 +54,12 @@ export function ProjectProgressSummary({ progress, className }: ProjectProgressS
 
   const sprintRemainingTasks = sprint ? Math.max(0, sprint.totalTasks - sprint.completedTasks) : 0;
 
-  const allStatuses = [
-    {
-      key: "todo",
-      label: "To Do",
-      count: tasks.todo,
-      barClass: "bg-slate-400 dark:bg-slate-500",
-      dotClass: "bg-slate-400 dark:bg-slate-500",
-      isBlocked: false,
-    },
-    {
-      key: "inProgress",
-      label: "In Progress",
-      count: tasks.inProgress,
-      barClass: "bg-blue-500",
-      dotClass: "bg-blue-500",
-      isBlocked: false,
-    },
-    {
-      key: "inReview",
-      label: "In Review",
-      count: tasks.inReview,
-      barClass: "bg-purple-500",
-      dotClass: "bg-purple-500",
-      isBlocked: false,
-    },
-    {
-      key: "done",
-      label: "Done",
-      count: tasks.done,
-      barClass: "bg-emerald-500",
-      dotClass: "bg-emerald-500",
-      isBlocked: false,
-    },
-    {
-      key: "blocked",
-      label: "Blocked",
-      count: tasks.blocked,
-      barClass: "bg-red-500",
-      dotClass: "bg-red-500",
-      isBlocked: true,
-    },
-  ];
-
-  const visibleStatuses = allStatuses.filter((s) => s.count > 0);
-
   return (
     <TooltipProvider delay={150}>
       <div className={cn("space-y-4", className)}>
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-2">
-            <h3 className="text-base font-bold text-foreground">Project progress</h3>
+            <h3 className="text-base font-bold text-foreground">Tiến độ dự án</h3>
             <Tooltip>
               <TooltipTrigger
                 aria-label="Thông tin số liệu tiến độ"
@@ -113,7 +68,7 @@ export function ProjectProgressSummary({ progress, className }: ProjectProgressS
                 <InfoIcon className="size-3.5" />
               </TooltipTrigger>
               <TooltipContent side="top" className="max-w-xs text-xs">
-                Technical progress data only. This is not a contribution or course grade.
+                Số liệu tiến độ kỹ thuật từ Jira và GitHub. Hệ thống không tính điểm môn học; mục Đánh giá dùng để đối soát và đánh giá tỷ lệ (%) đóng góp công sức.
               </TooltipContent>
             </Tooltip>
           </div>
@@ -133,7 +88,7 @@ export function ProjectProgressSummary({ progress, className }: ProjectProgressS
                   syncInfo.isJiraActive ? "bg-emerald-500" : "bg-amber-500"
                 )}
               />
-              {syncInfo.isJiraActive ? "Jira connected" : "Jira disconnected"}
+              {syncInfo.isJiraActive ? "Đã kết nối Jira" : "Chưa kết nối Jira"}
             </span>
 
             <span
@@ -150,7 +105,7 @@ export function ProjectProgressSummary({ progress, className }: ProjectProgressS
                   syncInfo.isGitHubActive ? "bg-emerald-500" : "bg-amber-500"
                 )}
               />
-              {syncInfo.isGitHubActive ? "GitHub connected" : "GitHub disconnected"}
+              {syncInfo.isGitHubActive ? "Đã kết nối GitHub" : "Chưa kết nối GitHub"}
             </span>
 
             <span
@@ -161,7 +116,7 @@ export function ProjectProgressSummary({ progress, className }: ProjectProgressS
                   : "text-muted-foreground"
               )}
             >
-              Updated {syncInfo.relativeTime}
+              Cập nhật {syncInfo.relativeTime}
             </span>
           </div>
         </div>
@@ -173,13 +128,13 @@ export function ProjectProgressSummary({ progress, className }: ProjectProgressS
                 <div className="flex size-8 items-center justify-center rounded-xl bg-primary/10 text-primary">
                   <ListChecksIcon className="size-4" />
                 </div>
-                <p className="text-[11px] font-semibold text-muted-foreground">Task progress</p>
+                <p className="text-[11px] font-semibold text-muted-foreground">Tiến độ công việc</p>
               </div>
               <p className="font-mono text-xl font-black leading-tight text-foreground">
                 {hasTasks ? completionLabel : NO_TASK_DATA_LABEL}
               </p>
               <p className="text-[11px] text-muted-foreground">
-                {hasTasks ? `${tasks.done} / ${tasks.total} tasks completed` : "No tasks in project"}
+                {hasTasks ? `${tasks.done} / ${tasks.total} task hoàn thành` : "Chưa có task trong dự án"}
               </p>
               <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
                 <div
@@ -199,7 +154,7 @@ export function ProjectProgressSummary({ progress, className }: ProjectProgressS
                   <div className="flex size-8 items-center justify-center rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400">
                     <CalendarRangeIcon className="size-4" />
                   </div>
-                  <p className="text-[11px] font-semibold text-muted-foreground">Current sprint</p>
+                  <p className="text-[11px] font-semibold text-muted-foreground">Sprint hiện tại</p>
                 </div>
                 {sprint && (
                   <Badge
@@ -225,10 +180,10 @@ export function ProjectProgressSummary({ progress, className }: ProjectProgressS
               </p>
               <p className="text-[11px] text-muted-foreground">
                 {!sprint
-                  ? "No active sprint"
+                  ? "Không có Sprint đang chạy"
                   : sprint.totalTasks === 0
-                    ? "No tasks in this sprint"
-                    : `${sprintRemainingTasks} ${sprintRemainingTasks === 1 ? "task" : "tasks"} remaining`}
+                    ? "Chưa có task trong Sprint"
+                    : `${sprintRemainingTasks} task còn lại`}
               </p>
             </CardContent>
           </Card>
@@ -239,7 +194,7 @@ export function ProjectProgressSummary({ progress, className }: ProjectProgressS
                 <div className="flex size-8 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
                   <GitCommitIcon className="size-4" />
                 </div>
-                <p className="text-[11px] font-semibold text-muted-foreground">Commit traceability</p>
+                <p className="text-[11px] font-semibold text-muted-foreground">Đối soát commit</p>
               </div>
               <p className="font-mono text-xl font-black leading-tight text-foreground">
                 {progress.commitSummary.linked} / {progress.commitSummary.total}
@@ -253,10 +208,10 @@ export function ProjectProgressSummary({ progress, className }: ProjectProgressS
                 )}
               >
                 {progress.commitSummary.total === 0
-                  ? "No commits recorded"
+                  ? "Chưa ghi nhận commit"
                   : unlinkedCommits > 0
-                    ? `${unlinkedCommits} commits need linking`
-                    : "All commits linked to Jira tasks"}
+                    ? `${unlinkedCommits} commit cần gắn mã task`
+                    : "Tất cả commit đã gắn mã task"}
               </p>
             </CardContent>
           </Card>
@@ -267,71 +222,17 @@ export function ProjectProgressSummary({ progress, className }: ProjectProgressS
                 <div className="flex size-8 items-center justify-center rounded-xl bg-amber-500/10 text-amber-700 dark:text-amber-300">
                   <FileTextIcon className="size-4" />
                 </div>
-                <p className="text-[11px] font-semibold text-muted-foreground">Work evidence</p>
+                <p className="text-[11px] font-semibold text-muted-foreground">Minh chứng công việc</p>
               </div>
               <p className="font-mono text-xl font-black leading-tight text-foreground">
                 {totalEvidence}
               </p>
               <p className="truncate text-[11px] text-muted-foreground">
-                {progress.evidenceSummary.workSessions} work session · {progress.evidenceSummary.files} files · {progress.evidenceSummary.webLinks} links · {progress.evidenceSummary.confirmations} confirmations
+                {progress.evidenceSummary.workSessions} phiên làm việc · {progress.evidenceSummary.files} tệp · {progress.evidenceSummary.webLinks} liên kết · {progress.evidenceSummary.confirmations} xác nhận
               </p>
             </CardContent>
           </Card>
         </div>
-
-        <Card className="rounded-2xl border border-border/80 shadow-xs">
-          <CardContent className="space-y-3 p-4">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-foreground">Jira status</span>
-              <span className="font-mono text-[11px] font-semibold text-muted-foreground">
-                {tasks.total} {tasks.total === 1 ? "task" : "tasks"} total
-              </span>
-            </div>
-
-            <div className="flex h-2.5 w-full overflow-hidden rounded-full bg-muted/60">
-              {tasks.total > 0 ? (
-                allStatuses.map((seg) => {
-                  if (seg.count <= 0) return null;
-                  const pct = (seg.count / tasks.total) * 100;
-                  return (
-                    <div
-                      key={seg.key}
-                      style={{ width: `${pct}%` }}
-                      className={cn("h-full transition-all duration-300", seg.barClass)}
-                      title={`${seg.label}: ${seg.count} (${Math.round(pct)}%)`}
-                    />
-                  );
-                })
-              ) : (
-                <div className="h-full w-full bg-muted" />
-              )}
-            </div>
-
-            <div className="flex flex-wrap items-center gap-x-4 gap-y-2 pt-1 text-xs">
-              {visibleStatuses.map((seg) => (
-                <div key={seg.key} className="flex items-center gap-1.5">
-                  <span className={cn("size-2 rounded-full", seg.dotClass)} />
-                  <span className="text-muted-foreground">{seg.label}</span>
-                  <span className="font-mono font-bold text-foreground">{seg.count}</span>
-
-                  {seg.isBlocked && (
-                    <Tooltip>
-                      <TooltipTrigger
-                        aria-label="Blocked status note"
-                        className="inline-flex size-3.5 cursor-help items-center justify-center text-red-500 hover:text-red-600"
-                      >
-                        <InfoIcon className="size-3" />
-                      </TooltipTrigger>
-                      <TooltipContent side="top" className="max-w-xs text-xs">
-                        A custom Jira status mapped when work cannot progress.
-                      </TooltipContent>
-                    </Tooltip>
-                  )}
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
       </div>
     </TooltipProvider>
   );

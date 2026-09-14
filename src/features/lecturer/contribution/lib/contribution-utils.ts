@@ -196,13 +196,13 @@ export function formatContributionWarning(warning: string): {
       };
     case "NO_PEER_REVIEW":
       return {
-        title: "Chưa có đánh giá đồng đẳng",
+        title: "Chưa có đánh giá chéo",
         description: "Thành viên chưa nhận được lượt đánh giá chéo từ các thành viên khác trong nhóm.",
         severity: "medium",
       };
     case "LOW_PEER_REVIEW":
       return {
-        title: "Điểm đánh giá đồng đẳng thấp",
+        title: "Điểm đánh giá chéo thấp",
         description: "Hệ số đánh giá chéo từ đồng đội ở mức thấp (≤ 0.60), cần giảng viên đối soát kỹ.",
         severity: "high",
       };
