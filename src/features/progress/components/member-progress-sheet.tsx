@@ -8,7 +8,7 @@ import {
   Loader2Icon,
   ShieldCheckIcon,
 } from "lucide-react";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -18,8 +18,10 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
+import { getAssigneeAvatarClass, getAssigneeInitials } from "@/features/student/sprint-progress/lib/assignee-avatar";
 import { useMemberProgress } from "@/features/student/project/hooks/useProjectSync";
 import { getApiErrorCode, getApiErrorMessage } from "@/lib/api-error";
+import { cn } from "@/lib/utils";
 import {
   formatDateTime,
   formatLinkedCommitRatio,
@@ -66,26 +68,41 @@ export function MemberProgressSheet({
     );
   }, [assignedTasks, taskFilter]);
 
-  const initials = data?.fullName
-    ? data.fullName
-      .split(" ")
-      .map((p) => p[0])
-      .slice(-2)
-      .join("")
-      .toUpperCase()
-    : "SV";
+  const rawData = data as Record<string, unknown> | undefined;
+  const avatarUrl =
+    typeof rawData?.avatarUrl === "string" && rawData.avatarUrl.trim()
+      ? rawData.avatarUrl.trim()
+      : typeof rawData?.avatar === "string" && rawData.avatar.trim()
+        ? rawData.avatar.trim()
+        : null;
+
+  const initials = getAssigneeInitials(data?.fullName);
+  const avatarColorClass = getAssigneeAvatarClass(
+    data?.studentId || data?.userId || data?.studentCode
+  );
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
         side="right"
-        className="w-full sm:max-w-xl md:max-w-2xl overflow-hidden p-0 flex flex-col bg-card border-l border-border/70 shadow-2xl"
+        className="w-full sm:max-w-2xl md:max-w-3xl data-[side=right]:sm:max-w-2xl data-[side=right]:md:max-w-3xl overflow-hidden p-0 flex flex-col bg-card border-l border-border/70 shadow-2xl"
       >
         <SheetHeader className="p-5 border-b border-border/60 bg-muted/20 shrink-0">
           <div className="flex items-start justify-between gap-3 pr-8">
             <div className="flex items-center gap-3">
-              <Avatar className="h-11 w-11 rounded-2xl border border-border/80 bg-primary/10 text-primary font-bold shadow-2xs">
-                <AvatarFallback className="rounded-2xl">{initials}</AvatarFallback>
+              <Avatar className="size-12 rounded-2xl border border-border/80 shadow-2xs">
+                {avatarUrl ? (
+                  <AvatarImage
+                    src={avatarUrl}
+                    alt={data?.fullName || "Avatar"}
+                    className="rounded-2xl object-cover"
+                  />
+                ) : null}
+                <AvatarFallback
+                  className={cn("rounded-2xl font-mono text-xs font-bold", avatarColorClass)}
+                >
+                  {initials}
+                </AvatarFallback>
               </Avatar>
               <div className="space-y-1 text-left">
                 <SheetTitle className="text-base font-extrabold text-foreground flex items-center gap-2">
@@ -317,7 +334,7 @@ export function MemberProgressSheet({
                     Không có task nào trong trạng thái này.
                   </div>
                 ) : (
-                  <div className="space-y-2 max-h-[320px] overflow-y-auto custom-scrollbar pr-1">
+                  <div className="space-y-2 max-h-[440px] overflow-y-auto custom-scrollbar pr-1">
                     {filteredTasks.map((task) => (
                       <div
                         key={task.id}
