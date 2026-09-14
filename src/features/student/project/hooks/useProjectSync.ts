@@ -3,11 +3,13 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ProjectProjectionService } from "../api/project-projection-service";
 import { PROJECT_INTEGRATIONS_QUERY_KEYS } from "./useProjectIntegrations";
+import { JIRA_SPRINT_QUERY_KEYS } from "@/features/student/sprint-progress/hooks/use-sprint-data";
+import { ProjectTaskService } from "@/features/student/sprint-progress/api/project-task-service";
 import type { ProjectSyncResponse, ProjectSyncStatusItem } from "../types/student-project";
 
 export const PROJECT_PROJECTION_QUERY_KEYS = {
   all: ["project-projections"] as const,
-  tasks: (projectId?: string | null) => [...PROJECT_PROJECTION_QUERY_KEYS.all, "tasks", projectId] as const,
+  tasks: (projectId?: string | null) => JIRA_SPRINT_QUERY_KEYS.tasks(projectId),
   syncStatus: (projectId?: string | null) => [...PROJECT_PROJECTION_QUERY_KEYS.all, "sync-status", projectId] as const,
   taskCommits: (projectId?: string | null, taskId?: string | null) =>
     [...PROJECT_PROJECTION_QUERY_KEYS.all, "task-commits", projectId, taskId] as const,
@@ -56,8 +58,8 @@ export function useSyncProject() {
 
 export function useProjectTasks(projectId?: string | null, options?: { enabled?: boolean }) {
   return useQuery({
-    queryKey: PROJECT_PROJECTION_QUERY_KEYS.tasks(projectId),
-    queryFn: () => ProjectProjectionService.getProjectTasks(projectId!),
+    queryKey: JIRA_SPRINT_QUERY_KEYS.tasks(projectId),
+    queryFn: () => ProjectTaskService.getTasks(projectId!),
     enabled: (options?.enabled ?? true) && Boolean(projectId && projectId.trim()),
     staleTime: 1000 * 30,
   });
@@ -67,7 +69,7 @@ export function useProjectSyncStatus(
   projectId?: string | null,
   options?: {
     enabled?: boolean;
-    refetchInterval?: import("@tanstack/react-query").UseQueryOptions<ProjectSyncStatusItem[]>["refetchInterval"];
+    refetchInterval?: number | false | ((query: unknown) => number | false | undefined);
   }
 ) {
   return useQuery({
@@ -75,7 +77,20 @@ export function useProjectSyncStatus(
     queryFn: () => ProjectProjectionService.getProjectSyncStatus(projectId!),
     enabled: (options?.enabled ?? true) && Boolean(projectId && projectId.trim()),
     staleTime: 1000 * 15,
-    refetchInterval: options?.refetchInterval,
+    refetchInterval: (query) => {
+      if (options?.refetchInterval !== undefined) {
+        return typeof options.refetchInterval === "function"
+          ? (options.refetchInterval as (q: unknown) => number | false | undefined)(query)
+          : options.refetchInterval;
+      }
+      const jobs = query.state.data as ProjectSyncStatusItem[] | undefined;
+      const isActivelySyncing = jobs?.some((job) =>
+        ["ENQUEUED", "IN_PROGRESS", "RUNNING", "SYNCING"].includes(
+          (job.status || "").toUpperCase()
+        )
+      );
+      return isActivelySyncing ? 3000 : 30000;
+    },
   });
 }
 

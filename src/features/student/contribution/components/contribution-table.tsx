@@ -1,12 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import Link from "next/link";
 import {
   AlertTriangleIcon,
   ArrowUpRightIcon,
   ChevronDownIcon,
-  CrownIcon,
   NetworkIcon,
   ShieldAlertIcon,
 } from "lucide-react";
@@ -22,18 +21,20 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { MemberRoleBadge } from "@/components/common/leader-badge";
 import {
-  contributionRoleLabel,
   formatContributionNumber,
   formatContributionPercent,
   formatContributionWarning,
 } from "@/features/lecturer/contribution/lib/contribution-utils";
+import { cleanMemberName } from "../lib/contribution-view-utils";
 import type { ContributionMember } from "../types/contribution";
 import { cn } from "@/lib/utils";
 
 interface ContributionTableProps {
   members: ContributionMember[];
   currentStudentCode?: string;
+  courseId?: string | null;
 }
 
 function getInitials(name: string) {
@@ -43,19 +44,29 @@ function getInitials(name: string) {
   return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
 }
 
-export function ContributionTable({ members, currentStudentCode }: ContributionTableProps) {
+export function ContributionTable({
+  members,
+  currentStudentCode,
+  courseId,
+}: ContributionTableProps) {
   const [expandedId, setExpandedId] = useState<string | null>(null);
+
+  const hasAnyResearch = useMemo(() => {
+    return members.some((m) => (Number(m.researchContributionPercentage) || 0) > 0);
+  }, [members]);
+
+  const courseQuery = courseId ? `?courseId=${encodeURIComponent(courseId)}` : "";
 
   return (
     <Card className="rounded-2xl border border-border/80 shadow-2xs bg-card overflow-hidden">
-      <CardHeader className="p-4 sm:p-5 pb-4 border-b border-border/60">
+      <CardHeader className="p-4 sm:p-5 pb-4 border-b border-border/60 bg-muted/20">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
             <CardTitle className="text-sm sm:text-base font-bold text-foreground">
-              Bảng Đánh Giá Tỷ Lệ Đóng Góp Nhóm
+              Bảng ma trận đối soát tỷ lệ đóng góp (Slicing Pie)
             </CardTitle>
             <CardDescription className="text-xs text-muted-foreground mt-0.5">
-              Tính toán minh bạch từ SAGA-BE-V2 dựa trên 4 trụ cột công sức, liên kết bằng chứng và điểm đánh giá chéo.
+              Quy trình tính toán từ Slice score theo 3 phân loại công sức, hệ số Peer review đến tỷ lệ cuối cùng
             </CardDescription>
           </div>
           <Badge variant="outline" className="text-[10px] font-mono font-bold self-start sm:self-auto py-1 px-2.5">
@@ -66,30 +77,50 @@ export function ContributionTable({ members, currentStudentCode }: ContributionT
 
       <div className="overflow-x-auto">
         <Table>
-          <TableHeader className="bg-muted/30">
+          <TableHeader className="bg-muted/40">
             <TableRow className="border-b border-border/60">
               <TableHead className="sticky left-0 z-10 min-w-48 bg-card text-xs font-bold text-muted-foreground">
-                Thành viên & Minh chứng
+                Thành viên
               </TableHead>
               <TableHead className="text-xs font-bold text-muted-foreground">Vai trò</TableHead>
-              <TableHead className="text-xs font-bold text-muted-foreground">Điểm SP</TableHead>
-              <TableHead className="text-xs font-bold text-muted-foreground">Code</TableHead>
-              <TableHead className="text-xs font-bold text-muted-foreground">Testing</TableHead>
-              <TableHead className="text-xs font-bold text-muted-foreground">Document</TableHead>
-              <TableHead className="text-xs font-bold text-muted-foreground">Research</TableHead>
-              <TableHead className="text-xs font-bold text-muted-foreground">Công việc</TableHead>
-              <TableHead className="text-xs font-bold text-muted-foreground">Đánh giá chéo</TableHead>
-              <TableHead className="text-xs font-bold text-muted-foreground">Trước Peer</TableHead>
-              <TableHead className="min-w-40 text-xs font-bold text-muted-foreground">
-                Tỷ lệ đóng góp cuối cùng
+              <TableHead className="text-right text-xs font-bold text-muted-foreground">
+                Slice Score
               </TableHead>
-              <TableHead className="text-right text-xs font-bold text-muted-foreground">Chi tiết</TableHead>
+              <TableHead className="text-right text-xs font-bold text-muted-foreground">
+                Lập trình (Code)
+              </TableHead>
+              <TableHead className="text-right text-xs font-bold text-muted-foreground">
+                Kiểm thử (Test)
+              </TableHead>
+              <TableHead className="text-right text-xs font-bold text-muted-foreground">
+                Tài liệu (Doc)
+              </TableHead>
+              {hasAnyResearch && (
+                <TableHead className="text-right text-xs font-bold text-muted-foreground">
+                  Nghiên cứu
+                </TableHead>
+              )}
+              <TableHead className="text-right text-xs font-bold text-muted-foreground">
+                Trước Peer
+              </TableHead>
+              <TableHead className="text-right text-xs font-bold text-muted-foreground">
+                Hệ số Peer
+              </TableHead>
+              <TableHead className="min-w-36 text-right text-xs font-bold text-muted-foreground">
+                Tỷ lệ cuối cùng
+              </TableHead>
+              <TableHead className="text-right text-xs font-bold text-muted-foreground">
+                Chi tiết
+              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody className="divide-y divide-border/60">
             {members.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={12} className="h-32 text-center text-xs text-muted-foreground">
+                <TableCell
+                  colSpan={hasAnyResearch ? 11 : 10}
+                  className="h-32 text-center text-xs text-muted-foreground"
+                >
                   Nhóm chưa có dữ liệu thành viên để lập bảng điểm đóng góp.
                 </TableCell>
               </TableRow>
@@ -99,7 +130,7 @@ export function ContributionTable({ members, currentStudentCode }: ContributionT
                 const isLeader = member.roleInTeam === "LEADER";
                 const expanded = expandedId === member.studentProfileId || expandedId === member.studentCode;
                 const finalPercentage = Number(member.finalContributionPercentage) || 0;
-                const hasNoEvidence = member.warnings.includes("NO_EVIDENCE");
+                const hasNoEvidence = member.warnings.some((w) => w.toUpperCase().includes("NO_EVIDENCE"));
                 const hasWarnings = member.warnings.length > 0;
 
                 return (
@@ -112,6 +143,8 @@ export function ContributionTable({ members, currentStudentCode }: ContributionT
                     finalPercentage={finalPercentage}
                     hasNoEvidence={hasNoEvidence}
                     hasWarnings={hasWarnings}
+                    hasAnyResearch={hasAnyResearch}
+                    courseQuery={courseQuery}
                     onToggle={() =>
                       setExpandedId(expanded ? null : member.studentProfileId || member.studentCode)
                     }
@@ -134,6 +167,8 @@ function TableRowGroup({
   finalPercentage,
   hasNoEvidence,
   hasWarnings,
+  hasAnyResearch,
+  courseQuery,
   onToggle,
 }: {
   member: ContributionMember;
@@ -143,8 +178,12 @@ function TableRowGroup({
   finalPercentage: number;
   hasNoEvidence: boolean;
   hasWarnings: boolean;
+  hasAnyResearch: boolean;
+  courseQuery: string;
   onToggle: () => void;
 }) {
+  const cleanedName = cleanMemberName(member.fullName) || member.studentCode;
+
   return (
     <>
       <TableRow className={cn("transition-colors hover:bg-muted/20", isCurrent && "bg-primary/5")}>
@@ -159,12 +198,12 @@ function TableRowGroup({
                     : "bg-muted text-muted-foreground"
                 )}
               >
-                {getInitials(member.fullName)}
+                {getInitials(cleanedName)}
               </AvatarFallback>
             </Avatar>
             <div className="space-y-0.5">
               <div className="flex items-center gap-1.5">
-                <p className="text-xs font-bold text-foreground">{member.fullName}</p>
+                <p className="text-xs font-bold text-foreground">{cleanedName}</p>
                 {isCurrent && (
                   <Badge variant="outline" className="bg-primary/10 text-primary border-primary/30 text-[9px] px-1 py-0 font-bold">
                     Tôi
@@ -172,7 +211,7 @@ function TableRowGroup({
                 )}
               </div>
               <div className="flex flex-wrap items-center gap-1.5">
-                <span className="inline-block rounded bg-primary/10 px-1.5 py-0.2 font-mono text-[10px] font-bold text-primary">
+                <span className="inline-block rounded bg-muted px-1.5 py-0.2 font-mono text-[10px] font-bold text-foreground">
                   {member.studentCode}
                 </span>
                 {hasNoEvidence ? (
@@ -191,49 +230,37 @@ function TableRowGroup({
           </div>
         </TableCell>
         <TableCell>
-          <Badge
-            variant="outline"
-            className={cn(
-              "font-mono text-[10px] font-bold gap-1",
-              isLeader
-                ? "border-amber-500/30 bg-amber-500/15 text-amber-700 dark:text-amber-300"
-                : "border-border/60 bg-muted/60 text-muted-foreground"
-            )}
-          >
-            {isLeader && <CrownIcon className="size-2.5 text-amber-500" />}
-            {contributionRoleLabel(member.roleInTeam)}
-          </Badge>
+          <MemberRoleBadge role={member.roleInTeam} />
         </TableCell>
-        <TableCell className="font-mono text-xs font-semibold">
+        <TableCell className="text-right font-mono text-xs font-bold text-foreground">
           {formatContributionNumber(member.sliceScore)}
         </TableCell>
-        <TableCell className="font-mono text-xs">
+        <TableCell className="text-right font-mono text-xs text-muted-foreground">
           {formatContributionPercent(member.codeContributionPercentage)}
         </TableCell>
-        <TableCell className="font-mono text-xs">
+        <TableCell className="text-right font-mono text-xs text-muted-foreground">
           {formatContributionPercent(member.testContributionPercentage)}
         </TableCell>
-        <TableCell className="font-mono text-xs">
+        <TableCell className="text-right font-mono text-xs text-muted-foreground">
           {formatContributionPercent(member.documentContributionPercentage)}
         </TableCell>
-        <TableCell className="font-mono text-xs">
-          {formatContributionPercent(member.researchContributionPercentage)}
-        </TableCell>
-        <TableCell className="font-mono text-xs">
-          {formatContributionPercent(member.taskContributionPercentage)}
-        </TableCell>
-        <TableCell className="font-mono text-xs font-semibold text-foreground">
-          × {formatContributionNumber(member.peerReviewScore)}
-        </TableCell>
-        <TableCell className="font-mono text-xs text-muted-foreground">
+        {hasAnyResearch && (
+          <TableCell className="text-right font-mono text-xs text-muted-foreground">
+            {formatContributionPercent(member.researchContributionPercentage)}
+          </TableCell>
+        )}
+        <TableCell className="text-right font-mono text-xs text-muted-foreground">
           {formatContributionPercent(member.sliceContributionPercentage)}
         </TableCell>
-        <TableCell>
+        <TableCell className="text-right font-mono text-xs font-semibold text-foreground">
+          × {formatContributionNumber(member.peerReviewScore)}
+        </TableCell>
+        <TableCell className="text-right">
           <div className="space-y-1">
             <span className="font-mono text-xs font-black text-primary">
               {formatContributionPercent(member.finalContributionPercentage)}
             </span>
-            <div className="h-1.5 w-28 overflow-hidden rounded-full bg-muted">
+            <div className="h-1.5 w-24 ml-auto overflow-hidden rounded-full bg-muted">
               <div
                 className={cn(
                   "h-full rounded-full transition-all duration-300",
@@ -254,7 +281,7 @@ function TableRowGroup({
             className="h-8 cursor-pointer text-xs font-semibold hover:bg-muted/50"
             onClick={onToggle}
           >
-            Minh chứng
+            Chi tiết
             <ChevronDownIcon
               className={cn("ml-1 size-3.5 transition-transform duration-200", expanded && "rotate-180")}
             />
@@ -264,7 +291,7 @@ function TableRowGroup({
 
       {expanded && (
         <TableRow>
-          <TableCell colSpan={12} className="bg-muted/20 p-4">
+          <TableCell colSpan={hasAnyResearch ? 11 : 10} className="bg-muted/20 p-4">
             <div className="space-y-4">
               {member.warnings.length > 0 && (
                 <div className="space-y-1.5">
@@ -330,13 +357,13 @@ function TableRowGroup({
                         </div>
                         <div className="space-y-1 text-[11px] text-muted-foreground">
                           <div className="flex justify-between">
-                            <span>Điểm SP:</span>
+                            <span>Slice Score:</span>
                             <span className="font-mono font-bold text-foreground">
                               {formatContributionNumber(sprint.sliceScore)}
                             </span>
                           </div>
                           <div className="flex justify-between">
-                            <span>Tỷ lệ SP:</span>
+                            <span>Tỷ lệ trước Peer:</span>
                             <span className="font-mono font-bold text-foreground">
                               {formatContributionPercent(sprint.sliceContributionPercentage)}
                             </span>
@@ -350,7 +377,7 @@ function TableRowGroup({
 
               <div className="flex items-center justify-end border-t border-border/40 pt-3">
                 <Link
-                  href="/student/graph"
+                  href={`/student/graph${courseQuery}`}
                   prefetch={true}
                   className={buttonVariants({
                     variant: "outline",

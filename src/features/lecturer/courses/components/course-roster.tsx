@@ -5,7 +5,6 @@ import Link from "next/link";
 import {
   AlertCircleIcon,
   CheckCircle2Icon,
-  CrownIcon,
   FileSpreadsheetIcon,
   GraduationCapIcon,
   MailIcon,
@@ -15,6 +14,7 @@ import {
 } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { LeaderBadge } from "@/components/common/leader-badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -354,9 +354,7 @@ export function CourseRoster({ courseId, onSwitchToTeams }: CourseRosterProps) {
                           <span className="font-mono">Team #{teamInfo.teamNo}</span>
                           <span className="font-medium text-foreground/80">— {teamInfo.teamName}</span>
                           {teamInfo.isLeader && (
-                            <span title="Trưởng nhóm" className="inline-flex items-center">
-                              <CrownIcon className="size-3 text-amber-500 shrink-0" />
-                            </span>
+                            <LeaderBadge variant="icon-only" />
                           )}
                         </Link>
                       ) : (

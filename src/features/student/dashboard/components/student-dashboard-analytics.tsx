@@ -12,20 +12,11 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { MemberProgressDialog } from "@/features/progress/components/member-progress-dialog";
+import { MemberProgressSheet } from "@/features/progress/components/member-progress-sheet";
 import {
   ProgressFactNote,
   ProjectProgressSummary,
 } from "@/features/progress/components/project-progress-summary";
-import { ProgressMemberTable } from "@/features/progress/components/progress-member-table";
 import { useStudentCourseContext } from "@/features/student/courses/hooks/use-student-course-context";
 import { useStudentMyTeam } from "@/features/student/courses/hooks/use-student-courses";
 import { useProjectRealtime } from "@/features/student/project/hooks/use-project-realtime";
@@ -39,9 +30,10 @@ import {
   buildWeeklyCommitBuckets,
   normalizeProjectProgress,
 } from "@/features/progress/lib/progress-format";
-import { StudentKPICards } from "./student-kpi-cards";
 import { StudentTaskCommitCharts } from "./student-task-commit-charts";
 import { TeamWorkloadComparisonChart } from "./team-workload-comparison-chart";
+import { StudentDashboardSkeleton } from "./student-dashboard-skeleton";
+import { LeaderBadge } from "@/components/common/leader-badge";
 
 export function StudentDashboardAnalytics() {
   const { course, courseId, isLoading: isCoursesLoading, isInvalidCourse } = useStudentCourseContext();
@@ -55,72 +47,17 @@ export function StudentDashboardAnalytics() {
   const commitsQuery = useProjectCommits(projectId, { enabled: canLoadProgress });
   useProjectRealtime(projectId, { enabled: canLoadProgress });
 
-  const [isAllTeam, setIsAllTeam] = useState(true);
-  const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
   const [detailStudentId, setDetailStudentId] = useState<string | null>(null);
 
   const progress = normalizeProjectProgress(progressQuery.data);
   const members = progress?.memberProgress ?? [];
-  const selectedMember = members.find((member) => member.studentId === selectedStudentId) ?? null;
 
   const weeklyData = useMemo(
-    () =>
-      buildWeeklyCommitBuckets(commitsQuery.data ?? [], {
-        studentId: isAllTeam ? null : selectedStudentId,
-      }),
-    [commitsQuery.data, isAllTeam, selectedStudentId]
+    () => buildWeeklyCommitBuckets(commitsQuery.data ?? []),
+    [commitsQuery.data]
   );
 
-  const kpiTasks = (() => {
-    if (!progress) {
-      return {
-        total: 0,
-        todo: 0,
-        inProgress: 0,
-        inReview: 0,
-        done: 0,
-        blocked: 0,
-        completionPercent: null,
-      };
-    }
-    if (isAllTeam || !selectedMember) {
-      return progress.taskSummary;
-    }
-    const assigned = selectedMember.tasks.assigned || selectedMember.tasks.assignedTotal || 0;
-    return {
-      total: assigned,
-      todo: selectedMember.tasks.incomplete,
-      inProgress: selectedMember.tasks.inProgress,
-      inReview: 0,
-      done: selectedMember.tasks.completed,
-      blocked: selectedMember.tasks.blocked,
-      completionPercent:
-        assigned > 0 ? Math.round((selectedMember.tasks.completed / assigned) * 100) : null,
-    };
-  })();
-
-  const kpiCommits = isAllTeam || !selectedMember
-    ? {
-        total: progress?.commitSummary.total ?? 0,
-        linked: progress?.commitSummary.linked ?? 0,
-      }
-    : {
-        total: selectedMember.commits.total,
-        linked: selectedMember.commits.linkedToTasks,
-      };
-
-  const evidenceCount = isAllTeam || !selectedMember
-    ? progress
-      ? progress.evidenceSummary.workSessions +
-        progress.evidenceSummary.files +
-        progress.evidenceSummary.webLinks +
-        progress.evidenceSummary.confirmations
-      : 0
-    : selectedMember.evidenceConfirmations;
-
   const openMemberDetail = (studentId: string) => {
-    setSelectedStudentId(studentId);
-    setIsAllTeam(false);
     setDetailStudentId(studentId);
   };
 
@@ -134,7 +71,7 @@ export function StudentDashboardAnalytics() {
   }
 
   if (isCoursesLoading || (Boolean(courseId) && teamQuery.isLoading && !team)) {
-    return <div className="min-h-64 animate-pulse rounded-2xl bg-muted" />;
+    return <StudentDashboardSkeleton />;
   }
 
   if (!courseId || !course) {
@@ -225,7 +162,7 @@ export function StudentDashboardAnalytics() {
   }
 
   if (progressQuery.isLoading && !progress) {
-    return <div className="min-h-64 animate-pulse rounded-2xl bg-muted" />;
+    return <StudentDashboardSkeleton />;
   }
 
   if (!progress) {
@@ -249,9 +186,7 @@ export function StudentDashboardAnalytics() {
               <h2 className="text-base font-bold tracking-tight text-foreground">
                 Bảng tiến độ dự án nhóm
               </h2>
-              <Badge className="border-0 bg-amber-500/15 text-[10px] font-semibold text-amber-900 dark:text-amber-300">
-                Trưởng nhóm
-              </Badge>
+              <LeaderBadge size="sm" />
               <Badge variant="outline" className="font-mono text-[10px]">
                 Nhóm {progress.teamNo} · {progress.teamName}
               </Badge>
@@ -262,71 +197,21 @@ export function StudentDashboardAnalytics() {
           </div>
         </div>
 
-        <DropdownMenu>
-          <DropdownMenuTrigger className="flex cursor-pointer items-center gap-2 rounded-xl border border-border bg-muted/70 px-3 py-1.5 text-xs font-semibold text-foreground outline-none hover:bg-muted">
-            <UsersIcon className="size-3.5 text-primary" />
-            {isAllTeam || !selectedMember ? "Tổng quan cả nhóm" : selectedMember.fullName}
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-64 rounded-xl p-1.5">
-            <DropdownMenuLabel className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-              Phạm vi theo dõi
-            </DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem
-              onClick={() => {
-                setIsAllTeam(true);
-                setSelectedStudentId(null);
-              }}
-              className={cn("cursor-pointer rounded-lg text-xs", isAllTeam && "bg-primary/10 font-bold text-primary")}
-            >
-              Tổng quan cả nhóm
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            {members.map((member) => (
-              <DropdownMenuItem
-                key={member.studentId}
-                onClick={() => openMemberDetail(member.studentId)}
-                className={cn(
-                  "cursor-pointer rounded-lg text-xs",
-                  !isAllTeam && selectedStudentId === member.studentId && "bg-primary/10 font-bold text-primary"
-                )}
-              >
-                {member.fullName}
-                <span className="ml-auto font-mono text-[10px] text-muted-foreground">
-                  {member.studentCode}
-                </span>
-              </DropdownMenuItem>
-            ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
       </div>
 
       <ProjectProgressSummary progress={progress} />
       <ProgressFactNote />
 
-      <StudentKPICards
-        tasks={kpiTasks}
-        commits={kpiCommits}
-        evidenceCount={evidenceCount}
-        isAllTeamSelected={isAllTeam || !selectedMember}
-      />
-
-      <StudentTaskCommitCharts tasks={kpiTasks} weeklyData={weeklyData} />
+      <StudentTaskCommitCharts tasks={progress.taskSummary} weeklyData={weeklyData} />
 
       <TeamWorkloadComparisonChart
         members={members}
-        selectedStudentId={selectedStudentId}
+        selectedStudentId={detailStudentId}
         onSelectMember={openMemberDetail}
         currentSprintName={progress.currentSprint?.name}
       />
 
-      <ProgressMemberTable
-        members={members}
-        selectedStudentId={selectedStudentId}
-        onSelectMember={openMemberDetail}
-      />
-
-      <MemberProgressDialog
+      <MemberProgressSheet
         projectId={projectId}
         studentId={detailStudentId}
         open={Boolean(detailStudentId)}

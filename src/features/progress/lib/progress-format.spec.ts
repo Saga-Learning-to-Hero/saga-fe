@@ -4,6 +4,9 @@ import {
   buildWeeklyCommitBuckets,
   formatCompletionPercent,
   formatLinkedCommitRatio,
+  formatRelativeTime,
+  formatSprintDue,
+  getLatestSyncInfo,
   isIntegrationDegraded,
   normalizeMemberSummary,
   normalizeProjectProgress,
@@ -184,6 +187,178 @@ describe("progress-format", () => {
     () => {
       expect(normalizeProjectProgress(null)).toBeNull();
       expect(normalizeProjectProgress("x")).toBeNull();
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID11",
+      type: "A",
+      executedDate: "14/09/2026",
+      description: "formatSprintDue tra ve Chua co han khi input null hoac khong hop le",
+    },
+    () => {
+      expect(formatSprintDue(null)).toEqual({
+        label: "Chưa có hạn",
+        diffDays: null,
+        urgency: "none",
+      });
+      expect(formatSprintDue("")).toEqual({
+        label: "Chưa có hạn",
+        diffDays: null,
+        urgency: "none",
+      });
+      expect(formatSprintDue("invalid-date")).toEqual({
+        label: "Chưa có hạn",
+        diffDays: null,
+        urgency: "none",
+      });
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID12",
+      type: "N",
+      executedDate: "14/09/2026",
+      description: "formatSprintDue tra ve Het han hom nay khi end date trung ngay voi reference date",
+    },
+    () => {
+      const ref = new Date(2026, 8, 14, 9, 0, 0);
+      const todayEnd = new Date(2026, 8, 14, 23, 59, 59).toISOString();
+      const result = formatSprintDue(todayEnd, ref);
+      expect(result).toEqual({
+        label: "Hết hạn hôm nay",
+        diffDays: 0,
+        urgency: "warning",
+      });
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID13",
+      type: "B",
+      executedDate: "14/09/2026",
+      description: "formatSprintDue tra ve Con 1 ngay hoac Con 2 ngay voi muc urgency warning",
+    },
+    () => {
+      const ref = new Date(2026, 8, 14, 9, 0, 0);
+      const tomorrow = new Date(2026, 8, 15, 12, 0, 0).toISOString();
+      const afterTomorrow = new Date(2026, 8, 16, 12, 0, 0).toISOString();
+      expect(formatSprintDue(tomorrow, ref)).toEqual({
+        label: "Còn 1 ngày",
+        diffDays: 1,
+        urgency: "warning",
+      });
+      expect(formatSprintDue(afterTomorrow, ref)).toEqual({
+        label: "Còn 2 ngày",
+        diffDays: 2,
+        urgency: "warning",
+      });
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID14",
+      type: "N",
+      executedDate: "14/09/2026",
+      description: "formatSprintDue tra ve Con N ngay khi con hon 2 ngay",
+    },
+    () => {
+      const ref = new Date(2026, 8, 14, 9, 0, 0);
+      const sixDaysLater = new Date(2026, 8, 20, 12, 0, 0).toISOString();
+      expect(formatSprintDue(sixDaysLater, ref)).toEqual({
+        label: "Còn 6 ngày",
+        diffDays: 6,
+        urgency: "normal",
+      });
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID15",
+      type: "B",
+      executedDate: "14/09/2026",
+      description: "formatSprintDue tra ve Qua han N ngay khi end date nho hon ngay hien tai",
+    },
+    () => {
+      const ref = new Date(2026, 8, 14, 9, 0, 0);
+      const yesterday = new Date(2026, 8, 13, 12, 0, 0).toISOString();
+      const fourDaysAgo = new Date(2026, 8, 10, 12, 0, 0).toISOString();
+      expect(formatSprintDue(yesterday, ref)).toEqual({
+        label: "Quá hạn 1 ngày",
+        diffDays: -1,
+        urgency: "overdue",
+      });
+      expect(formatSprintDue(fourDaysAgo, ref)).toEqual({
+        label: "Quá hạn 4 ngày",
+        diffDays: -4,
+        urgency: "overdue",
+      });
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID16",
+      type: "N",
+      executedDate: "14/09/2026",
+      description: "formatRelativeTime tinh dung cac khoang thoi gian tuong doi",
+    },
+    () => {
+      const ref = new Date("2026-09-14T10:00:00Z");
+      expect(formatRelativeTime(null)).toBe("—");
+      expect(formatRelativeTime("invalid")).toBe("—");
+      expect(formatRelativeTime("2026-09-14T09:59:45Z", ref)).toBe("vừa xong");
+      expect(formatRelativeTime("2026-09-14T09:55:00Z", ref)).toBe("5 phút trước");
+      expect(formatRelativeTime("2026-09-14T08:00:00Z", ref)).toBe("2 giờ trước");
+      expect(formatRelativeTime("2026-09-11T10:00:00Z", ref)).toBe("3 ngày trước");
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID17",
+      type: "N",
+      executedDate: "14/09/2026",
+      description: "getLatestSyncInfo tong hop thong tin sync moi nhat va phat hien stale hoac missing",
+    },
+    () => {
+      const ref = new Date("2026-09-14T10:00:00Z");
+      const activeSync = {
+        jiraStatus: "ACTIVE",
+        jiraLastSyncedAt: "2026-09-14T09:30:00Z",
+        githubStatus: "ACTIVE",
+        githubLastSyncedAt: "2026-09-14T09:45:00Z",
+      };
+      const info = getLatestSyncInfo(activeSync, { referenceDate: ref });
+      expect(info.latestSyncAt).toBe("2026-09-14T09:45:00Z");
+      expect(info.relativeTime).toBe("15 phút trước");
+      expect(info.isStaleOrMissing).toBe(false);
+      expect(info.isJiraActive).toBe(true);
+      expect(info.isGitHubActive).toBe(true);
+
+      const degradedSync = {
+        jiraStatus: "ACTIVE",
+        jiraLastSyncedAt: "2026-09-14T09:30:00Z",
+        githubStatus: "REVOKED",
+        githubLastSyncedAt: "2026-09-14T09:00:00Z",
+      };
+      const degradedInfo = getLatestSyncInfo(degradedSync, { referenceDate: ref });
+      expect(degradedInfo.isStaleOrMissing).toBe(true);
+      expect(degradedInfo.isGitHubActive).toBe(false);
+
+      const oldSync = {
+        jiraStatus: "ACTIVE",
+        jiraLastSyncedAt: "2026-09-10T09:30:00Z",
+        githubStatus: "ACTIVE",
+        githubLastSyncedAt: "2026-09-10T09:00:00Z",
+      };
+      const oldInfo = getLatestSyncInfo(oldSync, { referenceDate: ref, staleThresholdHours: 24 });
+      expect(oldInfo.isStaleOrMissing).toBe(true);
     }
   );
 });

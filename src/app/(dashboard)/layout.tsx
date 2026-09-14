@@ -110,7 +110,7 @@ export default function DashboardLayout({
           <TopNavHeader />
         </Suspense>
 
-        <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
+        <main className="flex-1 p-4 sm:p-6 lg:p-8">
           {children}
         </main>
 

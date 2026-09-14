@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { UserCogIcon } from "lucide-react";
+import { InfoIcon, UserCogIcon } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { UserStats } from "@/features/admin/users/components/user-stats";
 import { UserToolbar } from "@/features/admin/users/components/user-toolbar";
 import { UserTable } from "@/features/admin/users/components/user-table";
@@ -66,14 +67,31 @@ export default function AdminUsersPage() {
             <UserCogIcon className="w-5 h-5" />
           </div>
           <div>
-            <h1 className="text-xl font-bold text-foreground tracking-tight">
-              Quản lý Tài khoản (Giảng viên & Sinh viên)
-            </h1>
+            <div className="flex flex-wrap items-center gap-2">
+              <h1 className="text-xl font-bold text-foreground tracking-tight">
+                Quản lý Tài khoản (Giảng viên & Sinh viên)
+              </h1>
+              <Badge variant="outline" className="border-amber-500/40 bg-amber-500/10 text-amber-700 dark:text-amber-300 text-[10px] font-mono">
+                Dữ liệu minh họa (Chưa kết nối API)
+              </Badge>
+            </div>
             <p className="text-xs text-muted-foreground">
               Quản trị danh sách tài khoản Giảng viên & Sinh viên chuyên ngành Kỹ thuật phần mềm (SE) và kiểm soát trạng thái truy cập.
             </p>
           </div>
         </div>
+      </div>
+
+      <div className="rounded-2xl border border-amber-500/30 bg-amber-500/5 p-3.5 flex items-center justify-between gap-3 text-xs">
+        <div className="flex items-center gap-2.5">
+          <InfoIcon className="size-4 text-amber-600 dark:text-amber-400 shrink-0" />
+          <span className="text-muted-foreground">
+            <strong className="text-foreground">Lưu ý:</strong> Danh sách tài khoản người dùng và thao tác khóa/mở khóa hiện đang hoạt động trên bộ dữ liệu mô phỏng trong lúc chờ API quản lý tài khoản từ máy chủ.
+          </span>
+        </div>
+        <Badge variant="outline" className="text-[10px] font-mono text-amber-600 dark:text-amber-400 border-amber-500/30 shrink-0">
+          Demo Environment
+        </Badge>
       </div>
 
       <UserStats users={users} />

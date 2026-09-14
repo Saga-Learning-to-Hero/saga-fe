@@ -8,6 +8,7 @@ export interface SimpleTeamMember {
   fullName?: string;
   studentCode?: string;
   avatar?: string;
+  accountId?: string | null;
 }
 
 export function mapProjectTaskToSprintIssue(
@@ -40,18 +41,54 @@ export function mapProjectTaskToSprintIssue(
   else if (rawPriority.includes("HIGH") || rawPriority.includes("CRITICAL")) priority = "HIGH";
   else if (rawPriority.includes("LOW") || rawPriority.includes("TRIVIAL")) priority = "LOW";
 
-  const member = members.find(
-    (m) =>
-      (task.assigneeStudentId && m.id === task.assigneeStudentId) ||
-      (taskResponse.assignee?.studentId && m.id === taskResponse.assignee.studentId) ||
-      (task.assigneeExternalId && m.studentCode && task.assigneeExternalId.includes(m.studentCode))
-  );
+  const taskAssigneeAccountId = taskResponse.assignee?.accountId || task.assigneeExternalId || null;
+  const rawAssigneeName =
+    taskResponse.assignee?.displayName ||
+    taskResponse.assigneeDisplayName ||
+    task.assigneeDisplayName ||
+    "";
+  const cleanAssigneeName = rawAssigneeName.toLowerCase().replace(/\s+/g, " ").trim();
+
+  const member = members.find((m) => {
+    if (m.accountId && taskAssigneeAccountId && m.accountId === taskAssigneeAccountId) {
+      return true;
+    }
+    if (task.assigneeStudentId && (m.id === task.assigneeStudentId || m.studentCode === task.assigneeStudentId)) {
+      return true;
+    }
+    if (
+      taskResponse.assignee?.studentId &&
+      (m.id === taskResponse.assignee.studentId || m.studentCode === taskResponse.assignee.studentId)
+    ) {
+      return true;
+    }
+    if (
+      task.assigneeExternalId &&
+      m.studentCode &&
+      task.assigneeExternalId.toLowerCase().includes(m.studentCode.toLowerCase())
+    ) {
+      return true;
+    }
+    if (m.studentCode && cleanAssigneeName && cleanAssigneeName.includes(m.studentCode.toLowerCase())) {
+      return true;
+    }
+    const cleanMemberName = (m.fullName || m.name || "").toLowerCase().replace(/\s+/g, " ").trim();
+    if (cleanMemberName && cleanAssigneeName) {
+      if (
+        cleanMemberName === cleanAssigneeName ||
+        cleanAssigneeName.includes(cleanMemberName) ||
+        cleanMemberName.includes(cleanAssigneeName)
+      ) {
+        return true;
+      }
+    }
+    return false;
+  });
 
   const memberName =
     member?.fullName ||
     member?.name ||
-    taskResponse.assignee?.displayName ||
-    taskResponse.assigneeDisplayName;
+    rawAssigneeName;
   const displayName =
     memberName ||
     (task.assigneeExternalId ? `Jira (${task.assigneeExternalId.slice(0, 8)})` : "Chưa phân công");
@@ -78,9 +115,9 @@ export function mapProjectTaskToSprintIssue(
     assignee: {
       id: member?.id || task.assigneeStudentId || task.assigneeExternalId || "unassigned",
       name: displayName,
-      // Sprint uses a deterministic text avatar from the real assignee name.
-      avatar: "",
+      avatar: member?.avatar || "",
       studentCode: member?.studentCode || "",
+      accountId: taskAssigneeAccountId,
     },
     parent: taskResponse.parent
       ? {
@@ -88,6 +125,11 @@ export function mapProjectTaskToSprintIssue(
         externalKey: taskResponse.parent.externalKey,
       }
       : undefined,
+    labels: Array.isArray(taskResponse.labels)
+      ? taskResponse.labels
+      : Array.isArray(task.labels)
+        ? task.labels
+        : [],
     sprintId: taskSprintId,
     githubCommitCount: task.linkedCommitCount || 0,
     createdAt: task.createdAt,

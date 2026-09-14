@@ -166,6 +166,9 @@ export function usePatchProjectTask() {
       queryClient.invalidateQueries({
         queryKey: JIRA_SPRINT_QUERY_KEYS.tasks(variables.projectId),
       });
+      queryClient.invalidateQueries({
+        queryKey: JIRA_SPRINT_QUERY_KEYS.taskDetail(variables.projectId, variables.taskId),
+      });
       toast.success(`Đã cập nhật task [${res.externalKey}] thành công.`);
     },
     onError: (error: unknown) => {

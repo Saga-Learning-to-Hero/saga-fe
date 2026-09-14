@@ -9,7 +9,6 @@ import {
   BrainCircuitIcon,
   ChevronDownIcon,
   Code2Icon,
-  CrownIcon,
   EllipsisIcon,
   FileTextIcon,
   FlaskConicalIcon,
@@ -19,6 +18,7 @@ import {
 } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { MemberRoleBadge } from "@/components/common/leader-badge";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { CustomSelect } from "@/components/common/custom-select";
@@ -59,7 +59,6 @@ import {
   type SliceWeightField,
   appliedContributionModeLabel,
   canFetchContributionEvaluation,
-  contributionRoleLabel,
   detectSliceWeightScale,
   formatContributionNumber,
   formatContributionPercent,
@@ -602,18 +601,7 @@ function MemberRows({
           </div>
         </TableCell>
         <TableCell>
-          <Badge
-            variant="outline"
-            className={cn(
-              "font-mono text-[10px] font-bold gap-1",
-              isLeader
-                ? "border-amber-500/30 bg-amber-500/15 text-amber-700 dark:text-amber-300"
-                : "border-border/60 bg-muted/60 text-muted-foreground"
-            )}
-          >
-            {isLeader && <CrownIcon className="size-2.5 text-amber-500" />}
-            {contributionRoleLabel(member.roleInTeam)}
-          </Badge>
+          <MemberRoleBadge role={member.roleInTeam} />
         </TableCell>
         <TableCell className="font-mono text-xs font-semibold">
           {formatContributionNumber(member.sliceScore)}

@@ -1,10 +1,11 @@
 "use client";
 
-import { CrownIcon, UsersIcon } from "lucide-react";
+import { UsersIcon } from "lucide-react";
 import type { StudentCourse, StudentTeamResponse } from "@/features/student/courses/types/student-course";
 import { sortStudentTeamMembers } from "@/features/student/courses/types/student-course";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { LeaderBadge, MemberRoleBadge } from "@/components/common/leader-badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { getApiErrorCode, getApiErrorMessage } from "@/lib/api-error";
@@ -160,7 +161,7 @@ export function TeamMembersCard({
                           {member.fullName}
                         </span>
                         {isLeader && (
-                          <CrownIcon className="h-3 w-3 shrink-0 text-amber-500" />
+                          <LeaderBadge variant="icon-only" />
                         )}
                       </div>
                       <div className="flex items-center gap-1.5 font-mono text-[10px] text-muted-foreground">
@@ -171,16 +172,7 @@ export function TeamMembersCard({
                     </div>
                   </div>
 
-                  <Badge
-                    variant="outline"
-                    className={
-                      isLeader
-                        ? "bg-primary/10 text-[10px] font-semibold text-primary border-primary/25 shrink-0"
-                        : "border-border bg-muted text-[10px] font-medium text-muted-foreground shrink-0"
-                    }
-                  >
-                    {isLeader ? "Leader" : "Member"}
-                  </Badge>
+                  <MemberRoleBadge role={member.role} showEnglish />
                 </div>
               );
             })}

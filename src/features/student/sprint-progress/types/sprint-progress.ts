@@ -17,6 +17,7 @@ export interface SprintIssue {
     name: string;
     avatar: string;
     studentCode: string;
+    accountId?: string | null;
   };
   /** Jira parent identity. Present for subtasks and, depending on Jira project type, epic children. */
   parent?: {

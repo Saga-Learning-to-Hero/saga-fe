@@ -4,6 +4,7 @@ import { ProjectSprintService } from "../api/project-sprint-service";
 import type {
   CreateProjectSprintRequest,
   PatchProjectSprintRequest,
+  ProjectSprintResponse,
 } from "../types/jira-task-types";
 import { getApiErrorCode } from "@/lib/api-error";
 import { JIRA_SPRINT_QUERY_KEYS } from "./use-sprint-data";
@@ -65,9 +66,17 @@ export function usePatchSprint() {
       data: PatchProjectSprintRequest;
     }) => ProjectSprintService.patchSprint(projectId, sprintId, data),
     onSuccess: (res, variables) => {
-      queryClient.invalidateQueries({
-        queryKey: JIRA_SPRINT_QUERY_KEYS.sprints(variables.projectId),
-      });
+      queryClient.setQueryData<ProjectSprintResponse[]>(
+        JIRA_SPRINT_QUERY_KEYS.sprints(variables.projectId),
+        (old) => {
+          if (!old) return old;
+          return old.map((s) => (s.id === res.id ? { ...s, ...res } : s));
+        }
+      );
+      queryClient.invalidateQueries(
+        { queryKey: JIRA_SPRINT_QUERY_KEYS.sprints(variables.projectId), refetchType: "none" },
+        { cancelRefetch: false }
+      );
       toast.success(`Đã cập nhật ${res.name} thành công.`);
     },
     onError: (error: unknown) => {

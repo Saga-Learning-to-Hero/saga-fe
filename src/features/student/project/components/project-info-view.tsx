@@ -22,6 +22,7 @@ import { ProjectDetailsCard } from "./project-details-card";
 import { ProjectIntegrationsCard } from "./project-integrations-card";
 import { ProjectEditModal } from "./project-edit-modal";
 import { ProjectInfoSkeleton } from "./project-info-skeleton";
+import { useProjectRealtime } from "../hooks/use-project-realtime";
 
 export function ProjectInfoView() {
   const { user, setSelectedCourse } = useAuthStore();
@@ -46,6 +47,8 @@ export function ProjectInfoView() {
   } = useStudentMyTeam(courseId, { enabled: Boolean(courseId) });
 
   const projectId = apiProject?.projectId || team?.projectId || effectiveCourse?.projectId || "";
+
+  useProjectRealtime(projectId, { enabled: Boolean(projectId) });
 
   const forbidden = getApiErrorCode(teamError) === "STUDENT_COURSE_FORBIDDEN";
   useEffect(() => { if (forbidden) void refreshCourses(); }, [forbidden, refreshCourses]);

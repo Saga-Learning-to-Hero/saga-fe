@@ -14,9 +14,24 @@ export interface WeeklyCommitBucket {
   commits: number;
 }
 
+export interface SprintDueInfo {
+  label: string;
+  diffDays: number | null;
+  urgency: "none" | "normal" | "warning" | "overdue";
+}
+
+export interface LatestSyncInfo {
+  latestSyncAt: string | null;
+  relativeTime: string;
+  isStaleOrMissing: boolean;
+  jiraStatus: string | null;
+  githubStatus: string | null;
+  isJiraActive: boolean;
+  isGitHubActive: boolean;
+}
+
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 
-/** Hiển thị tỉ lệ hoàn thành task; null nghĩa là project chưa có task. */
 export function formatCompletionPercent(value: number | null | undefined): string {
   if (value === null || value === undefined || Number.isNaN(value)) {
     return NO_TASK_DATA_LABEL;
@@ -24,7 +39,6 @@ export function formatCompletionPercent(value: number | null | undefined): strin
   return `${Math.round(value)}%`;
 }
 
-/** Status không ACTIVE (kể cả REVOKED) là dữ liệu last-known, không phải live. */
 export function isIntegrationDegraded(status?: string | null): boolean {
   if (status === null || status === undefined) return false;
   const normalized = status.trim().toUpperCase();
@@ -48,6 +62,139 @@ export function formatDateTime(value?: string | null): string {
     hour: "2-digit",
     minute: "2-digit",
   });
+}
+
+export function formatRelativeTime(
+  isoDate?: string | null,
+  referenceDate?: Date
+): string {
+  if (!isoDate) return "—";
+  const date = new Date(isoDate);
+  if (Number.isNaN(date.getTime())) return "—";
+
+  const base = referenceDate ?? new Date();
+  const diffMs = base.getTime() - date.getTime();
+
+  if (diffMs < 0) {
+    return "vừa xong";
+  }
+
+  const diffMinutes = Math.floor(diffMs / (60 * 1000));
+  if (diffMinutes < 1) return "vừa xong";
+  if (diffMinutes < 60) return `${diffMinutes} phút trước`;
+
+  const diffHours = Math.floor(diffMinutes / 60);
+  if (diffHours < 24) return `${diffHours} giờ trước`;
+
+  const diffDays = Math.floor(diffHours / 24);
+  if (diffDays < 30) return `${diffDays} ngày trước`;
+
+  return date.toLocaleDateString("vi-VN", { day: "2-digit", month: "2-digit" });
+}
+
+export function formatSprintDue(
+  endDateStr?: string | null,
+  referenceDate?: Date
+): SprintDueInfo {
+  if (!endDateStr) {
+    return { label: "Chưa có hạn", diffDays: null, urgency: "none" };
+  }
+
+  const targetDate = new Date(endDateStr);
+  if (Number.isNaN(targetDate.getTime())) {
+    return { label: "Chưa có hạn", diffDays: null, urgency: "none" };
+  }
+
+  const base = referenceDate ?? new Date();
+  const targetMidnight = new Date(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate());
+  const baseMidnight = new Date(base.getFullYear(), base.getMonth(), base.getDate());
+
+  const diffDays = Math.round((targetMidnight.getTime() - baseMidnight.getTime()) / MS_PER_DAY);
+
+  if (diffDays < 0) {
+    const overdueDays = Math.abs(diffDays);
+    return {
+      label: `Quá hạn ${overdueDays} ngày`,
+      diffDays,
+      urgency: "overdue",
+    };
+  }
+
+  if (diffDays === 0) {
+    return {
+      label: "Hết hạn hôm nay",
+      diffDays: 0,
+      urgency: "warning",
+    };
+  }
+
+  if (diffDays <= 2) {
+    return {
+      label: `Còn ${diffDays} ngày`,
+      diffDays,
+      urgency: "warning",
+    };
+  }
+
+  return {
+    label: `Còn ${diffDays} ngày`,
+    diffDays,
+    urgency: "normal",
+  };
+}
+
+export function getLatestSyncInfo(
+  sync?: ProjectProgressResponse["sync"] | null,
+  options?: { referenceDate?: Date; staleThresholdHours?: number }
+): LatestSyncInfo {
+  const reference = options?.referenceDate ?? new Date();
+  const staleHours = options?.staleThresholdHours ?? 24;
+
+  const jiraStatus = sync?.jiraStatus ?? null;
+  const githubStatus = sync?.githubStatus ?? null;
+
+  const isJiraActive = (jiraStatus || "").trim().toUpperCase() === "ACTIVE";
+  const isGitHubActive = (githubStatus || "").trim().toUpperCase() === "ACTIVE";
+
+  const syncRecord = sync as Record<string, unknown> | undefined;
+  const jiraDateStr = (sync?.jiraLastSyncedAt ?? syncRecord?.jiraLastSyncAt) as string | null | undefined;
+  const githubDateStr = (sync?.githubLastSyncedAt ?? syncRecord?.githubLastSyncAt) as string | null | undefined;
+
+  const jiraTime = jiraDateStr ? new Date(jiraDateStr).getTime() : Number.NaN;
+  const githubTime = githubDateStr ? new Date(githubDateStr).getTime() : Number.NaN;
+
+  let latestSyncAt: string | null = null;
+  let latestTime = 0;
+
+  if (!Number.isNaN(jiraTime) && !Number.isNaN(githubTime)) {
+    if (jiraTime >= githubTime) {
+      latestSyncAt = jiraDateStr ?? null;
+      latestTime = jiraTime;
+    } else {
+      latestSyncAt = githubDateStr ?? null;
+      latestTime = githubTime;
+    }
+  } else if (!Number.isNaN(jiraTime)) {
+    latestSyncAt = jiraDateStr ?? null;
+    latestTime = jiraTime;
+  } else if (!Number.isNaN(githubTime)) {
+    latestSyncAt = githubDateStr ?? null;
+    latestTime = githubTime;
+  }
+
+  const relativeTime = latestSyncAt ? formatRelativeTime(latestSyncAt, reference) : "Chưa có dữ liệu";
+  const isOld = latestTime > 0 ? (reference.getTime() - latestTime) > staleHours * 60 * 60 * 1000 : true;
+  const isStaleOrMissing = !isJiraActive || !isGitHubActive || isOld;
+
+  return {
+    latestSyncAt,
+    relativeTime,
+    isStaleOrMissing,
+    jiraStatus,
+    githubStatus,
+    isJiraActive,
+    isGitHubActive,
+  };
 }
 
 function getUtcMonday(date: Date): Date {
@@ -78,7 +225,6 @@ function weekKeyOf(date: Date): { weekKey: string; weekLabel: string } {
   };
 }
 
-/** Gom commit theo tuần ISO (UTC) để biểu đồ tuần không phụ thuộc timezone trình duyệt. */
 export function buildWeeklyCommitBuckets(
   commits: Array<Pick<TaskLinkedCommitItem, "committedAt" | "authorStudentId">>,
   options?: { studentId?: string | null }
@@ -126,7 +272,6 @@ function asNullableString(value: unknown): string | null {
   return typeof value === "string" ? value : null;
 }
 
-/** Backend có thể dùng tasks/commits hoặc taskSummary/commitSummary cho cùng một member. */
 export function normalizeMemberSummary(raw: unknown): ProjectProgressMemberSummary {
   const item = asRecord(raw);
   const tasks = asRecord(item.tasks ?? item.taskSummary);
@@ -206,9 +351,9 @@ export function normalizeProjectProgress(raw: unknown): ProjectProgressResponse 
     memberProgress: members.map(normalizeMemberSummary),
     sync: {
       jiraStatus: asNullableString(sync.jiraStatus),
-      jiraLastSyncedAt: asNullableString(sync.jiraLastSyncedAt),
+      jiraLastSyncedAt: asNullableString(sync.jiraLastSyncedAt ?? sync.jiraLastSyncAt),
       githubStatus: asNullableString(sync.githubStatus),
-      githubLastSyncedAt: asNullableString(sync.githubLastSyncedAt),
+      githubLastSyncedAt: asNullableString(sync.githubLastSyncedAt ?? sync.githubLastSyncAt),
     },
     lastActivityAt: asNullableString(item.lastActivityAt),
   };

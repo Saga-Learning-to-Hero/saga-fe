@@ -31,7 +31,7 @@ export function PeerAssessmentHeader({ teamName, courseCode }: PeerAssessmentHea
             )}
           </div>
           <p className="text-xs text-muted-foreground mt-0.5">
-            Tính năng đánh giá đồng đẳng theo Sprint đang chờ backend công bố contract API.
+            Tính năng đánh giá chéo theo Sprint đang chờ backend công bố contract API.
           </p>
         </div>
       </div>

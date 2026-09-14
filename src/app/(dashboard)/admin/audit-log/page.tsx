@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { ScrollTextIcon, RefreshCwIcon } from "lucide-react";
+import { InfoIcon, ScrollTextIcon, RefreshCwIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { AuditStats } from "@/features/admin/audit-log/components/audit-stats";
 import { AuditToolbar } from "@/features/admin/audit-log/components/audit-toolbar";
 import { AuditTable } from "@/features/admin/audit-log/components/audit-table";
@@ -83,9 +84,14 @@ export default function AdminAuditLogPage() {
               <ScrollTextIcon className="w-5 h-5" />
             </div>
             <div>
-              <h1 className="text-xl font-bold text-foreground tracking-tight">
-                Nhật ký hoạt động hệ thống
-              </h1>
+              <div className="flex flex-wrap items-center gap-2">
+                <h1 className="text-xl font-bold text-foreground tracking-tight">
+                  Nhật ký hoạt động hệ thống
+                </h1>
+                <Badge variant="outline" className="border-amber-500/40 bg-amber-500/10 text-amber-700 dark:text-amber-300 text-[10px] font-mono">
+                  Dữ liệu minh họa (Chưa kết nối API)
+                </Badge>
+              </div>
               <p className="text-xs text-muted-foreground mt-0.5">
                 Theo dõi lịch sử hoạt động, an ninh và thay đổi phân quyền hệ thống lưu trữ tại MongoDB.
               </p>
@@ -105,6 +111,18 @@ export default function AdminAuditLogPage() {
             Làm mới
           </Button>
         </div>
+      </div>
+
+      <div className="rounded-2xl border border-amber-500/30 bg-amber-500/5 p-3.5 flex items-center justify-between gap-3 text-xs">
+        <div className="flex items-center gap-2.5">
+          <InfoIcon className="size-4 text-amber-600 dark:text-amber-400 shrink-0" />
+          <span className="text-muted-foreground">
+            <strong className="text-foreground">Lưu ý:</strong> Bảng nhật ký kiểm toán hệ thống hiện đang hiển thị bản ghi mẫu minh họa cấu trúc Audit Log MongoDB trong lúc chờ kết nối API kiểm toán từ máy chủ.
+          </span>
+        </div>
+        <Badge variant="outline" className="text-[10px] font-mono text-amber-600 dark:text-amber-400 border-amber-500/30 shrink-0">
+          Demo Environment
+        </Badge>
       </div>
 
       <AuditStats logs={logs} />

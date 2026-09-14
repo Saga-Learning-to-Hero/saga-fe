@@ -11,6 +11,8 @@ import {
   AlertTriangleIcon,
   FolderGit2Icon,
   RotateCwIcon,
+  HelpCircleIcon,
+  ArrowRightIcon,
 } from "lucide-react";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
 import { useStudentCourseContext } from "@/features/student/courses/hooks/use-student-course-context";
@@ -24,9 +26,12 @@ import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { groupWarningsByMember } from "../lib/contribution-view-utils";
 import { ContributionKPICards } from "./contribution-kpi-cards";
 import { ContributionCharts } from "./contribution-charts";
 import { ContributionTable } from "./contribution-table";
+import { LeaderBadge } from "@/components/common/leader-badge";
 import { cn } from "@/lib/utils";
 
 export function ContributionView() {
@@ -46,11 +51,10 @@ export function ContributionView() {
   });
 
   const evaluation = evaluationQuery.data;
-  const warnings = useMemo(
-    () => [
-      ...new Set((evaluation?.members ?? []).flatMap((member) => member.warnings)),
-    ],
-    [evaluation?.members]
+
+  const memberWarnings = useMemo(
+    () => groupWarningsByMember(evaluation?.members ?? [], courseId),
+    [evaluation?.members, courseId]
   );
 
   if (isCoursesLoading || (courseId && teamQuery.isLoading)) {
@@ -118,20 +122,20 @@ export function ContributionView() {
         <div className="space-y-4 pb-2 border-b border-border/70">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-primary text-primary-foreground flex items-center justify-center shrink-0 shadow-xs font-bold text-lg">
-                <PieChartIcon className="w-5 h-5" />
+              <div className="size-10 rounded-xl bg-primary text-primary-foreground flex items-center justify-center shrink-0 shadow-xs font-bold text-lg">
+                <PieChartIcon className="size-5" />
               </div>
               <div>
                 <div className="flex items-center gap-2">
                   <h1 className="text-xl sm:text-2xl font-extrabold text-foreground tracking-tight">
-                    Tỷ Lệ Đóng Góp Nhóm ({teamName})
+                    Đóng góp nhóm · Slicing Pie ({teamName})
                   </h1>
                   <Badge className="bg-primary/15 text-primary border-primary/30 font-bold text-xs">
-                    SLICING PIE MODEL
+                    SLICING PIE
                   </Badge>
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  Mô hình tính toán cổ phần đóng góp theo DEC-092 từ Jira Tasks, Git Commits và Đánh giá chéo.
+                  Mô hình tính toán cổ phần đóng góp theo DEC-092 từ Jira Tasks, Git Commits và Đánh giá đồng đẳng.
                 </p>
               </div>
             </div>
@@ -256,39 +260,83 @@ export function ContributionView() {
       <div className="space-y-4 pb-2 border-b border-border/70">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-primary text-primary-foreground flex items-center justify-center shrink-0 shadow-xs font-bold text-lg">
-              <PieChartIcon className="w-5 h-5" />
+            <div className="size-10 rounded-xl bg-primary text-primary-foreground flex items-center justify-center shrink-0 shadow-xs font-bold text-lg">
+              <PieChartIcon className="size-5" />
             </div>
             <div>
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
                 <h1 className="text-xl sm:text-2xl font-extrabold text-foreground tracking-tight">
-                  Tỷ Lệ Đóng Góp Nhóm ({teamName})
+                  Đóng góp nhóm · Slicing Pie ({teamName})
                 </h1>
-                <Badge className="bg-primary/15 text-primary border-primary/30 font-bold text-xs">
-                  SLICING PIE MODEL
-                </Badge>
+                <div className="flex items-center gap-1.5">
+                  <Badge className="bg-primary/15 text-primary border-primary/30 font-bold text-xs">
+                    SLICING PIE
+                  </Badge>
+                  <Tooltip>
+                    <TooltipTrigger
+                      type="button"
+                      className="inline-flex size-5 cursor-pointer items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                      aria-label="Tìm hiểu khái niệm Slice score"
+                    >
+                      <HelpCircleIcon className="size-3.5" />
+                    </TooltipTrigger>
+                    <TooltipContent
+                      side="bottom"
+                      align="start"
+                      sideOffset={8}
+                      className="flex-col items-start w-84 p-3.5 bg-foreground text-background shadow-2xl rounded-2xl space-y-2.5 z-50 text-left border border-background/10"
+                    >
+                      <div className="w-full space-y-2.5 text-left">
+                        <div className="flex items-center justify-between gap-2 border-b border-background/20 pb-2">
+                          <div className="flex items-center gap-2">
+                            <div className="flex size-6 items-center justify-center rounded-lg bg-background/15 text-background shrink-0">
+                              <PieChartIcon className="size-3.5" />
+                            </div>
+                            <span className="text-xs font-bold text-background">
+                              Khái niệm Slice Score
+                            </span>
+                          </div>
+                          <span className="rounded-full bg-background/20 px-2 py-0.5 font-mono text-[10px] font-bold text-background">
+                            Slicing Pie
+                          </span>
+                        </div>
+
+                        <p className="text-xs leading-relaxed text-background/90">
+                          <strong className="font-bold text-background">Slice score</strong> là đơn vị công sức quy đổi chuẩn hóa trong mô hình Slicing Pie, được tính toán từ các nhiệm vụ Jira, commits mã nguồn và minh chứng nghiệm thu nhân với trọng số của từng tiêu chuẩn.
+                        </p>
+
+                        <div className="rounded-xl border border-background/15 bg-background/10 p-2.5 space-y-1">
+                          <div className="flex items-center justify-between text-[11px] font-semibold text-background">
+                            <span>Nguyên lý tính toán</span>
+                            <span className="font-mono font-bold text-emerald-400 dark:text-emerald-300">
+                              ∑ (Effort × Trọng số)
+                            </span>
+                          </div>
+                          <p className="text-[10px] leading-tight text-background/70">
+                            Dữ liệu đối soát khách quan từ Jira & GitHub, bảo đảm tính minh bạch và công bằng cho toàn nhóm.
+                          </p>
+                        </div>
+                      </div>
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
                 <Badge variant="outline" className="border-primary/25 bg-primary/10 font-mono text-xs font-bold text-primary">
                   {appliedContributionModeLabel(evaluation.configMode ?? "COURSE")}
                 </Badge>
               </div>
-              <p className="text-xs text-muted-foreground">
-                Số liệu tính toán live DEC-092 từ SAGA-BE-V2 dựa trên 4 lát cắt trọng số, minh chứng nộp và đánh giá đồng đẳng.
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Tỷ lệ được quy đổi từ Jira tasks, Git commits, minh chứng và điều chỉnh đánh giá đồng đẳng.
               </p>
             </div>
           </div>
 
           <div className="flex items-center gap-2 self-start md:self-auto">
-            <Badge
-              variant="outline"
-              className="bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30 font-bold text-xs py-1 px-3"
-            >
-              TRƯỞNG NHÓM (LEADER)
-            </Badge>
+            <LeaderBadge size="md" showEnglish />
             <Badge
               variant="outline"
               className="bg-emerald-500/10 text-emerald-600 border-emerald-500/30 font-bold text-xs gap-1.5 py-1 px-3"
             >
-              <ShieldCheckIcon className="w-4 h-4" />
+              <ShieldCheckIcon className="size-4" />
               Minh bạch dữ liệu 100%
             </Badge>
           </div>
@@ -297,47 +345,73 @@ export function ContributionView() {
 
       <ContributionKPICards sliceWeights={evaluation.sliceWeights} />
 
-      {warnings.length > 0 && (
+      {memberWarnings.length > 0 && (
         <Card className="rounded-2xl border border-amber-500/30 bg-amber-500/5 p-4 shadow-xs">
           <div className="flex items-start gap-3">
             <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-amber-500/15 text-amber-700 dark:text-amber-400">
               <AlertTriangleIcon className="size-5" />
             </div>
-            <div className="flex-1 space-y-2">
-              <div className="flex items-center gap-2">
-                <h4 className="text-sm font-extrabold text-amber-900 dark:text-amber-200">
-                  Cảnh báo đối soát minh chứng đóng góp ({warnings.length})
-                </h4>
-                <span className="rounded-full bg-amber-500/20 px-2 py-0.5 font-mono text-[10px] font-bold text-amber-800 dark:text-amber-300">
-                  Cần bổ sung bằng chứng
-                </span>
+            <div className="flex-1 space-y-3">
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  <h4 className="text-sm font-extrabold text-amber-900 dark:text-amber-200">
+                    Cảnh báo đối soát minh chứng theo thành viên ({memberWarnings.length})
+                  </h4>
+                  <span className="rounded-full bg-amber-500/20 px-2 py-0.5 font-mono text-[10px] font-bold text-amber-800 dark:text-amber-300">
+                    Cần hoàn thiện
+                  </span>
+                </div>
               </div>
-              <div className="grid gap-2 sm:grid-cols-2">
-                {warnings.map((warning) => {
-                  const parsed = formatContributionWarning(warning);
-                  const isHigh = parsed.severity === "high";
+
+              <div className="grid gap-3 sm:grid-cols-2">
+                {memberWarnings.map((group) => {
                   return (
                     <div
-                      key={warning}
-                      className={cn(
-                        "rounded-xl border p-2.5 text-xs space-y-0.5",
-                        isHigh
-                          ? "border-red-500/30 bg-red-500/5 text-red-800 dark:text-red-300"
-                          : "border-amber-500/30 bg-amber-500/10 text-amber-800 dark:text-amber-300"
-                      )}
+                      key={group.studentProfileId || group.studentCode}
+                      className="rounded-xl border border-amber-500/30 bg-card p-3 shadow-2xs space-y-2.5 flex flex-col justify-between"
                     >
-                      <div className="flex items-center gap-1.5 font-bold">
-                        <span
-                          className={cn(
-                            "size-1.5 rounded-full shrink-0",
-                            isHigh ? "bg-red-500" : "bg-amber-500"
-                          )}
-                        />
-                        <span>{parsed.title}</span>
+                      <div className="space-y-1.5">
+                        <div className="flex items-center justify-between gap-2 border-b border-border/50 pb-1.5">
+                          <span className="text-xs font-bold text-foreground">
+                            {group.fullName}
+                          </span>
+                          <span className="font-mono text-[10px] text-muted-foreground">
+                            {group.studentCode}
+                          </span>
+                        </div>
+
+                        <div className="space-y-1">
+                          {group.warnings.map((w) => {
+                            const parsed = formatContributionWarning(w);
+                            return (
+                              <div key={w} className="text-xs space-y-0.5">
+                                <p className="font-semibold text-amber-800 dark:text-amber-300 flex items-center gap-1.5">
+                                  <span className="size-1.5 rounded-full bg-amber-500 shrink-0" />
+                                  <span>{parsed.title}</span>
+                                </p>
+                                <p className="text-[11px] text-muted-foreground pl-3 leading-relaxed">
+                                  {parsed.description}
+                                </p>
+                              </div>
+                            );
+                          })}
+                        </div>
                       </div>
-                      <p className="text-[11px] leading-relaxed opacity-90 pl-3">
-                        {parsed.description}
-                      </p>
+
+                      <div className="pt-1 border-t border-border/40">
+                        <Link
+                          href={group.ctaHref}
+                          prefetch={true}
+                          className={buttonVariants({
+                            variant: "outline",
+                            size: "sm",
+                            className: "w-full h-7 text-[11px] font-bold gap-1 text-primary border-primary/30 hover:bg-primary/10 cursor-pointer justify-between",
+                          })}
+                        >
+                          <span>{group.ctaLabel}</span>
+                          <ArrowRightIcon className="size-3" />
+                        </Link>
+                      </div>
                     </div>
                   );
                 })}
@@ -352,6 +426,7 @@ export function ContributionView() {
       <ContributionTable
         members={evaluation.members}
         currentStudentCode={currentStudentCode}
+        courseId={courseId}
       />
     </div>
   );

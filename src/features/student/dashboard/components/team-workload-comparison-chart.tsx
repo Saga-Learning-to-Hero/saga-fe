@@ -4,14 +4,15 @@ import { useMemo, type ReactNode } from "react";
 import {
   CheckSquareIcon,
   ChevronRightIcon,
-  CrownIcon,
   GitCommitIcon,
   Link2Icon,
   UsersIcon,
 } from "lucide-react";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { LeaderBadge } from "@/components/common/leader-badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { getAssigneeAvatarClass, getAssigneeInitials } from "@/features/student/sprint-progress/lib/assignee-avatar";
 import type { ProjectProgressMemberSummary } from "@/features/student/project/types/student-project";
 import { formatLinkedCommitRatio } from "@/features/progress/lib/progress-format";
 import { cn } from "@/lib/utils";
@@ -52,11 +53,9 @@ export function TeamWorkloadComparisonChart({
           <div>
             <div className="flex flex-wrap items-center gap-2">
               <CardTitle className="text-sm font-bold text-foreground sm:text-base">
-                So sánh tiến độ thành viên
+                Tiến độ thành viên
               </CardTitle>
-              <Badge className="border-0 bg-amber-500/15 text-[10px] font-semibold text-amber-700 dark:text-amber-300">
-                Chỉ trưởng nhóm
-              </Badge>
+              <LeaderBadge size="sm">Chỉ trưởng nhóm</LeaderBadge>
             </div>
             <CardDescription className="text-xs text-muted-foreground">
               Task, commit và tỉ lệ commit đã liên kết task. Máy chủ không trả số liệu theo từng Sprint cho từng người.
@@ -84,6 +83,14 @@ export function TeamWorkloadComparisonChart({
               member.commits.total
             );
 
+            const rawMember = member as unknown as Record<string, unknown>;
+            const avatarUrl =
+              typeof rawMember?.avatarUrl === "string" && rawMember.avatarUrl.trim()
+                ? rawMember.avatarUrl.trim()
+                : typeof rawMember?.avatar === "string" && rawMember.avatar.trim()
+                  ? rawMember.avatar.trim()
+                  : null;
+
             return (
               <button
                 key={member.studentId}
@@ -98,8 +105,20 @@ export function TeamWorkloadComparisonChart({
               >
                 <div className="flex min-w-[220px] items-center gap-3">
                   <Avatar className="size-9 shrink-0 border border-background shadow-xs">
-                    <AvatarFallback className="bg-primary/10 text-xs font-bold text-primary">
-                      {member.fullName.slice(0, 2).toUpperCase()}
+                    {avatarUrl ? (
+                      <AvatarImage
+                        src={avatarUrl}
+                        alt={member.fullName}
+                        className="object-cover"
+                      />
+                    ) : null}
+                    <AvatarFallback
+                      className={cn(
+                        "font-mono text-xs font-bold",
+                        getAssigneeAvatarClass(member.studentId || member.userId || member.studentCode)
+                      )}
+                    >
+                      {getAssigneeInitials(member.fullName)}
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex min-w-0 flex-col">
@@ -107,7 +126,7 @@ export function TeamWorkloadComparisonChart({
                       <span className="truncate text-xs font-bold text-foreground">
                         {member.fullName}
                       </span>
-                      {isLeader ? <CrownIcon className="size-3.5 shrink-0 text-amber-500" /> : null}
+                      {isLeader ? <LeaderBadge variant="icon-only" /> : null}
                     </div>
                     <span className="font-mono text-[10px] text-muted-foreground">
                       MSSV: {member.studentCode}

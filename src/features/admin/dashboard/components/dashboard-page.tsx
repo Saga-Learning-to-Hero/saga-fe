@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { LayoutDashboardIcon, RefreshCwIcon } from "lucide-react";
+import { InfoIcon, LayoutDashboardIcon, RefreshCwIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { CustomSelect } from "@/components/common/custom-select";
@@ -30,12 +30,14 @@ export function DashboardPage() {
             <LayoutDashboardIcon className="w-5 h-5" />
           </div>
           <div>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <h1 className="text-xl font-bold text-foreground tracking-tight">Tổng quan Quản trị Hệ thống (SAGA Admin Portal)</h1>
-              <Badge className="bg-success-muted text-success border-0 text-[10px] font-semibold">Hệ thống sẵn sàng (Operational)</Badge>
+              <Badge variant="outline" className="border-amber-500/40 bg-amber-500/10 text-amber-700 dark:text-amber-300 text-[10px] font-mono">
+                Dữ liệu minh họa (Chưa kết nối API)
+              </Badge>
             </div>
             <p className="text-xs text-muted-foreground mt-0.5">
-              Giám sát thời gian thực hoạt động học thuật, chỉ số Traceability và trạng thái đồng bộ Webhook Jira / GitHub.
+              Giám sát hoạt động học thuật, chỉ số Traceability và trạng thái đồng bộ Webhook Jira / GitHub.
             </p>
           </div>
         </div>
@@ -63,6 +65,18 @@ export function DashboardPage() {
             Làm mới
           </Button>
         </div>
+      </div>
+
+      <div className="rounded-2xl border border-amber-500/30 bg-amber-500/5 p-3.5 flex items-center justify-between gap-3 text-xs">
+        <div className="flex items-center gap-2.5">
+          <InfoIcon className="size-4 text-amber-600 dark:text-amber-400 shrink-0" />
+          <span className="text-muted-foreground">
+            <strong className="text-foreground">Lưu ý:</strong> Bảng số liệu thống kê tổng quan quản trị và biểu đồ bên dưới đang hiển thị số liệu minh họa trong khi chờ hoàn thiện API tổng hợp từ máy chủ.
+          </span>
+        </div>
+        <Badge variant="outline" className="text-[10px] font-mono text-amber-600 dark:text-amber-400 border-amber-500/30 shrink-0">
+          Demo Environment
+        </Badge>
       </div>
 
       <DashboardKPIsSection kpis={currentData.kpis} />

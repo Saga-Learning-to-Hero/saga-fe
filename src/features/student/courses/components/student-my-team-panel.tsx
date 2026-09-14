@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { UsersIcon, XIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { MemberRoleBadge } from "@/components/common/leader-badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useRefreshStudentCourses, useStudentMyTeam } from "../hooks/use-student-courses";
@@ -100,16 +101,7 @@ export function StudentMyTeamPanel({ courseId, onClose }: StudentMyTeamPanelProp
                 <p className="font-mono text-[11px] text-muted-foreground">TeamNo {team.teamNo}</p>
                 <h4 className="text-lg font-bold">{team.teamName}</h4>
                 <div className="mt-2 flex flex-wrap gap-2">
-                  <Badge
-                    variant="outline"
-                    className={
-                      team.myRole === "LEADER"
-                        ? "border-primary/25 bg-primary/10 text-primary"
-                        : ""
-                    }
-                  >
-                    Vai trò của tôi: {team.myRole === "LEADER" ? "Leader" : "Member"}
-                  </Badge>
+                  <MemberRoleBadge role={team.myRole} showEnglish />
                   <Badge
                     variant="outline"
                     className={
@@ -135,9 +127,7 @@ export function StudentMyTeamPanel({ courseId, onClose }: StudentMyTeamPanelProp
                         {member.studentCode}
                       </p>
                     </div>
-                    <Badge variant="outline" className="text-[10px]">
-                      {member.role === "LEADER" ? "Leader" : "Member"}
-                    </Badge>
+                    <MemberRoleBadge role={member.role} showEnglish />
                   </li>
                 ))}
               </ul>
