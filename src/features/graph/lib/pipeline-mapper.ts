@@ -66,6 +66,7 @@ export function mapPipelineTasks(tasks: ProjectTaskResponse[]): PipelineTask[] {
       title: task.title,
       status: task.status,
       issueTypeName: task.issueTypeName,
+      parent: task.parent || null,
       assigneeStudentId: task.assigneeStudentId || task.assignee?.studentId || null,
       assigneeDisplayName: task.assigneeDisplayName || task.assignee?.displayName || null,
       assigneeExternalId: task.assigneeExternalId || task.assignee?.accountId || null,
@@ -102,6 +103,7 @@ export function mapPipelineCommits(
     authorLabel: resolveCommitAuthorLabel(commit, members),
     committedAt: commit.committedAt,
     repositoryFullName: commit.repositoryFullName,
+    headRef: commit.headRef || null,
   }));
 }
 
@@ -174,7 +176,8 @@ export function computePipelineStats(
 export function filterPipelineTasks(
   tasks: PipelineTask[],
   filter: PipelineFilterState,
-  members: PipelineMember[] = []
+  members: PipelineMember[] = [],
+  branchTaskKeys?: Set<string>
 ): PipelineTask[] {
   return tasks.filter((task) => {
     if (filter.studentId !== "ALL") {
@@ -186,7 +189,27 @@ export function filterPipelineTasks(
       }
     }
     if (filter.sprintId !== "ALL" && task.sprintId !== filter.sprintId) return false;
-    if (filter.anomaliesOnly && !isDoneWithoutLinkedCommit(task)) return false;
+
+    if (filter.anomalyType && filter.anomalyType !== "ALL") {
+      if (filter.anomalyType === "DONE_NO_COMMIT" && !isDoneWithoutLinkedCommit(task)) return false;
+      if (filter.anomalyType === "UNASSIGNED" && (task.assigneeStudentId || task.assigneeDisplayName)) return false;
+      if (filter.anomalyType === "MISSING_COMMITS" && task.linkedCommitCount > 0) return false;
+    } else if (filter.anomaliesOnly && !isDoneWithoutLinkedCommit(task)) {
+      return false;
+    }
+
+    if (filter.searchQuery && filter.searchQuery.trim()) {
+      const q = filter.searchQuery.trim().toLowerCase();
+      const matchKey = task.key.toLowerCase().includes(q);
+      const matchTitle = task.title.toLowerCase().includes(q);
+      const matchAssignee = (task.assigneeDisplayName || "").toLowerCase().includes(q);
+      if (!matchKey && !matchTitle && !matchAssignee) return false;
+    }
+
+    if (filter.branchName && filter.branchName !== "ALL" && branchTaskKeys) {
+      if (!branchTaskKeys.has(task.key.toUpperCase())) return false;
+    }
+
     return true;
   });
 }
@@ -229,6 +252,9 @@ export function sanitizePipelineFilter(
     ...filter,
     studentId: studentExists ? filter.studentId : "ALL",
     sprintId: sprintExists ? filter.sprintId : "ALL",
+    searchQuery: filter.searchQuery || "",
+    anomalyType: filter.anomalyType || "ALL",
+    branchName: filter.branchName || "ALL",
   };
 }
 

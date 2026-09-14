@@ -161,7 +161,7 @@ export function PipelineFlowView({
               {isCollapsed ? <ChevronDownIcon className="size-4 text-muted-foreground" /> : <ChevronUpIcon className="size-4 text-muted-foreground" />}
             </button>
             {!isCollapsed ? (
-              <div className="space-y-3 p-4">
+              <div className="max-h-[400px] overflow-y-auto space-y-3 p-4 pr-2.5">
                 {lane.tasks.length === 0 ? (
                   <p className="rounded-2xl border border-dashed border-border/80 p-4 text-center text-xs text-muted-foreground">
                     Thành viên này chưa được phân công Task trong bộ lọc.

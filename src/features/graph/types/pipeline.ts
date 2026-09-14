@@ -16,6 +16,7 @@ export interface PipelineTask {
   title: string;
   status: string;
   issueTypeName: string;
+  parent?: { externalId?: string | null; externalKey?: string | null } | null;
   assigneeStudentId: string | null;
   assigneeDisplayName: string | null;
   assigneeExternalId: string | null;
@@ -36,6 +37,7 @@ export interface PipelineCommit {
   authorLabel: string;
   committedAt: string;
   repositoryFullName: string;
+  headRef?: string | null;
 }
 
 export interface PipelineLane {
@@ -58,10 +60,15 @@ export interface PipelineStats {
   doneWithoutLinkedCommits: number;
 }
 
+export type PipelineAnomalyFilterType = "ALL" | "DONE_NO_COMMIT" | "UNASSIGNED" | "MISSING_COMMITS";
+
 export interface PipelineFilterState {
   studentId: string;
   sprintId: string;
-  anomaliesOnly: boolean;
+  anomaliesOnly?: boolean;
+  anomalyType?: PipelineAnomalyFilterType;
+  searchQuery?: string;
+  branchName?: string;
 }
 
 export type PipelineFilterOption = CustomSelectOption;

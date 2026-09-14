@@ -2,91 +2,44 @@
 
 import { useState, useMemo } from "react";
 import {
-  UsersIcon,
-  GitGraphIcon,
-  FolderKanbanIcon,
   AlertTriangleIcon,
-  ShieldAlertIcon,
   CheckCircle2Icon,
-  InfoIcon,
+  DownloadIcon,
+  FolderKanbanIcon,
+  GitBranchIcon,
+  GitGraphIcon,
+  RotateCcwIcon,
+  SearchIcon,
+  ShieldAlertIcon,
+  UsersIcon,
+  XIcon,
 } from "lucide-react";
 import { toast } from "sonner";
-import { CustomSelect } from "@/components/common/custom-select";
+import { CustomSelect, type CustomSelectOption } from "@/components/common/custom-select";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { useLecturerTeams } from "@/features/lecturer/teams/hooks/use-lecturer-teams";
-import { CytoscapeGraphCanvas } from "./cytoscape-graph-canvas";
-import { TraceabilityFlowCanvas } from "./traceability-flow-canvas";
-import { GraphFilterBar } from "./graph-filter-bar";
-import { GraphStatsSummary } from "./graph-stats-summary";
-import { GraphNodeDetailsModal } from "./graph-node-details-modal";
-import { TraceabilityMatrixTable } from "./traceability-matrix-table";
-import { SNANetworkView } from "./sna-network-view";
-import { getMockTraceabilityGraphData, MOCK_GRAPH_STUDENTS } from "../data/mock-graph-data";
-import type { GraphNodeData } from "../types/graph";
-
-const LECTURER_MEMBER_OPTIONS = MOCK_GRAPH_STUDENTS.map((student) => ({
-  value: student.id,
-  label: student.name,
-  subLabel: `${student.studentCode} (${student.role})`,
-}));
-
-const LECTURER_SPRINT_OPTIONS = [
-  { value: "sprint-01", label: "Sprint 1 - Foundation & Integration", subLabel: "Đã hoàn thành" },
-  { value: "sprint-02", label: "Sprint 2 - Slicing Pie & Traceability", subLabel: "Đang diễn ra" },
-];
-
-const MOCK_LECTURER_GROUPS = [
-  {
-    id: "g1",
-    name: "Nhóm 01 - SAGA Capstone Project",
-    projectTopic: "Hệ thống Phân tích Đóng góp Đồ án bằng Neo4j & Slicing Pie",
-    memberCount: 5,
-    traceabilityRate: 94.5,
-    msrCount: 1,
-    ghostingCount: 1,
-    status: "WARNING",
-  },
-  {
-    id: "g2",
-    name: "Nhóm 02 - EduBridge Learning Portal",
-    projectTopic: "Nền tảng Quản lý Học tập & Lớp học Trực tuyến",
-    memberCount: 4,
-    traceabilityRate: 98.2,
-    msrCount: 0,
-    ghostingCount: 0,
-    status: "HEALTHY",
-  },
-  {
-    id: "g3",
-    name: "Nhóm 03 - MediCare AI Clinic",
-    projectTopic: "Ứng dụng Đặt lịch Khám & Chẩn đoán Bệnh bằng AI",
-    memberCount: 5,
-    traceabilityRate: 81.0,
-    msrCount: 3,
-    ghostingCount: 1,
-    status: "WARNING",
-  },
-  {
-    id: "g4",
-    name: "Nhóm 04 - SmartFarm IoT Network",
-    projectTopic: "Hệ thống Giám sát Nông nghiệp Thông minh qua Cảm biến",
-    memberCount: 4,
-    traceabilityRate: 92.0,
-    msrCount: 0,
-    ghostingCount: 0,
-    status: "HEALTHY",
-  },
-  {
-    id: "g5",
-    name: "Nhóm 05 - AutoCare Logistics",
-    projectTopic: "Quản lý Đội xe Vận tải & Tối ưu Lộ trình",
-    memberCount: 5,
-    traceabilityRate: 46.0,
-    msrCount: 5,
-    ghostingCount: 2,
-    status: "CRITICAL",
-  },
-];
+import { useProjectRepositoryBranches } from "@/features/student/project/hooks/useProjectSync";
+import { getApiErrorCode, getApiErrorMessage, getApiErrorStatus } from "@/lib/api-error";
+import type { RoleInTeam } from "@/types/auth";
+import { usePipelineGraphData } from "../hooks/use-pipeline-graph-data";
+import {
+  buildPipelineTasksCsv,
+  downloadTextFile,
+} from "../lib/pipeline-mapper";
+import {
+  UNASSIGNED_LANE_ID,
+  type PipelineAnomalyFilterType,
+  type PipelineFilterState,
+  type PipelineTask,
+} from "../types/pipeline";
+import { PipelineEmptyState } from "./pipeline-empty-state";
+import { PipelineFlowView } from "./pipeline-flow-view";
+import { PipelineMatrixTable } from "./pipeline-matrix-table";
+import { PipelineStatsBar } from "./pipeline-stats-bar";
+import { PipelineTaskInspector } from "./pipeline-task-inspector";
 
 interface LecturerGraphViewProps {
   courseId?: string;
@@ -94,273 +47,569 @@ interface LecturerGraphViewProps {
 }
 
 export function LecturerGraphView({ courseId, initialTeamId }: LecturerGraphViewProps = {}) {
-  const { data: teamsData } = useLecturerTeams(courseId || "", {
+  const teamsQuery = useLecturerTeams(courseId || "", {
     enabled: Boolean(courseId),
   });
 
-  const teams = teamsData?.teams;
-  const lecturerGroups = useMemo(() => {
-    if (teams && teams.length > 0) {
-      return teams.map((t, idx) => {
-        const mockMatch = MOCK_LECTURER_GROUPS[idx % MOCK_LECTURER_GROUPS.length];
-        return {
-          id: t.teamId,
-          name: t.teamName ? `Nhóm ${t.teamNo} - ${t.teamName}` : `Nhóm ${t.teamNo}`,
-          projectTopic: t.projectId ? "Đồ án Kỹ thuật phần mềm" : "Chưa khởi tạo dự án",
-          memberCount: t.members?.length ?? 0,
-          traceabilityRate: mockMatch?.traceabilityRate ?? 92.0,
-          msrCount: mockMatch?.msrCount ?? 0,
-          ghostingCount: mockMatch?.ghostingCount ?? 0,
-          status: (mockMatch?.status ?? "HEALTHY") as "HEALTHY" | "WARNING" | "CRITICAL",
-        };
-      });
-    }
-    return MOCK_LECTURER_GROUPS;
-  }, [teams]);
+  const teams = useMemo(() => teamsQuery.data?.teams || [], [teamsQuery.data]);
 
-  const [selectedGroupIdState, setSelectedGroupId] = useState<string>("");
-  const selectedGroupId =
-    initialTeamId ||
-    (selectedGroupIdState && lecturerGroups.some((g) => g.id === selectedGroupIdState)
-      ? selectedGroupIdState
-      : lecturerGroups[0]?.id || "g1");
-
-  const [activeTab, setActiveTab] = useState<"TRACEABILITY" | "SNA">("TRACEABILITY");
-  const [viewMode, setViewMode] = useState<"FLOW" | "GRAPH">("GRAPH");
-
-  const [selectedStudentId, setSelectedStudentId] = useState<string>("ALL");
-  const [selectedSprint, setSelectedSprint] = useState<string>("ALL");
-  const [filterType, setFilterType] = useState<"ALL" | "ANOMALIES_ONLY" | "TASKS_COMMITS">("ALL");
-
-  const [selectedNode, setSelectedNode] = useState<GraphNodeData | null>(null);
-
-  const currentGroup = useMemo(
-    () => lecturerGroups.find((g) => g.id === selectedGroupId) || lecturerGroups[0] || MOCK_LECTURER_GROUPS[0],
-    [lecturerGroups, selectedGroupId]
+  // Tìm nhóm mặc định: ưu tiên nhóm đầu tiên đã có projectId
+  const defaultTeam = useMemo(
+    () => teams.find((t) => Boolean(t.projectId)) || teams[0] || null,
+    [teams]
   );
 
-  const initialData = useMemo(() => getMockTraceabilityGraphData(), []);
+  const [selectedTeamIdState, setSelectedTeamIdState] = useState<string>("");
 
-  const filteredGraphData = useMemo(() => {
-    let filteredNodes = [...initialData.nodes];
+  const selectedTeamId = useMemo(() => {
+    if (selectedTeamIdState && teams.some((t) => t.teamId === selectedTeamIdState)) {
+      return selectedTeamIdState;
+    }
+    if (initialTeamId && teams.some((t) => t.teamId === initialTeamId)) {
+      return initialTeamId;
+    }
+    return defaultTeam?.teamId || "";
+  }, [defaultTeam, initialTeamId, selectedTeamIdState, teams]);
 
-    if (selectedStudentId !== "ALL") {
-      filteredNodes = filteredNodes.filter((n) => {
-        if (n.type === "STUDENT") return n.id === selectedStudentId;
-        if (n.type === "TASK" && "assigneeId" in n.data) return n.data.assigneeId === selectedStudentId;
-        if (n.type === "COMMIT" && "authorId" in n.data) return n.data.authorId === selectedStudentId;
-        return true;
+  const currentTeam = useMemo(
+    () => teams.find((t) => t.teamId === selectedTeamId) || defaultTeam,
+    [defaultTeam, selectedTeamId, teams]
+  );
+
+  const projectId = currentTeam?.projectId || null;
+
+  // Mode: FLOW vs MATRIX
+  const [viewMode, setViewMode] = useState<"FLOW" | "MATRIX">("FLOW");
+  const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
+  const [isMobileInspectorOpen, setIsMobileInspectorOpen] = useState(false);
+
+  // Filters
+  const [pipelineFilter, setPipelineFilter] = useState<PipelineFilterState>({
+    studentId: "ALL",
+    sprintId: "ALL",
+    anomalyType: "ALL",
+    searchQuery: "",
+    branchName: "ALL",
+  });
+
+  // Khi đổi team, reset selection và filter
+  const handleSelectTeam = (newTeamId: string) => {
+    setSelectedTeamIdState(newTeamId);
+    setSelectedTaskId(null);
+    setPipelineFilter({
+      studentId: "ALL",
+      sprintId: "ALL",
+      anomalyType: "ALL",
+      searchQuery: "",
+      branchName: "ALL",
+    });
+  };
+
+  // Convert members sang định dạng StudentTeamMember cho hook
+  const teamMembersInput = useMemo(
+    () =>
+      (currentTeam?.members || []).map((m) => ({
+        studentCode: m.studentCode,
+        fullName: m.fullName,
+        role: (m.role as RoleInTeam) || "MEMBER",
+        email: m.email,
+      })),
+    [currentTeam]
+  );
+
+  // Gọi hook pipeline chỉ khi có projectId hợp lệ
+  const pipeline = usePipelineGraphData({
+    enabled: Boolean(projectId),
+    projectId,
+    selectedTaskId,
+    teamMembers: teamMembersInput,
+    filter: pipelineFilter,
+  });
+
+  // Repository & branch filter nếu có repo
+  const primaryRepoId = useMemo(() => {
+    if (pipeline.integrationsData?.github?.repositories?.[0]?.id) {
+      return String(pipeline.integrationsData.github.repositories[0].id);
+    }
+    if (pipeline.allCommits?.[0]?.repoId) {
+      return pipeline.allCommits[0].repoId;
+    }
+    return null;
+  }, [pipeline.allCommits, pipeline.integrationsData]);
+
+  const branchesQuery = useProjectRepositoryBranches(projectId, primaryRepoId, {
+    enabled: Boolean(projectId && primaryRepoId),
+  });
+
+  const availableBranches = useMemo(
+    () => branchesQuery.data?.branches || [],
+    [branchesQuery.data]
+  );
+
+  // Options bộ lọc
+  const teamSelectOptions = useMemo(
+    () =>
+      teams.map((t) => ({
+        value: t.teamId,
+        label: t.teamName ? `Nhóm ${t.teamNo} - ${t.teamName}` : `Nhóm ${t.teamNo}`,
+        subLabel: t.projectId
+          ? `${t.members?.length || 0} thành viên`
+          : "Chưa khởi tạo dự án",
+        icon: <FolderKanbanIcon className="size-4 text-primary shrink-0" />,
+      })),
+    [teams]
+  );
+
+  const memberSelectOptions = useMemo<CustomSelectOption[]>(() => {
+    const opts: CustomSelectOption[] = pipeline.members.map((member) => ({
+      value: member.studentId,
+      label: member.fullName,
+      subLabel: `${member.studentCode} (${member.teamRole})`,
+      icon: <UsersIcon className="size-4 text-muted-foreground shrink-0" />,
+    }));
+    if (pipeline.tasks.some((t) => !t.assigneeStudentId && !t.assigneeDisplayName)) {
+      opts.push({
+        value: UNASSIGNED_LANE_ID,
+        label: "Chưa phân công",
+        subLabel: "Task không có người nhận",
       });
     }
+    return [{ value: "ALL", label: "Tất cả thành viên" }, ...opts];
+  }, [pipeline.members, pipeline.tasks]);
 
-    if (selectedSprint !== "ALL") {
-      filteredNodes = filteredNodes.filter((n) => {
-        if (n.type === "TASK" && "sprintId" in n.data) return n.data.sprintId === selectedSprint;
-        return true;
-      });
+  const sprintSelectOptions = useMemo(() => {
+    const opts = pipeline.sprints.map((sprint) => ({
+      value: sprint.id,
+      label: sprint.name,
+      subLabel: sprint.state === "backlog" ? "Chưa vào Sprint" : undefined,
+    }));
+    return [{ value: "ALL", label: "Tất cả Sprint" }, ...opts];
+  }, [pipeline.sprints]);
+
+  const anomalySelectOptions = useMemo(
+    () => [
+      { value: "ALL", label: "Tất cả Task" },
+      { value: "DONE_NO_COMMIT", label: "Hoàn thành chưa có Commit (MSR Anomaly)" },
+      { value: "UNASSIGNED", label: "Chưa phân công người làm" },
+      { value: "MISSING_COMMITS", label: "Chưa có bất kỳ Commit nào liên kết" },
+    ],
+    []
+  );
+
+  const branchSelectOptions = useMemo(() => {
+    if (!availableBranches.length) return [];
+    return [
+      { value: "ALL", label: "Tất cả nhánh" },
+      ...availableBranches.map((b) => ({
+        value: b.name,
+        label: b.name,
+        subLabel: b.isDefault ? "Nhánh mặc định" : undefined,
+        icon: <GitBranchIcon className="size-3.5 text-muted-foreground shrink-0" />,
+      })),
+    ];
+  }, [availableBranches]);
+
+  // Click task handler
+  const handleSelectTask = (taskId: string) => {
+    setSelectedTaskId((current) => {
+      const next = current === taskId ? null : taskId;
+      if (next && typeof window !== "undefined" && window.innerWidth < 1024) {
+        setIsMobileInspectorOpen(true);
+      }
+      return next;
+    });
+  };
+
+  const selectedTask = useMemo<PipelineTask | null>(
+    () => pipeline.filteredTasks.find((task) => task.id === pipeline.effectiveTaskId) || null,
+    [pipeline.effectiveTaskId, pipeline.filteredTasks]
+  );
+
+  const hasActiveFilters = Boolean(
+    pipelineFilter.studentId !== "ALL" ||
+    pipelineFilter.sprintId !== "ALL" ||
+    (pipelineFilter.anomalyType && pipelineFilter.anomalyType !== "ALL") ||
+    pipelineFilter.searchQuery ||
+    (pipelineFilter.branchName && pipelineFilter.branchName !== "ALL")
+  );
+
+  const handleResetFilters = () => {
+    setPipelineFilter({
+      studentId: "ALL",
+      sprintId: "ALL",
+      anomalyType: "ALL",
+      searchQuery: "",
+      branchName: "ALL",
+    });
+  };
+
+  const handleExportCsv = () => {
+    if (!pipeline.filteredTasks.length) {
+      toast.error("Không có Task nào để xuất file.");
+      return;
     }
+    const csv = buildPipelineTasksCsv(pipeline.filteredTasks);
+    const filename = `SAGA_Traceability_Nhom_${currentTeam?.teamNo || "team"}.csv`;
+    downloadTextFile(filename, csv);
+    toast.success(`Đã xuất báo cáo ${pipeline.filteredTasks.length} Task thành công!`);
+  };
 
-    if (filterType === "ANOMALIES_ONLY") {
-      filteredNodes = filteredNodes.filter((n) => {
-        return (
-          ("isMSRAnomaly" in n.data && n.data.isMSRAnomaly) ||
-          ("isGhosting" in n.data && n.data.isGhosting)
-        );
-      });
+  // Rule trạng thái đối soát dựa trên dữ liệu thật
+  const teamStatusRule = useMemo(() => {
+    if (!projectId) {
+      return {
+        label: "Chưa có Project",
+        variant: "muted" as const,
+        icon: null,
+      };
     }
-
-    const nodeIds = new Set(filteredNodes.map((n) => n.id));
-    const filteredEdges = initialData.edges.filter(
-      (e) => nodeIds.has(e.source) && nodeIds.has(e.target)
-    );
-
+    if (pipeline.stats.doneWithoutLinkedCommits > 0) {
+      return {
+        label: "Cần đối soát",
+        variant: "warning" as const,
+        icon: <AlertTriangleIcon className="size-3.5 shrink-0 text-amber-600 dark:text-amber-400" />,
+      };
+    }
+    if (pipeline.tasks.length === 0) {
+      return {
+        label: "Chưa có Task",
+        variant: "muted" as const,
+        icon: null,
+      };
+    }
     return {
-      nodes: filteredNodes,
-      edges: filteredEdges,
+      label: "Hoạt động tốt",
+      variant: "success" as const,
+      icon: <CheckCircle2Icon className="size-3.5 shrink-0 text-emerald-600 dark:text-emerald-400" />,
     };
-  }, [initialData, selectedStudentId, selectedSprint, filterType]);
+  }, [pipeline.stats.doneWithoutLinkedCommits, pipeline.tasks.length, projectId]);
 
-  const groupSelectOptions = lecturerGroups.map((g) => ({
-    value: g.id,
-    label: g.name,
-    subLabel: `Độ tin cậy: ${g.traceabilityRate}% · ${g.msrCount} Task thiếu commit · ${g.ghostingCount} Ghosting`,
-  }));
-
-  const groupSelectorNode = (
-    <div className="flex items-center gap-2 w-full">
-      <div className="w-full max-w-[260px] sm:max-w-[300px]">
-        <CustomSelect
-          value={selectedGroupId}
-          onChange={setSelectedGroupId}
-          options={groupSelectOptions}
-        />
+  // Loading lần đầu
+  if (teamsQuery.isLoading) {
+    return (
+      <div className="space-y-6 animate-pulse" aria-label="Đang tải dữ liệu giám sát">
+        <div className="h-24 rounded-2xl bg-muted/60 border border-border/80" />
+        <div className="h-14 rounded-2xl bg-muted/40 border border-border/60" />
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          <div className="lg:col-span-8 h-96 rounded-3xl bg-muted/30 border border-border/60" />
+          <div className="lg:col-span-4 h-96 rounded-3xl bg-muted/30 border border-border/60" />
+        </div>
       </div>
-      <Badge
-        className={
-          currentGroup.status === "CRITICAL"
-            ? "bg-red-500/15 text-red-700 dark:text-red-300 border border-red-500/40 text-xs font-black gap-1 shrink-0 animate-pulse"
-            : currentGroup.status === "WARNING"
-              ? "bg-amber-500/20 text-amber-950 dark:text-amber-200 border border-amber-500/50 text-xs font-black gap-1 shrink-0"
-              : "bg-emerald-500/15 text-emerald-800 dark:text-emerald-300 border border-emerald-500/40 text-xs font-black gap-1 shrink-0"
-        }
-      >
-        {currentGroup.status === "CRITICAL" ? (
-          <>
-            <ShieldAlertIcon className="w-3.5 h-3.5 text-red-600 dark:text-red-400 shrink-0" />
-            <span className="hidden sm:inline">Nguy cơ cao</span>
-          </>
-        ) : currentGroup.status === "WARNING" ? (
-          <>
-            <AlertTriangleIcon className="w-3.5 h-3.5 text-amber-700 dark:text-amber-400 shrink-0" />
-            <span className="hidden sm:inline">Cần chú ý</span>
-          </>
-        ) : (
-          <>
-            <CheckCircle2Icon className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
-            <span className="hidden sm:inline">Hoạt động tốt</span>
-          </>
-        )}
-      </Badge>
-    </div>
-  );
+    );
+  }
 
-  const extraCollapsibleNode = (
-    <div className="pt-2 border-t border-border/60 flex items-center gap-2 overflow-x-auto pb-1 text-xs">
-      <span className="text-[11px] font-bold text-muted-foreground shrink-0 flex items-center gap-1">
-        <FolderKanbanIcon className="w-3.5 h-3.5 text-blue-500" />
-        Chọn nhanh nhóm:
-      </span>
-      {lecturerGroups.map((g) => (
-        <button
-          key={g.id}
-          onClick={() => setSelectedGroupId(g.id)}
-          className={`px-3 py-1.5 rounded-xl font-bold transition-all cursor-pointer shrink-0 flex items-center gap-1.5 ${selectedGroupId === g.id
-            ? "bg-primary text-primary-foreground shadow-xs"
-            : "bg-muted/60 text-muted-foreground hover:text-foreground hover:bg-muted"
-            }`}
+  // Error phân quyền 403
+  if (
+    teamsQuery.isError &&
+    (getApiErrorStatus(teamsQuery.error) === 403 ||
+      getApiErrorCode(teamsQuery.error) === "LECTURER_COURSE_FORBIDDEN")
+  ) {
+    return (
+      <div className="flex flex-col items-center justify-center p-12 text-center rounded-3xl border border-destructive/30 bg-destructive/5 space-y-3">
+        <div className="flex size-12 items-center justify-center rounded-2xl bg-destructive/10 text-destructive">
+          <ShieldAlertIcon className="size-6" />
+        </div>
+        <h3 className="text-base font-extrabold text-foreground">Truy cập bị từ chối</h3>
+        <p className="text-xs text-muted-foreground max-w-md">
+          Bạn không có quyền truy cập hoặc không được phân công giảng dạy lớp học phần này.
+        </p>
+      </div>
+    );
+  }
+
+  // Error chung khi tải teams
+  if (teamsQuery.isError) {
+    return (
+      <div className="p-8 text-center rounded-3xl border border-destructive/30 bg-destructive/5 space-y-3">
+        <p className="text-sm font-semibold text-destructive">
+          {getApiErrorMessage(teamsQuery.error, "Không thể tải danh sách nhóm của lớp học phần.")}
+        </p>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => teamsQuery.refetch()}
+          className="text-xs cursor-pointer"
         >
-          <span>{g.name.split(" - ")[0]}</span>
-          {g.msrCount > 0 && <span className="w-2 h-2 rounded-full bg-red-400" />}
-        </button>
-      ))}
-    </div>
-  );
+          Thử lại
+        </Button>
+      </div>
+    );
+  }
+
+  // Lớp chưa có nhóm
+  if (teams.length === 0) {
+    return (
+      <PipelineEmptyState
+        title="Lớp học phần chưa có nhóm"
+        description="Lớp học phần này hiện chưa có nhóm sinh viên nào được phân công. Vui lòng kiểm tra lại danh sách lớp hoặc phân nhóm trước."
+        onRetry={() => teamsQuery.refetch()}
+      />
+    );
+  }
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-2xl border border-border/80 bg-card/90 shadow-xs backdrop-blur-md">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shrink-0">
-            <GitGraphIcon className="w-5 h-5" />
+      {/* 1. Header & KPI Thật */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 sm:p-5 rounded-2xl border border-border/80 bg-card/90 shadow-xs backdrop-blur-md">
+        <div className="flex items-center gap-3.5">
+          <div className="size-11 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shrink-0">
+            <GitGraphIcon className="size-5.5" />
           </div>
           <div>
             <div className="flex flex-wrap items-center gap-2">
               <h1 className="text-base font-bold tracking-tight text-foreground sm:text-lg">
-                Đồ thị giám sát & Mạng lưới tương tác
+                Đồ thị & Đối soát nguồn gốc
               </h1>
-              <Badge variant="outline" className="border-primary/20 bg-primary/10 font-mono text-[10px] font-bold text-primary">
-                Traceability & SNA
+              <Badge
+                variant="outline"
+                className="border-primary/20 bg-primary/10 font-mono text-[10px] font-bold text-primary"
+              >
+                Traceability Pipeline
               </Badge>
-              <Badge variant="outline" className="border-amber-500/40 bg-amber-500/10 text-amber-700 dark:text-amber-300 text-[10px] font-mono">
-                Dữ liệu minh họa (Mô hình Cytoscape)
+              <Badge
+                className={
+                  teamStatusRule.variant === "warning"
+                    ? "bg-amber-500/15 text-amber-800 dark:text-amber-300 border border-amber-500/30 text-[10px] font-bold gap-1"
+                    : teamStatusRule.variant === "success"
+                      ? "bg-emerald-500/15 text-emerald-800 dark:text-emerald-300 border border-emerald-500/30 text-[10px] font-bold gap-1"
+                      : "bg-muted text-muted-foreground border border-border text-[10px]"
+                }
+              >
+                {teamStatusRule.icon}
+                <span>{teamStatusRule.label}</span>
               </Badge>
             </div>
-            <p className="text-xs text-muted-foreground">
-              Đối soát liên kết công việc - commit, nhận diện bất thường MSR và phân tích mạng lưới tương tác xã hội.
+            <p className="text-xs text-muted-foreground mt-0.5">
+              Đối soát liên kết giữa công việc Jira, Git commit và tiến độ thực hiện của các thành viên trong nhóm.
             </p>
           </div>
         </div>
 
+        {/* View mode toggle */}
         <div className="flex items-center gap-1.5 p-1 bg-muted/60 rounded-xl border border-border/60 self-start sm:self-auto shrink-0 shadow-2xs">
           <button
-            onClick={() => setActiveTab("TRACEABILITY")}
-            className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-extrabold transition-all cursor-pointer ${activeTab === "TRACEABILITY"
-              ? "bg-card text-foreground shadow-xs border border-border/80"
-              : "text-muted-foreground hover:text-foreground"
-              }`}
+            type="button"
+            onClick={() => setViewMode("FLOW")}
+            className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-extrabold transition-all cursor-pointer ${
+              viewMode === "FLOW"
+                ? "bg-card text-foreground shadow-xs border border-border/80"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
           >
-            <GitGraphIcon className="w-3.5 h-3.5 text-blue-500" />
-            <span>Traceability Graph</span>
+            <span>⊞ Pipeline Flow</span>
           </button>
           <button
-            onClick={() => setActiveTab("SNA")}
-            className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-extrabold transition-all cursor-pointer ${activeTab === "SNA"
-              ? "bg-card text-foreground shadow-xs border border-border/80"
-              : "text-muted-foreground hover:text-foreground"
-              }`}
+            type="button"
+            onClick={() => setViewMode("MATRIX")}
+            className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-extrabold transition-all cursor-pointer ${
+              viewMode === "MATRIX"
+                ? "bg-card text-foreground shadow-xs border border-border/80"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
           >
-            <UsersIcon className="w-3.5 h-3.5 text-purple-500" />
-            <span>Mạng lưới SNA</span>
+            <span>▦ Bảng đối soát Matrix</span>
           </button>
         </div>
       </div>
 
-      <div className="rounded-2xl border border-amber-500/30 bg-amber-500/5 p-3.5 flex items-center justify-between gap-3 text-xs">
-        <div className="flex items-center gap-2.5">
-          <InfoIcon className="size-4 text-amber-600 dark:text-amber-400 shrink-0" />
-          <span className="text-muted-foreground">
-            <strong className="text-foreground">Lưu ý:</strong> Trung tâm Giám sát Đồ thị Mạng lưới & SNA hiện đang hiển thị cấu trúc đồ thị thực nghiệm mô phỏng quan hệ giữa các thành viên, Task Jira và Git Commit trong lúc chờ tích hợp cơ sở dữ liệu Neo4j AuraDB từ máy chủ.
-          </span>
+      {/* 2. Toolbar Bộ Lọc & Team Selector */}
+      <div className="space-y-3 rounded-2xl border border-border/80 bg-card/90 p-3.5 shadow-xs">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2.5">
+          {/* Team Selector */}
+          <div className="col-span-1 sm:col-span-2 md:col-span-1 lg:col-span-2">
+            <CustomSelect
+              id="team-selector"
+              value={selectedTeamId}
+              onChange={handleSelectTeam}
+              options={teamSelectOptions}
+            />
+          </div>
+
+          {/* Search Input */}
+          <div className="relative">
+            <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground pointer-events-none" />
+            <Input
+              type="text"
+              value={pipelineFilter.searchQuery || ""}
+              onChange={(e) =>
+                setPipelineFilter((prev) => ({ ...prev, searchQuery: e.target.value }))
+              }
+              placeholder="Tìm Task key, title..."
+              className="h-10 pl-8 text-xs rounded-xl bg-card border-border/80"
+            />
+            {pipelineFilter.searchQuery && (
+              <button
+                type="button"
+                onClick={() => setPipelineFilter((prev) => ({ ...prev, searchQuery: "" }))}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground cursor-pointer"
+              >
+                <XIcon className="size-3" />
+              </button>
+            )}
+          </div>
+
+          {/* Assignee Filter */}
+          <div>
+            <CustomSelect
+              id="assignee-filter"
+              value={pipelineFilter.studentId}
+              onChange={(val) => setPipelineFilter((prev) => ({ ...prev, studentId: val }))}
+              options={memberSelectOptions}
+            />
+          </div>
+
+          {/* Sprint Filter */}
+          <div>
+            <CustomSelect
+              id="sprint-filter"
+              value={pipelineFilter.sprintId}
+              onChange={(val) => setPipelineFilter((prev) => ({ ...prev, sprintId: val }))}
+              options={sprintSelectOptions}
+            />
+          </div>
+
+          {/* Anomaly Filter */}
+          <div>
+            <CustomSelect
+              id="anomaly-filter"
+              value={pipelineFilter.anomalyType || "ALL"}
+              onChange={(val) =>
+                setPipelineFilter((prev) => ({
+                  ...prev,
+                  anomalyType: val as PipelineAnomalyFilterType,
+                }))
+              }
+              options={anomalySelectOptions}
+            />
+          </div>
         </div>
-        <Badge variant="outline" className="text-[10px] font-mono text-amber-600 dark:text-amber-400 border-amber-500/30 shrink-0">
-          Demo Environment
-        </Badge>
+
+        {/* Dòng bổ sung: Branch Filter & Action buttons */}
+        <div className="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-border/50 text-xs">
+          <div className="flex flex-wrap items-center gap-2">
+            {branchSelectOptions.length > 0 && (
+              <div className="w-56">
+                <CustomSelect
+                  id="branch-filter"
+                  value={pipelineFilter.branchName || "ALL"}
+                  onChange={(val) => setPipelineFilter((prev) => ({ ...prev, branchName: val }))}
+                  options={branchSelectOptions}
+                />
+              </div>
+            )}
+            {branchSelectOptions.length > 0 && (
+              <span className="text-[11px] text-muted-foreground italic">
+                * Lọc theo branch quan sát từ commit (headRef)
+              </span>
+            )}
+            {hasActiveFilters && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={handleResetFilters}
+                className="h-8 gap-1 text-xs text-muted-foreground hover:text-foreground cursor-pointer"
+              >
+                <RotateCcwIcon className="size-3" />
+                Đặt lại bộ lọc
+              </Button>
+            )}
+          </div>
+
+          <div className="flex items-center gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={handleExportCsv}
+              disabled={!pipeline.filteredTasks.length}
+              className="h-8 gap-1.5 text-xs font-semibold cursor-pointer"
+            >
+              <DownloadIcon className="size-3.5" />
+              Xuất CSV
+            </Button>
+          </div>
+        </div>
       </div>
 
-      {activeTab === "TRACEABILITY" ? (
-        <div className="space-y-4 animate-in fade-in-0 duration-200">
-          <GraphFilterBar
-            groupSelector={groupSelectorNode}
-            extraCollapsibleContent={extraCollapsibleNode}
-            selectedStudentId={selectedStudentId}
-            onSelectStudent={setSelectedStudentId}
-            selectedSprint={selectedSprint}
-            onSelectSprint={setSelectedSprint}
-            filterType={filterType}
-            onSelectFilterType={setFilterType}
-            onExport={() => toast.success("Đã xuất dữ liệu giám sát của nhóm thành công!")}
-            onReset={() => {
-              setSelectedStudentId("ALL");
-              setSelectedSprint("ALL");
-              setFilterType("ALL");
-            }}
-            anomaliesCount={currentGroup.msrCount}
-            memberOptions={LECTURER_MEMBER_OPTIONS}
-            sprintOptions={LECTURER_SPRINT_OPTIONS}
-            viewMode={viewMode}
-            onSelectViewMode={setViewMode}
-          />
-
-          {viewMode === "GRAPH" ? (
-            <CytoscapeGraphCanvas
-              nodes={filteredGraphData.nodes}
-              edges={filteredGraphData.edges}
-              onSelectNode={(node) => setSelectedNode(node)}
-              layoutName="breadthfirst"
-            />
-          ) : (
-            <TraceabilityFlowCanvas
-              nodes={filteredGraphData.nodes}
-              edges={filteredGraphData.edges}
-              onSelectNode={(node) => setSelectedNode(node)}
-              highlightMSRAnomaly={true}
-            />
-          )}
-
-          <GraphStatsSummary
-            totalNodes={filteredGraphData.nodes.length}
-            totalEdges={filteredGraphData.edges.length}
-            traceabilityRate={currentGroup.traceabilityRate}
-            msrCount={currentGroup.msrCount}
-          />
-
-          <TraceabilityMatrixTable />
+      {/* 3. Trường hợp nhóm chưa khởi tạo dự án */}
+      {!projectId ? (
+        <PipelineEmptyState
+          title={`Nhóm ${currentTeam?.teamNo || ""} chưa khởi tạo dự án`}
+          description="Nhóm này chưa liên kết với không gian làm việc Jira hoặc kho lưu trữ GitHub. Giảng viên vui lòng nhắc nhở nhóm thiết lập dự án để bắt đầu theo dõi dữ liệu đối soát."
+        />
+      ) : pipeline.isLoadingMain ? (
+        /* Loading nội dung khi đổi nhóm */
+        <div className="space-y-4 animate-pulse">
+          <div className="h-16 rounded-2xl bg-muted/40 border border-border/60" />
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <div className="lg:col-span-8 h-80 rounded-3xl bg-muted/30 border border-border/60" />
+            <div className="lg:col-span-4 h-80 rounded-3xl bg-muted/30 border border-border/60" />
+          </div>
         </div>
       ) : (
-        <SNANetworkView />
-      )}
+        <>
+          {/* KPI Stats Bar Thật */}
+          <PipelineStatsBar
+            stats={pipeline.stats}
+            isLoadingCommits={pipeline.isLoadingCommits}
+          />
 
-      <GraphNodeDetailsModal nodeData={selectedNode} onClose={() => setSelectedNode(null)} />
+          {/* 4. Nội dung chính: 2 Cột Desktop (65-70% / 30-35%) */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+            {/* Cột Trái: Pipeline Flow HOẶC Audit Matrix */}
+            <div className="lg:col-span-8 xl:col-span-8 space-y-4 min-w-0">
+              {viewMode === "FLOW" ? (
+                <PipelineFlowView
+                  lanes={pipeline.lanes}
+                  selectedTaskId={selectedTaskId}
+                  onSelectTask={handleSelectTask}
+                />
+              ) : (
+                <PipelineMatrixTable
+                  tasks={pipeline.filteredTasks}
+                  selectedTaskId={selectedTaskId}
+                  onSelectTask={handleSelectTask}
+                />
+              )}
+            </div>
+
+            {/* Cột Phải: Task Inspector Desktop (Sticky) */}
+            <div className="hidden lg:block lg:col-span-4 xl:col-span-4 self-start lg:sticky lg:top-28 lg:max-h-[calc(100dvh-8rem)] lg:overflow-y-auto">
+              <PipelineTaskInspector
+                selectedTask={selectedTask}
+                commits={pipeline.selectedCommits}
+                isLoadingCommits={pipeline.isLoadingTaskCommits}
+                errorMessage={pipeline.taskCommitsErrorMessage}
+                onRetry={pipeline.refetchTaskCommits}
+                onClearSelection={() => setSelectedTaskId(null)}
+              />
+            </div>
+          </div>
+
+          {/* Mobile / Tablet Sheet Drawer chứa Task Inspector (< lg) */}
+          <Sheet open={isMobileInspectorOpen} onOpenChange={setIsMobileInspectorOpen}>
+            <SheetContent
+              side="right"
+              className="w-full sm:max-w-md p-0 overflow-hidden border-l border-border"
+            >
+              <div className="h-full overflow-y-auto p-4">
+                <PipelineTaskInspector
+                  selectedTask={selectedTask}
+                  commits={pipeline.selectedCommits}
+                  isLoadingCommits={pipeline.isLoadingTaskCommits}
+                  errorMessage={pipeline.taskCommitsErrorMessage}
+                  onRetry={pipeline.refetchTaskCommits}
+                  onClearSelection={() => {
+                    setSelectedTaskId(null);
+                    setIsMobileInspectorOpen(false);
+                  }}
+                />
+              </div>
+            </SheetContent>
+          </Sheet>
+        </>
+      )}
     </div>
   );
 }

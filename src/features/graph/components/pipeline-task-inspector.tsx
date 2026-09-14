@@ -1,9 +1,11 @@
 "use client";
 
+import { useState } from "react";
 import {
   AlertTriangleIcon,
   CalendarIcon,
   CheckSquareIcon,
+  GitBranchIcon,
   GitCommitIcon,
   MousePointerClickIcon,
   UserIcon,
@@ -39,6 +41,21 @@ function statusClass(status: string): string {
   return "bg-muted text-muted-foreground";
 }
 
+function formatCommitDate(isoString?: string | null): string {
+  if (!isoString) return "";
+  try {
+    const d = new Date(isoString);
+    return new Intl.DateTimeFormat("vi-VN", {
+      dateStyle: "short",
+      timeStyle: "short",
+    }).format(d);
+  } catch {
+    return isoString;
+  }
+}
+
+const INITIAL_COMMITS_LIMIT = 8;
+
 export function PipelineTaskInspector({
   selectedTask,
   commits,
@@ -48,6 +65,9 @@ export function PipelineTaskInspector({
   onClearSelection,
   className,
 }: PipelineTaskInspectorProps) {
+  const [showAllForTaskId, setShowAllForTaskId] = useState<string | null>(null);
+  const showAllCommits = Boolean(selectedTask && showAllForTaskId === selectedTask.id);
+
   if (!selectedTask) {
     return (
       <div
@@ -60,14 +80,16 @@ export function PipelineTaskInspector({
           <MousePointerClickIcon className="size-5" />
         </div>
         <p className="mt-3 font-bold text-foreground">Chưa chọn Task</p>
-        <p className="mt-1 max-w-[260px] leading-relaxed">
-          Chọn một Task Jira trong danh sách hoặc bảng đối soát để kiểm tra danh sách Commit liên kết.
+        <p className="mt-1 max-w-[280px] leading-relaxed">
+          Chọn một Task Jira trong danh sách hoặc bảng đối soát để xem các commit đã liên kết.
         </p>
       </div>
     );
   }
 
   const warning = isDoneWithoutLinkedCommit(selectedTask);
+  const displayedCommits = showAllCommits ? commits : commits.slice(0, INITIAL_COMMITS_LIMIT);
+  const hasMoreCommits = commits.length > INITIAL_COMMITS_LIMIT;
 
   return (
     <div
@@ -100,6 +122,15 @@ export function PipelineTaskInspector({
         </div>
 
         <h4 className="text-sm font-bold leading-snug text-foreground">{selectedTask.title}</h4>
+
+        {selectedTask.parent && (selectedTask.parent.externalKey || selectedTask.parent.externalId) && (
+          <div className="flex items-center gap-2 rounded-xl bg-muted/20 px-2.5 py-1 text-[11px] text-muted-foreground">
+            <span className="font-medium">Thuộc Task cha:</span>
+            <Badge variant="outline" className="font-mono text-[10px] font-bold text-primary">
+              {selectedTask.parent.externalKey || selectedTask.parent.externalId}
+            </Badge>
+          </div>
+        )}
 
         <div className="grid grid-cols-1 gap-1.5 rounded-2xl bg-muted/30 p-2.5 text-xs text-muted-foreground">
           <div className="flex items-center gap-2 truncate">
@@ -156,19 +187,27 @@ export function PipelineTaskInspector({
           </div>
         ) : commits.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-border/80 p-5 text-center text-xs text-muted-foreground shrink-0">
-            <p>Task này chưa có Commit liên kết từ mã nguồn repository.</p>
+            <p>Chưa có commit được liên kết với task này.</p>
           </div>
         ) : (
           <div className="flex-1 min-h-0 space-y-2 overflow-y-auto pr-1">
-            {commits.map((commit) => (
+            {displayedCommits.map((commit) => (
               <div
                 key={commit.id}
                 className="rounded-2xl border border-border/70 bg-card/90 p-3 shadow-2xs transition-colors hover:border-border"
               >
                 <div className="flex items-center justify-between gap-2">
-                  <span className="font-mono text-[11px] font-bold text-primary">
-                    {commit.shortHash}
-                  </span>
+                  <div className="flex items-center gap-1.5">
+                    <span className="font-mono text-[11px] font-bold text-primary">
+                      {commit.shortHash}
+                    </span>
+                    {commit.headRef && (
+                      <Badge variant="outline" className="flex items-center gap-1 px-1.5 py-0 text-[10px] font-mono text-muted-foreground">
+                        <GitBranchIcon className="size-2.5" />
+                        <span className="max-w-[120px] truncate">{commit.headRef}</span>
+                      </Badge>
+                    )}
+                  </div>
                   <span className="truncate text-[10px] text-muted-foreground">
                     {commit.repositoryFullName}
                   </span>
@@ -176,12 +215,36 @@ export function PipelineTaskInspector({
                 <p className="mt-1 line-clamp-2 text-xs font-semibold text-foreground">
                   {commit.message}
                 </p>
-                <p className="mt-1 text-[11px] text-muted-foreground">{commit.authorLabel}</p>
+                <div className="mt-1.5 flex items-center justify-between text-[11px] text-muted-foreground">
+                  <span>{commit.authorLabel}</span>
+                  {commit.committedAt && (
+                    <span className="text-[10px]">{formatCommitDate(commit.committedAt)}</span>
+                  )}
+                </div>
               </div>
             ))}
+
+            {hasMoreCommits && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() =>
+                  setShowAllForTaskId((curr) =>
+                    curr === selectedTask.id ? null : selectedTask.id
+                  )
+                }
+                className="w-full mt-2 text-xs font-semibold text-primary hover:bg-primary/10 cursor-pointer"
+              >
+                {showAllCommits
+                  ? "Thu gọn danh sách"
+                  : `Xem thêm (còn ${commits.length - INITIAL_COMMITS_LIMIT} commit) / Hiển thị tất cả ${commits.length} commits`}
+              </Button>
+            )}
           </div>
         )}
       </div>
     </div>
   );
 }
+

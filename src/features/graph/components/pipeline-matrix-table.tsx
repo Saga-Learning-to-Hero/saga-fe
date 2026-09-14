@@ -52,9 +52,9 @@ export function PipelineMatrixTable({
             Chưa có Task phù hợp bộ lọc để đối soát.
           </p>
         ) : (
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto max-h-[560px] overflow-y-auto">
             <table className="w-full text-left text-xs">
-              <thead className="sticky top-0 z-10 border-b border-border/60 bg-muted/90 text-[10px] font-bold uppercase tracking-wider text-muted-foreground backdrop-blur-xs">
+              <thead className="sticky top-0 z-10 border-b border-border/80 bg-background/95 text-[10px] font-bold uppercase tracking-wider text-muted-foreground backdrop-blur-md">
                 <tr>
                   <th className="p-3.5 pl-4">Mã Task</th>
                   <th className="p-3.5">Tiêu đề</th>

@@ -89,9 +89,26 @@ export function usePipelineGraphData({
     () => sanitizePipelineFilter(filter, members, sprints),
     [filter, members, sprints]
   );
+  const branchTaskKeys = useMemo(() => {
+    if (!sanitizedFilter.branchName || sanitizedFilter.branchName === "ALL" || !commitsQuery.data) {
+      return undefined;
+    }
+    const keys = new Set<string>();
+    const targetBranch = sanitizedFilter.branchName.trim().toLowerCase();
+    for (const c of commitsQuery.data) {
+      if (c.headRef && c.headRef.trim().toLowerCase() === targetBranch) {
+        const matches = c.message.match(/([A-Za-z][A-Za-z0-9_]+-[0-9]+)/g);
+        if (matches) {
+          matches.forEach((k) => keys.add(k.toUpperCase()));
+        }
+      }
+    }
+    return keys;
+  }, [commitsQuery.data, sanitizedFilter.branchName]);
+
   const filteredTasks = useMemo(
-    () => filterPipelineTasks(tasks, sanitizedFilter, members),
-    [members, sanitizedFilter, tasks]
+    () => filterPipelineTasks(tasks, sanitizedFilter, members, branchTaskKeys),
+    [branchTaskKeys, members, sanitizedFilter, tasks]
   );
   const lanes = useMemo(
     () => groupTasksIntoLanes(filteredTasks, members),
@@ -180,5 +197,8 @@ export function usePipelineGraphData({
     refetchTaskCommits: taskCommitsQuery.refetch,
     realtimeStatus: realtime.status,
     queryPlan: commitsPlan,
+    allCommits: commitsQuery.data || [],
+    progressData: progressQuery.data || null,
+    integrationsData: integrationsQuery.data || null,
   };
 }
