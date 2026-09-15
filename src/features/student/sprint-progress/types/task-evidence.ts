@@ -1,6 +1,16 @@
 export interface TaskWorkSessionResponse {
   id: string;
+  taskId: string;
+  startedAt: string;
+  endedAt?: string | null;
   status: string;
+  elapsedSeconds: number;
+}
+
+export interface TaskWorkSessionsResponse {
+  taskId: string;
+  activeSession: TaskWorkSessionResponse | null;
+  sessions: TaskWorkSessionResponse[];
 }
 
 export interface TaskWebLinkItem {

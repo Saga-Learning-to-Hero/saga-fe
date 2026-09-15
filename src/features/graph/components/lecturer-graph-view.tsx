@@ -6,7 +6,6 @@ import {
   CheckCircle2Icon,
   DownloadIcon,
   FolderKanbanIcon,
-  GitBranchIcon,
   GitGraphIcon,
   RotateCcwIcon,
   SearchIcon,
@@ -21,7 +20,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { useLecturerTeams } from "@/features/lecturer/teams/hooks/use-lecturer-teams";
-import { useProjectRepositoryBranches } from "@/features/student/project/hooks/useProjectSync";
 import { getApiErrorCode, getApiErrorMessage, getApiErrorStatus } from "@/lib/api-error";
 import type { RoleInTeam } from "@/types/auth";
 import { usePipelineGraphData } from "../hooks/use-pipeline-graph-data";
@@ -38,6 +36,7 @@ import {
 import { PipelineEmptyState } from "./pipeline-empty-state";
 import { PipelineFlowView } from "./pipeline-flow-view";
 import { PipelineMatrixTable } from "./pipeline-matrix-table";
+import { PipelineRepositoryFilters } from "./pipeline-repository-filters";
 import { PipelineStatsBar } from "./pipeline-stats-bar";
 import { PipelineTaskInspector } from "./pipeline-task-inspector";
 
@@ -89,6 +88,7 @@ export function LecturerGraphView({ courseId, initialTeamId }: LecturerGraphView
     sprintId: "ALL",
     anomalyType: "ALL",
     searchQuery: "",
+    repoId: "ALL",
     branchName: "ALL",
   });
 
@@ -101,6 +101,7 @@ export function LecturerGraphView({ courseId, initialTeamId }: LecturerGraphView
       sprintId: "ALL",
       anomalyType: "ALL",
       searchQuery: "",
+      repoId: "ALL",
       branchName: "ALL",
     });
   };
@@ -127,25 +128,6 @@ export function LecturerGraphView({ courseId, initialTeamId }: LecturerGraphView
   });
 
   // Repository & branch filter nếu có repo
-  const primaryRepoId = useMemo(() => {
-    if (pipeline.integrationsData?.github?.repositories?.[0]?.id) {
-      return String(pipeline.integrationsData.github.repositories[0].id);
-    }
-    if (pipeline.allCommits?.[0]?.repoId) {
-      return pipeline.allCommits[0].repoId;
-    }
-    return null;
-  }, [pipeline.allCommits, pipeline.integrationsData]);
-
-  const branchesQuery = useProjectRepositoryBranches(projectId, primaryRepoId, {
-    enabled: Boolean(projectId && primaryRepoId),
-  });
-
-  const availableBranches = useMemo(
-    () => branchesQuery.data?.branches || [],
-    [branchesQuery.data]
-  );
-
   // Options bộ lọc
   const teamSelectOptions = useMemo(
     () =>
@@ -196,19 +178,6 @@ export function LecturerGraphView({ courseId, initialTeamId }: LecturerGraphView
     []
   );
 
-  const branchSelectOptions = useMemo(() => {
-    if (!availableBranches.length) return [];
-    return [
-      { value: "ALL", label: "Tất cả nhánh" },
-      ...availableBranches.map((b) => ({
-        value: b.name,
-        label: b.name,
-        subLabel: b.isDefault ? "Nhánh mặc định" : undefined,
-        icon: <GitBranchIcon className="size-3.5 text-muted-foreground shrink-0" />,
-      })),
-    ];
-  }, [availableBranches]);
-
   // Click task handler
   const handleSelectTask = (taskId: string) => {
     setSelectedTaskId((current) => {
@@ -230,6 +199,7 @@ export function LecturerGraphView({ courseId, initialTeamId }: LecturerGraphView
     pipelineFilter.sprintId !== "ALL" ||
     (pipelineFilter.anomalyType && pipelineFilter.anomalyType !== "ALL") ||
     pipelineFilter.searchQuery ||
+    (pipelineFilter.repoId && pipelineFilter.repoId !== "ALL") ||
     (pipelineFilter.branchName && pipelineFilter.branchName !== "ALL")
   );
 
@@ -239,6 +209,7 @@ export function LecturerGraphView({ courseId, initialTeamId }: LecturerGraphView
       sprintId: "ALL",
       anomalyType: "ALL",
       searchQuery: "",
+      repoId: "ALL",
       branchName: "ALL",
     });
   };
@@ -484,24 +455,30 @@ export function LecturerGraphView({ courseId, initialTeamId }: LecturerGraphView
           </div>
         </div>
 
-        {/* Dòng bổ sung: Branch Filter & Action buttons */}
+        {/* Dòng bổ sung: Repository, Branch và thao tác */}
         <div className="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-border/50 text-xs">
           <div className="flex flex-wrap items-center gap-2">
-            {branchSelectOptions.length > 0 && (
-              <div className="w-56">
-                <CustomSelect
-                  id="branch-filter"
-                  value={pipelineFilter.branchName || "ALL"}
-                  onChange={(val) => setPipelineFilter((prev) => ({ ...prev, branchName: val }))}
-                  options={branchSelectOptions}
-                />
-              </div>
-            )}
-            {branchSelectOptions.length > 0 && (
-              <span className="text-[11px] text-muted-foreground italic">
-                * Lọc theo branch quan sát từ commit (headRef)
-              </span>
-            )}
+            <PipelineRepositoryFilters
+              compact
+              repositories={pipeline.repositories}
+              branches={pipeline.branches}
+              selectedRepoId={pipeline.sanitizedFilter.repoId || "ALL"}
+              selectedBranchName={pipeline.sanitizedFilter.branchName || "ALL"}
+              onSelectRepository={(repoId) => {
+                setSelectedTaskId(null);
+                setPipelineFilter((current) => ({
+                  ...current,
+                  repoId,
+                  branchName: "ALL",
+                }));
+              }}
+              onSelectBranch={(branchName) => {
+                setSelectedTaskId(null);
+                setPipelineFilter((current) => ({ ...current, branchName }));
+              }}
+              isLoadingBranches={pipeline.isLoadingBranches}
+              canonicalFilter={pipeline.taskCommitLinksFilter}
+            />
             {hasActiveFilters && (
               <Button
                 type="button"
@@ -549,6 +526,13 @@ export function LecturerGraphView({ courseId, initialTeamId }: LecturerGraphView
         </div>
       ) : (
         <>
+          {pipeline.isTaskCommitsError ? (
+            <PipelineEmptyState
+              title="Không tải được liên kết Task–Commit"
+              description={pipeline.taskCommitsErrorMessage || "Vui lòng thử tải lại dữ liệu đối soát."}
+              onRetry={() => void pipeline.refetchTaskCommits()}
+            />
+          ) : null}
           {/* KPI Stats Bar Thật */}
           <PipelineStatsBar
             stats={pipeline.stats}

@@ -639,4 +639,73 @@ describe("TaskEvidenceService", () => {
       ).rejects.toThrow("taskId is required");
     }
   );
+
+  fptTest(
+    {
+      id: "UTCID31",
+      type: "N",
+      executedDate: "15/09/2026",
+      description: "GET work-sessions tra ve active session cua current user de khoi phuc timer",
+    },
+    async () => {
+      const activeSession = {
+        id: mockSessionId,
+        taskId: mockTaskId,
+        startedAt: "2026-09-14T10:20:00",
+        endedAt: null,
+        status: "OPEN",
+        elapsedSeconds: 1530,
+      };
+      const getSpy = vi.spyOn(apiClient, "get").mockResolvedValueOnce({
+        data: {
+          taskId: mockTaskId,
+          activeSession,
+          sessions: [activeSession],
+        },
+      });
+
+      const result = await TaskEvidenceService.getWorkSessions(mockTaskId);
+
+      expect(getSpy).toHaveBeenCalledWith(`/api/tasks/${mockTaskId}/work-sessions`);
+      expect(result.activeSession).toEqual(activeSession);
+      expect(result.activeSession?.elapsedSeconds).toBe(1530);
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID32",
+      type: "B",
+      executedDate: "15/09/2026",
+      description: "GET work-sessions chap nhan activeSession null khi current user khong co phien OPEN",
+    },
+    async () => {
+      vi.spyOn(apiClient, "get").mockResolvedValueOnce({
+        data: {
+          taskId: mockTaskId,
+          activeSession: null,
+          sessions: [],
+        },
+      });
+
+      const result = await TaskEvidenceService.getWorkSessions(mockTaskId);
+
+      expect(result.activeSession).toBeNull();
+      expect(result.sessions).toEqual([]);
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID33",
+      type: "A",
+      executedDate: "15/09/2026",
+      description: "getWorkSessions nem loi khi taskId rong",
+    },
+    async () => {
+      await expect(TaskEvidenceService.getWorkSessions("   ")).rejects.toThrow(
+        "taskId is required"
+      );
+    }
+  );
 });

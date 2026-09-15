@@ -1,15 +1,12 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useRef } from "react";
 import {
-  PlayIcon,
-  SquareIcon,
   Link2Icon,
   FileIcon,
   ExternalLinkIcon,
   PlusIcon,
   Loader2Icon,
-  TimerIcon,
   AlertCircleIcon,
   CheckCircle2Icon,
   Trash2Icon,
@@ -28,8 +25,6 @@ import { toast } from "sonner";
 import {
   useTaskWebLinks,
   useTaskFiles,
-  useStartWorkSession,
-  useStopWorkSession,
   useAddTaskWebLink,
   useDeleteTaskWebLink,
   useUploadTaskFile,
@@ -61,113 +56,6 @@ function formatFileSize(bytes: number): string {
   const sizes = ["B", "KB", "MB", "GB"];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
   return `${parseFloat((bytes / Math.pow(k, i)).toFixed(1))} ${sizes[i]}`;
-}
-
-function formatSeconds(totalSec: number): string {
-  const h = Math.floor(totalSec / 3600);
-  const m = Math.floor((totalSec % 3600) / 60);
-  const s = totalSec % 60;
-  return [h, m, s].map((v) => (v < 10 ? `0${v}` : `${v}`)).join(":");
-}
-
-interface TaskWorkSessionControlProps {
-  taskId: string;
-  isOwnerOrLeader?: boolean;
-}
-
-/** A compact, immediately available work-session control for the task drawer header. */
-export function TaskWorkSessionControl({
-  taskId,
-  isOwnerOrLeader = true,
-}: TaskWorkSessionControlProps) {
-  const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
-  const [isSessionRunning, setIsSessionRunning] = useState(false);
-  const [elapsedSeconds, setElapsedSeconds] = useState(0);
-  const startSessionMutation = useStartWorkSession(taskId);
-  const stopSessionMutation = useStopWorkSession(taskId);
-  const isSessionLoading = startSessionMutation.isPending || stopSessionMutation.isPending;
-
-  useEffect(() => {
-    if (!isSessionRunning) return;
-
-    const interval = window.setInterval(() => {
-      setElapsedSeconds((previous) => previous + 1);
-    }, 1000);
-
-    return () => window.clearInterval(interval);
-  }, [isSessionRunning]);
-
-  const handleStartSession = async () => {
-    try {
-      const session = await startSessionMutation.mutateAsync();
-      setActiveSessionId(session.id);
-      setIsSessionRunning(true);
-      setElapsedSeconds(0);
-      toast.success("Đã bắt đầu bấm giờ phiên làm việc.");
-    } catch (error: unknown) {
-      toast.error(error instanceof Error ? error.message : "Không thể bắt đầu phiên làm việc.");
-    }
-  };
-
-  const handleStopSession = async () => {
-    if (!activeSessionId) return;
-
-    try {
-      await stopSessionMutation.mutateAsync(activeSessionId);
-      setIsSessionRunning(false);
-      toast.success("Đã lưu thời lượng phiên làm việc.");
-    } catch (error: unknown) {
-      toast.error(error instanceof Error ? error.message : "Không thể dừng phiên làm việc.");
-    }
-  };
-
-  return (
-    <div className="hidden sm:flex items-center gap-1.5">
-      <div
-        className={`flex items-center gap-1.5 rounded-lg border px-2 py-1 font-mono text-xs font-bold tabular-nums ${isSessionRunning
-          ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"
-          : "border-border/60 bg-background text-muted-foreground"
-          }`}
-        title={isSessionRunning ? "Đang bấm giờ" : "Chưa bấm giờ"}
-      >
-        <TimerIcon className="w-3.5 h-3.5" />
-        {formatSeconds(elapsedSeconds)}
-      </div>
-
-      {isOwnerOrLeader &&
-        (!isSessionRunning ? (
-          <Button
-            type="button"
-            size="sm"
-            disabled={isSessionLoading}
-            onClick={handleStartSession}
-            className="h-8 rounded-lg bg-emerald-600 px-2.5 text-xs font-semibold text-white hover:bg-emerald-700"
-          >
-            {isSessionLoading ? (
-              <Loader2Icon className="w-3.5 h-3.5 animate-spin" />
-            ) : (
-              <PlayIcon className="w-3.5 h-3.5" />
-            )}
-            Bắt đầu
-          </Button>
-        ) : (
-          <Button
-            type="button"
-            size="sm"
-            disabled={isSessionLoading}
-            onClick={handleStopSession}
-            className="h-8 rounded-lg bg-rose-600 px-2.5 text-xs font-semibold text-white hover:bg-rose-700"
-          >
-            {isSessionLoading ? (
-              <Loader2Icon className="w-3.5 h-3.5 animate-spin" />
-            ) : (
-              <SquareIcon className="w-3.5 h-3.5" />
-            )}
-            Dừng
-          </Button>
-        ))}
-    </div>
-  );
 }
 
 export function TaskEvidencePanel({

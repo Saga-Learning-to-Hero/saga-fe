@@ -1,3 +1,4 @@
+import { useCallback } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { LecturerWeightsService } from "../api/lecturer-weights-service";
@@ -58,8 +59,23 @@ export function useContributionEvaluation(teamId: string, options?: { enabled?: 
     queryKey: CONTRIBUTION_QUERY_KEYS.evaluation(teamId),
     queryFn: () => TeamContributionService.getEvaluation(teamId),
     enabled: (options?.enabled ?? true) && Boolean(teamId && teamId.trim()),
-    staleTime: 1000 * 15,
+    staleTime: 1000 * 60 * 3,
   });
+}
+
+export function usePrefetchContributionEvaluation() {
+  const queryClient = useQueryClient();
+  return useCallback(
+    (teamId: string) => {
+      if (!teamId || !teamId.trim()) return;
+      void queryClient.prefetchQuery({
+        queryKey: CONTRIBUTION_QUERY_KEYS.evaluation(teamId),
+        queryFn: () => TeamContributionService.getEvaluation(teamId),
+        staleTime: 1000 * 60 * 3,
+      });
+    },
+    [queryClient]
+  );
 }
 
 export function useUpdateContributionSliceWeights(courseId: string) {

@@ -174,4 +174,23 @@ describe("task-mapper", () => {
       expect(result.dueDate).toBe("2026-09-22");
     }
   );
+
+  fptTest(
+    {
+      id: "UTCID09",
+      type: "B",
+      executedDate: "15/09/2026",
+      description: "Khong suy doan ngay task tu createdAt updatedAt hoac ngay Sprint khi API tra null",
+    },
+    () => {
+      const result = mapProjectTaskToSprintIssue({
+        ...baseTask,
+        startDate: null,
+        dueDate: null,
+      });
+
+      expect(result.startDate).toBeUndefined();
+      expect(result.dueDate).toBeUndefined();
+    }
+  );
 });

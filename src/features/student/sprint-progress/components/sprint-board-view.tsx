@@ -23,6 +23,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { getAssigneeAvatarClass, getAssigneeInitials } from "../lib/assignee-avatar";
+import { TaskDueDate } from "./task-due-date";
 
 interface SprintBoardViewProps {
   issues: SprintIssue[];
@@ -389,15 +390,7 @@ export function SprintBoardView({
                             <NetworkIcon className="w-3 h-3" />
                           </Link>
 
-                          {issue.dueDate && (
-                            <span
-                              title={`Hạn hoàn thành: ${issue.dueDate}`}
-                              className="inline-flex items-center gap-0.5 text-muted-foreground font-mono text-[10px]"
-                            >
-                              <span className="text-amber-500">📅</span>
-                              {issue.dueDate}
-                            </span>
-                          )}
+                          <TaskDueDate dueDate={issue.dueDate} status={issue.status} />
                         </div>
 
                         <div className="flex items-center gap-2">

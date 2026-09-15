@@ -29,7 +29,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { CustomSelect } from "@/components/common/custom-select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TaskLinkedCommitsList } from "./task-linked-commits-list";
-import { TaskEvidencePanel, TaskWorkSessionControl } from "./task-evidence-panel";
+import { TaskEvidencePanel } from "./task-evidence-panel";
+import { TaskWorkSessionControl } from "./task-work-session-control";
 import { LabelsMultiSelect } from "./labels-multi-select";
 import {
   useCreateProjectTask,

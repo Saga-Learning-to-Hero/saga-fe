@@ -68,6 +68,23 @@ export function MemberProgressSheet({
     );
   }, [assignedTasks, taskFilter]);
 
+  const inProgressFromSummary = data?.taskSummary?.inProgress;
+  const inProgressTasks = useMemo(() => {
+    if (typeof inProgressFromSummary === "number") {
+      return inProgressFromSummary;
+    }
+    if (!assignedTasks) return 0;
+    return assignedTasks.filter((t) => {
+      const s = (t.status || "").toUpperCase();
+      return (
+        s === "IN_PROGRESS" ||
+        s === "IN PROGRESS" ||
+        s === "IN_REVIEW" ||
+        s === "IN REVIEW"
+      );
+    }).length;
+  }, [inProgressFromSummary, assignedTasks]);
+
   const rawData = data as Record<string, unknown> | undefined;
   const avatarUrl =
     typeof rawData?.avatarUrl === "string" && rawData.avatarUrl.trim()
@@ -177,19 +194,19 @@ export function MemberProgressSheet({
                   <div className="rounded-xl border border-border/60 bg-card p-2">
                     <span className="text-[10px] text-muted-foreground block font-sans">Đã xong</span>
                     <span className="text-sm font-extrabold text-emerald-600 dark:text-emerald-400">
-                      {data.taskSummary.completed}
+                      {data.taskSummary.completed ?? 0}
                     </span>
                   </div>
                   <div className="rounded-xl border border-border/60 bg-card p-2">
                     <span className="text-[10px] text-muted-foreground block font-sans">Chưa xong</span>
                     <span className="text-sm font-extrabold text-amber-600 dark:text-amber-400">
-                      {data.taskSummary.incomplete}
+                      {data.taskSummary.incomplete ?? 0}
                     </span>
                   </div>
                   <div className="rounded-xl border border-border/60 bg-card p-2">
                     <span className="text-[10px] text-muted-foreground block font-sans">Đang làm</span>
                     <span className="text-sm font-extrabold text-primary">
-                      {data.taskSummary.inProgress}
+                      {inProgressTasks}
                     </span>
                   </div>
                 </div>

@@ -16,7 +16,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/sonner";
-import { AuthService } from "../api/auth-service";
+import { useResetPassword } from "../hooks/useAuth";
 
 export function ResetPasswordForm() {
   const searchParams = useSearchParams();
@@ -28,9 +28,11 @@ export function ResetPasswordForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+
+  const resetPasswordMutation = useResetPassword();
+  const isLoading = resetPasswordMutation.isPending;
 
   useEffect(() => {
     if (typeof window !== "undefined" && window.location.search.includes("token=")) {
@@ -58,9 +60,8 @@ export function ResetPasswordForm() {
       return;
     }
 
-    setIsLoading(true);
     try {
-      await AuthService.resetPassword({
+      await resetPasswordMutation.mutateAsync({
         token,
         newPassword,
       });
@@ -89,8 +90,6 @@ export function ResetPasswordForm() {
         setErrorMessage(msg);
         toast.error(msg);
       }
-    } finally {
-      setIsLoading(false);
     }
   };
 

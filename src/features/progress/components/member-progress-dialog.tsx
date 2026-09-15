@@ -94,9 +94,9 @@ export function MemberProgressDialog({
                 </div>
 
                 <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-                  <Metric label="Task đã giao" value={data.taskSummary.assigned ?? data.taskSummary.assignedTotal} />
-                  <Metric label="Đã xong" value={data.taskSummary.completed} />
-                  <Metric label="Chưa xong" value={data.taskSummary.incomplete} />
+                  <Metric label="Task đã giao" value={data.taskSummary.assigned ?? data.taskSummary.assignedTotal ?? 0} />
+                  <Metric label="Đã xong" value={data.taskSummary.completed ?? 0} />
+                  <Metric label="Chưa xong" value={data.taskSummary.incomplete ?? 0} />
                   <Metric label="Tổng commit" value={data.commitSummary.total} />
                   <Metric label="Commit đã liên kết" value={data.commitSummary.linkedToTasks} />
                   <Metric

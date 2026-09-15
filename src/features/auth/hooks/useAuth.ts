@@ -14,6 +14,7 @@ import type {
   PasswordSetupRequest,
   AuthMeResponse,
   ReauthPasswordRequest,
+  ResetPasswordRequest,
 } from "../types/auth-dto";
 import type { User } from "@/types/auth";
 
@@ -241,6 +242,18 @@ export function useEnsureCsrf() {
 export function useReauthPassword() {
   return useMutation({
     mutationFn: (payload: ReauthPasswordRequest) => AuthService.reauthPassword(payload),
+  });
+}
+
+export function useForgotPassword() {
+  return useMutation({
+    mutationFn: (email: string) => AuthService.forgotPassword(email),
+  });
+}
+
+export function useResetPassword() {
+  return useMutation({
+    mutationFn: (payload: ResetPasswordRequest) => AuthService.resetPassword(payload),
   });
 }
 

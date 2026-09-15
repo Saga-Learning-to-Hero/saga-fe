@@ -7,13 +7,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/sonner";
-import { AuthService } from "../api/auth-service";
+import { useForgotPassword } from "../hooks/useAuth";
 
 export function ForgotPasswordForm() {
   const [email, setEmail] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [successMsg, setSuccessMsg] = useState("");
+  const forgotPasswordMutation = useForgotPassword();
+  const isLoading = forgotPasswordMutation.isPending;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -23,17 +24,14 @@ export function ForgotPasswordForm() {
       return;
     }
 
-    setIsLoading(true);
     try {
-      const res = await AuthService.forgotPassword(cleanEmail);
+      const res = await forgotPasswordMutation.mutateAsync(cleanEmail);
       setIsSuccess(true);
       setSuccessMsg(res.message || "Nếu email tồn tại, hướng dẫn đặt lại mật khẩu đã được gửi.");
       toast.success("Yêu cầu đặt lại mật khẩu đã được gửi đi.");
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Đã có lỗi xảy ra. Vui lòng thử lại sau.";
       toast.error(message);
-    } finally {
-      setIsLoading(false);
     }
   };
 

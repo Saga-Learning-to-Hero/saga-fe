@@ -1,11 +1,16 @@
 "use client";
 
+import { useCallback } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ProjectProjectionService } from "../api/project-projection-service";
 import { PROJECT_INTEGRATIONS_QUERY_KEYS } from "./useProjectIntegrations";
 import { JIRA_SPRINT_QUERY_KEYS } from "@/features/student/sprint-progress/hooks/use-sprint-data";
 import { ProjectTaskService } from "@/features/student/sprint-progress/api/project-task-service";
-import type { ProjectSyncResponse, ProjectSyncStatusItem } from "../types/student-project";
+import type {
+  ProjectSyncResponse,
+  ProjectSyncStatusItem,
+  ProjectTaskCommitLinkQuery,
+} from "../types/student-project";
 
 export const PROJECT_PROJECTION_QUERY_KEYS = {
   all: ["project-projections"] as const,
@@ -19,6 +24,18 @@ export const PROJECT_PROJECTION_QUERY_KEYS = {
     [...PROJECT_PROJECTION_QUERY_KEYS.all, "member-progress", projectId, studentId] as const,
   repositoryBranches: (projectId?: string | null, repoId?: string | null) =>
     [...PROJECT_PROJECTION_QUERY_KEYS.all, "repository-branches", projectId, repoId] as const,
+  taskCommitLinks: (
+    projectId?: string | null,
+    repoId?: string | null,
+    branchName?: string | null
+  ) =>
+    [
+      ...PROJECT_PROJECTION_QUERY_KEYS.all,
+      "task-commit-links",
+      projectId,
+      repoId || null,
+      branchName || null,
+    ] as const,
 };
 
 export function useSyncProject() {
@@ -48,6 +65,9 @@ export function useSyncProject() {
       });
       await queryClient.invalidateQueries({
         queryKey: [...PROJECT_PROJECTION_QUERY_KEYS.all, "repository-branches", projectId],
+      });
+      await queryClient.invalidateQueries({
+        queryKey: [...PROJECT_PROJECTION_QUERY_KEYS.all, "task-commit-links", projectId],
       });
       await queryClient.invalidateQueries({
         queryKey: ["jira-sprint"],
@@ -155,4 +175,45 @@ export function useProjectRepositoryBranches(
       Boolean(projectId && projectId.trim() && repoId && repoId.trim() && repoId !== "all"),
     staleTime: 1000 * 60,
   });
+}
+
+export function useProjectTaskCommitLinks(
+  projectId?: string | null,
+  query: ProjectTaskCommitLinkQuery = {},
+  options?: { enabled?: boolean }
+) {
+  const repoId = query.repoId?.trim() || null;
+  const branchName = query.branchName?.trim() || null;
+  return useQuery({
+    queryKey: PROJECT_PROJECTION_QUERY_KEYS.taskCommitLinks(projectId, repoId, branchName),
+    queryFn: () =>
+      ProjectProjectionService.getProjectTaskCommitLinks(projectId!, { repoId, branchName }),
+    enabled:
+      (options?.enabled ?? true) &&
+      Boolean(projectId && projectId.trim()) &&
+      (!branchName || Boolean(repoId)),
+    staleTime: 1000 * 30,
+  });
+}
+
+export function usePrefetchProjectProjection() {
+  const queryClient = useQueryClient();
+  return useCallback(
+    (projectId: string, options?: { includeCommits?: boolean }) => {
+      if (!projectId || !projectId.trim()) return;
+      void queryClient.prefetchQuery({
+        queryKey: PROJECT_PROJECTION_QUERY_KEYS.progress(projectId),
+        queryFn: () => ProjectProjectionService.getProjectProgress(projectId),
+        staleTime: 1000 * 30,
+      });
+      if (options?.includeCommits) {
+        void queryClient.prefetchQuery({
+          queryKey: PROJECT_PROJECTION_QUERY_KEYS.commits(projectId),
+          queryFn: () => ProjectProjectionService.getProjectCommits(projectId),
+          staleTime: 1000 * 30,
+        });
+      }
+    },
+    [queryClient]
+  );
 }

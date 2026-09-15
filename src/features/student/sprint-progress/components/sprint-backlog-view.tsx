@@ -28,6 +28,7 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { getAssigneeAvatarClass, getAssigneeInitials } from "../lib/assignee-avatar";
 import { QuickCreateTask } from "./quick-create-task";
+import { TaskDueDate } from "./task-due-date";
 
 interface SprintBacklogViewProps {
   sprints: Sprint[];
@@ -220,6 +221,8 @@ export function SprintBacklogView({
           >
             {issue.status}
           </Badge>
+
+          <TaskDueDate dueDate={issue.dueDate} status={issue.status} />
 
           {issue.githubCommitCount && issue.githubCommitCount > 0 ? (
             <span

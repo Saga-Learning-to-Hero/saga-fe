@@ -36,6 +36,11 @@ interface GraphFilterBarProps {
   onSelectViewMode?: (mode: "FLOW" | "GRAPH") => void;
   groupSelector?: React.ReactNode;
   extraCollapsibleContent?: React.ReactNode;
+  extraActiveFilters?: Array<{
+    key: string;
+    label: string;
+    onClear: () => void;
+  }>;
 }
 
 export function GraphFilterBar({
@@ -55,6 +60,7 @@ export function GraphFilterBar({
   onSelectViewMode,
   groupSelector,
   extraCollapsibleContent,
+  extraActiveFilters = [],
 }: GraphFilterBarProps) {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
 
@@ -66,7 +72,9 @@ export function GraphFilterBar({
   const resolvedSprintOptions = [{ value: "ALL", label: "Tất cả các Sprint" }, ...sprintOptions];
 
   const activeFiltersCount =
-    (selectedStudentId !== "ALL" ? 1 : 0) + (selectedSprint !== "ALL" ? 1 : 0);
+    (selectedStudentId !== "ALL" ? 1 : 0) +
+    (selectedSprint !== "ALL" ? 1 : 0) +
+    extraActiveFilters.length;
 
   return (
     <div className="space-y-2.5">
@@ -155,7 +163,7 @@ export function GraphFilterBar({
             )}
           </Button>
 
-          {(selectedStudentId !== "ALL" || selectedSprint !== "ALL" || filterType !== "ALL") && (
+          {(activeFiltersCount > 0 || filterType !== "ALL") && (
             <Button
               variant="ghost"
               size="sm"
@@ -181,48 +189,46 @@ export function GraphFilterBar({
       </div>
 
       {isFilterOpen && (
-        <div className="animate-in fade-in-0 slide-in-from-top-2 space-y-3 rounded-2xl border border-primary/20 bg-card p-4 shadow-xs duration-200">
-          <div className="flex flex-col justify-between gap-3 md:flex-row md:items-center">
-            <div className="flex flex-1 flex-wrap items-center gap-3">
-              <div className="min-w-[220px] max-w-xs flex-1 space-y-1">
-                <label className="flex items-center gap-1.5 text-[11px] font-bold text-muted-foreground">
-                  <UserIcon className="size-3.5 text-primary" />
-                  Lọc theo Thành viên:
-                </label>
-                <CustomSelect
-                  value={selectedStudentId}
-                  onChange={onSelectStudent}
-                  options={studentOptions}
-                />
-              </div>
-
-              <div className="min-w-[200px] max-w-xs flex-1 space-y-1">
-                <label className="flex items-center gap-1.5 text-[11px] font-bold text-muted-foreground">
-                  <LayersIcon className="size-3.5 text-primary" />
-                  Lọc theo Sprint:
-                </label>
-                <CustomSelect
-                  value={selectedSprint}
-                  onChange={onSelectSprint}
-                  options={resolvedSprintOptions}
-                />
-              </div>
+        <div className="animate-in fade-in-0 slide-in-from-top-2 rounded-2xl border border-primary/20 bg-card p-3 shadow-xs duration-200 sm:p-4">
+          <div
+            className={`grid grid-cols-1 items-end gap-3 sm:grid-cols-2 ${
+              extraCollapsibleContent ? "xl:grid-cols-4" : ""
+            }`}
+          >
+            <div className="space-y-1.5">
+              <label
+                htmlFor="graph-member-filter"
+                className="flex items-center gap-1.5 text-[11px] font-bold text-muted-foreground"
+              >
+                <UserIcon className="size-3.5 text-primary" />
+                Thành viên
+              </label>
+              <CustomSelect
+                id="graph-member-filter"
+                value={selectedStudentId}
+                onChange={onSelectStudent}
+                options={studentOptions}
+              />
             </div>
 
-            {activeFiltersCount > 0 && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={onReset}
-                className="cursor-pointer self-end text-xs text-muted-foreground hover:text-foreground md:self-center"
+            <div className="space-y-1.5">
+              <label
+                htmlFor="graph-sprint-filter"
+                className="flex items-center gap-1.5 text-[11px] font-bold text-muted-foreground"
               >
-                <RefreshCwIcon className="mr-1 size-3.5" />
-                Xóa bộ lọc
-              </Button>
-            )}
-          </div>
+                <LayersIcon className="size-3.5 text-primary" />
+                Sprint
+              </label>
+              <CustomSelect
+                id="graph-sprint-filter"
+                value={selectedSprint}
+                onChange={onSelectSprint}
+                options={resolvedSprintOptions}
+              />
+            </div>
 
-          {extraCollapsibleContent}
+            {extraCollapsibleContent}
+          </div>
         </div>
       )}
 
@@ -255,6 +261,22 @@ export function GraphFilterBar({
               </button>
             </span>
           )}
+          {extraActiveFilters.map((filter) => (
+            <span
+              key={filter.key}
+              className="inline-flex items-center gap-1 rounded-lg border border-primary/20 bg-primary/10 px-2.5 py-1 font-medium text-primary"
+            >
+              <span>{filter.label}</span>
+              <button
+                type="button"
+                onClick={filter.onClear}
+                aria-label={`Xóa bộ lọc ${filter.label}`}
+                className="ml-0.5 cursor-pointer hover:text-foreground"
+              >
+                <XIcon className="size-3" />
+              </button>
+            </span>
+          ))}
           <button
             onClick={onReset}
             className="ml-1 cursor-pointer text-[11px] text-muted-foreground underline hover:text-foreground"
