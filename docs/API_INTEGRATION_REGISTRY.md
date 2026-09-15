@@ -199,6 +199,31 @@ Tài liệu này là **Sổ bộ theo dõi chi tiết toàn bộ 128 API** của
 
 ---
 
+## Peer Review Playbook — wire contract đã kiểm chứng
+
+Playbook SAGA-71 khớp response Backend runtime. Swagger production chưa công bố các endpoint này nên **không sửa tay** `docs/openapi.json`.
+
+| STT | Method | Endpoint | Wire đã kiểm chứng | UI | Trạng thái |
+| --- | --- | --- | --- | --- | --- |
+| PR-1 | `GET` | `/api/teams/{teamId}/peer-review-rubric` | `{ teamId, subjectId, criteria[{ rubricId, criteriaName, description }] }` | `/student/assessment` | ✅ ĐÃ TÍCH HỢP |
+| PR-2 | `GET` | `/api/peer-review-rubrics/default` | Cùng shape; chỉ gọi khi team `criteria: []` | `/student/assessment` | ✅ ĐÃ TÍCH HỢP |
+| PR-3 | `GET` | `/api/teams/{teamId}/sprints/{sprintId}/peer-reviews/candidates` | Wrapper `{ teamId, sprintId, reviewerId, candidates[{ studentId, fullName, studentCode, alreadyReviewed, existingReviewId, existingTotalStarRating }] }` | `/student/assessment` | ✅ ĐÃ TÍCH HỢP |
+| PR-4 | `POST` | `/api/teams/{teamId}/sprints/{sprintId}/peer-reviews` | Body `{ revieweeId, criteriaRatings[{ rubricId, starRating }], comment? }`. Response `{ revieweeId, starRating, criteriaRatings, createdAt, updatedAt }` + metadata reviewer/sprint | `/student/assessment` | ✅ ĐÃ TÍCH HỢP |
+| PR-5 | `GET` | `/api/teams/{teamId}/sprints/{sprintId}/peer-reviews` | Danh sách đánh giá toàn đội | Không gọi — lộ dữ liệu qua Network | ⏸ HOÃN VÌ RIÊNG TƯ |
+
+Quy ước FE đã khóa:
+- Mapper rubric chỉ đọc `rubricId` + `criteriaName`, giữ thứ tự mảng Backend. Có `subjectId` thì UI ghi "Tiêu chí môn học", không thì "Tiêu chí mặc định".
+- Service candidates trả nguyên wrapper để giữ `reviewerId`. Self-review lọc bằng `studentId === reviewerId`, không lọc `studentCode`.
+- POST không gửi `reviewerId`, `existingReviewId`, `revieweeStudentId`, `criterionId`, tổng sao hay field nội bộ.
+- Mỗi sinh viên chỉ đánh giá một thành viên một lần trong từng Sprint. Khi candidate có `alreadyReviewed: true`, UI thay thao tác bằng trạng thái "Đã đánh giá" và lớp tạo payload chặn gọi POST lần hai.
+- Leader và Member ACTIVE cùng quyền chấm. Role trên card lấy từ `team.members`, không chờ candidate API.
+- Cửa sổ chấm: Sprint `closed` luôn mở; còn lại mở từ `endDate - 48h` trở đi (kể cả khi Jira chưa kịp `closed`).
+- Không gọi `contribution-evaluation`, không tự tính hệ số P.
+
+Service: `src/features/student/assessment/api/peer-review-service.ts`.
+
+---
+
 ## Ghi Chú Kỹ Thuật & Cảnh Báo Lỗi Ngoại Lệ (Technical Caveats)
 
 ### ⚠️ Caveat Endpoint (`PUT /api/projects/{id}/integrations/jira`):

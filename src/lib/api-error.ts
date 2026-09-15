@@ -93,6 +93,13 @@ export function requireStudentProfileId(studentProfileId: string): string {
   return studentProfileId.trim();
 }
 
+export function requireSprintId(sprintId: string): string {
+  if (!sprintId || !sprintId.trim()) {
+    throw new Error("Throw ValidationException: Sprint ID is required");
+  }
+  return sprintId.trim();
+}
+
 export function requireTeamMemberId(teamMemberId: string): string {
   if (!teamMemberId || !teamMemberId.trim()) {
     throw new Error("Throw ValidationException: Team member ID is required");

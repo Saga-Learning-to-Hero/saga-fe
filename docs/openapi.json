@@ -13,8 +13,16 @@
   ],
   "tags": [
     {
+      "name": "User Profile",
+      "description": "Self-service view/update of the authenticated user's own profile."
+    },
+    {
       "name": "Admin course roster",
       "description": "XLSX roster template, preview, confirm, and read. ADMIN only."
+    },
+    {
+      "name": "Project projections",
+      "description": "Projected Jira tasks/sprints and GitHub commits for a SAGA project."
     },
     {
       "name": "Admin courses",
@@ -85,12 +93,12 @@
       "description": "Lecturer directory for course assignment. lecturerProfileId is Course.lecturerId, not userId. ADMIN only."
     },
     {
-      "name": "Project projections",
-      "description": "Projected Jira tasks and GitHub commits for a SAGA project."
-    },
-    {
       "name": "Project integrations",
       "description": "Team Leader GitHub App and Jira Cloud connections for a project."
+    },
+    {
+      "name": "Project realtime",
+      "description": "Project-scoped SSE invalidation stream."
     },
     {
       "name": "Admin semesters",
@@ -98,6 +106,62 @@
     }
   ],
   "paths": {
+    "/api/projects/{projectId}/tasks/{taskId}/sprint": {
+      "put": {
+        "tags": [
+          "Project projections"
+        ],
+        "summary": "Move task to a Jira sprint or backlog (sprintId=null). Team Leader only.",
+        "operationId": "putTaskSprint",
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "taskId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PutProjectTaskSprintRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectTaskResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "SAGA_SESSION": []
+          }
+        ]
+      }
+    },
     "/api/projects/{projectId}/integrations/jira": {
       "put": {
         "tags": [
@@ -689,7 +753,15 @@
             }
           },
           {
-            "name": "X-Hub-Signature-256",
+            "name": "Authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "X-Hub-Signature",
             "in": "header",
             "required": false,
             "schema": {
@@ -1186,6 +1258,147 @@
         ]
       }
     },
+    "/api/projects/{projectId}/tasks": {
+      "get": {
+        "tags": [
+          "Project projections"
+        ],
+        "summary": "List projected Jira tasks. Owning team students and assigned lecturer.",
+        "operationId": "tasks",
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ProjectTaskResponse"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "SAGA_SESSION": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "Project projections"
+        ],
+        "summary": "Create a Jira issue then reconcile local Task projection. Team Leader only.",
+        "operationId": "createTask",
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateProjectTaskRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectTaskResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "SAGA_SESSION": []
+          }
+        ]
+      }
+    },
+    "/api/projects/{projectId}/tasks/{taskId}/transition": {
+      "post": {
+        "tags": [
+          "Project projections"
+        ],
+        "summary": "Transition Jira issue status via available transitions. Team Leader only.",
+        "operationId": "transitionTask",
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "taskId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TransitionProjectTaskRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectTaskResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "SAGA_SESSION": []
+          }
+        ]
+      }
+    },
     "/api/projects/{projectId}/sync": {
       "post": {
         "tags": [
@@ -1211,6 +1424,91 @@
               "*/*": {
                 "schema": {
                   "$ref": "#/components/schemas/ProjectSyncEnqueueResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "SAGA_SESSION": []
+          }
+        ]
+      }
+    },
+    "/api/projects/{projectId}/sprints": {
+      "get": {
+        "tags": [
+          "Project projections"
+        ],
+        "summary": "List/reconcile Jira Software sprints for the project's board.",
+        "operationId": "sprints",
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ProjectSprintResponse"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "SAGA_SESSION": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "Project projections"
+        ],
+        "summary": "Create a Jira Software sprint then reconcile projection. Team Leader only.",
+        "operationId": "createSprint",
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateProjectSprintRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectSprintResponse"
                 }
               }
             }
@@ -1272,6 +1570,8 @@
         "tags": [
           "Project integrations"
         ],
+        "summary": "Start GitHub App connect/reconnect for the project. Team Leader only.",
+        "description": "Default: resolve historical provenance / discover existing installations via user OAuth.\nPass installationId to bind a chosen candidate (re-verified after OAuth).\nPass mode=install_new to open GitHub App /installations/new (another account/org) without\nguessing among candidates — does not delete historical git_repo rows.\n",
         "operationId": "githubConnect",
         "parameters": [
           {
@@ -1285,6 +1585,23 @@
           },
           {
             "name": "returnPath",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "installationId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "mode",
             "in": "query",
             "required": false,
             "schema": {
@@ -1694,6 +2011,96 @@
             "SAGA_SESSION": []
           }
         ]
+      }
+    },
+    "/api/auth/password/reset": {
+      "post": {
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Reset password using an emailed one-time token",
+        "description": "Public, CSRF-protected. Consumes the one-time token from the reset email and sets a new local password with the existing password policy/encoder. Works even for Google-linked accounts that have no local password yet — Google login remains available afterward.\n",
+        "operationId": "resetPassword",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResetPasswordRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Password updated; token consumed",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResetPasswordResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid, expired, or already-used token, or password policy violation",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                },
+                "examples": {
+                  "PASSWORD_RESET_TOKEN_INVALID": {
+                    "description": "PASSWORD_RESET_TOKEN_INVALID",
+                    "value": {
+                      "code": "PASSWORD_RESET_TOKEN_INVALID",
+                      "message": "This password reset link is invalid or has already been used."
+                    }
+                  },
+                  "PASSWORD_RESET_TOKEN_EXPIRED": {
+                    "description": "PASSWORD_RESET_TOKEN_EXPIRED",
+                    "value": {
+                      "code": "PASSWORD_RESET_TOKEN_EXPIRED",
+                      "message": "This password reset link has expired."
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/password/forgot": {
+      "post": {
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Request a password reset link",
+        "description": "Public, CSRF-protected. Always returns the same generic response, whether or not the email is registered, Google-only, or already has a local password — this endpoint never reveals account existence. If the account exists, a one-time reset link is emailed via the transactional email outbox.\n",
+        "operationId": "forgotPassword",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ForgotPasswordRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Generic acknowledgement (does not imply the account exists)",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ForgotPasswordResponse"
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/api/auth/logout": {
@@ -2495,6 +2902,396 @@
         ]
       }
     },
+    "/api/users/me/profile": {
+      "get": {
+        "tags": [
+          "User Profile"
+        ],
+        "summary": "Get my profile",
+        "description": "Returns the authenticated caller's own profile. studentCode is included only for STUDENT accounts.",
+        "operationId": "getMyProfile",
+        "responses": {
+          "200": {
+            "description": "Current profile",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserProfileResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                },
+                "example": {
+                  "code": "INVALID_CREDENTIALS",
+                  "message": "Authentication failed."
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "SAGA_SESSION": []
+          }
+        ]
+      },
+      "patch": {
+        "tags": [
+          "User Profile"
+        ],
+        "summary": "Update my profile",
+        "description": "Partial update of the caller's own profile. Only fields present in the request body are changed; omitted fields are left untouched. Editable fields: `fullName` (non-blank if present) and `avatarUrl` (must be http(s):// if non-blank; an empty string clears it). All other fields (id, email, username, role, accountStatus, studentCode) are read-only and cannot be changed here. Returns the full updated profile and refreshes the session so `/api/auth/me` reflects the change immediately.\n",
+        "operationId": "updateMyProfile",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateProfileRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Updated profile",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserProfileResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid fullName or avatarUrl",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                },
+                "examples": {
+                  "PROFILE_FULL_NAME_INVALID": {
+                    "description": "PROFILE_FULL_NAME_INVALID",
+                    "value": {
+                      "code": "PROFILE_FULL_NAME_INVALID",
+                      "message": "Full name cannot be blank."
+                    }
+                  },
+                  "PROFILE_AVATAR_URL_INVALID": {
+                    "description": "PROFILE_AVATAR_URL_INVALID",
+                    "value": {
+                      "code": "PROFILE_AVATAR_URL_INVALID",
+                      "message": "Avatar URL must start with http:// or https://."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                },
+                "example": {
+                  "code": "INVALID_CREDENTIALS",
+                  "message": "Authentication failed."
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "SAGA_SESSION": []
+          }
+        ]
+      }
+    },
+    "/api/projects/{projectId}/tasks/{taskId}": {
+      "get": {
+        "tags": [
+          "Project projections"
+        ],
+        "summary": "Get one projected Jira task.",
+        "operationId": "task",
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "taskId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectTaskResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "SAGA_SESSION": []
+          }
+        ]
+      },
+      "delete": {
+        "tags": [
+          "Project projections"
+        ],
+        "summary": "Delete Jira issue then soft-delete local projection. Team Leader only.",
+        "operationId": "deleteTask",
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "taskId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "SAGA_SESSION": []
+          }
+        ]
+      },
+      "patch": {
+        "tags": [
+          "Project projections"
+        ],
+        "summary": "Update Jira issue fields then reconcile projection. Team Leader only. Status via /transition.",
+        "operationId": "patchTask",
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "taskId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PatchProjectTaskRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectTaskResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "SAGA_SESSION": []
+          }
+        ]
+      }
+    },
+    "/api/projects/{projectId}/sprints/{sprintId}": {
+      "get": {
+        "tags": [
+          "Project projections"
+        ],
+        "summary": "Get one projected sprint.",
+        "operationId": "sprint",
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "sprintId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectSprintResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "SAGA_SESSION": []
+          }
+        ]
+      },
+      "delete": {
+        "tags": [
+          "Project projections"
+        ],
+        "summary": "Delete a Jira Software sprint then soft-delete projection. Team Leader only.",
+        "operationId": "deleteSprint",
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "sprintId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "SAGA_SESSION": []
+          }
+        ]
+      },
+      "patch": {
+        "tags": [
+          "Project projections"
+        ],
+        "summary": "Update a Jira Software sprint then reconcile projection. Team Leader only.",
+        "operationId": "patchSprint",
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "sprintId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PatchProjectSprintRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectSprintResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "SAGA_SESSION": []
+          }
+        ]
+      }
+    },
     "/api/lecturer/courses/{courseId}/team-members/{teamMemberId}/team": {
       "patch": {
         "tags": [
@@ -3263,16 +4060,25 @@
         ]
       }
     },
-    "/api/projects/{projectId}/tasks": {
+    "/api/projects/{projectId}/tasks/{taskId}/transitions": {
       "get": {
         "tags": [
           "Project projections"
         ],
-        "summary": "List projected Jira tasks. Owning team students and assigned lecturer.",
-        "operationId": "tasks",
+        "summary": "List available Jira transitions for a task. Team Leader only.",
+        "operationId": "taskTransitions",
         "parameters": [
           {
             "name": "projectId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "taskId",
             "in": "path",
             "required": true,
             "schema": {
@@ -3289,7 +4095,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/ProjectTaskResponse"
+                    "$ref": "#/components/schemas/TransitionOption"
                   }
                 }
               }
@@ -3352,6 +4158,43 @@
         ]
       }
     },
+    "/api/projects/{projectId}/tasks/options": {
+      "get": {
+        "tags": [
+          "Project projections"
+        ],
+        "summary": "Provider-backed create/edit options (issue types, priorities, assignable users, estimation, sprints).",
+        "operationId": "taskOptions",
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectTaskOptionsResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "SAGA_SESSION": []
+          }
+        ]
+      }
+    },
     "/api/projects/{projectId}/sync-status": {
       "get": {
         "tags": [
@@ -3380,6 +4223,137 @@
                   "items": {
                     "$ref": "#/components/schemas/ProjectSyncStatusResponse"
                   }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "SAGA_SESSION": []
+          }
+        ]
+      }
+    },
+    "/api/projects/{projectId}/repos/{repoId}/branches": {
+      "get": {
+        "tags": [
+          "Project projections"
+        ],
+        "summary": "Live GitHub branch inventory for one ACTIVE project repository.",
+        "description": "Authoritative source for the repository branch dropdown and current branch count --\nfetched directly from GitHub (fully paginated), not derived from GitCommit.headRef.\nheadRef only records the single branch a commit was observed under during ingestion,\nnot complete branch membership, so commit-by-branch filtering via\ncommit.headRef == selectedBranch remains best-effort/observed-branch filtering only.\n",
+        "operationId": "repositoryBranches",
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "repoId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectGitBranchListResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "SAGA_SESSION": []
+          }
+        ]
+      }
+    },
+    "/api/projects/{projectId}/progress": {
+      "get": {
+        "tags": [
+          "Project projections"
+        ],
+        "summary": "Factual Task/Sprint/Commit/evidence progress dashboard for the project.",
+        "description": "Read-only aggregation of canonical DB projections — no live Jira/GitHub call, no\ngrading/contribution formula (see GET /api/teams/{teamId}/contribution-evaluation\nfor that). Same reader authorization as every other endpoint on this controller.\n",
+        "operationId": "projectProgress",
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectProgressResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "SAGA_SESSION": []
+          }
+        ]
+      }
+    },
+    "/api/projects/{projectId}/progress/members/{studentId}": {
+      "get": {
+        "tags": [
+          "Project projections"
+        ],
+        "summary": "Factual per-member progress drill-down (assigned tasks, commit/evidence attribution).",
+        "operationId": "memberProgress",
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "studentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectMemberProgressResponse"
                 }
               }
             }
@@ -3614,6 +4588,84 @@
         ]
       }
     },
+    "/api/projects/{projectId}/integrations/github/reconnect/candidates": {
+      "get": {
+        "tags": [
+          "Project integrations"
+        ],
+        "summary": "List GitHub installation candidates for reconnect selection. Team Leader only.",
+        "description": "Returns OAuth-verified eligible candidates when present; otherwise historical provenance hints. Display fields only — no tokens.",
+        "operationId": "githubReconnectCandidates",
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/GithubReconnectCandidateResponse"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "SAGA_SESSION": []
+          }
+        ]
+      }
+    },
+    "/api/projects/{projectId}/events": {
+      "get": {
+        "tags": [
+          "Project realtime"
+        ],
+        "summary": "Subscribe to project realtime invalidation events. Refetch REST after each event.",
+        "operationId": "subscribe",
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "$ref": "#/components/schemas/SseEmitter"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "SAGA_SESSION": []
+          }
+        ]
+      }
+    },
     "/api/projects/{projectId}/commits": {
       "get": {
         "tags": [
@@ -3820,6 +4872,44 @@
               "*/*": {
                 "schema": {
                   "$ref": "#/components/schemas/LecturerActiveRosterResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "SAGA_SESSION": []
+          }
+        ]
+      }
+    },
+    "/api/lecturer/courses/{courseId}/progress": {
+      "get": {
+        "tags": [
+          "Lecturer courses"
+        ],
+        "summary": "Lightweight Task/Sprint/Commit progress summary per Team in this course, for dashboard cards.",
+        "description": "Bounded, constant-query-count aggregation — not per-team live provider calls. Click a team's projectId into GET /api/projects/{projectId}/progress for full detail.",
+        "operationId": "progress",
+        "parameters": [
+          {
+            "name": "courseId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/LecturerCourseProgressResponse"
                 }
               }
             }
@@ -4363,6 +5453,100 @@
         }
       }
     },
+    "/api/admin/courses/{courseId}/roster/invitations/{invitationId}": {
+      "delete": {
+        "tags": [
+          "Admin course roster"
+        ],
+        "summary": "Cancel a pending roster invitation",
+        "description": "Cancels a PENDING/SENT StudentCourseInvitation (status becomes CANCELLED); the row is kept, not deleted, so a later signup cannot silently claim it. A later POST .../roster/students for the same email/studentCode reuses and reactivates this same row. Repeating this call on an already-cancelled/claimed invitation returns 409 ROSTER_STUDENT_ALREADY_REMOVED.\n",
+        "operationId": "cancelInvitation",
+        "parameters": [
+          {
+            "name": "courseId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "invitationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/CourseRosterEntryResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "SAGA_SESSION": []
+          }
+        ]
+      }
+    },
+    "/api/admin/courses/{courseId}/roster/enrollments/{enrollmentId}": {
+      "delete": {
+        "tags": [
+          "Admin course roster"
+        ],
+        "summary": "Remove an actively-enrolled student from the roster",
+        "description": "Withdraws the CourseEnrollment (status becomes WITHDRAWN). Never deletes the UserAccount, StudentProfile, or historical records. If the student is the ACTIVE Leader of a team in this course, this is refused with 409 TEAM_LEADER_REMOVAL_REQUIRES_REASSIGNMENT — reassign the team's Leader first, then retry. Repeating this call on an already-withdrawn enrollment returns 409 ROSTER_STUDENT_ALREADY_REMOVED.\n",
+        "operationId": "removeEnrollment",
+        "parameters": [
+          {
+            "name": "courseId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "enrollmentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/CourseRosterEntryResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "SAGA_SESSION": []
+          }
+        ]
+      }
+    },
     "/oauth2/authorization/google": {
       "get": {
         "tags": [
@@ -4380,6 +5564,154 @@
   },
   "components": {
     "schemas": {
+      "PutProjectTaskSprintRequest": {
+        "type": "object",
+        "properties": {
+          "sprintId": {
+            "type": "integer",
+            "format": "int64"
+          }
+        }
+      },
+      "Assignee": {
+        "type": "object",
+        "properties": {
+          "accountId": {
+            "type": "string"
+          },
+          "displayName": {
+            "type": "string"
+          },
+          "studentId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      },
+      "Parent": {
+        "type": "object",
+        "properties": {
+          "externalId": {
+            "type": "string"
+          },
+          "externalKey": {
+            "type": "string"
+          }
+        }
+      },
+      "PriorityDetail": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          }
+        }
+      },
+      "ProjectTaskResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "externalId": {
+            "type": "string"
+          },
+          "externalKey": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "jiraStatusId": {
+            "type": "string"
+          },
+          "jiraStatusName": {
+            "type": "string"
+          },
+          "issueTypeName": {
+            "type": "string"
+          },
+          "assigneeExternalId": {
+            "type": "string"
+          },
+          "assigneeDisplayName": {
+            "type": "string"
+          },
+          "assigneeStudentId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "assignee": {
+            "$ref": "#/components/schemas/Assignee"
+          },
+          "priority": {
+            "type": "string"
+          },
+          "priorityDetail": {
+            "$ref": "#/components/schemas/PriorityDetail"
+          },
+          "storyPoint": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "sprint": {
+            "$ref": "#/components/schemas/ProjectTaskSprintResponse"
+          },
+          "parent": {
+            "$ref": "#/components/schemas/Parent"
+          },
+          "labels": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "linkedCommitCount": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "externalUpdatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "ProjectTaskSprintResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "externalSprintId": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "state": {
+            "type": "string"
+          }
+        }
+      },
       "SelectJiraIntegrationRequest": {
         "type": "object",
         "description": "Select the Jira Cloud site, project, and optional board for this SAGA project.",
@@ -5336,6 +6668,61 @@
           }
         }
       },
+      "CreateProjectTaskRequest": {
+        "type": "object",
+        "properties": {
+          "summary": {
+            "type": "string",
+            "maxLength": 255,
+            "minLength": 0
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 10000,
+            "minLength": 0
+          },
+          "issueTypeId": {
+            "type": "string"
+          },
+          "assigneeAccountId": {
+            "type": "string"
+          },
+          "priorityId": {
+            "type": "string"
+          },
+          "storyPoints": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "sprintId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "sprintExternalId": {
+            "type": "string"
+          },
+          "labels": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "summary"
+        ]
+      },
+      "TransitionProjectTaskRequest": {
+        "type": "object",
+        "properties": {
+          "transitionId": {
+            "type": "string"
+          },
+          "targetStatusId": {
+            "type": "string"
+          }
+        }
+      },
       "ProjectSyncEnqueueResponse": {
         "type": "object",
         "properties": {
@@ -5347,6 +6734,63 @@
           },
           "github": {
             "type": "string"
+          }
+        }
+      },
+      "CreateProjectSprintRequest": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 255,
+            "minLength": 0
+          },
+          "goal": {
+            "type": "string",
+            "maxLength": 1000,
+            "minLength": 0
+          },
+          "startDate": {
+            "type": "string"
+          },
+          "endDate": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "ProjectSprintResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "externalSprintId": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "state": {
+            "type": "string"
+          },
+          "goal": {
+            "type": "string"
+          },
+          "startDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "endDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "completeDate": {
+            "type": "string",
+            "format": "date-time"
           }
         }
       },
@@ -5700,6 +7144,54 @@
             "type": "string",
             "description": "STUDENT, LECTURER, or ADMIN",
             "example": "ADMIN"
+          }
+        }
+      },
+      "ResetPasswordRequest": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string",
+            "description": "Raw one-time reset token from the emailed link.",
+            "minLength": 1
+          },
+          "newPassword": {
+            "type": "string",
+            "example": "example-password",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "newPassword",
+          "token"
+        ]
+      },
+      "ResetPasswordResponse": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string"
+          }
+        }
+      },
+      "ForgotPasswordRequest": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "example": "student@example.com",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "email"
+        ]
+      },
+      "ForgotPasswordResponse": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string"
           }
         }
       },
@@ -6374,6 +7866,130 @@
           }
         }
       },
+      "UpdateProfileRequest": {
+        "type": "object",
+        "properties": {
+          "fullName": {
+            "type": "string",
+            "example": "Nguyen Van A",
+            "maxLength": 255,
+            "minLength": 0
+          },
+          "avatarUrl": {
+            "type": "string",
+            "example": "https://example.com/avatar.png",
+            "maxLength": 500,
+            "minLength": 0
+          }
+        }
+      },
+      "UserProfileResponse": {
+        "type": "object",
+        "description": "Current user's own profile. studentCode is present only for STUDENT accounts.",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "email": {
+            "type": "string"
+          },
+          "username": {
+            "type": "string"
+          },
+          "fullName": {
+            "type": "string"
+          },
+          "avatarUrl": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string",
+            "description": "STUDENT, LECTURER, or ADMIN"
+          },
+          "accountStatus": {
+            "type": "string",
+            "description": "ACTIVE, INACTIVE, or SUSPENDED — read-only"
+          },
+          "studentCode": {
+            "type": "string",
+            "description": "Institution-managed; null for non-STUDENT accounts; never editable here"
+          }
+        }
+      },
+      "PatchProjectTaskRequest": {
+        "type": "object",
+        "properties": {
+          "summary": {
+            "type": "string",
+            "maxLength": 255,
+            "minLength": 0
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 10000,
+            "minLength": 0
+          },
+          "issueTypeId": {
+            "type": "string"
+          },
+          "assigneeAccountId": {
+            "type": "string"
+          },
+          "clearAssignee": {
+            "type": "boolean"
+          },
+          "priorityId": {
+            "type": "string"
+          },
+          "storyPoints": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "sprintExternalId": {
+            "type": "string"
+          },
+          "moveToBacklog": {
+            "type": "boolean"
+          },
+          "transitionId": {
+            "type": "string"
+          },
+          "targetStatusId": {
+            "type": "string"
+          },
+          "labels": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "PatchProjectSprintRequest": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 255,
+            "minLength": 0
+          },
+          "goal": {
+            "type": "string",
+            "maxLength": 1000,
+            "minLength": 0
+          },
+          "state": {
+            "type": "string"
+          },
+          "startDate": {
+            "type": "string"
+          },
+          "endDate": {
+            "type": "string"
+          }
+        }
+      },
       "MoveTeamMemberRequest": {
         "type": "object",
         "properties": {
@@ -6787,50 +8403,20 @@
           }
         }
       },
-      "ProjectTaskResponse": {
+      "TransitionOption": {
         "type": "object",
         "properties": {
           "id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "externalId": {
             "type": "string"
           },
-          "externalKey": {
+          "name": {
             "type": "string"
           },
-          "title": {
+          "toStatusId": {
             "type": "string"
           },
-          "status": {
+          "toStatusName": {
             "type": "string"
-          },
-          "issueTypeName": {
-            "type": "string"
-          },
-          "assigneeExternalId": {
-            "type": "string"
-          },
-          "assigneeStudentId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "linkedCommitCount": {
-            "type": "integer",
-            "format": "int64"
-          },
-          "externalUpdatedAt": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "createdAt": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "updatedAt": {
-            "type": "string",
-            "format": "date-time"
           }
         }
       },
@@ -6861,6 +8447,9 @@
             "type": "string",
             "format": "uuid"
           },
+          "headRef": {
+            "type": "string"
+          },
           "committedAt": {
             "type": "string",
             "format": "date-time"
@@ -6868,6 +8457,102 @@
           "createdAt": {
             "type": "string",
             "format": "date-time"
+          }
+        }
+      },
+      "AssignableUserOption": {
+        "type": "object",
+        "properties": {
+          "accountId": {
+            "type": "string"
+          },
+          "displayName": {
+            "type": "string"
+          }
+        }
+      },
+      "EstimationOption": {
+        "type": "object",
+        "properties": {
+          "supported": {
+            "type": "boolean"
+          },
+          "fieldId": {
+            "type": "string"
+          },
+          "fieldName": {
+            "type": "string"
+          }
+        }
+      },
+      "IssueTypeOption": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          }
+        }
+      },
+      "PriorityOption": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          }
+        }
+      },
+      "ProjectTaskOptionsResponse": {
+        "type": "object",
+        "properties": {
+          "issueTypes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IssueTypeOption"
+            }
+          },
+          "priorities": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PriorityOption"
+            }
+          },
+          "assignableUsers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AssignableUserOption"
+            }
+          },
+          "estimation": {
+            "$ref": "#/components/schemas/EstimationOption"
+          },
+          "sprints": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SprintOption"
+            }
+          }
+        }
+      },
+      "SprintOption": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "state": {
+            "type": "string"
           }
         }
       },
@@ -6899,6 +8584,360 @@
           "itemsFailed": {
             "type": "integer",
             "format": "int32"
+          }
+        }
+      },
+      "Branch": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "isDefault": {
+            "type": "boolean"
+          }
+        }
+      },
+      "ProjectGitBranchListResponse": {
+        "type": "object",
+        "properties": {
+          "repoId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "repositoryFullName": {
+            "type": "string"
+          },
+          "branchCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "branches": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Branch"
+            }
+          }
+        }
+      },
+      "CommitAttribution": {
+        "type": "object",
+        "properties": {
+          "total": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "linkedToTasks": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "tasksWithLinkedCommits": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "lastCommitAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "CommitSummary": {
+        "type": "object",
+        "properties": {
+          "total": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "linked": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "lastCommitAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "EvidenceSummary": {
+        "type": "object",
+        "properties": {
+          "workSessions": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "files": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "webLinks": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "confirmations": {
+            "type": "integer",
+            "format": "int64"
+          }
+        }
+      },
+      "MemberSummary": {
+        "type": "object",
+        "properties": {
+          "studentId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "userId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "fullName": {
+            "type": "string"
+          },
+          "studentCode": {
+            "type": "string"
+          },
+          "teamRole": {
+            "type": "string"
+          },
+          "taskSummary": {
+            "$ref": "#/components/schemas/TaskAttribution"
+          },
+          "commitSummary": {
+            "$ref": "#/components/schemas/CommitAttribution"
+          }
+        }
+      },
+      "ProjectProgressResponse": {
+        "type": "object",
+        "properties": {
+          "projectId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "teamId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "teamNo": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "teamName": {
+            "type": "string"
+          },
+          "taskSummary": {
+            "$ref": "#/components/schemas/TaskSummary"
+          },
+          "currentSprint": {
+            "$ref": "#/components/schemas/SprintSummary"
+          },
+          "commitSummary": {
+            "$ref": "#/components/schemas/CommitSummary"
+          },
+          "evidenceSummary": {
+            "$ref": "#/components/schemas/EvidenceSummary"
+          },
+          "memberProgress": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MemberSummary"
+            }
+          },
+          "sync": {
+            "$ref": "#/components/schemas/SyncSummary"
+          },
+          "lastActivityAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "SprintSummary": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "externalSprintId": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "state": {
+            "type": "string"
+          },
+          "startDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "endDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "totalTasks": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "completedTasks": {
+            "type": "integer",
+            "format": "int64"
+          }
+        }
+      },
+      "SyncSummary": {
+        "type": "object",
+        "properties": {
+          "jiraStatus": {
+            "type": "string"
+          },
+          "githubStatus": {
+            "type": "string"
+          },
+          "jiraSyncStatus": {
+            "type": "string"
+          },
+          "jiraLastSyncAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "githubSyncStatus": {
+            "type": "string"
+          },
+          "githubLastSyncAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "TaskAttribution": {
+        "type": "object",
+        "properties": {
+          "assigned": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "completed": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "incomplete": {
+            "type": "integer",
+            "format": "int64"
+          }
+        }
+      },
+      "TaskSummary": {
+        "type": "object",
+        "properties": {
+          "total": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "todo": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "inProgress": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "inReview": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "done": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "blocked": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "completionPercent": {
+            "type": "number",
+            "format": "double"
+          }
+        }
+      },
+      "AssignedTask": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "externalKey": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "externalUpdatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "EvidenceAttribution": {
+        "type": "object",
+        "properties": {
+          "workSessions": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "files": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "webLinks": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "confirmations": {
+            "type": "integer",
+            "format": "int64"
+          }
+        }
+      },
+      "ProjectMemberProgressResponse": {
+        "type": "object",
+        "properties": {
+          "studentId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "userId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "fullName": {
+            "type": "string"
+          },
+          "studentCode": {
+            "type": "string"
+          },
+          "teamRole": {
+            "type": "string"
+          },
+          "taskSummary": {
+            "$ref": "#/components/schemas/TaskAttribution"
+          },
+          "assignedTasks": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AssignedTask"
+            }
+          },
+          "commitSummary": {
+            "$ref": "#/components/schemas/CommitAttribution"
+          },
+          "evidenceSummary": {
+            "$ref": "#/components/schemas/EvidenceAttribution"
           }
         }
       },
@@ -7042,6 +9081,37 @@
           }
         }
       },
+      "GithubReconnectCandidateResponse": {
+        "type": "object",
+        "description": "Historical GitHub App installation candidate for project reconnect selection.",
+        "properties": {
+          "installationId": {
+            "type": "integer",
+            "format": "int64",
+            "description": "GitHub App installation id",
+            "example": 158866076
+          },
+          "accountLogin": {
+            "type": "string",
+            "description": "Provider account login when known",
+            "example": "Saga-Learning-to-Hero"
+          },
+          "accountType": {
+            "type": "string",
+            "description": "Provider account type when known",
+            "example": "Organization"
+          }
+        }
+      },
+      "SseEmitter": {
+        "type": "object",
+        "properties": {
+          "timeout": {
+            "type": "integer",
+            "format": "int64"
+          }
+        }
+      },
       "LecturerActiveRosterEntryResponse": {
         "type": "object",
         "properties": {
@@ -7085,6 +9155,60 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/LecturerActiveRosterEntryResponse"
+            }
+          }
+        }
+      },
+      "Entry": {
+        "type": "object",
+        "properties": {
+          "teamId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "teamNo": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "teamName": {
+            "type": "string"
+          },
+          "projectId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "totalTasks": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "completedTasks": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "taskCompletionPercent": {
+            "type": "number",
+            "format": "double"
+          },
+          "currentSprintName": {
+            "type": "string"
+          },
+          "lastActivityAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "LecturerCourseProgressResponse": {
+        "type": "object",
+        "properties": {
+          "courseId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "teams": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Entry"
             }
           }
         }

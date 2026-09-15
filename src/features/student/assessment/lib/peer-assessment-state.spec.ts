@@ -36,4 +36,17 @@ describe("peer-assessment-state", () => {
       expect(getPeerAssessmentState({ ...base, isTeamError: true })).toBe("TEAM_ERROR");
     }
   );
+
+  fptTest(
+    {
+      id: "UTCID04",
+      type: "A",
+      executedDate: "14/09/2026",
+      description: "Nhom da co nhung chua co du an",
+    },
+    () => {
+      expect(getPeerAssessmentState({ ...base, hasTeam: true, projectId: null })).toBe("NO_PROJECT");
+      expect(getPeerAssessmentState({ ...base, hasTeam: true, projectId: "proj-1" })).toBe("READY");
+    }
+  );
 });

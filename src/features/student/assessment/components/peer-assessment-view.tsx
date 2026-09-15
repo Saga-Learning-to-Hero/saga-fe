@@ -1,18 +1,13 @@
 "use client";
 
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import {
   CalendarIcon,
+  CheckCircle2Icon,
   InfoIcon,
   LockIcon,
-  SendIcon,
-  UsersIcon,
-  SparklesIcon,
-  ClockIcon,
-  CheckCircle2Icon,
-  ShieldCheckIcon,
+  StarIcon,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { MemberRoleBadge } from "@/components/common/leader-badge";
@@ -24,13 +19,68 @@ import {
   useStudentMyTeam,
 } from "@/features/student/courses/hooks/use-student-courses";
 import { useStudentCourseContext } from "@/features/student/courses/hooks/use-student-course-context";
-import {
-  sortStudentTeamMembers,
-} from "@/features/student/courses/types/student-course";
+import { useProjectSprints } from "@/features/student/sprint-progress/hooks/use-project-sprints";
 import { getApiErrorCode, getApiErrorMessage } from "@/lib/api-error";
 import { cn } from "@/lib/utils";
 import { PeerAssessmentHeader } from "./peer-assessment-header";
+import { PeerReviewModal } from "./peer-review-modal";
 import { getPeerAssessmentState } from "../lib/peer-assessment-state";
+import {
+  formatPeerReviewOpenAt,
+  formatSprintStateLabel,
+  isPeerReviewWindowOpen,
+  isSprintClosed,
+  pickDefaultPeerReviewSprintId,
+} from "../lib/peer-review-window";
+import {
+  excludeSelfReviewCandidates,
+  hasRubricCriteria,
+  resolveCandidateTeamRole,
+  resolvePeerReviewRubric,
+  rubricSourceLabel,
+  shouldFetchDefaultRubric,
+} from "../lib/peer-review-payload";
+import {
+  useDefaultPeerReviewRubric,
+  usePeerReviewCandidates,
+  useTeamPeerReviewRubric,
+} from "../hooks/use-peer-review";
+import {
+  PEER_REVIEW_STAR_MAX,
+  type PeerReviewCandidate,
+} from "../types/peer-review";
+
+function StatusPanel({
+  title,
+  description,
+  tone = "default",
+  action,
+}: {
+  title: string;
+  description: string;
+  tone?: "default" | "warning" | "danger";
+  action?: React.ReactNode;
+}) {
+  const toneClass =
+    tone === "danger"
+      ? "border-destructive/30 bg-destructive/5"
+      : tone === "warning"
+        ? "border-amber-500/40 bg-amber-500/5"
+        : "border-dashed border-border/80 bg-card/50";
+  return (
+    <div
+      className={`rounded-3xl border p-8 text-center shadow-2xs ${toneClass}`}
+    >
+      <p
+        className={`text-sm font-bold ${tone === "danger" ? "text-destructive" : "text-foreground"}`}
+      >
+        {title}
+      </p>
+      <p className="mt-1 text-xs text-muted-foreground">{description}</p>
+      {action}
+    </div>
+  );
+}
 
 export function PeerAssessmentView() {
   const refreshCourses = useRefreshStudentCourses();
@@ -49,15 +99,22 @@ export function PeerAssessmentView() {
     isWaitingForTeam,
   } = useStudentMyTeam(courseId, { enabled: Boolean(courseId) });
 
-  const forbidden = getApiErrorCode(teamError) === "STUDENT_COURSE_FORBIDDEN";
-  useEffect(() => {
-    if (forbidden) void refreshCourses();
-  }, [forbidden, refreshCourses]);
+  const forbiddenCode =
+    getApiErrorCode(teamError) === "STUDENT_COURSE_FORBIDDEN";
 
-  const teamMembers = useMemo(
-    () => sortStudentTeamMembers(team?.members ?? []),
-    [team?.members],
-  );
+  useEffect(() => {
+    if (forbiddenCode) void refreshCourses();
+  }, [forbiddenCode, refreshCourses]);
+
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const timer = window.setInterval(() => setNow(Date.now()), 60_000);
+    return () => window.clearInterval(timer);
+  }, []);
+
+  const [selectedSprintId, setSelectedSprintId] = useState<string>("");
+  const [selectedCandidate, setSelectedCandidate] =
+    useState<PeerReviewCandidate | null>(null);
 
   const assessmentState = getPeerAssessmentState({
     courseId,
@@ -65,9 +122,71 @@ export function PeerAssessmentView() {
     isInvalidCourse,
     isTeamLoading,
     isWaitingForTeam,
-    forbidden,
+    forbidden: forbiddenCode,
     isTeamError,
+    hasTeam: Boolean(team),
+    projectId: team?.projectId,
   });
+
+  const projectId = team?.projectId || null;
+  const teamId = team?.teamId || null;
+  const sprintsQuery = useProjectSprints(projectId, {
+    enabled: assessmentState === "READY" && Boolean(projectId),
+  });
+  const sprints = sprintsQuery.data || [];
+  const defaultSprintId =
+    pickDefaultPeerReviewSprintId(sprints, now) || sprints[0]?.id || "";
+  const effectiveSprintId = sprints.some(
+    (sprint) => sprint.id === selectedSprintId,
+  )
+    ? selectedSprintId
+    : defaultSprintId;
+  const selectedSprint =
+    sprints.find((sprint) => sprint.id === effectiveSprintId) || null;
+  const windowOpen = selectedSprint
+    ? isPeerReviewWindowOpen(selectedSprint, now)
+    : false;
+
+  const teamRubricQuery = useTeamPeerReviewRubric(teamId, {
+    enabled: assessmentState === "READY" && Boolean(teamId),
+  });
+  const defaultRubricQuery = useDefaultPeerReviewRubric({
+    enabled: shouldFetchDefaultRubric(
+      teamRubricQuery.data,
+      teamRubricQuery.isSuccess,
+    ),
+  });
+  const rubric = resolvePeerReviewRubric(
+    teamRubricQuery.data,
+    defaultRubricQuery.data,
+  );
+  const candidatesQuery = usePeerReviewCandidates(teamId, effectiveSprintId, {
+    enabled: Boolean(teamId && effectiveSprintId && windowOpen),
+  });
+
+  const candidates = useMemo(
+    () =>
+      excludeSelfReviewCandidates(
+        candidatesQuery.data?.candidates || [],
+        candidatesQuery.data?.reviewerId,
+      ),
+    [candidatesQuery.data],
+  );
+  const reviewedCount = candidates.filter(
+    (item) => item.alreadyReviewed,
+  ).length;
+  const maxStars = (rubric?.criteria.length || 0) * PEER_REVIEW_STAR_MAX;
+  const isRubricFallbackPending =
+    teamRubricQuery.isSuccess &&
+    !hasRubricCriteria(teamRubricQuery.data) &&
+    defaultRubricQuery.isFetching;
+  const showRubricSkeleton =
+    teamRubricQuery.isLoading || isRubricFallbackPending;
+  const showEmptyRubric =
+    teamRubricQuery.isSuccess &&
+    defaultRubricQuery.isSuccess &&
+    !hasRubricCriteria(teamRubricQuery.data) &&
+    !hasRubricCriteria(defaultRubricQuery.data);
 
   if (assessmentState === "LOADING_COURSE") {
     return (
@@ -82,19 +201,22 @@ export function PeerAssessmentView() {
     return (
       <div className="mx-auto max-w-[1600px] space-y-6 pb-12">
         <PeerAssessmentHeader />
-        <div className="rounded-3xl border border-dashed border-border/80 bg-card/50 p-8 text-center shadow-2xs backdrop-blur-xs">
-          <p className="text-sm font-bold text-foreground">Chưa chọn lớp học phần</p>
-          <p className="mt-1 text-xs text-muted-foreground">
-            Hãy chọn lớp đang học trước khi xem đánh giá chéo theo Sprint.
-          </p>
-          <Link
-            href="/student/courses"
-            prefetch={true}
-            className={cn(buttonVariants({ size: "sm" }), "mt-4 text-xs rounded-xl font-semibold")}
-          >
-            Chọn lớp học phần
-          </Link>
-        </div>
+        <StatusPanel
+          title="Chưa chọn lớp học phần"
+          description="Hãy chọn lớp đang học trước khi xem đánh giá chéo theo Sprint."
+          action={
+            <Link
+              href="/student/courses"
+              prefetch={true}
+              className={cn(
+                buttonVariants({ size: "sm" }),
+                "mt-4 rounded-xl text-xs font-semibold",
+              )}
+            >
+              Chọn lớp học phần
+            </Link>
+          }
+        />
       </div>
     );
   }
@@ -103,13 +225,23 @@ export function PeerAssessmentView() {
     return (
       <div className="mx-auto max-w-[1600px] space-y-6 pb-12">
         <PeerAssessmentHeader />
-        <div className="rounded-3xl border border-dashed border-amber-500/40 bg-amber-500/5 p-8 text-center shadow-2xs">
-          <p className="text-sm font-bold text-foreground">Lớp học phần không còn khả dụng</p>
-          <p className="mt-1 text-xs text-muted-foreground">Hãy chọn lại lớp học phần trước khi xem đánh giá chéo.</p>
-          <Link href="/student/courses" prefetch={true} className={cn(buttonVariants({ size: "sm", variant: "outline" }), "mt-4 text-xs rounded-xl font-semibold")}>
-            Chọn lớp học phần
-          </Link>
-        </div>
+        <StatusPanel
+          tone="warning"
+          title="Lớp học phần không còn khả dụng"
+          description="Hãy chọn lại lớp học phần trước khi xem đánh giá chéo."
+          action={
+            <Link
+              href="/student/courses"
+              prefetch={true}
+              className={cn(
+                buttonVariants({ size: "sm", variant: "outline" }),
+                "mt-4 rounded-xl text-xs font-semibold",
+              )}
+            >
+              Chọn lớp học phần
+            </Link>
+          }
+        />
       </div>
     );
   }
@@ -128,13 +260,10 @@ export function PeerAssessmentView() {
     return (
       <div className="mx-auto max-w-[1600px] space-y-6 pb-12">
         <PeerAssessmentHeader courseCode={effectiveCourse?.code} />
-        <div className="rounded-3xl border border-dashed border-border/80 bg-card/50 p-8 text-center shadow-2xs backdrop-blur-xs">
-          <UsersIcon className="mx-auto mb-3 size-8 text-muted-foreground/40" />
-          <p className="text-sm font-bold text-foreground">Đang chờ giảng viên phân nhóm</p>
-          <p className="mt-1 text-xs text-muted-foreground">
-            Bạn đã ghi danh nhưng chưa được gán vào nhóm. Đây không phải lỗi hệ thống.
-          </p>
-        </div>
+        <StatusPanel
+          title="Đang chờ giảng viên phân nhóm"
+          description="Bạn đã ghi danh nhưng chưa được gán vào nhóm. Đây không phải lỗi hệ thống."
+        />
       </div>
     );
   }
@@ -143,19 +272,23 @@ export function PeerAssessmentView() {
     return (
       <div className="mx-auto max-w-[1600px] space-y-6 pb-12">
         <PeerAssessmentHeader />
-        <div className="rounded-3xl border border-dashed border-destructive/30 bg-destructive/5 p-8 text-center shadow-2xs">
-          <p className="text-sm font-bold text-destructive">Bạn không thuộc lớp học phần này</p>
-          <p className="mt-1 text-xs text-muted-foreground">
-            Danh sách lớp sẽ được làm mới. Không thử ID của sinh viên khác.
-          </p>
-          <Link
-            href="/student/courses"
-            prefetch={true}
-            className={cn(buttonVariants({ size: "sm", variant: "outline" }), "mt-4 text-xs rounded-xl font-semibold")}
-          >
-            Về danh sách lớp
-          </Link>
-        </div>
+        <StatusPanel
+          tone="danger"
+          title="Bạn không thuộc lớp học phần này"
+          description="Danh sách lớp sẽ được làm mới. Không thử ID của sinh viên khác."
+          action={
+            <Link
+              href="/student/courses"
+              prefetch={true}
+              className={cn(
+                buttonVariants({ size: "sm", variant: "outline" }),
+                "mt-4 rounded-xl text-xs font-semibold",
+              )}
+            >
+              Về danh sách lớp
+            </Link>
+          }
+        />
       </div>
     );
   }
@@ -164,221 +297,310 @@ export function PeerAssessmentView() {
     return (
       <div className="mx-auto max-w-[1600px] space-y-6 pb-12">
         <PeerAssessmentHeader courseCode={effectiveCourse?.code} />
-        <div className="rounded-3xl border border-dashed border-destructive/30 bg-destructive/5 p-8 text-center shadow-2xs">
-          <p className="text-sm font-bold text-destructive">Không tải được nhóm</p>
-          <p className="mt-1 text-xs text-muted-foreground">
-            {getApiErrorMessage(teamError, "Vui lòng thử lại.")}
-          </p>
-          <Button
-            type="button"
-            size="sm"
-            variant="outline"
-            className="mt-4 cursor-pointer text-xs rounded-xl font-semibold"
-            onClick={() => void refetchTeam()}
-          >
-            Thử lại
-          </Button>
-        </div>
+        <StatusPanel
+          tone="danger"
+          title="Không tải được nhóm"
+          description={getApiErrorMessage(teamError, "Vui lòng thử lại.")}
+          action={
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              className="mt-4 cursor-pointer rounded-xl text-xs font-semibold"
+              onClick={() => void refetchTeam()}
+            >
+              Thử lại
+            </Button>
+          }
+        />
       </div>
     );
   }
+
+  if (assessmentState === "NO_PROJECT") {
+    return (
+      <div className="mx-auto max-w-[1600px] space-y-6 pb-12">
+        <PeerAssessmentHeader
+          teamName={team?.teamName}
+          courseCode={effectiveCourse?.code}
+          myRole={team?.myRole}
+        />
+        <StatusPanel
+          tone="warning"
+          title="Nhóm chưa có dự án"
+          description="Đánh giá chéo theo Sprint chỉ mở khi nhóm đã có dự án."
+        />
+      </div>
+    );
+  }
+
+  const sprintOptions = sprints.map((sprint) => {
+    const open = isPeerReviewWindowOpen(sprint, now);
+    const openAt = formatPeerReviewOpenAt(sprint);
+    return {
+      value: sprint.id,
+      label: sprint.name,
+      subLabel: open
+        ? isSprintClosed(sprint)
+          ? "Sprint đã đóng · được chấm"
+          : "Trong cửa sổ đánh giá"
+        : openAt
+          ? `Mở lúc ${openAt}`
+          : "Chỉ chấm khi Sprint đã đóng",
+    };
+  });
 
   return (
     <div className="mx-auto max-w-[1600px] space-y-5 pb-12">
       <PeerAssessmentHeader
         teamName={team?.teamName}
         courseCode={effectiveCourse?.code}
+        myRole={team?.myRole}
+        sprintName={selectedSprint?.name}
+        sprintStateLabel={
+          selectedSprint ? formatSprintStateLabel(selectedSprint.state) : null
+        }
+        rubricSource={rubric ? rubricSourceLabel(rubric) : null}
+        criteriaCount={rubric ? rubric.criteria.length : null}
+        reviewedCount={windowOpen ? reviewedCount : null}
+        candidateCount={windowOpen ? candidates.length : null}
       />
 
-      <div className="rounded-3xl border border-amber-500/25 bg-amber-500/5 p-4.5 backdrop-blur-xs shadow-2xs">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-          <div className="flex items-start gap-3">
-            <div className="w-8 h-8 rounded-xl bg-amber-500/15 text-amber-700 dark:text-amber-400 flex items-center justify-center shrink-0 mt-0.5">
-              <SparklesIcon className="w-4 h-4" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h3 className="text-xs font-bold text-foreground uppercase tracking-wide">
-                  Quy trình đánh giá chéo (Peer Review Flow)
-                </h3>
-                <Badge variant="outline" className="text-[10px] font-mono border-amber-500/30 text-amber-700 dark:text-amber-300 bg-amber-500/10">
-                  Tính năng sắp mở
-                </Badge>
-              </div>
-              <p className="mt-1 text-xs text-muted-foreground leading-relaxed">
-                Tính năng đánh giá chéo giữa các thành viên nhóm theo từng Sprint đang trong lộ trình hoàn thiện. Biểu mẫu đánh giá và thang điểm năng lực sẽ tự động mở khi Giảng viên khởi tạo đợt nghiệm thu Sprint.
-              </p>
-            </div>
-          </div>
-          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg border border-border/80 bg-background/80 text-[11px] font-mono text-muted-foreground shrink-0">
-            <ClockIcon className="w-3 h-3 text-amber-600 dark:text-amber-400" />
-            <span>Đang phát triển</span>
-          </div>
+      <div className="rounded-3xl border border-border/70 bg-card/60 p-5 shadow-2xs">
+        <div className="max-w-md space-y-1.5">
+          <Label
+            htmlFor="peer-sprint"
+            className="text-[11px] font-semibold text-muted-foreground"
+          >
+            <span className="inline-flex items-center gap-1">
+              <CalendarIcon className="size-3 text-primary" />
+              Sprint đánh giá chéo
+            </span>
+          </Label>
+          {sprintsQuery.isLoading ? (
+            <div className="h-10 animate-pulse rounded-xl bg-muted" />
+          ) : sprintsQuery.isError ? (
+            <StatusPanel
+              tone="danger"
+              title="Không tải được Sprint"
+              description={getApiErrorMessage(
+                sprintsQuery.error,
+                "Vui lòng thử lại.",
+              )}
+              action={
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  className="mt-3 cursor-pointer text-xs"
+                  onClick={() => void sprintsQuery.refetch()}
+                >
+                  Thử lại
+                </Button>
+              }
+            />
+          ) : sprints.length === 0 ? (
+            <StatusPanel
+              title="Chưa có Sprint"
+              description="Dự án nhóm chưa có Sprint để mở đánh giá chéo."
+            />
+          ) : (
+            <CustomSelect
+              id="peer-sprint"
+              value={effectiveSprintId}
+              onChange={setSelectedSprintId}
+              options={sprintOptions}
+            />
+          )}
         </div>
       </div>
 
-      <ol className="grid gap-3.5 sm:grid-cols-3">
-        <li className="rounded-2xl border border-border/70 bg-card/60 backdrop-blur-xs p-4 shadow-2xs hover:border-primary/40 transition-all flex flex-col justify-between">
-          <div>
-            <div className="flex items-center justify-between gap-2">
-              <span className="w-6 h-6 rounded-lg bg-primary/10 text-primary font-mono text-xs font-bold flex items-center justify-center">
-                01
-              </span>
-              <Badge variant="outline" className="text-[10px] text-muted-foreground border-border/70">
-                Bước khởi đầu
-              </Badge>
-            </div>
-            <h2 className="mt-2.5 text-sm font-bold text-foreground">Chọn Sprint Đã Hoàn Thành</h2>
-            <p className="mt-1 text-xs text-muted-foreground">
-              Chọn đợt nghiệm thu Sprint đã đóng để mở danh sách thành viên cần đánh giá.
-            </p>
-            <div className="mt-3.5 space-y-1.5">
-              <Label htmlFor="peer-sprint" className="text-[11px] font-semibold text-muted-foreground">
-                <span className="inline-flex items-center gap-1">
-                  <CalendarIcon className="size-3 text-primary" />
-                  Sprint Nghiệm Thu
-                </span>
-              </Label>
-              <CustomSelect
-                id="peer-sprint"
-                value=""
-                onChange={() => undefined}
-                disabled
-                placeholder="Chờ kích hoạt đợt đánh giá"
-                options={[]}
-              />
-            </div>
-          </div>
-          <p className="mt-3 text-[10px] font-mono text-muted-foreground flex items-center gap-1">
-            <CheckCircle2Icon className="w-3 h-3 text-muted-foreground/60" />
-            Yêu cầu trạng thái: CLOSED
-          </p>
-        </li>
+      {sprints.length > 0 && selectedSprint && !windowOpen ? (
+        <StatusPanel
+          tone="warning"
+          title="Sprint chưa đến hạn đánh giá"
+          description={
+            formatPeerReviewOpenAt(selectedSprint)
+              ? `Form bị khóa đến ${formatPeerReviewOpenAt(selectedSprint)}. Trang sẽ tự mở khi đến cửa sổ 48 giờ.`
+              : "Sprint này chưa có ngày kết thúc nên chỉ được chấm sau khi đã đóng."
+          }
+        />
+      ) : null}
 
-        <li className="rounded-2xl border border-border/70 bg-card/60 backdrop-blur-xs p-4 shadow-2xs hover:border-primary/40 transition-all flex flex-col justify-between">
-          <div>
-            <div className="flex items-center justify-between gap-2">
-              <span className="w-6 h-6 rounded-lg bg-muted text-muted-foreground font-mono text-xs font-bold flex items-center justify-center">
-                02
-              </span>
-              <Badge variant="outline" className="text-[10px] text-muted-foreground border-border/70">
-                Chấm điểm chéo
-              </Badge>
-            </div>
-            <h2 className="mt-2.5 text-sm font-bold text-foreground">Xác Định Thành Viên Đánh Giá</h2>
-            <p className="mt-1 text-xs text-muted-foreground leading-relaxed">
-              Biểu mẫu thang điểm 10 theo tiêu chí năng lực và thái độ làm việc sẽ tự động mở tương ứng từng thành viên nhóm.
-            </p>
-          </div>
-          <div className="mt-4 p-2.5 rounded-xl border border-dashed border-border bg-muted/20 text-center">
-            <p className="text-[11px] text-muted-foreground font-medium">Biểu mẫu sẽ tự động hiển thị khi mở đợt đánh giá</p>
-          </div>
-        </li>
+      {windowOpen && showRubricSkeleton ? (
+        <div className="h-40 animate-pulse rounded-3xl bg-muted/60" />
+      ) : null}
 
-        <li className="rounded-2xl border border-border/70 bg-card/60 backdrop-blur-xs p-4 shadow-2xs hover:border-primary/40 transition-all flex flex-col justify-between">
-          <div>
-            <div className="flex items-center justify-between gap-2">
-              <span className="w-6 h-6 rounded-lg bg-muted text-muted-foreground font-mono text-xs font-bold flex items-center justify-center">
-                03
-              </span>
-              <Badge variant="outline" className="text-[10px] text-muted-foreground border-border/70">
-                Nộp kết quả
-              </Badge>
-            </div>
-            <h2 className="mt-2.5 text-sm font-bold text-foreground">Gửi Đánh Giá Chéo</h2>
-            <p className="mt-1 text-xs text-muted-foreground leading-relaxed">
-              Chức năng gửi đánh giá sẽ được bảo vệ bởi cơ chế kiểm soát bảo mật và tính toàn vẹn dữ liệu.
-            </p>
-          </div>
-          <div className="mt-4 space-y-2">
+      {windowOpen && teamRubricQuery.isError ? (
+        <StatusPanel
+          tone="danger"
+          title="Không tải được tiêu chí đánh giá"
+          description={getApiErrorMessage(
+            teamRubricQuery.error,
+            "Vui lòng thử lại.",
+          )}
+          action={
             <Button
               type="button"
               size="sm"
-              className="w-full h-8.5 rounded-xl text-xs font-bold cursor-not-allowed opacity-60 bg-primary/50 text-primary-foreground gap-1.5"
-              disabled
+              variant="outline"
+              className="mt-3 cursor-pointer text-xs"
+              onClick={() => void teamRubricQuery.refetch()}
             >
-              <SendIcon className="size-3.5" />
-              <span>Chưa mở đợt đánh giá</span>
+              Thử lại
             </Button>
-            <p className="text-[10px] text-muted-foreground text-center flex items-center justify-center gap-1 font-mono">
-              <ShieldCheckIcon className="w-3 h-3 text-emerald-500" />
-              Dữ liệu được lưu vết bảo mật
+          }
+        />
+      ) : null}
+
+      {windowOpen &&
+      teamRubricQuery.isSuccess &&
+      !hasRubricCriteria(rubric) &&
+      defaultRubricQuery.isError ? (
+        <StatusPanel
+          tone="danger"
+          title="Không tải được tiêu chí mặc định"
+          description={getApiErrorMessage(
+            defaultRubricQuery.error,
+            "Vui lòng thử lại.",
+          )}
+          action={
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              className="mt-3 cursor-pointer text-xs"
+              onClick={() => void defaultRubricQuery.refetch()}
+            >
+              Thử lại
+            </Button>
+          }
+        />
+      ) : null}
+
+      {windowOpen && !showRubricSkeleton && showEmptyRubric ? (
+        <StatusPanel
+          title="Chưa có tiêu chí đánh giá"
+          description="Nhóm chưa có rubric và rubric mặc định cũng chưa có tiêu chí."
+        />
+      ) : null}
+
+      {windowOpen && !showRubricSkeleton && hasRubricCriteria(rubric) ? (
+        <div className="space-y-3 rounded-3xl border border-border/70 bg-card/60 p-5 shadow-2xs">
+          <div className="flex items-start gap-2 rounded-2xl border border-primary/15 bg-primary/5 px-3.5 py-3 text-xs text-muted-foreground">
+            <InfoIcon className="mt-0.5 size-3.5 shrink-0 text-primary" />
+            <p>
+              Chỉ hiển thị trạng thái đánh giá do bạn gửi. Không tải bảng kết quả
+              toàn nhóm để bảo vệ nội dung đánh giá của các thành viên.
             </p>
           </div>
-        </li>
-      </ol>
-
-      <div className="rounded-3xl border border-border/70 bg-card/60 backdrop-blur-xs p-5 shadow-2xs space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-border/60">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
-              <UsersIcon className="w-4 h-4" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h2 className="text-sm font-extrabold text-foreground">{team?.teamName || "Nhóm của tôi"}</h2>
-                <Badge variant="secondary" className="font-mono text-[10px] font-bold border border-border/60">
-                  Mã nhóm: {team?.teamNo ?? "—"}
-                </Badge>
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Tổng số {teamMembers.length} thành viên trong nhóm đồ án môn học
-              </p>
-            </div>
-          </div>
-          <MemberRoleBadge role={team?.myRole} size="sm" />
-        </div>
-
-        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-          <InfoIcon className="w-3.5 h-3.5 text-primary shrink-0" />
-          <span>Danh sách thành viên thuộc nhóm đồ án hiện tại. Khi đợt đánh giá mở, sinh viên sẽ thực hiện chấm điểm chéo theo từng thành viên.</span>
-        </div>
-
-        {teamMembers.length === 0 ? (
-          <div className="p-8 text-center text-xs text-muted-foreground rounded-2xl border border-dashed border-border">
-            Nhóm chưa có dữ liệu thành viên.
-          </div>
-        ) : (
-          <div className="grid gap-2">
-            {teamMembers.map((member) => (
-              <div
-                key={`${member.studentCode}-${member.role}`}
-                className="flex items-center justify-between rounded-2xl border border-border/60 bg-muted/20 px-3.5 py-2.5 hover:bg-muted/40 hover:border-primary/30 transition-all group"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-background border border-border/80 overflow-hidden relative shrink-0 shadow-2xs">
-                    <Image
-                      src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(member.fullName || member.studentCode)}`}
-                      alt={member.fullName}
-                      width={36}
-                      height={36}
-                      className="w-full h-full object-cover"
-                      unoptimized
-                    />
-                  </div>
-                  <div>
-                    <p className="text-xs font-bold text-foreground group-hover:text-primary transition-colors">
-                      {member.fullName}
-                    </p>
-                    <p className="font-mono text-[11px] text-muted-foreground">{member.studentCode}</p>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <MemberRoleBadge role={member.role} size="sm" />
-                  <Badge
-                    variant="outline"
-                    className="border-border/70 bg-muted/60 text-[10px] font-medium text-muted-foreground gap-1"
+          {candidatesQuery.isLoading ? (
+            <div className="h-32 animate-pulse rounded-2xl bg-muted/60" />
+          ) : candidatesQuery.isError ? (
+            <StatusPanel
+              tone="danger"
+              title="Không tải được danh sách đánh giá"
+              description={getApiErrorMessage(
+                candidatesQuery.error,
+                "Vui lòng thử lại.",
+              )}
+              action={
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  className="mt-3 cursor-pointer text-xs"
+                  onClick={() => void candidatesQuery.refetch()}
+                >
+                  Thử lại
+                </Button>
+              }
+            />
+          ) : candidates.length === 0 ? (
+            <p className="rounded-2xl border border-dashed border-border p-8 text-center text-xs text-muted-foreground">
+              Không có thành viên nào để đánh giá trong Sprint này.
+            </p>
+          ) : (
+            <div className="grid gap-2">
+              {candidates.map((candidate) => {
+                const role = resolveCandidateTeamRole(
+                  team?.members || [],
+                  candidate.studentCode,
+                );
+                return (
+                  <div
+                    key={candidate.studentId}
+                    className="flex flex-col gap-2 rounded-2xl border border-border/60 bg-muted/20 px-3.5 py-2.5 sm:flex-row sm:items-center sm:justify-between"
                   >
-                    <LockIcon className="size-2.5" />
-                    <span>Chưa mở chấm điểm</span>
-                  </Badge>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
+                    <div>
+                      <p className="text-xs font-bold text-foreground">
+                        {candidate.fullName}
+                      </p>
+                      <p className="font-mono text-[11px] text-muted-foreground">
+                        {candidate.studentCode || candidate.studentId}
+                      </p>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-2 sm:justify-end">
+                      {role ? <MemberRoleBadge role={role} size="sm" /> : null}
+                      {candidate.alreadyReviewed ? (
+                        <Badge variant="outline" className="gap-1 text-[10px]">
+                          <StarIcon className="size-3 fill-primary text-primary" />
+                          Đã gửi · {candidate.existingTotalStarRating ?? "—"} /{" "}
+                          {maxStars}
+                        </Badge>
+                      ) : (
+                        <Badge
+                          variant="outline"
+                          className="gap-1 text-[10px] text-muted-foreground"
+                        >
+                          <LockIcon className="size-2.5" />
+                          Chưa đánh giá
+                        </Badge>
+                      )}
+                      {candidate.alreadyReviewed ? (
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                          disabled
+                          className="h-8 rounded-xl text-xs disabled:opacity-100"
+                        >
+                          <CheckCircle2Icon className="size-3.5 text-emerald-600" />
+                          Đã đánh giá
+                        </Button>
+                      ) : (
+                        <Button
+                          type="button"
+                          size="sm"
+                          className="h-8 cursor-pointer rounded-xl text-xs"
+                          onClick={() => setSelectedCandidate(candidate)}
+                        >
+                          Đánh giá
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      ) : null}
+
+      <PeerReviewModal
+        key={selectedCandidate?.studentId || "closed"}
+        open={Boolean(selectedCandidate && !selectedCandidate.alreadyReviewed)}
+        teamId={teamId || ""}
+        sprintId={effectiveSprintId}
+        candidate={selectedCandidate}
+        rubric={rubric}
+        reviewerId={candidatesQuery.data?.reviewerId}
+        allowedRevieweeIds={candidates.map((item) => item.studentId)}
+        sprintWindowOpen={windowOpen}
+        onOpenChange={(open) => {
+          if (!open) setSelectedCandidate(null);
+        }}
+      />
     </div>
   );
 }
