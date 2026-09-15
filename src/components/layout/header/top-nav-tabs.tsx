@@ -33,6 +33,7 @@ import { useAuthStore } from "@/features/auth/store/useAuthStore";
 import { studentCoursePath } from "@/features/student/courses/hooks/use-student-course-context";
 import type { StudentCourseResponse } from "@/features/student/courses/types/student-course";
 import { usePrefetchContributionEvaluation } from "@/features/lecturer/contribution/hooks/use-lecturer-contribution";
+import { usePrefetchLecturerPeerReviews } from "@/features/lecturer/peer-review/hooks/use-lecturer-peer-review";
 
 const ICON_MAP: Record<string, React.ElementType> = {
   LayoutDashboard: LayoutDashboardIcon,
@@ -111,6 +112,7 @@ function TopNavTabLink({
   const prefetchStudentTeam = usePrefetchStudentTeam();
   const prefetchProjectProjection = usePrefetchProjectProjection();
   const prefetchContributionEvaluation = usePrefetchContributionEvaluation();
+  const prefetchLecturerPeerReviews = usePrefetchLecturerPeerReviews();
   const queryClient = useQueryClient();
 
   useEffect(() => {
@@ -123,6 +125,9 @@ function TopNavTabLink({
     if (courseMatch) {
       const courseId = decodeURIComponent(courseMatch[1]);
       prefetchLecturerCourse(courseId);
+      if (item.id === "course-peer-reviews") {
+        prefetchLecturerPeerReviews(courseId);
+      }
       return;
     }
     if (studentCourseId) {

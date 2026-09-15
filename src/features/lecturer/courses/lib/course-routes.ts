@@ -30,6 +30,22 @@ export function lecturerCourseGraphPath(courseId: string) {
   return `/lecturer/courses/${courseId}/graph`;
 }
 
+export function lecturerCoursePeerReviewsPath(
+  courseId: string,
+  filters?: { teamId?: string | null; sprintId?: string | null; revieweeId?: string | null }
+) {
+  const base = `/lecturer/courses/${courseId}/peer-reviews`;
+  const params = new URLSearchParams();
+  const teamId = typeof filters?.teamId === "string" ? filters.teamId.trim() : "";
+  const sprintId = typeof filters?.sprintId === "string" ? filters.sprintId.trim() : "";
+  const revieweeId = typeof filters?.revieweeId === "string" ? filters.revieweeId.trim() : "";
+  if (teamId) params.set("teamId", teamId);
+  if (sprintId) params.set("sprintId", sprintId);
+  if (revieweeId) params.set("revieweeId", revieweeId);
+  const query = params.toString();
+  return query ? `${base}?${query}` : base;
+}
+
 export function lecturerCourseTeamsPath(
   courseId: string,
   view?: "members" | "teams"

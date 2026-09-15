@@ -3,6 +3,7 @@ import { fptTest } from "@/testing/fpt-test-helper";
 import {
   lecturerCourseContributionPath,
   lecturerCourseGradesPath,
+  lecturerCoursePeerReviewsPath,
   lecturerCourseTeamEvaluationPath,
   lecturerCourseTeamsPath,
   lecturerCourseWeightSettingsPath,
@@ -113,6 +114,41 @@ describe("lecturer course-routes", () => {
     () => {
       expect(lecturerCourseGradesPath("course-1", "a b&c")).toBe(
         "/lecturer/courses/course-1/grades?teamId=a+b%26c"
+      );
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID08",
+      type: "N",
+      executedDate: "15/09/2026",
+      description: "Route danh gia cheo khong gan query khi thieu teamId",
+    },
+    () => {
+      expect(lecturerCoursePeerReviewsPath("course-1")).toBe(
+        "/lecturer/courses/course-1/peer-reviews"
+      );
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID09",
+      type: "N",
+      executedDate: "15/09/2026",
+      description: "Route danh gia cheo gan teamId, sprintId, revieweeId va doi nhom bo bo loc cu",
+    },
+    () => {
+      expect(lecturerCoursePeerReviewsPath("course-1", {
+        teamId: "team-1",
+        sprintId: "sprint-1",
+        revieweeId: "student-1",
+      })).toBe(
+        "/lecturer/courses/course-1/peer-reviews?teamId=team-1&sprintId=sprint-1&revieweeId=student-1"
+      );
+      expect(lecturerCoursePeerReviewsPath("course-1", { teamId: "team-2" })).toBe(
+        "/lecturer/courses/course-1/peer-reviews?teamId=team-2"
       );
     }
   );

@@ -5,6 +5,7 @@ import {
   lecturerCourseGradesPath,
   lecturerCourseGraphPath,
   lecturerCourseContributionPath,
+  lecturerCoursePeerReviewsPath,
   lecturerCourseTeamsPath,
 } from "@/features/lecturer/courses/lib/course-routes";
 
@@ -90,6 +91,13 @@ export function getLecturerNavItems(courseId: string): NavItem[] {
       title: "Đánh giá & Bảng điểm",
       href: lecturerCourseGradesPath(courseId),
       icon: "ScrollText",
+      match: "exact",
+    },
+    {
+      id: "course-peer-reviews",
+      title: "Đánh giá chéo",
+      href: lecturerCoursePeerReviewsPath(courseId),
+      icon: "UserCheck",
       match: "exact",
     },
     {
