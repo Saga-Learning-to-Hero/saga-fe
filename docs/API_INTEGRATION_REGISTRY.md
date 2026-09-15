@@ -201,7 +201,7 @@ Tài liệu này là **Sổ bộ theo dõi chi tiết toàn bộ 128 API** của
 
 ## Peer Review Playbook — wire contract đã kiểm chứng
 
-Playbook SAGA-71 khớp response Backend runtime. Swagger production chưa công bố các endpoint này nên **không sửa tay** `docs/openapi.json`.
+Playbook SAGA-71 khớp response Backend runtime cho luồng sinh viên.
 
 | STT | Method | Endpoint | Wire đã kiểm chứng | UI | Trạng thái |
 | --- | --- | --- | --- | --- | --- |
@@ -221,6 +221,29 @@ Quy ước FE đã khóa:
 - Không gọi `contribution-evaluation`, không tự tính hệ số P.
 
 Service: `src/features/student/assessment/api/peer-review-service.ts`.
+
+---
+
+## Peer Review — Giảng viên (SAGA-72)
+
+Swagger production đã công bố list/rubric. Màn `/lecturer/courses/{courseId}/peer-reviews` chỉ đọc; giảng viên **không** gọi candidates hay submit.
+
+| STT | Method | Endpoint | Mục đích trên UI giảng viên | Trạng thái |
+| --- | --- | --- | --- | --- |
+| LPR-1 | `GET` | `/api/lecturer/courses/{courseId}/teams` | Chọn nhóm thuộc đúng lớp (`teamId`, `projectId`, thành viên) | ✅ ĐÃ TÍCH HỢP |
+| LPR-2 | `GET` | `/api/projects/{projectId}/sprints` | Sprint của dự án nhóm; dùng `id`, không dùng `externalSprintId` | ✅ ĐÃ TÍCH HỢP |
+| LPR-3 | `GET` | `/api/teams/{teamId}/peer-review-rubric` | Tên tiêu chí để ghép `rubricId` → `criteriaName` | ✅ ĐÃ TÍCH HỢP |
+| LPR-4 | `GET` | `/api/teams/{teamId}/sprints/{sprintId}/peer-reviews` | Toàn bộ đánh giá chéo nhóm/Sprint | ✅ ĐÃ TÍCH HỢP |
+| LPR-5 | `GET` | `/api/teams/{teamId}/sprints/{sprintId}/peer-reviews/candidates` | Form sinh viên | Không gọi từ màn giảng viên |
+| LPR-6 | `POST` | `/api/teams/{teamId}/sprints/{sprintId}/peer-reviews` | Nộp đánh giá | Không gọi — GV bị 403 |
+| LPR-7 | `GET` | `/api/projects/{projectId}/sprints/{sprintId}/graph/peer-review` | Đồ thị Cytoscape | Ngoài MVP |
+| LPR-8 | `GET` | `/api/teams/{teamId}/contribution-evaluation` | % đã gồm P | Ngoài MVP |
+
+Quy ước:
+- Luồng UI: chọn nhóm → Sprint của `projectId` nhóm đó → tải song song rubric + list.
+- `criteriaRatings` trên Swagger chỉ có `rubricId` + `starRating`. FE ghép tên từ rubric, không giả định `criteriaName` trên list.
+- Nhóm `projectId == null` không gọi sprints/reviews.
+- Service: `src/features/lecturer/peer-review/api/lecturer-peer-review-service.ts`.
 
 ---
 

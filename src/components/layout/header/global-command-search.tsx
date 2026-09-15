@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import {
   SearchIcon,
   LayoutDashboardIcon,
@@ -29,7 +29,7 @@ import {
 } from "@/components/ui/command";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
 import { useLogout } from "@/features/auth/hooks/useAuth";
-import { lecturerCourseDashboardPath } from "@/features/lecturer/courses/lib/course-routes";
+import { lecturerCourseDashboardPath, lecturerCoursePeerReviewsPath } from "@/features/lecturer/courses/lib/course-routes";
 import { useLecturerCourses } from "@/features/lecturer/courses/hooks/use-lecturer-courses";
 import { useStudentCourses } from "@/features/student/courses/hooks/use-student-courses";
 import { mapStudentCourseResponse } from "@/features/student/courses/types/student-course";
@@ -38,6 +38,7 @@ import { studentCoursePath } from "@/features/student/courses/hooks/use-student-
 export function GlobalCommandSearch() {
   const [open, setOpen] = useState(false);
   const router = useRouter();
+  const pathname = usePathname();
   const searchParams = useSearchParams();
   const { user, selectedCourse, setSelectedCourse } = useAuthStore();
   const { mutate: logout } = useLogout();
@@ -49,6 +50,10 @@ export function GlobalCommandSearch() {
   });
 
   const lecturerCourses = lecturerCoursesQuery.data ?? [];
+  const pathLecturerCourseId = pathname.match(/^\/lecturer\/courses\/([^/]+)/)?.[1];
+  const currentLecturerCourseId = pathLecturerCourseId
+    ? decodeURIComponent(pathLecturerCourseId)
+    : lecturerCourses[0]?.id;
   const studentCourses = (studentCoursesQuery.data ?? []).map(mapStudentCourseResponse);
   const selectedStudentCourseId =
     searchParams.get("courseId")?.trim() || selectedCourse?.courseId || selectedCourse?.id || "";
@@ -169,6 +174,17 @@ export function GlobalCommandSearch() {
                 <BookOpenIcon className="size-4 text-primary" />
                 <span>Danh sách tất cả lớp giảng dạy</span>
               </CommandItem>
+              {currentLecturerCourseId ? (
+                  <CommandItem
+                    onSelect={() =>
+                      runCommand(() => router.push(lecturerCoursePeerReviewsPath(currentLecturerCourseId)))
+                    }
+                    className="flex items-center gap-2.5 cursor-pointer py-2 px-3 text-xs"
+                  >
+                    <UserCheckIcon className="size-4 text-amber-500" />
+                    <span>Đánh giá chéo của lớp đang chọn</span>
+                  </CommandItem>
+              ) : null}
               {lecturerCourses.slice(0, 5).map((c) => (
                 <CommandItem
                   key={c.id}
