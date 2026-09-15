@@ -68,6 +68,7 @@ export interface PipelineFilterState {
   anomaliesOnly?: boolean;
   anomalyType?: PipelineAnomalyFilterType;
   searchQuery?: string;
+  repoId?: string;
   branchName?: string;
 }
 

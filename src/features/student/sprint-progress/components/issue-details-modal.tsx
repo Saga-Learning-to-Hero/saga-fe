@@ -12,6 +12,7 @@ import {
   GitCommitIcon,
   PaperclipIcon,
   ShieldCheckIcon,
+  CalendarIcon,
 } from "lucide-react";
 import type {
   SprintIssue,
@@ -28,7 +29,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { CustomSelect } from "@/components/common/custom-select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TaskLinkedCommitsList } from "./task-linked-commits-list";
-import { TaskEvidencePanel, TaskWorkSessionControl } from "./task-evidence-panel";
+import { TaskEvidencePanel } from "./task-evidence-panel";
+import { TaskWorkSessionControl } from "./task-work-session-control";
 import { LabelsMultiSelect } from "./labels-multi-select";
 import {
   useCreateProjectTask,
@@ -184,6 +186,8 @@ export function IssueDetailsModal({
       assigneeAccountId: initialAssigneeAccountId,
       labels: Array.isArray(issue?.labels) ? issue.labels : [],
       sprintId: initialSprintId,
+      startDate: issue?.startDate || taskDetail?.startDate || "",
+      dueDate: issue?.dueDate || taskDetail?.dueDate || "",
     };
   });
 
@@ -208,6 +212,8 @@ export function IssueDetailsModal({
         sprintId: resolvedSprintId,
         assigneeAccountId: resolvedAccountId || prev.assigneeAccountId,
         labels: Array.isArray(taskDetail.labels) ? taskDetail.labels : prev.labels,
+        startDate: taskDetail.startDate ?? prev.startDate,
+        dueDate: taskDetail.dueDate ?? prev.dueDate,
       }));
     }
   }
@@ -359,9 +365,31 @@ export function IssueDetailsModal({
             assigneeAccountId?: string;
             clearAssignee?: boolean;
             labels?: string[];
+            startDate?: string;
+            clearStartDate?: boolean;
+            dueDate?: string;
+            clearDueDate?: boolean;
           } = {
             summary: form.summary.trim() || issue.summary,
           };
+
+          const originalStartDate = taskDetail?.startDate || issue.startDate || "";
+          if (form.startDate !== originalStartDate) {
+            if (!form.startDate.trim()) {
+              patchData.clearStartDate = true;
+            } else {
+              patchData.startDate = form.startDate.trim();
+            }
+          }
+
+          const originalDueDate = taskDetail?.dueDate || issue.dueDate || "";
+          if (form.dueDate !== originalDueDate) {
+            if (!form.dueDate.trim()) {
+              patchData.clearDueDate = true;
+            } else {
+              patchData.dueDate = form.dueDate.trim();
+            }
+          }
 
           if (form.assigneeAccountId !== originalAssigneeAccountId) {
             if (!form.assigneeAccountId || !form.assigneeAccountId.trim()) {
@@ -452,6 +480,8 @@ export function IssueDetailsModal({
               sprintExternalId: sprintExtId,
               assigneeAccountId,
               labels: form.labels,
+              startDate: form.startDate.trim() || undefined,
+              dueDate: form.dueDate.trim() || undefined,
             },
           });
           savedKey = res.externalKey || savedKey;
@@ -493,6 +523,8 @@ export function IssueDetailsModal({
         assignee: finalAssignee,
         labels: form.labels,
         sprintId: form.sprintId || "backlog",
+        startDate: form.startDate || undefined,
+        dueDate: form.dueDate || undefined,
         createdAt: issue?.createdAt || new Date().toISOString(),
         githubCommitCount: issue?.githubCommitCount || 0,
       };
@@ -547,11 +579,13 @@ export function IssueDetailsModal({
                     ? "Chi tiết Task (Chỉ đọc)"
                     : isEditing
                       ? "Chi tiết & Cập nhật Task"
-                      : "Tạo Task mới"}
+                      : "Tạo Task mới với đầy đủ thông tin"}
                 </h3>
               </div>
               <p className="text-xs text-muted-foreground mt-0.5">
-                Quản lý trạng thái, phân công, Story Points và Labels chuẩn Jira
+                {isEditing
+                  ? "Quản lý trạng thái, phân công, Story Points và Labels chuẩn Jira"
+                  : "Chỉ bắt buộc Tên task, các thuộc tính còn lại là tùy chọn"}
               </p>
             </div>
           </div>
@@ -581,8 +615,11 @@ export function IssueDetailsModal({
           )}
 
           <div className="space-y-1.5">
-            <Label htmlFor="issue-title" className="text-xs font-semibold text-foreground">
-              Tên task / Tóm tắt Jira <span className="text-destructive">*</span>
+            <Label htmlFor="issue-title" className="text-xs font-semibold text-foreground flex items-center justify-between">
+              <span>
+                Tên task / Tóm tắt Jira <span className="text-destructive">*</span>
+              </span>
+              <span className="text-[10px] font-normal text-muted-foreground">Bắt buộc</span>
             </Label>
             <Input
               id="issue-title"
@@ -605,9 +642,12 @@ export function IssueDetailsModal({
           <div className="space-y-5">
             <div className="space-y-1.5">
               <div className="space-y-1.5">
-                <Label htmlFor="issue-desc" className="text-xs font-semibold flex items-center gap-1.5">
-                  <FileTextIcon className="w-3.5 h-3.5 text-primary" />
-                  Mô tả chi tiết task
+                <Label htmlFor="issue-desc" className="text-xs font-semibold flex items-center justify-between">
+                  <span className="flex items-center gap-1.5">
+                    <FileTextIcon className="w-3.5 h-3.5 text-primary" />
+                    Mô tả chi tiết task
+                  </span>
+                  <span className="text-[10px] font-normal text-muted-foreground">(Tùy chọn)</span>
                 </Label>
                 <Textarea
                   id="issue-desc"
@@ -621,93 +661,118 @@ export function IssueDetailsModal({
               </div>
             </div>
 
-            <div
-              className={`grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 rounded-2xl bg-muted/20 border border-border/60 ${isEditing ? "md:grid-cols-4" : ""
-                }`}
-            >
-              <h4
-                className={`text-xs font-bold uppercase tracking-wider text-muted-foreground pb-1 border-b border-border/40 ${isEditing ? "sm:col-span-2 md:col-span-4" : "sm:col-span-2"
-                  }`}
-              >
-                Thuộc tính Task
-              </h4>
-
-              <div className="space-y-1.5">
-                <Label htmlFor="issue-status" className="text-xs font-semibold">
-                  Trạng thái (Status)
-                </Label>
-                <CustomSelect
-                  id="issue-status"
-                  disabled={!canEdit}
-                  value={form.status}
-                  onChange={(val) => setForm((f) => ({ ...f, status: val as IssueStatus }))}
-                  options={[
-                    { value: "TODO", label: "TO DO (Cần làm)" },
-                    { value: "IN_PROGRESS", label: "IN PROGRESS (Đang làm)" },
-                    { value: "IN_REVIEW", label: "IN REVIEW (Đang kiểm thử)" },
-                    { value: "DONE", label: "DONE (Hoàn thành)" },
-                  ]}
-                />
+            <div className="p-4 sm:p-5 rounded-2xl bg-muted/20 border border-border/60 space-y-4">
+              <div className="pb-2 border-b border-border/40">
+                <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                  Thuộc tính Task
+                </h4>
               </div>
 
-              <div className="space-y-1.5">
-                <Label htmlFor="issue-assignee" className="text-xs font-semibold">
-                  Người thực hiện (Assignee)
-                </Label>
-                <CustomSelect
-                  id="issue-assignee"
-                  disabled={!canEdit}
-                  value={form.assigneeAccountId}
-                  onChange={(val) => {
-                    const matchedUser = taskOptions?.assignableUsers?.find((u) => u.accountId === val);
-                    const matchedMember = matchedUser
-                      ? matchJiraUserWithMember(matchedUser.displayName, teamMembers)
-                      : teamMembers.find((m) => m.id === val);
-                    setForm((f) => ({
-                      ...f,
-                      assigneeAccountId: val,
-                      assignee: matchedMember || (matchedUser ? {
-                        id: matchedUser.accountId,
-                        name: matchedUser.displayName,
-                        avatar: "",
-                        studentCode: "",
-                        accountId: matchedUser.accountId,
-                      } : f.assignee),
-                    }));
-                  }}
-                  placeholder="Chọn người thực hiện..."
-                  options={assigneeOptions}
-                />
-              </div>
-
-              <div className={`space-y-1.5 sm:col-span-2 ${isEditing ? "md:col-span-2" : ""}`}>
-                <Label htmlFor="issue-sprint" className="text-xs font-semibold">
-                  Sprint thuộc về
-                </Label>
-                <CustomSelect
-                  id="issue-sprint"
-                  disabled={!canEdit}
-                  value={form.sprintId}
-                  onChange={(val) => setForm((f) => ({ ...f, sprintId: val }))}
-                  options={[
-                    {
-                      value: "backlog",
-                      label: "Backlog (Chưa gán vào Sprint)",
-                      subLabel: "Product Backlog",
-                    },
-                    ...sprints.map((s) => ({
-                      value: s.id,
-                      label: s.name,
-                      subLabel: `Trạng thái: ${s.status}`,
-                    })),
-                  ]}
-                />
-              </div>
-
-              <div className={`grid grid-cols-2 gap-3 sm:col-span-2 ${isEditing ? "md:col-span-2" : ""}`}>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <Label htmlFor="issue-sp" className="text-xs font-semibold">
-                    Story Points
+                  <Label htmlFor="issue-type" className="text-xs font-semibold flex items-center gap-1.5 text-foreground">
+                    <span>Loại thẻ</span>
+                    <span className="text-[11px] font-normal text-muted-foreground">(Tùy chọn)</span>
+                  </Label>
+                  <CustomSelect
+                    id="issue-type"
+                    disabled={!canEdit}
+                    value={
+                      issueTypeOptions.find((option) => option.value === form.issueTypeId)?.value ||
+                      issueTypeOptions.find((option) => option.type === form.type)?.value ||
+                      form.type
+                    }
+                    onChange={(value) => {
+                      const selected = issueTypeOptions.find((option) => option.value === value);
+                      if (!selected) return;
+                      setForm((current) => ({
+                        ...current,
+                        type: selected.type,
+                        issueTypeId: selected.issueTypeId,
+                      }));
+                    }}
+                    options={issueTypeOptions}
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label htmlFor="issue-status" className="text-xs font-semibold text-foreground">
+                    Trạng thái
+                  </Label>
+                  <CustomSelect
+                    id="issue-status"
+                    disabled={!canEdit}
+                    value={form.status}
+                    onChange={(val) => setForm((f) => ({ ...f, status: val as IssueStatus }))}
+                    options={[
+                      { value: "TODO", label: "TO DO (Cần làm)" },
+                      { value: "IN_PROGRESS", label: "IN PROGRESS (Đang làm)" },
+                      { value: "IN_REVIEW", label: "IN REVIEW (Đang kiểm thử)" },
+                      { value: "DONE", label: "DONE (Hoàn thành)" },
+                    ]}
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label htmlFor="issue-assignee" className="text-xs font-semibold flex items-center gap-1.5 text-foreground">
+                    <span>Người thực hiện</span>
+                    <span className="text-[11px] font-normal text-muted-foreground">(Tùy chọn)</span>
+                  </Label>
+                  <CustomSelect
+                    id="issue-assignee"
+                    disabled={!canEdit}
+                    value={form.assigneeAccountId}
+                    onChange={(val) => {
+                      const matchedUser = taskOptions?.assignableUsers?.find((u) => u.accountId === val);
+                      const matchedMember = matchedUser
+                        ? matchJiraUserWithMember(matchedUser.displayName, teamMembers)
+                        : teamMembers.find((m) => m.id === val);
+                      setForm((f) => ({
+                        ...f,
+                        assigneeAccountId: val,
+                        assignee: matchedMember || (matchedUser ? {
+                          id: matchedUser.accountId,
+                          name: matchedUser.displayName,
+                          avatar: "",
+                          studentCode: "",
+                          accountId: matchedUser.accountId,
+                        } : f.assignee),
+                      }));
+                    }}
+                    placeholder="Chọn người thực hiện..."
+                    options={assigneeOptions}
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label htmlFor="issue-sprint" className="text-xs font-semibold flex items-center gap-1.5 text-foreground">
+                    <span>Sprint</span>
+                    <span className="text-[11px] font-normal text-muted-foreground">(Tùy chọn)</span>
+                  </Label>
+                  <CustomSelect
+                    id="issue-sprint"
+                    disabled={!canEdit}
+                    value={form.sprintId}
+                    onChange={(val) => setForm((f) => ({ ...f, sprintId: val }))}
+                    options={[
+                      {
+                        value: "backlog",
+                        label: "Backlog (Chưa gán vào Sprint)",
+                        subLabel: "Product Backlog",
+                      },
+                      ...sprints.map((s) => ({
+                        value: s.id,
+                        label: s.name,
+                        subLabel: `Trạng thái: ${s.status}`,
+                      })),
+                    ]}
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label htmlFor="issue-sp" className="text-xs font-semibold flex items-center gap-1.5 text-foreground">
+                    <span>Story Points</span>
+                    <span className="text-[11px] font-normal text-muted-foreground">(Tùy chọn)</span>
                   </Label>
                   <Input
                     id="issue-sp"
@@ -717,13 +782,14 @@ export function IssueDetailsModal({
                     disabled={!canEdit}
                     value={form.storyPoints}
                     onChange={(e) => setForm((f) => ({ ...f, storyPoints: Number(e.target.value) }))}
-                    className="h-9 text-xs rounded-xl bg-card font-mono disabled:opacity-80"
+                    className="h-9 text-xs rounded-xl bg-card font-mono disabled:opacity-80 border-border/80"
                   />
                 </div>
 
                 <div className="space-y-1.5">
-                  <Label htmlFor="issue-priority" className="text-xs font-semibold">
-                    Mức ưu tiên
+                  <Label htmlFor="issue-priority" className="text-xs font-semibold flex items-center gap-1.5 text-foreground">
+                    <span>Mức ưu tiên</span>
+                    <span className="text-[11px] font-normal text-muted-foreground">(Tùy chọn)</span>
                   </Label>
                   <CustomSelect
                     id="issue-priority"
@@ -738,46 +804,54 @@ export function IssueDetailsModal({
                     ]}
                   />
                 </div>
-              </div>
 
-              <div className="space-y-1.5">
-                <Label htmlFor="issue-type" className="text-xs font-semibold">
-                  Loại thẻ (Issue Type)
-                </Label>
-                <CustomSelect
-                  id="issue-type"
-                  disabled={!canEdit}
-                  value={
-                    issueTypeOptions.find((option) => option.value === form.issueTypeId)?.value ||
-                    issueTypeOptions.find((option) => option.type === form.type)?.value ||
-                    form.type
-                  }
-                  onChange={(value) => {
-                    const selected = issueTypeOptions.find((option) => option.value === value);
-                    if (!selected) return;
-                    setForm((current) => ({
-                      ...current,
-                      type: selected.type,
-                      issueTypeId: selected.issueTypeId,
-                    }));
-                  }}
-                  options={issueTypeOptions}
-                />
-              </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="issue-start-date" className="text-xs font-semibold flex items-center gap-1.5 text-foreground">
+                    <CalendarIcon className="w-3.5 h-3.5 text-muted-foreground" />
+                    <span>Ngày bắt đầu</span>
+                    <span className="text-[11px] font-normal text-muted-foreground">(Tùy chọn)</span>
+                  </Label>
+                  <Input
+                    id="issue-start-date"
+                    type="date"
+                    disabled={!canEdit}
+                    value={form.startDate}
+                    onChange={(e) => setForm((f) => ({ ...f, startDate: e.target.value }))}
+                    className="h-9 text-xs rounded-xl bg-card font-mono disabled:opacity-80 border-border/80"
+                  />
+                </div>
 
-              <div className="space-y-1.5 sm:col-span-2 md:col-span-4">
-                <Label htmlFor="issue-labels" className="text-xs font-semibold flex items-center gap-1.5">
-                  <TagIcon className="w-3.5 h-3.5 text-blue-500" />
-                  Labels (Nhãn phân loại)
-                </Label>
-                <LabelsMultiSelect
-                  id="issue-labels"
-                  disabled={!canEdit}
-                  value={form.labels}
-                  onChange={(newLabels) => setForm((f) => ({ ...f, labels: newLabels }))}
-                  availableLabels={availableLabels}
-                  placeholder="Chọn hoặc gõ nhãn mới (nhấn Enter hoặc dấu phẩy)..."
-                />
+                <div className="space-y-1.5">
+                  <Label htmlFor="issue-due-date" className="text-xs font-semibold flex items-center gap-1.5 text-foreground">
+                    <CalendarIcon className="w-3.5 h-3.5 text-muted-foreground" />
+                    <span>Hạn hoàn thành</span>
+                    <span className="text-[11px] font-normal text-muted-foreground">(Tùy chọn)</span>
+                  </Label>
+                  <Input
+                    id="issue-due-date"
+                    type="date"
+                    disabled={!canEdit}
+                    value={form.dueDate}
+                    onChange={(e) => setForm((f) => ({ ...f, dueDate: e.target.value }))}
+                    className="h-9 text-xs rounded-xl bg-card font-mono disabled:opacity-80 border-border/80"
+                  />
+                </div>
+
+                <div className="space-y-1.5 sm:col-span-2">
+                  <Label htmlFor="issue-labels" className="text-xs font-semibold flex items-center gap-1.5 text-foreground">
+                    <TagIcon className="w-3.5 h-3.5 text-blue-500" />
+                    <span>Labels (Nhãn phân loại)</span>
+                    <span className="text-[11px] font-normal text-muted-foreground">(Tùy chọn)</span>
+                  </Label>
+                  <LabelsMultiSelect
+                    id="issue-labels"
+                    disabled={!canEdit}
+                    value={form.labels}
+                    onChange={(newLabels) => setForm((f) => ({ ...f, labels: newLabels }))}
+                    availableLabels={availableLabels}
+                    placeholder="Chọn hoặc gõ nhãn mới (nhấn Enter hoặc dấu phẩy)..."
+                  />
+                </div>
               </div>
             </div>
           </div>
@@ -812,7 +886,6 @@ export function IssueDetailsModal({
               <TabsContent value="documents">
                 <TaskEvidencePanel
                   taskId={issue.id}
-                  projectId={projectId}
                   section="documents"
                   isOwnerOrLeader={canEdit}
                 />
@@ -821,12 +894,9 @@ export function IssueDetailsModal({
               <TabsContent value="contribution">
                 <TaskEvidencePanel
                   taskId={issue.id}
-                  projectId={projectId}
-                  taskKey={issue.key}
                   section="contribution"
                   isOwnerOrLeader={canEdit}
                   externalCommitShas={selectedCommitShas}
-                  onConfirmCommitsChange={setSelectedCommitShas}
                 />
               </TabsContent>
             </Tabs>
@@ -864,7 +934,7 @@ export function IssueDetailsModal({
               <Button
                 type="button"
                 onClick={() => void handleSubmit()}
-                disabled={isSubmitting}
+                disabled={isSubmitting || (!isEditing && !form.summary.trim())}
                 className="h-9 text-xs font-bold rounded-xl gap-2 cursor-pointer shadow-xs bg-blue-600 hover:bg-blue-700 text-white px-5"
               >
                 {isSubmitting ? (
@@ -875,7 +945,7 @@ export function IssueDetailsModal({
                 ) : (
                   <>
                     <SaveIcon className="w-4 h-4" />
-                    {isEditing ? "Lưu thay đổi" : "Tạo task mới"}
+                    {isEditing ? "Lưu thay đổi" : "Tạo task"}
                   </>
                 )}
               </Button>

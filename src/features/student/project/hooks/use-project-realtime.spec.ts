@@ -290,6 +290,13 @@ describe("useProjectRealtime Hook", () => {
       expect(invalidateSpy).toHaveBeenCalledWith({
         queryKey: ["projects", "project-111", "commits"],
       });
+      expect(invalidateSpy).toHaveBeenCalledWith({
+        queryKey: [
+          ...PROJECT_PROJECTION_QUERY_KEYS.all,
+          "task-commit-links",
+          "project-111",
+        ],
+      });
 
       act(() => {
         es.emitEvent("TASK_EVIDENCE_CHANGED", {
@@ -299,6 +306,9 @@ describe("useProjectRealtime Hook", () => {
         });
       });
 
+      expect(invalidateSpy).toHaveBeenCalledWith({
+        queryKey: TASK_EVIDENCE_QUERY_KEYS.workSessions("task-111"),
+      });
       expect(invalidateSpy).toHaveBeenCalledWith({
         queryKey: TASK_EVIDENCE_QUERY_KEYS.webLinks("task-111"),
       });

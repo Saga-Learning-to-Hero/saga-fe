@@ -1,6 +1,7 @@
 import { apiClient } from "@/lib/axios";
 import type {
   TaskWorkSessionResponse,
+  TaskWorkSessionsResponse,
   TaskWebLinkItem,
   CreateTaskWebLinkPayload,
   TaskFileItem,
@@ -9,6 +10,18 @@ import type {
 } from "../types/task-evidence";
 
 export class TaskEvidenceService {
+  static async getWorkSessions(taskId: string): Promise<TaskWorkSessionsResponse> {
+    const cleanTaskId = taskId ? taskId.trim() : "";
+    if (!cleanTaskId) {
+      throw new Error("taskId is required");
+    }
+
+    const response = await apiClient.get<TaskWorkSessionsResponse>(
+      `/api/tasks/${encodeURIComponent(cleanTaskId)}/work-sessions`
+    );
+    return response.data;
+  }
+
   static async startWorkSession(taskId: string): Promise<TaskWorkSessionResponse> {
     const cleanTaskId = taskId ? taskId.trim() : "";
     if (!cleanTaskId) {

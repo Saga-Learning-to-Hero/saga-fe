@@ -27,6 +27,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { getAssigneeAvatarClass, getAssigneeInitials } from "../lib/assignee-avatar";
+import { QuickCreateTask } from "./quick-create-task";
+import { TaskDueDate } from "./task-due-date";
 
 interface SprintBacklogViewProps {
   sprints: Sprint[];
@@ -41,6 +43,8 @@ interface SprintBacklogViewProps {
   updatingSprintId?: string | null;
   isTeamLeader: boolean;
   currentUserStudentCode: string;
+  courseId: string;
+  projectId?: string | null;
 }
 
 export function SprintBacklogView({
@@ -56,6 +60,8 @@ export function SprintBacklogView({
   updatingSprintId,
   isTeamLeader,
   currentUserStudentCode,
+  courseId,
+  projectId,
 }: SprintBacklogViewProps) {
   const [collapsedSprints, setCollapsedSprints] = useState<Record<string, boolean>>({});
   const [expandedSubtaskParents, setExpandedSubtaskParents] = useState<Record<string, boolean>>({});
@@ -216,6 +222,8 @@ export function SprintBacklogView({
             {issue.status}
           </Badge>
 
+          <TaskDueDate dueDate={issue.dueDate} status={issue.status} />
+
           {issue.githubCommitCount && issue.githubCommitCount > 0 ? (
             <span
               title={`Có ${issue.githubCommitCount} commit liên kết`}
@@ -235,7 +243,7 @@ export function SprintBacklogView({
           ) : null}
 
           <Link
-            href={`/student/graph?taskId=${issue.key}`}
+            href={`/student/graph?courseId=${encodeURIComponent(courseId)}&taskId=${encodeURIComponent(issue.key)}`}
             onClick={(e) => e.stopPropagation()}
             title="Xem minh chứng trên Đồ thị Neo4j"
             className="text-muted-foreground/60 hover:text-primary transition-colors p-0.5 rounded"
@@ -468,6 +476,7 @@ export function SprintBacklogView({
                         variant="outline"
                         size="sm"
                         onClick={() => onCreateIssueClick(sprint.id)}
+                        title="Tạo với đầy đủ thông tin"
                         className="h-7.5 text-xs font-semibold rounded-xl gap-1 cursor-pointer hover:bg-primary/10 hover:text-primary hover:border-primary/40 px-2.5"
                       >
                         <PlusIcon className="w-3 h-3" />
@@ -525,6 +534,15 @@ export function SprintBacklogView({
                       {sprintHierarchy.orphanSubtasks.map((subtask) => renderTaskItem(subtask, true))}
                     </div>
                   )}
+
+                  <QuickCreateTask
+                    projectId={projectId}
+                    sprintId={sprint.id}
+                    sprintExternalId={sprint.externalSprintId != null ? String(sprint.externalSprintId) : undefined}
+                    sprintName={sprint.name}
+                    canCreate={isTeamLeader}
+                    onOpenFullModal={() => onCreateIssueClick(sprint.id)}
+                  />
                 </div>
               )}
             </div>
@@ -586,6 +604,7 @@ export function SprintBacklogView({
                 variant="outline"
                 size="sm"
                 onClick={() => onCreateIssueClick("backlog")}
+                title="Tạo với đầy đủ thông tin"
                 className="h-7.5 text-xs font-semibold rounded-xl gap-1 cursor-pointer hover:bg-primary/10 hover:text-primary hover:border-primary/40 px-2.5"
               >
                 <PlusIcon className="w-3 h-3" />
@@ -632,6 +651,14 @@ export function SprintBacklogView({
                 {productBacklogHierarchy.orphanSubtasks.map((subtask) => renderTaskItem(subtask, true))}
               </div>
             )}
+
+            <QuickCreateTask
+              projectId={projectId}
+              sprintId="backlog"
+              sprintName="Backlog"
+              canCreate={isTeamLeader}
+              onOpenFullModal={() => onCreateIssueClick("backlog")}
+            />
           </div>
         )}
       </div>

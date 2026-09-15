@@ -284,4 +284,53 @@ describe("ProjectTaskService", () => {
       );
     }
   );
+
+  fptTest(
+    {
+      id: "UTCID13",
+      type: "N",
+      executedDate: "15/09/2026",
+      description: "Create Task giu nguyen startDate va dueDate ISO date trong payload",
+    },
+    async () => {
+      const postSpy = vi.spyOn(apiClient, "post").mockResolvedValueOnce({ data: mockTask });
+
+      await ProjectTaskService.createTask(mockProjectId, {
+        summary: "Task có kế hoạch ngày",
+        startDate: "2026-09-15",
+        dueDate: "2026-09-22",
+      });
+
+      expect(postSpy).toHaveBeenCalledWith(`/api/projects/${mockProjectId}/tasks`, {
+        summary: "Task có kế hoạch ngày",
+        startDate: "2026-09-15",
+        dueDate: "2026-09-22",
+      });
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID14",
+      type: "N",
+      executedDate: "15/09/2026",
+      description: "Patch mot ngay va clear ngay con lai ma khong gui gia tri suy doan",
+    },
+    async () => {
+      const patchSpy = vi.spyOn(apiClient, "patch").mockResolvedValueOnce({ data: mockTask });
+
+      await ProjectTaskService.patchTask(mockProjectId, mockTaskId, {
+        startDate: "2026-09-16",
+        clearDueDate: true,
+      });
+
+      expect(patchSpy).toHaveBeenCalledWith(
+        `/api/projects/${mockProjectId}/tasks/${mockTaskId}`,
+        {
+          startDate: "2026-09-16",
+          clearDueDate: true,
+        }
+      );
+    }
+  );
 });

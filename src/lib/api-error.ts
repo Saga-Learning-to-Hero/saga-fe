@@ -65,6 +65,24 @@ export function isUnauthorizedError(error: unknown): boolean {
   return getApiErrorStatus(error) === 401;
 }
 
+export function isStepUpRequiredError(error: unknown): boolean {
+  const code = getApiErrorCode(error);
+  if (code === "STEP_UP_REQUIRED") {
+    return true;
+  }
+  const status = getApiErrorStatus(error);
+  if (status === 403 && code === "STEP_UP_REQUIRED") {
+    return true;
+  }
+  if (error && typeof error === "object") {
+    const anyErr = error as { code?: string; status?: number; data?: { code?: string } };
+    if (anyErr.code === "STEP_UP_REQUIRED" || anyErr.data?.code === "STEP_UP_REQUIRED") {
+      return true;
+    }
+  }
+  return false;
+}
+
 export function requireCourseId(courseId: string): string {
   if (!courseId || !courseId.trim()) {
     throw new Error("Throw ValidationException: Course ID is required");

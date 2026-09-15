@@ -17,6 +17,7 @@ import { TraceabilityMatrixTable } from "./traceability-matrix-table";
 import { PipelineEmptyState } from "./pipeline-empty-state";
 import { PipelineFlowView } from "./pipeline-flow-view";
 import { PipelineMatrixTable } from "./pipeline-matrix-table";
+import { PipelineRepositoryFilters } from "./pipeline-repository-filters";
 import { PipelineStatsBar } from "./pipeline-stats-bar";
 import { PipelineTaskInspector } from "./pipeline-task-inspector";
 import { getMockTraceabilityGraphData, MOCK_GRAPH_STUDENTS } from "../data/mock-graph-data";
@@ -51,6 +52,8 @@ export function TraceabilityGraphView() {
     studentId: "ALL",
     sprintId: "ALL",
     anomaliesOnly: false,
+    repoId: "ALL",
+    branchName: "ALL",
   });
   const [viewMode, setViewMode] = useState<"FLOW" | "GRAPH">("GRAPH");
   const [pipelineSubView, setPipelineSubView] = useState<"FLOW" | "MATRIX">("FLOW");
@@ -309,6 +312,13 @@ export function TraceabilityGraphView() {
             onRetry={() => void pipeline.refetchCommits()}
           />
         ) : null}
+        {pipeline.isTaskCommitsError ? (
+          <PipelineEmptyState
+            title="Không tải được liên kết Task–Commit"
+            description={pipeline.taskCommitsErrorMessage || "Vui lòng thử tải lại dữ liệu đối soát."}
+            onRetry={() => void pipeline.refetchTaskCommits()}
+          />
+        ) : null}
         <PipelineStatsBar stats={pipeline.stats} isLoadingCommits={pipeline.isLoadingCommits} />
 
         <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border/80 bg-card p-2 shadow-2xs">
@@ -452,7 +462,13 @@ export function TraceabilityGraphView() {
           onExport={handleExport}
           onReset={() => {
             if (pipelineOpen) {
-              setPipelineFilter({ studentId: "ALL", sprintId: "ALL", anomaliesOnly: false });
+              setPipelineFilter({
+                studentId: "ALL",
+                sprintId: "ALL",
+                anomaliesOnly: false,
+                repoId: "ALL",
+                branchName: "ALL",
+              });
               return;
             }
             setNeo4jStudentId("ALL");
@@ -467,6 +483,69 @@ export function TraceabilityGraphView() {
           sprintOptions={pipelineOpen ? pipelineSprintOptions : NEO4J_SPRINT_OPTIONS}
           viewMode={viewMode}
           onSelectViewMode={setViewMode}
+          extraActiveFilters={
+            pipelineOpen
+              ? [
+                  pipeline.sanitizedFilter.repoId !== "ALL"
+                    ? {
+                        key: "repository",
+                        label: `Repository: ${
+                          pipeline.repositories.find(
+                            (repository) => repository.id === pipeline.sanitizedFilter.repoId
+                          )?.fullName || pipeline.sanitizedFilter.repoId
+                        }`,
+                        onClear: () => {
+                          setSelectedTaskId(null);
+                          setPipelineFilter((current) => ({
+                            ...current,
+                            repoId: "ALL",
+                            branchName: "ALL",
+                          }));
+                        },
+                      }
+                    : null,
+                  pipeline.sanitizedFilter.branchName !== "ALL"
+                    ? {
+                        key: "branch",
+                        label: `Branch: ${pipeline.sanitizedFilter.branchName}`,
+                        onClear: () => {
+                          setSelectedTaskId(null);
+                          setPipelineFilter((current) => ({ ...current, branchName: "ALL" }));
+                        },
+                      }
+                    : null,
+                ].filter(
+                  (filter): filter is { key: string; label: string; onClear: () => void } =>
+                    filter !== null
+                )
+              : []
+          }
+          extraCollapsibleContent={
+            pipelineOpen ? (
+              <PipelineRepositoryFilters
+                embedded
+                idPrefix="student-pipeline"
+                repositories={pipeline.repositories}
+                branches={pipeline.branches}
+                selectedRepoId={pipeline.sanitizedFilter.repoId || "ALL"}
+                selectedBranchName={pipeline.sanitizedFilter.branchName || "ALL"}
+                onSelectRepository={(repoId) => {
+                  setSelectedTaskId(null);
+                  setPipelineFilter((current) => ({
+                    ...current,
+                    repoId,
+                    branchName: "ALL",
+                  }));
+                }}
+                onSelectBranch={(branchName) => {
+                  setSelectedTaskId(null);
+                  setPipelineFilter((current) => ({ ...current, branchName }));
+                }}
+                isLoadingBranches={pipeline.isLoadingBranches}
+                canonicalFilter={pipeline.taskCommitLinksFilter}
+              />
+            ) : null
+          }
         />
 
         {pipelineOpen ? (

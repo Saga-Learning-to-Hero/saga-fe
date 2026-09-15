@@ -63,6 +63,9 @@ export function useProjectRealtime(
         void queryClient.invalidateQueries({
           queryKey: [...PROJECT_PROJECTION_QUERY_KEYS.all, "task-commits", pid],
         });
+        void queryClient.invalidateQueries({
+          queryKey: [...PROJECT_PROJECTION_QUERY_KEYS.all, "task-commit-links", pid],
+        });
       };
       const invalidateSyncStatus = () => {
         void queryClient.invalidateQueries({ queryKey: ["projects", pid, "sync-status"] });
@@ -116,6 +119,7 @@ export function useProjectRealtime(
           invalidateProgress();
           invalidateMemberProgress();
           if (entityId) {
+            void queryClient.invalidateQueries({ queryKey: TASK_EVIDENCE_QUERY_KEYS.workSessions(entityId) });
             void queryClient.invalidateQueries({ queryKey: TASK_EVIDENCE_QUERY_KEYS.webLinks(entityId) });
             void queryClient.invalidateQueries({ queryKey: TASK_EVIDENCE_QUERY_KEYS.files(entityId) });
           } else {

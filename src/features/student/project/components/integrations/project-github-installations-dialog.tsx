@@ -61,7 +61,9 @@ export function ProjectGitHubInstallationsDialog({
     }
     try {
       toast.loading("Đang khởi tạo liên kết GitHub với tài khoản đã chọn...", { id: "github-select-connect" });
-      const returnPath = typeof window !== "undefined" ? window.location.pathname : "/student/project-info";
+      const returnPath = typeof window !== "undefined"
+        ? `${window.location.pathname}${window.location.search}`
+        : "/student/project-info";
       const res = await connectMutation.mutateAsync({ projectId, installationId: selectedId, returnPath });
 
       if (res?.authorizationUrl && typeof window !== "undefined") {
@@ -79,7 +81,9 @@ export function ProjectGitHubInstallationsDialog({
   const handleInstallNew = async () => {
     try {
       toast.loading("Đang chuyển hướng sang GitHub App để cài đặt mới...", { id: "github-install-new" });
-      const returnPath = typeof window !== "undefined" ? window.location.pathname : "/student/project-info";
+      const returnPath = typeof window !== "undefined"
+        ? `${window.location.pathname}${window.location.search}`
+        : "/student/project-info";
       const res = await connectMutation.mutateAsync({ projectId, mode: "install_new", returnPath });
 
       if (res?.authorizationUrl && typeof window !== "undefined") {

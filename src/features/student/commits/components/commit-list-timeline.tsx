@@ -19,12 +19,14 @@ interface CommitListTimelineProps {
   commits: CommitItem[];
   selectedRepoName: string;
   selectedBranchName: string;
+  courseId: string;
 }
 
 export function CommitListTimeline({
   commits,
   selectedRepoName,
   selectedBranchName,
+  courseId,
 }: CommitListTimelineProps) {
   const [copiedHash, setCopiedHash] = useState<string | null>(null);
 
@@ -206,7 +208,7 @@ export function CommitListTimeline({
                       </button>
 
                       <Link
-                        href={`/student/graph?commitHash=${commit.hash}`}
+                        href={`/student/graph?courseId=${encodeURIComponent(courseId)}&commitHash=${encodeURIComponent(commit.hash)}`}
                         title="Xem nhánh minh chứng trên Đồ thị Neo4j"
                         className="p-1.5 rounded-xl border border-border/60 bg-muted/40 hover:bg-muted text-muted-foreground hover:text-primary transition-all shadow-2xs"
                       >

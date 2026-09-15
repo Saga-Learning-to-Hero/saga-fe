@@ -20,7 +20,7 @@ vi.mock("@/features/lecturer/teams/hooks/use-lecturer-teams", () => ({
 vi.mock("@/features/student/project/hooks/useProjectSync", () => ({
   useProjectProgress: (...args: unknown[]) => progressMock(...args),
   useProjectCommits: (...args: unknown[]) => commitsMock(...args),
-  useTaskCommits: (...args: unknown[]) => taskCommitsMock(...args),
+  useProjectTaskCommitLinks: (...args: unknown[]) => taskCommitsMock(...args),
   useProjectRepositoryBranches: (...args: unknown[]) => branchesMock(...args),
 }));
 
@@ -199,7 +199,16 @@ describe("LecturerGraphView", () => {
     progressMock.mockReturnValue(idleQuery({ isSuccess: true, data: mockProgressData }));
     tasksMock.mockReturnValue(idleQuery({ isSuccess: true, data: mockTasksData }));
     commitsMock.mockReturnValue(idleQuery({ isSuccess: true, data: [] }));
-    taskCommitsMock.mockReturnValue(idleQuery({ isSuccess: true, data: [] }));
+    taskCommitsMock.mockReturnValue(
+      idleQuery({
+        isSuccess: true,
+        data: {
+          filter: { branchResolution: "REACHABLE_AT_SYNC" },
+          links: [],
+          total: 0,
+        },
+      })
+    );
     branchesMock.mockReturnValue(idleQuery({ isSuccess: true, data: { branches: [] } }));
     realtimeMock.mockReturnValue({ status: "OPEN" });
     integrationsMock.mockReturnValue(idleQuery({ isSuccess: true, data: { jira: { status: "ACTIVE" }, github: { status: "ACTIVE" } } }));
@@ -246,24 +255,31 @@ describe("LecturerGraphView", () => {
       id: "UTCID03",
       type: "N",
       executedDate: "14/09/2026",
-      description: "Click task se cap nhat Task Inspector va lazy-load linked commits",
+      description: "Click task cap nhat Inspector tu batch canonical, khong tao N+1",
     },
     () => {
       taskCommitsMock.mockReturnValue(
         idleQuery({
           isSuccess: true,
-          data: [
-            {
-              id: "c1",
-              repoId: "r1",
-              repositoryFullName: "org/repo",
-              sha: "abcdef1234567890",
-              message: "feat: [SAGA-101] implement schema",
-              authorStudentId: "SE1701",
-              committedAt: "2026-09-14T08:00:00Z",
-              createdAt: "2026-09-14T08:00:00Z",
-            },
-          ],
+          data: {
+            filter: { branchResolution: "REACHABLE_AT_SYNC" },
+            links: [
+              {
+                taskId: "task-101",
+                taskKey: "SAGA-101",
+                commitId: "c1",
+                repoId: "r1",
+                repositoryFullName: "org/repo",
+                sha: "abcdef1234567890",
+                message: "feat: [SAGA-101] implement schema",
+                headRef: "main",
+                branchNames: ["main"],
+                linkedAt: "2026-09-14T08:00:00Z",
+                linkSource: "COMMIT_MESSAGE",
+              },
+            ],
+            total: 1,
+          },
         })
       );
 
@@ -283,7 +299,12 @@ describe("LecturerGraphView", () => {
       description: "Task khong co linked commit hien thi thong bao ro rang",
     },
     () => {
-      taskCommitsMock.mockReturnValue(idleQuery({ isSuccess: true, data: [] }));
+      taskCommitsMock.mockReturnValue(
+        idleQuery({
+          isSuccess: true,
+          data: { filter: { branchResolution: "REACHABLE_AT_SYNC" }, links: [], total: 0 },
+        })
+      );
 
       renderView({ courseId: "course-123", initialTeamId: "team-with-project" });
       const taskCard = screen.getByText("SAGA-102");
@@ -357,7 +378,7 @@ describe("LecturerGraphView", () => {
       id: "UTCID08",
       type: "B",
       executedDate: "14/09/2026",
-      description: "Branch filter chi hien thi khi co repository va danh sach branch hop le",
+      description: "Repository va Branch filter hien thi dong nhat theo contract canonical",
     },
     () => {
       branchesMock.mockReturnValue(
@@ -382,7 +403,8 @@ describe("LecturerGraphView", () => {
       );
 
       renderView({ courseId: "course-123", initialTeamId: "team-with-project" });
-      expect(screen.getByText(/Lọc theo branch quan sát từ commit/i)).toBeTruthy();
+      expect(screen.getByText("Repository")).toBeTruthy();
+      expect(screen.getByText("Branch")).toBeTruthy();
     }
   );
 });

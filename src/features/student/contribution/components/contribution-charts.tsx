@@ -114,13 +114,13 @@ export function ContributionCharts({ members }: ContributionChartsProps) {
                   </span>
                 </div>
                 <p className="text-[10px] text-muted-foreground">
-                  Thành viên có tỷ trọng cổ phần cao nhất
+                  Thành viên có tỷ lệ đóng góp cao nhất
                 </p>
               </div>
 
               <div className="rounded-xl border border-border/60 bg-muted/20 p-3 space-y-1">
                 <span className="text-[11px] text-muted-foreground font-medium block">
-                  Ghi nhận công sức
+                  Ghi nhận đóng góp
                 </span>
                 <span className="font-mono text-xl font-black text-foreground">
                   {activeMembersCount} / {members.length} thành viên
@@ -295,7 +295,7 @@ export function ContributionCharts({ members }: ContributionChartsProps) {
 
               <div className="rounded-xl border border-border/60 bg-muted/20 p-3 space-y-1">
                 <span className="text-[11px] text-muted-foreground font-medium block">
-                  Hệ số Đánh giá đồng đẳng
+                  Hệ số Đánh giá chéo
                 </span>
                 <span className="font-mono text-xl font-black text-foreground">
                   {hasAdjustment ? "Đã áp dụng" : "1.00 ×"}
@@ -353,7 +353,7 @@ export function ContributionCharts({ members }: ContributionChartsProps) {
               <InfoIcon className="size-4 text-primary shrink-0 mt-0.5" />
               <p className="text-[11px] leading-relaxed">
                 {hasAdjustment
-                  ? "Tỷ lệ cuối cùng đã được nhân với hệ số đánh giá chéo đồng đẳng (Peer Review Multiplier) của từng thành viên và chuẩn hóa lại theo tổng công sức."
+                  ? "Tỷ lệ cuối cùng đã được nhân với hệ số đánh giá chéo (Peer Review Multiplier) của từng thành viên và chuẩn hóa lại theo tổng công sức."
                   : "Chưa có điều chỉnh peer review được áp dụng. Tỷ lệ hiện tại đang được tính trực tiếp từ tỷ trọng Slice score của từng cá nhân."}
               </p>
             </div>

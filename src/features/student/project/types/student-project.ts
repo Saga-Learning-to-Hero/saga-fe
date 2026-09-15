@@ -225,6 +225,8 @@ export interface ProjectTaskItem {
   priority?: string | null;
   jiraStatusName?: string | null;
   labels?: string[];
+  dueDate?: string | null;
+  startDate?: string | null;
   linkedCommitCount: number;
   externalUpdatedAt: string | null;
   createdAt: string;
@@ -370,4 +372,42 @@ export interface ProjectGitBranchListResponse {
   repositoryFullName: string;
   branchCount: number;
   branches: ProjectGitBranchItem[];
+}
+
+export interface ProjectTaskCommitLinkFilter {
+  repoId: string | null;
+  repositoryId: number | null;
+  repositoryFullName: string | null;
+  branchName: string | null;
+  branchResolution: "REACHABLE_AT_SYNC" | string;
+  resolvedAt: string | null;
+}
+
+export interface ProjectTaskCommitLinkItem {
+  taskId: string;
+  taskKey: string;
+  commitId: string;
+  sha: string;
+  message: string;
+  repoId: string | null;
+  repositoryId: number | null;
+  repositoryFullName: string | null;
+  headRef: string | null;
+  branchNames: string[];
+  linkedAt: string;
+  linkSource: string | null;
+}
+
+export interface ProjectTaskCommitLinksResponse {
+  projectId: string;
+  filter: ProjectTaskCommitLinkFilter;
+  links: ProjectTaskCommitLinkItem[];
+  page: number;
+  size: number;
+  total: number;
+}
+
+export interface ProjectTaskCommitLinkQuery {
+  repoId?: string | null;
+  branchName?: string | null;
 }

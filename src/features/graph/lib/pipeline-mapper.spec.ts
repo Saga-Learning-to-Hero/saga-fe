@@ -378,4 +378,45 @@ describe("pipeline-mapper", () => {
       expect(fromProgress[0].studentId).toBe("uuid-1");
     }
   );
+
+  fptTest(
+    {
+      id: "UTCID14",
+      type: "N",
+      executedDate: "15/09/2026",
+      description: "Repository Branch filter dung taskId canonical thay vi parse Jira key",
+    },
+    () => {
+      const mapped = mapPipelineTasks([
+        task({
+          id: "task-manual",
+          externalKey: "SAGA-66",
+          title: "Manual link",
+          status: "DONE",
+          linkedCommitCount: 1,
+        }),
+        task({
+          id: "task-other",
+          externalKey: "SAGA-67",
+          title: "Other task",
+          status: "DONE",
+          linkedCommitCount: 1,
+        }),
+      ]);
+
+      const filtered = filterPipelineTasks(
+        mapped,
+        {
+          studentId: "ALL",
+          sprintId: "ALL",
+          repoId: "repo-uuid",
+          branchName: "develop",
+        },
+        members,
+        new Set(["task-manual"])
+      );
+
+      expect(filtered.map((item) => item.id)).toEqual(["task-manual"]);
+    }
+  );
 });

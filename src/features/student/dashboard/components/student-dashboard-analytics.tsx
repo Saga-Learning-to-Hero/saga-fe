@@ -17,7 +17,10 @@ import {
   ProgressFactNote,
   ProjectProgressSummary,
 } from "@/features/progress/components/project-progress-summary";
-import { useStudentCourseContext } from "@/features/student/courses/hooks/use-student-course-context";
+import {
+  studentCoursePath,
+  useStudentCourseContext,
+} from "@/features/student/courses/hooks/use-student-course-context";
 import { useStudentMyTeam } from "@/features/student/courses/hooks/use-student-courses";
 import { useProjectRealtime } from "@/features/student/project/hooks/use-project-realtime";
 import {
@@ -119,7 +122,7 @@ export function StudentDashboardAnalytics() {
           </div>
           <div className="flex flex-wrap items-center justify-center gap-2">
             <Link
-              href="/student/sprint-progress"
+              href={studentCoursePath("/student/sprint-progress", courseId)}
               prefetch={true}
               className={cn(buttonVariants({ size: "sm" }), "text-xs")}
             >
@@ -127,7 +130,7 @@ export function StudentDashboardAnalytics() {
               Xem task
             </Link>
             <Link
-              href="/student/commits"
+              href={studentCoursePath("/student/commits", courseId)}
               prefetch={true}
               className={cn(buttonVariants({ size: "sm", variant: "outline" }), "text-xs")}
             >
@@ -145,7 +148,7 @@ export function StudentDashboardAnalytics() {
       <EmptyPanel
         title="Nhóm chưa khởi tạo dự án"
         description="Bảng tiến độ chỉ mở khi nhóm đã có dự án. Hãy vào trang Dự án để khởi tạo."
-        href="/student/project-info"
+        href={studentCoursePath("/student/project-info", courseId)}
         action="Mở trang dự án"
       />
     );

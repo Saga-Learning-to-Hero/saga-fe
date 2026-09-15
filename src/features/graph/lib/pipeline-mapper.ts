@@ -177,7 +177,7 @@ export function filterPipelineTasks(
   tasks: PipelineTask[],
   filter: PipelineFilterState,
   members: PipelineMember[] = [],
-  branchTaskKeys?: Set<string>
+  scopedTaskIds?: Set<string>
 ): PipelineTask[] {
   return tasks.filter((task) => {
     if (filter.studentId !== "ALL") {
@@ -206,8 +206,10 @@ export function filterPipelineTasks(
       if (!matchKey && !matchTitle && !matchAssignee) return false;
     }
 
-    if (filter.branchName && filter.branchName !== "ALL" && branchTaskKeys) {
-      if (!branchTaskKeys.has(task.key.toUpperCase())) return false;
+    const hasRepositoryScope = Boolean(filter.repoId && filter.repoId !== "ALL");
+    const hasBranchScope = Boolean(filter.branchName && filter.branchName !== "ALL");
+    if ((hasRepositoryScope || hasBranchScope) && scopedTaskIds && !scopedTaskIds.has(task.id)) {
+      return false;
     }
 
     return true;
@@ -254,6 +256,7 @@ export function sanitizePipelineFilter(
     sprintId: sprintExists ? filter.sprintId : "ALL",
     searchQuery: filter.searchQuery || "",
     anomalyType: filter.anomalyType || "ALL",
+    repoId: filter.repoId || "ALL",
     branchName: filter.branchName || "ALL",
   };
 }

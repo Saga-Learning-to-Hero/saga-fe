@@ -25,12 +25,12 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { groupWarningsByMember } from "../lib/contribution-view-utils";
 import { ContributionKPICards } from "./contribution-kpi-cards";
 import { ContributionCharts } from "./contribution-charts";
 import { ContributionTable } from "./contribution-table";
+import { ContributionViewSkeleton } from "./contribution-view-skeleton";
 import { LeaderBadge } from "@/components/common/leader-badge";
 import { cn } from "@/lib/utils";
 
@@ -58,20 +58,7 @@ export function ContributionView() {
   );
 
   if (isCoursesLoading || (courseId && teamQuery.isLoading)) {
-    return (
-      <div className="space-y-6 max-w-[1600px] mx-auto pb-12">
-        <div className="space-y-2">
-          <Skeleton className="h-8 w-72 rounded-xl" />
-          <Skeleton className="h-4 w-96 rounded-lg" />
-        </div>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <Skeleton key={i} className="h-28 rounded-2xl" />
-          ))}
-        </div>
-        <Skeleton className="h-96 rounded-2xl" />
-      </div>
-    );
+    return <ContributionViewSkeleton />;
   }
 
   if (!courseId) {
@@ -106,7 +93,7 @@ export function ContributionView() {
             Vui lòng liên hệ Giảng viên phụ trách để được phân nhóm trước khi truy cập bảng điểm đóng góp Slicing Pie.
           </p>
           <Link
-            href="/student/dashboard"
+            href={`/student/dashboard?courseId=${encodeURIComponent(courseId)}`}
             className={cn(buttonVariants({ variant: "outline", size: "sm" }), "mt-4 text-xs font-bold shadow-xs")}
           >
             Quay lại Tổng quan
@@ -215,20 +202,7 @@ export function ContributionView() {
   }
 
   if (evaluationQuery.isLoading) {
-    return (
-      <div className="space-y-6 max-w-[1600px] mx-auto pb-12">
-        <div className="space-y-2">
-          <Skeleton className="h-8 w-72 rounded-xl" />
-          <Skeleton className="h-4 w-96 rounded-lg" />
-        </div>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <Skeleton key={i} className="h-28 rounded-2xl" />
-          ))}
-        </div>
-        <Skeleton className="h-96 rounded-2xl" />
-      </div>
-    );
+    return <ContributionViewSkeleton />;
   }
 
   if (evaluationQuery.isError || !evaluation) {

@@ -53,7 +53,7 @@ export function GlobalCommandSearch() {
   const selectedStudentCourseId =
     searchParams.get("courseId")?.trim() || selectedCourse?.courseId || selectedCourse?.id || "";
   const studentPath = (pathname: string) =>
-    selectedStudentCourseId ? studentCoursePath(pathname, selectedStudentCourseId) : pathname;
+    selectedStudentCourseId ? studentCoursePath(pathname, selectedStudentCourseId) : "/student/courses";
 
   useEffect(() => {
     const down = (e: KeyboardEvent) => {

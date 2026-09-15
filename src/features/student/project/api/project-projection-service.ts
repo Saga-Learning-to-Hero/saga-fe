@@ -7,7 +7,11 @@ import type {
   ProjectProgressResponse,
   ProjectMemberProgressResponse,
   ProjectGitBranchListResponse,
+  ProjectTaskCommitLinkQuery,
+  ProjectTaskCommitLinksResponse,
 } from "../types/student-project";
+
+const TASK_COMMIT_LINK_PAGE_SIZE = 200;
 
 export class ProjectProjectionService {
   static async syncProject(projectId: string): Promise<ProjectSyncResponse> {
@@ -88,6 +92,50 @@ export class ProjectProjectionService {
       `/api/projects/${encodeURIComponent(cleanProjectId)}/repos/${encodeURIComponent(cleanRepoId)}/branches`
     );
     return res.data;
+  }
+
+  static async getProjectTaskCommitLinks(
+    projectId: string,
+    query: ProjectTaskCommitLinkQuery = {}
+  ): Promise<ProjectTaskCommitLinksResponse> {
+    if (!projectId || projectId.trim() === "") {
+      throw new Error("Throw ValidationException: Project ID is required");
+    }
+
+    const cleanProjectId = projectId.trim();
+    const repoId = query.repoId?.trim() || undefined;
+    const branchName = query.branchName?.trim() || undefined;
+    if (branchName && !repoId) {
+      throw new Error("Throw ValidationException: Repo ID is required when filtering by branch");
+    }
+
+    const requestPage = async (page: number) => {
+      const res = await apiClient.get<ProjectTaskCommitLinksResponse>(
+        `/api/projects/${encodeURIComponent(cleanProjectId)}/task-commit-links`,
+        {
+          params: {
+            ...(repoId ? { repoId } : {}),
+            ...(branchName ? { branchName } : {}),
+            page,
+            size: TASK_COMMIT_LINK_PAGE_SIZE,
+          },
+        }
+      );
+      return res.data;
+    };
+
+    const firstPage = await requestPage(0);
+    const pageCount = Math.ceil(firstPage.total / TASK_COMMIT_LINK_PAGE_SIZE);
+    if (pageCount <= 1) return firstPage;
+
+    const remainingPages = await Promise.all(
+      Array.from({ length: pageCount - 1 }, (_, index) => requestPage(index + 1))
+    );
+    return {
+      ...firstPage,
+      links: [firstPage, ...remainingPages].flatMap((page) => page.links),
+      size: firstPage.total,
+    };
   }
 
   static async getProjectProgress(projectId: string): Promise<ProjectProgressResponse> {

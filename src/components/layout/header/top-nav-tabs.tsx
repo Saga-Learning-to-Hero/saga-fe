@@ -27,12 +27,12 @@ import {
   usePrefetchStudentTeam,
   STUDENT_COURSE_QUERY_KEYS,
 } from "@/features/student/courses/hooks/use-student-courses";
-import { PROJECT_PROJECTION_QUERY_KEYS } from "@/features/student/project/hooks/useProjectSync";
-import { ProjectProjectionService } from "@/features/student/project/api/project-projection-service";
+import { usePrefetchProjectProjection } from "@/features/student/project/hooks/useProjectSync";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
 import { studentCoursePath } from "@/features/student/courses/hooks/use-student-course-context";
 import type { StudentCourseResponse } from "@/features/student/courses/types/student-course";
+import { usePrefetchContributionEvaluation } from "@/features/lecturer/contribution/hooks/use-lecturer-contribution";
 
 const ICON_MAP: Record<string, React.ElementType> = {
   LayoutDashboard: LayoutDashboardIcon,
@@ -76,7 +76,13 @@ export function TopNavTabs({ items }: TopNavTabsProps) {
           <TopNavTabLink
             key={item.id}
             item={item}
-            href={user?.role === "STUDENT" && studentCourseId ? studentCoursePath(item.href, studentCourseId) : item.href}
+            href={
+              user?.role === "STUDENT"
+                ? studentCourseId
+                  ? studentCoursePath(item.href, studentCourseId)
+                  : "/student/courses"
+                : item.href
+            }
             isActive={isActive}
             Icon={Icon}
             studentCourseId={studentCourseId}
@@ -103,6 +109,8 @@ function TopNavTabLink({
   const linkRef = useRef<HTMLAnchorElement>(null);
   const prefetchLecturerCourse = usePrefetchLecturerCourse();
   const prefetchStudentTeam = usePrefetchStudentTeam();
+  const prefetchProjectProjection = usePrefetchProjectProjection();
+  const prefetchContributionEvaluation = usePrefetchContributionEvaluation();
   const queryClient = useQueryClient();
 
   useEffect(() => {
@@ -119,21 +127,27 @@ function TopNavTabLink({
     }
     if (studentCourseId) {
       prefetchStudentTeam(studentCourseId);
-      const cachedTeam = queryClient.getQueryData<{ projectId?: string | null }>(
-        STUDENT_COURSE_QUERY_KEYS.studentMyTeam(studentCourseId)
-      );
+      const cachedTeam = queryClient.getQueryData<{
+        projectId?: string | null;
+        teamId?: string | null;
+      }>(STUDENT_COURSE_QUERY_KEYS.studentMyTeam(studentCourseId));
       const cachedCourses = queryClient.getQueryData<StudentCourseResponse[]>(
         STUDENT_COURSE_QUERY_KEYS.studentCourses
       );
-      const projectId =
-        cachedTeam?.projectId ||
-        cachedCourses?.find((c) => c.courseId === studentCourseId)?.projectId;
-      if (projectId) {
-        void queryClient.prefetchQuery({
-          queryKey: PROJECT_PROJECTION_QUERY_KEYS.progress(projectId),
-          queryFn: () => ProjectProjectionService.getProjectProgress(projectId),
-          staleTime: 1000 * 30,
-        });
+      const matchedCourse = cachedCourses?.find((c) => c.courseId === studentCourseId);
+      const projectId = cachedTeam?.projectId || matchedCourse?.projectId;
+      const teamId = cachedTeam?.teamId || matchedCourse?.teamId;
+
+      if (item.href === "/student/dashboard" || item.href === "/student") {
+        if (projectId) {
+          prefetchProjectProjection(projectId, { includeCommits: true });
+        }
+      } else if (item.href === "/student/contribution") {
+        if (teamId) {
+          prefetchContributionEvaluation(teamId);
+        }
+      } else if (projectId) {
+        prefetchProjectProjection(projectId);
       }
     }
   };

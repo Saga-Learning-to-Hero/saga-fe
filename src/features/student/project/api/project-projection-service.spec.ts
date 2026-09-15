@@ -345,4 +345,112 @@ describe("ProjectProjectionService", () => {
       expect(result).toEqual(mockBranchResponse);
     }
   );
+
+  fptTest(
+    {
+      id: "UTCID20",
+      type: "N",
+      executedDate: "15/09/2026",
+      description: "getProjectTaskCommitLinks gui repoId UUID va branchName canonical",
+    },
+    async () => {
+      const response = {
+        projectId: mockProjectId,
+        filter: {
+          repoId: "repo-uuid",
+          repositoryId: 123,
+          repositoryFullName: "org/repo",
+          branchName: "develop",
+          branchResolution: "REACHABLE_AT_SYNC",
+          resolvedAt: "2026-09-15T10:00:00",
+        },
+        links: [],
+        page: 0,
+        size: 200,
+        total: 0,
+      };
+      vi.mocked(apiClient.get).mockResolvedValueOnce({ data: response });
+
+      const result = await ProjectProjectionService.getProjectTaskCommitLinks(
+        ` ${mockProjectId} `,
+        { repoId: " repo-uuid ", branchName: " develop " }
+      );
+
+      expect(apiClient.get).toHaveBeenCalledWith(
+        "/api/projects/proj-123/task-commit-links",
+        { params: { repoId: "repo-uuid", branchName: "develop", page: 0, size: 200 } }
+      );
+      expect(result).toEqual(response);
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID21",
+      type: "B",
+      executedDate: "15/09/2026",
+      description: "getProjectTaskCommitLinks gom het cac batch page ma khong query theo tung task",
+    },
+    async () => {
+      const filter = {
+        repoId: null,
+        repositoryId: null,
+        repositoryFullName: null,
+        branchName: null,
+        branchResolution: "REACHABLE_AT_SYNC",
+        resolvedAt: null,
+      };
+      const firstLink = { taskId: "task-1", commitId: "commit-1" };
+      const lastLink = { taskId: "task-2", commitId: "commit-201" };
+      vi.mocked(apiClient.get)
+        .mockResolvedValueOnce({
+          data: {
+            projectId: mockProjectId,
+            filter,
+            links: [firstLink],
+            page: 0,
+            size: 200,
+            total: 201,
+          },
+        })
+        .mockResolvedValueOnce({
+          data: {
+            projectId: mockProjectId,
+            filter,
+            links: [lastLink],
+            page: 1,
+            size: 200,
+            total: 201,
+          },
+        });
+
+      const result = await ProjectProjectionService.getProjectTaskCommitLinks(mockProjectId);
+
+      expect(apiClient.get).toHaveBeenCalledTimes(2);
+      expect(apiClient.get).toHaveBeenNthCalledWith(
+        2,
+        "/api/projects/proj-123/task-commit-links",
+        { params: { page: 1, size: 200 } }
+      );
+      expect(result.links).toEqual([firstLink, lastLink]);
+      expect(result.total).toBe(201);
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID22",
+      type: "A",
+      executedDate: "15/09/2026",
+      description: "getProjectTaskCommitLinks khong cho gui branchName neu thieu repoId",
+    },
+    async () => {
+      await expect(
+        ProjectProjectionService.getProjectTaskCommitLinks(mockProjectId, {
+          branchName: "develop",
+        })
+      ).rejects.toThrow("Repo ID is required when filtering by branch");
+      expect(apiClient.get).not.toHaveBeenCalled();
+    }
+  );
 });

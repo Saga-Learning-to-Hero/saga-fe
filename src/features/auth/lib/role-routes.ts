@@ -32,6 +32,10 @@ export function isPathAllowedForRole(pathname: string, role: Role): boolean {
 }
 
 export function getSafeRedirectUrl(nextUrl: string | null | undefined, role: Role): string {
+  if (role === "STUDENT") {
+    return getRoleHomePath(role);
+  }
+
   if (!nextUrl) {
     return getRoleHomePath(role);
   }

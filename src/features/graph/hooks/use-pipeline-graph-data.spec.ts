@@ -7,14 +7,16 @@ import { fptTest } from "@/testing/fpt-test-helper";
 const progressMock = vi.fn();
 const tasksMock = vi.fn();
 const commitsMock = vi.fn();
-const taskCommitsMock = vi.fn();
+const taskCommitLinksMock = vi.fn();
+const branchesMock = vi.fn();
 const realtimeMock = vi.fn();
 const integrationsMock = vi.fn();
 
 vi.mock("@/features/student/project/hooks/useProjectSync", () => ({
   useProjectProgress: (...args: unknown[]) => progressMock(...args),
   useProjectCommits: (...args: unknown[]) => commitsMock(...args),
-  useTaskCommits: (...args: unknown[]) => taskCommitsMock(...args),
+  useProjectTaskCommitLinks: (...args: unknown[]) => taskCommitLinksMock(...args),
+  useProjectRepositoryBranches: (...args: unknown[]) => branchesMock(...args),
 }));
 
 vi.mock("@/features/student/sprint-progress/hooks/use-project-tasks", () => ({
@@ -54,7 +56,8 @@ describe("usePipelineGraphData", () => {
     progressMock.mockReset();
     tasksMock.mockReset();
     commitsMock.mockReset();
-    taskCommitsMock.mockReset();
+    taskCommitLinksMock.mockReset();
+    branchesMock.mockReset();
     realtimeMock.mockReset();
     integrationsMock.mockReset();
 
@@ -89,7 +92,27 @@ describe("usePipelineGraphData", () => {
       })
     );
     commitsMock.mockReturnValue(idleQuery({ isSuccess: true, data: [] }));
-    taskCommitsMock.mockReturnValue(idleQuery({ isSuccess: true, data: [] }));
+    taskCommitLinksMock.mockReturnValue(
+      idleQuery({
+        isSuccess: true,
+        data: {
+          projectId: "proj-1",
+          filter: {
+            repoId: null,
+            repositoryId: null,
+            repositoryFullName: null,
+            branchName: null,
+            branchResolution: "REACHABLE_AT_SYNC",
+            resolvedAt: null,
+          },
+          links: [],
+          page: 0,
+          size: 200,
+          total: 0,
+        },
+      })
+    );
+    branchesMock.mockReturnValue(idleQuery({ isSuccess: true, data: { branches: [] } }));
     realtimeMock.mockReturnValue({ status: "OPEN" });
     integrationsMock.mockReturnValue(idleQuery({ isSuccess: true, data: { jira: null, github: null } }));
   });
@@ -99,7 +122,7 @@ describe("usePipelineGraphData", () => {
       id: "UTCID01",
       type: "N",
       executedDate: "14/09/2026",
-      description: "Mo Pipeline khong goi task commits khi chua chon Task",
+      description: "Mo Pipeline goi mot batch canonical thay vi query commit theo tung Task",
     },
     () => {
       renderHook(
@@ -113,7 +136,11 @@ describe("usePipelineGraphData", () => {
           }),
         { wrapper }
       );
-      expect(taskCommitsMock).toHaveBeenCalledWith(null, null, { enabled: false });
+      expect(taskCommitLinksMock).toHaveBeenCalledWith(
+        "proj-1",
+        { repoId: null, branchName: null },
+        { enabled: true }
+      );
     }
   );
 
@@ -122,10 +149,33 @@ describe("usePipelineGraphData", () => {
       id: "UTCID02",
       type: "N",
       executedDate: "14/09/2026",
-      description: "Chon mot Task chi bat mot query lien ket dung ID do",
+      description: "Chon Task doc commit tu batch canonical da tai, khong phat sinh N+1",
     },
     () => {
-      renderHook(
+      taskCommitLinksMock.mockReturnValue(
+        idleQuery({
+          isSuccess: true,
+          data: {
+            filter: { branchResolution: "REACHABLE_AT_SYNC" },
+            links: [
+              {
+                taskId: "task-a",
+                taskKey: "SAGA-A",
+                commitId: "commit-1",
+                sha: "abc1234",
+                message: "manual link without Jira key",
+                repoId: "repo-1",
+                repositoryFullName: "org/repo",
+                headRef: "main",
+                branchNames: ["main", "develop"],
+                linkedAt: "2026-09-15T10:00:00",
+                linkSource: "MANUAL",
+              },
+            ],
+          },
+        })
+      );
+      const { result } = renderHook(
         () =>
           usePipelineGraphData({
             enabled: true,
@@ -136,7 +186,9 @@ describe("usePipelineGraphData", () => {
           }),
         { wrapper }
       );
-      expect(taskCommitsMock).toHaveBeenCalledWith("proj-1", "task-a", { enabled: true });
+      expect(taskCommitLinksMock).toHaveBeenCalledTimes(1);
+      expect(result.current.selectedCommits).toHaveLength(1);
+      expect(result.current.selectedCommits[0].sha).toBe("abc1234");
     }
   );
 
@@ -145,24 +197,51 @@ describe("usePipelineGraphData", () => {
       id: "UTCID03",
       type: "B",
       executedDate: "14/09/2026",
-      description: "Doi Task dung ID moi, tab Neo4j tat toan bo query Pipeline",
+      description: "Repository va Branch duoc gui vao batch canonical; dong Pipeline tat query",
     },
     () => {
+      integrationsMock.mockReturnValue(
+        idleQuery({
+          isSuccess: true,
+          data: {
+            jira: { status: "ACTIVE" },
+            github: {
+              status: "ACTIVE",
+              repositories: [{ id: "repo-1", repositoryId: 123, fullName: "org/repo" }],
+            },
+          },
+        })
+      );
+      branchesMock.mockReturnValue(
+        idleQuery({ isSuccess: true, data: { branches: [{ name: "develop", isDefault: false }] } })
+      );
       const { rerender } = renderHook(
-        (props: { selectedTaskId: string | null; enabled: boolean }) =>
+        (props: { enabled: boolean }) =>
           usePipelineGraphData({
             enabled: props.enabled,
             projectId: "proj-1",
-            selectedTaskId: props.selectedTaskId,
+            selectedTaskId: "task-a",
             teamMembers: [],
-            filter: { studentId: "ALL", sprintId: "ALL", anomaliesOnly: false },
+            filter: {
+              studentId: "ALL",
+              sprintId: "ALL",
+              repoId: "repo-1",
+              branchName: "develop",
+            },
           }),
-        { wrapper, initialProps: { selectedTaskId: "task-a", enabled: true } }
+        { wrapper, initialProps: { enabled: true } }
       );
-      rerender({ selectedTaskId: "task-b", enabled: true });
-      expect(taskCommitsMock).toHaveBeenLastCalledWith("proj-1", "task-b", { enabled: true });
-      rerender({ selectedTaskId: "task-b", enabled: false });
-      expect(taskCommitsMock).toHaveBeenLastCalledWith(null, null, { enabled: false });
+      expect(taskCommitLinksMock).toHaveBeenLastCalledWith(
+        "proj-1",
+        { repoId: "repo-1", branchName: "develop" },
+        { enabled: true }
+      );
+      rerender({ enabled: false });
+      expect(taskCommitLinksMock).toHaveBeenLastCalledWith(
+        "proj-1",
+        { repoId: "repo-1", branchName: "develop" },
+        { enabled: false }
+      );
     }
   );
 

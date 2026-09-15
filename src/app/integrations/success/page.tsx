@@ -41,7 +41,7 @@ function SuccessContent() {
         if (isMounted) {
           setIsSyncing(false);
           const returnParam = searchParams.get("returnPath") || searchParams.get("returnUrl");
-          const target = returnParam || (user?.role === "STUDENT" ? "/student/project-info" : "/profile/integrations");
+          const target = returnParam || (user?.role === "STUDENT" ? "/student/courses" : "/profile/integrations");
           const codeParam = searchParams.get("code");
           let finalTarget = target;
           if (codeParam) {

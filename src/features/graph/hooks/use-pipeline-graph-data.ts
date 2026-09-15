@@ -7,7 +7,8 @@ import { useProjectIntegrations } from "@/features/student/project/hooks/useProj
 import {
   useProjectCommits,
   useProjectProgress,
-  useTaskCommits,
+  useProjectRepositoryBranches,
+  useProjectTaskCommitLinks,
 } from "@/features/student/project/hooks/useProjectSync";
 import { useProjectRealtime } from "@/features/student/project/hooks/use-project-realtime";
 import { useProjectTasksData } from "@/features/student/sprint-progress/hooks/use-project-tasks";
@@ -66,9 +67,6 @@ export function usePipelineGraphData({
   const commitsQuery = useProjectCommits(commitsPlan.projectId, {
     enabled: commitsPlan.commitsEnabled,
   });
-  const taskCommitsQuery = useTaskCommits(commitsPlan.taskCommitsProjectId, commitsPlan.taskCommitsTaskId, {
-    enabled: commitsPlan.taskCommitsEnabled,
-  });
   const integrationsQuery = useProjectIntegrations(plan.projectId, {
     enabled: plan.pipelineReady,
   });
@@ -85,47 +83,113 @@ export function usePipelineGraphData({
   }, [progressQuery.data, teamMembers]);
 
   const sprints = useMemo(() => collectPipelineSprints(tasks), [tasks]);
-  const sanitizedFilter = useMemo(
+  const baseSanitizedFilter = useMemo(
     () => sanitizePipelineFilter(filter, members, sprints),
     [filter, members, sprints]
   );
-  const branchTaskKeys = useMemo(() => {
-    if (!sanitizedFilter.branchName || sanitizedFilter.branchName === "ALL" || !commitsQuery.data) {
-      return undefined;
+  const repositories = useMemo(
+    () =>
+      (integrationsQuery.data?.github?.repositories || []).filter(
+        (repository) => !repository.status || repository.status.toUpperCase() === "ACTIVE"
+      ),
+    [integrationsQuery.data]
+  );
+  const selectedRepoId =
+    baseSanitizedFilter.repoId &&
+    baseSanitizedFilter.repoId !== "ALL" &&
+    repositories.some((repository) => repository.id === baseSanitizedFilter.repoId)
+      ? baseSanitizedFilter.repoId
+      : "ALL";
+  const branchesQuery = useProjectRepositoryBranches(
+    plan.projectId,
+    selectedRepoId === "ALL" ? null : selectedRepoId,
+    { enabled: plan.pipelineReady && selectedRepoId !== "ALL" }
+  );
+  const branches = useMemo(() => branchesQuery.data?.branches || [], [branchesQuery.data]);
+  const selectedBranchName =
+    selectedRepoId !== "ALL" &&
+    baseSanitizedFilter.branchName &&
+    baseSanitizedFilter.branchName !== "ALL" &&
+    branches.some((branch) => branch.name === baseSanitizedFilter.branchName)
+      ? baseSanitizedFilter.branchName
+      : "ALL";
+  const sanitizedFilter = useMemo(
+    () => ({
+      ...baseSanitizedFilter,
+      repoId: selectedRepoId,
+      branchName: selectedBranchName,
+    }),
+    [baseSanitizedFilter, selectedBranchName, selectedRepoId]
+  );
+  const taskCommitLinksQuery = useProjectTaskCommitLinks(
+    commitsPlan.projectId,
+    {
+      repoId: selectedRepoId === "ALL" ? null : selectedRepoId,
+      branchName: selectedBranchName === "ALL" ? null : selectedBranchName,
+    },
+    { enabled: commitsPlan.commitsEnabled }
+  );
+  const scopedLinkCounts = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const link of taskCommitLinksQuery.data?.links || []) {
+      counts.set(link.taskId, (counts.get(link.taskId) || 0) + 1);
     }
-    const keys = new Set<string>();
-    const targetBranch = sanitizedFilter.branchName.trim().toLowerCase();
-    for (const c of commitsQuery.data) {
-      if (c.headRef && c.headRef.trim().toLowerCase() === targetBranch) {
-        const matches = c.message.match(/([A-Za-z][A-Za-z0-9_]+-[0-9]+)/g);
-        if (matches) {
-          matches.forEach((k) => keys.add(k.toUpperCase()));
-        }
-      }
-    }
-    return keys;
-  }, [commitsQuery.data, sanitizedFilter.branchName]);
+    return counts;
+  }, [taskCommitLinksQuery.data]);
+  const scopedTasks = useMemo(
+    () =>
+      taskCommitLinksQuery.isSuccess
+        ? tasks.map((task) => ({
+            ...task,
+            linkedCommitCount: scopedLinkCounts.get(task.id) || 0,
+          }))
+        : tasks,
+    [scopedLinkCounts, taskCommitLinksQuery.isSuccess, tasks]
+  );
+  const hasCommitScope = selectedRepoId !== "ALL" || selectedBranchName !== "ALL";
+  const scopedTaskIds = useMemo(
+    () =>
+      hasCommitScope
+        ? new Set((taskCommitLinksQuery.data?.links || []).map((link) => link.taskId))
+        : undefined,
+    [hasCommitScope, taskCommitLinksQuery.data]
+  );
 
   const filteredTasks = useMemo(
-    () => filterPipelineTasks(tasks, sanitizedFilter, members, branchTaskKeys),
-    [branchTaskKeys, members, sanitizedFilter, tasks]
+    () => filterPipelineTasks(scopedTasks, sanitizedFilter, members, scopedTaskIds),
+    [members, sanitizedFilter, scopedTaskIds, scopedTasks]
   );
   const lanes = useMemo(
     () => groupTasksIntoLanes(filteredTasks, members),
     [filteredTasks, members]
   );
-  const selectedCommits = useMemo(
-    () => mapPipelineCommits(taskCommitsQuery.data || [], members),
-    [members, taskCommitsQuery.data]
-  );
+  const selectedCommits = useMemo(() => {
+    if (!effectiveTaskId) return [];
+    const commitById = new Map((commitsQuery.data || []).map((commit) => [commit.id, commit]));
+    const commits = (taskCommitLinksQuery.data?.links || [])
+      .filter((link) => link.taskId === effectiveTaskId)
+      .map((link) =>
+        commitById.get(link.commitId) || {
+          id: link.commitId,
+          repoId: link.repoId || "",
+          repositoryFullName: link.repositoryFullName || "Repository không xác định",
+          sha: link.sha,
+          message: link.message,
+          headRef: link.headRef,
+          committedAt: link.linkedAt,
+          createdAt: link.linkedAt,
+        }
+      );
+    return mapPipelineCommits(commits, members);
+  }, [commitsQuery.data, effectiveTaskId, members, taskCommitLinksQuery.data]);
   const stats = useMemo(
     () =>
       computePipelineStats(
         members,
-        tasks,
+        scopedTasks,
         commitsQuery.isSuccess ? (commitsQuery.data || []).length : null
       ),
-    [commitsQuery.data, commitsQuery.isSuccess, members, tasks]
+    [commitsQuery.data, commitsQuery.isSuccess, members, scopedTasks]
   );
 
   const progressForbidden =
@@ -158,6 +222,8 @@ export function usePipelineGraphData({
     filteredTasks,
     lanes,
     sprints,
+    repositories,
+    branches,
     sanitizedFilter,
     effectiveTaskId,
     stats,
@@ -166,9 +232,12 @@ export function usePipelineGraphData({
       plan.pipelineReady &&
       (tasksQuery.isLoading ||
         (progressQuery.isLoading && !progressForbidden) ||
-        (integrationsQuery.isLoading && !(tasksQuery.data || []).length)),
+        (integrationsQuery.isLoading && !(tasksQuery.data || []).length) ||
+        (hasCommitScope && taskCommitLinksQuery.isLoading)),
     isLoadingCommits: commitsQuery.isFetching && !commitsQuery.isSuccess,
-    isLoadingTaskCommits: taskCommitsQuery.isFetching && !taskCommitsQuery.isSuccess,
+    isLoadingBranches: branchesQuery.isFetching && !branchesQuery.isSuccess,
+    isLoadingTaskCommits:
+      taskCommitLinksQuery.isFetching && !taskCommitLinksQuery.isSuccess,
     isTasksError: tasksQuery.isError,
     tasksErrorMessage: tasksQuery.isError
       ? getApiErrorMessage(tasksQuery.error, "Không tải được danh sách Task.")
@@ -177,10 +246,11 @@ export function usePipelineGraphData({
     commitsErrorMessage: commitsQuery.isError
       ? getApiErrorMessage(commitsQuery.error, "Không tải được tổng số Commit.")
       : null,
-    isTaskCommitsError: taskCommitsQuery.isError,
-    taskCommitsErrorMessage: taskCommitsQuery.isError
-      ? getApiErrorMessage(taskCommitsQuery.error, "Không tải được Commit liên kết của Task.")
+    isTaskCommitsError: taskCommitLinksQuery.isError,
+    taskCommitsErrorMessage: taskCommitLinksQuery.isError
+      ? getApiErrorMessage(taskCommitLinksQuery.error, "Không tải được liên kết Task–Commit canonical.")
       : null,
+    taskCommitLinksFilter: taskCommitLinksQuery.data?.filter || null,
     progressForbidden,
     integrationsUnsynced,
     jiraStatus,
@@ -194,7 +264,7 @@ export function usePipelineGraphData({
     isIntegrationsConnectedButUnsynced,
     refetchTasks: tasksQuery.refetch,
     refetchCommits: commitsQuery.refetch,
-    refetchTaskCommits: taskCommitsQuery.refetch,
+    refetchTaskCommits: taskCommitLinksQuery.refetch,
     realtimeStatus: realtime.status,
     queryPlan: commitsPlan,
     allCommits: commitsQuery.data || [],

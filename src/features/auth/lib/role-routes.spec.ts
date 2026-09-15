@@ -42,11 +42,14 @@ describe("role-routes", () => {
       id: "UTCID03",
       type: "B",
       executedDate: "10/09/2026",
-      description: "next rong hoac ngoai origin quay ve role home",
+      description: "Student luon vao trang chon hoc phan sau dang nhap; next rong hoac ngoai origin quay ve role home",
     },
     () => {
       expect(getSafeRedirectUrl(null, "LECTURER")).toBe("/lecturer/courses");
       expect(getSafeRedirectUrl("https://evil.example/login", "LECTURER")).toBe("/lecturer/courses");
+      expect(getSafeRedirectUrl("/student/sprint-progress?courseId=other-student-course", "STUDENT")).toBe(
+        "/student/courses"
+      );
     }
   );
 });
