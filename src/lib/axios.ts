@@ -1,6 +1,6 @@
 import axios, { type AxiosInstance, type AxiosResponse, type InternalAxiosRequestConfig } from "axios";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "https://saga-be-production.up.railway.app";
+export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "https://saga-be-production.up.railway.app";
 
 export function getCookie(name: string): string | null {
   if (typeof document === "undefined") return null;
@@ -136,6 +136,20 @@ apiClient.interceptors.response.use(
     const errorData = error.response?.data;
     const code = errorData?.code || (status === 403 ? "ACCESS_DENIED" : status === 401 ? "UNAUTHORIZED" : "UNEXPECTED_ERROR");
 
+    // Bảo mật Fallback 1: 403 ACCOUNT_DISABLED
+    if (status === 403 && code === "ACCOUNT_DISABLED" && typeof window !== "undefined") {
+      window.dispatchEvent(
+        new CustomEvent("saga:account-disabled", {
+          detail: {
+            message:
+              errorData?.message ||
+              "Tài khoản của bạn đã bị vô hiệu hóa. Vui lòng liên hệ quản trị viên nếu bạn cần hỗ trợ.",
+          },
+        })
+      );
+    }
+
+    // Bảo mật Fallback 2: 401 Unauthorized / INVALID_CREDENTIALS (Session revoked / expired)
     if (status === 401 && typeof window !== "undefined") {
       const isAuthEndpoint =
         originalRequest?.url?.includes("/api/auth/login") ||
@@ -148,6 +162,11 @@ apiClient.interceptors.response.use(
             detail: {
               url: originalRequest?.url,
               pathname: window.location.pathname,
+              code,
+              message:
+                code === "INVALID_CREDENTIALS"
+                  ? "Phiên đăng nhập đã bị thu hồi hoặc thông tin xác thực không hợp lệ. Vui lòng đăng nhập lại."
+                  : "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.",
             },
           })
         );

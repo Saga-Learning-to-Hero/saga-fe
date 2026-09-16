@@ -170,12 +170,12 @@ function SubjectForm({
                   options={[
                     {
                       value: "ACTIVE",
-                      label: "Đang hoạt động (ACTIVE)",
+                      label: "Đang hoạt động",
                       subLabel: "Cho phép mở lớp và gán đề cương mới",
                     },
                     {
                       value: "INACTIVE",
-                      label: "Tạm ngừng (INACTIVE)",
+                      label: "Tạm ngừng",
                       subLabel: "Không cho phép mở lớp học phần mới",
                     },
                   ]}

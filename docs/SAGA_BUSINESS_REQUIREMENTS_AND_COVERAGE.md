@@ -106,7 +106,7 @@ Bảng này là checklist chức năng cấp cao dành cho tài liệu báo cáo
 
 | Mã phạm vi | Năng lực sản phẩm | Đầu ra nghiệp vụ bắt buộc |
 | --- | --- | --- |
-| SCOPE-01 | Xác thực và định danh | Session an toàn; role/status chính xác; profile; liên kết nhiều danh tính Jira/GitHub; reset/setup password; step-up cho thao tác nhạy cảm |
+| SCOPE-01 | Xác thực và định danh | Session an toàn; role/status chính xác; profile; liên kết nhiều danh tính Jira/GitHub; reset/setup password; step-up cho thao tác nhạy cảm; realtime account ban/unban qua SSE `GET /api/users/me/events` (`ACCOUNT_DISABLED`) kết hợp HTTP 403 `ACCOUNT_DISABLED` fallback, đóng SSE, clear auth state & query cache, chuyển hướng `/account-disabled` |
 | SCOPE-02 | Quản trị học vụ | Học kỳ active; Subject; Syllabus có version/lifecycle/structure; Academic Class; Course; Lecturer assignment; roster có preview/confirm |
 | SCOPE-03 | Quản lý nhóm | Danh sách nhóm theo course; import; Team Leader; chuyển thành viên; quan hệ Student–Team–Course rõ ràng |
 | SCOPE-04 | Khởi tạo dự án | Một project gắn đúng team/course; tên/mô tả; Project Type tùy chọn; policy Leader; trạng thái chưa/có project rõ ràng |
@@ -348,8 +348,8 @@ Project Type dùng để phân loại hướng dự án, không điều khiển 
 | ADM-005 | Course create/list/detail/update | ✓ | ✓ | ✓ | `DONE` |
 | ADM-006 | Lecturer directory | ✓ | ✓ | ✓ | `DONE` |
 | ADM-007 | Roster template/list/import preview-confirm/add/remove/cancel invite | ✓ | ✓ | ✓ | `DONE` |
-| ADM-008 | User list/detail/status | ✓ | — | Mock | `MOCK`; BE đã sẵn sàng, FE admin users chưa tích hợp |
-| ADM-009 | Audit log list/filter | ✓ | — | Mock | `MOCK`; cần thay mock bằng API |
+| ADM-008 | User list/detail/status | ✓ | ✓ | ✓ | `DONE` (GET `/api/admin/users`, GET `/api/admin/users/{userId}`, PATCH `/api/admin/users/{userId}/status`; SSE `ACCOUNT_DISABLED` & HTTP 403 fallback) |
+| ADM-009 | Audit log list/filter | ✓ | ✓ | ✓ | `DONE` (GET `/api/admin/audit-logs`) |
 | ADM-010 | Admin dashboard KPI/chart/recent activity | — | — | Mock | `MOCK/ABSENT`; cần thống nhất API aggregate hoặc ghép API có sẵn |
 | ADM-011 | Dev email test, landing, privacy, terms | ✓ | — | — | `INTERNAL`/server pages |
 
@@ -480,7 +480,7 @@ Project Type dùng để phân loại hướng dự án, không điều khiển 
 | `/api/admin/courses` | Đã dùng |
 | `/api/admin/lecturers` | Đã dùng |
 | `/api/admin/courses/{courseId}/roster/**` | Đã dùng |
-| `/api/admin/users/**` | Chưa dùng; UI mock |
+| `/api/admin/users/**` | Đã dùng |
 | `/api/admin/audit-logs` | Chưa dùng; UI mock |
 | `/api/admin/dev/email-test` | Không cần UI production |
 
@@ -611,7 +611,7 @@ Hiện mỗi request graph có thể kích hoạt/rebuild projection theo implem
 
 ### P0 — Sai dữ liệu/quyền hoặc chặn luồng chính
 
-- [ ] Thay Admin Users mock bằng `/api/admin/users` và kiểm thử đổi status.
+- [x] Thay Admin Users mock bằng `/api/admin/users` và kiểm thử đổi status.
 - [ ] Thay Admin Audit Log mock bằng `/api/admin/audit-logs`.
 - [ ] Xác minh logout/login tài khoản khác xóa query cache, selected course/project/team và reconnect SSE đúng context mới.
 - [ ] Xác minh Graph SAGA-75 không rò dữ liệu project/student cũ và đúng authorization.

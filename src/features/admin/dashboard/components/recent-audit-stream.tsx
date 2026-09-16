@@ -22,7 +22,7 @@ export function RecentAuditAndQuickActionsSection() {
                 Nhật ký hệ thống gần đây (Audit Stream)
               </CardTitle>
               <CardDescription className="text-[11px] text-muted-foreground">
-                Lịch sử thao tác quản trị, sự kiện an ninh và phân quyền ghi nhận từ MongoDB
+                Lịch sử thao tác quản trị, sự kiện an ninh và phân quyền ghi nhận
               </CardDescription>
             </div>
           </div>

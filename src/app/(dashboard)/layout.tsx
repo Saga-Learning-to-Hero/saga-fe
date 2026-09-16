@@ -15,12 +15,14 @@ import { TopNavHeader } from "@/components/layout/header/top-nav-header";
 import { ProfileModal } from "@/features/profile/components/profile-modal";
 import { UserRealtimeProvider } from "@/features/notification/providers/user-realtime-provider";
 import { NotificationBell } from "@/features/notification/components/notification-bell";
+import { useUserEvents } from "@/features/auth/hooks/useUserEvents";
 
 export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  useUserEvents();
   const router = useRouter();
   const pathname = usePathname();
   const { isAuthenticated, user, passwordSetupRequired, hasHydrated } = useAuthStore();
