@@ -12,6 +12,7 @@ const taskCommitsMock = vi.fn();
 const branchesMock = vi.fn();
 const realtimeMock = vi.fn();
 const integrationsMock = vi.fn();
+const graphQueryMock = vi.fn();
 
 vi.mock("@/features/lecturer/teams/hooks/use-lecturer-teams", () => ({
   useLecturerTeams: (...args: unknown[]) => teamsMock(...args),
@@ -35,6 +36,51 @@ vi.mock("@/features/student/project/hooks/use-project-realtime", () => ({
 vi.mock("@/features/student/project/hooks/useProjectIntegrations", () => ({
   useProjectIntegrations: (...args: unknown[]) => integrationsMock(...args),
 }));
+
+vi.mock("@/features/student/sprint-progress/hooks/use-project-sprints", () => ({
+  useProjectSprints: () => ({
+    data: [
+      { id: "sp-1", name: "Sprint 1", state: "active" },
+      { id: "sp-2", name: "Sprint 2", state: "future" },
+    ],
+    isLoading: false,
+    isError: false,
+  }),
+}));
+
+vi.mock("../hooks/use-project-graph", () => ({
+  PROJECT_GRAPH_QUERY_KEY: "project-graph",
+  useProjectGraph: (...args: unknown[]) => graphQueryMock(...args),
+}));
+
+vi.mock("cytoscape", () => {
+  return {
+    default: vi.fn(() => ({
+      destroy: vi.fn(),
+      elements: vi.fn(() => ({
+        remove: vi.fn(),
+        filter: vi.fn(() => []),
+        unselect: vi.fn(),
+        map: vi.fn(() => []),
+      })),
+      nodes: vi.fn(() => []),
+      edges: vi.fn(() => []),
+      batch: vi.fn((fn: () => void) => fn()),
+      add: vi.fn(),
+      remove: vi.fn(),
+      getElementById: vi.fn(() => ({
+        length: 0,
+        data: vi.fn(),
+        select: vi.fn(),
+      })),
+      layout: vi.fn(() => ({ run: vi.fn() })),
+      on: vi.fn(),
+      zoom: vi.fn(() => 1),
+      fit: vi.fn(),
+    })),
+    __esModule: true,
+  };
+});
 
 import { LecturerGraphView } from "./lecturer-graph-view";
 
@@ -194,6 +240,7 @@ describe("LecturerGraphView", () => {
     branchesMock.mockReset();
     realtimeMock.mockReset();
     integrationsMock.mockReset();
+    graphQueryMock.mockReset();
 
     teamsMock.mockReturnValue(idleQuery({ isSuccess: true, data: mockTeamsData }));
     progressMock.mockReturnValue(idleQuery({ isSuccess: true, data: mockProgressData }));
@@ -211,13 +258,39 @@ describe("LecturerGraphView", () => {
     );
     branchesMock.mockReturnValue(idleQuery({ isSuccess: true, data: { branches: [] } }));
     realtimeMock.mockReturnValue({ status: "OPEN" });
-    integrationsMock.mockReturnValue(idleQuery({ isSuccess: true, data: { jira: { status: "ACTIVE" }, github: { status: "ACTIVE" } } }));
+    integrationsMock.mockReturnValue(
+      idleQuery({
+        isSuccess: true,
+        data: { jira: { status: "ACTIVE" }, github: { status: "ACTIVE" } },
+      })
+    );
+
+    graphQueryMock.mockReturnValue(
+      idleQuery({
+        isSuccess: true,
+        data: {
+          nodes: [
+            { data: { id: "student:sp1", label: "Nguyen Van A", type: "STUDENT" } },
+            { data: { id: "task:t1", label: "SAGA-101", type: "TASK" } },
+          ],
+          edges: [
+            { data: { id: "e1", source: "student:sp1", target: "task:t1", label: "ASSIGNED_TO" } },
+          ],
+        },
+      })
+    );
   });
 
-  const renderView = (props: { courseId?: string; initialTeamId?: string } = {}) => {
+  const renderView = (
+    props: {
+      courseId?: string;
+      initialTeamId?: string;
+      initialViewMode?: "GRAPH" | "PIPELINE";
+    } = {}
+  ) => {
     return render(
       <QueryClientProvider client={client}>
-        <LecturerGraphView {...props} />
+        <LecturerGraphView initialViewMode={props.initialViewMode || "PIPELINE"} {...props} />
       </QueryClientProvider>
     );
   };
@@ -326,10 +399,10 @@ describe("LecturerGraphView", () => {
       const taskCard = screen.getByText("SAGA-101");
       fireEvent.click(taskCard);
 
-      const matrixBtn = screen.getByText(/Bảng đối soát Matrix/i);
+      const matrixBtn = screen.getByText(/Audit Matrix/i);
       fireEvent.click(matrixBtn);
 
-      expect(screen.getByText(/Đối soát Task và Commit liên kết/i)).toBeTruthy();
+      expect(screen.getByText(/Bảng đối soát/i)).toBeTruthy();
       expect(screen.getAllByText("SAGA-101").length).toBeGreaterThan(1);
     }
   );
@@ -405,6 +478,62 @@ describe("LecturerGraphView", () => {
       renderView({ courseId: "course-123", initialTeamId: "team-with-project" });
       expect(screen.getByText("Repository")).toBeTruthy();
       expect(screen.getByText("Branch")).toBeTruthy();
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID09",
+      type: "N",
+      executedDate: "15/09/2026",
+      description: "Tab Neo4j Graph hien thi 4 che do va truyen dung projectId tu team duoc chon",
+    },
+    () => {
+      renderView({
+        courseId: "course-123",
+        initialTeamId: "team-with-project",
+        initialViewMode: "GRAPH",
+      });
+
+      expect(screen.getByText("Tổng quan nhóm")).toBeTruthy();
+      expect(screen.getByText("Hoạt động Sprint")).toBeTruthy();
+      expect(screen.getByText("Đối soát danh tính")).toBeTruthy();
+      expect(screen.getByText("Mạng đánh giá chéo")).toBeTruthy();
+
+      expect(graphQueryMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          projectId: "proj-1",
+          graphType: "OVERVIEW",
+        })
+      );
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID10",
+      type: "N",
+      executedDate: "15/09/2026",
+      description: "Chuyen sang che do Hoat dong Sprint tu dong chon Sprint active va goi graph query",
+    },
+    () => {
+      renderView({
+        courseId: "course-123",
+        initialTeamId: "team-with-project",
+        initialViewMode: "GRAPH",
+      });
+
+      const activityTab = screen.getByText("Hoạt động Sprint");
+      fireEvent.click(activityTab);
+
+      expect(graphQueryMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          projectId: "proj-1",
+          graphType: "ACTIVITY",
+          sprintId: "sp-1",
+          enabled: true,
+        })
+      );
     }
   );
 });

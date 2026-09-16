@@ -1,53 +1,46 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { GitCommitIcon, NetworkIcon, SparklesIcon, TableIcon } from "lucide-react";
-import { toast } from "sonner";
+import { NetworkIcon, CalendarIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent } from "@/components/ui/sheet";
+import { type CustomSelectOption } from "@/components/common/custom-select";
 import { useStudentCourseContext } from "@/features/student/courses/hooks/use-student-course-context";
 import { useStudentMyTeam } from "@/features/student/courses/hooks/use-student-courses";
+import { useProjectSprints } from "@/features/student/sprint-progress/hooks/use-project-sprints";
 import { getApiErrorMessage } from "@/lib/api-error";
 import { CytoscapeGraphCanvas } from "./cytoscape-graph-canvas";
 import { GraphFilterBar, type GraphFilterType } from "./graph-filter-bar";
 import { GraphStatsSummary } from "./graph-stats-summary";
 import { GraphNodeDetailsModal } from "./graph-node-details-modal";
-import { TraceabilityMatrixTable } from "./traceability-matrix-table";
+import { Neo4jTabBar, type Neo4jTabMode } from "./neo4j-tab-bar";
 import { PipelineEmptyState } from "./pipeline-empty-state";
-import { PipelineFlowView } from "./pipeline-flow-view";
-import { PipelineMatrixTable } from "./pipeline-matrix-table";
 import { PipelineRepositoryFilters } from "./pipeline-repository-filters";
 import { PipelineStatsBar } from "./pipeline-stats-bar";
-import { PipelineTaskInspector } from "./pipeline-task-inspector";
-import { getMockTraceabilityGraphData, MOCK_GRAPH_STUDENTS } from "../data/mock-graph-data";
+import { PipelineWorkspace } from "./pipeline-workspace";
 import { usePipelineGraphData } from "../hooks/use-pipeline-graph-data";
+import { useProjectGraph } from "../hooks/use-project-graph";
 import { buildPipelineTasksCsv, downloadTextFile } from "../lib/pipeline-mapper";
 import { UNASSIGNED_LANE_ID, type PipelineFilterState } from "../types/pipeline";
-import type { GraphNodeData } from "../types/graph";
-
-const NEO4J_DEMO_LABEL = "Dữ liệu minh họa — chưa kết nối API Neo4j";
-
-const NEO4J_MEMBER_OPTIONS = MOCK_GRAPH_STUDENTS.map((student) => ({
-  value: student.id,
-  label: student.name,
-  subLabel: `${student.studentCode} (${student.role})`,
-}));
-
-const NEO4J_SPRINT_OPTIONS = [
-  { value: "sprint-01", label: "Sprint 1 - Foundation & Integration", subLabel: "Đã hoàn thành" },
-  { value: "sprint-02", label: "Sprint 2 - Slicing Pie & Traceability", subLabel: "Đang diễn ra" },
-];
+import type { CytoscapeNodeData, GraphSubgraphFilterParams, GraphType } from "../types/graph";
 
 export function TraceabilityGraphView() {
-  const initialData = useMemo(() => getMockTraceabilityGraphData(), []);
   const { course, courseId, isLoading: isCoursesLoading, isInvalidCourse } = useStudentCourseContext();
   const teamQuery = useStudentMyTeam(courseId, { enabled: Boolean(courseId) });
   const projectId = teamQuery.data?.projectId || null;
 
-  const [neo4jStudentId, setNeo4jStudentId] = useState("ALL");
-  const [neo4jSprintId, setNeo4jSprintId] = useState("ALL");
+  const sprintsQuery = useProjectSprints(projectId, { enabled: Boolean(projectId) });
+
+  const [viewMode, setViewMode] = useState<"FLOW" | "GRAPH">("GRAPH");
+  const [neo4jTab, setNeo4jTab] = useState<Neo4jTabMode>("OVERVIEW");
+  const [drillDownStudent, setDrillDownStudent] = useState<{ id: string; label: string } | null>(null);
+  const [selectedSprintState, setSelectedSprintState] = useState<string | null>(null);
   const [neo4jFilterType, setNeo4jFilterType] = useState<GraphFilterType>("ALL");
+  const [selectedNode, setSelectedNode] = useState<CytoscapeNodeData | null>(null);
+  const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
+
+  const [scopeMode, setScopeMode] = useState<"COMPACT" | "FULL">("COMPACT");
+  const [maxNodes, setMaxNodes] = useState<number | null>(100);
+
   const [pipelineFilter, setPipelineFilter] = useState<PipelineFilterState>({
     studentId: "ALL",
     sprintId: "ALL",
@@ -55,11 +48,6 @@ export function TraceabilityGraphView() {
     repoId: "ALL",
     branchName: "ALL",
   });
-  const [viewMode, setViewMode] = useState<"FLOW" | "GRAPH">("GRAPH");
-  const [pipelineSubView, setPipelineSubView] = useState<"FLOW" | "MATRIX">("FLOW");
-  const [isMobileInspectorOpen, setIsMobileInspectorOpen] = useState(false);
-  const [selectedNode, setSelectedNode] = useState<GraphNodeData | null>(null);
-  const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
 
   const pipelineOpen = viewMode === "FLOW";
   const pipeline = usePipelineGraphData({
@@ -70,40 +58,112 @@ export function TraceabilityGraphView() {
     filter: pipelineFilter,
   });
 
-  const filteredGraphData = useMemo(() => {
-    let filteredNodes = [...initialData.nodes];
+  const sprintOptions: CustomSelectOption[] = useMemo(() => {
+    const list = sprintsQuery.data || [];
+    return list.map((s) => ({
+      value: s.id,
+      label: s.name,
+      subLabel: s.state ? `Trạng thái: ${s.state}` : undefined,
+    }));
+  }, [sprintsQuery.data]);
 
-    if (neo4jStudentId !== "ALL") {
-      filteredNodes = filteredNodes.filter((n) => {
-        if (n.type === "STUDENT") return n.id === neo4jStudentId;
-        if (n.type === "TASK" && "assigneeId" in n.data) return n.data.assigneeId === neo4jStudentId;
-        if (n.type === "COMMIT" && "authorId" in n.data) return n.data.authorId === neo4jStudentId;
-        return true;
-      });
+  const defaultSprintId = useMemo(() => {
+    const list = sprintsQuery.data || [];
+    if (list.length === 0) return null;
+    const active = list.find((s) => s.state?.toLowerCase() === "active");
+    return active ? active.id : list[0].id;
+  }, [sprintsQuery.data]);
+
+  const neo4jSprintId = selectedSprintState !== null ? selectedSprintState : (defaultSprintId || "ALL");
+
+  const handleSprintChange = (sprintId: string) => {
+    setSelectedSprintState(sprintId);
+  };
+
+  const effectiveSprintId = useMemo(() => {
+    if (neo4jSprintId && neo4jSprintId !== "ALL") {
+      return neo4jSprintId;
     }
+    if (neo4jTab === "ACTIVITY" || neo4jTab === "PEER_REVIEW") {
+      return defaultSprintId;
+    }
+    return null;
+  }, [neo4jSprintId, neo4jTab, defaultSprintId]);
 
-    if (neo4jSprintId !== "ALL") {
-      filteredNodes = filteredNodes.filter((n) => {
-        if (n.type === "TASK" && "sprintId" in n.data) return n.data.sprintId === neo4jSprintId;
-        return true;
-      });
+  const handleTabChange = (tab: Neo4jTabMode) => {
+    setNeo4jTab(tab);
+    if (
+      (tab === "ACTIVITY" || tab === "PEER_REVIEW") &&
+      (neo4jSprintId === "ALL" || !neo4jSprintId) &&
+      defaultSprintId
+    ) {
+      setSelectedSprintState(defaultSprintId);
+    }
+  };
+
+  const isSprintRequired = (neo4jTab === "ACTIVITY" || neo4jTab === "PEER_REVIEW") && !drillDownStudent;
+  const hasRequiredSprint = Boolean(effectiveSprintId);
+
+  const activeGraphType: GraphType = drillDownStudent ? "CONTRIBUTION" : neo4jTab;
+
+  const subgraphParams = useMemo<GraphSubgraphFilterParams | null>(() => {
+    const params: GraphSubgraphFilterParams = {};
+    let hasFilter = false;
+
+    if (
+      scopeMode === "COMPACT" &&
+      !drillDownStudent &&
+      (neo4jTab === "OVERVIEW" || neo4jTab === "ACTIVITY" || neo4jTab === "ATTRIBUTION")
+    ) {
+      params.nodeTypes = ["STUDENT", "TEAM", "PROJECT", "SPRINT", "TASK"];
+      hasFilter = true;
     }
 
     if (neo4jFilterType === "ANOMALIES_ONLY") {
-      filteredNodes = filteredNodes.filter((n) => {
-        return (
-          ("isMSRAnomaly" in n.data && n.data.isMSRAnomaly) ||
-          ("isGhosting" in n.data && n.data.isGhosting)
-        );
-      });
+      params.anomaliesOnly = true;
+      hasFilter = true;
     }
 
-    const nodeIds = new Set(filteredNodes.map((n) => n.id));
+    if (maxNodes) {
+      params.maxNodes = maxNodes;
+      hasFilter = true;
+    }
+
+    return hasFilter ? params : null;
+  }, [scopeMode, drillDownStudent, neo4jTab, neo4jFilterType, maxNodes]);
+
+  const isWaitingDefaultSprint = selectedSprintState === null && sprintsQuery.isLoading;
+
+  const graphQuery = useProjectGraph({
+    projectId: projectId || "",
+    graphType: activeGraphType,
+    sprintId: effectiveSprintId,
+    studentId: drillDownStudent?.id || null,
+    subgraphParams,
+    enabled:
+      viewMode === "GRAPH" &&
+      Boolean(projectId) &&
+      !isWaitingDefaultSprint &&
+      (!isSprintRequired || hasRequiredSprint),
+  });
+
+  const displayGraphData = useMemo(() => {
+    const rawData = graphQuery.data;
+    if (!rawData) return { nodes: [], edges: [] };
+    return rawData;
+  }, [graphQuery.data]);
+
+  const structuralStats = useMemo(() => {
+    const nodes = graphQuery.data?.nodes || [];
+    const edges = graphQuery.data?.edges || [];
+    const anomalyCount = nodes.filter((n) => n.data.isAnomaly === true).length;
     return {
-      nodes: filteredNodes,
-      edges: initialData.edges.filter((e) => nodeIds.has(e.source) && nodeIds.has(e.target)),
+      totalNodes: nodes.length,
+      totalEdges: edges.length,
+      anomalyCount,
+      meta: graphQuery.data?.meta,
     };
-  }, [initialData, neo4jFilterType, neo4jSprintId, neo4jStudentId]);
+  }, [graphQuery.data]);
 
   const pipelineMemberOptions = useMemo(
     () => [
@@ -129,24 +189,10 @@ export function TraceabilityGraphView() {
     [pipeline.sprints]
   );
 
-  const handleSelectTask = (taskId: string) => {
-    setSelectedTaskId((current) => {
-      const next = current === taskId ? null : taskId;
-      if (next && typeof window !== "undefined" && window.innerWidth < 1024) {
-        setIsMobileInspectorOpen(true);
-      }
-      return next;
-    });
-  };
-
-  const selectedTask = useMemo(
-    () => pipeline.filteredTasks.find((task) => task.id === pipeline.effectiveTaskId) || null,
-    [pipeline.filteredTasks, pipeline.effectiveTaskId]
-  );
-
   const handleExport = () => {
     if (viewMode === "GRAPH") {
-      toast.info("Tab Neo4j đang dùng dữ liệu minh họa nên chưa xuất được từ API.");
+      const exportJson = JSON.stringify(graphQuery.data || { nodes: [], edges: [] }, null, 2);
+      downloadTextFile(`neo4j-graph-${activeGraphType.toLowerCase()}.json`, exportJson);
       return;
     }
     downloadTextFile("pipeline-tasks.csv", buildPipelineTasksCsv(pipeline.filteredTasks));
@@ -161,16 +207,108 @@ export function TraceabilityGraphView() {
       <Badge variant="outline" className="border-border/80 bg-muted/40 px-2.5 py-1 text-xs font-bold text-foreground">
         {teamLabel}
       </Badge>
-      {viewMode === "GRAPH" ? (
-        <Badge
-          variant="outline"
-          className="border-amber-500/40 bg-amber-500/10 px-2.5 py-1 text-[10px] font-bold text-amber-800 dark:text-amber-200"
-        >
-          {NEO4J_DEMO_LABEL}
-        </Badge>
-      ) : null}
     </div>
   );
+
+  const renderNeo4jBody = () => {
+    if (isCoursesLoading || (Boolean(courseId) && teamQuery.isLoading && !teamQuery.data)) {
+      return <div className="h-[640px] w-full animate-pulse rounded-3xl bg-muted" />;
+    }
+    if (isInvalidCourse || !courseId || !course) {
+      return (
+        <PipelineEmptyState
+          title="Chưa chọn lớp học phần"
+          description="Hãy chọn lớp đang học để xem đồ thị quan hệ Neo4j."
+          href="/student/courses"
+          action="Chọn lớp học phần"
+        />
+      );
+    }
+    if (teamQuery.isWaitingForTeam) {
+      return (
+        <PipelineEmptyState
+          title="Đang chờ phân nhóm"
+          description="Bạn chưa được gán vào nhóm dự án nên chưa có đồ thị liên kết."
+        />
+      );
+    }
+    if (teamQuery.isError) {
+      return (
+        <PipelineEmptyState
+          title="Không tải được thông tin nhóm"
+          description={getApiErrorMessage(teamQuery.error, "Vui lòng thử lại.")}
+          onRetry={() => void teamQuery.refetch()}
+        />
+      );
+    }
+    if (!projectId) {
+      return (
+        <PipelineEmptyState
+          title="Nhóm chưa có dự án"
+          description="Đồ thị Neo4j chỉ hiển thị khi nhóm đã được gán projectId."
+        />
+      );
+    }
+
+    if (isSprintRequired && !hasRequiredSprint) {
+      return (
+        <div className="flex flex-col items-center justify-center p-12 text-center rounded-3xl border border-dashed border-border bg-card/50 space-y-3">
+          <div className="w-12 h-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center">
+            <CalendarIcon className="w-6 h-6" />
+          </div>
+          <h3 className="text-base font-bold text-foreground">Dự án chưa có Sprint</h3>
+          <p className="text-xs text-muted-foreground max-w-sm">
+            Chế độ {neo4jTab === "ACTIVITY" ? "Hoạt động Sprint" : "Mạng đánh giá chéo"} yêu cầu dự án cần có ít nhất một Sprint từ Jira để phân tích.
+          </p>
+        </div>
+      );
+    }
+
+    if ((graphQuery.isLoading && !graphQuery.data) || isWaitingDefaultSprint) {
+      return (
+        <div className="flex flex-col items-center justify-center h-[640px] w-full rounded-3xl border border-border bg-card/60 space-y-3">
+          <div className="w-10 h-10 rounded-full border-3 border-primary border-t-transparent animate-spin" />
+          <p className="text-xs font-bold text-muted-foreground">Đang tải dữ liệu đồ thị Neo4j...</p>
+        </div>
+      );
+    }
+
+    if (graphQuery.isError) {
+      return (
+        <div className="flex flex-col items-center justify-center p-12 text-center rounded-3xl border border-destructive/20 bg-destructive/5 space-y-3">
+          <h3 className="text-base font-bold text-destructive">Không tải được đồ thị Neo4j</h3>
+          <p className="text-xs text-muted-foreground max-w-sm">
+            {getApiErrorMessage(graphQuery.error, "Vui lòng kiểm tra lại kết nối.")}
+          </p>
+          <button
+            type="button"
+            onClick={() => void graphQuery.refetch()}
+            className="px-4 py-2 rounded-xl bg-primary text-primary-foreground text-xs font-bold cursor-pointer"
+          >
+            Thử lại
+          </button>
+        </div>
+      );
+    }
+
+    return (
+      <div className="space-y-4">
+        <CytoscapeGraphCanvas
+          nodes={displayGraphData.nodes}
+          edges={displayGraphData.edges}
+          onSelectNode={(node) => setSelectedNode(node)}
+          layoutName="breadthfirst"
+          isUpdating={graphQuery.isFetching && !graphQuery.isLoading}
+        />
+        <GraphStatsSummary
+          totalNodes={structuralStats.totalNodes}
+          totalEdges={structuralStats.totalEdges}
+          anomalyCount={structuralStats.anomalyCount}
+          meta={structuralStats.meta}
+        />
+      </div>
+    );
+  };
 
   const renderPipelineBody = () => {
     if (isCoursesLoading || (Boolean(courseId) && teamQuery.isLoading && !teamQuery.data)) {
@@ -321,91 +459,16 @@ export function TraceabilityGraphView() {
         ) : null}
         <PipelineStatsBar stats={pipeline.stats} isLoadingCommits={pipeline.isLoadingCommits} />
 
-        <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border/80 bg-card p-2 shadow-2xs">
-          <div className="flex items-center gap-1 rounded-xl border border-border/60 bg-muted/60 p-1 text-xs font-bold">
-            <button
-              type="button"
-              onClick={() => setPipelineSubView("FLOW")}
-              className={`flex cursor-pointer items-center gap-1.5 rounded-lg px-3 py-1.5 transition-all ${pipelineSubView === "FLOW"
-                ? "bg-card text-foreground shadow-2xs"
-                : "text-muted-foreground hover:text-foreground"
-                }`}
-            >
-              <SparklesIcon className="size-3.5 text-primary" />
-              <span>Luồng liên kết (Flow)</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setPipelineSubView("MATRIX")}
-              className={`flex cursor-pointer items-center gap-1.5 rounded-lg px-3 py-1.5 transition-all ${pipelineSubView === "MATRIX"
-                ? "bg-card text-foreground shadow-2xs"
-                : "text-muted-foreground hover:text-foreground"
-                }`}
-            >
-              <TableIcon className="size-3.5 text-primary" />
-              <span>Ma trận đối soát (Audit matrix)</span>
-            </button>
-          </div>
-
-          {selectedTask && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setIsMobileInspectorOpen(true)}
-              className="h-8 cursor-pointer gap-1.5 rounded-xl text-xs font-bold lg:hidden"
-            >
-              <GitCommitIcon className="size-3.5 text-primary" />
-              <span>Chi tiết Task & Commit ({selectedTask.key})</span>
-            </Button>
-          )}
-        </div>
-
-        <div className="flex flex-col gap-5 lg:flex-row lg:items-start">
-          <div className="min-w-0 flex-1">
-            {pipelineSubView === "FLOW" ? (
-              <PipelineFlowView
-                lanes={pipeline.lanes}
-                selectedTaskId={pipeline.effectiveTaskId}
-                onSelectTask={handleSelectTask}
-              />
-            ) : (
-              <PipelineMatrixTable
-                tasks={pipeline.filteredTasks}
-                selectedTaskId={pipeline.effectiveTaskId}
-                onSelectTask={handleSelectTask}
-              />
-            )}
-          </div>
-
-          <aside className="hidden w-full shrink-0 self-start lg:sticky lg:top-28 lg:block lg:w-[380px] xl:w-[420px]">
-            <PipelineTaskInspector
-              selectedTask={selectedTask}
-              commits={pipeline.selectedCommits}
-              isLoadingCommits={pipeline.isLoadingTaskCommits}
-              errorMessage={pipeline.taskCommitsErrorMessage}
-              onRetry={() => void pipeline.refetchTaskCommits()}
-              onClearSelection={() => setSelectedTaskId(null)}
-            />
-          </aside>
-        </div>
-
-        <Sheet open={Boolean(selectedTask && isMobileInspectorOpen)} onOpenChange={setIsMobileInspectorOpen}>
-          <SheetContent side="right" className="w-full sm:max-w-md p-0 overflow-y-auto lg:hidden">
-            <div className="p-4">
-              <PipelineTaskInspector
-                selectedTask={selectedTask}
-                commits={pipeline.selectedCommits}
-                isLoadingCommits={pipeline.isLoadingTaskCommits}
-                errorMessage={pipeline.taskCommitsErrorMessage}
-                onRetry={() => void pipeline.refetchTaskCommits()}
-                onClearSelection={() => {
-                  setSelectedTaskId(null);
-                  setIsMobileInspectorOpen(false);
-                }}
-              />
-            </div>
-          </SheetContent>
-        </Sheet>
+        <PipelineWorkspace
+          lanes={pipeline.lanes}
+          filteredTasks={pipeline.filteredTasks}
+          selectedTaskId={selectedTaskId}
+          onSelectTask={setSelectedTaskId}
+          selectedCommits={pipeline.selectedCommits}
+          isLoadingCommits={pipeline.isLoadingTaskCommits}
+          errorMessage={pipeline.taskCommitsErrorMessage}
+          onRetryCommits={() => void pipeline.refetchTaskCommits()}
+        />
       </>
     );
   };
@@ -433,18 +496,27 @@ export function TraceabilityGraphView() {
       <div className="animate-in fade-in-0 space-y-4 duration-200">
         <GraphFilterBar
           groupSelector={projectInfoNode}
-          selectedStudentId={pipelineOpen ? pipeline.sanitizedFilter.studentId : neo4jStudentId}
-          onSelectStudent={
-            pipelineOpen
-              ? (studentId) => setPipelineFilter((prev) => ({ ...prev, studentId }))
-              : setNeo4jStudentId
-          }
-          selectedSprint={pipelineOpen ? pipeline.sanitizedFilter.sprintId : neo4jSprintId}
-          onSelectSprint={
-            pipelineOpen
-              ? (sprintId) => setPipelineFilter((prev) => ({ ...prev, sprintId }))
-              : setNeo4jSprintId
-          }
+          selectedStudentId={pipelineOpen ? pipeline.sanitizedFilter.studentId : (drillDownStudent?.id || "ALL")}
+          onSelectStudent={(studentId) => {
+            if (pipelineOpen) {
+              setPipelineFilter((prev) => ({ ...prev, studentId }));
+            } else {
+              if (studentId === "ALL") {
+                setDrillDownStudent(null);
+              } else {
+                const found = pipelineMemberOptions.find((m) => m.value === studentId);
+                setDrillDownStudent({ id: studentId, label: found?.label || studentId });
+              }
+            }
+          }}
+          selectedSprint={pipelineOpen ? pipeline.sanitizedFilter.sprintId : (neo4jSprintId || "ALL")}
+          onSelectSprint={(sprintId) => {
+            if (pipelineOpen) {
+              setPipelineFilter((prev) => ({ ...prev, sprintId }));
+            } else {
+              setSelectedSprintState(sprintId);
+            }
+          }}
           filterType={
             pipelineOpen
               ? pipeline.sanitizedFilter.anomaliesOnly
@@ -471,53 +543,57 @@ export function TraceabilityGraphView() {
               });
               return;
             }
-            setNeo4jStudentId("ALL");
-            setNeo4jSprintId("ALL");
+            setSelectedSprintState("ALL");
             setNeo4jFilterType("ALL");
+            setDrillDownStudent(null);
+            setScopeMode("COMPACT");
+            setMaxNodes(100);
           }}
           anomaliesCount={
-            pipelineOpen ? pipeline.stats.doneWithoutLinkedCommits : initialData.summary.msrAnomaliesCount
+            pipelineOpen ? pipeline.stats.doneWithoutLinkedCommits : structuralStats.anomalyCount
           }
-          anomalyLabel={pipelineOpen ? "Task hoàn thành chưa có Commit" : "Chỉ cảnh báo"}
-          memberOptions={pipelineOpen ? pipelineMemberOptions : NEO4J_MEMBER_OPTIONS}
-          sprintOptions={pipelineOpen ? pipelineSprintOptions : NEO4J_SPRINT_OPTIONS}
+          anomalyLabel={pipelineOpen ? "Task hoàn thành chưa có Commit" : "Node bất thường"}
+          memberOptions={pipelineMemberOptions}
+          sprintOptions={pipelineOpen ? pipelineSprintOptions : sprintOptions}
           viewMode={viewMode}
-          onSelectViewMode={setViewMode}
+          onSelectViewMode={(mode) => {
+            setViewMode(mode);
+            setSelectedNode(null);
+          }}
           extraActiveFilters={
             pipelineOpen
               ? [
-                  pipeline.sanitizedFilter.repoId !== "ALL"
-                    ? {
-                        key: "repository",
-                        label: `Repository: ${
-                          pipeline.repositories.find(
-                            (repository) => repository.id === pipeline.sanitizedFilter.repoId
-                          )?.fullName || pipeline.sanitizedFilter.repoId
-                        }`,
-                        onClear: () => {
-                          setSelectedTaskId(null);
-                          setPipelineFilter((current) => ({
-                            ...current,
-                            repoId: "ALL",
-                            branchName: "ALL",
-                          }));
-                        },
-                      }
-                    : null,
-                  pipeline.sanitizedFilter.branchName !== "ALL"
-                    ? {
-                        key: "branch",
-                        label: `Branch: ${pipeline.sanitizedFilter.branchName}`,
-                        onClear: () => {
-                          setSelectedTaskId(null);
-                          setPipelineFilter((current) => ({ ...current, branchName: "ALL" }));
-                        },
-                      }
-                    : null,
-                ].filter(
-                  (filter): filter is { key: string; label: string; onClear: () => void } =>
-                    filter !== null
-                )
+                pipeline.sanitizedFilter.repoId !== "ALL"
+                  ? {
+                    key: "repository",
+                    label: `Repository: ${pipeline.repositories.find(
+                      (repository) => repository.id === pipeline.sanitizedFilter.repoId
+                    )?.fullName || pipeline.sanitizedFilter.repoId
+                      }`,
+                    onClear: () => {
+                      setSelectedTaskId(null);
+                      setPipelineFilter((current) => ({
+                        ...current,
+                        repoId: "ALL",
+                        branchName: "ALL",
+                      }));
+                    },
+                  }
+                  : null,
+                pipeline.sanitizedFilter.branchName !== "ALL"
+                  ? {
+                    key: "branch",
+                    label: `Branch: ${pipeline.sanitizedFilter.branchName}`,
+                    onClear: () => {
+                      setSelectedTaskId(null);
+                      setPipelineFilter((current) => ({ ...current, branchName: "ALL" }));
+                    },
+                  }
+                  : null,
+              ].filter(
+                (filter): filter is { key: string; label: string; onClear: () => void } =>
+                  filter !== null
+              )
               : []
           }
           extraCollapsibleContent={
@@ -548,29 +624,46 @@ export function TraceabilityGraphView() {
           }
         />
 
-        {pipelineOpen ? (
-          renderPipelineBody()
-        ) : (
-          <>
-            <CytoscapeGraphCanvas
-              nodes={filteredGraphData.nodes}
-              edges={filteredGraphData.edges}
-              onSelectNode={(node) => setSelectedNode(node)}
-              layoutName="breadthfirst"
-            />
-            <GraphStatsSummary
-              totalNodes={filteredGraphData.nodes.length}
-              totalEdges={filteredGraphData.edges.length}
-              traceabilityRate={initialData.summary.traceabilityRate}
-              msrCount={initialData.summary.msrAnomaliesCount}
-              demoNotice={NEO4J_DEMO_LABEL}
-            />
-            <TraceabilityMatrixTable />
-          </>
+        {!pipelineOpen && (
+          <Neo4jTabBar
+            tab={neo4jTab}
+            onTabChange={handleTabChange}
+            sprintOptions={sprintOptions}
+            selectedSprintId={effectiveSprintId}
+            onSprintChange={handleSprintChange}
+            drillDownStudent={drillDownStudent}
+            onBackToOverview={() => setDrillDownStudent(null)}
+            scopeMode={scopeMode}
+            onScopeModeChange={setScopeMode}
+            maxNodes={maxNodes}
+            onMaxNodesChange={setMaxNodes}
+            memberOptions={pipelineMemberOptions}
+            selectedStudentId={drillDownStudent?.id || "ALL"}
+            onStudentChange={(studentId) => {
+              if (studentId === "ALL") {
+                setDrillDownStudent(null);
+              } else {
+                const found = pipelineMemberOptions.find((m) => m.value === studentId);
+                setDrillDownStudent({ id: studentId, label: found?.label || studentId });
+              }
+            }}
+          />
         )}
+
+        {pipelineOpen ? renderPipelineBody() : renderNeo4jBody()}
       </div>
 
-      <GraphNodeDetailsModal nodeData={selectedNode} onClose={() => setSelectedNode(null)} />
+      <GraphNodeDetailsModal
+        nodeData={selectedNode}
+        onClose={() => setSelectedNode(null)}
+        onViewContribution={(studentId) => {
+          const cleanId = studentId.replace(/^student:/, "");
+          setDrillDownStudent({
+            id: cleanId,
+            label: selectedNode?.label || cleanId,
+          });
+        }}
+      />
     </div>
   );
 }

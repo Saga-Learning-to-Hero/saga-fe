@@ -5,6 +5,8 @@ import { useQueryClient } from "@tanstack/react-query";
 import { JIRA_SPRINT_QUERY_KEYS } from "@/features/student/sprint-progress/hooks/use-sprint-data";
 import { TASK_EVIDENCE_QUERY_KEYS } from "@/features/student/sprint-progress/hooks/use-task-evidence";
 import { PROJECT_PROJECTION_QUERY_KEYS } from "@/features/student/project/hooks/useProjectSync";
+import { PROJECT_GRAPH_QUERY_KEY } from "@/features/graph/hooks/use-project-graph";
+import type { GraphType } from "@/features/graph/types/graph";
 import type {
   ProjectRealtimeEvent,
   ProjectRealtimeEventType,
@@ -21,6 +23,7 @@ const REALTIME_EVENT_NAMES: ProjectRealtimeEventType[] = [
   "TASK_LINKS_CHANGED",
   "TASK_EVIDENCE_CHANGED",
   "SYNC_STATUS_CHANGED",
+  "GRAPH_CHANGED",
 ];
 
 export function useProjectRealtime(
@@ -35,6 +38,8 @@ export function useProjectRealtime(
 
   const eventSourceRef = useRef<EventSource | null>(null);
   const optionsRef = useRef(options);
+  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const pendingGraphTypesRef = useRef<Set<GraphType | "ALL">>(new Set());
 
   useEffect(() => {
     optionsRef.current = options;
@@ -42,6 +47,36 @@ export function useProjectRealtime(
 
   const isEnabled = (options?.enabled ?? true) && Boolean(projectId && projectId.trim());
   const cleanProjectId = projectId?.trim() || "";
+
+  const scheduleGraphInvalidation = useCallback(
+    (pid: string, types: (GraphType | "ALL")[]) => {
+      types.forEach((t) => pendingGraphTypesRef.current.add(t));
+
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
+
+      debounceTimerRef.current = setTimeout(() => {
+        const set = new Set(pendingGraphTypesRef.current);
+        pendingGraphTypesRef.current.clear();
+        debounceTimerRef.current = null;
+
+        if (set.has("ALL")) {
+          void queryClient.invalidateQueries({
+            queryKey: [PROJECT_GRAPH_QUERY_KEY, pid],
+          });
+          return;
+        }
+
+        set.forEach((gType) => {
+          void queryClient.invalidateQueries({
+            queryKey: [PROJECT_GRAPH_QUERY_KEY, pid, gType],
+          });
+        });
+      }, 350);
+    },
+    [queryClient]
+  );
 
   const invalidateForEvent = useCallback(
     (type: ProjectRealtimeEventType, pid: string, entityId?: string) => {
@@ -82,7 +117,6 @@ export function useProjectRealtime(
 
       switch (type) {
         case "READY":
-          // READY is also emitted after an EventSource reconnect. The stream contains no canonical data.
           void queryClient.invalidateQueries({ queryKey: ["projects", pid] });
           invalidateTasks();
           invalidateSprints();
@@ -91,20 +125,27 @@ export function useProjectRealtime(
           invalidateSyncStatus();
           invalidateProgress();
           invalidateMemberProgress();
+          scheduleGraphInvalidation(pid, ["ALL"]);
+          break;
+        case "GRAPH_CHANGED":
+          scheduleGraphInvalidation(pid, ["ALL"]);
           break;
         case "TASKS_CHANGED":
           invalidateTasks();
           invalidateProgress();
           invalidateMemberProgress();
+          scheduleGraphInvalidation(pid, ["OVERVIEW", "CONTRIBUTION", "ACTIVITY"]);
           break;
         case "SPRINTS_CHANGED":
           invalidateSprints();
           invalidateProgress();
+          scheduleGraphInvalidation(pid, ["OVERVIEW", "ACTIVITY", "PEER_REVIEW"]);
           break;
         case "COMMITS_CHANGED":
           invalidateCommits();
           invalidateProgress();
           invalidateMemberProgress();
+          scheduleGraphInvalidation(pid, ["OVERVIEW", "CONTRIBUTION", "ACTIVITY", "ATTRIBUTION"]);
           break;
         case "TASK_LINKS_CHANGED":
           invalidateTasks();
@@ -113,6 +154,7 @@ export function useProjectRealtime(
           invalidateCommits();
           invalidateProgress();
           invalidateMemberProgress();
+          scheduleGraphInvalidation(pid, ["OVERVIEW", "CONTRIBUTION", "ACTIVITY", "ATTRIBUTION"]);
           break;
         case "TASK_EVIDENCE_CHANGED":
           invalidateTaskDetails();
@@ -125,6 +167,7 @@ export function useProjectRealtime(
           } else {
             void queryClient.invalidateQueries({ queryKey: ["tasks"] });
           }
+          scheduleGraphInvalidation(pid, ["OVERVIEW", "CONTRIBUTION", "ACTIVITY"]);
           break;
         case "SYNC_STATUS_CHANGED":
           invalidateSyncStatus();
@@ -132,8 +175,16 @@ export function useProjectRealtime(
           break;
       }
     },
-    [queryClient]
+    [queryClient, scheduleGraphInvalidation]
   );
+
+  useEffect(() => {
+    return () => {
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
+    };
+  }, []);
 
   useEffect(() => {
     if (!isEnabled || !cleanProjectId || typeof window === "undefined" || typeof EventSource === "undefined") {
@@ -161,7 +212,6 @@ export function useProjectRealtime(
 
       es.onerror = () => {
         setConnectionStatus("ERROR");
-        // Keep the source open: native EventSource reconnects and BE will emit READY again.
       };
 
       REALTIME_EVENT_NAMES.forEach((eventName) => {
@@ -170,7 +220,6 @@ export function useProjectRealtime(
           try {
             payload = typeof e.data === "string" ? JSON.parse(e.data) : e.data || {};
           } catch {
-            // Event names are authoritative invalidation signals; a malformed payload is ignored.
           }
 
           const realtimeEvent: ProjectRealtimeEvent = {
