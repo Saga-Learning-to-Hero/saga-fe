@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "@/components/ui/sonner";
 import { AuthService } from "../api/auth-service";
 import { useAuthStore } from "../store/useAuthStore";
+import { performLogout } from "../lib/logout-orchestrator";
 import { ensureCsrfToken } from "@/lib/axios";
 import { isUnauthorizedError } from "@/lib/api-error";
 import type {
@@ -87,6 +88,7 @@ export function useLogin() {
         queryClient.clear();
         setUser(mappedUser, res.passwordSetupRequired);
         queryClient.setQueryData(AUTH_QUERY_KEY, res);
+        void ensureCsrfToken(true);
 
         toast.success("Đăng nhập thành công!", {
           id: "auth-login-success",
@@ -190,26 +192,19 @@ export function useSetupPassword() {
 export function useLogout() {
   const queryClient = useQueryClient();
   const router = useRouter();
-  const { setUser } = useAuthStore();
 
   return useMutation({
-    mutationFn: () => AuthService.logout(),
-    onSuccess: () => {
-      setUser(null);
-      queryClient.setQueryData(AUTH_QUERY_KEY, {
-        authenticated: false,
-        passwordSetupRequired: false,
-        user: null,
-      });
-      queryClient.clear();
-
-      toast.info("Đã đăng xuất tài khoản", {
-        id: "auth-logout-info",
-        description: "Hẹn gặp lại bạn trong phiên làm việc tiếp theo.",
-      });
-
-      router.replace("/login");
-    },
+    mutationFn: () =>
+      performLogout({
+        queryClient,
+        onRedirect: () => {
+          toast.info("Đã đăng xuất tài khoản", {
+            id: "auth-logout-info",
+            description: "Hẹn gặp lại bạn trong phiên làm việc tiếp theo.",
+          });
+          router.replace("/login");
+        },
+      }),
     onError: (err: unknown) => {
       const e = err as Error;
       toast.error("Đăng xuất thất bại", {

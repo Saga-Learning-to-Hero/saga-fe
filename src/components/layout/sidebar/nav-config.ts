@@ -59,6 +59,7 @@ export const ADMIN_NAV: NavGroup[] = [
     roles: ["ADMIN"],
     items: [
       { id: "admin-audit", title: "Nhật ký hệ thống", href: "/admin/audit-log", icon: "ScrollText", match: "exact" },
+      { id: "admin-notifications", title: "Thông báo hệ thống", href: "/admin/notifications", icon: "Bell", match: "exact" },
     ],
   },
 ];

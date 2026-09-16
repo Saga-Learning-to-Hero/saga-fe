@@ -41,7 +41,14 @@ function setStoredCsrfToken(token: string | null) {
       sessionStorage.removeItem(CSRF_STORAGE_KEY);
     }
   } catch {
-    // Ignore storage errors
+  }
+}
+
+export function clearStoredCsrfToken() {
+  cachedCsrfToken = null;
+  setStoredCsrfToken(null);
+  if (typeof document !== "undefined") {
+    document.cookie = "XSRF-TOKEN=; Max-Age=0; path=/;";
   }
 }
 

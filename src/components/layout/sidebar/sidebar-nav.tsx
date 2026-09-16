@@ -21,6 +21,7 @@ import {
   SlidersHorizontalIcon,
   ArrowLeftIcon,
   Link2Icon,
+  BellIcon,
 } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import {
@@ -54,6 +55,7 @@ const ICON_MAP: Record<string, React.ElementType> = {
   SlidersHorizontal: SlidersHorizontalIcon,
   ArrowLeft: ArrowLeftIcon,
   Link2: Link2Icon,
+  Bell: BellIcon,
 };
 
 interface SidebarNavProps {

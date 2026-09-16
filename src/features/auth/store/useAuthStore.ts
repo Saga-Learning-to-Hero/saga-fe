@@ -3,6 +3,7 @@ import { persist } from "zustand/middleware";
 import type { Role, User } from "@/types/auth";
 import type { StudentCourse } from "@/features/student/courses/types/student-course";
 import { AuthService } from "../api/auth-service";
+import { performLogout } from "../lib/logout-orchestrator";
 import { isUnauthorizedError } from "@/lib/api-error";
 
 interface AuthState {
@@ -110,17 +111,7 @@ export const useAuthStore = create<AuthState>()(
       },
 
       logout: async () => {
-        try {
-          await AuthService.logout();
-        } catch {
-        } finally {
-          set({
-            isAuthenticated: false,
-            user: null,
-            selectedCourse: null,
-            passwordSetupRequired: false,
-          });
-        }
+        await performLogout();
       },
 
       switchRole: (role) =>
