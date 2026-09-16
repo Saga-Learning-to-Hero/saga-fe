@@ -275,11 +275,25 @@ export function LecturerGraphView({
   const neo4jMemberSelectOptions = useMemo<CustomSelectOption[]>(() => {
     if (!currentTeam?.members) return [];
     return currentTeam.members.map((m) => ({
-      value: m.studentCode,
+      value: m.studentProfileId || m.studentCode,
       label: m.fullName,
       subLabel: `${m.studentCode} (${m.role})`,
     }));
   }, [currentTeam]);
+
+  const handleSelectDrillDownStudent = (input: string | null) => {
+    if (!input || input === "ALL") {
+      setDrillDownStudent(null);
+      return;
+    }
+    const cleanId = input.replace(/^student:/, "");
+    const member = currentTeam?.members?.find(
+      (m) => m.studentProfileId === cleanId || m.studentCode === cleanId
+    );
+    const resolvedId = member?.studentProfileId || cleanId;
+    const resolvedLabel = member?.fullName || cleanId;
+    setDrillDownStudent({ id: resolvedId, label: resolvedLabel });
+  };
 
   const memberSelectOptions = useMemo<CustomSelectOption[]>(() => {
     const opts: CustomSelectOption[] = pipeline.members.map((member) => ({
@@ -371,6 +385,35 @@ export function LecturerGraphView({
         icon: null,
       };
     }
+    if (mainMode === "GRAPH") {
+      if (graphQuery.isLoading) {
+        return {
+          label: "Đang tải...",
+          variant: "muted" as const,
+          icon: null,
+        };
+      }
+      if (structuralStats.anomalyCount > 0) {
+        return {
+          label: "Cần đối soát",
+          variant: "warning" as const,
+          icon: <AlertTriangleIcon className="size-3.5 shrink-0 text-amber-600 dark:text-amber-400" />,
+        };
+      }
+      const taskCount = (graphQuery.data?.nodes || []).filter((n) => n.data.type === "TASK").length;
+      if (taskCount === 0 && (graphQuery.data?.nodes || []).length > 0) {
+        return {
+          label: "Chưa có Task",
+          variant: "muted" as const,
+          icon: null,
+        };
+      }
+      return {
+        label: "Hoạt động tốt",
+        variant: "success" as const,
+        icon: <CheckCircle2Icon className="size-3.5 shrink-0 text-emerald-600 dark:text-emerald-400" />,
+      };
+    }
     if (pipeline.stats.doneWithoutLinkedCommits > 0) {
       return {
         label: "Cần đối soát",
@@ -390,7 +433,15 @@ export function LecturerGraphView({
       variant: "success" as const,
       icon: <CheckCircle2Icon className="size-3.5 shrink-0 text-emerald-600 dark:text-emerald-400" />,
     };
-  }, [pipeline.stats.doneWithoutLinkedCommits, pipeline.tasks.length, projectId]);
+  }, [
+    mainMode,
+    projectId,
+    graphQuery.isLoading,
+    graphQuery.data?.nodes,
+    structuralStats.anomalyCount,
+    pipeline.stats.doneWithoutLinkedCommits,
+    pipeline.tasks.length,
+  ]);
 
   if (teamsQuery.isLoading) {
     return (
@@ -632,11 +683,11 @@ export function LecturerGraphView({
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 sm:p-5 rounded-2xl border border-border/80 bg-card/90 shadow-xs backdrop-blur-md">
-        <div className="flex items-center gap-3.5">
-          <div className="size-11 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shrink-0">
-            <GitGraphIcon className="size-5.5" />
+    <div className="space-y-3.5">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 p-3 sm:p-4 rounded-2xl border border-border/80 bg-card/90 shadow-xs backdrop-blur-md">
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="size-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shrink-0">
+            <GitGraphIcon className="size-5" />
           </div>
           <div>
             <div className="flex flex-wrap items-center gap-2">
@@ -662,46 +713,9 @@ export function LecturerGraphView({
                 <span>{teamStatusRule.label}</span>
               </Badge>
             </div>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              Giám sát đa chiều đồ thị mạng lưới Neo4j và ma trận đối soát công việc của các nhóm dự án.
-            </p>
           </div>
-        </div>
 
-        <div className="flex items-center gap-1.5 p-1 bg-muted/60 rounded-xl border border-border/60 self-start sm:self-auto shrink-0 shadow-2xs">
-          <button
-            type="button"
-            onClick={() => {
-              setMainMode("GRAPH");
-              setSelectedTaskId(null);
-            }}
-            className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-extrabold transition-all cursor-pointer ${mainMode === "GRAPH"
-              ? "bg-card text-foreground shadow-xs border border-border/80"
-              : "text-muted-foreground hover:text-foreground"
-              }`}
-          >
-            <NetworkIcon className="size-3.5 text-primary" />
-            <span>Neo4j Graph</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              setMainMode("PIPELINE");
-              setSelectedGraphNode(null);
-            }}
-            className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-extrabold transition-all cursor-pointer ${mainMode === "PIPELINE"
-              ? "bg-card text-foreground shadow-xs border border-border/80"
-              : "text-muted-foreground hover:text-foreground"
-              }`}
-          >
-            <span>Pipeline</span>
-          </button>
-        </div>
-      </div>
-
-      <div className="space-y-3 rounded-2xl border border-border/80 bg-card/90 p-3.5 shadow-xs">
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2.5">
-          <div className="col-span-1 sm:col-span-2 md:col-span-1 lg:col-span-2">
+          <div className="w-56 sm:w-64">
             <CustomSelect
               id="team-selector"
               value={selectedTeamId}
@@ -709,125 +723,163 @@ export function LecturerGraphView({
               options={teamSelectOptions}
             />
           </div>
+        </div>
 
-          {mainMode === "GRAPH" ? (
+        <div className="flex flex-wrap items-center gap-2 shrink-0">
+          {mainMode === "GRAPH" && (
             <>
-              <div className="col-span-1 sm:col-span-2 flex items-center gap-1 p-1 bg-muted/60 rounded-xl border border-border/60 text-xs">
+              <div className="flex items-center gap-1 p-0.5 bg-muted/60 rounded-xl border border-border/60 text-xs">
                 <button
                   type="button"
                   onClick={() => setNeo4jFilterType("ALL")}
-                  className={`flex-1 py-1.5 text-center font-bold rounded-lg cursor-pointer transition-colors ${neo4jFilterType === "ALL"
-                    ? "bg-card text-foreground shadow-2xs"
-                    : "text-muted-foreground hover:text-foreground"
-                    }`}
+                  className={`px-3 py-1.5 font-bold rounded-lg cursor-pointer transition-colors ${
+                    neo4jFilterType === "ALL"
+                      ? "bg-card text-foreground shadow-2xs"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
                 >
                   Tất cả
                 </button>
                 <button
                   type="button"
                   onClick={() => setNeo4jFilterType("ANOMALIES_ONLY")}
-                  className={`flex-1 py-1.5 text-center font-bold rounded-lg cursor-pointer transition-colors ${neo4jFilterType === "ANOMALIES_ONLY"
-                    ? "border border-destructive/40 bg-destructive/15 text-destructive shadow-2xs"
-                    : "text-muted-foreground hover:text-foreground"
-                    }`}
+                  className={`px-3 py-1.5 font-bold rounded-lg cursor-pointer transition-colors ${
+                    neo4jFilterType === "ANOMALIES_ONLY"
+                      ? "border border-destructive/40 bg-destructive/15 text-destructive shadow-2xs"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
                 >
                   Cảnh báo ({structuralStats.anomalyCount})
                 </button>
               </div>
 
-              <div className="col-span-1 sm:col-span-2 flex items-center justify-end gap-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    const json = JSON.stringify(graphQuery.data || { nodes: [], edges: [] }, null, 2);
-                    downloadTextFile(`neo4j-lecturer-team-${currentTeam?.teamNo || "team"}.json`, json);
-                  }}
-                  disabled={!graphQuery.data?.nodes.length}
-                  className="h-9 gap-1.5 text-xs font-semibold cursor-pointer"
-                >
-                  <DownloadIcon className="size-3.5" />
-                  Xuất JSON
-                </Button>
-              </div>
-            </>
-          ) : (
-            <>
-              <div className="relative">
-                <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground pointer-events-none" />
-                <Input
-                  type="text"
-                  value={pipelineFilter.searchQuery || ""}
-                  onChange={(e) =>
-                    setPipelineFilter((prev) => ({ ...prev, searchQuery: e.target.value }))
-                  }
-                  placeholder="Tìm Task key, title..."
-                  className="h-10 pl-8 text-xs rounded-xl bg-card border-border/80"
-                />
-                {pipelineFilter.searchQuery && (
-                  <button
-                    type="button"
-                    onClick={() => setPipelineFilter((prev) => ({ ...prev, searchQuery: "" }))}
-                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground cursor-pointer"
-                  >
-                    <XIcon className="size-3" />
-                  </button>
-                )}
-              </div>
-
-              <div>
-                <CustomSelect
-                  id="assignee-filter"
-                  value={pipelineFilter.studentId}
-                  onChange={(val) => setPipelineFilter((prev) => ({ ...prev, studentId: val }))}
-                  options={memberSelectOptions}
-                />
-              </div>
-
-              <div>
-                <CustomSelect
-                  id="sprint-filter"
-                  value={pipelineFilter.sprintId}
-                  onChange={(val) => setPipelineFilter((prev) => ({ ...prev, sprintId: val }))}
-                  options={pipelineSprintSelectOptions}
-                />
-              </div>
-
-              <div>
-                <CustomSelect
-                  id="anomaly-filter"
-                  value={pipelineFilter.anomalyType || "ALL"}
-                  onChange={(val) =>
-                    setPipelineFilter((prev) => ({
-                      ...prev,
-                      anomalyType: val as PipelineAnomalyFilterType,
-                    }))
-                  }
-                  options={anomalySelectOptions}
-                />
-              </div>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  const json = JSON.stringify(graphQuery.data || { nodes: [], edges: [] }, null, 2);
+                  downloadTextFile(`neo4j-lecturer-team-${currentTeam?.teamNo || "team"}.json`, json);
+                }}
+                disabled={!graphQuery.data?.nodes.length}
+                className="h-8.5 gap-1.5 text-xs font-semibold cursor-pointer rounded-xl"
+              >
+                <DownloadIcon className="size-3.5" />
+                Xuất JSON
+              </Button>
             </>
           )}
-        </div>
 
-        {mainMode === "PIPELINE" && (
+          <div className="flex items-center gap-1 p-1 bg-muted/60 rounded-xl border border-border/60 shadow-2xs">
+            <button
+              type="button"
+              onClick={() => {
+                setMainMode("GRAPH");
+                setSelectedTaskId(null);
+              }}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-extrabold transition-all cursor-pointer ${
+                mainMode === "GRAPH"
+                  ? "bg-card text-foreground shadow-xs border border-border/80"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              <NetworkIcon className="size-3.5 text-primary" />
+              <span>Neo4j Graph</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setMainMode("PIPELINE");
+                setSelectedGraphNode(null);
+              }}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-extrabold transition-all cursor-pointer ${
+                mainMode === "PIPELINE"
+                  ? "bg-card text-foreground shadow-xs border border-border/80"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              <span>Pipeline</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {mainMode === "PIPELINE" && (
+        <div className="space-y-3 rounded-2xl border border-border/80 bg-card/90 p-3.5 shadow-xs">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2.5">
+            <div className="relative">
+              <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground pointer-events-none" />
+              <Input
+                type="text"
+                value={pipelineFilter.searchQuery || ""}
+                onChange={(e) =>
+                  setPipelineFilter((prev) => ({ ...prev, searchQuery: e.target.value }))
+                }
+                placeholder="Tìm Task key, title..."
+                className="h-10 pl-8 text-xs rounded-xl bg-card border-border/80"
+              />
+              {pipelineFilter.searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setPipelineFilter((prev) => ({ ...prev, searchQuery: "" }))}
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground cursor-pointer"
+                >
+                  <XIcon className="size-3" />
+                </button>
+              )}
+            </div>
+
+            <div>
+              <CustomSelect
+                id="assignee-filter"
+                value={pipelineFilter.studentId}
+                onChange={(val) => setPipelineFilter((prev) => ({ ...prev, studentId: val }))}
+                options={memberSelectOptions}
+              />
+            </div>
+
+            <div>
+              <CustomSelect
+                id="sprint-filter"
+                value={pipelineFilter.sprintId}
+                onChange={(val) => setPipelineFilter((prev) => ({ ...prev, sprintId: val }))}
+                options={pipelineSprintSelectOptions}
+              />
+            </div>
+
+            <div>
+              <CustomSelect
+                id="anomaly-filter"
+                value={pipelineFilter.anomalyType || "ALL"}
+                onChange={(val) =>
+                  setPipelineFilter((prev) => ({
+                    ...prev,
+                    anomalyType: val as PipelineAnomalyFilterType,
+                  }))
+                }
+                options={anomalySelectOptions}
+              />
+            </div>
+          </div>
+
           <div className="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-border/50 text-xs">
             <div className="flex flex-wrap items-center gap-2">
               <div className="flex items-center gap-1 p-0.5 bg-muted/60 rounded-lg border border-border/60">
                 <button
                   type="button"
                   onClick={() => setPipelineSubView("FLOW")}
-                  className={`px-2.5 py-1 rounded-md font-bold cursor-pointer transition-colors ${pipelineSubView === "FLOW" ? "bg-card text-foreground shadow-2xs" : "text-muted-foreground"
-                    }`}
+                  className={`px-2.5 py-1 rounded-md font-bold cursor-pointer transition-colors ${
+                    pipelineSubView === "FLOW" ? "bg-card text-foreground shadow-2xs" : "text-muted-foreground"
+                  }`}
                 >
                   Flow
                 </button>
                 <button
                   type="button"
                   onClick={() => setPipelineSubView("MATRIX")}
-                  className={`px-2.5 py-1 rounded-md font-bold cursor-pointer transition-colors ${pipelineSubView === "MATRIX" ? "bg-card text-foreground shadow-2xs" : "text-muted-foreground"
-                    }`}
+                  className={`px-2.5 py-1 rounded-md font-bold cursor-pointer transition-colors ${
+                    pipelineSubView === "MATRIX" ? "bg-card text-foreground shadow-2xs" : "text-muted-foreground"
+                  }`}
                 >
                   Audit Matrix
                 </button>
@@ -882,8 +934,8 @@ export function LecturerGraphView({
               </Button>
             </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
       {mainMode === "GRAPH" && (
         <Neo4jTabBar
@@ -901,14 +953,7 @@ export function LecturerGraphView({
           onMaxNodesChange={setMaxNodes}
           memberOptions={neo4jMemberSelectOptions}
           selectedStudentId={drillDownStudent?.id || "ALL"}
-          onStudentChange={(studentId) => {
-            if (studentId === "ALL") {
-              setDrillDownStudent(null);
-            } else {
-              const found = neo4jMemberSelectOptions.find((m) => m.value === studentId);
-              setDrillDownStudent({ id: studentId, label: found?.label || studentId });
-            }
-          }}
+          onStudentChange={handleSelectDrillDownStudent}
         />
       )}
 
@@ -918,13 +963,10 @@ export function LecturerGraphView({
         nodeData={selectedGraphNode}
         onClose={() => setSelectedGraphNode(null)}
         onViewContribution={(studentId) => {
-          const cleanId = studentId.replace(/^student:/, "");
-          setDrillDownStudent({
-            id: cleanId,
-            label: selectedGraphNode?.label || cleanId,
-          });
+          handleSelectDrillDownStudent(studentId);
         }}
       />
     </div>
   );
 }
+

@@ -194,7 +194,7 @@ export function CytoscapeGraphCanvas({
         name: "preset",
         positions,
         fit: true,
-        padding: 50,
+        padding: 60,
         animate: false,
       };
 
@@ -202,7 +202,7 @@ export function CytoscapeGraphCanvas({
         const layoutInstance = cyInstance.layout(layoutConfig);
         activeLayoutRef.current = layoutInstance;
         layoutInstance.run();
-        cyInstance.fit(undefined, 50);
+        cyInstance.fit(undefined, 60);
         cyInstance.center?.();
       } catch { }
       return;
@@ -679,7 +679,7 @@ export function CytoscapeGraphCanvas({
   };
 
   return (
-    <div className="relative w-full h-[640px] sm:h-[700px] lg:h-[740px] rounded-3xl border border-border/90 bg-linear-to-b from-card/95 via-card/80 to-card/95 backdrop-blur-md overflow-hidden shadow-md">
+    <div className="relative w-full h-[580px] sm:h-[640px] lg:h-[calc(100vh-230px)] min-h-[540px] max-h-[780px] rounded-3xl border border-border/90 bg-linear-to-b from-card/95 via-card/80 to-card/95 backdrop-blur-md overflow-hidden shadow-md">
       <div ref={containerRef} className="w-full h-full cursor-grab active:cursor-grabbing" />
 
       {isUpdating && (
