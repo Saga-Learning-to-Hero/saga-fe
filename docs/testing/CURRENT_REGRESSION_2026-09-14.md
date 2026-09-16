@@ -1,6 +1,6 @@
-# Current regression — 14/09/2026
+# Historical regression snapshot — 14/09/2026
 
-> Canonical test inventory for the current `saga-fe` branch. Generated from a successful `npm test` run on 14/09/2026.
+> Snapshot lịch sử được tạo từ lần chạy `npm test` thành công ngày 14/09/2026. Không dùng số liệu trong file này làm kết quả regression hiện hành. Xem [CURRENT_REGRESSION_2026-09-16.md](CURRENT_REGRESSION_2026-09-16.md) để lấy inventory canonical mới nhất.
 
 ```text
 Test Files  39 passed (39)

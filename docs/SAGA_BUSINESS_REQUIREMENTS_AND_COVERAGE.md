@@ -8,7 +8,7 @@
 documentType: SAGA_PRODUCT_BUSINESS_SPECIFICATION
 scopeMode: TARGET_BUSINESS_SCOPE_PLUS_AS_BUILT_APPENDIX
 canonicalLocation: saga-fe/docs/SAGA_BUSINESS_REQUIREMENTS_AND_COVERAGE.md
-baselineDate: 2026-09-15
+baselineDate: 2026-09-16
 updatePolicy: MANDATORY_IN_SAME_CHANGESET
 ```
 
@@ -31,13 +31,14 @@ Quy tắc bảo trì bắt buộc:
 
 | Hạng mục | Giá trị tại thời điểm kiểm tra |
 | --- | --- |
-| Frontend | `saga-fe`, nhánh `feat/SAGA-75-integrate-canonical-neo4j-graph-student-lecturer` |
+| Frontend | `saga-fe`, nhánh `feat/SAGA-76-notification-center-and-firebase-web-push`, commit `6a05e3c` |
 | Backend | `saga-be`, nhánh `main` |
 | FE framework | Next.js 16, React, TypeScript, TanStack Query |
 | Dữ liệu nghiệp vụ chính | REST từ Backend; Jira/GitHub được đồng bộ thành projection trong SAGA |
 | Dữ liệu Graph | Neo4j projection do Backend tạo, FE chỉ truy vấn và trực quan hóa |
 | Realtime | SSE chỉ báo thay đổi; sau event FE phải refetch REST canonical |
-| Lưu ý | Phần Graph SAGA-75 đang có thay đổi chưa commit tại thời điểm lập baseline, vì vậy được đánh dấu `WIP/VERIFY` |
+| FE unit regression | 66/66 files, 643/643 tests passed ngày 16/09/2026; chi tiết tại `docs/testing/CURRENT_REGRESSION_2026-09-16.md` |
+| Lưu ý | SAGA-75 Graph và SAGA-76 Notification đã có data layer, UI và unit/component test; vẫn cần E2E với BE deployed, Jira/GitHub/Firebase thật trước khi coi là nghiệm thu production |
 
 ### 1.1 Mục đích sử dụng
 
@@ -365,7 +366,7 @@ Project Type dùng để phân loại hướng dự án, không điều khiển 
 | LEC-007 | Xem/sửa project group weights | ✓ | ✓ | ✓ | `DONE` |
 | LEC-008 | Xem contribution evaluation | ✓ | ✓ | ✓ | `DONE` |
 | LEC-009 | Contribution override | ✓ | ✓ | ✓ | `DONE`; phải audit và kiểm tra quyền |
-| LEC-010 | Lecturer canonical graph | ✓ | WIP | WIP | `WIP/VERIFY` trong SAGA-75 |
+| LEC-010 | Lecturer canonical graph | ✓ | ✓ | ✓ | `DONE/VERIFY`; đủ năm mode canonical và unit/component test, còn E2E authorization/latency với dữ liệu lớn |
 
 ### 7.4 Student course, project và integration
 
@@ -428,14 +429,14 @@ Project Type dùng để phân loại hướng dự án, không điều khiển 
 | --- | --- | --- | --- | --- | --- |
 | PROG-001 | Project progress summary | ✓ | ✓ | ✓ | `DONE`; quyền leader/lecturer theo policy |
 | PROG-002 | Member progress detail | ✓ | ✓ | ✓ | `DONE`; drawer chỉ là inspector, không thay dữ liệu dashboard tổng |
-| GRAPH-001 | Project graph overview | ✓ | WIP | WIP | `WIP/VERIFY` |
-| GRAPH-002 | Student contribution graph | ✓ | WIP | WIP | `WIP/VERIFY` |
-| GRAPH-003 | Sprint activity graph | ✓ | WIP | WIP | `WIP/VERIFY` |
-| GRAPH-004 | Attribution graph | ✓ | WIP | WIP | `WIP/VERIFY` |
-| GRAPH-005 | Sprint peer-review graph | ✓ | WIP | WIP | `WIP/VERIFY` |
-| PEER-001 | Default/team rubric | ✓ | — | — | `BE_ONLY` |
-| PEER-002 | Sprint review candidates | ✓ | — | Coming soon | `BE_ONLY` |
-| PEER-003 | Submit/list peer reviews | ✓ | — | Coming soon | `BE_ONLY` |
+| GRAPH-001 | Project graph overview | ✓ | ✓ | ✓ | `DONE/VERIFY`; còn E2E dữ liệu lớn và authorization |
+| GRAPH-002 | Student contribution graph | ✓ | ✓ | ✓ | `DONE/VERIFY`; lazy query theo mode/student/sprint |
+| GRAPH-003 | Sprint activity graph | ✓ | ✓ | ✓ | `DONE/VERIFY`; yêu cầu sprint trước khi gọi API |
+| GRAPH-004 | Attribution graph | ✓ | ✓ | ✓ | `DONE/VERIFY`; hỗ trợ anomaly filter và subgraph params |
+| GRAPH-005 | Sprint peer-review graph | ✓ | ✓ | ✓ | `DONE/VERIFY`; yêu cầu sprint trước khi gọi API |
+| PEER-001 | Default/team rubric | ✓ | ✓ | ✓ | `DONE`; Student fallback default rubric và Lecturer dùng team rubric |
+| PEER-002 | Sprint review candidates | ✓ | ✓ | ✓ | `DONE`; Student UI khóa theo review window/trạng thái |
+| PEER-003 | Submit/list peer reviews | ✓ | ✓ | ✓ | `DONE/VERIFY`; Student submit một lần, Lecturer xem list theo team/sprint; còn E2E quyền và deadline |
 | CONT-001 | Student contribution dashboard | ✓ | ✓ | ✓ | `DONE`; dùng evaluation data, tên/tooltip phải rõ |
 | CONT-002 | Warning evidence/peer review | ✓ | ✓ | ✓ | `DONE`; diễn đạt là cảnh báo dữ liệu, không kết luận gian lận |
 
@@ -493,8 +494,10 @@ Project Type dùng để phân loại hướng dự án, không điều khiển 
 | `/api/projects/{projectId}/group-weights` | Đã dùng |
 | `/api/teams/{teamId}/contribution-evaluation` | Đã dùng |
 | `/api/teams/{teamId}/contribution-override` | Đã dùng |
-| `/api/peer-review-rubrics/default` | Chưa dùng |
-| Team rubric, candidates, submit/list peer reviews | Chưa dùng |
+| `/api/peer-review-rubrics/default` | Đã dùng làm fallback rubric cho Student |
+| `/api/teams/{teamId}/peer-review-rubric` | Đã dùng cho Student và Lecturer |
+| `/api/teams/{teamId}/sprints/{sprintId}/peer-reviews/candidates` | Đã dùng cho Student |
+| `/api/teams/{teamId}/sprints/{sprintId}/peer-reviews` GET/POST | Đã dùng; Student submit, Lecturer xem danh sách |
 
 ### 8.4 Student project và provider integration
 
@@ -538,11 +541,11 @@ Project Type dùng để phân loại hướng dự án, không điều khiển 
 
 | Endpoint | FE hiện tại |
 | --- | --- |
-| `GET /api/projects/{projectId}/graph/overview` | WIP SAGA-75 |
-| `GET /api/projects/{projectId}/students/{studentId}/graph/contribution` | WIP SAGA-75 |
-| `GET /api/projects/{projectId}/sprints/{sprintId}/graph/activity` | WIP SAGA-75 |
-| `GET /api/projects/{projectId}/graph/attribution` | WIP SAGA-75 |
-| `GET /api/projects/{projectId}/sprints/{sprintId}/graph/peer-review` | WIP SAGA-75 |
+| `GET /api/projects/{projectId}/graph/overview` | Đã dùng cho Student và Lecturer |
+| `GET /api/projects/{projectId}/students/{studentId}/graph/contribution` | Đã dùng theo student selection/context |
+| `GET /api/projects/{projectId}/sprints/{sprintId}/graph/activity` | Đã dùng và chỉ enable khi có sprint |
+| `GET /api/projects/{projectId}/graph/attribution` | Đã dùng, gồm filter anomaly/subgraph |
+| `GET /api/projects/{projectId}/sprints/{sprintId}/graph/peer-review` | Đã dùng và chỉ enable khi có sprint |
 
 ### 8.8 Notification và Push Installation
 
@@ -616,15 +619,14 @@ Hiện mỗi request graph có thể kích hoạt/rebuild projection theo implem
 
 ### P1 — Nghiệp vụ đã có BE nhưng chưa có UI
 
-- [ ] Tích hợp Peer Review: rubric → candidates → submit → list/result cho Student/Lecturer.
 - [ ] Dùng `/analytics/sprint-activity` cho chart Task–Commit theo Sprint nếu đây là biểu đồ nghiệp vụ yêu cầu; chart commit theo tuần chỉ là activity phụ.
-- [ ] Hoàn thiện và nghiệm thu đủ năm graph endpoint cho Student/Lecturer.
 - [ ] Sửa Project Type thành optional, nullable và bỏ auto-select.
 - [ ] Chuẩn hóa Repository Role giữa FE/BE; bỏ hoặc map rõ `FULLSTACK`/`DOCS`.
 
 ### P2 — Hiệu năng, khả dụng và báo cáo
 
 - [ ] Đo latency/rebuild cost của Graph API; bổ sung cache/version/graph-specific event nếu cần.
+- [ ] Với project lớn, ưu tiên summary/chart/heatmap/swimlane và chỉ lazy-load subgraph khi drill-down; không render toàn bộ Task/Commit thành node mặc định.
 - [ ] Có API hoặc chiến lược aggregate cho Admin Dashboard thay vì mock.
 - [ ] Bổ sung WebAuthn step-up UI nếu phạm vi sản phẩm yêu cầu.
 - [ ] Theo dõi `lastSyncedAt`, trạng thái SSE và lỗi sync riêng; không gộp thành một badge mơ hồ.
@@ -633,7 +635,8 @@ Hiện mỗi request graph có thể kích hoạt/rebuild projection theo implem
 ### Contract cần BE xác nhận
 
 - [ ] Work-session resume chính thức dùng list hiện tại hay endpoint `/active`; chỉ duy trì một convention.
-- [ ] Graph response version/cursor/limit và cơ chế refresh projection.
+- [ ] Graph response version/cursor/limit và cơ chế refresh projection; focused pagination phải giữ context node và connecting edges.
+- [ ] Có cần `GET /api/projects/{projectId}/graph/summary` canonical để trả aggregate theo project/sprint/student, tránh FE tải toàn bộ nodes/edges chỉ để đếm.
 - [ ] Sprint activity DTO có đủ Task completed và Commit theo cùng sprint/timezone.
 - [ ] Task date/parent keys luôn xuất hiện trong response kể cả khi null.
 - [ ] Project update/delete có nằm trong scope release hay không.
