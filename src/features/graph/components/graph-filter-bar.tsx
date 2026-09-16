@@ -71,8 +71,9 @@ export function GraphFilterBar({
 
   const resolvedSprintOptions = [{ value: "ALL", label: "Tất cả các Sprint" }, ...sprintOptions];
 
+  const hasMemberOptions = memberOptions.length > 0;
   const activeFiltersCount =
-    (selectedStudentId !== "ALL" ? 1 : 0) +
+    (hasMemberOptions && selectedStudentId !== "ALL" ? 1 : 0) +
     (selectedSprint !== "ALL" ? 1 : 0) +
     extraActiveFilters.length;
 
@@ -195,6 +196,7 @@ export function GraphFilterBar({
               extraCollapsibleContent ? "xl:grid-cols-4" : ""
             }`}
           >
+            {hasMemberOptions && (
             <div className="space-y-1.5">
               <label
                 htmlFor="graph-member-filter"
@@ -210,6 +212,7 @@ export function GraphFilterBar({
                 options={studentOptions}
               />
             </div>
+            )}
 
             <div className="space-y-1.5">
               <label
@@ -235,7 +238,7 @@ export function GraphFilterBar({
       {!isFilterOpen && activeFiltersCount > 0 && (
         <div className="flex flex-wrap items-center gap-2 px-1 text-xs">
           <span className="text-[11px] font-bold text-muted-foreground">Đang lọc theo:</span>
-          {selectedStudentId !== "ALL" && (
+          {hasMemberOptions && selectedStudentId !== "ALL" && (
             <span className="inline-flex items-center gap-1 rounded-lg border border-primary/20 bg-primary/10 px-2.5 py-1 font-medium text-primary">
               <span>
                 Thành viên: {studentOptions.find((o) => o.value === selectedStudentId)?.label}

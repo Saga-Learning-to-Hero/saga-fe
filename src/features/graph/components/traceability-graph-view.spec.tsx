@@ -1,5 +1,6 @@
 import { describe, expect, vi, beforeEach } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import React from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { fptTest } from "@/testing/fpt-test-helper";
@@ -34,7 +35,14 @@ vi.mock("../hooks/use-project-graph", () => ({
 
 vi.mock("../hooks/use-pipeline-graph-data", () => ({
   usePipelineGraphData: () => ({
-    members: [],
+    members: [
+      {
+        studentId: "SE171184",
+        fullName: "Tran Van B",
+        studentCode: "SE171184",
+        teamRole: "LEADER",
+      },
+    ],
     tasks: [{ id: "t-1", externalKey: "SAGA-1", title: "Task 1", status: "TODO" }],
     sprints: [],
     repositories: [],
@@ -88,7 +96,31 @@ vi.mock("cytoscape", () => {
   };
 });
 
+vi.mock("./cytoscape-graph-canvas", () => ({
+  CytoscapeGraphCanvas: ({
+    onSelectNode,
+  }: {
+    onSelectNode?: (node: { id: string; label: string; type: string }) => void;
+  }) => (
+    <button
+      type="button"
+      onClick={() =>
+        onSelectNode?.({
+          id: "student:80ffd344-5190-4373-a2fb-10e74d64e55d",
+          label: "Tran Van B",
+          type: "STUDENT",
+        })
+      }
+    >
+      Chọn node sinh viên
+    </button>
+  ),
+}));
+
 import { TraceabilityGraphView } from "./traceability-graph-view";
+
+const STUDENT_PROFILE_UUID = "80ffd344-5190-4373-a2fb-10e74d64e55d";
+const STUDENT_NODE_ID = `student:${STUDENT_PROFILE_UUID}`;
 
 function idleQuery(overrides: Record<string, unknown> = {}) {
   return {
@@ -131,7 +163,7 @@ describe("TraceabilityGraphView", () => {
             {
               teamMemberId: "m1",
               studentProfileId: "sp-uuid-1",
-              studentCode: "SE1701",
+              studentCode: "SE171184",
               fullName: "Tran Van B",
               role: "LEADER",
             },
@@ -145,14 +177,21 @@ describe("TraceabilityGraphView", () => {
         isSuccess: true,
         data: {
           nodes: [
-            { data: { id: "student:sp-uuid-1", label: "Tran Van B", type: "STUDENT" } },
+            {
+              data: {
+                id: STUDENT_NODE_ID,
+                label: "Tran Van B",
+                type: "STUDENT",
+                subLabel: "SE171184",
+              },
+            },
             { data: { id: "task:t1", label: "SAGA-201", type: "TASK" } },
           ],
           edges: [
             {
               data: {
                 id: "e1",
-                source: "student:sp-uuid-1",
+                source: STUDENT_NODE_ID,
                 target: "task:t1",
                 label: "ASSIGNED_TO",
               },
@@ -187,8 +226,13 @@ describe("TraceabilityGraphView", () => {
         expect.objectContaining({
           projectId: "proj-1",
           graphType: "OVERVIEW",
+          sprintId: null,
+          subgraphParams: { nodeTypes: ["STUDENT"] },
           enabled: true,
         })
+      );
+      expect(graphQueryMock).not.toHaveBeenCalledWith(
+        expect.objectContaining({ studentProfileId: "SE171184" })
       );
     }
   );
@@ -265,6 +309,122 @@ describe("TraceabilityGraphView", () => {
       expect(screen.getByText("2")).toBeTruthy();
       expect(screen.getAllByText("1").length).toBeGreaterThanOrEqual(1);
       expect(screen.getByText("0 bất thường")).toBeTruthy();
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID06",
+      type: "N",
+      executedDate: "17/09/2026",
+      description: "Filter bar va modal Xem dong gop deu goi Contribution bang studentProfileId UUID",
+    },
+    async () => {
+      const user = userEvent.setup();
+      renderView();
+
+      await user.click(screen.getByRole("button", { name: /Bộ lọc/ }));
+      await user.click(screen.getByLabelText("Thành viên"));
+      await user.click(screen.getAllByText("Tran Van B")[0]);
+
+      expect(graphQueryMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          projectId: "proj-1",
+          graphType: "CONTRIBUTION",
+          studentProfileId: STUDENT_PROFILE_UUID,
+        })
+      );
+      expect(graphQueryMock).not.toHaveBeenCalledWith(
+        expect.objectContaining({ studentProfileId: "SE171184" })
+      );
+
+      await user.click(screen.getByRole("button", { name: "Quay lại Tổng quan" }));
+      await user.click(screen.getByRole("button", { name: "Chọn node sinh viên" }));
+      await user.click(screen.getByRole("button", { name: /Xem chi tiết đóng góp/ }));
+
+      expect(graphQueryMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          projectId: "proj-1",
+          graphType: "CONTRIBUTION",
+          studentProfileId: STUDENT_PROFILE_UUID,
+        })
+      );
+    },
+    15_000
+  );
+
+  fptTest(
+    {
+      id: "UTCID07",
+      type: "A",
+      executedDate: "17/09/2026",
+      description: "Doi projectId xoa drill-down va khong goi Contribution bang UUID cu",
+    },
+    async () => {
+      const user = userEvent.setup();
+      const view = renderView();
+
+      await user.click(screen.getByRole("button", { name: /Bộ lọc/ }));
+      await user.click(screen.getByLabelText("Thành viên"));
+      await user.click(screen.getAllByText("Tran Van B")[0]);
+
+      expect(graphQueryMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          projectId: "proj-1",
+          graphType: "CONTRIBUTION",
+          studentProfileId: STUDENT_PROFILE_UUID,
+        })
+      );
+
+      myTeamMock.mockReturnValue(
+        idleQuery({
+          isSuccess: true,
+          data: {
+            teamId: "t-2",
+            teamNo: 2,
+            teamName: "Team 2",
+            projectId: "proj-2",
+            members: [],
+          },
+        })
+      );
+
+      view.rerender(
+        <QueryClientProvider client={client}>
+          <TraceabilityGraphView />
+        </QueryClientProvider>
+      );
+
+      expect(graphQueryMock).not.toHaveBeenCalledWith(
+        expect.objectContaining({
+          projectId: "proj-2",
+          graphType: "CONTRIBUTION",
+          studentProfileId: STUDENT_PROFILE_UUID,
+        })
+      );
+    },
+    15_000
+  );
+
+  fptTest(
+    {
+      id: "UTCID08",
+      type: "B",
+      executedDate: "17/09/2026",
+      description: "Pipeline Flow van dung studentCode noi bo va khong goi Contribution",
+    },
+    async () => {
+      const user = userEvent.setup();
+      renderView();
+      await user.click(screen.getByText("Pipeline Flow"));
+
+      await user.click(screen.getByRole("button", { name: /Bộ lọc/ }));
+      await user.click(screen.getByLabelText("Thành viên"));
+      expect(screen.getByText("SE171184 (LEADER)")).toBeTruthy();
+
+      expect(graphQueryMock).not.toHaveBeenCalledWith(
+        expect.objectContaining({ graphType: "CONTRIBUTION" })
+      );
     }
   );
 });

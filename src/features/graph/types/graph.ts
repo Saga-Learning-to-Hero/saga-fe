@@ -109,7 +109,7 @@ export interface GraphSubgraphFilterParams {
 export interface GraphQueryParams extends GraphSubgraphFilterParams {
   projectId: string;
   graphType: GraphType;
-  studentId?: string | null;
+  studentProfileId?: string | null;
 }
 
 export interface GraphStats {

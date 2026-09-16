@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useMemo, useState } from "react";
 import {
   AlertTriangleIcon,
   CheckCircle2Icon,
@@ -33,6 +33,12 @@ import { Neo4jTabBar } from "./neo4j-tab-bar";
 import { useProjectGraph } from "../hooks/use-project-graph";
 import { usePipelineGraphData } from "../hooks/use-pipeline-graph-data";
 import { buildPipelineTasksCsv, downloadTextFile } from "../lib/pipeline-mapper";
+import {
+  mapStudentNodesToMemberOptions,
+  resolveDrillDownStudent,
+  STUDENT_ROSTER_SUBGRAPH_PARAMS,
+  type GraphDrillDownStudent,
+} from "../lib/student-profile-id";
 import {
   UNASSIGNED_LANE_ID,
   type PipelineAnomalyFilterType,
@@ -92,7 +98,7 @@ export function LecturerGraphView({
 
   const [mainMode, setMainMode] = useState<"GRAPH" | "PIPELINE">(initialViewMode);
   const [neo4jTab, setNeo4jTab] = useState<Neo4jTabMode>("OVERVIEW");
-  const [drillDownStudent, setDrillDownStudent] = useState<{ id: string; label: string } | null>(null);
+  const [drillDownStudent, setDrillDownStudent] = useState<GraphDrillDownStudent | null>(null);
   const [selectedSprintState, setSelectedSprintState] = useState<string | null>(null);
   const [neo4jFilterType, setNeo4jFilterType] = useState<"ALL" | "ANOMALIES_ONLY">("ALL");
   const [selectedGraphNode, setSelectedGraphNode] = useState<CytoscapeNodeData | null>(null);
@@ -100,6 +106,16 @@ export function LecturerGraphView({
   const [scopeMode, setScopeMode] = useState<"COMPACT" | "FULL">("COMPACT");
   const [maxNodes, setMaxNodes] = useState<number | null>(100);
   const [focusedNodeId, setFocusedNodeId] = useState<string | null>(null);
+
+  const [prevProjectId, setPrevProjectId] = useState(projectId);
+  if (projectId !== prevProjectId) {
+    setPrevProjectId(projectId);
+    setDrillDownStudent(null);
+    setFocusedNodeId(null);
+  }
+
+  const activeDrillDownStudent = projectId === prevProjectId ? drillDownStudent : null;
+  const activeFocusedNodeId = projectId === prevProjectId ? focusedNodeId : null;
 
   const [pipelineSubView, setPipelineSubView] = useState<"FLOW" | "MATRIX">("FLOW");
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
@@ -161,17 +177,17 @@ export function LecturerGraphView({
     }
   };
 
-  const isSprintRequired = (neo4jTab === "ACTIVITY" || neo4jTab === "PEER_REVIEW") && !drillDownStudent;
+  const isSprintRequired = (neo4jTab === "ACTIVITY" || neo4jTab === "PEER_REVIEW") && !activeDrillDownStudent;
   const hasRequiredSprint = Boolean(effectiveNeo4jSprintId);
 
-  const activeGraphType: GraphType = drillDownStudent ? "CONTRIBUTION" : neo4jTab;
+  const activeGraphType: GraphType = activeDrillDownStudent ? "CONTRIBUTION" : neo4jTab;
 
   const subgraphParams = useMemo<GraphSubgraphFilterParams | null>(() => {
     const params: GraphSubgraphFilterParams = {};
     let hasFilter = false;
 
-    if (focusedNodeId) {
-      params.focusNodeId = focusedNodeId;
+    if (activeFocusedNodeId) {
+      params.focusNodeId = activeFocusedNodeId;
       params.depth = 1;
       params.includeCommits = true;
       params.nodeTypes = ["TASK", "COMMIT", "STUDENT"];
@@ -183,7 +199,7 @@ export function LecturerGraphView({
         hasFilter = true;
       } else if (
         scopeMode === "COMPACT" &&
-        !drillDownStudent &&
+        !activeDrillDownStudent &&
         (neo4jTab === "OVERVIEW" || neo4jTab === "ACTIVITY" || neo4jTab === "ATTRIBUTION")
       ) {
         params.includeCommits = false;
@@ -203,15 +219,41 @@ export function LecturerGraphView({
     }
 
     return hasFilter ? params : null;
-  }, [focusedNodeId, scopeMode, drillDownStudent, neo4jTab, neo4jFilterType, maxNodes]);
+  }, [activeFocusedNodeId, scopeMode, activeDrillDownStudent, neo4jTab, neo4jFilterType, maxNodes]);
 
   const isWaitingDefaultSprint = selectedSprintState === null && sprintsQuery.isLoading;
+
+  const studentRosterQuery = useProjectGraph({
+    projectId: projectId || "",
+    graphType: "OVERVIEW",
+    sprintId: null,
+    subgraphParams: STUDENT_ROSTER_SUBGRAPH_PARAMS,
+    enabled: mainMode === "GRAPH" && Boolean(projectId),
+  });
+
+  const neo4jMemberSelectOptions = useMemo(
+    () => mapStudentNodesToMemberOptions(studentRosterQuery.data?.nodes),
+    [studentRosterQuery.data]
+  );
+
+  const handleSelectDrillDownStudent = (
+    input: string | null,
+    fallbackLabel?: string | null
+  ) => {
+    setFocusedNodeId(null);
+    setDrillDownStudent(
+      resolveDrillDownStudent(input, {
+        memberOptions: neo4jMemberSelectOptions,
+        fallbackLabel,
+      })
+    );
+  };
 
   const graphQuery = useProjectGraph({
     projectId: projectId || "",
     graphType: activeGraphType,
     sprintId: effectiveNeo4jSprintId,
-    studentId: drillDownStudent?.id || null,
+    studentProfileId: activeDrillDownStudent?.studentProfileId || null,
     subgraphParams,
     enabled:
       mainMode === "GRAPH" &&
@@ -288,30 +330,6 @@ export function LecturerGraphView({
       })),
     [teams]
   );
-
-  const neo4jMemberSelectOptions = useMemo<CustomSelectOption[]>(() => {
-    if (!currentTeam?.members) return [];
-    return currentTeam.members.map((m) => ({
-      value: m.studentProfileId || m.studentCode,
-      label: m.fullName,
-      subLabel: `${m.studentCode} (${m.role})`,
-    }));
-  }, [currentTeam]);
-
-  const handleSelectDrillDownStudent = (input: string | null) => {
-    setFocusedNodeId(null);
-    if (!input || input === "ALL") {
-      setDrillDownStudent(null);
-      return;
-    }
-    const cleanId = input.replace(/^student:/, "");
-    const member = currentTeam?.members?.find(
-      (m) => m.studentProfileId === cleanId || m.studentCode === cleanId
-    );
-    const resolvedId = member?.studentProfileId || cleanId;
-    const resolvedLabel = member?.fullName || cleanId;
-    setDrillDownStudent({ id: resolvedId, label: resolvedLabel });
-  };
 
   const memberSelectOptions = useMemo<CustomSelectOption[]>(() => {
     const opts: CustomSelectOption[] = pipeline.members.map((member) => ({
@@ -596,12 +614,12 @@ export function LecturerGraphView({
 
     return (
       <div className="space-y-4">
-        {focusedNodeId && (
+        {activeFocusedNodeId && (
           <div className="flex flex-wrap items-center justify-between gap-3 p-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/25 text-xs font-bold text-emerald-700 dark:text-emerald-400 shadow-xs">
             <div className="flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping shrink-0" />
               <span>
-                Đang tập trung đối chiếu Task: <code className="font-mono text-foreground bg-background/80 px-1.5 py-0.5 rounded-md border border-border/60">{focusedNodeId}</code> và các Commit liên kết (EVIDENCED_BY)
+                Đang tập trung đối chiếu Task: <code className="font-mono text-foreground bg-background/80 px-1.5 py-0.5 rounded-md border border-border/60">{activeFocusedNodeId}</code> và các Commit liên kết (EVIDENCED_BY)
               </span>
             </div>
             <Button
@@ -974,7 +992,7 @@ export function LecturerGraphView({
           sprintOptions={sprintOptions}
           selectedSprintId={effectiveNeo4jSprintId}
           onSprintChange={handleSprintChange}
-          drillDownStudent={drillDownStudent}
+          drillDownStudent={activeDrillDownStudent}
           onBackToOverview={() => setDrillDownStudent(null)}
           selectId="lecturer-neo4j-sprint"
           scopeMode={scopeMode}
@@ -982,7 +1000,7 @@ export function LecturerGraphView({
           maxNodes={maxNodes}
           onMaxNodesChange={setMaxNodes}
           memberOptions={neo4jMemberSelectOptions}
-          selectedStudentId={drillDownStudent?.id || "ALL"}
+          selectedStudentId={activeDrillDownStudent?.studentProfileId || "ALL"}
           onStudentChange={handleSelectDrillDownStudent}
         />
       )}
@@ -994,7 +1012,7 @@ export function LecturerGraphView({
         onClose={() => setSelectedGraphNode(null)}
         onFocusNode={(nodeId) => setFocusedNodeId(nodeId)}
         onViewContribution={(studentId) => {
-          handleSelectDrillDownStudent(studentId);
+          handleSelectDrillDownStudent(studentId, selectedGraphNode?.label);
         }}
       />
     </div>

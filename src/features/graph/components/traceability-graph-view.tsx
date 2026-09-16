@@ -20,6 +20,12 @@ import { PipelineWorkspace } from "./pipeline-workspace";
 import { usePipelineGraphData } from "../hooks/use-pipeline-graph-data";
 import { useProjectGraph } from "../hooks/use-project-graph";
 import { buildPipelineTasksCsv, downloadTextFile } from "../lib/pipeline-mapper";
+import {
+  mapStudentNodesToMemberOptions,
+  resolveDrillDownStudent,
+  STUDENT_ROSTER_SUBGRAPH_PARAMS,
+  type GraphDrillDownStudent,
+} from "../lib/student-profile-id";
 import { UNASSIGNED_LANE_ID, type PipelineFilterState } from "../types/pipeline";
 import type { CytoscapeNodeData, GraphSubgraphFilterParams, GraphType } from "../types/graph";
 import { Button } from "@/components/ui/button";
@@ -33,7 +39,7 @@ export function TraceabilityGraphView() {
 
   const [viewMode, setViewMode] = useState<"FLOW" | "GRAPH">("GRAPH");
   const [neo4jTab, setNeo4jTab] = useState<Neo4jTabMode>("OVERVIEW");
-  const [drillDownStudent, setDrillDownStudent] = useState<{ id: string; label: string } | null>(null);
+  const [drillDownStudent, setDrillDownStudent] = useState<GraphDrillDownStudent | null>(null);
   const [selectedSprintState, setSelectedSprintState] = useState<string | null>(null);
   const [neo4jFilterType, setNeo4jFilterType] = useState<GraphFilterType>("ALL");
   const [selectedNode, setSelectedNode] = useState<CytoscapeNodeData | null>(null);
@@ -50,6 +56,19 @@ export function TraceabilityGraphView() {
     repoId: "ALL",
     branchName: "ALL",
   });
+
+  const graphIdentityKey = `${courseId || ""}:${projectId || ""}`;
+  const [prevGraphIdentityKey, setPrevGraphIdentityKey] = useState(graphIdentityKey);
+  if (graphIdentityKey !== prevGraphIdentityKey) {
+    setPrevGraphIdentityKey(graphIdentityKey);
+    setDrillDownStudent(null);
+    setFocusedNodeId(null);
+  }
+
+  const activeDrillDownStudent =
+    graphIdentityKey === prevGraphIdentityKey ? drillDownStudent : null;
+  const activeFocusedNodeId =
+    graphIdentityKey === prevGraphIdentityKey ? focusedNodeId : null;
 
   const pipelineOpen = viewMode === "FLOW";
   const pipeline = usePipelineGraphData({
@@ -105,17 +124,17 @@ export function TraceabilityGraphView() {
     }
   };
 
-  const isSprintRequired = (neo4jTab === "ACTIVITY" || neo4jTab === "PEER_REVIEW") && !drillDownStudent;
+  const isSprintRequired = (neo4jTab === "ACTIVITY" || neo4jTab === "PEER_REVIEW") && !activeDrillDownStudent;
   const hasRequiredSprint = Boolean(effectiveSprintId);
 
-  const activeGraphType: GraphType = drillDownStudent ? "CONTRIBUTION" : neo4jTab;
+  const activeGraphType: GraphType = activeDrillDownStudent ? "CONTRIBUTION" : neo4jTab;
 
   const subgraphParams = useMemo<GraphSubgraphFilterParams | null>(() => {
     const params: GraphSubgraphFilterParams = {};
     let hasFilter = false;
 
-    if (focusedNodeId) {
-      params.focusNodeId = focusedNodeId;
+    if (activeFocusedNodeId) {
+      params.focusNodeId = activeFocusedNodeId;
       params.depth = 1;
       params.includeCommits = true;
       params.nodeTypes = ["TASK", "COMMIT", "STUDENT"];
@@ -127,7 +146,7 @@ export function TraceabilityGraphView() {
         hasFilter = true;
       } else if (
         scopeMode === "COMPACT" &&
-        !drillDownStudent &&
+        !activeDrillDownStudent &&
         (neo4jTab === "OVERVIEW" || neo4jTab === "ACTIVITY" || neo4jTab === "ATTRIBUTION")
       ) {
         params.includeCommits = false;
@@ -147,15 +166,41 @@ export function TraceabilityGraphView() {
     }
 
     return hasFilter ? params : null;
-  }, [focusedNodeId, scopeMode, drillDownStudent, neo4jTab, neo4jFilterType, maxNodes]);
+  }, [activeFocusedNodeId, scopeMode, activeDrillDownStudent, neo4jTab, neo4jFilterType, maxNodes]);
 
   const isWaitingDefaultSprint = selectedSprintState === null && sprintsQuery.isLoading;
+
+  const studentRosterQuery = useProjectGraph({
+    projectId: projectId || "",
+    graphType: "OVERVIEW",
+    sprintId: null,
+    subgraphParams: STUDENT_ROSTER_SUBGRAPH_PARAMS,
+    enabled: viewMode === "GRAPH" && Boolean(projectId),
+  });
+
+  const neo4jMemberOptions = useMemo(
+    () => mapStudentNodesToMemberOptions(studentRosterQuery.data?.nodes),
+    [studentRosterQuery.data]
+  );
+
+  const handleSelectDrillDownStudent = (
+    input: string | null,
+    fallbackLabel?: string | null
+  ) => {
+    setFocusedNodeId(null);
+    setDrillDownStudent(
+      resolveDrillDownStudent(input, {
+        memberOptions: neo4jMemberOptions,
+        fallbackLabel,
+      })
+    );
+  };
 
   const graphQuery = useProjectGraph({
     projectId: projectId || "",
     graphType: activeGraphType,
     sprintId: effectiveSprintId,
-    studentId: drillDownStudent?.id || null,
+    studentProfileId: activeDrillDownStudent?.studentProfileId || null,
     subgraphParams,
     enabled:
       viewMode === "GRAPH" &&
@@ -310,12 +355,12 @@ export function TraceabilityGraphView() {
 
     return (
       <div className="space-y-4">
-        {focusedNodeId && (
+        {activeFocusedNodeId && (
           <div className="flex flex-wrap items-center justify-between gap-3 p-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/25 text-xs font-bold text-emerald-700 dark:text-emerald-400 shadow-xs">
             <div className="flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping shrink-0" />
               <span>
-                Đang tập trung đối chiếu Task: <code className="font-mono text-foreground bg-background/80 px-1.5 py-0.5 rounded-md border border-border/60">{focusedNodeId}</code> và các Commit liên kết (EVIDENCED_BY)
+                Đang tập trung đối chiếu Task: <code className="font-mono text-foreground bg-background/80 px-1.5 py-0.5 rounded-md border border-border/60">{activeFocusedNodeId}</code> và các Commit liên kết (EVIDENCED_BY)
               </span>
             </div>
             <Button
@@ -531,18 +576,17 @@ export function TraceabilityGraphView() {
       <div className="animate-in fade-in-0 space-y-4 duration-200">
         <GraphFilterBar
           groupSelector={projectInfoNode}
-          selectedStudentId={pipelineOpen ? pipeline.sanitizedFilter.studentId : (drillDownStudent?.id || "ALL")}
+          selectedStudentId={
+            pipelineOpen
+              ? pipeline.sanitizedFilter.studentId
+              : activeDrillDownStudent?.studentProfileId || "ALL"
+          }
           onSelectStudent={(studentId) => {
             if (pipelineOpen) {
               setPipelineFilter((prev) => ({ ...prev, studentId }));
-            } else {
-              if (studentId === "ALL") {
-                setDrillDownStudent(null);
-              } else {
-                const found = pipelineMemberOptions.find((m) => m.value === studentId);
-                setDrillDownStudent({ id: studentId, label: found?.label || studentId });
-              }
+              return;
             }
+            handleSelectDrillDownStudent(studentId);
           }}
           selectedSprint={pipelineOpen ? pipeline.sanitizedFilter.sprintId : (neo4jSprintId || "ALL")}
           onSelectSprint={(sprintId) => {
@@ -589,7 +633,7 @@ export function TraceabilityGraphView() {
             pipelineOpen ? pipeline.stats.doneWithoutLinkedCommits : structuralStats.anomalyCount
           }
           anomalyLabel={pipelineOpen ? "Task hoàn thành chưa có Commit" : "Node bất thường"}
-          memberOptions={pipelineMemberOptions}
+          memberOptions={pipelineOpen ? pipelineMemberOptions : neo4jMemberOptions}
           sprintOptions={pipelineOpen ? pipelineSprintOptions : sprintOptions}
           viewMode={viewMode}
           onSelectViewMode={(mode) => {
@@ -667,22 +711,15 @@ export function TraceabilityGraphView() {
             sprintOptions={sprintOptions}
             selectedSprintId={effectiveSprintId}
             onSprintChange={handleSprintChange}
-            drillDownStudent={drillDownStudent}
+            drillDownStudent={activeDrillDownStudent}
             onBackToOverview={() => setDrillDownStudent(null)}
             scopeMode={scopeMode}
             onScopeModeChange={setScopeMode}
             maxNodes={maxNodes}
             onMaxNodesChange={setMaxNodes}
-            memberOptions={pipelineMemberOptions}
-            selectedStudentId={drillDownStudent?.id || "ALL"}
-            onStudentChange={(studentId) => {
-              if (studentId === "ALL") {
-                setDrillDownStudent(null);
-              } else {
-                const found = pipelineMemberOptions.find((m) => m.value === studentId);
-                setDrillDownStudent({ id: studentId, label: found?.label || studentId });
-              }
-            }}
+            memberOptions={neo4jMemberOptions}
+            selectedStudentId={activeDrillDownStudent?.studentProfileId || "ALL"}
+            onStudentChange={handleSelectDrillDownStudent}
           />
         )}
 
@@ -694,11 +731,7 @@ export function TraceabilityGraphView() {
         onClose={() => setSelectedNode(null)}
         onFocusNode={(nodeId) => setFocusedNodeId(nodeId)}
         onViewContribution={(studentId) => {
-          const cleanId = studentId.replace(/^student:/, "");
-          setDrillDownStudent({
-            id: cleanId,
-            label: selectedNode?.label || cleanId,
-          });
+          handleSelectDrillDownStudent(studentId, selectedNode?.label);
         }}
       />
     </div>

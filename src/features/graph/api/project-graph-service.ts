@@ -1,12 +1,9 @@
 import { apiClient } from "@/lib/axios";
 import type { CytoscapeGraphResponse, GraphSubgraphFilterParams } from "../types/graph";
+import { resolveStudentProfileId } from "../lib/student-profile-id";
 
 function cleanId(id: string): string {
   return encodeURIComponent(id.trim());
-}
-
-function cleanStudentId(id: string): string {
-  return encodeURIComponent(id.replace(/^student:/, "").trim());
 }
 
 function buildGraphQuery(params?: string | null | GraphSubgraphFilterParams): string {
@@ -87,7 +84,7 @@ export const ProjectGraphService = {
 
   async getStudentContributionGraph(
     projectId: string,
-    studentId: string,
+    studentProfileId: string,
     params?: string | null | GraphSubgraphFilterParams,
     signal?: AbortSignal
   ): Promise<CytoscapeGraphResponse> {
@@ -96,13 +93,13 @@ export const ProjectGraphService = {
       throw new Error("projectId is required");
     }
 
-    const trimmedStudent = studentId?.trim();
-    if (!trimmedStudent) {
-      throw new Error("studentId is required");
+    const resolvedStudentProfileId = resolveStudentProfileId(studentProfileId);
+    if (!resolvedStudentProfileId) {
+      throw new Error("studentProfileId must be a UUID");
     }
 
     const query = buildGraphQuery(params);
-    const url = `/api/projects/${cleanId(trimmedProject)}/students/${cleanStudentId(trimmedStudent)}/graph/contribution${query}`;
+    const url = `/api/projects/${cleanId(trimmedProject)}/students/${encodeURIComponent(resolvedStudentProfileId)}/graph/contribution${query}`;
 
     const res = await apiClient.get<CytoscapeGraphResponse>(url, { signal });
     return res.data;

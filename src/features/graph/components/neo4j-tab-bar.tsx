@@ -14,6 +14,7 @@ import {
 import { CustomSelect, type CustomSelectOption } from "@/components/common/custom-select";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import type { GraphDrillDownStudent } from "../lib/student-profile-id";
 
 export type Neo4jTabMode = "OVERVIEW" | "ACTIVITY" | "ATTRIBUTION" | "PEER_REVIEW";
 
@@ -23,7 +24,7 @@ export interface Neo4jTabBarProps {
   sprintOptions: CustomSelectOption[];
   selectedSprintId?: string | null;
   onSprintChange: (sprintId: string) => void;
-  drillDownStudent?: { id: string; label: string } | null;
+  drillDownStudent?: GraphDrillDownStudent | null;
   onBackToOverview?: () => void;
   selectId?: string;
   scopeMode?: "COMPACT" | "FULL";

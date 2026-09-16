@@ -143,4 +143,27 @@ describe("GraphFilterBar", () => {
     expect(screen.queryByText("Thành viên: Lê Hoàng Hải")).not.toBeInTheDocument();
     expect(screen.queryByText("Sprint: Sprint 4")).not.toBeInTheDocument();
   });
+
+  it("an CustomSelect thanh vien khi roster rong", async () => {
+    const user = userEvent.setup();
+    render(
+      <GraphFilterBar
+        selectedStudentId="ALL"
+        onSelectStudent={vi.fn()}
+        selectedSprint="ALL"
+        onSelectSprint={vi.fn()}
+        filterType="ALL"
+        onSelectFilterType={vi.fn()}
+        onExport={vi.fn()}
+        onReset={vi.fn()}
+        anomaliesCount={0}
+        memberOptions={[]}
+        sprintOptions={[{ value: "sprint-4", label: "Sprint 4" }]}
+      />
+    );
+
+    await user.click(screen.getByRole("button", { name: /Bộ lọc/ }));
+    expect(screen.queryByLabelText("Thành viên")).not.toBeInTheDocument();
+    expect(screen.getByLabelText("Sprint")).toBeInTheDocument();
+  });
 });
