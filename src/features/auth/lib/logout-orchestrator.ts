@@ -4,6 +4,7 @@ import { useAuthStore } from "../store/useAuthStore";
 import { AUTH_QUERY_KEY } from "../hooks/useAuth";
 import { NotificationService } from "@/features/notification/api/notification-service";
 import { deletePushToken } from "@/lib/firebase/firebase-client";
+import { clearStoredCsrfToken } from "@/lib/axios";
 
 export function getPushInstallationStorageKey(userId?: string | null): string {
   return userId ? `saga_push_installation_id_${userId}` : "saga_push_installation_id";
@@ -55,6 +56,8 @@ export async function performLogout(options?: LogoutOptions): Promise<void> {
       });
       options.queryClient.clear();
     }
+
+    clearStoredCsrfToken();
 
     if (options?.onRedirect) {
       options.onRedirect();

@@ -88,6 +88,7 @@ export function useLogin() {
         queryClient.clear();
         setUser(mappedUser, res.passwordSetupRequired);
         queryClient.setQueryData(AUTH_QUERY_KEY, res);
+        void ensureCsrfToken(true);
 
         toast.success("Đăng nhập thành công!", {
           id: "auth-login-success",
