@@ -1,15 +1,20 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import { InfoIcon, ScrollTextIcon, RefreshCwIcon } from "lucide-react";
+import { useState, useMemo, useEffect } from "react";
+import { ScrollTextIcon, RefreshCwIcon, AlertCircleIcon, DatabaseIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { AuditStats } from "@/features/admin/audit-log/components/audit-stats";
 import { AuditToolbar } from "@/features/admin/audit-log/components/audit-toolbar";
 import { AuditTable } from "@/features/admin/audit-log/components/audit-table";
 import { AuditDetailDialog } from "@/features/admin/audit-log/components/audit-detail-dialog";
-import { MOCK_AUDIT_LOGS } from "@/features/admin/audit-log/data/mock-audit-logs";
-import type { AuditLogItem, AuditFilterState } from "@/features/admin/audit-log/types/audit-log";
+import { useAdminAuditLogs } from "@/features/admin/audit-log/hooks/use-admin-audit";
+import {
+  mapAdminAuditLogResponseToItem,
+  type AuditLogItem,
+  type AuditFilterState,
+  type GetAdminAuditLogsParams,
+} from "@/features/admin/audit-log/types/audit-log";
 
 const INITIAL_FILTERS: AuditFilterState = {
   search: "",
@@ -18,84 +23,108 @@ const INITIAL_FILTERS: AuditFilterState = {
   timeRange: "ALL",
 };
 
+const PAGE_SIZE = 10;
+
 export default function AdminAuditLogPage() {
-  const [logs] = useState<AuditLogItem[]>(MOCK_AUDIT_LOGS);
   const [filters, setFilters] = useState<AuditFilterState>(INITIAL_FILTERS);
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [page, setPage] = useState(1);
   const [selectedLog, setSelectedLog] = useState<AuditLogItem | null>(null);
-  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  // Debounce search 350ms
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(filters.search.trim());
+      setPage(1);
+    }, 350);
+    return () => clearTimeout(timer);
+  }, [filters.search]);
+
+  // Chuyển đổi bộ lọc thời gian sang tham số from / to ISO
+  const timeParams = useMemo(() => {
+    if (filters.timeRange === "ALL") return {};
+    const now = new Date();
+    const fromDate = new Date();
+
+    if (filters.timeRange === "TODAY") {
+      fromDate.setHours(0, 0, 0, 0);
+    } else if (filters.timeRange === "7_DAYS") {
+      fromDate.setDate(now.getDate() - 7);
+    } else if (filters.timeRange === "30_DAYS") {
+      fromDate.setDate(now.getDate() - 30);
+    }
+
+    return {
+      from: fromDate.toISOString(),
+      to: now.toISOString(),
+    };
+  }, [filters.timeRange]);
+
+  // Chuẩn hóa params gửi lên API máy chủ
+  const queryParams: GetAdminAuditLogsParams = useMemo(() => {
+    const params: GetAdminAuditLogsParams = {
+      page: page - 1, // Spring Boot 0-indexed
+      size: PAGE_SIZE,
+      ...timeParams,
+    };
+
+    if (debouncedSearch) {
+      // Có thể truyền vào action hoặc entityType nếu khớp
+      params.action = debouncedSearch;
+    }
+
+    if (filters.category === "AUTH_SECURITY") {
+      params.entityType = "USER";
+    } else if (filters.category === "ACADEMIC") {
+      params.entityType = "COURSE";
+    }
+
+    return params;
+  }, [page, timeParams, debouncedSearch, filters.category]);
+
+  const { data, isLoading, isError, error, refetch, isFetching } =
+    useAdminAuditLogs(queryParams);
+
+  const mappedLogs: AuditLogItem[] = useMemo(() => {
+    if (!data?.items) return [];
+    return data.items.map(mapAdminAuditLogResponseToItem);
+  }, [data]);
+
+  const totalLogs = data?.total ?? 0;
 
   const handleFilterChange = (updated: Partial<AuditFilterState>) => {
     setFilters((prev) => ({ ...prev, ...updated }));
+    setPage(1);
   };
 
   const handleResetFilters = () => {
     setFilters(INITIAL_FILTERS);
+    setPage(1);
   };
-
-  const handleRefresh = () => {
-    setIsRefreshing(true);
-    setTimeout(() => {
-      setIsRefreshing(false);
-    }, 400);
-  };
-
-  const filteredLogs = useMemo(() => {
-    return logs.filter((log) => {
-      if (filters.search) {
-        const q = filters.search.toLowerCase();
-        const matchSearch =
-          log.actor.fullName.toLowerCase().includes(q) ||
-          log.actor.email.toLowerCase().includes(q) ||
-          log.actor.ipAddress.toLowerCase().includes(q) ||
-          log.target.name.toLowerCase().includes(q) ||
-          log.description.toLowerCase().includes(q) ||
-          log.requestId.toLowerCase().includes(q);
-        if (!matchSearch) return false;
-      }
-
-      if (filters.category !== "ALL" && log.category !== filters.category) {
-        return false;
-      }
-
-      if (filters.severity !== "ALL" && log.severity !== filters.severity) {
-        return false;
-      }
-
-      if (filters.timeRange !== "ALL") {
-        const logDate = new Date(log.timestamp).getTime();
-        const now = new Date("2026-08-26T12:00:00Z").getTime();
-        const diffHours = (now - logDate) / (1000 * 60 * 60);
-
-        if (filters.timeRange === "TODAY" && diffHours > 24) return false;
-        if (filters.timeRange === "7_DAYS" && diffHours > 24 * 7) return false;
-        if (filters.timeRange === "30_DAYS" && diffHours > 24 * 30) return false;
-      }
-
-      return true;
-    });
-  }, [logs, filters]);
 
   return (
-    <div className="p-6 space-y-6 max-w-[1600px] mx-auto">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0">
-              <ScrollTextIcon className="w-5 h-5" />
+    <div className="p-6 space-y-6 max-w-[1600px] mx-auto animate-in fade-in-0 duration-200">
+      {/* 1. Header trang */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-border">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0 shadow-2xs">
+            <ScrollTextIcon className="w-5 h-5" />
+          </div>
+          <div>
+            <div className="flex flex-wrap items-center gap-2">
+              <h1 className="text-xl font-bold text-foreground tracking-tight">
+                Nhật ký hoạt động hệ thống (Audit Logs)
+              </h1>
+              <Badge
+                variant="outline"
+                className="border-primary/30 bg-primary/10 text-primary text-[10px] font-mono font-bold"
+              >
+                REST API / Audit Store
+              </Badge>
             </div>
-            <div>
-              <div className="flex flex-wrap items-center gap-2">
-                <h1 className="text-xl font-bold text-foreground tracking-tight">
-                  Nhật ký hoạt động hệ thống
-                </h1>
-                <Badge variant="outline" className="border-amber-500/40 bg-amber-500/10 text-amber-700 dark:text-amber-300 text-[10px] font-mono">
-                  Dữ liệu minh họa (Chưa kết nối API)
-                </Badge>
-              </div>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                Theo dõi lịch sử hoạt động, an ninh và thay đổi phân quyền hệ thống lưu trữ tại MongoDB.
-              </p>
-            </div>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              Theo dõi lịch sử hoạt động, bảo mật và thay đổi dữ liệu được lưu trữ bất biến tại cơ sở dữ liệu kiểm toán.
+            </p>
           </div>
         </div>
 
@@ -103,43 +132,81 @@ export default function AdminAuditLogPage() {
           <Button
             variant="outline"
             size="sm"
-            onClick={handleRefresh}
-            disabled={isRefreshing}
-            className="h-9 gap-1.5 text-xs font-semibold rounded-xl cursor-pointer"
+            onClick={() => refetch()}
+            disabled={isLoading || isFetching}
+            className="h-8.5 px-3 text-xs font-semibold rounded-xl gap-1.5 cursor-pointer shadow-2xs"
           >
-            <RefreshCwIcon className={`w-3.5 h-3.5 ${isRefreshing ? "animate-spin" : ""}`} />
-            Làm mới
+            <RefreshCwIcon className={`w-3.5 h-3.5 ${isFetching ? "animate-spin text-primary" : ""}`} />
+            <span>Làm mới</span>
           </Button>
         </div>
       </div>
 
-      <div className="rounded-2xl border border-amber-500/30 bg-amber-500/5 p-3.5 flex items-center justify-between gap-3 text-xs">
+      {/* 2. Banner thông tin lưu trữ */}
+      <div className="rounded-2xl border border-primary/20 bg-primary/5 p-3.5 flex items-center justify-between gap-3 text-xs">
         <div className="flex items-center gap-2.5">
-          <InfoIcon className="size-4 text-amber-600 dark:text-amber-400 shrink-0" />
+          <DatabaseIcon className="size-4 text-primary shrink-0" />
           <span className="text-muted-foreground">
-            <strong className="text-foreground">Lưu ý:</strong> Bảng nhật ký kiểm toán hệ thống hiện đang hiển thị bản ghi mẫu minh họa cấu trúc Audit Log MongoDB trong lúc chờ kết nối API kiểm toán từ máy chủ.
+            <strong className="text-foreground">Cơ sở dữ liệu kiểm toán:</strong> Mọi thao tác quản trị, phân quyền người dùng và cập nhật cấu trúc đồ án đều được ghi vết tự động kèm snapshot dữ liệu trước & sau (State Diff).
           </span>
         </div>
-        <Badge variant="outline" className="text-[10px] font-mono text-amber-600 dark:text-amber-400 border-amber-500/30 shrink-0">
-          Demo Environment
+        <Badge variant="outline" className="text-[10px] font-mono text-primary border-primary/30 shrink-0">
+          Immutable Logs
         </Badge>
       </div>
 
-      <AuditStats logs={logs} />
+      {/* 3. Lỗi kết nối máy chủ nếu có */}
+      {isError && (
+        <div className="p-5 rounded-2xl border border-dashed border-destructive/40 bg-destructive/5 flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <AlertCircleIcon className="w-5 h-5 text-destructive shrink-0" />
+            <div>
+              <p className="text-sm font-bold text-foreground">
+                Không thể tải nhật ký kiểm toán hệ thống
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {(error as Error)?.message || "Đã có lỗi xảy ra trong quá trình kết nối đến máy chủ SAGA."}
+              </p>
+            </div>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => refetch()}
+            className="text-xs cursor-pointer shrink-0"
+          >
+            Thử lại
+          </Button>
+        </div>
+      )}
 
+      {/* 4. Thống kê nhanh */}
+      <AuditStats logs={mappedLogs} />
+
+      {/* 5. Toolbar bộ lọc */}
       <AuditToolbar
         filters={filters}
         onFilterChange={handleFilterChange}
         onReset={handleResetFilters}
-        filteredCount={filteredLogs.length}
-        totalCount={logs.length}
+        filteredCount={mappedLogs.length}
+        totalCount={totalLogs}
       />
 
-      <AuditTable logs={filteredLogs} onSelectLog={setSelectedLog} />
+      {/* 6. Bảng dữ liệu phân trang Server */}
+      <AuditTable
+        logs={mappedLogs}
+        onSelectLog={setSelectedLog}
+        page={page}
+        pageSize={PAGE_SIZE}
+        totalItems={totalLogs}
+        onPageChange={(newPage) => setPage(newPage)}
+        isLoading={isLoading}
+      />
 
+      {/* 7. Modal chi tiết nhật ký */}
       <AuditDetailDialog
         log={selectedLog}
-        isOpen={!!selectedLog}
+        isOpen={Boolean(selectedLog)}
         onClose={() => setSelectedLog(null)}
       />
     </div>

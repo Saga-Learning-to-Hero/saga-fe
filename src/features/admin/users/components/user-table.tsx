@@ -9,6 +9,7 @@ import {
   InboxIcon,
   ClockIcon,
   UserXIcon,
+  EyeIcon,
 } from "lucide-react";
 import {
   Table,
@@ -27,16 +28,45 @@ import type { ManagedUser } from "../types/user-management";
 interface UserTableProps {
   users: ManagedUser[];
   onToggleStatus: (user: ManagedUser) => void;
+  onViewDetail?: (user: ManagedUser) => void;
+  page?: number;
+  pageSize?: number;
+  totalItems?: number;
+  onPageChange?: (newPage: number) => void;
+  isLoading?: boolean;
 }
 
-const PAGE_SIZE = 8;
+const DEFAULT_PAGE_SIZE = 8;
 
-export function UserTable({ users, onToggleStatus }: UserTableProps) {
-  const [currentPage, setCurrentPage] = useState(1);
+export function UserTable({
+  users,
+  onToggleStatus,
+  onViewDetail,
+  page,
+  pageSize = DEFAULT_PAGE_SIZE,
+  totalItems,
+  onPageChange,
+  isLoading = false,
+}: UserTableProps) {
+  const [localPage, setLocalPage] = useState(1);
 
-  const totalPages = Math.ceil(users.length / PAGE_SIZE) || 1;
-  const startIndex = (currentPage - 1) * PAGE_SIZE;
-  const paginatedUsers = users.slice(startIndex, startIndex + PAGE_SIZE);
+  const isServer = Boolean(onPageChange && totalItems !== undefined);
+  const currentPage = isServer ? (page ?? 1) : localPage;
+  const effectiveTotal = isServer ? (totalItems ?? users.length) : users.length;
+  const totalPages = Math.max(1, Math.ceil(effectiveTotal / pageSize));
+
+  const displayUsers = isServer
+    ? users
+    : users.slice((localPage - 1) * pageSize, localPage * pageSize);
+
+  const handlePageChange = (newPage: number) => {
+    if (newPage < 1 || newPage > totalPages) return;
+    if (isServer) {
+      onPageChange?.(newPage);
+    } else {
+      setLocalPage(newPage);
+    }
+  };
 
   const getInitials = (name: string) => {
     return name
@@ -74,7 +104,7 @@ export function UserTable({ users, onToggleStatus }: UserTableProps) {
         return (
           <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-warning-muted text-warning">
             <ClockIcon className="w-3 h-3" />
-            Chờ đăng nhập
+            Chờ kích hoạt
           </span>
         );
       case "INACTIVE":
@@ -106,7 +136,46 @@ export function UserTable({ users, onToggleStatus }: UserTableProps) {
     }
   };
 
-  if (users.length === 0) {
+  if (isLoading) {
+    return (
+      <Card className="rounded-2xl border border-border overflow-hidden shadow-xs">
+        <Table>
+          <TableHeader className="bg-muted/40">
+            <TableRow className="border-b border-border">
+              <TableHead className="py-3 px-4 text-xs font-semibold">Người dùng (User)</TableHead>
+              <TableHead className="py-3 px-4 text-xs font-semibold">Mã định danh (MSSV / Staff ID)</TableHead>
+              <TableHead className="py-3 px-4 text-xs font-semibold">Vai trò (Role)</TableHead>
+              <TableHead className="py-3 px-4 text-xs font-semibold">Trạng thái (Status)</TableHead>
+              <TableHead className="py-3 px-4 text-xs font-semibold">Hoạt động gần nhất</TableHead>
+              <TableHead className="py-3 px-4 text-xs font-semibold text-right">Thao tác</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {Array.from({ length: 6 }).map((_, idx) => (
+              <TableRow key={idx} className="animate-pulse">
+                <TableCell className="py-3 px-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-xl bg-muted/60" />
+                    <div className="space-y-1.5">
+                      <div className="w-28 h-3.5 rounded bg-muted/60" />
+                      <div className="w-36 h-3 rounded bg-muted/40" />
+                    </div>
+                  </div>
+                </TableCell>
+                <TableCell className="py-3 px-4"><div className="w-20 h-4 rounded bg-muted/50" /></TableCell>
+                <TableCell className="py-3 px-4"><div className="w-16 h-5 rounded-full bg-muted/50" /></TableCell>
+                <TableCell className="py-3 px-4"><div className="w-20 h-5 rounded-full bg-muted/50" /></TableCell>
+                <TableCell className="py-3 px-4"><div className="w-20 h-4 rounded bg-muted/50" /></TableCell>
+                <TableCell className="py-3 px-4 text-right"><div className="w-16 h-7 rounded-lg bg-muted/50 ml-auto" /></TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </Card>
+    );
+  }
+
+  if (displayUsers.length === 0) {
     return (
       <Card className="rounded-2xl border border-border shadow-xs">
         <CardContent className="p-12 text-center space-y-3">
@@ -131,7 +200,6 @@ export function UserTable({ users, onToggleStatus }: UserTableProps) {
           <TableRow className="border-b border-border">
             <TableHead className="py-3 px-4 text-xs font-semibold">Người dùng (User)</TableHead>
             <TableHead className="py-3 px-4 text-xs font-semibold">Mã định danh (MSSV / Staff ID)</TableHead>
-            <TableHead className="py-3 px-4 text-xs font-semibold">Khoa / Bộ môn (Department)</TableHead>
             <TableHead className="py-3 px-4 text-xs font-semibold">Vai trò (Role)</TableHead>
             <TableHead className="py-3 px-4 text-xs font-semibold">Trạng thái (Status)</TableHead>
             <TableHead className="py-3 px-4 text-xs font-semibold">Hoạt động gần nhất</TableHead>
@@ -140,8 +208,8 @@ export function UserTable({ users, onToggleStatus }: UserTableProps) {
         </TableHeader>
 
         <TableBody>
-          {paginatedUsers.map((user) => {
-            const isBanned = user.status === "BANNED";
+          {displayUsers.map((user) => {
+            const isInactive = user.status === "BANNED" || user.status === "INACTIVE";
 
             return (
               <TableRow
@@ -167,64 +235,71 @@ export function UserTable({ users, onToggleStatus }: UserTableProps) {
                   </div>
                 </TableCell>
 
-                <TableCell className="py-3 px-4">
-                  {user.studentCode ? (
-                    <span className="font-mono text-xs font-semibold px-2 py-0.5 rounded-md bg-muted text-foreground/90" title="Mã số sinh viên (MSSV)">
-                      {user.studentCode}
-                    </span>
-                  ) : user.lecturerCode ? (
-                    <span className="font-mono text-xs font-semibold px-2 py-0.5 rounded-md bg-amber-500/10 text-amber-700 dark:text-amber-300" title="Mã cán bộ/giảng viên">
-                      {user.lecturerCode}
-                    </span>
+                <TableCell className="py-3 px-4 font-mono text-xs">
+                  {user.studentCode || user.lecturerCode ? (
+                    <Badge variant="outline" className="font-mono text-[11px] font-medium border-border">
+                      {user.studentCode || user.lecturerCode}
+                    </Badge>
                   ) : (
-                    <span className="text-muted-foreground/60">—</span>
+                    <span className="text-muted-foreground text-xs italic">Chưa cấp</span>
                   )}
                 </TableCell>
 
-                <TableCell className="py-3 px-4 text-muted-foreground font-medium">
-                  {user.department || "—"}
-                </TableCell>
-
                 <TableCell className="py-3 px-4">
-                  {user.role === "LECTURER" ? (
-                    <Badge className="bg-warning-muted text-warning border-0 font-semibold px-2 py-0.5 text-[11px]">
-                      Giảng viên
-                    </Badge>
-                  ) : (
-                    <Badge className="bg-info-muted text-info border-0 font-semibold px-2 py-0.5 text-[11px]">
-                      Sinh viên
-                    </Badge>
-                  )}
+                  <Badge
+                    className={`text-[11px] font-semibold ${
+                      user.role === "LECTURER"
+                        ? "bg-primary/10 text-primary border-primary/20"
+                        : "bg-muted text-muted-foreground border-border"
+                    }`}
+                  >
+                    {user.role === "LECTURER" ? "Giảng viên" : "Sinh viên"}
+                  </Badge>
                 </TableCell>
 
                 <TableCell className="py-3 px-4">{renderStatusBadge(user)}</TableCell>
 
                 <TableCell className="py-3 px-4 text-muted-foreground">
-                  {formatDate(user.lastActiveAt)}
+                  {formatDate(user.lastActiveAt || user.createdAt)}
                 </TableCell>
 
                 <TableCell className="py-3 px-4 text-right">
-                  <Button
-                    variant={isBanned ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => onToggleStatus(user)}
-                    className={`h-8 px-3 text-xs font-semibold rounded-lg cursor-pointer transition-colors ${isBanned
-                      ? "bg-primary text-primary-foreground hover:bg-primary/90"
-                      : "border-destructive/40 text-destructive hover:bg-destructive/10 hover:border-destructive"
-                      }`}
-                  >
-                    {isBanned ? (
-                      <>
-                        <UnlockIcon className="w-3.5 h-3.5 mr-1" />
-                        Mở khóa
-                      </>
-                    ) : (
-                      <>
-                        <LockIcon className="w-3.5 h-3.5 mr-1" />
-                        Khóa
-                      </>
+                  <div className="flex items-center justify-end gap-1.5">
+                    {onViewDetail && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => onViewDetail(user)}
+                        className="h-8 px-2.5 text-xs font-semibold rounded-lg cursor-pointer hover:bg-muted text-muted-foreground hover:text-foreground"
+                        title="Xem chi tiết tài khoản"
+                      >
+                        <EyeIcon className="size-3.5 mr-1" />
+                        Chi tiết
+                      </Button>
                     )}
-                  </Button>
+                    <Button
+                      variant={isInactive ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => onToggleStatus(user)}
+                      className={`h-8 px-3 text-xs font-semibold rounded-lg cursor-pointer transition-colors ${
+                        isInactive
+                          ? "bg-primary text-primary-foreground hover:bg-primary/90"
+                          : "border-destructive/40 text-destructive hover:bg-destructive/10 hover:border-destructive"
+                      }`}
+                    >
+                      {isInactive ? (
+                        <>
+                          <UnlockIcon className="w-3.5 h-3.5 mr-1" />
+                          Kích hoạt
+                        </>
+                      ) : (
+                        <>
+                          <LockIcon className="w-3.5 h-3.5 mr-1" />
+                          Tạm ngưng
+                        </>
+                      )}
+                    </Button>
+                  </div>
                 </TableCell>
               </TableRow>
             );
@@ -234,15 +309,15 @@ export function UserTable({ users, onToggleStatus }: UserTableProps) {
 
       <div className="flex items-center justify-between px-4 py-3 border-t border-border bg-muted/20 text-xs text-muted-foreground">
         <span>
-          Trang <strong className="text-foreground">{currentPage}</strong> / {totalPages} (Tổng {users.length} người dùng)
+          Trang <strong className="text-foreground">{currentPage}</strong> / {totalPages} (Tổng {effectiveTotal} người dùng)
         </span>
         <div className="flex items-center gap-1.5">
           <Button
             variant="outline"
             size="icon"
             disabled={currentPage === 1}
-            onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-            className="h-8 w-8 rounded-lg"
+            onClick={() => handlePageChange(currentPage - 1)}
+            className="h-8 w-8 rounded-lg cursor-pointer"
           >
             <ChevronLeftIcon className="w-4 h-4" />
           </Button>
@@ -250,8 +325,8 @@ export function UserTable({ users, onToggleStatus }: UserTableProps) {
             variant="outline"
             size="icon"
             disabled={currentPage === totalPages}
-            onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-            className="h-8 w-8 rounded-lg"
+            onClick={() => handlePageChange(currentPage + 1)}
+            className="h-8 w-8 rounded-lg cursor-pointer"
           >
             <ChevronRightIcon className="w-4 h-4" />
           </Button>

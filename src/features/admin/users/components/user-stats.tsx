@@ -4,10 +4,11 @@ import type { ManagedUser } from "../types/user-management";
 
 interface UserStatsProps {
   users: ManagedUser[];
+  totalCount?: number;
 }
 
-export function UserStats({ users }: UserStatsProps) {
-  const totalUsers = users.length;
+export function UserStats({ users, totalCount }: UserStatsProps) {
+  const totalUsers = totalCount !== undefined ? totalCount : users.length;
   const activeCount = users.filter((u) => u.status === "ACTIVE").length;
   const pendingCount = users.filter((u) => u.status === "PENDING").length;
   const bannedCount = users.filter((u) => u.status === "BANNED").length;
@@ -24,7 +25,7 @@ export function UserStats({ users }: UserStatsProps) {
       bg: "bg-primary/10",
     },
     {
-      label: "Đang hoạt động (Active)",
+      label: "Đang hoạt động",
       value: activeCount,
       sub: "Đã xác thực & phiên hợp lệ",
       icon: UserCheckIcon,

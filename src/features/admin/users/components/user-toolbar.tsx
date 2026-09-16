@@ -89,8 +89,6 @@ export function UserToolbar({
                 [
                   { value: "ALL", label: "Tất cả trạng thái" },
                   { value: "ACTIVE", label: "Hoạt động" },
-                  { value: "PENDING", label: "Chờ đăng nhập" },
-                  { value: "BANNED", label: "Đã khóa" },
                   { value: "INACTIVE", label: "Không hoạt động" },
                 ] as const
               ).map((tab) => (

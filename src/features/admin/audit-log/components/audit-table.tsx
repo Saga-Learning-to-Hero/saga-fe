@@ -1,48 +1,136 @@
 "use client";
 
-import { EyeIcon, ShieldAlertIcon, InfoIcon, AlertTriangleIcon, CheckCircle2Icon, XCircleIcon } from "lucide-react";
-import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from "@/components/ui/table";
+import {
+  EyeIcon,
+  ShieldAlertIcon,
+  InfoIcon,
+  AlertTriangleIcon,
+  CheckCircle2Icon,
+  XCircleIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
+} from "lucide-react";
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableHead,
+  TableRow,
+  TableCell,
+} from "@/components/ui/table";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import type { AuditLogItem, AuditActionType, AuditSeverity } from "../types/audit-log";
+import type {
+  AuditLogItem,
+  AuditActionType,
+  AuditSeverity,
+} from "../types/audit-log";
 
 interface AuditTableProps {
   logs: AuditLogItem[];
   onSelectLog: (log: AuditLogItem) => void;
+  page?: number;
+  pageSize?: number;
+  totalItems?: number;
+  onPageChange?: (newPage: number) => void;
+  isLoading?: boolean;
 }
 
-export function AuditTable({ logs, onSelectLog }: AuditTableProps) {
-  const getActionBadge = (action: AuditActionType) => {
-    switch (action) {
-      case "USER_BAN":
-        return <Badge className="bg-danger-muted text-danger border-0 font-semibold">Khóa tài khoản</Badge>;
-      case "USER_UNBAN":
-        return <Badge className="bg-warning-muted text-warning border-0 font-semibold">Mở khóa tài khoản</Badge>;
-      case "USER_LOGIN":
-        return <Badge variant="outline" className="text-muted-foreground border-border">Đăng nhập</Badge>;
-      case "USER_LOGOUT":
-        return <Badge variant="outline" className="text-muted-foreground border-border">Đăng xuất</Badge>;
-      case "ROLE_CHANGE":
-        return <Badge className="bg-primary/10 text-primary border-0 font-semibold">Đổi vai trò</Badge>;
-      case "COURSE_CREATE":
-        return <Badge className="bg-success-muted text-success border-0 font-semibold">Mở khóa học</Badge>;
-      case "COURSE_UPDATE":
-        return <Badge className="bg-info-muted text-info border-0 font-semibold">Sửa khóa học</Badge>;
-      case "COURSE_DELETE":
-        return <Badge className="bg-danger-muted text-danger border-0 font-semibold">Xóa khóa học</Badge>;
-      case "STUDENTS_IMPORT":
-        return <Badge className="bg-primary/10 text-primary border-0 font-semibold">Import sinh viên</Badge>;
-      case "CLASS_CREATE":
-        return <Badge className="bg-success-muted text-success border-0 font-semibold">Tạo lớp HC</Badge>;
-      case "CLASS_UPDATE":
-        return <Badge className="bg-info-muted text-info border-0 font-semibold">Sửa lớp HC</Badge>;
-      case "CLASS_DELETE":
-        return <Badge className="bg-danger-muted text-danger border-0 font-semibold">Xóa lớp HC</Badge>;
-      default:
-        return <Badge variant="secondary">{action}</Badge>;
+const DEFAULT_PAGE_SIZE = 10;
+
+function toSafeString(val: unknown): string {
+  if (val === null || val === undefined) return "";
+  if (typeof val === "object") {
+    try {
+      return JSON.stringify(val);
+    } catch {
+      return String(val);
     }
+  }
+  return String(val);
+}
+
+export function AuditTable({
+  logs,
+  onSelectLog,
+  page = 1,
+  pageSize = DEFAULT_PAGE_SIZE,
+  totalItems,
+  onPageChange,
+  isLoading = false,
+}: AuditTableProps) {
+  const isServer = Boolean(onPageChange && totalItems !== undefined);
+  const effectiveTotal = isServer ? (totalItems ?? logs.length) : logs.length;
+  const totalPages = Math.max(1, Math.ceil(effectiveTotal / pageSize));
+
+  const getActionBadge = (action: AuditActionType) => {
+    const act = (action || "").toUpperCase();
+    if (act.includes("BAN") || act.includes("LOCK") || act.includes("INACTIVE")) {
+      return (
+        <Badge className="bg-danger-muted text-danger border-0 font-semibold">
+          {action === "USER_BAN" ? "Khóa tài khoản" : action}
+        </Badge>
+      );
+    }
+    if (act.includes("UNBAN") || act.includes("ACTIVE")) {
+      return (
+        <Badge className="bg-success-muted text-success border-0 font-semibold">
+          {action === "USER_UNBAN" ? "Mở tài khoản" : action}
+        </Badge>
+      );
+    }
+    if (act.includes("LOGIN")) {
+      return (
+        <Badge variant="outline" className="text-muted-foreground border-border">
+          Đăng nhập
+        </Badge>
+      );
+    }
+    if (act.includes("LOGOUT")) {
+      return (
+        <Badge variant="outline" className="text-muted-foreground border-border">
+          Đăng xuất
+        </Badge>
+      );
+    }
+    if (act.includes("ROLE") || act.includes("PERMISSION")) {
+      return (
+        <Badge className="bg-primary/10 text-primary border-0 font-semibold">
+          Phân quyền
+        </Badge>
+      );
+    }
+    if (act.includes("CREATE")) {
+      return (
+        <Badge className="bg-success-muted text-success border-0 font-semibold">
+          Tạo mới ({action})
+        </Badge>
+      );
+    }
+    if (act.includes("UPDATE") || act.includes("STATUS")) {
+      return (
+        <Badge className="bg-info-muted text-info border-0 font-semibold">
+          Cập nhật ({action})
+        </Badge>
+      );
+    }
+    if (act.includes("DELETE")) {
+      return (
+        <Badge className="bg-danger-muted text-danger border-0 font-semibold">
+          Xóa ({action})
+        </Badge>
+      );
+    }
+    if (act.includes("IMPORT")) {
+      return (
+        <Badge className="bg-primary/10 text-primary border-0 font-semibold">
+          Import dữ liệu
+        </Badge>
+      );
+    }
+    return <Badge variant="secondary">{action}</Badge>;
   };
 
   const getSeverityBadge = (sev: AuditSeverity) => {
@@ -62,6 +150,7 @@ export function AuditTable({ logs, onSelectLog }: AuditTableProps) {
           </span>
         );
       case "INFO":
+      default:
         return (
           <span className="inline-flex items-center gap-1 text-[11px] font-medium text-muted-foreground">
             <InfoIcon className="w-3.5 h-3.5 text-primary" />
@@ -72,29 +161,102 @@ export function AuditTable({ logs, onSelectLog }: AuditTableProps) {
   };
 
   const formatRelativeTime = (iso: string) => {
-    const d = new Date(iso);
-    return d.toLocaleString("vi-VN", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
+    if (!iso) return "—";
+    try {
+      const d = new Date(iso);
+      return d.toLocaleString("vi-VN", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+      });
+    } catch {
+      return iso;
+    }
   };
 
+  if (isLoading) {
+    return (
+      <Card className="rounded-2xl border border-border overflow-hidden shadow-xs">
+        <Table className="w-full text-left text-xs">
+          <TableHeader className="bg-muted/40 border-b border-border">
+            <TableRow>
+              <TableHead className="py-3 px-4 text-xs font-semibold">Thời gian</TableHead>
+              <TableHead className="py-3 px-4 text-xs font-semibold">Người thực hiện</TableHead>
+              <TableHead className="py-3 px-4 text-xs font-semibold">Hành động</TableHead>
+              <TableHead className="py-3 px-4 text-xs font-semibold">Đối tượng</TableHead>
+              <TableHead className="py-3 px-4 text-xs font-semibold">Mức độ</TableHead>
+              <TableHead className="py-3 px-4 text-xs font-semibold">Trạng thái</TableHead>
+              <TableHead className="py-3 px-4 text-xs font-semibold text-right">Chi tiết</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {Array.from({ length: 6 }).map((_, idx) => (
+              <TableRow key={idx} className="animate-pulse">
+                <TableCell className="py-3 px-4">
+                  <div className="w-28 h-3.5 rounded bg-muted/60" />
+                </TableCell>
+                <TableCell className="py-3 px-4">
+                  <div className="flex items-center gap-2">
+                    <div className="size-7 rounded-lg bg-muted/60 shrink-0" />
+                    <div className="space-y-1">
+                      <div className="w-24 h-3.5 rounded bg-muted/60" />
+                      <div className="w-32 h-2.5 rounded bg-muted/40" />
+                    </div>
+                  </div>
+                </TableCell>
+                <TableCell className="py-3 px-4">
+                  <div className="w-20 h-5 rounded-full bg-muted/50" />
+                </TableCell>
+                <TableCell className="py-3 px-4">
+                  <div className="w-36 h-3.5 rounded bg-muted/50" />
+                </TableCell>
+                <TableCell className="py-3 px-4">
+                  <div className="w-16 h-4 rounded bg-muted/50" />
+                </TableCell>
+                <TableCell className="py-3 px-4">
+                  <div className="w-16 h-4 rounded bg-muted/50" />
+                </TableCell>
+                <TableCell className="py-3 px-4 text-right">
+                  <div className="w-7 h-7 rounded-lg bg-muted/50 ml-auto" />
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </Card>
+    );
+  }
+
   return (
-    <Card className="rounded-2xl border border-border overflow-hidden shadow-xs">
+    <Card className="rounded-2xl border border-border overflow-hidden shadow-xs flex flex-col">
       <div className="overflow-x-auto">
         <Table className="w-full text-left text-xs border-collapse">
           <TableHeader className="bg-muted/40 border-b border-border">
             <TableRow>
-              <TableHead className="py-3 px-4 text-xs font-semibold whitespace-nowrap w-[150px]">Thời gian (Timestamp)</TableHead>
-              <TableHead className="py-3 px-4 text-xs font-semibold min-w-[220px]">Tài khoản thực hiện (Actor & IP)</TableHead>
-              <TableHead className="py-3 px-4 text-xs font-semibold whitespace-nowrap w-[140px]">Hành động (Action)</TableHead>
-              <TableHead className="py-3 px-4 text-xs font-semibold min-w-[220px]">Đối tượng tác động (Target)</TableHead>
-              <TableHead className="py-3 px-4 text-xs font-semibold whitespace-nowrap w-[130px]">Mức độ (Severity)</TableHead>
-              <TableHead className="py-3 px-4 text-xs font-semibold whitespace-nowrap w-[90px]">Trạng thái (Status)</TableHead>
-              <TableHead className="py-3 px-4 text-xs font-semibold whitespace-nowrap text-right w-[80px]">Chi tiết</TableHead>
+              <TableHead className="py-3 px-4 text-xs font-semibold whitespace-nowrap w-[160px]">
+                Thời gian (Timestamp)
+              </TableHead>
+              <TableHead className="py-3 px-4 text-xs font-semibold min-w-[220px]">
+                Tài khoản thực hiện (Actor & IP)
+              </TableHead>
+              <TableHead className="py-3 px-4 text-xs font-semibold whitespace-nowrap w-[150px]">
+                Hành động (Action)
+              </TableHead>
+              <TableHead className="py-3 px-4 text-xs font-semibold min-w-[220px]">
+                Đối tượng tác động (Target)
+              </TableHead>
+              <TableHead className="py-3 px-4 text-xs font-semibold whitespace-nowrap w-[130px]">
+                Mức độ (Severity)
+              </TableHead>
+              <TableHead className="py-3 px-4 text-xs font-semibold whitespace-nowrap w-[90px]">
+                Trạng thái (Status)
+              </TableHead>
+              <TableHead className="py-3 px-4 text-xs font-semibold whitespace-nowrap text-right w-[80px]">
+                Chi tiết
+              </TableHead>
             </TableRow>
           </TableHeader>
 
@@ -115,7 +277,9 @@ export function AuditTable({ logs, onSelectLog }: AuditTableProps) {
                   <TableCell className="py-3 px-4">
                     <div className="flex items-center gap-2.5">
                       <Avatar className="w-7 h-7 rounded-lg border border-border shrink-0">
-                        {log.actor.avatar && <AvatarImage src={log.actor.avatar} alt={log.actor.fullName} />}
+                        {log.actor.avatar && (
+                          <AvatarImage src={log.actor.avatar} alt={log.actor.fullName} />
+                        )}
                         <AvatarFallback className="text-[10px] font-bold bg-primary/10 text-primary">
                           {log.actor.fullName.slice(0, 2).toUpperCase()}
                         </AvatarFallback>
@@ -125,7 +289,8 @@ export function AuditTable({ logs, onSelectLog }: AuditTableProps) {
                           {log.actor.fullName}
                         </span>
                         <span className="text-[10px] text-muted-foreground font-mono truncate">
-                          {log.actor.ipAddress} · {log.actor.role}
+                          {log.actor.ipAddress} &bull; {log.actor.role}
+                          {log.actor.studentCode ? ` (${log.actor.studentCode})` : ""}
                         </span>
                       </div>
                     </div>
@@ -138,10 +303,11 @@ export function AuditTable({ logs, onSelectLog }: AuditTableProps) {
                   <TableCell className="py-3 px-4">
                     <div className="flex flex-col min-w-0">
                       <span className="font-medium text-foreground text-xs truncate">
-                        {log.target.name}
+                        {toSafeString(log.target.name)}
                       </span>
-                      <span className="text-[10px] text-muted-foreground truncate">
-                        {log.description}
+                      <span className="text-[10px] text-muted-foreground truncate font-mono">
+                        {toSafeString(log.target.type)}
+                        {log.context?.classCode ? ` &bull; ${toSafeString(log.context.classCode)}` : ""}
                       </span>
                     </div>
                   </TableCell>
@@ -181,6 +347,39 @@ export function AuditTable({ logs, onSelectLog }: AuditTableProps) {
           </TableBody>
         </Table>
       </div>
+
+      {/* Pagination Footer */}
+      {isServer && totalPages > 1 && onPageChange && (
+        <div className="p-3 border-t border-border/60 bg-muted/20 flex items-center justify-between text-xs text-muted-foreground">
+          <div>
+            Hiển thị trang <strong className="text-foreground">{page}</strong> /{" "}
+            <strong className="text-foreground">{totalPages}</strong> (Tổng cộng{" "}
+            <strong className="text-foreground">{effectiveTotal}</strong> nhật ký)
+          </div>
+          <div className="flex items-center gap-1.5">
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={page <= 1}
+              onClick={() => onPageChange(page - 1)}
+              className="h-7 px-2 text-xs rounded-lg gap-1 cursor-pointer"
+            >
+              <ChevronLeftIcon className="size-3.5" />
+              <span>Trước</span>
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={page >= totalPages}
+              onClick={() => onPageChange(page + 1)}
+              className="h-7 px-2 text-xs rounded-lg gap-1 cursor-pointer"
+            >
+              <span>Sau</span>
+              <ChevronRightIcon className="size-3.5" />
+            </Button>
+          </div>
+        </div>
+      )}
     </Card>
   );
 }
