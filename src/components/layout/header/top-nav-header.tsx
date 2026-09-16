@@ -11,6 +11,7 @@ import {
   UserIcon,
   Link2Icon,
   MenuIcon,
+  BellIcon,
 } from "lucide-react";
 import { SagaLogo } from "@/components/common/saga-logo";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -37,6 +38,7 @@ import {
   isNavItemActive,
 } from "@/components/layout/sidebar/nav-config";
 import type { NavItem } from "@/components/layout/sidebar/nav-config";
+import { NotificationBell } from "@/features/notification/components/notification-bell";
 import { cn } from "@/lib/utils";
 import { CourseContextSwitcher } from "./course-context-switcher";
 import { TopNavTabs } from "./top-nav-tabs";
@@ -151,6 +153,8 @@ export function TopNavHeader() {
             </TooltipContent>
           </Tooltip>
 
+          <NotificationBell />
+
           <div className="h-5 w-px bg-border mx-1" />
 
           <DropdownMenu>
@@ -207,6 +211,16 @@ export function TopNavHeader() {
                   >
                     <Link2Icon className="size-3.5 text-primary" />
                     <span>Tích hợp Jira & GitHub</span>
+                  </DropdownMenuItem>
+                )}
+
+                {user.role === "LECTURER" && (
+                  <DropdownMenuItem
+                    onClick={() => router.push("/lecturer/notifications")}
+                    className="text-xs cursor-pointer py-2 px-2.5 rounded-lg flex items-center gap-2 hover:bg-primary/10 hover:text-primary font-medium"
+                  >
+                    <BellIcon className="size-3.5 text-primary" />
+                    <span>Gửi thông báo lớp học</span>
                   </DropdownMenuItem>
                 )}
 

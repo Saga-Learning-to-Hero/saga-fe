@@ -13,6 +13,8 @@ import { Button } from "@/components/ui/button";
 
 import { TopNavHeader } from "@/components/layout/header/top-nav-header";
 import { ProfileModal } from "@/features/profile/components/profile-modal";
+import { UserRealtimeProvider } from "@/features/notification/providers/user-realtime-provider";
+import { NotificationBell } from "@/features/notification/components/notification-bell";
 
 export default function DashboardLayout({
   children,
@@ -33,7 +35,6 @@ export default function DashboardLayout({
 
   useEffect(() => {
     if (!hasHydrated || isSessionLoading) return;
-    // Lỗi mạng/5xx không được hiểu thành hết phiên — giữ danh tính và hiện màn thử lại.
     if (isSessionError) return;
 
     if (!isAuthenticated || !user) {
@@ -103,53 +104,61 @@ export default function DashboardLayout({
 
   if (!isAuthenticated || !user) return null;
 
-  if (user.role === "LECTURER" || user.role === "STUDENT") {
-    return (
-      <div className="flex min-h-screen flex-col bg-background text-foreground">
-        <Suspense fallback={<div className="h-16 border-b border-border bg-background" />}>
-          <TopNavHeader />
-        </Suspense>
-
-        <main className="flex-1 p-4 sm:p-6 lg:p-8">
-          {children}
-        </main>
-
-        <ProfileModal />
-      </div>
-    );
-  }
-
   return (
-    <div className="flex h-screen overflow-hidden bg-background">
-      <div className="hidden md:flex">
-        <Sidebar collapsed={collapsed} onToggle={() => setCollapsed((v) => !v)} />
-      </div>
+    <UserRealtimeProvider>
+      {user.role === "LECTURER" || user.role === "STUDENT" ? (
+        <div className="flex min-h-screen flex-col bg-background text-foreground">
+          <Suspense fallback={<div className="h-16 border-b border-border bg-background" />}>
+            <TopNavHeader />
+          </Suspense>
 
-      <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
-        <SheetContent side="left" className="p-0 w-64">
-          <Sidebar collapsed={false} onToggle={() => setMobileOpen(false)} />
-        </SheetContent>
-      </Sheet>
+          <main className="flex-1 p-4 sm:p-6 lg:p-8">
+            {children}
+          </main>
 
-      <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
-        <div className="flex items-center md:hidden px-4 h-14 border-b border-border gap-3 bg-background shrink-0">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 rounded-lg"
-            onClick={() => setMobileOpen(true)}
-            aria-label="Mở menu"
-          >
-            <MenuIcon className="w-4 h-4" />
-          </Button>
-          <SagaLogo size="xs" showText={true} showSubtitle={false} />
+          <ProfileModal />
         </div>
+      ) : (
+        <div className="flex h-screen overflow-hidden bg-background">
+          <div className="hidden md:flex">
+            <Sidebar collapsed={collapsed} onToggle={() => setCollapsed((v) => !v)} />
+          </div>
 
-        <main className="flex-1 overflow-y-auto p-6">{children}</main>
-      </div>
+          <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
+            <SheetContent side="left" className="p-0 w-64">
+              <Sidebar collapsed={false} onToggle={() => setMobileOpen(false)} />
+            </SheetContent>
+          </Sheet>
 
-      <ProfileModal />
-    </div>
+          <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
+            <div className="flex items-center justify-between px-4 h-14 border-b border-border bg-background shrink-0">
+              <div className="flex items-center gap-3">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 rounded-lg md:hidden"
+                  onClick={() => setMobileOpen(true)}
+                  aria-label="Mở menu"
+                >
+                  <MenuIcon className="w-4 h-4" />
+                </Button>
+                <div className="md:hidden">
+                  <SagaLogo size="xs" showText={true} showSubtitle={false} />
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <NotificationBell />
+              </div>
+            </div>
+
+            <main className="flex-1 overflow-y-auto p-6">{children}</main>
+          </div>
+
+          <ProfileModal />
+        </div>
+      )}
+    </UserRealtimeProvider>
   );
 }
 

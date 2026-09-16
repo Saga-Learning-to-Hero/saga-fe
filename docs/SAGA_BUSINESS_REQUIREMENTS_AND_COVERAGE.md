@@ -121,6 +121,7 @@ Bảng này là checklist chức năng cấp cao dành cho tài liệu báo cáo
 | SCOPE-14 | Contribution | Bốn nhóm CODE/TEST/DOCUMENT/RESEARCH; mode COURSE/PROJECT_GROUP; evidence eligibility; peer coefficient; normalization; warning; override có audit |
 | SCOPE-15 | Quản trị và kiểm toán | User status; audit log; integration/sync observability; lỗi có mã; dữ liệu mock không xuất hiện trong bản production/report |
 | SCOPE-16 | Chất lượng hệ thống | Authorization server-side; isolation theo account/course/project; timezone nhất quán; accessibility/responsive; test; không N+1/refetch storm |
+| SCOPE-17 | Trung tâm thông báo & Web Push | Hộp thư thông báo canonical (REST); User-scoped SSE; Firebase Web Push FCM; bell badge/preview/sheet; broadcast Admin; targeted notification Giảng viên theo 4 scope; Idempotency-Key và điều phối đăng xuất tập trung |
 
 ---
 
@@ -438,6 +439,19 @@ Project Type dùng để phân loại hướng dự án, không điều khiển 
 | CONT-001 | Student contribution dashboard | ✓ | ✓ | ✓ | `DONE`; dùng evaluation data, tên/tooltip phải rõ |
 | CONT-002 | Warning evidence/peer review | ✓ | ✓ | ✓ | `DONE`; diễn đạt là cảnh báo dữ liệu, không kết luận gian lận |
 
+### 7.9 Thông báo, Web Push và Realtime Signal (Notification Center)
+
+| ID | Nghiệp vụ | BE | FE data | UI | Trạng thái/Ghi chú |
+| --- | --- | --- | --- | --- | --- |
+| NOTIF-001 | REST notification inbox list & unread count | ✓ | ✓ | ✓ | `DONE`; REST inbox là canonical data source of truth |
+| NOTIF-002 | Mark read single & mark all read | ✓ | ✓ | ✓ | `DONE`; optimistic update và refetch canonical state |
+| NOTIF-003 | Header notification bell, badge, preview popover & sheet | ✓ | ✓ | ✓ | `DONE`; áp dụng cho STUDENT, LECTURER, ADMIN; kiểm tra internal actionUrl |
+| NOTIF-004 | User-scoped SSE (`/api/users/me/events`) | ✓ | ✓ | ✓ | `DONE`; UserRealtimeProvider duy nhất trong layout; READY và NOTIFICATION_CREATED chỉ invalidate query; ACCOUNT_DISABLED đóng SSE và logout |
+| NOTIF-005 | Firebase Web Push registration & FCM token | ✓ | ✓ | ✓ | `DONE`; không popup xin quyền tự động; lưu installationId; foreground onMessage invalidate queries |
+| NOTIF-006 | Unified logout orchestration | ✓ | ✓ | ✓ | `DONE`; DELETE push installation -> deleteToken -> logout -> clear state; revoke fail vẫn logout |
+| NOTIF-007 | Admin system notification composer | ✓ | ✓ | ✓ | `DONE`; POST `/api/admin/notifications/system` kèm Idempotency-Key, live preview, dialog xác nhận |
+| NOTIF-008 | Lecturer targeted notification composer | ✓ | ✓ | ✓ | `DONE`; 4 scope: all-courses, course, team, student; chọn qua CustomSelect; Idempotency-Key và chống 409 |
+
 ---
 
 ## 8. Registry API Backend và mức sử dụng FE
@@ -529,6 +543,23 @@ Project Type dùng để phân loại hướng dự án, không điều khiển 
 | `GET /api/projects/{projectId}/sprints/{sprintId}/graph/activity` | WIP SAGA-75 |
 | `GET /api/projects/{projectId}/graph/attribution` | WIP SAGA-75 |
 | `GET /api/projects/{projectId}/sprints/{sprintId}/graph/peer-review` | WIP SAGA-75 |
+
+### 8.8 Notification và Push Installation
+
+| Endpoint group | FE hiện tại |
+| --- | --- |
+| `GET /api/users/me/notifications` | Đã dùng (phân trang, lọc unreadOnly) |
+| `GET /api/users/me/notifications/unread-count` | Đã dùng |
+| `PATCH /api/users/me/notifications/{id}/read` | Đã dùng |
+| `PATCH /api/users/me/notifications/read-all` | Đã dùng |
+| `PUT /api/users/me/push-installations` | Đã dùng (đăng ký Firebase Installation FID và FCM Web Push token) |
+| `DELETE /api/users/me/push-installations/{id}` | Đã dùng (thu hồi thiết bị push khi đăng xuất) |
+| `GET /api/users/me/events` | Đã dùng (User-scoped SSE: READY, NOTIFICATION_CREATED, ACCOUNT_DISABLED) |
+| `POST /api/admin/notifications/system` | Đã dùng (kèm Idempotency-Key và preview) |
+| `POST /api/lecturer/notifications/all-courses` | Đã dùng (kèm Idempotency-Key) |
+| `POST /api/lecturer/courses/{courseId}/notifications` | Đã dùng (kèm Idempotency-Key) |
+| `POST /api/lecturer/teams/{teamId}/notifications` | Đã dùng (kèm Idempotency-Key) |
+| `POST /api/lecturer/courses/{courseId}/students/{studentId}/notifications` | Đã dùng (kèm Idempotency-Key) |
 
 ---
 
