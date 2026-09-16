@@ -732,22 +732,20 @@ export function LecturerGraphView({
                 <button
                   type="button"
                   onClick={() => setNeo4jFilterType("ALL")}
-                  className={`px-3 py-1.5 font-bold rounded-lg cursor-pointer transition-colors ${
-                    neo4jFilterType === "ALL"
+                  className={`px-3 py-1.5 font-bold rounded-lg cursor-pointer transition-colors ${neo4jFilterType === "ALL"
                       ? "bg-card text-foreground shadow-2xs"
                       : "text-muted-foreground hover:text-foreground"
-                  }`}
+                    }`}
                 >
                   Tất cả
                 </button>
                 <button
                   type="button"
                   onClick={() => setNeo4jFilterType("ANOMALIES_ONLY")}
-                  className={`px-3 py-1.5 font-bold rounded-lg cursor-pointer transition-colors ${
-                    neo4jFilterType === "ANOMALIES_ONLY"
+                  className={`px-3 py-1.5 font-bold rounded-lg cursor-pointer transition-colors ${neo4jFilterType === "ANOMALIES_ONLY"
                       ? "border border-destructive/40 bg-destructive/15 text-destructive shadow-2xs"
                       : "text-muted-foreground hover:text-foreground"
-                  }`}
+                    }`}
                 >
                   Cảnh báo ({structuralStats.anomalyCount})
                 </button>
@@ -777,11 +775,10 @@ export function LecturerGraphView({
                 setMainMode("GRAPH");
                 setSelectedTaskId(null);
               }}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-extrabold transition-all cursor-pointer ${
-                mainMode === "GRAPH"
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-extrabold transition-all cursor-pointer ${mainMode === "GRAPH"
                   ? "bg-card text-foreground shadow-xs border border-border/80"
                   : "text-muted-foreground hover:text-foreground"
-              }`}
+                }`}
             >
               <NetworkIcon className="size-3.5 text-primary" />
               <span>Neo4j Graph</span>
@@ -792,11 +789,10 @@ export function LecturerGraphView({
                 setMainMode("PIPELINE");
                 setSelectedGraphNode(null);
               }}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-extrabold transition-all cursor-pointer ${
-                mainMode === "PIPELINE"
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-extrabold transition-all cursor-pointer ${mainMode === "PIPELINE"
                   ? "bg-card text-foreground shadow-xs border border-border/80"
                   : "text-muted-foreground hover:text-foreground"
-              }`}
+                }`}
             >
               <span>Pipeline</span>
             </button>
@@ -868,18 +864,16 @@ export function LecturerGraphView({
                 <button
                   type="button"
                   onClick={() => setPipelineSubView("FLOW")}
-                  className={`px-2.5 py-1 rounded-md font-bold cursor-pointer transition-colors ${
-                    pipelineSubView === "FLOW" ? "bg-card text-foreground shadow-2xs" : "text-muted-foreground"
-                  }`}
+                  className={`px-2.5 py-1 rounded-md font-bold cursor-pointer transition-colors ${pipelineSubView === "FLOW" ? "bg-card text-foreground shadow-2xs" : "text-muted-foreground"
+                    }`}
                 >
                   Flow
                 </button>
                 <button
                   type="button"
                   onClick={() => setPipelineSubView("MATRIX")}
-                  className={`px-2.5 py-1 rounded-md font-bold cursor-pointer transition-colors ${
-                    pipelineSubView === "MATRIX" ? "bg-card text-foreground shadow-2xs" : "text-muted-foreground"
-                  }`}
+                  className={`px-2.5 py-1 rounded-md font-bold cursor-pointer transition-colors ${pipelineSubView === "MATRIX" ? "bg-card text-foreground shadow-2xs" : "text-muted-foreground"
+                    }`}
                 >
                   Audit Matrix
                 </button>
