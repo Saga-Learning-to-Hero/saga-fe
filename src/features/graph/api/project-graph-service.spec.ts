@@ -203,5 +203,48 @@ describe("ProjectGraphService", () => {
       expect(apiClient.get).toHaveBeenCalledWith("/api/projects/p-1/graph/overview", { signal: undefined });
       expect(result).toEqual(mockData);
     });
+
+    it("UTCID16 - [N] Normal: includeCommits=true duoc serialize thanh query param chuan tren overview", async () => {
+      const mockData = { nodes: [], edges: [] };
+      vi.mocked(apiClient.get).mockResolvedValueOnce({ data: mockData });
+
+      const result = await ProjectGraphService.getProjectOverviewGraph("p-1", {
+        includeCommits: true,
+      });
+
+      expect(apiClient.get).toHaveBeenCalledWith("/api/projects/p-1/graph/overview?includeCommits=true", {
+        signal: undefined,
+      });
+      expect(result).toEqual(mockData);
+    });
+
+    it("UTCID17 - [N] Normal: continuationToken duoc chuyen thanh query cursor khi cursor bi rong", async () => {
+      const mockData = { nodes: [], edges: [] };
+      vi.mocked(apiClient.get).mockResolvedValueOnce({ data: mockData });
+
+      const result = await ProjectGraphService.getProjectOverviewGraph("p-1", {
+        continuationToken: "rev-5:task:456",
+      });
+
+      expect(apiClient.get).toHaveBeenCalledWith(
+        "/api/projects/p-1/graph/overview?cursor=rev-5%3Atask%3A456",
+        { signal: undefined }
+      );
+      expect(result).toEqual(mockData);
+    });
+
+    it("UTCID18 - [B] Boundary: includeCommits=false van sinh query param includeCommits=false tuong minh", async () => {
+      const mockData = { nodes: [], edges: [] };
+      vi.mocked(apiClient.get).mockResolvedValueOnce({ data: mockData });
+
+      const result = await ProjectGraphService.getProjectOverviewGraph("p-1", {
+        includeCommits: false,
+      });
+
+      expect(apiClient.get).toHaveBeenCalledWith("/api/projects/p-1/graph/overview?includeCommits=false", {
+        signal: undefined,
+      });
+      expect(result).toEqual(mockData);
+    });
   });
 });

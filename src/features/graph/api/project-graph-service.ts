@@ -55,8 +55,12 @@ function buildGraphQuery(params?: string | null | GraphSubgraphFilterParams): st
   if (typeof params.maxNodes === "number" && !Number.isNaN(params.maxNodes)) {
     searchParams.set("maxNodes", String(params.maxNodes));
   }
-  if (params.cursor?.trim()) {
-    searchParams.set("cursor", params.cursor.trim());
+  const cursorVal = params.cursor?.trim() || params.continuationToken?.trim();
+  if (cursorVal) {
+    searchParams.set("cursor", cursorVal);
+  }
+  if (typeof params.includeCommits === "boolean") {
+    searchParams.set("includeCommits", String(params.includeCommits));
   }
 
   const qs = searchParams.toString();

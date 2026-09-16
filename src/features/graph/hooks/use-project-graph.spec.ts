@@ -224,5 +224,37 @@ describe("useProjectGraph", () => {
       expect.any(AbortSignal)
     );
   });
+
+  it("UTCID10 - [N] Normal: Hook truyen includeCommits va focusNodeId vao ProjectGraphService.getProjectOverviewGraph", async () => {
+    const mockData = { nodes: [], edges: [] };
+    vi.mocked(ProjectGraphService.getProjectOverviewGraph).mockResolvedValueOnce(mockData);
+
+    const { result } = renderHook(
+      () =>
+        useProjectGraph({
+          projectId: "p-1",
+          graphType: "OVERVIEW",
+          sprintId: "sp-1",
+          subgraphParams: {
+            includeCommits: true,
+            focusNodeId: "task:abc-123",
+            depth: 1,
+          },
+        }),
+      { wrapper: createWrapper() }
+    );
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(ProjectGraphService.getProjectOverviewGraph).toHaveBeenCalledWith(
+      "p-1",
+      {
+        includeCommits: true,
+        focusNodeId: "task:abc-123",
+        depth: 1,
+        sprintId: "sp-1",
+      },
+      expect.any(AbortSignal)
+    );
+  });
 });
 

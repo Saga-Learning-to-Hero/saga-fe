@@ -22,6 +22,7 @@ import { useProjectGraph } from "../hooks/use-project-graph";
 import { buildPipelineTasksCsv, downloadTextFile } from "../lib/pipeline-mapper";
 import { UNASSIGNED_LANE_ID, type PipelineFilterState } from "../types/pipeline";
 import type { CytoscapeNodeData, GraphSubgraphFilterParams, GraphType } from "../types/graph";
+import { Button } from "@/components/ui/button";
 
 export function TraceabilityGraphView() {
   const { course, courseId, isLoading: isCoursesLoading, isInvalidCourse } = useStudentCourseContext();
@@ -40,6 +41,7 @@ export function TraceabilityGraphView() {
 
   const [scopeMode, setScopeMode] = useState<"COMPACT" | "FULL">("COMPACT");
   const [maxNodes, setMaxNodes] = useState<number | null>(100);
+  const [focusedNodeId, setFocusedNodeId] = useState<string | null>(null);
 
   const [pipelineFilter, setPipelineFilter] = useState<PipelineFilterState>({
     studentId: "ALL",
@@ -78,6 +80,7 @@ export function TraceabilityGraphView() {
 
   const handleSprintChange = (sprintId: string) => {
     setSelectedSprintState(sprintId);
+    setFocusedNodeId(null);
   };
 
   const effectiveSprintId = useMemo(() => {
@@ -92,6 +95,7 @@ export function TraceabilityGraphView() {
 
   const handleTabChange = (tab: Neo4jTabMode) => {
     setNeo4jTab(tab);
+    setFocusedNodeId(null);
     if (
       (tab === "ACTIVITY" || tab === "PEER_REVIEW") &&
       (neo4jSprintId === "ALL" || !neo4jSprintId) &&
@@ -110,13 +114,26 @@ export function TraceabilityGraphView() {
     const params: GraphSubgraphFilterParams = {};
     let hasFilter = false;
 
-    if (
-      scopeMode === "COMPACT" &&
-      !drillDownStudent &&
-      (neo4jTab === "OVERVIEW" || neo4jTab === "ACTIVITY" || neo4jTab === "ATTRIBUTION")
-    ) {
-      params.nodeTypes = ["STUDENT", "TEAM", "PROJECT", "SPRINT", "TASK"];
+    if (focusedNodeId) {
+      params.focusNodeId = focusedNodeId;
+      params.depth = 1;
+      params.includeCommits = true;
+      params.nodeTypes = ["TASK", "COMMIT", "STUDENT"];
+      params.edgeTypes = ["ASSIGNED_TO", "EVIDENCED_BY"];
       hasFilter = true;
+    } else {
+      if (scopeMode === "FULL") {
+        params.includeCommits = true;
+        hasFilter = true;
+      } else if (
+        scopeMode === "COMPACT" &&
+        !drillDownStudent &&
+        (neo4jTab === "OVERVIEW" || neo4jTab === "ACTIVITY" || neo4jTab === "ATTRIBUTION")
+      ) {
+        params.includeCommits = false;
+        params.nodeTypes = ["STUDENT", "TEAM", "PROJECT", "SPRINT", "TASK"];
+        hasFilter = true;
+      }
     }
 
     if (neo4jFilterType === "ANOMALIES_ONLY") {
@@ -130,7 +147,7 @@ export function TraceabilityGraphView() {
     }
 
     return hasFilter ? params : null;
-  }, [scopeMode, drillDownStudent, neo4jTab, neo4jFilterType, maxNodes]);
+  }, [focusedNodeId, scopeMode, drillDownStudent, neo4jTab, neo4jFilterType, maxNodes]);
 
   const isWaitingDefaultSprint = selectedSprintState === null && sprintsQuery.isLoading;
 
@@ -293,6 +310,24 @@ export function TraceabilityGraphView() {
 
     return (
       <div className="space-y-4">
+        {focusedNodeId && (
+          <div className="flex flex-wrap items-center justify-between gap-3 p-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/25 text-xs font-bold text-emerald-700 dark:text-emerald-400 shadow-xs">
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping shrink-0" />
+              <span>
+                Đang tập trung đối chiếu Task: <code className="font-mono text-foreground bg-background/80 px-1.5 py-0.5 rounded-md border border-border/60">{focusedNodeId}</code> và các Commit liên kết (EVIDENCED_BY)
+              </span>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setFocusedNodeId(null)}
+              className="h-7 text-xs rounded-xl cursor-pointer bg-background hover:bg-muted"
+            >
+              Quay lại toàn cảnh
+            </Button>
+          </div>
+        )}
         <CytoscapeGraphCanvas
           nodes={displayGraphData.nodes}
           edges={displayGraphData.edges}
@@ -546,6 +581,7 @@ export function TraceabilityGraphView() {
             setSelectedSprintState("ALL");
             setNeo4jFilterType("ALL");
             setDrillDownStudent(null);
+            setFocusedNodeId(null);
             setScopeMode("COMPACT");
             setMaxNodes(100);
           }}
@@ -656,6 +692,7 @@ export function TraceabilityGraphView() {
       <GraphNodeDetailsModal
         nodeData={selectedNode}
         onClose={() => setSelectedNode(null)}
+        onFocusNode={(nodeId) => setFocusedNodeId(nodeId)}
         onViewContribution={(studentId) => {
           const cleanId = studentId.replace(/^student:/, "");
           setDrillDownStudent({

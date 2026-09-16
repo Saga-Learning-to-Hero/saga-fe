@@ -99,6 +99,7 @@ export function LecturerGraphView({
 
   const [scopeMode, setScopeMode] = useState<"COMPACT" | "FULL">("COMPACT");
   const [maxNodes, setMaxNodes] = useState<number | null>(100);
+  const [focusedNodeId, setFocusedNodeId] = useState<string | null>(null);
 
   const [pipelineSubView, setPipelineSubView] = useState<"FLOW" | "MATRIX">("FLOW");
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
@@ -135,6 +136,7 @@ export function LecturerGraphView({
 
   const handleSprintChange = (sprintId: string) => {
     setSelectedSprintState(sprintId);
+    setFocusedNodeId(null);
   };
 
   const effectiveNeo4jSprintId = useMemo(() => {
@@ -149,6 +151,7 @@ export function LecturerGraphView({
 
   const handleTabChange = (tab: Neo4jTabMode) => {
     setNeo4jTab(tab);
+    setFocusedNodeId(null);
     if (
       (tab === "ACTIVITY" || tab === "PEER_REVIEW") &&
       (neo4jSprintId === "ALL" || !neo4jSprintId) &&
@@ -167,13 +170,26 @@ export function LecturerGraphView({
     const params: GraphSubgraphFilterParams = {};
     let hasFilter = false;
 
-    if (
-      scopeMode === "COMPACT" &&
-      !drillDownStudent &&
-      (neo4jTab === "OVERVIEW" || neo4jTab === "ACTIVITY" || neo4jTab === "ATTRIBUTION")
-    ) {
-      params.nodeTypes = ["STUDENT", "TEAM", "PROJECT", "SPRINT", "TASK"];
+    if (focusedNodeId) {
+      params.focusNodeId = focusedNodeId;
+      params.depth = 1;
+      params.includeCommits = true;
+      params.nodeTypes = ["TASK", "COMMIT", "STUDENT"];
+      params.edgeTypes = ["ASSIGNED_TO", "EVIDENCED_BY"];
       hasFilter = true;
+    } else {
+      if (scopeMode === "FULL") {
+        params.includeCommits = true;
+        hasFilter = true;
+      } else if (
+        scopeMode === "COMPACT" &&
+        !drillDownStudent &&
+        (neo4jTab === "OVERVIEW" || neo4jTab === "ACTIVITY" || neo4jTab === "ATTRIBUTION")
+      ) {
+        params.includeCommits = false;
+        params.nodeTypes = ["STUDENT", "TEAM", "PROJECT", "SPRINT", "TASK"];
+        hasFilter = true;
+      }
     }
 
     if (neo4jFilterType === "ANOMALIES_ONLY") {
@@ -187,7 +203,7 @@ export function LecturerGraphView({
     }
 
     return hasFilter ? params : null;
-  }, [scopeMode, drillDownStudent, neo4jTab, neo4jFilterType, maxNodes]);
+  }, [focusedNodeId, scopeMode, drillDownStudent, neo4jTab, neo4jFilterType, maxNodes]);
 
   const isWaitingDefaultSprint = selectedSprintState === null && sprintsQuery.isLoading;
 
@@ -227,6 +243,7 @@ export function LecturerGraphView({
     setSelectedTaskId(null);
     setSelectedGraphNode(null);
     setDrillDownStudent(null);
+    setFocusedNodeId(null);
     setSelectedSprintState("ALL");
     setNeo4jTab("OVERVIEW");
     setNeo4jFilterType("ALL");
@@ -282,6 +299,7 @@ export function LecturerGraphView({
   }, [currentTeam]);
 
   const handleSelectDrillDownStudent = (input: string | null) => {
+    setFocusedNodeId(null);
     if (!input || input === "ALL") {
       setDrillDownStudent(null);
       return;
@@ -578,6 +596,24 @@ export function LecturerGraphView({
 
     return (
       <div className="space-y-4">
+        {focusedNodeId && (
+          <div className="flex flex-wrap items-center justify-between gap-3 p-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/25 text-xs font-bold text-emerald-700 dark:text-emerald-400 shadow-xs">
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping shrink-0" />
+              <span>
+                Đang tập trung đối chiếu Task: <code className="font-mono text-foreground bg-background/80 px-1.5 py-0.5 rounded-md border border-border/60">{focusedNodeId}</code> và các Commit liên kết (EVIDENCED_BY)
+              </span>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setFocusedNodeId(null)}
+              className="h-7 text-xs rounded-xl cursor-pointer bg-background hover:bg-muted"
+            >
+              Quay lại toàn cảnh
+            </Button>
+          </div>
+        )}
         <CytoscapeGraphCanvas
           nodes={displayGraphData.nodes}
           edges={displayGraphData.edges}
@@ -733,8 +769,8 @@ export function LecturerGraphView({
                   type="button"
                   onClick={() => setNeo4jFilterType("ALL")}
                   className={`px-3 py-1.5 font-bold rounded-lg cursor-pointer transition-colors ${neo4jFilterType === "ALL"
-                      ? "bg-card text-foreground shadow-2xs"
-                      : "text-muted-foreground hover:text-foreground"
+                    ? "bg-card text-foreground shadow-2xs"
+                    : "text-muted-foreground hover:text-foreground"
                     }`}
                 >
                   Tất cả
@@ -743,8 +779,8 @@ export function LecturerGraphView({
                   type="button"
                   onClick={() => setNeo4jFilterType("ANOMALIES_ONLY")}
                   className={`px-3 py-1.5 font-bold rounded-lg cursor-pointer transition-colors ${neo4jFilterType === "ANOMALIES_ONLY"
-                      ? "border border-destructive/40 bg-destructive/15 text-destructive shadow-2xs"
-                      : "text-muted-foreground hover:text-foreground"
+                    ? "border border-destructive/40 bg-destructive/15 text-destructive shadow-2xs"
+                    : "text-muted-foreground hover:text-foreground"
                     }`}
                 >
                   Cảnh báo ({structuralStats.anomalyCount})
@@ -776,8 +812,8 @@ export function LecturerGraphView({
                 setSelectedTaskId(null);
               }}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-extrabold transition-all cursor-pointer ${mainMode === "GRAPH"
-                  ? "bg-card text-foreground shadow-xs border border-border/80"
-                  : "text-muted-foreground hover:text-foreground"
+                ? "bg-card text-foreground shadow-xs border border-border/80"
+                : "text-muted-foreground hover:text-foreground"
                 }`}
             >
               <NetworkIcon className="size-3.5 text-primary" />
@@ -790,8 +826,8 @@ export function LecturerGraphView({
                 setSelectedGraphNode(null);
               }}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-extrabold transition-all cursor-pointer ${mainMode === "PIPELINE"
-                  ? "bg-card text-foreground shadow-xs border border-border/80"
-                  : "text-muted-foreground hover:text-foreground"
+                ? "bg-card text-foreground shadow-xs border border-border/80"
+                : "text-muted-foreground hover:text-foreground"
                 }`}
             >
               <span>Pipeline</span>
@@ -956,6 +992,7 @@ export function LecturerGraphView({
       <GraphNodeDetailsModal
         nodeData={selectedGraphNode}
         onClose={() => setSelectedGraphNode(null)}
+        onFocusNode={(nodeId) => setFocusedNodeId(nodeId)}
         onViewContribution={(studentId) => {
           handleSelectDrillDownStudent(studentId);
         }}

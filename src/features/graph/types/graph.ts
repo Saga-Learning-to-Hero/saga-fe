@@ -102,6 +102,8 @@ export interface GraphSubgraphFilterParams {
   anomaliesOnly?: boolean | null;
   maxNodes?: number | null;
   cursor?: string | null;
+  continuationToken?: string | null;
+  includeCommits?: boolean | null;
 }
 
 export interface GraphQueryParams extends GraphSubgraphFilterParams {

@@ -546,4 +546,39 @@ describe("useProjectRealtime Hook", () => {
       vi.useRealTimers();
     }
   );
+
+  fptTest(
+    {
+      id: "UTCID14",
+      type: "N",
+      executedDate: "16/09/2026",
+      description: "Invalidate toan bo graph query cua project khi nhan su kien GRAPH_CHANGED",
+    },
+    async () => {
+      vi.useFakeTimers();
+      const invalidateSpy = vi.spyOn(queryClient, "invalidateQueries");
+      const wrapper = createWrapper();
+      renderHook(() => useProjectRealtime("project-graph-changed"), { wrapper });
+
+      const es = MockEventSource.instances[0];
+      act(() => {
+        es.emitOpen();
+        es.emitEvent("GRAPH_CHANGED", {
+          type: "GRAPH_CHANGED",
+          projectId: "project-graph-changed",
+          revision: "12",
+          reason: "TASKS_CHANGED",
+        });
+      });
+
+      act(() => {
+        vi.advanceTimersByTime(400);
+      });
+
+      expect(invalidateSpy).toHaveBeenCalledWith({
+        queryKey: ["project-graph", "project-graph-changed"],
+      });
+      vi.useRealTimers();
+    }
+  );
 });

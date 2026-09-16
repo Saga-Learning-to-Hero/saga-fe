@@ -417,6 +417,18 @@ export function CytoscapeGraphCanvas({
   }, []);
 
   useEffect(() => {
+    if (cyRef.current && !cyRef.current.destroyed?.()) {
+      try {
+        cyRef.current
+          .style()
+          .selector("edge")
+          .style("label", showEdgeLabels ? "data(label)" : "")
+          .update();
+      } catch { }
+    }
+  }, [showEdgeLabels]);
+
+  useEffect(() => {
     if (!containerRef.current) return;
 
     const elements = buildElements(normalizedNodes, normalizedEdges);
@@ -454,6 +466,11 @@ export function CytoscapeGraphCanvas({
               }
             });
           });
+
+          cy.style()
+            .selector("edge")
+            .style("label", showEdgeLabels ? "data(label)" : "")
+            .update();
 
           if (topologyChanged || layoutChanged) {
             applyLayout(cy, currentLayout, true);

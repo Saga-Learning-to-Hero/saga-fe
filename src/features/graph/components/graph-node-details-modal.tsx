@@ -21,6 +21,7 @@ interface GraphNodeDetailsModalProps {
   nodeData: CytoscapeNodeData | null;
   onClose: () => void;
   onViewContribution?: (studentId: string) => void;
+  onFocusNode?: (nodeId: string) => void;
 }
 
 const TYPE_CONFIG: Record<
@@ -45,6 +46,7 @@ export function GraphNodeDetailsModal({
   nodeData,
   onClose,
   onViewContribution,
+  onFocusNode,
 }: GraphNodeDetailsModalProps) {
   if (!nodeData) return null;
 
@@ -176,21 +178,34 @@ export function GraphNodeDetailsModal({
         </div>
 
         <div className="p-4 border-t border-border/60 flex items-center justify-between bg-muted/20 shrink-0">
-          {isStudent && onViewContribution ? (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                onViewContribution(nodeData.id);
-                onClose();
-              }}
-              className="h-9 text-xs rounded-xl cursor-pointer"
-            >
-              Xem chi tiết đóng góp
-            </Button>
-          ) : (
-            <div />
-          )}
+          <div className="flex items-center gap-2">
+            {isStudent && onViewContribution && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  onViewContribution(nodeData.id);
+                  onClose();
+                }}
+                className="h-9 text-xs rounded-xl cursor-pointer"
+              >
+                Xem chi tiết đóng góp
+              </Button>
+            )}
+            {nodeData.type === "TASK" && onFocusNode && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  onFocusNode(nodeData.id);
+                  onClose();
+                }}
+                className="h-9 text-xs rounded-xl cursor-pointer text-emerald-600 dark:text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/10"
+              >
+                Tập trung Task & Xem Commit đối chiếu
+              </Button>
+            )}
+          </div>
           <Button onClick={onClose} size="sm" className="h-9 text-xs rounded-xl px-5 cursor-pointer">
             Đóng
           </Button>
