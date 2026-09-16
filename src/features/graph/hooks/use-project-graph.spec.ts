@@ -87,13 +87,13 @@ describe("useProjectGraph", () => {
     expect(ProjectGraphService.getSprintPeerReviewGraph).not.toHaveBeenCalled();
   });
 
-  it("UTCID04 - [A] Abnormal: Contribution khong duoc enabled khi thieu studentId", async () => {
+  it("UTCID04 - [A] Abnormal: Contribution khong duoc enabled khi thieu studentProfileId", async () => {
     const { result } = renderHook(
       () =>
         useProjectGraph({
           projectId: "p-1",
           graphType: "CONTRIBUTION",
-          studentId: null,
+          studentProfileId: null,
         }),
       { wrapper: createWrapper() }
     );
@@ -102,7 +102,7 @@ describe("useProjectGraph", () => {
     expect(ProjectGraphService.getStudentContributionGraph).not.toHaveBeenCalled();
   });
 
-  it("UTCID05 - [N] Normal: Contribution goi voi studentProfileId sau khi strip prefix", async () => {
+  it("UTCID05 - [N] Normal: Contribution goi voi studentProfileId sau khi strip prefix UUID", async () => {
     const mockData = { nodes: [], edges: [] };
     vi.mocked(ProjectGraphService.getStudentContributionGraph).mockResolvedValueOnce(mockData);
 
@@ -111,7 +111,7 @@ describe("useProjectGraph", () => {
         useProjectGraph({
           projectId: "p-1",
           graphType: "CONTRIBUTION",
-          studentId: "student:stu-99",
+          studentProfileId: "student:80ffd344-5190-4373-a2fb-10e74d64e55d",
           sprintId: "sp-1",
         }),
       { wrapper: createWrapper() }
@@ -120,7 +120,7 @@ describe("useProjectGraph", () => {
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expect(ProjectGraphService.getStudentContributionGraph).toHaveBeenCalledWith(
       "p-1",
-      "stu-99",
+      "80ffd344-5190-4373-a2fb-10e74d64e55d",
       "sp-1",
       expect.any(AbortSignal)
     );
@@ -255,6 +255,21 @@ describe("useProjectGraph", () => {
       },
       expect.any(AbortSignal)
     );
+  });
+
+  it("UTCID11 - [A] Abnormal: Contribution disable khi studentProfileId la studentCode, khong goi service", async () => {
+    const { result } = renderHook(
+      () =>
+        useProjectGraph({
+          projectId: "p-1",
+          graphType: "CONTRIBUTION",
+          studentProfileId: "SE171184",
+        }),
+      { wrapper: createWrapper() }
+    );
+
+    expect(result.current.fetchStatus).toBe("idle");
+    expect(ProjectGraphService.getStudentContributionGraph).not.toHaveBeenCalled();
   });
 });
 

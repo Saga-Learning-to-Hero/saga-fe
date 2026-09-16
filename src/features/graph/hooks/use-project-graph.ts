@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { ProjectGraphService } from "../api/project-graph-service";
+import { resolveStudentProfileId } from "../lib/student-profile-id";
 import type { CytoscapeGraphResponse, GraphSubgraphFilterParams, GraphType } from "../types/graph";
 
 export const PROJECT_GRAPH_QUERY_KEY = "project-graph";
@@ -8,7 +9,7 @@ export function getProjectGraphQueryKey(
   projectId: string,
   graphType: GraphType,
   sprintId?: string | null,
-  studentId?: string | null,
+  studentProfileId?: string | null,
   subgraphParams?: GraphSubgraphFilterParams | null
 ) {
   if (!subgraphParams) {
@@ -17,7 +18,7 @@ export function getProjectGraphQueryKey(
       projectId,
       graphType,
       sprintId ?? null,
-      studentId ?? null,
+      studentProfileId ?? null,
     ] as const;
   }
   return [
@@ -25,7 +26,7 @@ export function getProjectGraphQueryKey(
     projectId,
     graphType,
     sprintId ?? null,
-    studentId ?? null,
+    studentProfileId ?? null,
     subgraphParams,
   ] as const;
 }
@@ -34,7 +35,7 @@ export interface UseProjectGraphOptions {
   projectId: string;
   graphType: GraphType;
   sprintId?: string | null;
-  studentId?: string | null;
+  studentProfileId?: string | null;
   subgraphParams?: GraphSubgraphFilterParams | null;
   enabled?: boolean;
 }
@@ -43,18 +44,18 @@ export function useProjectGraph({
   projectId,
   graphType,
   sprintId,
-  studentId,
+  studentProfileId,
   subgraphParams,
   enabled = true,
 }: UseProjectGraphOptions) {
   const trimmedProject = projectId?.trim();
   const trimmedSprint = sprintId?.trim();
-  const trimmedStudent = studentId?.replace(/^student:/, "").trim();
+  const resolvedStudentProfileId = resolveStudentProfileId(studentProfileId);
 
   let isQueryEnabled = Boolean(enabled && trimmedProject);
   if (isQueryEnabled) {
     if (graphType === "CONTRIBUTION") {
-      isQueryEnabled = Boolean(trimmedStudent);
+      isQueryEnabled = Boolean(resolvedStudentProfileId);
     } else if (graphType === "ACTIVITY" || graphType === "PEER_REVIEW") {
       isQueryEnabled = Boolean(trimmedSprint || subgraphParams?.sprintId);
     }
@@ -70,7 +71,7 @@ export function useProjectGraph({
       trimmedProject || "",
       graphType,
       effectiveSprint,
-      trimmedStudent || null,
+      resolvedStudentProfileId,
       subgraphParams || null
     ),
     queryFn: async ({ signal }) => {
@@ -80,7 +81,7 @@ export function useProjectGraph({
         case "CONTRIBUTION":
           return ProjectGraphService.getStudentContributionGraph(
             trimmedProject,
-            trimmedStudent!,
+            resolvedStudentProfileId!,
             mergedParams,
             signal
           );

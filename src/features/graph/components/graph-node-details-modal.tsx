@@ -16,6 +16,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import type { CytoscapeNodeData, CanonicalNodeType } from "../types/graph";
+import { parseStudentNodeProfileId } from "../lib/student-profile-id";
 
 interface GraphNodeDetailsModalProps {
   nodeData: CytoscapeNodeData | null;
@@ -179,7 +180,7 @@ export function GraphNodeDetailsModal({
 
         <div className="p-4 border-t border-border/60 flex items-center justify-between bg-muted/20 shrink-0">
           <div className="flex items-center gap-2">
-            {isStudent && onViewContribution && (
+            {isStudent && onViewContribution && parseStudentNodeProfileId(nodeData) && (
               <Button
                 variant="outline"
                 size="sm"

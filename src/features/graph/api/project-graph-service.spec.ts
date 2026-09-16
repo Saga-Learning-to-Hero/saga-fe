@@ -42,22 +42,40 @@ describe("ProjectGraphService", () => {
   });
 
   describe("getStudentContributionGraph", () => {
-    it("UTCID04 - [N] Normal: Strip prefix student: va goi dung endpoint contribution", async () => {
+    it("UTCID04 - [N] Normal: Strip prefix student: va goi contribution voi UUID", async () => {
       const mockData = { nodes: [], edges: [] };
       vi.mocked(apiClient.get).mockResolvedValueOnce({ data: mockData });
 
-      const result = await ProjectGraphService.getStudentContributionGraph("p-1", "student:stu-99", "sp-1");
+      const result = await ProjectGraphService.getStudentContributionGraph(
+        "p-1",
+        "student:80ffd344-5190-4373-a2fb-10e74d64e55d",
+        "sp-1"
+      );
       expect(apiClient.get).toHaveBeenCalledWith(
-        "/api/projects/p-1/students/stu-99/graph/contribution?sprintId=sp-1",
+        "/api/projects/p-1/students/80ffd344-5190-4373-a2fb-10e74d64e55d/graph/contribution?sprintId=sp-1",
         { signal: undefined }
       );
       expect(result).toEqual(mockData);
     });
 
-    it("UTCID05 - [A] Abnormal: Nem loi khi studentId bi rong", async () => {
+    it("UTCID05 - [A] Abnormal: Nem loi khi studentProfileId bi rong, khong goi apiClient", async () => {
       await expect(ProjectGraphService.getStudentContributionGraph("p-1", "   ")).rejects.toThrow(
-        "studentId is required"
+        "studentProfileId must be a UUID"
       );
+      expect(apiClient.get).not.toHaveBeenCalled();
+    });
+
+    it("UTCID19 - [A] Abnormal: Nem loi khi truyen studentCode SE171184, khong goi apiClient", async () => {
+      await expect(ProjectGraphService.getStudentContributionGraph("p-1", "SE171184")).rejects.toThrow(
+        "studentProfileId must be a UUID"
+      );
+      expect(apiClient.get).not.toHaveBeenCalled();
+    });
+
+    it("UTCID20 - [A] Abnormal: Nem loi khi truyen student:SE171184, khong goi apiClient", async () => {
+      await expect(
+        ProjectGraphService.getStudentContributionGraph("p-1", "student:SE171184")
+      ).rejects.toThrow("studentProfileId must be a UUID");
       expect(apiClient.get).not.toHaveBeenCalled();
     });
   });

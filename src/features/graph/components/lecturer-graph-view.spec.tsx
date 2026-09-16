@@ -1,5 +1,6 @@
 import { describe, expect, vi, beforeEach } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import React from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { fptTest } from "@/testing/fpt-test-helper";
@@ -270,11 +271,11 @@ describe("LecturerGraphView", () => {
         isSuccess: true,
         data: {
           nodes: [
-            { data: { id: "student:sp1", label: "Nguyen Van A", type: "STUDENT" } },
+            { data: { id: "student:80ffd344-5190-4373-a2fb-10e74d64e55d", label: "Nguyen Van A", type: "STUDENT", subLabel: "SE1701" } },
             { data: { id: "task:t1", label: "SAGA-101", type: "TASK" } },
           ],
           edges: [
-            { data: { id: "e1", source: "student:sp1", target: "task:t1", label: "ASSIGNED_TO" } },
+            { data: { id: "e1", source: "student:80ffd344-5190-4373-a2fb-10e74d64e55d", target: "task:t1", label: "ASSIGNED_TO" } },
           ],
         },
       })
@@ -533,6 +534,49 @@ describe("LecturerGraphView", () => {
           sprintId: "sp-1",
           enabled: true,
         })
+      );
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID11",
+      type: "N",
+      executedDate: "17/09/2026",
+      description: "Neo4j Graph drill-down dung StudentProfile UUID, khong gui studentCode SE1701",
+    },
+    async () => {
+      const user = userEvent.setup();
+      renderView({
+        courseId: "course-123",
+        initialTeamId: "team-with-project",
+        initialViewMode: "GRAPH",
+      });
+
+      expect(graphQueryMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          projectId: "proj-1",
+          graphType: "OVERVIEW",
+          sprintId: null,
+          subgraphParams: { nodeTypes: ["STUDENT"] },
+        })
+      );
+
+      await user.click(screen.getByRole("button", { name: /Tất cả thành viên/ }));
+      await user.click(screen.getAllByText("Nguyen Van A")[0]);
+
+      expect(graphQueryMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          projectId: "proj-1",
+          graphType: "CONTRIBUTION",
+          studentProfileId: "80ffd344-5190-4373-a2fb-10e74d64e55d",
+        })
+      );
+      expect(graphQueryMock).not.toHaveBeenCalledWith(
+        expect.objectContaining({ studentProfileId: "SE1701" })
+      );
+      expect(graphQueryMock).not.toHaveBeenCalledWith(
+        expect.objectContaining({ studentId: "SE1701" })
       );
     }
   );
