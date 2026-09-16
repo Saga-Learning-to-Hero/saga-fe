@@ -27,8 +27,10 @@ export function UserRealtimeProvider({ children }: { children: ReactNode }) {
   const debouncedInvalidate = useDebouncedNotificationInvalidate(300);
   const eventSourceRef = useRef<EventSource | null>(null);
 
+  const userId = user?.id;
+
   useEffect(() => {
-    if (!isAuthenticated || !user) {
+    if (!isAuthenticated || !userId) {
       if (eventSourceRef.current) {
         eventSourceRef.current.close();
         eventSourceRef.current = null;
@@ -74,10 +76,10 @@ export function UserRealtimeProvider({ children }: { children: ReactNode }) {
         eventSourceRef.current = null;
       }
     };
-  }, [isAuthenticated, user, debouncedInvalidate, queryClient, router]);
+  }, [isAuthenticated, userId, debouncedInvalidate, queryClient, router]);
 
   useEffect(() => {
-    if (!isAuthenticated || !user || typeof window === "undefined") return;
+    if (!isAuthenticated || !userId || typeof window === "undefined") return;
 
     let unsubscribe: (() => void) | undefined;
 
@@ -104,7 +106,7 @@ export function UserRealtimeProvider({ children }: { children: ReactNode }) {
         unsubscribe();
       }
     };
-  }, [isAuthenticated, user, debouncedInvalidate]);
+  }, [isAuthenticated, userId, debouncedInvalidate]);
 
   return (
     <UserRealtimeContext.Provider value={{ isConnected: true }}>
