@@ -1,104 +1,117 @@
-export type NodeType = "STUDENT" | "TASK" | "COMMIT";
+export type CanonicalNodeType =
+  | "STUDENT"
+  | "TEAM"
+  | "PROJECT"
+  | "SPRINT"
+  | "TASK"
+  | "COMMIT"
+  | "CRITERION"
+  | "IDENTITY";
 
-export type EdgeType = "AUTHORED" | "ASSIGNED_TO" | "IMPLEMENTS" | "REVIEWED" | "COMMENTED_ON";
+export type NodeType = CanonicalNodeType;
 
-export type TaskType = "STORY" | "TASK" | "BUG" | "SUBTASK" | "FEATURE";
-export type TaskStatus = "TODO" | "IN_PROGRESS" | "IN_REVIEW" | "DONE";
-export type TaskWeight = "CODE" | "TEST" | "DOC" | "RESEARCH";
+export type CanonicalEdgeLabel =
+  | "MEMBER_OF"
+  | "OWNS"
+  | "HAS_SPRINT"
+  | "CONTAINS"
+  | "ASSIGNED_TO"
+  | "EVIDENCED_BY"
+  | "CLASSIFIED_AS"
+  | "AUTHORED_BY"
+  | "MAPS_TO"
+  | "REVIEWED";
 
-export interface StudentNodeData {
+export type EdgeType = CanonicalEdgeLabel;
+
+export type TaskStatus = "TODO" | "IN_PROGRESS" | "IN_REVIEW" | "DONE" | "BLOCKED" | string;
+export type TaskWeight = "CODE" | "TEST" | "DOCUMENT" | "RESEARCH";
+
+export interface CytoscapeNodeData {
   id: string;
-  studentCode: string;
-  name: string;
-  avatar: string;
-  role: "LEADER" | "MEMBER";
-  commitsCount: number;
-  tasksCount: number;
-  traceabilityScore: number;
-  isGhosting?: boolean;
+  label: string;
+  subLabel?: string;
+  type: CanonicalNodeType;
+  status?: TaskStatus;
+  weightType?: TaskWeight;
+  isAnomaly?: boolean;
+  avatar?: string;
+  role?: string;
+  storyPoint?: number;
 }
 
-export interface TaskNodeData {
+export type GraphNodeData = CytoscapeNodeData;
+
+export interface CytoscapeEdgeData {
   id: string;
-  key: string;
-  summary: string;
-  taskType: TaskType;
-  status: TaskStatus;
-  storyPoints: number;
-  sprintId: string;
-  weightType: TaskWeight;
-  assigneeId: string;
-  assigneeName: string;
-  isMSRAnomaly?: boolean; // Báo DONE nhưng không có commit code
-  commitCount: number;
+  source: string;
+  target: string;
+  label: CanonicalEdgeLabel;
+  weight?: number;
+  isAnomaly?: boolean;
 }
 
-export interface CommitNodeData {
-  id: string;
-  hash: string;
-  shortHash: string;
-  message: string;
-  authorId: string;
-  authorName: string;
-  branch: string;
-  timestamp: string;
-  additions: number;
-  deletions: number;
-  linkedTaskKey?: string;
-  isVerified: boolean;
+export interface GraphMeta {
+  revision: string;
+  totalNodes: number;
+  totalEdges: number;
+  returnedNodes: number;
+  returnedEdges: number;
+  truncated: boolean;
+  nextCursor?: string;
 }
 
-export type GraphNodeData = StudentNodeData | TaskNodeData | CommitNodeData;
+export interface CytoscapeGraphResponse {
+  nodes: Array<{ data: CytoscapeNodeData }>;
+  edges: Array<{ data: CytoscapeEdgeData }>;
+  meta?: GraphMeta;
+}
 
 export interface GraphNode {
   id: string;
-  type: NodeType;
+  type: CanonicalNodeType;
   label: string;
   subLabel?: string;
   status?: string;
-  data: GraphNodeData;
+  data: CytoscapeNodeData;
 }
 
 export interface GraphEdge {
   id: string;
   source: string;
   target: string;
-  type: EdgeType;
+  type: CanonicalEdgeLabel;
   label: string;
-  weight?: number; // Cho SNA graph
+  weight?: number;
   isAnomaly?: boolean;
 }
 
-export interface TraceabilityGraphData {
-  nodes: GraphNode[];
-  edges: GraphEdge[];
-  summary: {
-    totalStudents: number;
-    totalTasks: number;
-    totalCommits: number;
-    traceabilityRate: number;
-    msrAnomaliesCount: number;
-    unlinkedCommitsCount: number;
-  };
+export type GraphType =
+  | "OVERVIEW"
+  | "CONTRIBUTION"
+  | "ACTIVITY"
+  | "ATTRIBUTION"
+  | "PEER_REVIEW";
+
+export interface GraphSubgraphFilterParams {
+  sprintId?: string | null;
+  focusNodeId?: string | null;
+  depth?: number | null;
+  nodeTypes?: readonly CanonicalNodeType[] | CanonicalNodeType[] | string | null;
+  edgeTypes?: readonly CanonicalEdgeLabel[] | CanonicalEdgeLabel[] | string | null;
+  anomaliesOnly?: boolean | null;
+  maxNodes?: number | null;
+  cursor?: string | null;
 }
 
-export interface SNANodeMetrics {
-  studentId: string;
-  studentName: string;
-  studentCode: string;
-  avatar: string;
-  inDegree: number;
-  outDegree: number;
-  centralityScore: number;
-  reviewsGiven: number;
-  reviewsReceived: number;
-  isGhosting: boolean;
-  isKeyContributor: boolean;
-  statusLabel: "GHOSTING" | "KEY_CONTRIBUTOR" | "BALANCED";
+export interface GraphQueryParams extends GraphSubgraphFilterParams {
+  projectId: string;
+  graphType: GraphType;
+  studentId?: string | null;
 }
 
-export interface SNAGraphData {
-  nodes: GraphNode[];
-  edges: GraphEdge[];
-  metrics: SNANodeMetrics[];
+export interface GraphStats {
+  totalNodes: number;
+  totalEdges: number;
+  anomalyNodesCount: number;
 }

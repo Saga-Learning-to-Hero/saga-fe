@@ -476,4 +476,74 @@ describe("useProjectRealtime Hook", () => {
       expect(es.closed).toBe(true);
     }
   );
+
+  fptTest(
+    {
+      id: "UTCID12",
+      type: "N",
+      executedDate: "15/09/2026",
+      description: "Debounce invalidate graph query khi nhan su kien TASKS_CHANGED",
+    },
+    async () => {
+      vi.useFakeTimers();
+      const invalidateSpy = vi.spyOn(queryClient, "invalidateQueries");
+      const wrapper = createWrapper();
+      renderHook(() => useProjectRealtime("project-graph-test"), { wrapper });
+
+      const es = MockEventSource.instances[0];
+      act(() => {
+        es.emitOpen();
+        es.emitEvent("TASKS_CHANGED", { type: "TASKS_CHANGED", projectId: "project-graph-test" });
+      });
+
+      expect(invalidateSpy).not.toHaveBeenCalledWith({
+        queryKey: ["project-graph", "project-graph-test", "OVERVIEW"],
+      });
+
+      act(() => {
+        vi.advanceTimersByTime(400);
+      });
+
+      expect(invalidateSpy).toHaveBeenCalledWith({
+        queryKey: ["project-graph", "project-graph-test", "OVERVIEW"],
+      });
+      expect(invalidateSpy).toHaveBeenCalledWith({
+        queryKey: ["project-graph", "project-graph-test", "CONTRIBUTION"],
+      });
+      expect(invalidateSpy).toHaveBeenCalledWith({
+        queryKey: ["project-graph", "project-graph-test", "ACTIVITY"],
+      });
+      vi.useRealTimers();
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID13",
+      type: "N",
+      executedDate: "15/09/2026",
+      description: "Invalidate toan bo graph query cua project khi nhan su kien READY",
+    },
+    async () => {
+      vi.useFakeTimers();
+      const invalidateSpy = vi.spyOn(queryClient, "invalidateQueries");
+      const wrapper = createWrapper();
+      renderHook(() => useProjectRealtime("project-graph-ready"), { wrapper });
+
+      const es = MockEventSource.instances[0];
+      act(() => {
+        es.emitOpen();
+        es.emitEvent("READY", { type: "READY", projectId: "project-graph-ready" });
+      });
+
+      act(() => {
+        vi.advanceTimersByTime(400);
+      });
+
+      expect(invalidateSpy).toHaveBeenCalledWith({
+        queryKey: ["project-graph", "project-graph-ready"],
+      });
+      vi.useRealTimers();
+    }
+  );
 });

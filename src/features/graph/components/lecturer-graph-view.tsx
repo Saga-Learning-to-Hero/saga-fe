@@ -12,6 +12,9 @@ import {
   ShieldAlertIcon,
   UsersIcon,
   XIcon,
+  NetworkIcon,
+  CalendarIcon,
+  AlertCircleIcon,
 } from "lucide-react";
 import { toast } from "sonner";
 import { CustomSelect, type CustomSelectOption } from "@/components/common/custom-select";
@@ -20,19 +23,23 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { useLecturerTeams } from "@/features/lecturer/teams/hooks/use-lecturer-teams";
+import { useProjectSprints } from "@/features/student/sprint-progress/hooks/use-project-sprints";
 import { getApiErrorCode, getApiErrorMessage, getApiErrorStatus } from "@/lib/api-error";
 import type { RoleInTeam } from "@/types/auth";
+import { CytoscapeGraphCanvas } from "./cytoscape-graph-canvas";
+import { GraphStatsSummary } from "./graph-stats-summary";
+import { GraphNodeDetailsModal } from "./graph-node-details-modal";
+import { Neo4jTabBar } from "./neo4j-tab-bar";
+import { useProjectGraph } from "../hooks/use-project-graph";
 import { usePipelineGraphData } from "../hooks/use-pipeline-graph-data";
-import {
-  buildPipelineTasksCsv,
-  downloadTextFile,
-} from "../lib/pipeline-mapper";
+import { buildPipelineTasksCsv, downloadTextFile } from "../lib/pipeline-mapper";
 import {
   UNASSIGNED_LANE_ID,
   type PipelineAnomalyFilterType,
   type PipelineFilterState,
   type PipelineTask,
 } from "../types/pipeline";
+import type { CytoscapeNodeData, GraphSubgraphFilterParams, GraphType } from "../types/graph";
 import { PipelineEmptyState } from "./pipeline-empty-state";
 import { PipelineFlowView } from "./pipeline-flow-view";
 import { PipelineMatrixTable } from "./pipeline-matrix-table";
@@ -43,16 +50,22 @@ import { PipelineTaskInspector } from "./pipeline-task-inspector";
 interface LecturerGraphViewProps {
   courseId?: string;
   initialTeamId?: string;
+  initialViewMode?: "GRAPH" | "PIPELINE";
 }
 
-export function LecturerGraphView({ courseId, initialTeamId }: LecturerGraphViewProps = {}) {
+type Neo4jTabMode = "OVERVIEW" | "ACTIVITY" | "ATTRIBUTION" | "PEER_REVIEW";
+
+export function LecturerGraphView({
+  courseId,
+  initialTeamId,
+  initialViewMode = "GRAPH",
+}: LecturerGraphViewProps = {}) {
   const teamsQuery = useLecturerTeams(courseId || "", {
     enabled: Boolean(courseId),
   });
 
   const teams = useMemo(() => teamsQuery.data?.teams || [], [teamsQuery.data]);
 
-  // Tìm nhóm mặc định: ưu tiên nhóm đầu tiên đã có projectId
   const defaultTeam = useMemo(
     () => teams.find((t) => Boolean(t.projectId)) || teams[0] || null,
     [teams]
@@ -77,12 +90,20 @@ export function LecturerGraphView({ courseId, initialTeamId }: LecturerGraphView
 
   const projectId = currentTeam?.projectId || null;
 
-  // Mode: FLOW vs MATRIX
-  const [viewMode, setViewMode] = useState<"FLOW" | "MATRIX">("FLOW");
+  const [mainMode, setMainMode] = useState<"GRAPH" | "PIPELINE">(initialViewMode);
+  const [neo4jTab, setNeo4jTab] = useState<Neo4jTabMode>("OVERVIEW");
+  const [drillDownStudent, setDrillDownStudent] = useState<{ id: string; label: string } | null>(null);
+  const [selectedSprintState, setSelectedSprintState] = useState<string | null>(null);
+  const [neo4jFilterType, setNeo4jFilterType] = useState<"ALL" | "ANOMALIES_ONLY">("ALL");
+  const [selectedGraphNode, setSelectedGraphNode] = useState<CytoscapeNodeData | null>(null);
+
+  const [scopeMode, setScopeMode] = useState<"COMPACT" | "FULL">("COMPACT");
+  const [maxNodes, setMaxNodes] = useState<number | null>(100);
+
+  const [pipelineSubView, setPipelineSubView] = useState<"FLOW" | "MATRIX">("FLOW");
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
   const [isMobileInspectorOpen, setIsMobileInspectorOpen] = useState(false);
 
-  // Filters
   const [pipelineFilter, setPipelineFilter] = useState<PipelineFilterState>({
     studentId: "ALL",
     sprintId: "ALL",
@@ -92,10 +113,123 @@ export function LecturerGraphView({ courseId, initialTeamId }: LecturerGraphView
     branchName: "ALL",
   });
 
-  // Khi đổi team, reset selection và filter
+  const sprintsQuery = useProjectSprints(projectId, { enabled: Boolean(projectId) });
+
+  const sprintOptions: CustomSelectOption[] = useMemo(() => {
+    const list = sprintsQuery.data || [];
+    return list.map((s) => ({
+      value: s.id,
+      label: s.name,
+      subLabel: s.state ? `Trạng thái: ${s.state}` : undefined,
+    }));
+  }, [sprintsQuery.data]);
+
+  const defaultSprintId = useMemo(() => {
+    const list = sprintsQuery.data || [];
+    if (list.length === 0) return null;
+    const active = list.find((s) => s.state?.toLowerCase() === "active");
+    return active ? active.id : list[0].id;
+  }, [sprintsQuery.data]);
+
+  const neo4jSprintId = selectedSprintState !== null ? selectedSprintState : (defaultSprintId || "ALL");
+
+  const handleSprintChange = (sprintId: string) => {
+    setSelectedSprintState(sprintId);
+  };
+
+  const effectiveNeo4jSprintId = useMemo(() => {
+    if (neo4jSprintId && neo4jSprintId !== "ALL") {
+      return neo4jSprintId;
+    }
+    if (neo4jTab === "ACTIVITY" || neo4jTab === "PEER_REVIEW") {
+      return defaultSprintId;
+    }
+    return null;
+  }, [neo4jSprintId, neo4jTab, defaultSprintId]);
+
+  const handleTabChange = (tab: Neo4jTabMode) => {
+    setNeo4jTab(tab);
+    if (
+      (tab === "ACTIVITY" || tab === "PEER_REVIEW") &&
+      (neo4jSprintId === "ALL" || !neo4jSprintId) &&
+      defaultSprintId
+    ) {
+      setSelectedSprintState(defaultSprintId);
+    }
+  };
+
+  const isSprintRequired = (neo4jTab === "ACTIVITY" || neo4jTab === "PEER_REVIEW") && !drillDownStudent;
+  const hasRequiredSprint = Boolean(effectiveNeo4jSprintId);
+
+  const activeGraphType: GraphType = drillDownStudent ? "CONTRIBUTION" : neo4jTab;
+
+  const subgraphParams = useMemo<GraphSubgraphFilterParams | null>(() => {
+    const params: GraphSubgraphFilterParams = {};
+    let hasFilter = false;
+
+    if (
+      scopeMode === "COMPACT" &&
+      !drillDownStudent &&
+      (neo4jTab === "OVERVIEW" || neo4jTab === "ACTIVITY" || neo4jTab === "ATTRIBUTION")
+    ) {
+      params.nodeTypes = ["STUDENT", "TEAM", "PROJECT", "SPRINT", "TASK"];
+      hasFilter = true;
+    }
+
+    if (neo4jFilterType === "ANOMALIES_ONLY") {
+      params.anomaliesOnly = true;
+      hasFilter = true;
+    }
+
+    if (maxNodes) {
+      params.maxNodes = maxNodes;
+      hasFilter = true;
+    }
+
+    return hasFilter ? params : null;
+  }, [scopeMode, drillDownStudent, neo4jTab, neo4jFilterType, maxNodes]);
+
+  const isWaitingDefaultSprint = selectedSprintState === null && sprintsQuery.isLoading;
+
+  const graphQuery = useProjectGraph({
+    projectId: projectId || "",
+    graphType: activeGraphType,
+    sprintId: effectiveNeo4jSprintId,
+    studentId: drillDownStudent?.id || null,
+    subgraphParams,
+    enabled:
+      mainMode === "GRAPH" &&
+      Boolean(projectId) &&
+      !isWaitingDefaultSprint &&
+      (!isSprintRequired || hasRequiredSprint),
+  });
+
+  const displayGraphData = useMemo(() => {
+    const rawData = graphQuery.data;
+    if (!rawData) return { nodes: [], edges: [] };
+    return rawData;
+  }, [graphQuery.data]);
+
+  const structuralStats = useMemo(() => {
+    const nodes = graphQuery.data?.nodes || [];
+    const edges = graphQuery.data?.edges || [];
+    const anomalyCount = nodes.filter((n) => n.data.isAnomaly === true).length;
+    return {
+      totalNodes: nodes.length,
+      totalEdges: edges.length,
+      anomalyCount,
+      meta: graphQuery.data?.meta,
+    };
+  }, [graphQuery.data]);
+
   const handleSelectTeam = (newTeamId: string) => {
     setSelectedTeamIdState(newTeamId);
     setSelectedTaskId(null);
+    setSelectedGraphNode(null);
+    setDrillDownStudent(null);
+    setSelectedSprintState("ALL");
+    setNeo4jTab("OVERVIEW");
+    setNeo4jFilterType("ALL");
     setPipelineFilter({
       studentId: "ALL",
       sprintId: "ALL",
@@ -106,7 +240,6 @@ export function LecturerGraphView({ courseId, initialTeamId }: LecturerGraphView
     });
   };
 
-  // Convert members sang định dạng StudentTeamMember cho hook
   const teamMembersInput = useMemo(
     () =>
       (currentTeam?.members || []).map((m) => ({
@@ -118,17 +251,14 @@ export function LecturerGraphView({ courseId, initialTeamId }: LecturerGraphView
     [currentTeam]
   );
 
-  // Gọi hook pipeline chỉ khi có projectId hợp lệ
   const pipeline = usePipelineGraphData({
-    enabled: Boolean(projectId),
+    enabled: mainMode === "PIPELINE" && Boolean(projectId),
     projectId,
     selectedTaskId,
     teamMembers: teamMembersInput,
     filter: pipelineFilter,
   });
 
-  // Repository & branch filter nếu có repo
-  // Options bộ lọc
   const teamSelectOptions = useMemo(
     () =>
       teams.map((t) => ({
@@ -141,6 +271,15 @@ export function LecturerGraphView({ courseId, initialTeamId }: LecturerGraphView
       })),
     [teams]
   );
+
+  const neo4jMemberSelectOptions = useMemo<CustomSelectOption[]>(() => {
+    if (!currentTeam?.members) return [];
+    return currentTeam.members.map((m) => ({
+      value: m.studentCode,
+      label: m.fullName,
+      subLabel: `${m.studentCode} (${m.role})`,
+    }));
+  }, [currentTeam]);
 
   const memberSelectOptions = useMemo<CustomSelectOption[]>(() => {
     const opts: CustomSelectOption[] = pipeline.members.map((member) => ({
@@ -159,7 +298,7 @@ export function LecturerGraphView({ courseId, initialTeamId }: LecturerGraphView
     return [{ value: "ALL", label: "Tất cả thành viên" }, ...opts];
   }, [pipeline.members, pipeline.tasks]);
 
-  const sprintSelectOptions = useMemo(() => {
+  const pipelineSprintSelectOptions = useMemo(() => {
     const opts = pipeline.sprints.map((sprint) => ({
       value: sprint.id,
       label: sprint.name,
@@ -178,7 +317,6 @@ export function LecturerGraphView({ courseId, initialTeamId }: LecturerGraphView
     []
   );
 
-  // Click task handler
   const handleSelectTask = (taskId: string) => {
     setSelectedTaskId((current) => {
       const next = current === taskId ? null : taskId;
@@ -225,7 +363,6 @@ export function LecturerGraphView({ courseId, initialTeamId }: LecturerGraphView
     toast.success(`Đã xuất báo cáo ${pipeline.filteredTasks.length} Task thành công!`);
   };
 
-  // Rule trạng thái đối soát dựa trên dữ liệu thật
   const teamStatusRule = useMemo(() => {
     if (!projectId) {
       return {
@@ -255,7 +392,6 @@ export function LecturerGraphView({ courseId, initialTeamId }: LecturerGraphView
     };
   }, [pipeline.stats.doneWithoutLinkedCommits, pipeline.tasks.length, projectId]);
 
-  // Loading lần đầu
   if (teamsQuery.isLoading) {
     return (
       <div className="space-y-6 animate-pulse" aria-label="Đang tải dữ liệu giám sát">
@@ -269,7 +405,6 @@ export function LecturerGraphView({ courseId, initialTeamId }: LecturerGraphView
     );
   }
 
-  // Error phân quyền 403
   if (
     teamsQuery.isError &&
     (getApiErrorStatus(teamsQuery.error) === 403 ||
@@ -288,7 +423,6 @@ export function LecturerGraphView({ courseId, initialTeamId }: LecturerGraphView
     );
   }
 
-  // Error chung khi tải teams
   if (teamsQuery.isError) {
     return (
       <div className="p-8 text-center rounded-3xl border border-destructive/30 bg-destructive/5 space-y-3">
@@ -307,7 +441,6 @@ export function LecturerGraphView({ courseId, initialTeamId }: LecturerGraphView
     );
   }
 
-  // Lớp chưa có nhóm
   if (teams.length === 0) {
     return (
       <PipelineEmptyState
@@ -318,9 +451,188 @@ export function LecturerGraphView({ courseId, initialTeamId }: LecturerGraphView
     );
   }
 
+  const renderNeo4jView = () => {
+    if (!projectId) {
+      return (
+        <PipelineEmptyState
+          title={`Nhóm ${currentTeam?.teamNo || ""} chưa khởi tạo dự án`}
+          description="Nhóm này chưa liên kết với không gian làm việc Jira hoặc kho lưu trữ GitHub. Giảng viên vui lòng nhắc nhở nhóm thiết lập dự án để bắt đầu theo dõi đồ thị."
+        />
+      );
+    }
+
+    if (isSprintRequired && !hasRequiredSprint) {
+      return (
+        <div className="flex flex-col items-center justify-center p-12 text-center rounded-3xl border border-dashed border-border bg-card/50 space-y-3">
+          <div className="w-12 h-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center">
+            <CalendarIcon className="w-6 h-6" />
+          </div>
+          <h3 className="text-base font-bold text-foreground">Dự án chưa có Sprint</h3>
+          <p className="text-xs text-muted-foreground max-w-sm">
+            Chế độ {neo4jTab === "ACTIVITY" ? "Hoạt động Sprint" : "Mạng đánh giá chéo"} yêu cầu dự án cần có ít nhất một Sprint từ Jira để phân tích.
+          </p>
+        </div>
+      );
+    }
+
+    if ((graphQuery.isLoading && !graphQuery.data) || isWaitingDefaultSprint) {
+      return (
+        <div className="flex flex-col items-center justify-center h-[640px] w-full rounded-3xl border border-border bg-card/60 space-y-3">
+          <div className="w-10 h-10 rounded-full border-3 border-primary border-t-transparent animate-spin" />
+          <p className="text-xs font-bold text-muted-foreground">Đang tải đồ thị Neo4j của nhóm...</p>
+        </div>
+      );
+    }
+
+    if (graphQuery.isError) {
+      const err = graphQuery.error as { status?: number; code?: string; message?: string };
+      return (
+        <div className="flex flex-col items-center justify-center p-12 text-center rounded-3xl border border-destructive/20 bg-destructive/5 space-y-3">
+          <div className="w-12 h-12 rounded-2xl bg-destructive/10 text-destructive flex items-center justify-center">
+            <AlertCircleIcon className="w-6 h-6" />
+          </div>
+          <h3 className="text-base font-bold text-foreground">Không tải được dữ liệu đồ thị</h3>
+          <p className="text-xs text-muted-foreground max-w-md">
+            {err?.status === 403
+              ? "Bạn không có quyền xem dữ liệu đồ thị của nhóm dự án này."
+              : err?.status === 404
+                ? "Dữ liệu liên kết của nhóm không còn khả dụng trên hệ thống."
+                : err?.message || "Đã xảy ra lỗi khi kết nối máy chủ đồ thị Neo4j."}
+          </p>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => void graphQuery.refetch()}
+            className="rounded-xl text-xs font-bold cursor-pointer"
+          >
+            Thử lại
+          </Button>
+        </div>
+      );
+    }
+
+    if (!graphQuery.data || graphQuery.data.nodes.length === 0) {
+      return (
+        <div className="flex flex-col items-center justify-center p-12 text-center rounded-3xl border border-dashed border-border bg-card/50 space-y-3">
+          <div className="w-12 h-12 rounded-2xl bg-muted text-muted-foreground flex items-center justify-center">
+            <NetworkIcon className="w-6 h-6" />
+          </div>
+          <h3 className="text-base font-bold text-foreground">Chưa có dữ liệu liên kết</h3>
+          <p className="text-xs text-muted-foreground max-w-sm">
+            Nhóm dự án hiện chưa có đỉnh hoặc cạnh liên kết nào được ghi nhận từ Neo4j.
+          </p>
+        </div>
+      );
+    }
+
+    return (
+      <div className="space-y-4">
+        <CytoscapeGraphCanvas
+          nodes={displayGraphData.nodes}
+          edges={displayGraphData.edges}
+          onSelectNode={(node) => setSelectedGraphNode(node)}
+          layoutName="breadthfirst"
+          isUpdating={graphQuery.isFetching && !graphQuery.isLoading}
+        />
+        <GraphStatsSummary
+          totalNodes={structuralStats.totalNodes}
+          totalEdges={structuralStats.totalEdges}
+          anomalyCount={structuralStats.anomalyCount}
+          meta={structuralStats.meta}
+        />
+      </div>
+    );
+  };
+
+  const renderPipelineView = () => {
+    if (!projectId) {
+      return (
+        <PipelineEmptyState
+          title={`Nhóm ${currentTeam?.teamNo || ""} chưa khởi tạo dự án`}
+          description="Nhóm này chưa liên kết với không gian làm việc Jira hoặc kho lưu trữ GitHub. Giảng viên vui lòng nhắc nhở nhóm thiết lập dự án để bắt đầu theo dõi dữ liệu đối soát."
+        />
+      );
+    }
+
+    if (pipeline.isLoadingMain) {
+      return (
+        <div className="space-y-4 animate-pulse">
+          <div className="h-16 rounded-2xl bg-muted/40 border border-border/60" />
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <div className="lg:col-span-8 h-80 rounded-3xl bg-muted/30 border border-border/60" />
+            <div className="lg:col-span-4 h-80 rounded-3xl bg-muted/30 border border-border/60" />
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <>
+        {pipeline.isTaskCommitsError ? (
+          <PipelineEmptyState
+            title="Không tải được liên kết Task–Commit"
+            description={pipeline.taskCommitsErrorMessage || "Vui lòng thử tải lại dữ liệu đối soát."}
+            onRetry={() => void pipeline.refetchTaskCommits()}
+          />
+        ) : null}
+
+        <PipelineStatsBar stats={pipeline.stats} isLoadingCommits={pipeline.isLoadingCommits} />
+
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+          <div className="lg:col-span-8 xl:col-span-8 space-y-4 min-w-0">
+            {pipelineSubView === "FLOW" ? (
+              <PipelineFlowView
+                lanes={pipeline.lanes}
+                selectedTaskId={selectedTaskId}
+                onSelectTask={handleSelectTask}
+              />
+            ) : (
+              <PipelineMatrixTable
+                tasks={pipeline.filteredTasks}
+                selectedTaskId={selectedTaskId}
+                onSelectTask={handleSelectTask}
+              />
+            )}
+          </div>
+
+          <div className="hidden lg:block lg:col-span-4 xl:col-span-4 self-start lg:sticky lg:top-28 lg:max-h-[calc(100dvh-8rem)] lg:overflow-y-auto">
+            <PipelineTaskInspector
+              selectedTask={selectedTask}
+              commits={pipeline.selectedCommits}
+              isLoadingCommits={pipeline.isLoadingTaskCommits}
+              errorMessage={pipeline.taskCommitsErrorMessage}
+              onRetry={pipeline.refetchTaskCommits}
+              onClearSelection={() => setSelectedTaskId(null)}
+            />
+          </div>
+        </div>
+
+        <Sheet open={isMobileInspectorOpen} onOpenChange={setIsMobileInspectorOpen}>
+          <SheetContent
+            side="right"
+            className="w-full sm:max-w-md p-0 overflow-hidden border-l border-border"
+          >
+            <div className="h-full overflow-y-auto p-4">
+              <PipelineTaskInspector
+                selectedTask={selectedTask}
+                commits={pipeline.selectedCommits}
+                isLoadingCommits={pipeline.isLoadingTaskCommits}
+                errorMessage={pipeline.taskCommitsErrorMessage}
+                onRetry={pipeline.refetchTaskCommits}
+                onClearSelection={() => {
+                  setSelectedTaskId(null);
+                  setIsMobileInspectorOpen(false);
+                }}
+              />
+            </div>
+          </SheetContent>
+        </Sheet>
+      </>
+    );
+  };
+
   return (
     <div className="space-y-6">
-      {/* 1. Header & KPI Thật */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 sm:p-5 rounded-2xl border border-border/80 bg-card/90 shadow-xs backdrop-blur-md">
         <div className="flex items-center gap-3.5">
           <div className="size-11 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shrink-0">
@@ -335,7 +647,7 @@ export function LecturerGraphView({ courseId, initialTeamId }: LecturerGraphView
                 variant="outline"
                 className="border-primary/20 bg-primary/10 font-mono text-[10px] font-bold text-primary"
               >
-                Traceability Pipeline
+                Giảng viên
               </Badge>
               <Badge
                 className={
@@ -351,42 +663,44 @@ export function LecturerGraphView({ courseId, initialTeamId }: LecturerGraphView
               </Badge>
             </div>
             <p className="text-xs text-muted-foreground mt-0.5">
-              Đối soát liên kết giữa công việc Jira, Git commit và tiến độ thực hiện của các thành viên trong nhóm.
+              Giám sát đa chiều đồ thị mạng lưới Neo4j và ma trận đối soát công việc của các nhóm dự án.
             </p>
           </div>
         </div>
 
-        {/* View mode toggle */}
         <div className="flex items-center gap-1.5 p-1 bg-muted/60 rounded-xl border border-border/60 self-start sm:self-auto shrink-0 shadow-2xs">
           <button
             type="button"
-            onClick={() => setViewMode("FLOW")}
-            className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-extrabold transition-all cursor-pointer ${
-              viewMode === "FLOW"
-                ? "bg-card text-foreground shadow-xs border border-border/80"
-                : "text-muted-foreground hover:text-foreground"
-            }`}
+            onClick={() => {
+              setMainMode("GRAPH");
+              setSelectedTaskId(null);
+            }}
+            className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-extrabold transition-all cursor-pointer ${mainMode === "GRAPH"
+              ? "bg-card text-foreground shadow-xs border border-border/80"
+              : "text-muted-foreground hover:text-foreground"
+              }`}
           >
-            <span>⊞ Pipeline Flow</span>
+            <NetworkIcon className="size-3.5 text-primary" />
+            <span>Neo4j Graph</span>
           </button>
           <button
             type="button"
-            onClick={() => setViewMode("MATRIX")}
-            className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-extrabold transition-all cursor-pointer ${
-              viewMode === "MATRIX"
-                ? "bg-card text-foreground shadow-xs border border-border/80"
-                : "text-muted-foreground hover:text-foreground"
-            }`}
+            onClick={() => {
+              setMainMode("PIPELINE");
+              setSelectedGraphNode(null);
+            }}
+            className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-extrabold transition-all cursor-pointer ${mainMode === "PIPELINE"
+              ? "bg-card text-foreground shadow-xs border border-border/80"
+              : "text-muted-foreground hover:text-foreground"
+              }`}
           >
-            <span>▦ Bảng đối soát Matrix</span>
+            <span>Pipeline</span>
           </button>
         </div>
       </div>
 
-      {/* 2. Toolbar Bộ Lọc & Team Selector */}
       <div className="space-y-3 rounded-2xl border border-border/80 bg-card/90 p-3.5 shadow-xs">
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2.5">
-          {/* Team Selector */}
           <div className="col-span-1 sm:col-span-2 md:col-span-1 lg:col-span-2">
             <CustomSelect
               id="team-selector"
@@ -396,204 +710,221 @@ export function LecturerGraphView({ courseId, initialTeamId }: LecturerGraphView
             />
           </div>
 
-          {/* Search Input */}
-          <div className="relative">
-            <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground pointer-events-none" />
-            <Input
-              type="text"
-              value={pipelineFilter.searchQuery || ""}
-              onChange={(e) =>
-                setPipelineFilter((prev) => ({ ...prev, searchQuery: e.target.value }))
-              }
-              placeholder="Tìm Task key, title..."
-              className="h-10 pl-8 text-xs rounded-xl bg-card border-border/80"
-            />
-            {pipelineFilter.searchQuery && (
-              <button
-                type="button"
-                onClick={() => setPipelineFilter((prev) => ({ ...prev, searchQuery: "" }))}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground cursor-pointer"
-              >
-                <XIcon className="size-3" />
-              </button>
-            )}
-          </div>
+          {mainMode === "GRAPH" ? (
+            <>
+              <div className="col-span-1 sm:col-span-2 flex items-center gap-1 p-1 bg-muted/60 rounded-xl border border-border/60 text-xs">
+                <button
+                  type="button"
+                  onClick={() => setNeo4jFilterType("ALL")}
+                  className={`flex-1 py-1.5 text-center font-bold rounded-lg cursor-pointer transition-colors ${neo4jFilterType === "ALL"
+                    ? "bg-card text-foreground shadow-2xs"
+                    : "text-muted-foreground hover:text-foreground"
+                    }`}
+                >
+                  Tất cả
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setNeo4jFilterType("ANOMALIES_ONLY")}
+                  className={`flex-1 py-1.5 text-center font-bold rounded-lg cursor-pointer transition-colors ${neo4jFilterType === "ANOMALIES_ONLY"
+                    ? "border border-destructive/40 bg-destructive/15 text-destructive shadow-2xs"
+                    : "text-muted-foreground hover:text-foreground"
+                    }`}
+                >
+                  Cảnh báo ({structuralStats.anomalyCount})
+                </button>
+              </div>
 
-          {/* Assignee Filter */}
-          <div>
-            <CustomSelect
-              id="assignee-filter"
-              value={pipelineFilter.studentId}
-              onChange={(val) => setPipelineFilter((prev) => ({ ...prev, studentId: val }))}
-              options={memberSelectOptions}
-            />
-          </div>
-
-          {/* Sprint Filter */}
-          <div>
-            <CustomSelect
-              id="sprint-filter"
-              value={pipelineFilter.sprintId}
-              onChange={(val) => setPipelineFilter((prev) => ({ ...prev, sprintId: val }))}
-              options={sprintSelectOptions}
-            />
-          </div>
-
-          {/* Anomaly Filter */}
-          <div>
-            <CustomSelect
-              id="anomaly-filter"
-              value={pipelineFilter.anomalyType || "ALL"}
-              onChange={(val) =>
-                setPipelineFilter((prev) => ({
-                  ...prev,
-                  anomalyType: val as PipelineAnomalyFilterType,
-                }))
-              }
-              options={anomalySelectOptions}
-            />
-          </div>
-        </div>
-
-        {/* Dòng bổ sung: Repository, Branch và thao tác */}
-        <div className="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-border/50 text-xs">
-          <div className="flex flex-wrap items-center gap-2">
-            <PipelineRepositoryFilters
-              compact
-              repositories={pipeline.repositories}
-              branches={pipeline.branches}
-              selectedRepoId={pipeline.sanitizedFilter.repoId || "ALL"}
-              selectedBranchName={pipeline.sanitizedFilter.branchName || "ALL"}
-              onSelectRepository={(repoId) => {
-                setSelectedTaskId(null);
-                setPipelineFilter((current) => ({
-                  ...current,
-                  repoId,
-                  branchName: "ALL",
-                }));
-              }}
-              onSelectBranch={(branchName) => {
-                setSelectedTaskId(null);
-                setPipelineFilter((current) => ({ ...current, branchName }));
-              }}
-              isLoadingBranches={pipeline.isLoadingBranches}
-              canonicalFilter={pipeline.taskCommitLinksFilter}
-            />
-            {hasActiveFilters && (
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={handleResetFilters}
-                className="h-8 gap-1 text-xs text-muted-foreground hover:text-foreground cursor-pointer"
-              >
-                <RotateCcwIcon className="size-3" />
-                Đặt lại bộ lọc
-              </Button>
-            )}
-          </div>
-
-          <div className="flex items-center gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={handleExportCsv}
-              disabled={!pipeline.filteredTasks.length}
-              className="h-8 gap-1.5 text-xs font-semibold cursor-pointer"
-            >
-              <DownloadIcon className="size-3.5" />
-              Xuất CSV
-            </Button>
-          </div>
-        </div>
-      </div>
-
-      {/* 3. Trường hợp nhóm chưa khởi tạo dự án */}
-      {!projectId ? (
-        <PipelineEmptyState
-          title={`Nhóm ${currentTeam?.teamNo || ""} chưa khởi tạo dự án`}
-          description="Nhóm này chưa liên kết với không gian làm việc Jira hoặc kho lưu trữ GitHub. Giảng viên vui lòng nhắc nhở nhóm thiết lập dự án để bắt đầu theo dõi dữ liệu đối soát."
-        />
-      ) : pipeline.isLoadingMain ? (
-        /* Loading nội dung khi đổi nhóm */
-        <div className="space-y-4 animate-pulse">
-          <div className="h-16 rounded-2xl bg-muted/40 border border-border/60" />
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            <div className="lg:col-span-8 h-80 rounded-3xl bg-muted/30 border border-border/60" />
-            <div className="lg:col-span-4 h-80 rounded-3xl bg-muted/30 border border-border/60" />
-          </div>
-        </div>
-      ) : (
-        <>
-          {pipeline.isTaskCommitsError ? (
-            <PipelineEmptyState
-              title="Không tải được liên kết Task–Commit"
-              description={pipeline.taskCommitsErrorMessage || "Vui lòng thử tải lại dữ liệu đối soát."}
-              onRetry={() => void pipeline.refetchTaskCommits()}
-            />
-          ) : null}
-          {/* KPI Stats Bar Thật */}
-          <PipelineStatsBar
-            stats={pipeline.stats}
-            isLoadingCommits={pipeline.isLoadingCommits}
-          />
-
-          {/* 4. Nội dung chính: 2 Cột Desktop (65-70% / 30-35%) */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-            {/* Cột Trái: Pipeline Flow HOẶC Audit Matrix */}
-            <div className="lg:col-span-8 xl:col-span-8 space-y-4 min-w-0">
-              {viewMode === "FLOW" ? (
-                <PipelineFlowView
-                  lanes={pipeline.lanes}
-                  selectedTaskId={selectedTaskId}
-                  onSelectTask={handleSelectTask}
+              <div className="col-span-1 sm:col-span-2 flex items-center justify-end gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    const json = JSON.stringify(graphQuery.data || { nodes: [], edges: [] }, null, 2);
+                    downloadTextFile(`neo4j-lecturer-team-${currentTeam?.teamNo || "team"}.json`, json);
+                  }}
+                  disabled={!graphQuery.data?.nodes.length}
+                  className="h-9 gap-1.5 text-xs font-semibold cursor-pointer"
+                >
+                  <DownloadIcon className="size-3.5" />
+                  Xuất JSON
+                </Button>
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="relative">
+                <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground pointer-events-none" />
+                <Input
+                  type="text"
+                  value={pipelineFilter.searchQuery || ""}
+                  onChange={(e) =>
+                    setPipelineFilter((prev) => ({ ...prev, searchQuery: e.target.value }))
+                  }
+                  placeholder="Tìm Task key, title..."
+                  className="h-10 pl-8 text-xs rounded-xl bg-card border-border/80"
                 />
-              ) : (
-                <PipelineMatrixTable
-                  tasks={pipeline.filteredTasks}
-                  selectedTaskId={selectedTaskId}
-                  onSelectTask={handleSelectTask}
+                {pipelineFilter.searchQuery && (
+                  <button
+                    type="button"
+                    onClick={() => setPipelineFilter((prev) => ({ ...prev, searchQuery: "" }))}
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground cursor-pointer"
+                  >
+                    <XIcon className="size-3" />
+                  </button>
+                )}
+              </div>
+
+              <div>
+                <CustomSelect
+                  id="assignee-filter"
+                  value={pipelineFilter.studentId}
+                  onChange={(val) => setPipelineFilter((prev) => ({ ...prev, studentId: val }))}
+                  options={memberSelectOptions}
                 />
+              </div>
+
+              <div>
+                <CustomSelect
+                  id="sprint-filter"
+                  value={pipelineFilter.sprintId}
+                  onChange={(val) => setPipelineFilter((prev) => ({ ...prev, sprintId: val }))}
+                  options={pipelineSprintSelectOptions}
+                />
+              </div>
+
+              <div>
+                <CustomSelect
+                  id="anomaly-filter"
+                  value={pipelineFilter.anomalyType || "ALL"}
+                  onChange={(val) =>
+                    setPipelineFilter((prev) => ({
+                      ...prev,
+                      anomalyType: val as PipelineAnomalyFilterType,
+                    }))
+                  }
+                  options={anomalySelectOptions}
+                />
+              </div>
+            </>
+          )}
+        </div>
+
+        {mainMode === "PIPELINE" && (
+          <div className="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-border/50 text-xs">
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="flex items-center gap-1 p-0.5 bg-muted/60 rounded-lg border border-border/60">
+                <button
+                  type="button"
+                  onClick={() => setPipelineSubView("FLOW")}
+                  className={`px-2.5 py-1 rounded-md font-bold cursor-pointer transition-colors ${pipelineSubView === "FLOW" ? "bg-card text-foreground shadow-2xs" : "text-muted-foreground"
+                    }`}
+                >
+                  Flow
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPipelineSubView("MATRIX")}
+                  className={`px-2.5 py-1 rounded-md font-bold cursor-pointer transition-colors ${pipelineSubView === "MATRIX" ? "bg-card text-foreground shadow-2xs" : "text-muted-foreground"
+                    }`}
+                >
+                  Audit Matrix
+                </button>
+              </div>
+
+              <PipelineRepositoryFilters
+                compact
+                repositories={pipeline.repositories}
+                branches={pipeline.branches}
+                selectedRepoId={pipeline.sanitizedFilter.repoId || "ALL"}
+                selectedBranchName={pipeline.sanitizedFilter.branchName || "ALL"}
+                onSelectRepository={(repoId) => {
+                  setSelectedTaskId(null);
+                  setPipelineFilter((current) => ({
+                    ...current,
+                    repoId,
+                    branchName: "ALL",
+                  }));
+                }}
+                onSelectBranch={(branchName) => {
+                  setSelectedTaskId(null);
+                  setPipelineFilter((current) => ({ ...current, branchName }));
+                }}
+                isLoadingBranches={pipeline.isLoadingBranches}
+                canonicalFilter={pipeline.taskCommitLinksFilter}
+              />
+              {hasActiveFilters && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleResetFilters}
+                  className="h-8 gap-1 text-xs text-muted-foreground hover:text-foreground cursor-pointer"
+                >
+                  <RotateCcwIcon className="size-3" />
+                  Đặt lại bộ lọc
+                </Button>
               )}
             </div>
 
-            {/* Cột Phải: Task Inspector Desktop (Sticky) */}
-            <div className="hidden lg:block lg:col-span-4 xl:col-span-4 self-start lg:sticky lg:top-28 lg:max-h-[calc(100dvh-8rem)] lg:overflow-y-auto">
-              <PipelineTaskInspector
-                selectedTask={selectedTask}
-                commits={pipeline.selectedCommits}
-                isLoadingCommits={pipeline.isLoadingTaskCommits}
-                errorMessage={pipeline.taskCommitsErrorMessage}
-                onRetry={pipeline.refetchTaskCommits}
-                onClearSelection={() => setSelectedTaskId(null)}
-              />
+            <div className="flex items-center gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={handleExportCsv}
+                disabled={!pipeline.filteredTasks.length}
+                className="h-8 gap-1.5 text-xs font-semibold cursor-pointer"
+              >
+                <DownloadIcon className="size-3.5" />
+                Xuất CSV
+              </Button>
             </div>
           </div>
+        )}
+      </div>
 
-          {/* Mobile / Tablet Sheet Drawer chứa Task Inspector (< lg) */}
-          <Sheet open={isMobileInspectorOpen} onOpenChange={setIsMobileInspectorOpen}>
-            <SheetContent
-              side="right"
-              className="w-full sm:max-w-md p-0 overflow-hidden border-l border-border"
-            >
-              <div className="h-full overflow-y-auto p-4">
-                <PipelineTaskInspector
-                  selectedTask={selectedTask}
-                  commits={pipeline.selectedCommits}
-                  isLoadingCommits={pipeline.isLoadingTaskCommits}
-                  errorMessage={pipeline.taskCommitsErrorMessage}
-                  onRetry={pipeline.refetchTaskCommits}
-                  onClearSelection={() => {
-                    setSelectedTaskId(null);
-                    setIsMobileInspectorOpen(false);
-                  }}
-                />
-              </div>
-            </SheetContent>
-          </Sheet>
-        </>
+      {mainMode === "GRAPH" && (
+        <Neo4jTabBar
+          tab={neo4jTab}
+          onTabChange={handleTabChange}
+          sprintOptions={sprintOptions}
+          selectedSprintId={effectiveNeo4jSprintId}
+          onSprintChange={handleSprintChange}
+          drillDownStudent={drillDownStudent}
+          onBackToOverview={() => setDrillDownStudent(null)}
+          selectId="lecturer-neo4j-sprint"
+          scopeMode={scopeMode}
+          onScopeModeChange={setScopeMode}
+          maxNodes={maxNodes}
+          onMaxNodesChange={setMaxNodes}
+          memberOptions={neo4jMemberSelectOptions}
+          selectedStudentId={drillDownStudent?.id || "ALL"}
+          onStudentChange={(studentId) => {
+            if (studentId === "ALL") {
+              setDrillDownStudent(null);
+            } else {
+              const found = neo4jMemberSelectOptions.find((m) => m.value === studentId);
+              setDrillDownStudent({ id: studentId, label: found?.label || studentId });
+            }
+          }}
+        />
       )}
+
+      {mainMode === "GRAPH" ? renderNeo4jView() : renderPipelineView()}
+
+      <GraphNodeDetailsModal
+        nodeData={selectedGraphNode}
+        onClose={() => setSelectedGraphNode(null)}
+        onViewContribution={(studentId) => {
+          const cleanId = studentId.replace(/^student:/, "");
+          setDrillDownStudent({
+            id: cleanId,
+            label: selectedGraphNode?.label || cleanId,
+          });
+        }}
+      />
     </div>
   );
 }

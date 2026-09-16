@@ -5,7 +5,8 @@ export type ProjectRealtimeEventType =
   | "COMMITS_CHANGED"
   | "TASK_LINKS_CHANGED"
   | "TASK_EVIDENCE_CHANGED"
-  | "SYNC_STATUS_CHANGED";
+  | "SYNC_STATUS_CHANGED"
+  | "GRAPH_CHANGED";
 
 export interface ProjectRealtimeEvent {
   type: ProjectRealtimeEventType;
