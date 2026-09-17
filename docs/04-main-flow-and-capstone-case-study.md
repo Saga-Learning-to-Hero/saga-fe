@@ -1,30 +1,32 @@
-# Kiến Trúc Tổng Thể, Luồng Nghiệp Vụ Cốt Lõi & Case Study dự án Tốt Nghiệp SAGA
+# Kiến Trúc Tổng Thể, Luồng Nghiệp Vụ Cốt Lõi & Kịch Bản Demo Đồ Án Tốt Nghiệp SAGA
 
-Tài liệu này tổng hợp toàn bộ **Bản đồ nghiệp vụ xuyên suốt (End-to-End Main Flow)** và **Tình huống thực chiến (Case Study chuẩn mực)** của hệ thống **SAGA (Student Achievement & Governance Analytics)**. Đây là tài liệu cốt lõi giúp nhóm tự tin nắm chắc logic hệ thống và trình bày thuyết phục trước Hội đồng dự án Tốt nghiệp (Capstone Defense).
+> **Tài liệu chuẩn mực phục vụ Bảo vệ Đồ án Tốt nghiệp (Capstone Defense Guide)**  
+> **Dự án:** SAGA (Student Achievement & Governance Analytics)  
+> **Phạm vi:** Kết nối đồng bộ xuyên suốt giữa **Backend (`saga-be`)** và **Frontend (`saga-fe`)**
 
 ---
 
 ## 1. Bối Cảnh Thực Tế & Triết Lý Giải Pháp (The Problem & The Hook)
 
-### 🚨 Nỗi Đau Lớn Nhất Trong Các dự án Tốt Nghiệp CNTT (FPT University):
-1. **Vấn nạn "Free-rider" (Ký sinh dự án)**: Trong nhóm 4–5 sinh viên, luôn có nguy cơ 1–2 thành viên lười biếng, ỷ lại nhưng cuối kỳ vẫn nhận điểm ngang bằng với người gánh team.
+### 🚨 Nỗi đau lớn nhất trong các đồ án tốt nghiệp CNTT (FPT University):
+1. **Vấn nạn "Free-rider" (Ký sinh đồ án)**: Trong nhóm 4–5 sinh viên, luôn có nguy cơ 1–2 thành viên lười biếng, ỷ lại nhưng cuối kỳ vẫn muốn nhận điểm ngang bằng với người gánh team.
 2. **"Báo cáo khống" trên Jira**: Sinh viên kéo các thẻ công việc sang `DONE` vào đêm trước buổi bảo vệ Sprint mà thực chất không hề có dòng mã nguồn, bài kiểm thử hay tài liệu thực tế nào được bàn giao.
 3. **Giảng viên bị quá tải giám sát**: Một giảng viên phụ trách 5–10 nhóm với hàng trăm commits và hàng nghìn đầu việc, không thể đủ thời gian đọc từng dòng Git commit để phân định công sức ai làm nhiều ai làm ít.
 4. **Xung đột nội bộ khi chấm điểm chéo (Peer Review cảm tính)**: Sinh viên chấm điểm cho nhau dựa trên mức độ thân thiết thay vì dựa trên minh chứng năng lực thực tế.
 
-### 💡 Triết Lý Giải Pháp Của SAGA: "Minh Bạch Dựa Trên Dữ Liệu (Data-Driven Transparency)"
-Hệ thống SAGA không dựa vào lời khai báo của sinh viên, mà tự động thu thập và đối soát **Minh chứng kỹ thuật thực tế (Empirical Evidence)** từ:
+### 💡 Triết lý giải pháp của SAGA: "Minh Bạch Dựa Trên Dữ Liệu (Data-Driven Transparency)"
+Hệ thống SAGA không dựa vào lời khai báo chủ quan, mà tự động thu thập và đối soát **Minh chứng kỹ thuật thực tế (Empirical Evidence)** từ:
 - **Jira Software**: Sprint, Epic, User Story, Task, Trạng thái bàn giao.
 - **GitHub**: Commit log, Thay đổi dòng code ($+/-$), Pull Request reviews, Tần suất push.
 - **Đồ thị Tri thức Neo4j & Cytoscape.js**: Nối chuỗi minh chứng bất biến:
   $$\text{(:Student)} \xrightarrow{\text{[:ASSIGNED\_TO]}} \text{(:JiraTask)} \xleftarrow{\text{[:IMPLEMENTS]}} \text{(:Commit)}$$
-- **Mô hình Cổ phần Động Slicing Pie (DEC-002)**: Đánh giá tỷ lệ phần trăm đóng góp công bằng theo trọng số công việc (Code, Test, Doc, Research).
+- **Mô hình Cổ phần Động Slicing Pie**: Đánh giá tỷ lệ phần trăm đóng góp công bằng theo 4 nhóm trọng số công việc (Code, Test, Doc, Research) kết hợp hệ số đồng đẳng $P$.
 
 ---
 
 ## 2. Bản Đồ 5 Giai Đoạn Vận Hành Cốt Lõi (End-to-End Main Flow)
 
-Toàn bộ vòng đời của hệ thống SAGA từ lúc bắt đầu học kỳ đến khi sinh viên bảo vệ trước hội đồng trải qua 5 giai đoạn liên tục:
+Toàn bộ vòng đời của hệ thống SAGA trải qua 5 giai đoạn liên tục:
 
 ```mermaid
 flowchart TD
@@ -32,31 +34,31 @@ flowchart TD
         A1[Tạo Semester & Kích hoạt kỳ] --> A2[Tạo Lớp Niên Khóa Academic Class]
         A2 --> A3[Soạn thảo Đề cương Syllabus DRAFT]
         A3 --> A4[Xuất bản Đề cương PUBLISHED Bất biến]
-        A4 --> A5[Mở Lớp Học Phần Course Offering]
+        A4 --> A5[Mở Lớp Học Phần Course Section]
         A5 --> A6[Upload Excel Roster qua Preview Token]
     end
 
     subgraph G2 [Giai Đoạn 2: Tổ Chức Nhóm & Trọng Số - Lecturer]
         B1[Giảng viên truy cập lớp học] --> B2[Upload Excel chia nhóm & chỉ định Leader]
-        B2 --> B3[Cấu hình Trọng số lát cắt đóng góp Course Mode vs Project Group]
+        B2 --> B3[Cấu hình Trọng số đóng góp Course Mode vs Project Group]
     end
 
     subgraph G3 [Giai Đoạn 3: Khởi Tạo Dự Án & Tích Hợp - Student Leader]
         C1[Leader khởi tạo Dự án Project] --> C2[Cài đặt GitHub App & chọn Repos FE/BE]
-        C2 --> C3[OAuth Jira: chọn Site, Project, Board]
-        C3 --> C4[Từng thành viên liên kết GitHub/Jira cá nhân]
+        C2 --> C3[OAuth Jira: chọn Cloud Site, Project, Board]
+        C3 --> C4[Từng thành viên liên kết tài khoản GitHub/Jira cá nhân]
     end
 
     subgraph G4 [Giai Đoạn 4: Thực Thi Sprint & Thu Thập Chứng Cứ]
-        D1[Sinh viên làm việc: Jira Task + Git Commit] --> D2[Upload Minh chứng File/Web Links cho Task Doc/Research]
+        D1[Sinh viên làm việc: Jira Task + Git Commit] --> D2[Nộp Minh chứng File/Web Links cho Task Doc/Test]
         D2 --> D3[Leader kích hoạt Đồng bộ Backfill POST /sync]
         D3 --> D4[Dữ liệu chiếu về: Kanban, Commits, Traceability]
     end
 
-    subgraph G5 [Giai Đoạn 5: Đối Soát XAI & Bảo Vệ Hội Đồng]
-        E1[Sinh viên mở Graph làm sáng chuỗi công sức] --> E2[Giảng viên quét MSR Anomaly: Task Done 0 Commit]
-        E2 --> E3[Giảng viên quét SNA: Ghosting vs Key Contributor]
-        E3 --> E4[Tính toán Slicing Pie & Can thiệp Override điểm số]
+    subgraph G5 [Giai Đoạn 5: Đối Soát XAI & Đánh Giá Đóng Góp]
+        E1[Sinh viên mở Graph làm sáng chuỗi công sức] --> E2[Sinh viên đánh giá chéo ẩn danh Peer Review]
+        E2 --> E3[Giảng viên quét MSR Anomaly: Task Done 0 Commit]
+        E3 --> E4[Giảng viên xem Bảng điểm Slicing Pie & Ghi đè Tỷ lệ Override %]
     end
 
     G1 --> G2 --> G3 --> G4 --> G5
@@ -64,55 +66,80 @@ flowchart TD
 
 ---
 
-### Chi Tiết Từng Giai Đoạn:
+## 3. Cơ Chế Thu Thập & Đối Soát Minh Chứng Toàn Diện (Evidence Engine)
 
-#### 🔹 Giai đoạn 1: Thiết lập nền tảng học thuật (Admin Academic Setup)
-1. **Quản trị Học kỳ & Lớp niên khóa**: Admin tạo học kỳ (ví dụ `FA26`) và kích hoạt làm kỳ mặc định toàn hệ thống. Tạo lớp sinh viên niên khóa (`SE1705`).
-2. **Đề cương chuẩn FLM (Syllabus Immutability)**:
-   - Soạn đề cương môn học (`SWP391`) ở trạng thái `DRAFT`: Cấu hình Milestones, Deliverables, trọng số tiêu chí (tổng đúng 100%) và CLO mappings.
-   - Bấm **"Xuất bản chính thức (PUBLISHED)"**: Đề cương bị **khóa bất biến (Immutable)** để bảo toàn tính toàn vẹn dữ liệu đánh giá của sinh viên.
-3. **Mở lớp học phần & Import sinh viên**:
-   - Admin tạo Course liên kết: `SE1705` + `SWP391` + `Syllabus PUBLISHED` + `Lecturer Profile ID`.
-   - Tải file Excel mẫu Roster ➔ Upload xem trước lỗi qua `previewToken` ➔ Xác nhận Import danh sách sinh viên vào lớp.
+### 📌 A. Minh chứng Kỹ thuật (Code Commits)
+- Sinh viên commit code tuân theo quy ước chứa mã Jira Task: `feat: [FE][SAGA-15] Xay dung UI Traceability Graph`.
+- Hệ thống backend tự động phân tích biểu thức chính quy (Regex `SAGA-\\d+`), ánh xạ commit vào Task tương ứng và tạo cạnh liên kết `[:IMPLEMENTS]` trên đồ thị Neo4j.
 
-#### 🔹 Giai đoạn 2: Phân nhóm dự án & Cấu hình trọng số (Lecturer Team & Weights)
-1. **Phân nhóm bằng Excel chuyên dụng**: Giảng viên tải template chia nhóm ➔ Upload xem trước danh sách nhóm, đề tài, Leader ➔ Xác nhận tạo nhóm đồng loạt.
-2. **Điều phối linh hoạt**: Giảng viên có quyền chỉ định Trưởng nhóm mới (`PUT .../leader`) hoặc chuyển thành viên sang nhóm khác (`PATCH .../team`).
-3. **Cấu hình Trọng số đóng góp (Slicing Pie Weights)**:
-   - Giảng viên chọn chế độ `COURSE` (áp dụng chung 1 bộ trọng số Code/Test/Doc cho cả lớp) hoặc `PROJECT_GROUP` (cho phép từng nhóm cấu hình trọng số riêng phù hợp với đặc thù đề tài).
-
-#### 🔹 Giai đoạn 3: Khởi tạo dự án & Tích hợp công cụ (Project Setup & Integrations Hub)
-1. **Xác thực quyền Leader**: Hệ thống đọc `myRole` từ `GET /api/student/courses/{courseId}/team`. Chỉ tài khoản `LEADER` mới nhìn thấy nút "Khởi tạo Dự Án" (Member chỉ thấy thông báo chờ).
-2. **Tích hợp GitHub Workspace**:
-   - Leader khởi tạo kết nối GitHub App ➔ Cài đặt App vào Organization nhóm.
-   - Chọn các Repository liên quan và gán nhãn: Repo nào là `FRONTEND`, Repo nào là `BACKEND`.
-3. **Tích hợp Jira Software Workspace**:
-   - Leader kết nối OAuth Jira ➔ Chọn Atlassian Cloud Site ➔ Chọn Jira Project ➔ Chọn Board Scrum/Kanban.
-4. **Nhận diện danh tính cá nhân (Identity Mapping)**:
-   - Mỗi sinh viên tự vào mục Hồ sơ cá nhân (`/integrations/me`), bấm liên kết tài khoản GitHub và Jira của mình để hệ thống map chính xác `authorExternalId` với `studentId`.
-
-#### 🔹 Giai đoạn 4: Vận hành Sprint, Đồng bộ chiếu & Thu thập chứng cứ (Evidence Collection)
-1. **Quy ước Commit chuẩn**: Sinh viên commit mã nguồn kèm mã Jira Task: `feat: [FE][SAGA-15] Xay dung UI Traceability Graph`.
-2. **Thu thập chứng cứ đối với Task phi kỹ thuật (Non-code Tasks)**:
-   - Với các đầu việc tài liệu (SRS, Architecture Design) hoặc khảo sát (Research/User Testing): Sinh viên sử dụng tính năng **Task Evidence** để đính kèm link web (`POST /api/tasks/{taskId}/web-links`) hoặc upload file tài liệu/ảnh minh chứng (`POST /api/tasks/{taskId}/files`).
-3. **Kích hoạt đồng bộ chiếu ngầm (Sync Backfill)**:
-   - Leader bấm nút "Đồng bộ dữ liệu" (`POST /api/projects/{projectId}/sync`).
-   - Backend đưa vào hàng đợi xử lý ngầm và chiếu dữ liệu về: Bảng Kanban Jira tasks, Nhật ký Git commits và Cặp liên kết Task - Commit.
-
-#### 🔹 Giai đoạn 5: Đối soát XAI, Đánh giá công bằng & Bảo vệ dự án (Evaluation & Defense)
-1. **Sinh viên chứng minh năng lực**: Mở màn hình đồ thị `/student/graph`, chọn tên mình ➔ Toàn bộ mạng lưới công việc sáng bừng minh chứng trực quan.
-2. **Giảng viên phát hiện bất thường tự động**: Mở `/lecturer/courses/[id]/graph` để đồ thị XAI cảnh báo MSR Anomaly và Ghosting Anomaly.
-3. **Chốt điểm số Slicing Pie**: Bảng đánh giá tự động tính toán tỷ lệ đóng góp của từng thành viên. Giảng viên xem xét và ghi đè điểm số cuối cùng nếu có trường hợp đặc biệt.
+### 📌 B. Minh chứng Phi kỹ thuật (Non-Code Tasks: Document, Testing, Research)
+- Với các đầu việc về viết tài liệu (SRS, SDS), kiểm thử (Test Matrix, Test Cases) hoặc nghiên cứu giải pháp (PoC, Benchmark):
+- **Phía Sinh viên (`/student/sprint-progress`)**: 
+  - Mở thẻ Task trên bảng Kanban ➔ Vào tab **"Tài liệu & Minh chứng" (`TaskEvidencePanel`)**.
+  - Cho phép upload file minh chứng (`.pdf`, `.xlsx`, `.docx`, ảnh) và gắn liên kết Web (Figma design, Google Docs, tài liệu đặc tả).
+  - Tự động sinh mã băm đối soát bất biến `Evidence Hash`.
+- **Phía Giảng viên (`/lecturer/courses/[courseId]/grades`)**:
+  - Backend [TaskEvidenceController.java](file:///d:/Capstone/saga%20workspace/saga-be/src/main/java/com/saga/be/controller/TaskEvidenceController.java) và [TaskFileService.java](file:///d:/Capstone/saga%20workspace/saga-be/src/main/java/com/saga/be/service/evidence/TaskFileService.java) cấp quyền `requireCanRead()` cho cả Giảng viên và Sinh viên.
+  - Trên màn hình Bảng điểm đóng góp, Giảng viên xem chi tiết tỷ lệ phân bổ của sinh viên ở lát cắt **Document %**, **Testing %** và **Research %**. Nếu task không có file/link, hệ thống tự động gắn cờ cảnh báo `Chưa có minh chứng (NO_EVIDENCE)`.
 
 ---
 
-## 3. Case Study Thực Chiến: dự án "SAGA Platform" (Nhóm 5 - Lớp SWP391)
+## 4. Cơ Chế Đánh Giá Chéo Đồng Đẳng (Sprint Peer Review)
 
-Để minh họa sống động cho Hội đồng dự án, dưới đây là kịch bản Case Study mô phỏng một nhóm sinh viên gồm 4 thành viên với 4 kịch bản đóng góp điển hình:
+- **Cửa sổ đánh giá (Peer Review Window)**:
+  - Khi Sprint đang diễn ra bình thường: Khóa form để sinh viên tập trung làm việc.
+  - **48 giờ trước hạn kết thúc (`endDate - 48h`)**: Mở sớm để nhóm chuẩn bị nghiệm thu Sprint.
+  - **Khi Sprint đã kết thúc (`state = closed`)**: Cửa sổ **LUÔN MỞ** (`isSprintClosed = true`) cho phép sinh viên vào đánh giá cho Sprint vừa hoàn thành.
+- **Khung Rubric 4 tiêu chí chuẩn hóa**:
+  1. *Hoàn thành nhiệm vụ*: Tiến độ và khối lượng công việc được giao.
+  2. *Kỹ năng & Đóng góp kỹ thuật*: Chất lượng code, test, tài liệu bàn giao.
+  3. *Tinh thần trách nhiệm*: Tính chủ động, đúng hạn, tuân thủ kỷ luật nhóm.
+  4. *Phối hợp & Trao đổi*: Mức độ giao tiếp, hỗ trợ đồng đội và review công việc.
+- **Nguyên tắc Bảo mật & Ẩn danh**:
+  - Hệ thống tự động lọc bỏ bản thân khỏi danh sách cần đánh giá (*Anti self-review*).
+  - Mỗi sinh viên chỉ đánh giá một thành viên một lần trong Sprint (*Khóa gửi lặp lại*).
+  - Sinh viên **hoàn toàn không xem được điểm số người khác chấm cho mình** để tránh hiềm khích nội bộ.
+  - **Giảng viên xem toàn bộ ma trận đánh giá** tại `/lecturer/courses/[courseId]/peer-reviews` để nắm bắt nội tình nhóm.
+- **Hệ số đồng đẳng $P$ (Peer Multiplier)**: Điểm đánh giá chéo trung bình được chuẩn hóa thành hệ số $P$ (quanh mốc 1.0) nhân trực tiếp với điểm cơ sở để điều chỉnh tỷ lệ cổ phần Slicing Pie.
+
+---
+
+## 5. Cơ Chế Phát Hiện Gian Lận & Giám Sát Mạng Lưới (XAI & SNA)
+
+### 🚨 A. Bắt lỗi Báo cáo khống (MSR Anomaly Alert — Mining Software Repositories)
+- **Định nghĩa**: Task Jira được đánh dấu trạng thái `DONE`, nhưng không có bất kỳ Commit nào liên kết (`0 commits linked`).
+- **Vị trí hiển thị trên giao diện Giảng viên (`/lecturer/courses/[id]/graph`)**:
+  - **Badge đỏ trên thanh thống kê (Pipeline Stats Bar)**: Hiển thị nổi bật cảnh báo `[ ⚠️ {n} Task hoàn thành chưa có Commit liên kết ]`.
+  - **Bộ lọc Anomaly Filter**: Dropdown có tùy chọn **"Hoàn thành chưa có Commit (MSR Anomaly)"** (`DONE_NO_COMMIT`) giúp Giảng viên lọc ngay lập tức danh sách các Task nghi vấn gian lận.
+  - **Đồ thị Cytoscape Canvas**: Node task tự động đổi màu cam đỏ nhấp nháy (`animate-pulse`).
+
+### 🚨 B. Phân tích mạng xã hội SNA (Social Network Analysis)
+- Dựa trên mạng lưới đánh giá Pull Request và trao đổi công việc trong nhóm:
+  - **Key Contributor (Nòng cốt gánh team)**: Thành viên có hệ số trung tâm bậc *Degree Centrality* $> 85\%$, review PR cho hầu hết thành viên khác.
+  - **Ghosting Anomaly (Thành viên cô lập/Ký sinh)**: Thành viên có lượt tương tác và review bằng 0 ($Degree Centrality \approx 0$).
+
+---
+
+## 6. Bảng Điểm Đóng Góp Slicing Pie & Quyền Ghi Đè (Contribution % & Override)
+
+- **Lưu ý nghiệp vụ quan trọng**: Hệ thống SAGA **không chấm điểm thang 10**, mà tự động tính toán **Tỷ lệ phần trăm đóng góp công sức cuối cùng (`Final Contribution Percentage %`)** theo mô hình Slicing Pie. Tỷ lệ % này phản ánh chính xác tỷ trọng đóng góp của từng cá nhân để Giảng viên quy đổi ra điểm đồ án chính thức.
+- **Màn hình Bảng điểm đóng góp (`/lecturer/courses/[id]/grades`)**:
+  - Hiển thị bảng ma trận minh chứng: Điểm SP, Code %, Testing %, Document %, Research %, Công việc %, Đánh giá chéo $\times P$, Tỷ lệ đóng góp cuối cùng %.
+  - Nút **"Minh chứng"**: Mở rộng phân rã chi tiết đóng góp qua từng Sprint và liệt kê các cờ cảnh báo đối soát.
+  - Nút **"Điều chỉnh" (Contribution Override Dialog)**: 
+    - Cho phép Giảng viên thực hiện can thiệp **Human-in-the-loop**.
+    - Giảng viên nhập lại tỷ lệ % mới và **bắt buộc nhập lý do giải trình (Reason)**.
+    - Gọi API `POST /api/teams/{teamId}/contribution-override` và lưu vết vào hệ thống kiểm toán (Audit Log) bất biến trên MongoDB.
+
+---
+
+## 7. Case Study Thực Chiến: Đồ Án "SAGA Platform" (Nhóm 5 - Lớp SWP391)
+
+Dưới đây là kịch bản mô phỏng nhóm sinh viên 4 người với 4 kiểu hành vi điển hình trong đồ án:
 
 ```text
 ┌──────────────────────────────────────────────────────────────────────────────────┐
-│                   CASE STUDY NHÓM 5: dự án SAGA PLATFORM                         │
+│                   CASE STUDY NHÓM 5: ĐỒ ÁN SAGA PLATFORM                         │
 ├──────────────────┬─────────────────┬───────────────────┬─────────────────────────┤
 │ 👤 Thành viên A  │ 👤 Thành viên B │ 👤 Thành viên C   │ 👤 Thành viên D         │
 │ (Trưởng nhóm)    │ (Frontend Dev)  │ (QA / Tester)     │ (Ký sinh Free-rider)   │
@@ -121,57 +148,43 @@ flowchart TD
 ```
 
 ### 👤 1. Thành viên A (Team Leader — Nguyễn Văn An):
-- **Hành vi thực tế**:
-  - Tạo dự án, kết nối GitHub & Jira, phân chia nhiệm vụ cho cả nhóm.
-  - Hoàn thành 14 Jira Tasks, thực hiện 52 Commits, đóng góp $+3,400 / -450$ dòng code, review 21 Pull Requests cho các bạn khác.
-- **Minh chứng trên hệ thống SAGA**:
-  - Đồ thị Cytoscape: Đỉnh của An có mật độ liên kết dày đặc nhất.
-  - Thuật toán SNA: **Hệ số Trung tâm Bậc (Degree Centrality) = 0.94** ➔ Được hệ thống tự động gắn huy hiệu **`Key Contributor` (Nòng cốt gánh team)**.
-  - Tỷ lệ cổ phần Slicing Pie dự kiến: **38.5%**.
+- **Thực tế**: Kiến trúc sư chính, 52 Commits, 14 Jira Tasks, review 21 PRs.
+- **Kết quả SAGA**: Degree Centrality = 0.94 ➔ Nhận huy hiệu **`Key Contributor`**. Tỷ lệ Slicing Pie: **~38%**.
 
-### 👤 2. Thành viên B (Frontend Developer — Trần Thị Bình):
-- **Hành vi thực tế**:
-  - Nhận 8 Jira Tasks về giao diện người dùng.
-  - Thực hiện 28 Commits, đính kèm liên kết Figma Design vào Task Evidence.
-- **Minh chứng trên hệ thống SAGA**:
-  - 100% các Jira Tasks chuyển sang `DONE` đều có ít nhất 2–4 Git Commits gắn kèm qua mã `SAGA-xx`.
-  - Không có bất kỳ cảnh báo bất thường nào.
-  - Tỷ lệ cổ phần Slicing Pie dự kiến: **28.0%**.
+### 👤 2. Thành viên B (Frontend Dev — Trần Thị Bình):
+- **Thực tế**: Làm 8 Jira Tasks UI, 28 Commits, đính kèm link Figma.
+- **Kết quả SAGA**: 100% Tasks có commits linked đối soát. Tỷ lệ Slicing Pie: **~28%**.
 
 ### 👤 3. Thành viên C (QA & Documentation — Lê Hoàng Cường):
-- **Hành vi thực tế**:
-  - Nhận 5 Tasks về Kịch bản kiểm thử (Test Cases) và Tài liệu đặc tả yêu cầu (SRS).
-  - Vì không trực tiếp code nhiều, Cường chỉ có 6 commits cập nhật Markdown.
-- **Minh chứng trên hệ thống SAGA**:
-  - Cường upload file Excel kiểm thử `Test_Matrix_v2.xlsx` và file PDF `SRS_Signoff.pdf` trực tiếp vào hệ thống qua API Task Evidence (`POST .../files`).
-  - Hệ thống tính trọng số đóng góp ở lát cắt **DOCUMENT & TEST**, ghi nhận đầy đủ công sức mà không bị đánh giá thấp như các hệ thống đếm dòng code truyền thống.
-  - Tỷ lệ cổ phần Slicing Pie dự kiến: **21.5%**.
+- **Thực tế**: Làm 5 Tasks Test Cases và SRS. Ít commit code nhưng **upload file Excel kiểm thử và PDF SRS vào Task Evidence**.
+- **Kết quả SAGA**: Hệ thống ghi nhận công sức ở lát cắt **TEST & DOC**, không bị thiệt thòi như các công cụ chỉ đếm dòng code. Tỷ lệ Slicing Pie: **~22%**.
 
-### 🚨 4. Thành viên D (Free-rider / Gian lận — Phạm Văn Dũng):
-- **Hành vi thực tế**:
-  - Nhận 3 Jira Tasks: `SAGA-28` (Tối ưu cơ sở dữ liệu), `SAGA-32` (Viết Unit Test bảo mật), `SAGA-35` (Tích hợp Cache Redis).
-  - Trước buổi bảo vệ Sprint 2 ngày, Dũng âm thầm lên Jira kéo cả 3 tasks sang trạng thái `DONE`.
-  - Trong suốt Sprint, Dũng không tham gia review PR nào, không bình luận trao đổi, và không push bất kỳ commit nào lên GitHub.
-- **Hệ thống SAGA bóc trần gian lận tự động**:
-  1. **Bắt lỗi Báo cáo khống (MSR Anomaly Alert)**:
-     - Trên đồ thị Cytoscape, 3 đỉnh Task `SAGA-28`, `SAGA-32`, `SAGA-35` có trạng thái `DONE` nhưng có **0 commits linked** (không có bất kỳ cạnh `[:IMPLEMENTS]` nào trỏ về).
-     - Hệ thống tự động đổi màu đỉnh thành **Đỏ cam**, viền nhấp nháy đỏ (`animate-pulse`) và gắn cờ cảnh báo nghi vấn báo cáo khống.
-  2. **Bắt lỗi Mất tương tác (Ghosting Anomaly Alert)**:
-     - Trên ma trận SNA, số lượt PR Review và Comment của Dũng bằng 0 ➔ **Degree Centrality $\approx 0$**.
-     - Hệ thống gắn nhãn cảnh báo đỏ: `Ghosting Member Detected`.
-  3. **Xử lý công minh**:
-     - Slicing Pie tự động tính toán mức đóng góp của Dũng chỉ đạt **12.0%** (do không có bằng chứng mã nguồn).
-     - Giảng viên mở giao diện `/lecturer/courses/[id]/graph`, bấm vào nút can thiệp điểm số (`POST /api/teams/{teamId}/contribution-override`), hạ điểm dự án của Dũng và giữ trọn điểm cao xứng đáng cho An, Bình và Cường!
+### 🚨 4. Thành viên D (Free-rider / Báo cáo khống — Phạm Văn Dũng):
+- **Thực tế**: Không làm gì, trước ngày bảo vệ kéo 3 tasks sang `DONE`. Không có commit, không review PR.
+- **SAGA bóc trần**:
+  - **MSR Anomaly**: 3 Task DONE nhưng 0 commit trỏ về ➔ Hệ thống gắn cờ đỏ nhấp nháy cảnh báo báo cáo khống.
+  - **Ghosting Anomaly**: Degree Centrality = 0.
+  - **Peer Review**: Cả nhóm chấm Dũng 1 sao kèm nhận xét không hợp tác.
+  - Tỷ lệ Slicing Pie tụt xuống **~12%**. Giảng viên dùng nút **"Điều chỉnh"** để ghi đè điểm số kỷ luật.
 
 ---
 
-## 4. Kịch Bản Trình Bày Demo Trước Hội Đồng (10 – 12 Phút)
+## 8. Kịch Bản Trình Bày Demo Trước Hội Đồng (10 – 12 Phút)
 
-Khi trình bày trước các Thầy/Cô Hội đồng, nhóm thực hiện theo kịch bản 4 bước chuẩn xác:
+| Thời Lượng | Vai Trò & Màn Hình | Thao Tác Trực Tiếp (Screen Action) | Lời Thoại Thuyết Minh (Verbatim Script) |
+| :--- | :--- | :--- | :--- |
+| **Phút 1 – 2** | **Slide Giới thiệu** | Chiếu slide vấn nạn Free-rider và Báo cáo khống. | *"Kính thưa Hội đồng, trong đồ án nhóm sinh viên, nỗi đau lớn nhất là tình trạng ỷ lại và báo cáo khống trên Jira vào đêm trước buổi bảo vệ. Hệ thống SAGA ra đời với triết lý: **Minh bạch dựa trên Dữ liệu (Data-Driven Transparency)** — Tự động thu thập minh chứng kỹ thuật từ Jira và GitHub, dựng Đồ thị tri thức Neo4j và tính tỷ lệ đóng góp công bằng theo mô hình Slicing Pie."* |
+| **Phút 3 – 5** | **Sinh viên An**<br>`/student/graph`<br>`/student/sprint-progress` | 1. Mở Traceability Graph, rê chuột vào tên An ➔ Hiệu ứng **Neighborhood Dimming** làm sáng rực chuỗi: `An ➔ JiraTask ➔ Commit`.<br>2. Bấm vào 1 Commit để xem mã băm, số dòng $+/-$ và link GitHub.<br>3. Mở Task SRS của bạn Cường trên Kanban ➔ Cho xem tab **Tài liệu & Minh chứng** có file PDF/Excel đính kèm. | *"Ở góc nhìn sinh viên, toàn bộ công sức được chứng minh bằng chuỗi liên kết không thể chối cãi: Người làm ➔ Đầu việc Jira ➔ Commit Git thật. Với các đầu việc phi kỹ thuật như tài liệu đặc tả của bạn Cường, hệ thống cho phép đính kèm file minh chứng và băm mã đối soát để ghi nhận công bằng."* |
+| **Phút 6 – 7** | **Sinh viên An**<br>`/student/assessment` | 1. Chọn Sprint 3 (trạng thái `Đã đóng · được chấm`).<br>2. Bấm **Đánh giá ngay** cho đồng đội theo Rubric 4 tiêu chí.<br>3. Nhấn gửi ➔ Thẻ chuyển sang `Đã gửi đánh giá`. | *"Vào cuối mỗi Sprint, hệ thống mở cửa sổ Đánh giá chéo ẩn danh. Sinh viên chấm điểm theo Rubric chuẩn hóa và hoàn toàn không thấy người khác chấm mình bao nhiêu sao để tránh gây chia rẽ nội bộ."* |
+| **Phút 8 – 10** | **Giảng viên**<br>`/lecturer/courses/[id]/graph`<br>`/lecturer/courses/[id]/grades` | 1. Mở đồ thị giám sát ➔ Chỉ vào Badge đỏ: `Task hoàn thành chưa có Commit`.<br>2. Chọn bộ lọc **MSR Anomaly** để màn hình lọc ngay các task gian lận của Dũng.<br>3. Sang trang Bảng điểm đóng góp ➔ Cho Hội đồng xem bảng Slicing Pie phân bổ % từng người.<br>4. Bấm nút **Điều chỉnh** ➔ Nhập lại % và lý do kỷ luật. | *"Ở góc nhìn giảng viên, hệ thống tự động gắn cờ đỏ cảnh báo các Task DONE nhưng 0 commit của sinh viên Dũng. Giảng viên mở bảng đóng góp Slicing Pie để thấy rõ tỷ lệ % đóng góp thực tế của từng bạn, và có quyền bấm **Điều chỉnh** để ghi đè tỷ lệ công bằng trước khi chốt điểm."* |
+| **Phút 11 – 12**| **Slide Kiến trúc** | Chiếu kiến trúc Polyglot Persistence: Spring Boot 4 + MySQL (Source of Truth) + Neo4j (Graph Read Model) + Redis + Next.js 16. | *"SAGA đạt hiệu năng cao nhờ kiến trúc Polyglot: MySQL đảm bảo tính toàn vẹn giao dịch học thuật, Neo4j xử lý truy vấn đồ thị quan hệ trong vài mili-giây, và Next.js 16 mang lại trải nghiệm 60 FPS mượt mà. Nhóm xin sẵn sàng lắng nghe câu hỏi từ Hội đồng."* |
 
-| Thời Lượng | Nội Dung Trình Bày | Thao Tác Trực Tiếp Trên Giao Diện (Screen Action) |
-| :--- | :--- | :--- |
-| **Phút 1 – 2** | **Đặt vấn đề & Giới thiệu SAGA** | Chiếu slide vấn nạn Free-rider và Báo cáo khống. Nêu tuyên ngôn giải pháp minh chứng thực tế từ Jira & GitHub. |
-| **Phút 3 – 5** | **Góc nhìn Sinh viên (Minh chứng công sức)** | - Đăng nhập tài khoản Sinh viên An.<br>- Vào `/student/graph`, rê chuột vào tên An ➔ Hiển thị hiệu ứng **Neighborhood Dimming** làm sáng chuỗi `An ➔ JiraTask ➔ Commit`.<br>- Mở bảng Ma trận đối soát (Traceability Matrix Table) chỉ rõ từng commit hash, số dòng code $+/-$. |
-| **Phút 6 – 9** | **Góc nhìn Giảng viên (Phát hiện gian lận XAI & SNA)** | - Đăng nhập tài khoản Giảng viên ➔ Mở `/lecturer/courses/[id]/graph`.<br>- **Demo MSR Anomaly**: Chỉ vào Task của Dũng đang nhấp nháy đỏ vì "Done nhưng 0 commit linked".<br>- **Demo SNA Matrix**: Mở đồ thị phân tích mạng xã hội, chỉ ra Dũng bị cô lập ở góc ngoài (Degree Centrality = 0) đối lập với An ở vị trí trung tâm (**Key Contributor**).<br>- Mở bảng Slicing Pie và thực hiện thao tác **Override điểm số** trực tiếp. |
-| **Phút 10 – 12**| **Kiến trúc Kỹ thuật & Q&A** | - Tóm tắt kiến trúc: Next.js 16 + Spring Boot + Polyglot (PostgreSQL, Neo4j AuraDB, Redis, MongoDB).<br>- Mời Thầy/Cô Hội đồng đặt câu hỏi phản biện. |
+---
+
+## 9. Bộ Giáp Phản Biện Hội Đồng (Defense Q&A Armor)
+
+| Câu hỏi của Thầy/Cô Hội đồng | Câu trả lời chuẩn xác kỹ thuật & nghiệp vụ |
+| :--- | :--- |
+| **1. Nếu sinh viên dùng bot spam commit hoặc commit vô nghĩa (+1 dòng dấu cách) thì hệ thống có bị lừa không?** | SAGA không đếm số commit đơn thuần. Để commit được tính vào công sức, commit đó phải: (1) Thuộc repository chính thức của dự án, (2) Nằm trên branch hợp lệ, (3) Gắn với Jira Task được giao, và (4) Đi qua hệ số đồng đẳng $P$ từ chính các bạn cùng nhóm chấm điểm chéo. Ngoài ra, Giảng viên có thể xem trực tiếp biến động dòng code $+/-$ và diff trên giao diện đối soát. |
+| **2. Tại sao hệ thống lại dùng cả MySQL và Neo4j? Sao không dùng 1 loại DB cho đơn giản?** | Đây là mô hình **Polyglot Persistence chuẩn SE**: MySQL đóng vai trò **Source of Truth** đảm bảo các giao dịch ACID (tài khoản, đề cương, sinh viên, phân nhóm). Nhưng với các truy vấn đồ thị nhiều tầng `(:Student) ➔ (:Task) ➔ (:Commit)` và tính toán hệ số mạng lưới (Degree Centrality), câu lệnh SQL sẽ đòi hỏi hàng chục phép `JOIN` làm nghẽn hệ thống. Neo4j đóng vai trò **Graph Read Model** chuyên biệt, cho tốc độ phản hồi dưới 10ms. |
+| **3. Nếu Jira hoặc GitHub bị sập hoặc mất kết nối thì hệ thống có chạy được không?** | Hệ thống áp dụng cơ chế **Chiếu dữ liệu (Projection Read Model)**. Sau mỗi lần đồng bộ, dữ liệu được nạp vào cơ sở dữ liệu nội bộ của SAGA. Khi Jira/GitHub gặp sự cố mạng, sinh viên và giảng viên vẫn tra cứu tiến độ, xem đồ thị và chấm điểm bình thường từ dữ liệu đã lưu trữ. |
