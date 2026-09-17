@@ -82,8 +82,10 @@ export interface AuditFilterState {
   entityType: string;  // Loại đối tượng hoặc "ALL"
   actorUserId: string; // UUID người thực hiện
   entityId: string;    // UUID đối tượng tác động
-  fromDate: string;    // Chuỗi ngày YYYY-MM-DD (From Timestamp)
-  toDate: string;      // Chuỗi ngày YYYY-MM-DD (To Timestamp)
+  fromDate: string;    // Chuỗi ngày YYYY-MM-DD (From Date)
+  fromTime?: string;   // Chuỗi giờ HH:mm (From Time)
+  toDate: string;      // Chuỗi ngày YYYY-MM-DD (To Date)
+  toTime?: string;     // Chuỗi giờ HH:mm (To Time)
 }
 
 // -----------------------------------------------------------------------------

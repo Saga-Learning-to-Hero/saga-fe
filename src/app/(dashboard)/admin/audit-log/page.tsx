@@ -22,7 +22,9 @@ const INITIAL_FILTERS: AuditFilterState = {
   actorUserId: "",
   entityId: "",
   fromDate: "",
+  fromTime: "",
   toDate: "",
+  toTime: "",
 };
 
 const PAGE_SIZE = 10;
@@ -65,12 +67,23 @@ export default function AdminAuditLogPage() {
       params.entityId = debouncedFilters.entityId.trim();
     }
 
-    if (debouncedFilters.fromDate && debouncedFilters.fromDate.trim()) {
-      params.from = `${debouncedFilters.fromDate.trim()}T00:00:00Z`;
-    }
+    const fromDate = debouncedFilters.fromDate?.trim();
+    const fromTime = debouncedFilters.fromTime?.trim() || "00:00";
+    const toDate = debouncedFilters.toDate?.trim();
+    const toTime = debouncedFilters.toTime?.trim() || "23:59";
 
-    if (debouncedFilters.toDate && debouncedFilters.toDate.trim()) {
-      params.to = `${debouncedFilters.toDate.trim()}T23:59:59Z`;
+    const formattedFromTime = fromTime.length === 5 ? `${fromTime}:00` : fromTime;
+    const formattedToTime = toTime.length === 5 ? `${toTime}:59` : toTime;
+
+    if (fromDate && toDate) {
+      params.from = `${fromDate}T${formattedFromTime}`;
+      params.to = `${toDate}T${formattedToTime}`;
+    } else if (fromDate) {
+      params.from = `${fromDate}T${formattedFromTime}`;
+      params.to = `${fromDate}T23:59:59`;
+    } else if (toDate) {
+      params.from = `${toDate}T00:00:00`;
+      params.to = `${toDate}T${formattedToTime}`;
     }
 
     return params;

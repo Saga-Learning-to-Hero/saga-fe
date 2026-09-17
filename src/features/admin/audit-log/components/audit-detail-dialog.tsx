@@ -36,6 +36,7 @@ import {
 import type { AuditLogItem } from "../types/audit-log";
 import { ExpandableId } from "./expandable-id";
 import { useAuditNameResolver } from "../hooks/use-audit-name-resolver";
+import { formatVietnamDateTime } from "@/lib/utils";
 
 interface AuditDetailDialogProps {
   log: AuditLogItem | null;
@@ -166,7 +167,7 @@ export function AuditDetailDialog({
                 {renderSeverityBadge()}
               </div>
               <DialogDescription className="text-xs text-muted-foreground mt-0.5">
-                Nhật ký hoạt động ghi nhận lúc {new Date(log.timestamp).toLocaleString("vi-VN")}
+                Nhật ký hoạt động ghi nhận lúc {formatVietnamDateTime(log.timestamp)} (GMT+7)
               </DialogDescription>
             </div>
           </div>
@@ -236,7 +237,7 @@ export function AuditDetailDialog({
               )}
               <p className="text-muted-foreground text-[11px] flex items-center gap-1 mt-1 font-mono">
                 <CalendarIcon className="w-3 h-3" />
-                {new Date(log.timestamp).toLocaleString("vi-VN")}
+                {formatVietnamDateTime(log.timestamp)} (GMT+7)
               </p>
             </div>
           </div>

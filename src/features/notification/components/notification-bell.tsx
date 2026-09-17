@@ -26,6 +26,7 @@ import {
 import {
   formatFullDateTime,
   formatRelativeTime,
+  formatVietnamShortDateTime,
   getNotificationVisualConfig,
   isValidInternalActionUrl,
 } from "../lib/notification-utils";
@@ -205,11 +206,13 @@ export function NotificationBell({ className }: NotificationBellProps) {
 
                     <div className="flex items-center justify-between pt-0.5">
                       <Tooltip>
-                        <TooltipTrigger className="text-[10px] text-muted-foreground/80 font-medium">
-                          {formatRelativeTime(item.createdAt)}
+                        <TooltipTrigger className="text-[10px] text-muted-foreground/80 font-medium flex items-center gap-1.5 cursor-pointer">
+                          <span className="font-mono text-foreground/80">{formatVietnamShortDateTime(item.createdAt)}</span>
+                          <span className="text-muted-foreground/40">&bull;</span>
+                          <span>{formatRelativeTime(item.createdAt)}</span>
                         </TooltipTrigger>
                         <TooltipContent side="top">
-                          {formatFullDateTime(item.createdAt)}
+                          {formatFullDateTime(item.createdAt)} (GMT+7)
                         </TooltipContent>
                       </Tooltip>
 

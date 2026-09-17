@@ -18,8 +18,75 @@ export function isValidInternalActionUrl(url: string | null | undefined): boolea
   return true;
 }
 
+export function parseNotificationDate(dateInput: string | Date): Date {
+  if (dateInput instanceof Date) return dateInput;
+  if (!dateInput || typeof dateInput !== "string") return new Date(NaN);
+
+  let cleanStr = dateInput.trim();
+  // Nếu là ISO string có T nhưng không có timezone (Z hoặc offset), tự động thêm Z để coi là UTC
+  if (cleanStr.includes("T") && !cleanStr.endsWith("Z") && !/[+-]\d{2}(:\d{2})?$/.test(cleanStr)) {
+    cleanStr += "Z";
+  }
+  return new Date(cleanStr);
+}
+
+export function formatVietnamShortDateTime(dateInput: string | Date): string {
+  const date = parseNotificationDate(dateInput);
+  if (isNaN(date.getTime())) return "";
+
+  try {
+    const parts = new Intl.DateTimeFormat("en-GB", {
+      timeZone: "Asia/Ho_Chi_Minh",
+      hour: "2-digit",
+      minute: "2-digit",
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour12: false,
+    }).formatToParts(date);
+
+    const map: Record<string, string> = {};
+    for (const part of parts) {
+      map[part.type] = part.value;
+    }
+
+    return `${map.hour}:${map.minute} ${map.day}/${map.month}/${map.year}`;
+  } catch {
+    return "";
+  }
+}
+
+export function formatFullDateTime(dateInput: string | Date): string {
+  const date = parseNotificationDate(dateInput);
+  if (isNaN(date.getTime())) return "";
+
+  try {
+    const parts = new Intl.DateTimeFormat("en-GB", {
+      timeZone: "Asia/Ho_Chi_Minh",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour12: false,
+    }).formatToParts(date);
+
+    const map: Record<string, string> = {};
+    for (const part of parts) {
+      map[part.type] = part.value;
+    }
+
+    return `${map.hour}:${map.minute}:${map.second} ${map.day}/${map.month}/${map.year}`;
+  } catch {
+    return "";
+  }
+}
+
 export function formatRelativeTime(dateInput: string | Date): string {
-  const date = typeof dateInput === "string" ? new Date(dateInput) : dateInput;
+  const date = parseNotificationDate(dateInput);
+  if (isNaN(date.getTime())) return "Vừa xong";
+
   const now = new Date();
   const diffInMs = now.getTime() - date.getTime();
 
@@ -54,21 +121,6 @@ export function formatRelativeTime(dateInput: string | Date): string {
 
   const diffInYears = Math.floor(diffInDays / 365);
   return `${diffInYears} năm trước`;
-}
-
-export function formatFullDateTime(dateInput: string | Date): string {
-  const date = typeof dateInput === "string" ? new Date(dateInput) : dateInput;
-  if (isNaN(date.getTime())) return "";
-
-  const pad = (n: number) => n.toString().padStart(2, "0");
-  const hours = pad(date.getHours());
-  const minutes = pad(date.getMinutes());
-  const seconds = pad(date.getSeconds());
-  const day = pad(date.getDate());
-  const month = pad(date.getMonth() + 1);
-  const year = date.getFullYear();
-
-  return `${hours}:${minutes}:${seconds} ${day}/${month}/${year}`;
 }
 
 export interface NotificationVisualConfig {

@@ -4,6 +4,8 @@ import {
   getNotificationVisualConfig,
   formatRelativeTime,
   formatFullDateTime,
+  formatVietnamShortDateTime,
+  parseNotificationDate,
 } from "./notification-utils";
 
 describe("NotificationUtils", () => {
@@ -69,7 +71,7 @@ describe("NotificationUtils", () => {
     });
   });
 
-  describe("formatRelativeTime & formatFullDateTime", () => {
+  describe("formatRelativeTime & formatFullDateTime & formatVietnamShortDateTime", () => {
     it("UTCID10 - [N] Normal: Format thoi gian tuong doi theo cac moc", () => {
       const now = new Date();
       expect(formatRelativeTime(now.toISOString())).toBe("Vừa xong");
@@ -90,7 +92,18 @@ describe("NotificationUtils", () => {
       expect(formatRelativeTime(futureDate.toISOString())).toBe("Vừa xong");
 
       expect(formatFullDateTime("invalid-date")).toBe("");
-      expect(formatFullDateTime(new Date(2026, 8, 16, 10, 30, 0))).toContain("10:30:00 16/09/2026");
+      expect(formatVietnamShortDateTime("invalid-date")).toBe("");
+      expect(parseNotificationDate("invalid-date").getTime()).toBeNaN();
+    });
+
+    it("UTCID12 - [N] Normal: Format gio Viet Nam Asia/Ho_Chi_Minh GMT+7 chinh xac", () => {
+      // 03:30:00 UTC tuong duong 10:30:00 GMT+7 tai Viet Nam
+      expect(formatFullDateTime("2026-09-16T03:30:00Z")).toBe("10:30:00 16/09/2026");
+      expect(formatVietnamShortDateTime("2026-09-16T03:30:00Z")).toBe("10:30 16/09/2026");
+
+      // Chuoi ISO co san offset +07:00
+      expect(formatFullDateTime("2026-09-16T15:45:00+07:00")).toBe("15:45:00 16/09/2026");
+      expect(formatVietnamShortDateTime("2026-09-16T15:45:00+07:00")).toBe("15:45 16/09/2026");
     });
   });
 });

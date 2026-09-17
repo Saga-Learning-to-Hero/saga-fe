@@ -28,6 +28,7 @@ import type {
   AuditSeverity,
 } from "../types/audit-log";
 import { useAuditNameResolver } from "../hooks/use-audit-name-resolver";
+import { formatVietnamDateTime } from "@/lib/utils";
 
 interface AuditTableProps {
   logs: AuditLogItem[];
@@ -172,19 +173,7 @@ export function AuditTable({
 
   const formatRelativeTime = (iso: string) => {
     if (!iso) return "—";
-    try {
-      const d = new Date(iso);
-      return d.toLocaleString("vi-VN", {
-        day: "2-digit",
-        month: "2-digit",
-        year: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
-        second: "2-digit",
-      });
-    } catch {
-      return iso;
-    }
+    return formatVietnamDateTime(iso);
   };
 
   if (isLoading) {
@@ -247,22 +236,22 @@ export function AuditTable({
           <TableHeader className="bg-muted/40 border-b border-border">
             <TableRow>
               <TableHead className="py-3 px-4 text-xs font-semibold whitespace-nowrap w-[160px]">
-                Thời gian (Timestamp)
+                Thời gian
               </TableHead>
               <TableHead className="py-3 px-4 text-xs font-semibold min-w-[220px]">
-                Tài khoản thực hiện (Actor & IP)
+                Tài khoản thực hiện
               </TableHead>
               <TableHead className="py-3 px-4 text-xs font-semibold whitespace-nowrap w-[150px]">
-                Hành động (Action)
+                Hành động
               </TableHead>
               <TableHead className="py-3 px-4 text-xs font-semibold min-w-[220px]">
-                Đối tượng tác động (Target)
+                Đối tượng tác động
               </TableHead>
               <TableHead className="py-3 px-4 text-xs font-semibold whitespace-nowrap w-[130px]">
-                Mức độ (Severity)
+                Mức độ
               </TableHead>
               <TableHead className="py-3 px-4 text-xs font-semibold whitespace-nowrap w-[90px]">
-                Trạng thái (Status)
+                Trạng thái
               </TableHead>
               <TableHead className="py-3 px-4 text-xs font-semibold whitespace-nowrap text-right w-[80px]">
                 Chi tiết
@@ -353,39 +342,39 @@ export function AuditTable({
                       </div>
                     </TableCell>
 
-                  <TableCell className="py-3 px-4 whitespace-nowrap">
-                    {getSeverityBadge(log.severity)}
-                  </TableCell>
+                    <TableCell className="py-3 px-4 whitespace-nowrap">
+                      {getSeverityBadge(log.severity)}
+                    </TableCell>
 
-                  <TableCell className="py-3 px-4 whitespace-nowrap">
-                    {log.status === "SUCCESS" ? (
-                      <span className="inline-flex items-center gap-1 text-[11px] text-success font-medium">
-                        <CheckCircle2Icon className="w-3.5 h-3.5" />
-                        Thành công
-                      </span>
-                    ) : (
-                      <span className="inline-flex items-center gap-1 text-[11px] text-danger font-medium">
-                        <XCircleIcon className="w-3.5 h-3.5" />
-                        Thất bại
-                      </span>
-                    )}
-                  </TableCell>
+                    <TableCell className="py-3 px-4 whitespace-nowrap">
+                      {log.status === "SUCCESS" ? (
+                        <span className="inline-flex items-center gap-1 text-[11px] text-success font-medium">
+                          <CheckCircle2Icon className="w-3.5 h-3.5" />
+                          Thành công
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 text-[11px] text-danger font-medium">
+                          <XCircleIcon className="w-3.5 h-3.5" />
+                          Thất bại
+                        </span>
+                      )}
+                    </TableCell>
 
-                  <TableCell className="py-3 px-4 text-right whitespace-nowrap">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => onSelectLog(log)}
-                      className="h-7 w-7 p-0 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground cursor-pointer"
-                      title="Xem chi tiết sự kiện"
-                    >
-                      <EyeIcon className="w-3.5 h-3.5" />
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              );
-            })
-          )}
+                    <TableCell className="py-3 px-4 text-right whitespace-nowrap">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => onSelectLog(log)}
+                        className="h-7 w-7 p-0 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground cursor-pointer"
+                        title="Xem chi tiết sự kiện"
+                      >
+                        <EyeIcon className="w-3.5 h-3.5" />
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                );
+              })
+            )}
           </TableBody>
         </Table>
       </div>
