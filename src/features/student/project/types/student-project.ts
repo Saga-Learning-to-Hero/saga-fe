@@ -411,3 +411,44 @@ export interface ProjectTaskCommitLinkQuery {
   repoId?: string | null;
   branchName?: string | null;
 }
+
+export interface UpdateStudentProjectRequest {
+  name: string;
+  description: string;
+}
+
+export interface ProjectCommitDetailStats {
+  total: number;
+  additions: number;
+  deletions: number;
+}
+
+export interface ProjectCommitDetailParent {
+  sha: string;
+}
+
+export interface ProjectCommitDetailChangedFile {
+  filename: string;
+  previousFilename: string | null;
+  status: string;
+  additions: number;
+  deletions: number;
+  changes: number;
+  patch: string | null;
+}
+
+export interface ProjectCommitDetailResponse {
+  gitCommitId: string;
+  repoId: string;
+  repositoryFullName: string;
+  sha: string;
+  message: string;
+  authorName: string;
+  authorLogin: string;
+  committedAt: string;
+  htmlUrl: string;
+  stats: ProjectCommitDetailStats;
+  parents: ProjectCommitDetailParent[];
+  filesTruncated: boolean;
+  files: ProjectCommitDetailChangedFile[];
+}

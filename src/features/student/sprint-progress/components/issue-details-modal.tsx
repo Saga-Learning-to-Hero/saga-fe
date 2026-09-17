@@ -879,6 +879,7 @@ export function IssueDetailsModal({
                   projectId={projectId}
                   onSelectCommit={handleToggleCommitSha}
                   onSelectAllCommits={handleSelectAllCommitShas}
+                  onContinueToConfirmation={() => setActiveEvidenceTab("contribution")}
                   selectedShas={selectedShasList}
                 />
               </TabsContent>
@@ -897,6 +898,8 @@ export function IssueDetailsModal({
                   section="contribution"
                   isOwnerOrLeader={canEdit}
                   externalCommitShas={selectedCommitShas}
+                  onRequestCommitSelection={() => setActiveEvidenceTab("commits")}
+                  onConfirmationSuccess={() => setSelectedCommitShas("")}
                 />
               </TabsContent>
             </Tabs>

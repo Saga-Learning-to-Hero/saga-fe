@@ -453,4 +453,193 @@ describe("ProjectProjectionService", () => {
       expect(apiClient.get).not.toHaveBeenCalled();
     }
   );
+
+  fptTest(
+    {
+      id: "UTCID23",
+      type: "N",
+      executedDate: "17/09/2026",
+      description: "getProjectCommitDetail goi GET voi projectId va gitCommitId hop le",
+    },
+    async () => {
+      const mockDetail = {
+        gitCommitId: "commit-123",
+        repoId: "repo-1",
+        repositoryFullName: "owner/repo",
+        sha: "abc1234567890",
+        message: "feat: [FE][SAGA-79] commit test",
+        authorName: "Hai Le",
+        authorLogin: "haile",
+        committedAt: "2026-09-17T02:00:00Z",
+        htmlUrl: "https://github.com/owner/repo/commit/abc1234",
+        stats: { total: 10, additions: 8, deletions: 2 },
+        parents: [{ sha: "parent123" }],
+        filesTruncated: false,
+        files: [
+          {
+            filename: "src/App.tsx",
+            previousFilename: null,
+            status: "modified",
+            additions: 8,
+            deletions: 2,
+            changes: 10,
+            patch: "@@ -1,3 +1,5 @@",
+          },
+        ],
+      };
+      vi.mocked(apiClient.get).mockResolvedValueOnce({ data: mockDetail });
+
+      const result = await ProjectProjectionService.getProjectCommitDetail(
+        mockProjectId,
+        "commit-123"
+      );
+
+      expect(apiClient.get).toHaveBeenCalledWith(
+        "/api/projects/proj-123/commits/commit-123"
+      );
+      expect(result).toEqual(mockDetail);
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID24",
+      type: "A",
+      executedDate: "17/09/2026",
+      description: "getProjectCommitDetail nem loi khi projectId rong",
+    },
+    async () => {
+      await expect(
+        ProjectProjectionService.getProjectCommitDetail("", "commit-123")
+      ).rejects.toThrow("Throw ValidationException: Project ID is required");
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID25",
+      type: "A",
+      executedDate: "17/09/2026",
+      description: "getProjectCommitDetail nem loi khi gitCommitId rong",
+    },
+    async () => {
+      await expect(
+        ProjectProjectionService.getProjectCommitDetail(mockProjectId, "  ")
+      ).rejects.toThrow("Throw ValidationException: Git Commit ID is required");
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID26",
+      type: "B",
+      executedDate: "17/09/2026",
+      description: "getProjectCommitDetail cat khoang trang o hai dau",
+    },
+    async () => {
+      const mockDetail = { gitCommitId: "commit-123" };
+      vi.mocked(apiClient.get).mockResolvedValueOnce({ data: mockDetail });
+
+      const result = await ProjectProjectionService.getProjectCommitDetail(
+        "  proj-123  ",
+        "  commit-123  "
+      );
+
+      expect(apiClient.get).toHaveBeenCalledWith(
+        "/api/projects/proj-123/commits/commit-123"
+      );
+      expect(result).toEqual(mockDetail);
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID27",
+      type: "N",
+      executedDate: "17/09/2026",
+      description: "patchProject goi PATCH voi payload hop le",
+    },
+    async () => {
+      const mockUpdated = {
+        projectId: mockProjectId,
+        name: "Du an moi",
+        description: "Mo ta moi",
+      };
+      vi.mocked(apiClient.patch).mockResolvedValueOnce({ data: mockUpdated });
+
+      const result = await ProjectProjectionService.patchProject(mockProjectId, {
+        name: "Du an moi",
+        description: "Mo ta moi",
+      });
+
+      expect(apiClient.patch).toHaveBeenCalledWith(
+        "/api/projects/proj-123",
+        {
+          name: "Du an moi",
+          description: "Mo ta moi",
+        }
+      );
+      expect(result).toEqual(mockUpdated);
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID28",
+      type: "A",
+      executedDate: "17/09/2026",
+      description: "patchProject nem loi khi projectId rong",
+    },
+    async () => {
+      await expect(
+        ProjectProjectionService.patchProject("", {
+          name: "Ten",
+          description: "Mo ta",
+        })
+      ).rejects.toThrow("Throw ValidationException: Project ID is required");
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID29",
+      type: "A",
+      executedDate: "17/09/2026",
+      description: "patchProject nem loi khi name rong",
+    },
+    async () => {
+      await expect(
+        ProjectProjectionService.patchProject(mockProjectId, {
+          name: "  ",
+          description: "Mo ta",
+        })
+      ).rejects.toThrow("Throw ValidationException: Project name is required");
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID30",
+      type: "B",
+      executedDate: "17/09/2026",
+      description: "patchProject cat khoang trang o name va description",
+    },
+    async () => {
+      const mockUpdated = { projectId: mockProjectId };
+      vi.mocked(apiClient.patch).mockResolvedValueOnce({ data: mockUpdated });
+
+      await ProjectProjectionService.patchProject("  proj-123  ", {
+        name: "  Du an chuan  ",
+        description: "  Mo ta chuan  ",
+      });
+
+      expect(apiClient.patch).toHaveBeenCalledWith(
+        "/api/projects/proj-123",
+        {
+          name: "Du an chuan",
+          description: "Mo ta chuan",
+        }
+      );
+    }
+  );
 });

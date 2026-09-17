@@ -8,6 +8,7 @@ import { useStudentCourseContext } from "@/features/student/courses/hooks/use-st
 import { useStudentMyTeam } from "@/features/student/courses/hooks/use-student-courses";
 import { useProjectSprints } from "@/features/student/sprint-progress/hooks/use-project-sprints";
 import { getApiErrorMessage } from "@/lib/api-error";
+import { useAuthStore } from "@/features/auth/store/useAuthStore";
 import { CytoscapeGraphCanvas } from "./cytoscape-graph-canvas";
 import { GraphFilterBar, type GraphFilterType } from "./graph-filter-bar";
 import { GraphStatsSummary } from "./graph-stats-summary";
@@ -32,6 +33,7 @@ import { Button } from "@/components/ui/button";
 
 export function TraceabilityGraphView() {
   const { course, courseId, isLoading: isCoursesLoading, isInvalidCourse } = useStudentCourseContext();
+  const currentUser = useAuthStore((state) => state.user);
   const teamQuery = useStudentMyTeam(courseId, { enabled: Boolean(courseId) });
   const projectId = teamQuery.data?.projectId || null;
 
@@ -212,8 +214,42 @@ export function TraceabilityGraphView() {
   const displayGraphData = useMemo(() => {
     const rawData = graphQuery.data;
     if (!rawData) return { nodes: [], edges: [] };
-    return rawData;
-  }, [graphQuery.data]);
+    const enrichedNodes = rawData.nodes.map((node) => {
+      const nodeData = node.data;
+      if (nodeData.type !== "STUDENT") return node;
+
+      let avatar = nodeData.avatar;
+      const norm = (s?: string | null) => (s || "").toLowerCase().trim();
+      const nodeCode = norm(nodeData.subLabel);
+      const nodeName = norm(nodeData.label);
+      const userCode = norm(currentUser?.studentCode);
+      const userName = norm(currentUser?.fullName || currentUser?.name);
+
+      const isCurrentUser =
+        (nodeCode && userCode && nodeCode === userCode) ||
+        (nodeName && userName && (nodeName.includes(userName) || userName.includes(nodeName)));
+
+      if (!avatar && isCurrentUser && currentUser?.avatar) {
+        avatar = currentUser.avatar;
+      }
+      if (!avatar) {
+        avatar = `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(nodeData.subLabel || nodeData.label)}`;
+      }
+
+      return {
+        ...node,
+        data: {
+          ...nodeData,
+          avatar,
+        },
+      };
+    });
+
+    return {
+      ...rawData,
+      nodes: enrichedNodes,
+    };
+  }, [graphQuery.data, currentUser]);
 
   const structuralStats = useMemo(() => {
     const nodes = graphQuery.data?.nodes || [];
@@ -548,6 +584,7 @@ export function TraceabilityGraphView() {
           isLoadingCommits={pipeline.isLoadingTaskCommits}
           errorMessage={pipeline.taskCommitsErrorMessage}
           onRetryCommits={() => void pipeline.refetchTaskCommits()}
+          projectId={projectId}
         />
       </>
     );
@@ -576,6 +613,7 @@ export function TraceabilityGraphView() {
       <div className="animate-in fade-in-0 space-y-4 duration-200">
         <GraphFilterBar
           groupSelector={projectInfoNode}
+          hideCollapsibleFilter={!pipelineOpen}
           selectedStudentId={
             pipelineOpen
               ? pipeline.sanitizedFilter.studentId
@@ -730,6 +768,7 @@ export function TraceabilityGraphView() {
         nodeData={selectedNode}
         onClose={() => setSelectedNode(null)}
         onFocusNode={(nodeId) => setFocusedNodeId(nodeId)}
+        projectId={projectId}
         onViewContribution={(studentId) => {
           handleSelectDrillDownStudent(studentId, selectedNode?.label);
         }}

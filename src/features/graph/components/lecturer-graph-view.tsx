@@ -265,7 +265,24 @@ export function LecturerGraphView({
   const displayGraphData = useMemo(() => {
     const rawData = graphQuery.data;
     if (!rawData) return { nodes: [], edges: [] };
-    return rawData;
+    const enrichedNodes = rawData.nodes.map((node) => {
+      const nodeData = node.data;
+      if (nodeData.type !== "STUDENT") return node;
+      const avatar =
+        nodeData.avatar ||
+        `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(nodeData.subLabel || nodeData.label)}`;
+      return {
+        ...node,
+        data: {
+          ...nodeData,
+          avatar,
+        },
+      };
+    });
+    return {
+      ...rawData,
+      nodes: enrichedNodes,
+    };
   }, [graphQuery.data]);
 
   const structuralStats = useMemo(() => {
@@ -708,6 +725,7 @@ export function LecturerGraphView({
               errorMessage={pipeline.taskCommitsErrorMessage}
               onRetry={pipeline.refetchTaskCommits}
               onClearSelection={() => setSelectedTaskId(null)}
+              projectId={projectId}
             />
           </div>
         </div>
@@ -724,6 +742,7 @@ export function LecturerGraphView({
                 isLoadingCommits={pipeline.isLoadingTaskCommits}
                 errorMessage={pipeline.taskCommitsErrorMessage}
                 onRetry={pipeline.refetchTaskCommits}
+                projectId={projectId}
                 onClearSelection={() => {
                   setSelectedTaskId(null);
                   setIsMobileInspectorOpen(false);
@@ -1011,6 +1030,7 @@ export function LecturerGraphView({
         nodeData={selectedGraphNode}
         onClose={() => setSelectedGraphNode(null)}
         onFocusNode={(nodeId) => setFocusedNodeId(nodeId)}
+        projectId={projectId}
         onViewContribution={(studentId) => {
           handleSelectDrillDownStudent(studentId, selectedGraphNode?.label);
         }}

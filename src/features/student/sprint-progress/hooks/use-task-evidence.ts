@@ -171,8 +171,39 @@ export function useDeleteTaskFile(taskId: string) {
 }
 
 export function useConfirmContribution(taskId: string) {
+  const queryClient = useQueryClient();
+
   return useMutation({
     mutationFn: (payload: CreateContributionConfirmationPayload) =>
       TaskEvidenceService.confirmContribution(taskId, payload),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({
+        queryKey: TASK_EVIDENCE_QUERY_KEYS.webLinks(taskId),
+      });
+      void queryClient.invalidateQueries({
+        queryKey: TASK_EVIDENCE_QUERY_KEYS.files(taskId),
+      });
+      void queryClient.invalidateQueries({
+        queryKey: ["task-commits", taskId],
+      });
+      void queryClient.invalidateQueries({
+        queryKey: ["project-task", taskId],
+      });
+      void queryClient.invalidateQueries({
+        queryKey: ["project-tasks"],
+      });
+      void queryClient.invalidateQueries({
+        queryKey: ["project-progress"],
+      });
+      void queryClient.invalidateQueries({
+        queryKey: ["contributionEvaluation"],
+      });
+      void queryClient.invalidateQueries({
+        queryKey: ["traceability"],
+      });
+      void queryClient.invalidateQueries({
+        queryKey: ["neo4j"],
+      });
+    },
   });
 }

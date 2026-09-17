@@ -147,6 +147,7 @@ export function ProjectInfoView() {
         isLeader={isLeader}
         hasTeam={hasTeam}
         isRoleLoading={isRoleLoading}
+        onProjectUpdated={handleUpdateProject}
       />
 
       <div className="space-y-6">

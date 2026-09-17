@@ -41,6 +41,7 @@ interface GraphFilterBarProps {
     label: string;
     onClear: () => void;
   }>;
+  hideCollapsibleFilter?: boolean;
 }
 
 export function GraphFilterBar({
@@ -61,6 +62,7 @@ export function GraphFilterBar({
   groupSelector,
   extraCollapsibleContent,
   extraActiveFilters = [],
+  hideCollapsibleFilter = false,
 }: GraphFilterBarProps) {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
 
@@ -91,22 +93,20 @@ export function GraphFilterBar({
             <div className="flex items-center gap-1 rounded-xl border border-primary/20 bg-primary/10 p-1 text-xs">
               <button
                 onClick={() => onSelectViewMode("GRAPH")}
-                className={`flex cursor-pointer items-center gap-1.5 rounded-lg px-3 py-1.5 font-extrabold transition-all ${
-                  viewMode === "GRAPH"
-                    ? "bg-primary text-primary-foreground shadow-xs"
-                    : "text-primary hover:bg-primary/10"
-                }`}
+                className={`flex cursor-pointer items-center gap-1.5 rounded-lg px-3 py-1.5 font-extrabold transition-all ${viewMode === "GRAPH"
+                  ? "bg-primary text-primary-foreground shadow-xs"
+                  : "text-primary hover:bg-primary/10"
+                  }`}
               >
                 <NetworkIcon className="size-3.5" />
                 <span>Neo4j Graph</span>
               </button>
               <button
                 onClick={() => onSelectViewMode("FLOW")}
-                className={`flex cursor-pointer items-center gap-1.5 rounded-lg px-3 py-1.5 font-extrabold transition-all ${
-                  viewMode === "FLOW"
-                    ? "bg-primary text-primary-foreground shadow-xs"
-                    : "text-primary hover:bg-primary/10"
-                }`}
+                className={`flex cursor-pointer items-center gap-1.5 rounded-lg px-3 py-1.5 font-extrabold transition-all ${viewMode === "FLOW"
+                  ? "bg-primary text-primary-foreground shadow-xs"
+                  : "text-primary hover:bg-primary/10"
+                  }`}
               >
                 <SparklesIcon className="size-3.5" />
                 <span>Pipeline Flow</span>
@@ -117,21 +117,19 @@ export function GraphFilterBar({
           <div className="flex items-center gap-1 rounded-xl border border-border/60 bg-muted/60 p-1 text-xs">
             <button
               onClick={() => onSelectFilterType("ALL")}
-              className={`cursor-pointer rounded-lg px-2.5 py-1.5 font-bold transition-colors ${
-                filterType === "ALL"
-                  ? "bg-card text-foreground shadow-2xs"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
+              className={`cursor-pointer rounded-lg px-2.5 py-1.5 font-bold transition-colors ${filterType === "ALL"
+                ? "bg-card text-foreground shadow-2xs"
+                : "text-muted-foreground hover:text-foreground"
+                }`}
             >
               Tất cả
             </button>
             <button
               onClick={() => onSelectFilterType("ANOMALIES_ONLY")}
-              className={`flex cursor-pointer items-center gap-1.5 rounded-lg px-2.5 py-1.5 font-bold transition-colors ${
-                filterType === "ANOMALIES_ONLY"
-                  ? "border border-destructive/40 bg-destructive/15 text-destructive shadow-2xs"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
+              className={`flex cursor-pointer items-center gap-1.5 rounded-lg px-2.5 py-1.5 font-bold transition-colors ${filterType === "ANOMALIES_ONLY"
+                ? "border border-destructive/40 bg-destructive/15 text-destructive shadow-2xs"
+                : "text-muted-foreground hover:text-foreground"
+                }`}
             >
               <AlertTriangleIcon className="size-3.5 text-destructive" />
               <span>
@@ -140,29 +138,30 @@ export function GraphFilterBar({
             </button>
           </div>
 
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setIsFilterOpen(!isFilterOpen)}
-            className={`h-9 cursor-pointer gap-1.5 rounded-xl text-xs font-bold transition-all ${
-              isFilterOpen || activeFiltersCount > 0
+          {!hideCollapsibleFilter && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setIsFilterOpen(!isFilterOpen)}
+              className={`h-9 cursor-pointer gap-1.5 rounded-xl text-xs font-bold transition-all ${isFilterOpen || activeFiltersCount > 0
                 ? "border-primary/50 bg-primary/10 text-primary"
                 : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            <FilterIcon className="size-3.5" />
-            <span>Bộ lọc</span>
-            {activeFiltersCount > 0 && (
-              <span className="flex size-4 items-center justify-center rounded-full bg-primary font-mono text-[10px] text-primary-foreground">
-                {activeFiltersCount}
-              </span>
-            )}
-            {isFilterOpen ? (
-              <ChevronUpIcon className="size-3.5 opacity-60" />
-            ) : (
-              <ChevronDownIcon className="size-3.5 opacity-60" />
-            )}
-          </Button>
+                }`}
+            >
+              <FilterIcon className="size-3.5" />
+              <span>Bộ lọc</span>
+              {activeFiltersCount > 0 && (
+                <span className="flex size-4 items-center justify-center rounded-full bg-primary font-mono text-[10px] text-primary-foreground">
+                  {activeFiltersCount}
+                </span>
+              )}
+              {isFilterOpen ? (
+                <ChevronUpIcon className="size-3.5 opacity-60" />
+              ) : (
+                <ChevronDownIcon className="size-3.5 opacity-60" />
+              )}
+            </Button>
+          )}
 
           {(activeFiltersCount > 0 || filterType !== "ALL") && (
             <Button
@@ -189,29 +188,28 @@ export function GraphFilterBar({
         </div>
       </div>
 
-      {isFilterOpen && (
+      {!hideCollapsibleFilter && isFilterOpen && (
         <div className="animate-in fade-in-0 slide-in-from-top-2 rounded-2xl border border-primary/20 bg-card p-3 shadow-xs duration-200 sm:p-4">
           <div
-            className={`grid grid-cols-1 items-end gap-3 sm:grid-cols-2 ${
-              extraCollapsibleContent ? "xl:grid-cols-4" : ""
-            }`}
+            className={`grid grid-cols-1 items-end gap-3 sm:grid-cols-2 ${extraCollapsibleContent ? "xl:grid-cols-4" : ""
+              }`}
           >
             {hasMemberOptions && (
-            <div className="space-y-1.5">
-              <label
-                htmlFor="graph-member-filter"
-                className="flex items-center gap-1.5 text-[11px] font-bold text-muted-foreground"
-              >
-                <UserIcon className="size-3.5 text-primary" />
-                Thành viên
-              </label>
-              <CustomSelect
-                id="graph-member-filter"
-                value={selectedStudentId}
-                onChange={onSelectStudent}
-                options={studentOptions}
-              />
-            </div>
+              <div className="space-y-1.5">
+                <label
+                  htmlFor="graph-member-filter"
+                  className="flex items-center gap-1.5 text-[11px] font-bold text-muted-foreground"
+                >
+                  <UserIcon className="size-3.5 text-primary" />
+                  Thành viên
+                </label>
+                <CustomSelect
+                  id="graph-member-filter"
+                  value={selectedStudentId}
+                  onChange={onSelectStudent}
+                  options={studentOptions}
+                />
+              </div>
             )}
 
             <div className="space-y-1.5">
@@ -235,7 +233,7 @@ export function GraphFilterBar({
         </div>
       )}
 
-      {!isFilterOpen && activeFiltersCount > 0 && (
+      {!hideCollapsibleFilter && !isFilterOpen && activeFiltersCount > 0 && (
         <div className="flex flex-wrap items-center gap-2 px-1 text-xs">
           <span className="text-[11px] font-bold text-muted-foreground">Đang lọc theo:</span>
           {hasMemberOptions && selectedStudentId !== "ALL" && (

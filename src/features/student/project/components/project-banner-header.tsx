@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useEffect, useRef } from "react";
+import { useMemo, useEffect, useRef, useState } from "react";
 import {
   FolderKanbanIcon,
   SparklesIcon,
@@ -8,6 +8,7 @@ import {
   CheckCircle2Icon,
   UserCheck2Icon,
   RefreshCwIcon,
+  PencilIcon,
 } from "lucide-react";
 import type { StudentProjectDetails } from "../types/student-project";
 import type { StudentCourse } from "@/features/student/courses/types/student-course";
@@ -17,6 +18,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/sonner";
 import { useSyncProject, useProjectSyncStatus } from "../hooks/useProjectSync";
 import { formatVietnamDateTime } from "@/lib/utils";
+import { EditProjectDialog } from "./edit-project-dialog";
 
 interface ProjectBannerHeaderProps {
   project: StudentProjectDetails;
@@ -24,6 +26,7 @@ interface ProjectBannerHeaderProps {
   isLeader?: boolean;
   hasTeam?: boolean;
   isRoleLoading?: boolean;
+  onProjectUpdated?: (updated: { name: string; description: string }) => void;
 }
 
 export function ProjectBannerHeader({
@@ -32,7 +35,9 @@ export function ProjectBannerHeader({
   isLeader,
   hasTeam,
   isRoleLoading = false,
+  onProjectUpdated,
 }: ProjectBannerHeaderProps) {
+  const [isEditOpen, setIsEditOpen] = useState(false);
   const syncMutation = useSyncProject();
 
   const categoryLabel = project.projectType?.name || project.category;
@@ -189,25 +194,37 @@ export function ProjectBannerHeader({
         {projectId && (
           <div className="flex flex-col items-start md:items-end gap-2 shrink-0">
             {isLeader && (
-              <Button
-                type="button"
-                size="sm"
-                onClick={() => void handleSync()}
-                disabled={syncMutation.isPending || hasActiveJob}
-                className="h-9 px-3.5 rounded-xl bg-white/20 hover:bg-white/30 text-white border border-white/20 text-xs font-semibold backdrop-blur-md gap-2 shadow-xs transition-all cursor-pointer active:scale-95"
-              >
-                <RefreshCwIcon
-                  className={`w-3.5 h-3.5 ${syncMutation.isPending || hasActiveJob ? "animate-spin text-amber-300" : ""
-                    }`}
-                />
-                <span>
-                  {syncMutation.isPending
-                    ? "Đang gửi yêu cầu..."
-                    : hasActiveJob
-                      ? "Đang đồng bộ..."
-                      : "Đồng bộ Jira & GitHub"}
-                </span>
-              </Button>
+              <div className="flex items-center gap-2">
+                <Button
+                  type="button"
+                  size="sm"
+                  onClick={() => setIsEditOpen(true)}
+                  className="h-9 px-3 rounded-xl bg-white/20 hover:bg-white/30 text-white border border-white/20 text-xs font-semibold backdrop-blur-md gap-1.5 shadow-xs transition-all cursor-pointer active:scale-95"
+                >
+                  <PencilIcon className="w-3.5 h-3.5" />
+                  <span>Chỉnh sửa thông tin</span>
+                </Button>
+
+                <Button
+                  type="button"
+                  size="sm"
+                  onClick={() => void handleSync()}
+                  disabled={syncMutation.isPending || hasActiveJob}
+                  className="h-9 px-3.5 rounded-xl bg-white/20 hover:bg-white/30 text-white border border-white/20 text-xs font-semibold backdrop-blur-md gap-2 shadow-xs transition-all cursor-pointer active:scale-95"
+                >
+                  <RefreshCwIcon
+                    className={`w-3.5 h-3.5 ${syncMutation.isPending || hasActiveJob ? "animate-spin text-amber-300" : ""
+                      }`}
+                  />
+                  <span>
+                    {syncMutation.isPending
+                      ? "Đang gửi yêu cầu..."
+                      : hasActiveJob
+                        ? "Đang đồng bộ..."
+                        : "Đồng bộ Jira & GitHub"}
+                  </span>
+                </Button>
+              </div>
             )}
 
             <div className="text-[11px] text-white/95 bg-black/25 px-2.5 py-1 rounded-lg border border-white/10 flex items-center gap-2 font-mono backdrop-blur-sm shadow-2xs">
@@ -259,6 +276,17 @@ export function ProjectBannerHeader({
           </div>
         )}
       </div>
+
+      {isLeader && projectId && (
+        <EditProjectDialog
+          isOpen={isEditOpen}
+          onClose={() => setIsEditOpen(false)}
+          projectId={projectId}
+          initialName={project.name || ""}
+          initialDescription={project.description || ""}
+          onSuccess={onProjectUpdated}
+        />
+      )}
     </div>
   );
 }

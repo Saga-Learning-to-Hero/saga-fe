@@ -149,46 +149,183 @@ export function CytoscapeGraphCanvas({
         }
       });
 
-      colTasks.sort((a, b) => {
+      colProject.sort((a, b) => {
+        const typeA = a.data("nodeType");
+        const typeB = b.data("nodeType");
+        if (typeA === "PROJECT" && typeB !== "PROJECT") return -1;
+        if (typeB === "PROJECT" && typeA !== "PROJECT") return 1;
+        return 0;
+      });
+
+      colStudents.sort((a, b) => {
         const labelA = (a.data("label") || "") as string;
         const labelB = (b.data("label") || "") as string;
-        return labelA.localeCompare(labelB);
+        return labelA.localeCompare(labelB, "vi", { sensitivity: "base" });
+      });
+
+      const studentIndexMap = new Map<string, number>();
+      colStudents.forEach((studentNode, idx) => {
+        studentIndexMap.set(studentNode.id(), idx);
+      });
+
+      const taskAssigneeIndexMap = new Map<string, number>();
+      const taskConnectedEdges = cyInstance.edges();
+      taskConnectedEdges.forEach((edge) => {
+        const label = edge.data("label");
+        const srcId = edge.source().id();
+        const tgtId = edge.target().id();
+
+        if (label === "ASSIGNED_TO") {
+          if (studentIndexMap.has(srcId)) {
+            taskAssigneeIndexMap.set(tgtId, studentIndexMap.get(srcId)!);
+          } else if (studentIndexMap.has(tgtId)) {
+            taskAssigneeIndexMap.set(srcId, studentIndexMap.get(tgtId)!);
+          }
+        }
+      });
+
+      colTasks.sort((a, b) => {
+        const studentIdxA = taskAssigneeIndexMap.has(a.id())
+          ? taskAssigneeIndexMap.get(a.id())!
+          : 999;
+        const studentIdxB = taskAssigneeIndexMap.has(b.id())
+          ? taskAssigneeIndexMap.get(b.id())!
+          : 999;
+
+        if (studentIdxA !== studentIdxB) {
+          return studentIdxA - studentIdxB;
+        }
+
+        const labelA = (a.data("label") || "") as string;
+        const labelB = (b.data("label") || "") as string;
+        return labelA.localeCompare(labelB, "vi", { numeric: true, sensitivity: "base" });
+      });
+
+      const taskIndexMap = new Map<string, number>();
+      colTasks.forEach((taskNode, idx) => {
+        taskIndexMap.set(taskNode.id(), idx);
+      });
+
+      const artifactTaskMap = new Map<string, number>();
+      taskConnectedEdges.forEach((edge) => {
+        const label = edge.data("label");
+        const srcId = edge.source().id();
+        const tgtId = edge.target().id();
+
+        if (label === "EVIDENCED_BY" || label === "IMPLEMENTS") {
+          if (taskIndexMap.has(srcId)) {
+            artifactTaskMap.set(tgtId, taskIndexMap.get(srcId)!);
+          } else if (taskIndexMap.has(tgtId)) {
+            artifactTaskMap.set(srcId, taskIndexMap.get(tgtId)!);
+          }
+        }
+      });
+
+      colArtifacts.sort((a, b) => {
+        const taskIdxA = artifactTaskMap.has(a.id()) ? artifactTaskMap.get(a.id())! : 999;
+        const taskIdxB = artifactTaskMap.has(b.id()) ? artifactTaskMap.get(b.id())! : 999;
+        if (taskIdxA !== taskIdxB) {
+          return taskIdxA - taskIdxB;
+        }
+        const labelA = (a.data("label") || "") as string;
+        const labelB = (b.data("label") || "") as string;
+        return labelA.localeCompare(labelB, "vi", { numeric: true, sensitivity: "base" });
       });
 
       const hasProject = colProject.length > 0;
-      const xProject = -520;
-      let xStudent = -280;
-      let xSprint = -50;
-      let xTask = 240;
-      let xArtifact = 580;
-
-      if (!hasProject) {
-        xStudent = -420;
-        xSprint = -160;
-        xTask = 150;
-        xArtifact = 480;
-      }
+      const xProject = -540;
+      const xStudent = hasProject ? -260 : -360;
+      const xTask = hasProject ? 80 : 40;
+      const xSprint = hasProject ? 440 : 400;
+      const xArtifact = hasProject ? 740 : 700;
 
       const positions: Record<string, { x: number; y: number }> = {};
 
-      const assignColumnY = (nodes: cytoscape.NodeSingular[], x: number, spacingY: number) => {
-        const count = nodes.length;
-        if (count === 0) return;
-        const totalHeight = (count - 1) * spacingY;
-        const startY = -totalHeight / 2;
-        nodes.forEach((node, i) => {
-          positions[node.id()] = {
-            x,
-            y: startY + i * spacingY,
+      const taskSpacingY = 58;
+      const totalTasksHeight = (colTasks.length - 1) * taskSpacingY;
+      const startTaskY = -totalTasksHeight / 2;
+      const taskYMap = new Map<string, number>();
+
+      colTasks.forEach((node, i) => {
+        const y = startTaskY + i * taskSpacingY;
+        positions[node.id()] = { x: xTask, y };
+        taskYMap.set(node.id(), y);
+      });
+
+      if (colStudents.length > 0) {
+        const studentYTargets: number[] = [];
+
+        colStudents.forEach((studentNode, sIdx) => {
+          const assignedTasks = colTasks.filter(
+            (t) => taskAssigneeIndexMap.get(t.id()) === sIdx
+          );
+
+          if (assignedTasks.length > 0) {
+            const firstTaskY = taskYMap.get(assignedTasks[0].id()) ?? 0;
+            const lastTaskY = taskYMap.get(assignedTasks[assignedTasks.length - 1].id()) ?? 0;
+            studentYTargets.push((firstTaskY + lastTaskY) / 2);
+          } else {
+            const defaultTotalHeight = (colStudents.length - 1) * 110;
+            const defaultStartY = -defaultTotalHeight / 2;
+            studentYTargets.push(defaultStartY + sIdx * 110);
+          }
+        });
+
+        const minGap = 90;
+        for (let i = 1; i < studentYTargets.length; i++) {
+          if (studentYTargets[i] < studentYTargets[i - 1] + minGap) {
+            studentYTargets[i] = studentYTargets[i - 1] + minGap;
+          }
+        }
+        const studentCenter = (studentYTargets[0] + studentYTargets[studentYTargets.length - 1]) / 2;
+        colStudents.forEach((studentNode, i) => {
+          positions[studentNode.id()] = {
+            x: xStudent,
+            y: studentYTargets[i] - studentCenter,
           };
         });
-      };
+      }
 
-      assignColumnY(colProject, xProject, 80);
-      assignColumnY(colStudents, xStudent, 90);
-      assignColumnY(colSprints, xSprint, 80);
-      assignColumnY(colTasks, xTask, 55);
-      assignColumnY(colArtifacts, xArtifact, 48);
+      if (colProject.length > 0) {
+        const projCount = colProject.length;
+        const projSpacingY = 120;
+        const projStartY = -((projCount - 1) * projSpacingY) / 2;
+        colProject.forEach((node, i) => {
+          positions[node.id()] = {
+            x: xProject,
+            y: projStartY + i * projSpacingY,
+          };
+        });
+      }
+
+      if (colSprints.length > 0) {
+        const sprintCount = colSprints.length;
+        const sprintSpacingY = 90;
+        const sprintStartY = -((sprintCount - 1) * sprintSpacingY) / 2;
+        colSprints.forEach((node, i) => {
+          positions[node.id()] = {
+            x: xSprint,
+            y: sprintStartY + i * sprintSpacingY,
+          };
+        });
+      }
+
+      if (colArtifacts.length > 0) {
+        const artCount = colArtifacts.length;
+        const artSpacingY = 48;
+        const artStartY = -((artCount - 1) * artSpacingY) / 2;
+        colArtifacts.forEach((node, i) => {
+          const linkedTaskIdx = artifactTaskMap.get(node.id());
+          let targetY = artStartY + i * artSpacingY;
+          if (linkedTaskIdx !== undefined && colTasks[linkedTaskIdx]) {
+            targetY = taskYMap.get(colTasks[linkedTaskIdx].id()) ?? targetY;
+          }
+          positions[node.id()] = {
+            x: xArtifact,
+            y: targetY,
+          };
+        });
+      }
 
       const layoutConfig: LayoutOptions = {
         name: "preset",
@@ -299,6 +436,13 @@ export function CytoscapeGraphCanvas({
           }
         }
 
+        const avatarUrl =
+          n.avatar ||
+          (n.type === "STUDENT"
+            ? `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(n.subLabel || n.label)}`
+            : undefined);
+        const hasImage = Boolean(avatarUrl && avatarUrl.trim().length > 0);
+
         return {
           group: "nodes" as const,
           data: {
@@ -315,7 +459,9 @@ export function CytoscapeGraphCanvas({
             width,
             height,
             isAnomaly,
-            originalData: n,
+            hasImage,
+            bgImage: hasImage ? avatarUrl : undefined,
+            originalData: { ...n, avatar: avatarUrl || n.avatar },
           },
         };
       });
@@ -529,6 +675,16 @@ export function CytoscapeGraphCanvas({
           },
         },
         {
+          selector: "node[?hasImage]",
+          style: {
+            "background-image": "data(bgImage)",
+            "background-fit": "cover",
+            "background-clip": "node",
+            "background-opacity": 1,
+            "background-image-crossorigin": "anonymous",
+          },
+        },
+        {
           selector: 'node[nodeType = "COMMIT"]',
           style: {
             "font-family": "monospace",
@@ -575,21 +731,46 @@ export function CytoscapeGraphCanvas({
             "target-arrow-color": "data(arrowColor)",
             "target-arrow-shape": "triangle",
             "curve-style": "bezier",
-            "control-point-step-size": 40,
-            "arrow-scale": 1.1,
-            opacity: 0.8,
+            "control-point-step-size": 24,
+            "arrow-scale": 0.95,
+            opacity: 0.7,
             "line-style": "data(lineStyle)" as unknown as cytoscape.Css.LineStyle,
             label: showEdgeLabels ? "data(label)" : "",
-            "font-size": "9px",
-            "font-weight": 700,
+            "font-size": "8px",
+            "font-weight": 600,
             "text-rotation": "autorotate",
-            "text-background-opacity": 0.95,
+            "text-background-opacity": 0.85,
             "text-background-color": "#ffffff",
-            "text-background-padding": "2px",
+            "text-background-padding": "1.5px",
             "text-background-shape": "roundrectangle",
-            color: "#475569",
+            color: "#64748b",
             "transition-property": "line-color, target-arrow-color, width, opacity",
             "transition-duration": 0.2,
+          },
+        },
+        {
+          selector: 'edge[label = "HAS_SPRINT"]',
+          style: {
+            "curve-style": "unbundled-bezier",
+            "control-point-distances": [-90],
+            "control-point-weights": [0.5],
+            "line-style": "dashed",
+            "line-color": "#06b6d4",
+            "target-arrow-color": "#0891b2",
+          },
+        },
+        {
+          selector: "edge.highlighted",
+          style: {
+            opacity: 1,
+            width: 3.5,
+            label: "data(label)",
+            "font-size": "9px",
+            "font-weight": 700,
+            color: "#0f172a",
+            "text-background-opacity": 1,
+            "text-background-color": "#f8fafc",
+            "z-index": 99,
           },
         },
       ],

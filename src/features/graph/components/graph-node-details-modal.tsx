@@ -11,18 +11,25 @@ import {
   CalendarIcon,
   ShieldCheckIcon,
   FingerprintIcon,
+  FileCodeIcon,
 } from "lucide-react";
+import { useState, useEffect, useSyncExternalStore } from "react";
+import { createPortal } from "react-dom";
+
+const emptySubscribe = () => () => { };
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import type { CytoscapeNodeData, CanonicalNodeType } from "../types/graph";
 import { parseStudentNodeProfileId } from "../lib/student-profile-id";
+import { CommitDetailModal } from "@/features/student/commits/components/commit-detail-modal";
 
 interface GraphNodeDetailsModalProps {
   nodeData: CytoscapeNodeData | null;
   onClose: () => void;
   onViewContribution?: (studentId: string) => void;
   onFocusNode?: (nodeId: string) => void;
+  projectId?: string | null;
 }
 
 const TYPE_CONFIG: Record<
@@ -48,8 +55,44 @@ export function GraphNodeDetailsModal({
   onClose,
   onViewContribution,
   onFocusNode,
+  projectId,
 }: GraphNodeDetailsModalProps) {
+  const [showCommitDetail, setShowCommitDetail] = useState(false);
+  const mounted = useSyncExternalStore(
+    emptySubscribe,
+    () => true,
+    () => false
+  );
+
+  useEffect(() => {
+    if (!nodeData) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [nodeData, onClose]);
+
   if (!nodeData) return null;
+
+  if (showCommitDetail) {
+    return (
+      <CommitDetailModal
+        isOpen={true}
+        onClose={() => setShowCommitDetail(false)}
+        projectId={projectId}
+        gitCommitId={nodeData.id.startsWith("commit:") ? nodeData.id.slice(7) : nodeData.id}
+        fallbackCommit={{
+          commitHash: nodeData.subLabel || nodeData.label,
+          commitMessage: nodeData.label,
+          authorName: "",
+          committedDate: "",
+        }}
+      />
+    );
+  }
+
+  if (!mounted || typeof document === "undefined") return null;
 
   const config = TYPE_CONFIG[nodeData.type] || {
     label: nodeData.type,
@@ -58,17 +101,37 @@ export function GraphNodeDetailsModal({
   };
   const IconComponent = config.icon;
   const isStudent = nodeData.type === "STUDENT";
+  const avatarUrl =
+    nodeData.avatar ||
+    (isStudent
+      ? `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(nodeData.subLabel || nodeData.label)}`
+      : undefined);
 
-  return (
-    <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in-0 duration-200">
-      <div className="bg-card border border-border/80 rounded-3xl w-full max-w-lg max-h-[92vh] flex flex-col shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
+  return createPortal(
+    <div
+      className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in-0 duration-200"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+    >
+      <div
+        className="bg-card border border-border/80 rounded-3xl w-full max-w-lg max-h-[92vh] flex flex-col shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200"
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className="p-5 border-b border-border/60 flex items-center justify-between bg-muted/30 shrink-0">
           <div className="flex items-center gap-3">
-            <div
-              className={`w-10 h-10 rounded-2xl flex items-center justify-center text-white shadow-xs ${config.bgClass}`}
-            >
-              <IconComponent className="w-5 h-5" />
-            </div>
+            {isStudent && avatarUrl ? (
+              <Avatar className="size-10 rounded-2xl border border-border/60">
+                <AvatarImage src={avatarUrl} alt={nodeData.label} />
+                <AvatarFallback>{nodeData.label.slice(0, 2).toUpperCase()}</AvatarFallback>
+              </Avatar>
+            ) : (
+              <div
+                className={`w-10 h-10 rounded-2xl flex items-center justify-center text-white shadow-xs ${config.bgClass}`}
+              >
+                <IconComponent className="w-5 h-5" />
+              </div>
+            )}
             <div>
               <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
                 {config.label}
@@ -91,7 +154,7 @@ export function GraphNodeDetailsModal({
           {isStudent && (
             <div className="flex items-center gap-4 p-3.5 rounded-2xl bg-muted/40 border border-border/60">
               <Avatar className="h-12 w-12 border border-border">
-                {nodeData.avatar && <AvatarImage src={nodeData.avatar} alt={nodeData.label} />}
+                {avatarUrl && <AvatarImage src={avatarUrl} alt={nodeData.label} />}
                 <AvatarFallback>{nodeData.label.slice(0, 2).toUpperCase()}</AvatarFallback>
               </Avatar>
               <div className="flex-1 min-w-0">
@@ -206,12 +269,24 @@ export function GraphNodeDetailsModal({
                 Tập trung Task & Xem Commit đối chiếu
               </Button>
             )}
+            {nodeData.type === "COMMIT" && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowCommitDetail(true)}
+                className="h-9 text-xs rounded-xl cursor-pointer text-purple-600 dark:text-purple-400 border-purple-500/30 hover:bg-purple-500/10 gap-1.5"
+              >
+                <FileCodeIcon className="w-3.5 h-3.5" />
+                Xem Code Diff chi tiết
+              </Button>
+            )}
           </div>
           <Button onClick={onClose} size="sm" className="h-9 text-xs rounded-xl px-5 cursor-pointer">
             Đóng
           </Button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
