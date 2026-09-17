@@ -9,6 +9,9 @@ import type {
   ProjectGitBranchListResponse,
   ProjectTaskCommitLinkQuery,
   ProjectTaskCommitLinksResponse,
+  ProjectCommitDetailResponse,
+  UpdateStudentProjectRequest,
+  StudentTeamProjectResponse,
 } from "../types/student-project";
 
 const TASK_COMMIT_LINK_PAGE_SIZE = 200;
@@ -163,6 +166,45 @@ export class ProjectProjectionService {
     const cleanStudentId = studentId.trim();
     const res = await apiClient.get<ProjectMemberProgressResponse>(
       `/api/projects/${encodeURIComponent(cleanProjectId)}/progress/members/${encodeURIComponent(cleanStudentId)}`
+    );
+    return res.data;
+  }
+
+  static async getProjectCommitDetail(
+    projectId: string,
+    gitCommitId: string
+  ): Promise<ProjectCommitDetailResponse> {
+    if (!projectId || projectId.trim() === "") {
+      throw new Error("Throw ValidationException: Project ID is required");
+    }
+    if (!gitCommitId || gitCommitId.trim() === "") {
+      throw new Error("Throw ValidationException: Git Commit ID is required");
+    }
+    const cleanProjectId = projectId.trim();
+    const cleanGitCommitId = gitCommitId.trim();
+    const res = await apiClient.get<ProjectCommitDetailResponse>(
+      `/api/projects/${encodeURIComponent(cleanProjectId)}/commits/${encodeURIComponent(cleanGitCommitId)}`
+    );
+    return res.data;
+  }
+
+  static async patchProject(
+    projectId: string,
+    payload: UpdateStudentProjectRequest
+  ): Promise<StudentTeamProjectResponse> {
+    if (!projectId || projectId.trim() === "") {
+      throw new Error("Throw ValidationException: Project ID is required");
+    }
+    if (!payload || !payload.name || payload.name.trim() === "") {
+      throw new Error("Throw ValidationException: Project name is required");
+    }
+    const cleanProjectId = projectId.trim();
+    const res = await apiClient.patch<StudentTeamProjectResponse>(
+      `/api/projects/${encodeURIComponent(cleanProjectId)}`,
+      {
+        name: payload.name.trim(),
+        description: (payload.description || "").trim(),
+      }
     );
     return res.data;
   }

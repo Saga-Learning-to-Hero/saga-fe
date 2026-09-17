@@ -440,6 +440,7 @@ export function CommitsView() {
             selectedRepoName={selectedRepo.fullPath}
             selectedBranchName={effectiveSelectedBranchName}
             courseId={courseId}
+            projectId={projectId}
           />
         </>
       )}

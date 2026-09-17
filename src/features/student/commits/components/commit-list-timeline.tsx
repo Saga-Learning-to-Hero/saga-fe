@@ -9,17 +9,20 @@ import {
   CalendarIcon,
   NetworkIcon,
   FolderGit2Icon,
+  FileCodeIcon,
 } from "lucide-react";
 import Link from "next/link";
 import type { CommitItem } from "../types/commits";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { CommitDetailModal } from "./commit-detail-modal";
 
 interface CommitListTimelineProps {
   commits: CommitItem[];
   selectedRepoName: string;
   selectedBranchName: string;
   courseId: string;
+  projectId?: string | null;
 }
 
 export function CommitListTimeline({
@@ -27,8 +30,10 @@ export function CommitListTimeline({
   selectedRepoName,
   selectedBranchName,
   courseId,
+  projectId,
 }: CommitListTimelineProps) {
   const [copiedHash, setCopiedHash] = useState<string | null>(null);
+  const [activeCommit, setActiveCommit] = useState<CommitItem | null>(null);
 
   const handleCopyHash = (shortHash: string) => {
     navigator.clipboard.writeText(shortHash);
@@ -131,7 +136,10 @@ export function CommitListTimeline({
                               </Badge>
                             )}
 
-                            <p className="text-xs sm:text-sm font-semibold text-foreground leading-snug group-hover:text-primary transition-colors">
+                            <p
+                              onClick={() => setActiveCommit(commit)}
+                              className="text-xs sm:text-sm font-semibold text-foreground leading-snug group-hover:text-primary transition-colors cursor-pointer hover:underline"
+                            >
                               {commit.message}
                             </p>
                           </div>
@@ -207,6 +215,15 @@ export function CommitListTimeline({
                         )}
                       </button>
 
+                      <button
+                        type="button"
+                        onClick={() => setActiveCommit(commit)}
+                        className="p-1.5 rounded-xl border border-border/60 bg-muted/40 hover:bg-muted text-muted-foreground hover:text-primary transition-all shadow-2xs cursor-pointer"
+                        title="Xem chi tiết mã nguồn và diff (Code Diff)"
+                      >
+                        <FileCodeIcon className="w-3.5 h-3.5" />
+                      </button>
+
                       <Link
                         href={`/student/graph?courseId=${encodeURIComponent(courseId)}&commitHash=${encodeURIComponent(commit.hash)}`}
                         title="Xem nhánh minh chứng trên Đồ thị Neo4j"
@@ -234,6 +251,15 @@ export function CommitListTimeline({
           </div>
         );
       })}
+
+      <CommitDetailModal
+        isOpen={Boolean(activeCommit)}
+        onClose={() => setActiveCommit(null)}
+        projectId={projectId || null}
+        gitCommitId={activeCommit?.id || null}
+        fallbackShortHash={activeCommit?.shortHash}
+        fallbackMessage={activeCommit?.message}
+      />
     </div>
   );
 }

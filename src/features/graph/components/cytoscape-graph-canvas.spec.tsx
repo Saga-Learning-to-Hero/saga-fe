@@ -168,4 +168,24 @@ describe("CytoscapeGraphCanvas", () => {
 
     expect(screen.queryByText("Chú Giải Đồ Thị Neo4j")).toBeNull();
   });
+
+  it("UTCID07 - [N] Normal: Node co avatar se co hasImage = true va bgImage hop le", () => {
+    const nodes: Array<{ data: CytoscapeNodeData }> = [
+      {
+        data: {
+          id: "n-stu-avatar",
+          label: "Le Hoang Hai",
+          type: "STUDENT",
+          avatar: "https://example.com/avatar.jpg",
+        },
+      },
+    ];
+
+    render(<CytoscapeGraphCanvas nodes={nodes} edges={[]} />);
+
+    const passedConfig = vi.mocked(cytoscape).mock.calls[0][0] as cytoscape.CytoscapeOptions;
+    const nodeElement = (passedConfig?.elements as Array<{ data: Record<string, unknown> }>)[0];
+    expect(nodeElement.data.hasImage).toBe(true);
+    expect(nodeElement.data.bgImage).toBe("https://example.com/avatar.jpg");
+  });
 });

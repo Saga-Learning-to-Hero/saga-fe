@@ -323,8 +323,7 @@ describe("TraceabilityGraphView", () => {
       const user = userEvent.setup();
       renderView();
 
-      await user.click(screen.getByRole("button", { name: /Bộ lọc/ }));
-      await user.click(screen.getByLabelText("Thành viên"));
+      await user.click(screen.getByText("Tất cả thành viên"));
       await user.click(screen.getAllByText("Tran Van B")[0]);
 
       expect(graphQueryMock).toHaveBeenCalledWith(
@@ -364,8 +363,7 @@ describe("TraceabilityGraphView", () => {
       const user = userEvent.setup();
       const view = renderView();
 
-      await user.click(screen.getByRole("button", { name: /Bộ lọc/ }));
-      await user.click(screen.getByLabelText("Thành viên"));
+      await user.click(screen.getByText("Tất cả thành viên"));
       await user.click(screen.getAllByText("Tran Van B")[0]);
 
       expect(graphQueryMock).toHaveBeenCalledWith(

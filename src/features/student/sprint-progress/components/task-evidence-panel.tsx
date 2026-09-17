@@ -48,6 +48,7 @@ interface TaskEvidencePanelProps {
   isOwnerOrLeader?: boolean;
   externalCommitShas?: string;
   onRequestCommitSelection?: () => void;
+  onConfirmationSuccess?: () => void;
 }
 
 function formatFileSize(bytes: number): string {
@@ -64,6 +65,7 @@ export function TaskEvidencePanel({
   isOwnerOrLeader = true,
   externalCommitShas = "",
   onRequestCommitSelection,
+  onConfirmationSuccess,
 }: TaskEvidencePanelProps) {
   const [newUrl, setNewUrl] = useState("");
   const [newTitle, setNewTitle] = useState("");
@@ -79,6 +81,8 @@ export function TaskEvidencePanel({
     id: string;
     evidenceHash: string;
     state: string;
+    commitShas?: string[];
+    pullRequests?: string[];
   } | null>(null);
   const [confirmError, setConfirmError] = useState<string | null>(null);
   const [isStepUpModalOpen, setIsStepUpModalOpen] = useState(false);
@@ -189,7 +193,14 @@ export function TaskEvidencePanel({
     if (!pendingContributionPayload) return;
     try {
       const res = await confirmContributionMutation.mutateAsync(pendingContributionPayload);
-      setConfirmResult(res);
+      setConfirmResult({
+        ...res,
+        commitShas: pendingContributionPayload.commitShas,
+        pullRequests: pendingContributionPayload.pullRequests,
+      });
+      setManualCommitShas("");
+      setConfirmPrs("");
+      onConfirmationSuccess?.();
       setPendingContributionPayload(null);
       toast.success("Xác thực nâng cao và xác nhận đóng góp thành công!");
     } catch (err: unknown) {
@@ -215,7 +226,15 @@ export function TaskEvidencePanel({
 
     try {
       const res = await confirmContributionMutation.mutateAsync(payload);
-      setConfirmResult(res);
+      setConfirmResult({
+        ...res,
+        commitShas: payload.commitShas,
+        pullRequests: payload.pullRequests,
+      });
+      setManualCommitShas("");
+      setConfirmPrs("");
+      onConfirmationSuccess?.();
+      toast.success("Xác nhận đóng góp thành công!");
     } catch (err: unknown) {
       if (isStepUpRequiredError(err)) {
         setPendingContributionPayload(payload);
@@ -628,17 +647,76 @@ export function TaskEvidencePanel({
         )}
 
         {confirmResult && (
-          <div className="p-3 bg-emerald-500/10 border border-emerald-500/30 rounded-xl space-y-1 text-xs">
-            <div className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 font-semibold">
-              <CheckCircle2Icon className="w-4 h-4" />
-              <span>Đã xác nhận đóng góp thành công</span>
+          <div className="p-3.5 bg-emerald-500/10 border border-emerald-500/30 rounded-2xl space-y-2 text-xs">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 font-bold">
+                <CheckCircle2Icon className="w-4 h-4" />
+                <span>Đã xác nhận đóng góp thành công</span>
+              </div>
+              <Badge className="bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 font-mono text-[10px] border-emerald-500/30">
+                {confirmResult.state || "CONFIRMED"}
+              </Badge>
             </div>
-            <p className="font-mono text-[11px] text-foreground truncate">
-              Mã đối soát (Evidence Hash): {confirmResult.evidenceHash}
-            </p>
-            <span className="inline-block font-mono text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-700 dark:text-emerald-300">
-              Trạng thái: {confirmResult.state}
-            </span>
+
+            <div className="p-2.5 rounded-xl bg-background/80 border border-emerald-500/20 space-y-1.5 font-mono text-[11px]">
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-muted-foreground text-[10px] uppercase font-bold">Mã đối soát (Evidence Hash):</span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    void navigator.clipboard.writeText(confirmResult.evidenceHash);
+                    toast.success("Đã sao chép mã đối soát!");
+                  }}
+                  className="text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 font-mono text-[10px] underline cursor-pointer"
+                >
+                  Sao chép
+                </button>
+              </div>
+              <p className="text-foreground break-all select-all font-semibold">
+                {confirmResult.evidenceHash}
+              </p>
+            </div>
+
+            {confirmResult.commitShas && confirmResult.commitShas.length > 0 && (
+              <div className="space-y-1">
+                <span className="text-[10px] text-muted-foreground uppercase font-bold block">
+                  Commit đã xác nhận ({confirmResult.commitShas.length}):
+                </span>
+                <div className="flex flex-wrap gap-1">
+                  {confirmResult.commitShas.map((sha) => (
+                    <Badge
+                      key={sha}
+                      variant="outline"
+                      className="font-mono text-[10px] bg-background border-emerald-500/30 text-emerald-700 dark:text-emerald-300"
+                    >
+                      {sha.slice(0, 7)}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {confirmResult.pullRequests && confirmResult.pullRequests.length > 0 && (
+              <div className="space-y-1">
+                <span className="text-[10px] text-muted-foreground uppercase font-bold block">
+                  Pull Requests ({confirmResult.pullRequests.length}):
+                </span>
+                <div className="flex flex-wrap gap-1">
+                  {confirmResult.pullRequests.map((pr, idx) => (
+                    <a
+                      key={idx}
+                      href={pr}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex items-center gap-1 font-mono text-[10px] text-sky-600 dark:text-sky-400 hover:underline bg-background px-2 py-0.5 rounded border border-border"
+                    >
+                      <span>{pr}</span>
+                      <ExternalLinkIcon className="w-2.5 h-2.5" />
+                    </a>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>

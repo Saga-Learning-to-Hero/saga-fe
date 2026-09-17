@@ -10,12 +10,15 @@ import {
   MousePointerClickIcon,
   UserIcon,
   XIcon,
+  FileCodeIcon,
+  FolderGit2Icon,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { isDoneWithoutLinkedCommit } from "../lib/pipeline-mapper";
 import type { PipelineCommit, PipelineTask } from "../types/pipeline";
+import { CommitDetailModal } from "@/features/student/commits/components/commit-detail-modal";
 
 interface PipelineTaskInspectorProps {
   selectedTask: PipelineTask | null;
@@ -25,6 +28,7 @@ interface PipelineTaskInspectorProps {
   onRetry?: () => void;
   onClearSelection: () => void;
   className?: string;
+  projectId?: string | null;
 }
 
 function statusClass(status: string): string {
@@ -64,8 +68,10 @@ export function PipelineTaskInspector({
   onRetry,
   onClearSelection,
   className,
+  projectId,
 }: PipelineTaskInspectorProps) {
   const [showAllForTaskId, setShowAllForTaskId] = useState<string | null>(null);
+  const [selectedCommit, setSelectedCommit] = useState<PipelineCommit | null>(null);
   const showAllCommits = Boolean(selectedTask && showAllForTaskId === selectedTask.id);
 
   if (!selectedTask) {
@@ -194,31 +200,58 @@ export function PipelineTaskInspector({
             {displayedCommits.map((commit) => (
               <div
                 key={commit.id}
-                className="rounded-2xl border border-border/70 bg-card/90 p-3 shadow-2xs transition-colors hover:border-border"
+                className="group rounded-2xl border border-border/70 bg-card/90 p-3 shadow-2xs transition-colors hover:border-border hover:bg-muted/30"
               >
                 <div className="flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-1.5">
-                    <span className="font-mono text-[11px] font-bold text-primary">
+                  <div className="flex items-center gap-1.5 min-w-0 flex-1">
+                    <span className="font-mono text-[11px] font-bold text-primary shrink-0">
                       {commit.shortHash}
                     </span>
                     {commit.headRef && (
-                      <Badge variant="outline" className="flex items-center gap-1 px-1.5 py-0 text-[10px] font-mono text-muted-foreground">
-                        <GitBranchIcon className="size-2.5" />
-                        <span className="max-w-[120px] truncate">{commit.headRef}</span>
+                      <Badge
+                        variant="outline"
+                        className="flex items-center gap-1 px-1.5 py-0 text-[10px] font-mono text-muted-foreground truncate max-w-[130px] shrink-0"
+                        title={commit.headRef}
+                      >
+                        <GitBranchIcon className="size-2.5 shrink-0 text-muted-foreground/70" />
+                        <span className="truncate">{commit.headRef}</span>
                       </Badge>
                     )}
                   </div>
-                  <span className="truncate text-[10px] text-muted-foreground">
-                    {commit.repositoryFullName}
-                  </span>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setSelectedCommit(commit)}
+                    className="h-6 px-2 text-[10px] font-bold text-purple-600 dark:text-purple-400 bg-purple-500/10 border-purple-500/25 hover:bg-purple-500/20 hover:border-purple-500/40 cursor-pointer gap-1 shrink-0 rounded-lg shadow-2xs transition-colors"
+                    title="Xem chi tiết thay đổi code diff"
+                  >
+                    <FileCodeIcon className="size-3" />
+                    <span>Diff</span>
+                  </Button>
                 </div>
-                <p className="mt-1 line-clamp-2 text-xs font-semibold text-foreground">
+
+                {commit.repositoryFullName && (
+                  <div className="mt-1 flex items-center gap-1 text-[10px] text-muted-foreground min-w-0">
+                    <FolderGit2Icon className="size-2.5 shrink-0 opacity-70" />
+                    <span className="truncate font-mono" title={commit.repositoryFullName}>
+                      {commit.repositoryFullName}
+                    </span>
+                  </div>
+                )}
+
+                <p className="mt-1.5 line-clamp-2 text-xs font-semibold text-foreground leading-snug">
                   {commit.message}
                 </p>
-                <div className="mt-1.5 flex items-center justify-between text-[11px] text-muted-foreground">
-                  <span>{commit.authorLabel}</span>
+
+                <div className="mt-2 flex items-center justify-between text-[11px] text-muted-foreground pt-1.5 border-t border-border/40">
+                  <span className="truncate font-medium max-w-[180px]" title={commit.authorLabel}>
+                    {commit.authorLabel}
+                  </span>
                   {commit.committedAt && (
-                    <span className="text-[10px]">{formatCommitDate(commit.committedAt)}</span>
+                    <span className="text-[10px] font-mono shrink-0 ml-2">
+                      {formatCommitDate(commit.committedAt)}
+                    </span>
                   )}
                 </div>
               </div>
@@ -244,6 +277,21 @@ export function PipelineTaskInspector({
           </div>
         )}
       </div>
+
+      {selectedCommit && (
+        <CommitDetailModal
+          isOpen={Boolean(selectedCommit)}
+          onClose={() => setSelectedCommit(null)}
+          projectId={projectId}
+          gitCommitId={selectedCommit.id}
+          fallbackCommit={{
+            commitHash: selectedCommit.sha,
+            commitMessage: selectedCommit.message,
+            authorName: selectedCommit.authorLabel,
+            committedDate: selectedCommit.committedAt,
+          }}
+        />
+      )}
     </div>
   );
 }

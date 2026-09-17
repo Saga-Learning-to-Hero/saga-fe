@@ -18,6 +18,7 @@ export interface PipelineWorkspaceProps {
   isLoadingCommits: boolean;
   errorMessage?: string | null;
   onRetryCommits: () => void;
+  projectId?: string | null;
 }
 
 export function PipelineWorkspace({
@@ -29,6 +30,7 @@ export function PipelineWorkspace({
   isLoadingCommits,
   errorMessage,
   onRetryCommits,
+  projectId,
 }: PipelineWorkspaceProps) {
   const [pipelineSubView, setPipelineSubView] = useState<"FLOW" | "MATRIX">("FLOW");
   const [isMobileInspectorOpen, setIsMobileInspectorOpen] = useState(false);
@@ -54,8 +56,8 @@ export function PipelineWorkspace({
             type="button"
             onClick={() => setPipelineSubView("FLOW")}
             className={`flex cursor-pointer items-center gap-1.5 rounded-lg px-3 py-1.5 transition-all ${pipelineSubView === "FLOW"
-                ? "bg-card text-foreground shadow-2xs"
-                : "text-muted-foreground hover:text-foreground"
+              ? "bg-card text-foreground shadow-2xs"
+              : "text-muted-foreground hover:text-foreground"
               }`}
           >
             <SparklesIcon className="size-3.5 text-primary" />
@@ -65,8 +67,8 @@ export function PipelineWorkspace({
             type="button"
             onClick={() => setPipelineSubView("MATRIX")}
             className={`flex cursor-pointer items-center gap-1.5 rounded-lg px-3 py-1.5 transition-all ${pipelineSubView === "MATRIX"
-                ? "bg-card text-foreground shadow-2xs"
-                : "text-muted-foreground hover:text-foreground"
+              ? "bg-card text-foreground shadow-2xs"
+              : "text-muted-foreground hover:text-foreground"
               }`}
           >
             <TableIcon className="size-3.5 text-primary" />
@@ -112,6 +114,7 @@ export function PipelineWorkspace({
             errorMessage={errorMessage ?? null}
             onRetry={onRetryCommits}
             onClearSelection={() => onSelectTask(null)}
+            projectId={projectId}
           />
         </aside>
       </div>
@@ -125,6 +128,7 @@ export function PipelineWorkspace({
               isLoadingCommits={isLoadingCommits}
               errorMessage={errorMessage ?? null}
               onRetry={onRetryCommits}
+              projectId={projectId}
               onClearSelection={() => {
                 onSelectTask(null);
                 setIsMobileInspectorOpen(false);
