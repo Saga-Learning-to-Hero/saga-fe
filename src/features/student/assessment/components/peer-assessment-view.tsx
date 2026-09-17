@@ -661,7 +661,7 @@ export function PeerAssessmentView() {
                       Danh sách thành viên cần đánh giá ({candidates.length})
                     </h2>
                     <p className="mt-0.5 text-[11px] text-muted-foreground">
-                      Chấm điểm và phản hồi đóng góp cho các thành viên trong nhóm dự án
+                      Chấm điểm và phản hồi đóng góp công sức cho các thành viên cùng thực hiện Sprint
                     </p>
                   </div>
                   <Badge

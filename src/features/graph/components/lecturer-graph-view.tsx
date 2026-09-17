@@ -653,7 +653,7 @@ export function LecturerGraphView({
           nodes={displayGraphData.nodes}
           edges={displayGraphData.edges}
           onSelectNode={(node) => setSelectedGraphNode(node)}
-          layoutName="breadthfirst"
+          layoutName={neo4jTab === "PEER_REVIEW" ? "circle" : "breadthfirst"}
           isUpdating={graphQuery.isFetching && !graphQuery.isLoading}
         />
         <GraphStatsSummary

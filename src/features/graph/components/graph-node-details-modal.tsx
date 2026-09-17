@@ -181,15 +181,6 @@ export function GraphNodeDetailsModal({
           <div className="grid grid-cols-2 gap-2.5 text-xs">
             <div className="p-3 rounded-xl bg-muted/30 border border-border/50">
               <span className="text-[10px] text-muted-foreground uppercase font-bold block mb-1">
-                Node ID
-              </span>
-              <span className="font-mono font-bold text-foreground text-[11px] break-all">
-                {nodeData.id}
-              </span>
-            </div>
-
-            <div className="p-3 rounded-xl bg-muted/30 border border-border/50">
-              <span className="text-[10px] text-muted-foreground uppercase font-bold block mb-1">
                 Phân loại
               </span>
               <span className="font-mono font-bold text-primary">{nodeData.type}</span>

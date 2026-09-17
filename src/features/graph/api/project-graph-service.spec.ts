@@ -264,5 +264,20 @@ describe("ProjectGraphService", () => {
       });
       expect(result).toEqual(mockData);
     });
+
+    it("UTCID19 - [N] Normal: usedCriteriaOnly=true sinh query param usedCriteriaOnly=true tuong minh", async () => {
+      const mockData = { nodes: [], edges: [] };
+      vi.mocked(apiClient.get).mockResolvedValueOnce({ data: mockData });
+
+      const result = await ProjectGraphService.getStudentContributionGraph("p-1", "3f2a5b8c-1234-4567-8901-abcdef123456", {
+        usedCriteriaOnly: true,
+      });
+
+      expect(apiClient.get).toHaveBeenCalledWith(
+        "/api/projects/p-1/students/3f2a5b8c-1234-4567-8901-abcdef123456/graph/contribution?usedCriteriaOnly=true",
+        { signal: undefined }
+      );
+      expect(result).toEqual(mockData);
+    });
   });
 });

@@ -132,7 +132,10 @@ export function CytoscapeGraphCanvas({
       const colStudents: cytoscape.NodeSingular[] = [];
       const colSprints: cytoscape.NodeSingular[] = [];
       const colTasks: cytoscape.NodeSingular[] = [];
-      const colArtifacts: cytoscape.NodeSingular[] = [];
+      const colCriteria: cytoscape.NodeSingular[] = [];
+      const colIdentities: cytoscape.NodeSingular[] = [];
+      const colCommits: cytoscape.NodeSingular[] = [];
+      const colOther: cytoscape.NodeSingular[] = [];
 
       allNodes.forEach((node) => {
         const type = node.data("nodeType");
@@ -144,187 +147,339 @@ export function CytoscapeGraphCanvas({
           colSprints.push(node);
         } else if (type === "TASK") {
           colTasks.push(node);
+        } else if (type === "CRITERION") {
+          colCriteria.push(node);
+        } else if (type === "IDENTITY") {
+          colIdentities.push(node);
+        } else if (type === "COMMIT") {
+          colCommits.push(node);
         } else {
-          colArtifacts.push(node);
+          colOther.push(node);
         }
       });
 
-      colProject.sort((a, b) => {
-        const typeA = a.data("nodeType");
-        const typeB = b.data("nodeType");
-        if (typeA === "PROJECT" && typeB !== "PROJECT") return -1;
-        if (typeB === "PROJECT" && typeA !== "PROJECT") return 1;
-        return 0;
-      });
-
-      colStudents.sort((a, b) => {
-        const labelA = (a.data("label") || "") as string;
-        const labelB = (b.data("label") || "") as string;
-        return labelA.localeCompare(labelB, "vi", { sensitivity: "base" });
-      });
-
-      const studentIndexMap = new Map<string, number>();
-      colStudents.forEach((studentNode, idx) => {
-        studentIndexMap.set(studentNode.id(), idx);
-      });
-
-      const taskAssigneeIndexMap = new Map<string, number>();
-      const taskConnectedEdges = cyInstance.edges();
-      taskConnectedEdges.forEach((edge) => {
-        const label = edge.data("label");
-        const srcId = edge.source().id();
-        const tgtId = edge.target().id();
-
-        if (label === "ASSIGNED_TO") {
-          if (studentIndexMap.has(srcId)) {
-            taskAssigneeIndexMap.set(tgtId, studentIndexMap.get(srcId)!);
-          } else if (studentIndexMap.has(tgtId)) {
-            taskAssigneeIndexMap.set(srcId, studentIndexMap.get(tgtId)!);
-          }
-        }
-      });
-
-      colTasks.sort((a, b) => {
-        const studentIdxA = taskAssigneeIndexMap.has(a.id())
-          ? taskAssigneeIndexMap.get(a.id())!
-          : 999;
-        const studentIdxB = taskAssigneeIndexMap.has(b.id())
-          ? taskAssigneeIndexMap.get(b.id())!
-          : 999;
-
-        if (studentIdxA !== studentIdxB) {
-          return studentIdxA - studentIdxB;
-        }
-
-        const labelA = (a.data("label") || "") as string;
-        const labelB = (b.data("label") || "") as string;
-        return labelA.localeCompare(labelB, "vi", { numeric: true, sensitivity: "base" });
-      });
-
-      const taskIndexMap = new Map<string, number>();
-      colTasks.forEach((taskNode, idx) => {
-        taskIndexMap.set(taskNode.id(), idx);
-      });
-
-      const artifactTaskMap = new Map<string, number>();
-      taskConnectedEdges.forEach((edge) => {
-        const label = edge.data("label");
-        const srcId = edge.source().id();
-        const tgtId = edge.target().id();
-
-        if (label === "EVIDENCED_BY" || label === "IMPLEMENTS") {
-          if (taskIndexMap.has(srcId)) {
-            artifactTaskMap.set(tgtId, taskIndexMap.get(srcId)!);
-          } else if (taskIndexMap.has(tgtId)) {
-            artifactTaskMap.set(srcId, taskIndexMap.get(tgtId)!);
-          }
-        }
-      });
-
-      colArtifacts.sort((a, b) => {
-        const taskIdxA = artifactTaskMap.has(a.id()) ? artifactTaskMap.get(a.id())! : 999;
-        const taskIdxB = artifactTaskMap.has(b.id()) ? artifactTaskMap.get(b.id())! : 999;
-        if (taskIdxA !== taskIdxB) {
-          return taskIdxA - taskIdxB;
-        }
-        const labelA = (a.data("label") || "") as string;
-        const labelB = (b.data("label") || "") as string;
-        return labelA.localeCompare(labelB, "vi", { numeric: true, sensitivity: "base" });
-      });
-
-      const hasProject = colProject.length > 0;
-      const xProject = -540;
-      const xStudent = hasProject ? -260 : -360;
-      const xTask = hasProject ? 80 : 40;
-      const xSprint = hasProject ? 440 : 400;
-      const xArtifact = hasProject ? 740 : 700;
+      const isAttributionGraph =
+        colTasks.length === 0 &&
+        (colIdentities.length > 0 || (colCommits.length > 0 && colStudents.length > 0));
+      const isPeerReviewGraph =
+        allNodes.length > 0 &&
+        colStudents.length === allNodes.length &&
+        colTasks.length === 0 &&
+        colCommits.length === 0;
 
       const positions: Record<string, { x: number; y: number }> = {};
 
-      const taskSpacingY = 58;
-      const totalTasksHeight = (colTasks.length - 1) * taskSpacingY;
-      const startTaskY = -totalTasksHeight / 2;
-      const taskYMap = new Map<string, number>();
+      if (isAttributionGraph) {
+        colStudents.sort((a, b) => {
+          const labelA = (a.data("label") || "") as string;
+          const labelB = (b.data("label") || "") as string;
+          return labelA.localeCompare(labelB, "vi", { sensitivity: "base" });
+        });
 
-      colTasks.forEach((node, i) => {
-        const y = startTaskY + i * taskSpacingY;
-        positions[node.id()] = { x: xTask, y };
-        taskYMap.set(node.id(), y);
-      });
+        const studentYMap = new Map<string, number>();
+        const studentIndexMap = new Map<string, number>();
+        const sSpacing = Math.max(80, Math.min(130, 600 / Math.max(colStudents.length, 1)));
+        const sStartY = -((colStudents.length - 1) * sSpacing) / 2;
+        colStudents.forEach((stNode, idx) => {
+          const y = sStartY + idx * sSpacing;
+          studentYMap.set(stNode.id(), y);
+          studentIndexMap.set(stNode.id(), idx);
+          positions[stNode.id()] = { x: 360, y };
+        });
 
-      if (colStudents.length > 0) {
-        const studentYTargets: number[] = [];
-
-        colStudents.forEach((studentNode, sIdx) => {
-          const assignedTasks = colTasks.filter(
-            (t) => taskAssigneeIndexMap.get(t.id()) === sIdx
-          );
-
-          if (assignedTasks.length > 0) {
-            const firstTaskY = taskYMap.get(assignedTasks[0].id()) ?? 0;
-            const lastTaskY = taskYMap.get(assignedTasks[assignedTasks.length - 1].id()) ?? 0;
-            studentYTargets.push((firstTaskY + lastTaskY) / 2);
-          } else {
-            const defaultTotalHeight = (colStudents.length - 1) * 110;
-            const defaultStartY = -defaultTotalHeight / 2;
-            studentYTargets.push(defaultStartY + sIdx * 110);
+        const identityToStudentMap = new Map<string, string>();
+        const commitToIdentityMap = new Map<string, string>();
+        cyInstance.edges().forEach((edge) => {
+          const label = edge.data("label");
+          const srcId = edge.source().id();
+          const tgtId = edge.target().id();
+          if (label === "MAPS_TO") {
+            identityToStudentMap.set(srcId, tgtId);
+          } else if (label === "AUTHORED_BY") {
+            commitToIdentityMap.set(srcId, tgtId);
           }
         });
 
-        const minGap = 90;
-        for (let i = 1; i < studentYTargets.length; i++) {
-          if (studentYTargets[i] < studentYTargets[i - 1] + minGap) {
-            studentYTargets[i] = studentYTargets[i - 1] + minGap;
+        colIdentities.sort((a, b) => {
+          const sIdxA = identityToStudentMap.has(a.id())
+            ? studentIndexMap.get(identityToStudentMap.get(a.id())!) ?? 999
+            : 1000;
+          const sIdxB = identityToStudentMap.has(b.id())
+            ? studentIndexMap.get(identityToStudentMap.get(b.id())!) ?? 999
+            : 1000;
+          if (sIdxA !== sIdxB) return sIdxA - sIdxB;
+          const labelA = (a.data("label") || "") as string;
+          const labelB = (b.data("label") || "") as string;
+          return labelA.localeCompare(labelB, "vi", { sensitivity: "base" });
+        });
+
+        const idSpacing = Math.max(60, Math.min(100, 600 / Math.max(colIdentities.length, 1)));
+        const idStartY = -((colIdentities.length - 1) * idSpacing) / 2;
+        const identityYMap = new Map<string, number>();
+        colIdentities.forEach((idNode, idx) => {
+          const mappedStudentId = identityToStudentMap.get(idNode.id());
+          let targetY = idStartY + idx * idSpacing;
+          if (mappedStudentId && studentYMap.has(mappedStudentId)) {
+            targetY = studentYMap.get(mappedStudentId)!;
+          }
+          identityYMap.set(idNode.id(), targetY);
+        });
+
+        const minIdGap = 65;
+        const idNodesList = [...colIdentities];
+        for (let i = 1; i < idNodesList.length; i++) {
+          const prevY = identityYMap.get(idNodesList[i - 1].id()) ?? 0;
+          const currY = identityYMap.get(idNodesList[i].id()) ?? 0;
+          if (currY < prevY + minIdGap) {
+            identityYMap.set(idNodesList[i].id(), prevY + minIdGap);
           }
         }
-        const studentCenter = (studentYTargets[0] + studentYTargets[studentYTargets.length - 1]) / 2;
-        colStudents.forEach((studentNode, i) => {
+        const firstIdY = identityYMap.get(idNodesList[0]?.id()) ?? 0;
+        const lastIdY = identityYMap.get(idNodesList[idNodesList.length - 1]?.id()) ?? 0;
+        const idCenter = (firstIdY + lastIdY) / 2;
+        colIdentities.forEach((idNode) => {
+          const finalY = (identityYMap.get(idNode.id()) ?? 0) - idCenter;
+          positions[idNode.id()] = { x: 0, y: finalY };
+          identityYMap.set(idNode.id(), finalY);
+        });
+
+        const identityIndexMap = new Map<string, number>();
+        colIdentities.forEach((n, idx) => identityIndexMap.set(n.id(), idx));
+
+        colCommits.sort((a, b) => {
+          const idIdxA = commitToIdentityMap.has(a.id())
+            ? identityIndexMap.get(commitToIdentityMap.get(a.id())!) ?? 999
+            : 1000;
+          const idIdxB = commitToIdentityMap.has(b.id())
+            ? identityIndexMap.get(commitToIdentityMap.get(b.id())!) ?? 999
+            : 1000;
+          if (idIdxA !== idIdxB) return idIdxA - idIdxB;
+          const labelA = (a.data("label") || "") as string;
+          const labelB = (b.data("label") || "") as string;
+          return labelA.localeCompare(labelB, "vi", { sensitivity: "base" });
+        });
+
+        const cSpacing = Math.max(42, Math.min(56, 650 / Math.max(colCommits.length, 1)));
+        const cStartY = -((colCommits.length - 1) * cSpacing) / 2;
+        colCommits.forEach((cNode, idx) => {
+          positions[cNode.id()] = { x: -360, y: cStartY + idx * cSpacing };
+        });
+      } else if (isPeerReviewGraph) {
+        colStudents.sort((a, b) => {
+          const labelA = (a.data("label") || "") as string;
+          const labelB = (b.data("label") || "") as string;
+          return labelA.localeCompare(labelB, "vi", { sensitivity: "base" });
+        });
+        const n = colStudents.length;
+        const radiusX = Math.max(220, Math.min(320, 50 * n));
+        const radiusY = Math.max(160, Math.min(240, 40 * n));
+        colStudents.forEach((studentNode, idx) => {
+          const angle = (2 * Math.PI * idx) / Math.max(n, 1) - Math.PI / 2;
           positions[studentNode.id()] = {
-            x: xStudent,
-            y: studentYTargets[i] - studentCenter,
+            x: Math.round(radiusX * Math.cos(angle)),
+            y: Math.round(radiusY * Math.sin(angle)),
           };
         });
-      }
-
-      if (colProject.length > 0) {
-        const projCount = colProject.length;
-        const projSpacingY = 120;
-        const projStartY = -((projCount - 1) * projSpacingY) / 2;
-        colProject.forEach((node, i) => {
-          positions[node.id()] = {
-            x: xProject,
-            y: projStartY + i * projSpacingY,
-          };
+      } else {
+        colProject.sort((a, b) => {
+          const typeA = a.data("nodeType");
+          const typeB = b.data("nodeType");
+          if (typeA === "PROJECT" && typeB !== "PROJECT") return -1;
+          if (typeB === "PROJECT" && typeA !== "PROJECT") return 1;
+          return 0;
         });
-      }
 
-      if (colSprints.length > 0) {
-        const sprintCount = colSprints.length;
-        const sprintSpacingY = 90;
-        const sprintStartY = -((sprintCount - 1) * sprintSpacingY) / 2;
-        colSprints.forEach((node, i) => {
-          positions[node.id()] = {
-            x: xSprint,
-            y: sprintStartY + i * sprintSpacingY,
-          };
+        colStudents.sort((a, b) => {
+          const labelA = (a.data("label") || "") as string;
+          const labelB = (b.data("label") || "") as string;
+          return labelA.localeCompare(labelB, "vi", { sensitivity: "base" });
         });
-      }
 
-      if (colArtifacts.length > 0) {
-        const artCount = colArtifacts.length;
-        const artSpacingY = 48;
-        const artStartY = -((artCount - 1) * artSpacingY) / 2;
-        colArtifacts.forEach((node, i) => {
-          const linkedTaskIdx = artifactTaskMap.get(node.id());
-          let targetY = artStartY + i * artSpacingY;
-          if (linkedTaskIdx !== undefined && colTasks[linkedTaskIdx]) {
-            targetY = taskYMap.get(colTasks[linkedTaskIdx].id()) ?? targetY;
+        const studentIndexMap = new Map<string, number>();
+        colStudents.forEach((studentNode, idx) => {
+          studentIndexMap.set(studentNode.id(), idx);
+        });
+
+        const taskAssigneeIndexMap = new Map<string, number>();
+        const taskConnectedEdges = cyInstance.edges();
+        taskConnectedEdges.forEach((edge) => {
+          const label = edge.data("label");
+          const srcId = edge.source().id();
+          const tgtId = edge.target().id();
+
+          if (label === "ASSIGNED_TO") {
+            if (studentIndexMap.has(srcId)) {
+              taskAssigneeIndexMap.set(tgtId, studentIndexMap.get(srcId)!);
+            } else if (studentIndexMap.has(tgtId)) {
+              taskAssigneeIndexMap.set(srcId, studentIndexMap.get(tgtId)!);
+            }
           }
-          positions[node.id()] = {
-            x: xArtifact,
-            y: targetY,
-          };
         });
+
+        colTasks.sort((a, b) => {
+          const studentIdxA = taskAssigneeIndexMap.has(a.id())
+            ? taskAssigneeIndexMap.get(a.id())!
+            : 999;
+          const studentIdxB = taskAssigneeIndexMap.has(b.id())
+            ? taskAssigneeIndexMap.get(b.id())!
+            : 999;
+
+          if (studentIdxA !== studentIdxB) {
+            return studentIdxA - studentIdxB;
+          }
+
+          const labelA = (a.data("label") || "") as string;
+          const labelB = (b.data("label") || "") as string;
+          return labelA.localeCompare(labelB, "vi", { numeric: true, sensitivity: "base" });
+        });
+
+        const taskIndexMap = new Map<string, number>();
+        colTasks.forEach((taskNode, idx) => {
+          taskIndexMap.set(taskNode.id(), idx);
+        });
+
+        const colArtifacts = [...colCommits, ...colIdentities, ...colOther];
+        const artifactTaskMap = new Map<string, number>();
+        taskConnectedEdges.forEach((edge) => {
+          const label = edge.data("label");
+          const srcId = edge.source().id();
+          const tgtId = edge.target().id();
+
+          if (label === "EVIDENCED_BY" || label === "IMPLEMENTS") {
+            if (taskIndexMap.has(srcId)) {
+              artifactTaskMap.set(tgtId, taskIndexMap.get(srcId)!);
+            } else if (taskIndexMap.has(tgtId)) {
+              artifactTaskMap.set(srcId, taskIndexMap.get(tgtId)!);
+            }
+          }
+        });
+
+        colArtifacts.sort((a, b) => {
+          const taskIdxA = artifactTaskMap.has(a.id()) ? artifactTaskMap.get(a.id())! : 999;
+          const taskIdxB = artifactTaskMap.has(b.id()) ? artifactTaskMap.get(b.id())! : 999;
+          if (taskIdxA !== taskIdxB) {
+            return taskIdxA - taskIdxB;
+          }
+          const labelA = (a.data("label") || "") as string;
+          const labelB = (b.data("label") || "") as string;
+          return labelA.localeCompare(labelB, "vi", { numeric: true, sensitivity: "base" });
+        });
+
+        const critOrder: Record<string, number> = { CODE: 0, TEST: 1, DOCUMENT: 2, RESEARCH: 3 };
+        colCriteria.sort((a, b) => {
+          const labelA = ((a.data("label") || "") as string).toUpperCase();
+          const labelB = ((b.data("label") || "") as string).toUpperCase();
+          const ordA = critOrder[labelA] ?? 9;
+          const ordB = critOrder[labelB] ?? 9;
+          return ordA - ordB;
+        });
+
+        const hasProject = colProject.length > 0;
+        const xProject = -540;
+        const xStudent = hasProject ? -260 : -360;
+        const xTask = hasProject ? 80 : 40;
+        const xSprint = hasProject ? 440 : 400;
+        const xCriteria = hasProject ? 440 : 380;
+        const xArtifact = colCriteria.length > 0 || colSprints.length > 0 ? 740 : 560;
+
+        const taskSpacingY = 58;
+        const totalTasksHeight = (colTasks.length - 1) * taskSpacingY;
+        const startTaskY = -totalTasksHeight / 2;
+        const taskYMap = new Map<string, number>();
+
+        colTasks.forEach((node, i) => {
+          const y = startTaskY + i * taskSpacingY;
+          positions[node.id()] = { x: xTask, y };
+          taskYMap.set(node.id(), y);
+        });
+
+        if (colStudents.length > 0) {
+          const studentYTargets: number[] = [];
+
+          colStudents.forEach((studentNode, sIdx) => {
+            const assignedTasks = colTasks.filter(
+              (t) => taskAssigneeIndexMap.get(t.id()) === sIdx
+            );
+
+            if (assignedTasks.length > 0) {
+              const firstTaskY = taskYMap.get(assignedTasks[0].id()) ?? 0;
+              const lastTaskY = taskYMap.get(assignedTasks[assignedTasks.length - 1].id()) ?? 0;
+              studentYTargets.push((firstTaskY + lastTaskY) / 2);
+            } else {
+              const defaultTotalHeight = (colStudents.length - 1) * 110;
+              const defaultStartY = -defaultTotalHeight / 2;
+              studentYTargets.push(defaultStartY + sIdx * 110);
+            }
+          });
+
+          const minGap = 90;
+          for (let i = 1; i < studentYTargets.length; i++) {
+            if (studentYTargets[i] < studentYTargets[i - 1] + minGap) {
+              studentYTargets[i] = studentYTargets[i - 1] + minGap;
+            }
+          }
+          const studentCenter =
+            (studentYTargets[0] + studentYTargets[studentYTargets.length - 1]) / 2;
+          colStudents.forEach((studentNode, i) => {
+            positions[studentNode.id()] = {
+              x: xStudent,
+              y: studentYTargets[i] - studentCenter,
+            };
+          });
+        }
+
+        if (colProject.length > 0) {
+          const projCount = colProject.length;
+          const projSpacingY = 120;
+          const projStartY = -((projCount - 1) * projSpacingY) / 2;
+          colProject.forEach((node, i) => {
+            positions[node.id()] = {
+              x: xProject,
+              y: projStartY + i * projSpacingY,
+            };
+          });
+        }
+
+        if (colSprints.length > 0) {
+          const sprintCount = colSprints.length;
+          const sprintSpacingY = 90;
+          const sprintStartY = -((sprintCount - 1) * sprintSpacingY) / 2;
+          colSprints.forEach((node, i) => {
+            positions[node.id()] = {
+              x: xSprint,
+              y: sprintStartY + i * sprintSpacingY,
+            };
+          });
+        }
+
+        if (colCriteria.length > 0) {
+          const critCount = colCriteria.length;
+          const critSpacingY = 80;
+          const critStartY = -((critCount - 1) * critSpacingY) / 2;
+          colCriteria.forEach((node, i) => {
+            positions[node.id()] = {
+              x: xCriteria,
+              y: critStartY + i * critSpacingY,
+            };
+          });
+        }
+
+        if (colArtifacts.length > 0) {
+          const artCount = colArtifacts.length;
+          const artSpacingY = 48;
+          const artStartY = -((artCount - 1) * artSpacingY) / 2;
+          colArtifacts.forEach((node, i) => {
+            const linkedTaskIdx = artifactTaskMap.get(node.id());
+            let targetY = artStartY + i * artSpacingY;
+            if (linkedTaskIdx !== undefined && colTasks[linkedTaskIdx]) {
+              targetY = taskYMap.get(colTasks[linkedTaskIdx].id()) ?? targetY;
+            }
+            positions[node.id()] = {
+              x: xArtifact,
+              y: targetY,
+            };
+          });
+        }
       }
 
       const layoutConfig: LayoutOptions = {
@@ -514,14 +669,20 @@ export function CytoscapeGraphCanvas({
           arrowColor = "#dc2626";
         }
 
+        const displayEdgeLabel =
+          e.label === "REVIEWED" && typeof e.weight === "number" && e.weight > 0
+            ? `${e.weight} ★`
+            : e.label;
+
         return {
           group: "edges" as const,
           data: {
             id: e.id,
             source: e.source,
             target: e.target,
-            label: e.label,
-            edgeLabel: e.label,
+            label: displayEdgeLabel,
+            edgeLabel: displayEdgeLabel,
+            edgeType: e.label,
             lineColor,
             arrowColor,
             lineStyle,
@@ -565,11 +726,9 @@ export function CytoscapeGraphCanvas({
   useEffect(() => {
     if (cyRef.current && !cyRef.current.destroyed?.()) {
       try {
-        cyRef.current
-          .style()
-          .selector("edge")
-          .style("label", showEdgeLabels ? "data(label)" : "")
-          .update();
+        cyRef.current?.batch(() => {
+          cyRef.current?.edges?.()?.toggleClass?.("show-label", showEdgeLabels);
+        });
       } catch { }
     }
   }, [showEdgeLabels]);
@@ -613,10 +772,7 @@ export function CytoscapeGraphCanvas({
             });
           });
 
-          cy.style()
-            .selector("edge")
-            .style("label", showEdgeLabels ? "data(label)" : "")
-            .update();
+          cy.edges?.()?.toggleClass?.("show-label", showEdgeLabels);
 
           if (topologyChanged || layoutChanged) {
             applyLayout(cy, currentLayout, true);
@@ -735,7 +891,7 @@ export function CytoscapeGraphCanvas({
             "arrow-scale": 0.95,
             opacity: 0.7,
             "line-style": "data(lineStyle)" as unknown as cytoscape.Css.LineStyle,
-            label: showEdgeLabels ? "data(label)" : "",
+            label: "",
             "font-size": "8px",
             "font-weight": 600,
             "text-rotation": "autorotate",
@@ -746,6 +902,18 @@ export function CytoscapeGraphCanvas({
             color: "#64748b",
             "transition-property": "line-color, target-arrow-color, width, opacity",
             "transition-duration": 0.2,
+          },
+        },
+        {
+          selector: "edge.show-label",
+          style: {
+            label: "data(label)",
+          },
+        },
+        {
+          selector: 'edge.show-label[edgeType = "REVIEWED"]',
+          style: {
+            label: "data(edgeLabel)",
           },
         },
         {
@@ -760,22 +928,44 @@ export function CytoscapeGraphCanvas({
           },
         },
         {
+          selector: 'edge[edgeType = "REVIEWED"]',
+          style: {
+            label: "data(edgeLabel)",
+            "font-size": "10px",
+            "font-weight": 700,
+            color: "#047857",
+            "text-background-opacity": 0.95,
+            "text-background-color": "#ecfdf5",
+            "text-background-padding": "2px",
+            "text-background-shape": "roundrectangle",
+          },
+        },
+        {
           selector: "edge.highlighted",
           style: {
             opacity: 1,
             width: 3.5,
             label: "data(label)",
-            "font-size": "9px",
+            "font-size": "9.5px",
             "font-weight": 700,
             color: "#0f172a",
             "text-background-opacity": 1,
             "text-background-color": "#f8fafc",
+            "text-background-padding": "2.5px",
+            "text-background-shape": "roundrectangle",
             "z-index": 99,
+          },
+        },
+        {
+          selector: 'edge.highlighted[edgeType = "REVIEWED"]',
+          style: {
+            label: "data(edgeLabel)",
           },
         },
       ],
     });
     cyRef.current = cy;
+    cy.edges?.()?.toggleClass?.("show-label", showEdgeLabels);
 
     applyLayout(cy, currentLayout, true);
     cy.fit(undefined, 50);

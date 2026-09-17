@@ -104,6 +104,7 @@ export interface GraphSubgraphFilterParams {
   cursor?: string | null;
   continuationToken?: string | null;
   includeCommits?: boolean | null;
+  usedCriteriaOnly?: boolean | null;
 }
 
 export interface GraphQueryParams extends GraphSubgraphFilterParams {

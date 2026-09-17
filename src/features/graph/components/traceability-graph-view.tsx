@@ -366,7 +366,7 @@ export function TraceabilityGraphView() {
       return (
         <div className="flex flex-col items-center justify-center h-[640px] w-full rounded-3xl border border-border bg-card/60 space-y-3">
           <div className="w-10 h-10 rounded-full border-3 border-primary border-t-transparent animate-spin" />
-          <p className="text-xs font-bold text-muted-foreground">Đang tải dữ liệu đồ thị Neo4j...</p>
+          <p className="text-xs font-bold text-muted-foreground">Đang tải dữ liệu đồ thị...</p>
         </div>
       );
     }
@@ -413,7 +413,7 @@ export function TraceabilityGraphView() {
           nodes={displayGraphData.nodes}
           edges={displayGraphData.edges}
           onSelectNode={(node) => setSelectedNode(node)}
-          layoutName="breadthfirst"
+          layoutName={neo4jTab === "PEER_REVIEW" ? "circle" : "breadthfirst"}
           isUpdating={graphQuery.isFetching && !graphQuery.isLoading}
         />
         <GraphStatsSummary
