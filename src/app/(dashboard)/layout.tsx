@@ -2,7 +2,7 @@
 
 import { Suspense, useState, useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
-import { MenuIcon, LoaderCircleIcon } from "lucide-react";
+import { LoaderCircleIcon } from "lucide-react";
 import { Sidebar } from "@/components/layout/sidebar";
 import { SagaLogo } from "@/components/common/saga-logo";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
@@ -12,9 +12,9 @@ import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 
 import { TopNavHeader } from "@/components/layout/header/top-nav-header";
+import { AdminTopHeader } from "@/components/layout/header/admin-top-header";
 import { ProfileModal } from "@/features/profile/components/profile-modal";
 import { UserRealtimeProvider } from "@/features/notification/providers/user-realtime-provider";
-import { NotificationBell } from "@/features/notification/components/notification-bell";
 import { useUserEvents } from "@/features/auth/hooks/useUserEvents";
 
 export default function DashboardLayout({
@@ -133,26 +133,7 @@ export default function DashboardLayout({
           </Sheet>
 
           <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
-            <div className="flex items-center justify-between px-4 h-14 border-b border-border bg-background shrink-0">
-              <div className="flex items-center gap-3">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8 rounded-lg md:hidden"
-                  onClick={() => setMobileOpen(true)}
-                  aria-label="Mở menu"
-                >
-                  <MenuIcon className="w-4 h-4" />
-                </Button>
-                <div className="md:hidden">
-                  <SagaLogo size="xs" showText={true} showSubtitle={false} />
-                </div>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <NotificationBell />
-              </div>
-            </div>
+            <AdminTopHeader onOpenMobileMenu={() => setMobileOpen(true)} />
 
             <main className="flex-1 overflow-y-auto p-6">{children}</main>
           </div>

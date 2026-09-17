@@ -4,6 +4,7 @@ export const SHARED_AUTHENTICATED_ROUTES = [
   '/profile',
   '/dashboard',
   '/integrations',
+  '/notifications',
 ] as const;
 
 export function isSharedRoute(pathname: string): boolean {

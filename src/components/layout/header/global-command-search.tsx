@@ -17,6 +17,11 @@ import {
   SunIcon,
   LayersIcon,
   Link2Icon,
+  UsersIcon,
+  GraduationCapIcon,
+  ScrollTextIcon,
+  SendIcon,
+  BellIcon,
 } from "lucide-react";
 import {
   CommandDialog,
@@ -111,6 +116,60 @@ export function GlobalCommandSearch() {
         <CommandList className="max-h-80">
           <CommandEmpty>Không tìm thấy kết quả phù hợp.</CommandEmpty>
 
+          {user.role === "ADMIN" && (
+            <CommandGroup heading="Quản trị hệ thống SAGA">
+              <CommandItem
+                onSelect={() => runCommand(() => router.push("/admin/dashboard"))}
+                className="flex items-center gap-2.5 cursor-pointer py-2 px-3 text-xs"
+              >
+                <LayoutDashboardIcon className="size-4 text-primary" />
+                <span>Tổng quan hệ thống</span>
+              </CommandItem>
+              <CommandItem
+                onSelect={() => runCommand(() => router.push("/admin/users"))}
+                className="flex items-center gap-2.5 cursor-pointer py-2 px-3 text-xs"
+              >
+                <UsersIcon className="size-4 text-blue-500" />
+                <span>Tài khoản người dùng & Phân quyền</span>
+              </CommandItem>
+              <CommandItem
+                onSelect={() => runCommand(() => router.push("/admin/academic"))}
+                className="flex items-center gap-2.5 cursor-pointer py-2 px-3 text-xs"
+              >
+                <GraduationCapIcon className="size-4 text-emerald-500" />
+                <span>Lớp học & Học kỳ đào tạo</span>
+              </CommandItem>
+              <CommandItem
+                onSelect={() => runCommand(() => router.push("/admin/subjects"))}
+                className="flex items-center gap-2.5 cursor-pointer py-2 px-3 text-xs"
+              >
+                <BookOpenIcon className="size-4 text-purple-500" />
+                <span>Môn học & Đề cương FLM</span>
+              </CommandItem>
+              <CommandItem
+                onSelect={() => runCommand(() => router.push("/admin/audit-log"))}
+                className="flex items-center gap-2.5 cursor-pointer py-2 px-3 text-xs"
+              >
+                <ScrollTextIcon className="size-4 text-amber-500" />
+                <span>Nhật ký kiểm toán hệ thống</span>
+              </CommandItem>
+              <CommandItem
+                onSelect={() => runCommand(() => router.push("/admin/notifications"))}
+                className="flex items-center gap-2.5 cursor-pointer py-2 px-3 text-xs"
+              >
+                <SendIcon className="size-4 text-cyan-500" />
+                <span>Trung tâm phát thông báo</span>
+              </CommandItem>
+              <CommandItem
+                onSelect={() => runCommand(() => router.push("/notifications"))}
+                className="flex items-center gap-2.5 cursor-pointer py-2 px-3 text-xs"
+              >
+                <BellIcon className="size-4 text-primary" />
+                <span>Hộp thư thông báo</span>
+              </CommandItem>
+            </CommandGroup>
+          )}
+
           {user.role === "STUDENT" && (
             <CommandGroup heading="Điều hướng học phần">
               <CommandItem
@@ -175,15 +234,15 @@ export function GlobalCommandSearch() {
                 <span>Danh sách tất cả lớp giảng dạy</span>
               </CommandItem>
               {currentLecturerCourseId ? (
-                  <CommandItem
-                    onSelect={() =>
-                      runCommand(() => router.push(lecturerCoursePeerReviewsPath(currentLecturerCourseId)))
-                    }
-                    className="flex items-center gap-2.5 cursor-pointer py-2 px-3 text-xs"
-                  >
-                    <UserCheckIcon className="size-4 text-amber-500" />
-                    <span>Đánh giá chéo của lớp đang chọn</span>
-                  </CommandItem>
+                <CommandItem
+                  onSelect={() =>
+                    runCommand(() => router.push(lecturerCoursePeerReviewsPath(currentLecturerCourseId)))
+                  }
+                  className="flex items-center gap-2.5 cursor-pointer py-2 px-3 text-xs"
+                >
+                  <UserCheckIcon className="size-4 text-amber-500" />
+                  <span>Đánh giá chéo của lớp đang chọn</span>
+                </CommandItem>
               ) : null}
               {lecturerCourses.slice(0, 5).map((c) => (
                 <CommandItem
