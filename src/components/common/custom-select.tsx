@@ -69,7 +69,7 @@ export function CustomSelect({
   };
 
   return (
-    <div ref={containerRef} className={cn("relative w-full", className)}>
+    <div ref={containerRef} className={cn("relative w-full", isOpen && "z-50", className)}>
       <button
         id={id}
         type="button"

@@ -93,7 +93,7 @@ export function TeamMembersCard({
             <UsersIcon className="mx-auto mb-2 size-6 text-muted-foreground/40" />
             <p className="text-xs font-semibold">Đang chờ giảng viên phân nhóm</p>
             <p className="mt-0.5 text-[11px] text-muted-foreground">
-              Bạn đã ghi danh ACTIVE nhưng chưa được gán nhóm.
+              Bạn đã ghi danh môn học nhưng chưa được gán vào nhóm.
             </p>
           </div>
         ) : forbidden ? (

@@ -150,12 +150,14 @@ export function ProjectGithubSection({
                 {(r.status || "").toUpperCase() === "ACTIVE" ? (
                   <Badge className="bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-0 text-[10px] font-semibold shrink-0">
                     <ShieldCheckIcon className="w-3 h-3 mr-1" />
-                    ACTIVE
+                    Đã kết nối
                   </Badge>
                 ) : (
                   <Badge className="bg-amber-500/15 text-amber-700 dark:text-amber-400 border border-amber-500/30 text-[10px] font-semibold shrink-0">
                     <AlertCircleIcon className="w-3 h-3 mr-1" />
-                    {r.status || "REVOKED"}
+                    {(r.status || "").toUpperCase() === "REVOKED"
+                      ? "Đã ngắt kết nối"
+                      : r.status || "Chưa kết nối"}
                   </Badge>
                 )}
               </div>

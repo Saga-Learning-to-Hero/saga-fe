@@ -357,7 +357,7 @@ export function SprintBacklogView({
                         {sprint.status === "ACTIVE" && (
                           <span className="inline-flex items-center gap-1 px-2 py-0.2 rounded-full text-[10px] font-bold bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30">
                             <FlameIcon className="w-3 h-3 text-emerald-500" />
-                            ACTIVE SPRINT
+                            Đang diễn ra
                           </span>
                         )}
                         {sprint.status === "PLANNED" && (

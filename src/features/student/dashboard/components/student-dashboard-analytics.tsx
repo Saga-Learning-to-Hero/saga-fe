@@ -117,7 +117,7 @@ export function StudentDashboardAnalytics() {
               Chỉ trưởng nhóm và giảng viên xem được bảng tiến độ nhóm
             </h2>
             <p className="text-xs text-muted-foreground">
-              Máy chủ không mở API tiến độ dự án cho thành viên thường. Bạn vẫn xem được task và commit của nhóm.
+              Quyền xem tổng quan tiến độ dự án được giới hạn cho trưởng nhóm và giảng viên. Bạn vẫn có thể theo dõi tasks và commits của nhóm.
             </p>
           </div>
           <div className="flex flex-wrap items-center justify-center gap-2">
@@ -172,7 +172,7 @@ export function StudentDashboardAnalytics() {
     return (
       <EmptyPanel
         title="Chưa có dữ liệu tiến độ"
-        description="Máy chủ chưa trả bảng tiến độ cho dự án này."
+        description="Hiện tại chưa có dữ liệu tiến độ cho dự án này."
       />
     );
   }
@@ -195,7 +195,7 @@ export function StudentDashboardAnalytics() {
               </Badge>
             </div>
             <p className="text-xs text-muted-foreground">
-              Số liệu lấy từ API tiến độ dự án. Không tự cộng từ danh sách task hay commit.
+              Số liệu tổng hợp tự động từ tiến độ thực tế các tasks và commits của toàn nhóm.
             </p>
           </div>
         </div>

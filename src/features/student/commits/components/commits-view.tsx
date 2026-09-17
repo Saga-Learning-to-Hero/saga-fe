@@ -324,7 +324,7 @@ export function CommitsView() {
               )}
             </div>
             <p className="text-xs text-muted-foreground">
-              Nhật ký commits thực tế được chiếu tự động từ GitHub Repositories của dự án
+              Nhật ký commits được đồng bộ tự động từ GitHub Repositories của dự án
             </p>
           </div>
         </div>

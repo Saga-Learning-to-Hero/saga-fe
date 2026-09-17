@@ -62,14 +62,14 @@ export function StudentMyTeamPanel({ courseId, onClose }: StudentMyTeamPanelProp
               <UsersIcon className="mx-auto mb-3 size-8 text-muted-foreground/40" />
               <p className="text-sm font-semibold">Đang chờ giảng viên phân nhóm</p>
               <p className="mt-1 text-xs text-muted-foreground">
-                Bạn đã ghi danh ACTIVE nhưng chưa được gán vào nhóm. Đây không phải lỗi hệ thống.
+                Bạn đã ghi danh môn học nhưng chưa được gán vào nhóm. Vui lòng chờ giảng viên sắp xếp nhóm.
               </p>
             </Card>
           ) : forbidden ? (
             <Card className="rounded-2xl border border-dashed border-destructive/30 p-6 text-center">
               <p className="text-sm font-semibold">Bạn không thuộc lớp học phần này</p>
               <p className="mt-1 text-xs text-muted-foreground">
-                Danh sách lớp sẽ được làm mới. Không thử ID của sinh viên khác.
+                Tài khoản của bạn không nằm trong danh sách sinh viên của lớp học phần này.
               </p>
               <Button
                 size="sm"

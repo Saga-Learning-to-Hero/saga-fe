@@ -55,7 +55,7 @@ export function CourseCard({ course, onSelectCourse, onViewTeam }: CourseCardPro
           <Badge className="border-0 bg-emerald-500/15 px-2.5 py-0.5 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">
             <span className="flex items-center gap-1">
               <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-500" />
-              ACTIVE
+              Đang học
             </span>
           </Badge>
         </div>

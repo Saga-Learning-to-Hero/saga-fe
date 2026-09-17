@@ -84,14 +84,13 @@ export function StudentCourseSelection({ onSelectCourse }: StudentCourseSelectio
           <div className="max-w-2xl space-y-2">
             <Badge className="border-0 bg-white/20 px-3 py-1 text-xs font-semibold text-white">
               <SparklesIcon className="mr-1 h-3.5 w-3.5" />
-              Khóa học ACTIVE của tôi
+              Lớp học phần của tôi
             </Badge>
             <h1 className="text-2xl font-extrabold tracking-tight sm:text-3xl">
               Xin chào, {user?.name || "Sinh viên"}
             </h1>
             <p className="text-xs leading-relaxed text-white/80 sm:text-sm">
-              Danh sách lấy từ phiên đăng nhập. Không gửi userId hay bộ lọc vai trò. Chọn lớp để xem
-              nhóm của bạn.
+              Danh sách các môn học bạn đang theo học trong kỳ. Chọn một lớp học phần để vào không gian dự án và theo dõi tiến độ nhóm.
             </p>
           </div>
           <div className="flex shrink-0 items-center gap-3">
@@ -105,7 +104,7 @@ export function StudentCourseSelection({ onSelectCourse }: StudentCourseSelectio
               <span className="block text-2xl font-black leading-none">
                 {isLoading ? "…" : apiCourses.length}
               </span>
-              <span className="text-[11px] font-medium text-white/80">Lớp ACTIVE</span>
+              <span className="text-[11px] font-medium text-white/80">Lớp đang học</span>
             </div>
           </div>
         </div>
@@ -135,9 +134,9 @@ export function StudentCourseSelection({ onSelectCourse }: StudentCourseSelectio
       ) : apiCourses.length === 0 ? (
         <Card className="flex flex-col items-center justify-center space-y-3 rounded-3xl border border-dashed border-border bg-card/40 px-4 py-16 text-center">
           <BookOpenIcon className="size-8 text-muted-foreground/50" />
-          <h3 className="text-base font-bold">Bạn chưa có lớp học phần ACTIVE</h3>
+          <h3 className="text-base font-bold">Bạn chưa có lớp học phần nào</h3>
           <p className="max-w-sm text-xs text-muted-foreground">
-            Khi hoàn tất ghi danh, các lớp ACTIVE sẽ xuất hiện tại đây.
+            Khi hoàn tất ghi danh, các lớp học phần trong kỳ sẽ xuất hiện tại đây.
           </p>
         </Card>
       ) : (
