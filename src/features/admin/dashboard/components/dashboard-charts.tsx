@@ -191,10 +191,10 @@ export function DashboardChartsSection() {
             </div>
             <div>
               <CardTitle className="text-sm font-bold text-foreground">
-                Tình trạng & Tiến độ đồ án
+                Tình trạng & Tiến độ dự án
               </CardTitle>
               <CardDescription className="text-[11px] text-muted-foreground">
-                Phân bố tình trạng 32 nhóm đồ án kỳ này
+                Phân bố tình trạng 32 nhóm dự án kỳ này
               </CardDescription>
             </div>
           </div>

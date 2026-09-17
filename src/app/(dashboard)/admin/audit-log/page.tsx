@@ -17,70 +17,64 @@ import {
 } from "@/features/admin/audit-log/types/audit-log";
 
 const INITIAL_FILTERS: AuditFilterState = {
-  search: "",
-  category: "ALL",
-  severity: "ALL",
-  timeRange: "ALL",
+  action: "",
+  entityType: "ALL",
+  actorUserId: "",
+  entityId: "",
+  fromDate: "",
+  toDate: "",
 };
 
 const PAGE_SIZE = 10;
 
 export default function AdminAuditLogPage() {
   const [filters, setFilters] = useState<AuditFilterState>(INITIAL_FILTERS);
-  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [debouncedFilters, setDebouncedFilters] = useState<AuditFilterState>(INITIAL_FILTERS);
   const [page, setPage] = useState(1);
   const [selectedLog, setSelectedLog] = useState<AuditLogItem | null>(null);
 
-  // Debounce search 350ms
+  // Debounce các trường filter 350ms để tránh spam API
   useEffect(() => {
     const timer = setTimeout(() => {
-      setDebouncedSearch(filters.search.trim());
+      setDebouncedFilters(filters);
       setPage(1);
     }, 350);
     return () => clearTimeout(timer);
-  }, [filters.search]);
+  }, [filters]);
 
-  // Chuyển đổi bộ lọc thời gian sang tham số from / to ISO
-  const timeParams = useMemo(() => {
-    if (filters.timeRange === "ALL") return {};
-    const now = new Date();
-    const fromDate = new Date();
-
-    if (filters.timeRange === "TODAY") {
-      fromDate.setHours(0, 0, 0, 0);
-    } else if (filters.timeRange === "7_DAYS") {
-      fromDate.setDate(now.getDate() - 7);
-    } else if (filters.timeRange === "30_DAYS") {
-      fromDate.setDate(now.getDate() - 30);
-    }
-
-    return {
-      from: fromDate.toISOString(),
-      to: now.toISOString(),
-    };
-  }, [filters.timeRange]);
-
-  // Chuẩn hóa params gửi lên API máy chủ
+  // Chuẩn hóa params gửi lên API máy chủ theo đúng 100% Swagger OpenAPI
   const queryParams: GetAdminAuditLogsParams = useMemo(() => {
     const params: GetAdminAuditLogsParams = {
       page: page - 1, // Spring Boot 0-indexed
       size: PAGE_SIZE,
-      ...timeParams,
     };
 
-    if (debouncedSearch) {
-      // Có thể truyền vào action hoặc entityType nếu khớp
-      params.action = debouncedSearch;
+    if (debouncedFilters.action && debouncedFilters.action !== "ALL" && debouncedFilters.action.trim()) {
+      params.action = debouncedFilters.action.trim();
     }
 
-    if (filters.category === "AUTH_SECURITY") {
-      params.entityType = "USER";
-    } else if (filters.category === "ACADEMIC") {
-      params.entityType = "COURSE";
+    if (debouncedFilters.entityType && debouncedFilters.entityType !== "ALL" && debouncedFilters.entityType.trim()) {
+      params.entityType = debouncedFilters.entityType.trim();
+    }
+
+    if (debouncedFilters.actorUserId && debouncedFilters.actorUserId.trim()) {
+      params.actorUserId = debouncedFilters.actorUserId.trim();
+    }
+
+    if (debouncedFilters.entityId && debouncedFilters.entityId.trim()) {
+      params.entityId = debouncedFilters.entityId.trim();
+    }
+
+    if (debouncedFilters.fromDate && debouncedFilters.fromDate.trim()) {
+      params.from = `${debouncedFilters.fromDate.trim()}T00:00:00Z`;
+    }
+
+    if (debouncedFilters.toDate && debouncedFilters.toDate.trim()) {
+      params.to = `${debouncedFilters.toDate.trim()}T23:59:59Z`;
     }
 
     return params;
-  }, [page, timeParams, debouncedSearch, filters.category]);
+  }, [page, debouncedFilters]);
 
   const { data, isLoading, isError, error, refetch, isFetching } =
     useAdminAuditLogs(queryParams);
@@ -147,7 +141,7 @@ export default function AdminAuditLogPage() {
         <div className="flex items-center gap-2.5">
           <DatabaseIcon className="size-4 text-primary shrink-0" />
           <span className="text-muted-foreground">
-            <strong className="text-foreground">Cơ sở dữ liệu kiểm toán:</strong> Mọi thao tác quản trị, phân quyền người dùng và cập nhật cấu trúc đồ án đều được ghi vết tự động kèm snapshot dữ liệu trước & sau (State Diff).
+            <strong className="text-foreground">Cơ sở dữ liệu kiểm toán:</strong> Mọi thao tác quản trị, phân quyền người dùng và cập nhật cấu trúc dự án đều được ghi vết tự động kèm snapshot dữ liệu trước & sau (State Diff).
           </span>
         </div>
         <Badge variant="outline" className="text-[10px] font-mono text-primary border-primary/30 shrink-0">
@@ -181,7 +175,7 @@ export default function AdminAuditLogPage() {
       )}
 
       {/* 4. Thống kê nhanh */}
-      <AuditStats logs={mappedLogs} />
+      <AuditStats logs={mappedLogs} totalCount={totalLogs} />
 
       {/* 5. Toolbar bộ lọc */}
       <AuditToolbar

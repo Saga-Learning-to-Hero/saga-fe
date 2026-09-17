@@ -60,12 +60,12 @@ export default function AccountDisabledPage() {
                 <span className="font-semibold text-foreground">Đã thu hồi (Revoked)</span>
               </div>
               <div className="flex justify-between">
-                <span>Quyền truy cập Đồ án:</span>
+                <span>Quyền truy cập dự án:</span>
                 <span className="font-semibold text-foreground">Tạm ngưng</span>
               </div>
             </div>
             <p className="text-[11px] text-muted-foreground pt-1 border-t border-border/50">
-              Nếu bạn cho rằng đây là sự nhầm lẫn hoặc cần phục hồi quyền truy cập phục vụ đánh giá đồ án, hãy liên hệ với Giảng viên hướng dẫn hoặc Quản trị viên phòng đào tạo (SE).
+              Nếu bạn cho rằng đây là sự nhầm lẫn hoặc cần phục hồi quyền truy cập phục vụ đánh giá dự án, hãy liên hệ với Giảng viên hướng dẫn hoặc Quản trị viên phòng đào tạo (SE).
             </p>
           </div>
 

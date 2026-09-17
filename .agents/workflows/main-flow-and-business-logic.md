@@ -27,7 +27,7 @@ description: End-to-end user journeys, main business flows for Student, Lecturer
 ```
 
 ### 🎯 Điểm Nhấn Sinh Viên:
-- **Đồ thị Truy xuất Nguồn gốc ([/student/graph](file:///d:/Github/saga%20workspace/saga-fe/src/app/(dashboard)/student/graph/page.tsx))**: Sinh viên sử dụng để bảo vệ đồ án trước Hội đồng. Khi rê chuột vào tên mình, toàn bộ chuỗi chứng minh công sức `(:Student) ➔ (:JiraTask) ➔ (:Commit)` sẽ sáng bừng, các đỉnh khác mờ đi (**Neighborhood Dimming**).
+- **Đồ thị Truy xuất Nguồn gốc ([/student/graph](file:///d:/Github/saga%20workspace/saga-fe/src/app/(dashboard)/student/graph/page.tsx))**: Sinh viên sử dụng để bảo vệ dự án trước Hội đồng. Khi rê chuột vào tên mình, toàn bộ chuỗi chứng minh công sức `(:Student) ➔ (:JiraTask) ➔ (:Commit)` sẽ sáng bừng, các đỉnh khác mờ đi (**Neighborhood Dimming**).
 
 ---
 
@@ -63,7 +63,7 @@ description: End-to-end user journeys, main business flows for Student, Lecturer
 [Đăng Nhập] ➔ [/admin/dashboard]
     │
     ├──► [/admin/users] ──── (Quản lý tài khoản, phân quyền Giảng viên/Sinh viên)
-    ├──► [/admin/projects] ─ (Quản trị toàn bộ đề tài đồ án capstone)
+    ├──► [/admin/projects] ─ (Quản trị toàn bộ đề tài dự án capstone)
     ├──► [/admin/academic] ─ (Quản lý cấu trúc học thuật, học kỳ, môn học)
     └──► [/admin/audit-log] ─ (Nhật ký kiểm toán hệ thống từ MongoDB)
 ```
@@ -73,7 +73,7 @@ description: End-to-end user journeys, main business flows for Student, Lecturer
 ## 4. Kịch Bản Trình Bày Demo Hội Đồng (10 - 15 Phút)
 
 ### ⏱️ Phân Bổ Thời Gian:
-1. **Phút 1 - 2 (The Hook - Đặt vấn đề)**: Nêu nỗi đau Free-rider, Báo cáo khống trên Jira và Thiếu minh chứng kỹ thuật thực tế trong đồ án tốt nghiệp. Giới thiệu giải pháp **SAGA** với triết lý **Minh bạch dựa trên Dữ liệu (Data-Driven Transparency)**.
+1. **Phút 1 - 2 (The Hook - Đặt vấn đề)**: Nêu nỗi đau Free-rider, Báo cáo khống trên Jira và Thiếu minh chứng kỹ thuật thực tế trong dự án tốt nghiệp. Giới thiệu giải pháp **SAGA** với triết lý **Minh bạch dựa trên Dữ liệu (Data-Driven Transparency)**.
 2. **Phút 3 - 6 (Demo Sinh viên)**: Đăng nhập Sinh viên ➔ Vào môn học ➔ Mở `/student/graph` ➔ Rê chuột làm sáng chuỗi liên kết `(:Student) ➔ (:JiraTask) ➔ (:Commit)` để chứng minh 100% công sức.
 3. **Phút 7 - 11 (Demo Giảng viên - Bắt lỗi XAI & SNA)**:
    - Chuyển sang Giảng viên ➔ Mở `/lecturer/courses/[id]/graph`.

@@ -18,8 +18,8 @@ Dùng chung bộ node / cạnh dưới đây cho mọi hình. Không thêm loạ
 | --- | --- |
 | Student | Sinh viên trong team |
 | Course | Lớp học phần |
-| Team | Nhóm đồ án |
-| Project | Đồ án của team |
+| Team | Nhóm dự án |
+| Project | dự án của team |
 | Sprint | Giai đoạn làm việc |
 | Task | Việc trên Jira, gắn sprint |
 | Commit | Commit GitHub (bằng chứng, không phải điểm) |

@@ -168,7 +168,7 @@ Giao diện sinh viên được điều hướng động dựa trên trạng th�
 #### 1. Quản lý Môn học (Subject)
 - `POST /api/admin/subjects`: Tạo môn học mới.
   ```json
-  { "code": "SWP391", "nameEnglish": "Software Development Project", "nameVietnamese": "Đồ án phát triển phần mềm" }
+  { "code": "SWP391", "nameEnglish": "Software Development Project", "nameVietnamese": "dự án phát triển phần mềm" }
   ```
 - `GET /api/admin/subjects`: Tìm kiếm/liệt kê môn học (query param: `?code=SWP391`, `?status=ACTIVE`, hoặc `?q=SWP`).
 - `GET /api/admin/subjects/{subjectId}`: Xem chi tiết môn học (kèm danh sách các phiên bản đề cương).
@@ -252,7 +252,7 @@ Giao diện sinh viên được điều hướng động dựa trên trạng th�
 - `GET /api/lecturer/courses/{courseId}/roster`: Danh sách sinh viên chính thức (`ACTIVE`) trong lớp học phần.
 
 #### 2. Phân chia & Điều phối Nhóm sinh viên (Teams & Leadership)
-- `GET /api/lecturer/courses/{courseId}/teams/template`: Tải file mẫu phân chia nhóm đồ án.
+- `GET /api/lecturer/courses/{courseId}/teams/template`: Tải file mẫu phân chia nhóm dự án.
 - `POST /api/lecturer/courses/{courseId}/teams/import/preview`: Tải file Excel phân nhóm lên xem trước (Form-data: `file: <binary>`). Nhận về `previewToken` và danh sách phân nhóm.
 - `POST /api/lecturer/courses/{courseId}/teams/import/confirm`: Xác nhận lưu phân nhóm vào hệ thống:
   ```json
@@ -285,15 +285,15 @@ Giao diện sinh viên được điều hướng động dựa trên trạng th�
 #### 1. Thông tin Khóa học & Nhóm của Sinh viên
 - `GET /api/student/courses`: Liệt kê các môn học đang theo học kỳ hiện tại (`status == ACTIVE`). Response chứa `courseId`, `teamId`, `projectId`.
 - `GET /api/student/courses/{courseId}/team`: Xem thông tin nhóm, danh sách thành viên và vai trò cá nhân (`myRole: "LEADER"` hoặc `"MEMBER"`).
-- `GET /api/student/courses/{courseId}/project`: Xem thông tin đồ án/dự án của nhóm (nếu chưa tạo sẽ trả về `404 PROJECT_NOT_FOUND`).
+- `GET /api/student/courses/{courseId}/project`: Xem thông tin dự án/dự án của nhóm (nếu chưa tạo sẽ trả về `404 PROJECT_NOT_FOUND`).
 
 #### 2. Tạo Dự Án (Chỉ dành cho Team Leader)
-- `GET /api/student/project-types`: Lấy danh mục các loại đồ án được phép tạo (phân loại đề tài).
+- `GET /api/student/project-types`: Lấy danh mục các loại dự án được phép tạo (phân loại đề tài).
 - `POST /api/student/courses/{courseId}/project`:
   ```json
   {
     "name": "SAGA Learning Platform",
-    "description": "Nền tảng hỗ trợ đánh giá minh chứng đồ án",
+    "description": "Nền tảng hỗ trợ đánh giá minh chứng dự án",
     "projectTypeId": "uuid-project-type"
   }
   ```
@@ -301,7 +301,7 @@ Giao diện sinh viên được điều hướng động dựa trên trạng th�
 
 ---
 
-### 4.5. Phân Hệ Tích Hợp Công Cụ Đồ Án (Project GitHub & Jira Integrations)
+### 4.5. Phân Hệ Tích Hợp Công Cụ dự án (Project GitHub & Jira Integrations)
 
 > Các API tích hợp yêu cầu **`projectId`** (lấy từ thông tin dự án sau khi tạo).
 

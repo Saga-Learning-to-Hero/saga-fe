@@ -184,7 +184,7 @@ export function CourseList() {
               Xin chào, {displayName}
             </h1>
             <p className="text-xs leading-relaxed text-white/80 sm:text-sm">
-              Chọn một lớp học phần được phân công để theo dõi tổng quan sĩ số, quản lý phân nhóm đồ án và giám sát tiến độ thực hiện.
+              Chọn một lớp học phần được phân công để theo dõi tổng quan sĩ số, quản lý phân nhóm dự án và giám sát tiến độ thực hiện.
             </p>
           </div>
           <div className="flex shrink-0 items-center gap-3">

@@ -120,4 +120,4 @@ $$\text{projectId} \xrightarrow{\text{Tích hợp}} \text{GitHub Repositories} +
 > 4. **Step-up Re-auth** (`/api/auth/reauth/*` - chức năng Sudo mode dự phòng của Backend).
 > 5. **Dev Smoke Test Email** (`/api/admin/dev/email-test` - kiểm thử nội bộ Backend).
 > 6. **Neo4j Graph Snapshot / Delta API** (Đang tính toán ở phân hệ Graph Engine tiếp theo).
-> 7. **Assessment Scoring tự động** (Đang thiết kế ở pha đánh giá đồ án cuối kỳ).
+> 7. **Assessment Scoring tự động** (Đang thiết kế ở pha đánh giá dự án cuối kỳ).

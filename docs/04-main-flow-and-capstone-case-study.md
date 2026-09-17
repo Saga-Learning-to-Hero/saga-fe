@@ -1,13 +1,13 @@
-# Kiến Trúc Tổng Thể, Luồng Nghiệp Vụ Cốt Lõi & Case Study Đồ Án Tốt Nghiệp SAGA
+# Kiến Trúc Tổng Thể, Luồng Nghiệp Vụ Cốt Lõi & Case Study dự án Tốt Nghiệp SAGA
 
-Tài liệu này tổng hợp toàn bộ **Bản đồ nghiệp vụ xuyên suốt (End-to-End Main Flow)** và **Tình huống thực chiến (Case Study chuẩn mực)** của hệ thống **SAGA (Student Achievement & Governance Analytics)**. Đây là tài liệu cốt lõi giúp nhóm tự tin nắm chắc logic hệ thống và trình bày thuyết phục trước Hội đồng Đồ án Tốt nghiệp (Capstone Defense).
+Tài liệu này tổng hợp toàn bộ **Bản đồ nghiệp vụ xuyên suốt (End-to-End Main Flow)** và **Tình huống thực chiến (Case Study chuẩn mực)** của hệ thống **SAGA (Student Achievement & Governance Analytics)**. Đây là tài liệu cốt lõi giúp nhóm tự tin nắm chắc logic hệ thống và trình bày thuyết phục trước Hội đồng dự án Tốt nghiệp (Capstone Defense).
 
 ---
 
 ## 1. Bối Cảnh Thực Tế & Triết Lý Giải Pháp (The Problem & The Hook)
 
-### 🚨 Nỗi Đau Lớn Nhất Trong Các Đồ Án Tốt Nghiệp CNTT (FPT University):
-1. **Vấn nạn "Free-rider" (Ký sinh đồ án)**: Trong nhóm 4–5 sinh viên, luôn có nguy cơ 1–2 thành viên lười biếng, ỷ lại nhưng cuối kỳ vẫn nhận điểm ngang bằng với người gánh team.
+### 🚨 Nỗi Đau Lớn Nhất Trong Các dự án Tốt Nghiệp CNTT (FPT University):
+1. **Vấn nạn "Free-rider" (Ký sinh dự án)**: Trong nhóm 4–5 sinh viên, luôn có nguy cơ 1–2 thành viên lười biếng, ỷ lại nhưng cuối kỳ vẫn nhận điểm ngang bằng với người gánh team.
 2. **"Báo cáo khống" trên Jira**: Sinh viên kéo các thẻ công việc sang `DONE` vào đêm trước buổi bảo vệ Sprint mà thực chất không hề có dòng mã nguồn, bài kiểm thử hay tài liệu thực tế nào được bàn giao.
 3. **Giảng viên bị quá tải giám sát**: Một giảng viên phụ trách 5–10 nhóm với hàng trăm commits và hàng nghìn đầu việc, không thể đủ thời gian đọc từng dòng Git commit để phân định công sức ai làm nhiều ai làm ít.
 4. **Xung đột nội bộ khi chấm điểm chéo (Peer Review cảm tính)**: Sinh viên chấm điểm cho nhau dựa trên mức độ thân thiết thay vì dựa trên minh chứng năng lực thực tế.
@@ -75,7 +75,7 @@ flowchart TD
    - Admin tạo Course liên kết: `SE1705` + `SWP391` + `Syllabus PUBLISHED` + `Lecturer Profile ID`.
    - Tải file Excel mẫu Roster ➔ Upload xem trước lỗi qua `previewToken` ➔ Xác nhận Import danh sách sinh viên vào lớp.
 
-#### 🔹 Giai đoạn 2: Phân nhóm đồ án & Cấu hình trọng số (Lecturer Team & Weights)
+#### 🔹 Giai đoạn 2: Phân nhóm dự án & Cấu hình trọng số (Lecturer Team & Weights)
 1. **Phân nhóm bằng Excel chuyên dụng**: Giảng viên tải template chia nhóm ➔ Upload xem trước danh sách nhóm, đề tài, Leader ➔ Xác nhận tạo nhóm đồng loạt.
 2. **Điều phối linh hoạt**: Giảng viên có quyền chỉ định Trưởng nhóm mới (`PUT .../leader`) hoặc chuyển thành viên sang nhóm khác (`PATCH .../team`).
 3. **Cấu hình Trọng số đóng góp (Slicing Pie Weights)**:
@@ -99,20 +99,20 @@ flowchart TD
    - Leader bấm nút "Đồng bộ dữ liệu" (`POST /api/projects/{projectId}/sync`).
    - Backend đưa vào hàng đợi xử lý ngầm và chiếu dữ liệu về: Bảng Kanban Jira tasks, Nhật ký Git commits và Cặp liên kết Task - Commit.
 
-#### 🔹 Giai đoạn 5: Đối soát XAI, Đánh giá công bằng & Bảo vệ đồ án (Evaluation & Defense)
+#### 🔹 Giai đoạn 5: Đối soát XAI, Đánh giá công bằng & Bảo vệ dự án (Evaluation & Defense)
 1. **Sinh viên chứng minh năng lực**: Mở màn hình đồ thị `/student/graph`, chọn tên mình ➔ Toàn bộ mạng lưới công việc sáng bừng minh chứng trực quan.
 2. **Giảng viên phát hiện bất thường tự động**: Mở `/lecturer/courses/[id]/graph` để đồ thị XAI cảnh báo MSR Anomaly và Ghosting Anomaly.
 3. **Chốt điểm số Slicing Pie**: Bảng đánh giá tự động tính toán tỷ lệ đóng góp của từng thành viên. Giảng viên xem xét và ghi đè điểm số cuối cùng nếu có trường hợp đặc biệt.
 
 ---
 
-## 3. Case Study Thực Chiến: Đồ Án "SAGA Platform" (Nhóm 5 - Lớp SWP391)
+## 3. Case Study Thực Chiến: dự án "SAGA Platform" (Nhóm 5 - Lớp SWP391)
 
-Để minh họa sống động cho Hội đồng Đồ án, dưới đây là kịch bản Case Study mô phỏng một nhóm sinh viên gồm 4 thành viên với 4 kịch bản đóng góp điển hình:
+Để minh họa sống động cho Hội đồng dự án, dưới đây là kịch bản Case Study mô phỏng một nhóm sinh viên gồm 4 thành viên với 4 kịch bản đóng góp điển hình:
 
 ```text
 ┌──────────────────────────────────────────────────────────────────────────────────┐
-│                   CASE STUDY NHÓM 5: ĐỒ ÁN SAGA PLATFORM                         │
+│                   CASE STUDY NHÓM 5: dự án SAGA PLATFORM                         │
 ├──────────────────┬─────────────────┬───────────────────┬─────────────────────────┤
 │ 👤 Thành viên A  │ 👤 Thành viên B │ 👤 Thành viên C   │ 👤 Thành viên D         │
 │ (Trưởng nhóm)    │ (Frontend Dev)  │ (QA / Tester)     │ (Ký sinh Free-rider)   │
@@ -161,7 +161,7 @@ flowchart TD
      - Hệ thống gắn nhãn cảnh báo đỏ: `Ghosting Member Detected`.
   3. **Xử lý công minh**:
      - Slicing Pie tự động tính toán mức đóng góp của Dũng chỉ đạt **12.0%** (do không có bằng chứng mã nguồn).
-     - Giảng viên mở giao diện `/lecturer/courses/[id]/graph`, bấm vào nút can thiệp điểm số (`POST /api/teams/{teamId}/contribution-override`), hạ điểm đồ án của Dũng và giữ trọn điểm cao xứng đáng cho An, Bình và Cường!
+     - Giảng viên mở giao diện `/lecturer/courses/[id]/graph`, bấm vào nút can thiệp điểm số (`POST /api/teams/{teamId}/contribution-override`), hạ điểm dự án của Dũng và giữ trọn điểm cao xứng đáng cho An, Bình và Cường!
 
 ---
 

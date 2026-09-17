@@ -46,7 +46,7 @@ Tiến trình hội tụ chất lượng (Quality Convergence):
 
 ## 📊 PHẦN 1: BẢNG THỐNG KÊ TỔNG HỢP (STATISTICS)
 
-> Bảng này đối soát trực tiếp với sheet **Statistics** trong file Excel báo cáo kiểm thử đồ án tốt nghiệp.
+> Bảng này đối soát trực tiếp với sheet **Statistics** trong file Excel báo cáo kiểm thử dự án tốt nghiệp.
 
 | STT | Tên Hàm / Module Kiểm Thử | Đợt 1 Pass | Đợt 1 Fail | Nghiệm Thu Final | Normal (N) | Abnormal (A) | Boundary (B) | Tổng Số Ca | Ngày Hoàn Tất |
 | :---: | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |

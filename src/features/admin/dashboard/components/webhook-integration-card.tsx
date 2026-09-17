@@ -118,7 +118,7 @@ export function WebhookIntegrationSection({
                 {unconnectedGroups.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={4} className="text-center py-8 text-muted-foreground text-xs">
-                      Tất cả các nhóm đồ án đã kết nối đầy đủ Jira & GitHub!
+                      Tất cả các nhóm dự án đã kết nối đầy đủ Jira & GitHub!
                     </TableCell>
                   </TableRow>
                 ) : (

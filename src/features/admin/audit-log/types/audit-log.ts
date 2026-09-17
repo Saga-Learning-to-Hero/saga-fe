@@ -49,8 +49,12 @@ export interface AuditContextSnapshot {
   classCode?: string | null;
   className?: string | null;
   courseId?: string | null;
+  courseName?: string | null;
   teamId?: string | null;
+  teamNo?: number | null;
+  teamName?: string | null;
   projectId?: string | null;
+  projectName?: string | null;
   source?: string | null;
 }
 
@@ -74,12 +78,12 @@ export interface AuditLogItem {
 }
 
 export interface AuditFilterState {
-  search: string;
-  category: "ALL" | AuditCategory;
-  severity: "ALL" | AuditSeverity;
-  timeRange: "TODAY" | "7_DAYS" | "30_DAYS" | "ALL";
-  action?: string;
-  entityType?: string;
+  action: string;      // Chuỗi hành động hoặc "ALL"
+  entityType: string;  // Loại đối tượng hoặc "ALL"
+  actorUserId: string; // UUID người thực hiện
+  entityId: string;    // UUID đối tượng tác động
+  fromDate: string;    // Chuỗi ngày YYYY-MM-DD (From Timestamp)
+  toDate: string;      // Chuỗi ngày YYYY-MM-DD (To Timestamp)
 }
 
 // -----------------------------------------------------------------------------
@@ -99,7 +103,10 @@ export interface AdminAuditLogItemResponse {
   contextClassNameSnapshot?: string | null;
   contextCourseId?: string | null;
   contextTeamId?: string | null;
+  contextTeamNoSnapshot?: number | null;
+  contextTeamNameSnapshot?: string | null;
   contextProjectId?: string | null;
+  contextProjectNameSnapshot?: string | null;
   action: string;
   entityType: string;
   entityId: string;
@@ -305,12 +312,89 @@ export function mapAdminAuditLogResponseToItem(
     severity = "WARNING";
   }
 
+  const beforeObj = toRecordObject(res.before);
+  const afterObj = toRecordObject(res.after);
+  const metaObj = toRecordObject(res.metadata);
+
+  // Trích xuất tên Team từ backend snapshot, metadata hoặc before/after nếu có
+  const extractedTeamName =
+    res.contextTeamNameSnapshot ||
+    (metaObj?.teamName as string) ||
+    (metaObj?.team_name as string) ||
+    (afterObj?.teamName as string) ||
+    (beforeObj?.teamName as string) ||
+    (metaObj?.groupName as string) ||
+    (metaObj?.name && (res.entityType === "TEAM" || res.contextTeamId)
+      ? (metaObj.name as string)
+      : null);
+
+  // Trích xuất tên Project từ backend snapshot, metadata hoặc before/after nếu có
+  const extractedProjectName =
+    res.contextProjectNameSnapshot ||
+    (metaObj?.projectName as string) ||
+    (metaObj?.project_name as string) ||
+    (metaObj?.projectKey as string) ||
+    (metaObj?.project_key as string) ||
+    (afterObj?.projectName as string) ||
+    (beforeObj?.projectName as string) ||
+    (metaObj?.name && (res.entityType === "PROJECT" || res.contextProjectId)
+      ? (metaObj.name as string)
+      : null);
+
+  // Trích xuất tên Course từ metadata hoặc before/after nếu có
+  const extractedCourseName =
+    (metaObj?.courseName as string) ||
+    (metaObj?.courseCode as string) ||
+    (afterObj?.courseName as string) ||
+    (afterObj?.courseCode as string) ||
+    (beforeObj?.courseName as string) ||
+    (metaObj?.name && (res.entityType === "COURSE" || res.contextCourseId)
+      ? (metaObj.name as string)
+      : null);
+
+  // Xác định tên đối tượng tác động (Target) với fallback thông minh
+  let resolvedTargetName: string | null = null;
+  if (upperEntity.includes("USER")) {
+    const uName =
+      (afterObj?.fullName as string) ||
+      (beforeObj?.fullName as string) ||
+      (metaObj?.fullName as string) ||
+      (metaObj?.userName as string) ||
+      (afterObj?.email as string) ||
+      (beforeObj?.email as string) ||
+      (metaObj?.email as string);
+    if (uName) resolvedTargetName = uName;
+  } else if (upperEntity.includes("COURSE")) {
+    resolvedTargetName = extractedCourseName;
+  } else if (upperEntity.includes("SUBJECT")) {
+    resolvedTargetName =
+      (afterObj?.nameVietnamese as string) ||
+      (afterObj?.nameEnglish as string) ||
+      (afterObj?.code as string) ||
+      (beforeObj?.nameVietnamese as string) ||
+      (beforeObj?.code as string) ||
+      (metaObj?.name as string);
+  } else if (upperEntity.includes("PROJECT")) {
+    resolvedTargetName =
+      res.contextProjectNameSnapshot ||
+      extractedProjectName ||
+      (afterObj?.name as string) ||
+      (beforeObj?.name as string) ||
+      (metaObj?.name as string);
+  } else if (upperEntity.includes("TEAM")) {
+    resolvedTargetName =
+      res.contextTeamNameSnapshot ||
+      extractedTeamName ||
+      (afterObj?.name as string) ||
+      (beforeObj?.name as string) ||
+      (metaObj?.name as string);
+  }
+
   const targetName =
+    resolvedTargetName ||
     res.contextClassNameSnapshot ||
     res.contextClassCodeSnapshot ||
-    (res.entityType
-      ? `${res.entityType} #${res.entityId ? res.entityId.slice(0, 8) : ""}`
-      : res.entityId || "Hệ thống");
+    (res.entityType || "Hệ thống");
 
   const changes = parseDiffChanges(res.before, res.after);
 
@@ -336,7 +420,7 @@ export function mapAdminAuditLogResponseToItem(
       type: res.entityType || "SYSTEM",
       code: res.contextClassCodeSnapshot || undefined,
     },
-    description: `Thao tác [${res.action}] trên đối tượng ${res.entityType || "thực thể"} (ID: ${res.entityId})`,
+    description: `Thao tác [${res.action}] trên ${res.entityType || "thực thể"}: ${targetName}`,
     changes: changes.length > 0 ? changes : undefined,
     rawBefore: formatRawJsonString(res.before),
     rawAfter: formatRawJsonString(res.after),
@@ -346,8 +430,12 @@ export function mapAdminAuditLogResponseToItem(
       classCode: res.contextClassCodeSnapshot,
       className: res.contextClassNameSnapshot,
       courseId: res.contextCourseId,
+      courseName: extractedCourseName,
       teamId: res.contextTeamId,
+      teamNo: res.contextTeamNoSnapshot ?? (metaObj?.teamNo as number) ?? undefined,
+      teamName: extractedTeamName,
       projectId: res.contextProjectId,
+      projectName: extractedProjectName,
       source: res.source,
     },
     status: "SUCCESS",

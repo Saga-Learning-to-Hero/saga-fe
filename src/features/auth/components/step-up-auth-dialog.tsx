@@ -203,7 +203,7 @@ export function StepUpAuthDialog({
   onClose,
   onSuccess,
   title = "Xác thực bảo mật nâng cao",
-  description = "Thao tác xác nhận đóng góp yêu cầu bạn nhập lại mật khẩu hiện tại để xác minh danh tính và bảo vệ dữ liệu đồ án.",
+  description = "Thao tác xác nhận đóng góp yêu cầu bạn nhập lại mật khẩu hiện tại để xác minh danh tính và bảo vệ dữ liệu dự án.",
   notice,
 }: StepUpAuthDialogProps) {
   return (

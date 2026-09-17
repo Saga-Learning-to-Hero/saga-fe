@@ -6,7 +6,7 @@ description: Quy chuẩn viết Unit Test, phân loại ca kiểm thử (Normal,
 # Quy Chuẩn Kiểm Thử Đơn Vị (Unit Testing) & Thiết Kế API Service
 
 ## 1. Mục Đích & Chuẩn Mực Báo Cáo (Report Standards)
-Hệ thống Frontend của SAGA tuân thủ mẫu báo cáo **Unit Test Report & Decision Matrix** (chuẩn Đồ án Tốt nghiệp FPT University / FPT Software):
+Hệ thống Frontend của SAGA tuân thủ mẫu báo cáo **Unit Test Report & Decision Matrix** (chuẩn dự án Tốt nghiệp FPT University / FPT Software):
 - Mọi hàm xử lý nghiệp vụ tính toán hoặc gọi API (API Services) **BẮT BUỘC** phải có file test tương ứng (`*.spec.ts`).
 - Mỗi hàm phải được phân tích ca kiểm thử theo 3 nhóm:
   1. **`N` (Normal Case - Ca thông thường / Happy Path)**: Dữ liệu hợp lệ, API trả về `200 OK`, hàm xử lý đúng logic và trả về kết quả mong đợi.

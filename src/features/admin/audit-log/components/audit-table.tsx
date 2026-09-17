@@ -27,6 +27,7 @@ import type {
   AuditActionType,
   AuditSeverity,
 } from "../types/audit-log";
+import { useAuditNameResolver } from "../hooks/use-audit-name-resolver";
 
 interface AuditTableProps {
   logs: AuditLogItem[];
@@ -61,6 +62,15 @@ export function AuditTable({
   onPageChange,
   isLoading = false,
 }: AuditTableProps) {
+  const {
+    resolveTargetName,
+    resolveTargetSubtext,
+    resolveActorName,
+    resolveUserInfo,
+    resolveCourseName,
+    resolveClassName,
+  } = useAuditNameResolver();
+
   const isServer = Boolean(onPageChange && totalItems !== undefined);
   const effectiveTotal = isServer ? (totalItems ?? logs.length) : logs.length;
   const totalPages = Math.max(1, Math.ceil(effectiveTotal / pageSize));
@@ -268,49 +278,80 @@ export function AuditTable({
                 </TableCell>
               </TableRow>
             ) : (
-              logs.map((log) => (
-                <TableRow key={log.id} className="hover:bg-muted/30 transition-colors">
-                  <TableCell className="py-3 px-4 whitespace-nowrap font-mono text-[11px] text-muted-foreground">
-                    {formatRelativeTime(log.timestamp)}
-                  </TableCell>
+              logs.map((log) => {
+                const resolvedActorName = resolveActorName(log.actor.id, log.actor.fullName);
+                const actorUserInfo = resolveUserInfo(log.actor.id);
+                const actorStudentCode = log.actor.studentCode || actorUserInfo?.studentCode;
 
-                  <TableCell className="py-3 px-4">
-                    <div className="flex items-center gap-2.5">
-                      <Avatar className="w-7 h-7 rounded-lg border border-border shrink-0">
-                        {log.actor.avatar && (
-                          <AvatarImage src={log.actor.avatar} alt={log.actor.fullName} />
-                        )}
-                        <AvatarFallback className="text-[10px] font-bold bg-primary/10 text-primary">
-                          {log.actor.fullName.slice(0, 2).toUpperCase()}
-                        </AvatarFallback>
-                      </Avatar>
+                const displayTargetName = resolveTargetName(
+                  log.target.type,
+                  log.target.id,
+                  log.target.name
+                );
+                const resolvedCourseName =
+                  resolveCourseName(log.context?.courseId) || log.context?.courseName;
+                const resolvedClassName =
+                  resolveClassName(log.context?.classId) ||
+                  log.context?.className ||
+                  log.context?.classCode;
+
+                let targetContextLabel = "";
+                if (log.context?.classCode) {
+                  targetContextLabel = ` • ${log.context.classCode}`;
+                } else if (resolvedClassName) {
+                  targetContextLabel = ` • ${resolvedClassName}`;
+                } else if (resolvedCourseName) {
+                  targetContextLabel = ` • ${resolvedCourseName}`;
+                }
+
+                const displaySubtext = resolveTargetSubtext(
+                  log.target.type,
+                  log.target.id,
+                  `${toSafeString(log.target.type)}${targetContextLabel}`
+                );
+
+                return (
+                  <TableRow key={log.id} className="hover:bg-muted/30 transition-colors">
+                    <TableCell className="py-3 px-4 whitespace-nowrap font-mono text-[11px] text-muted-foreground">
+                      {formatRelativeTime(log.timestamp)}
+                    </TableCell>
+
+                    <TableCell className="py-3 px-4">
+                      <div className="flex items-center gap-2.5">
+                        <Avatar className="w-7 h-7 rounded-lg border border-border shrink-0">
+                          {log.actor.avatar && (
+                            <AvatarImage src={log.actor.avatar} alt={resolvedActorName} />
+                          )}
+                          <AvatarFallback className="text-[10px] font-bold bg-primary/10 text-primary">
+                            {resolvedActorName.slice(0, 2).toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="flex flex-col min-w-0">
+                          <span className="font-semibold text-foreground text-xs truncate">
+                            {resolvedActorName}
+                          </span>
+                          <span className="text-[10px] text-muted-foreground font-mono truncate">
+                            {log.actor.ipAddress} &bull; {log.actor.role}
+                            {actorStudentCode ? ` (${actorStudentCode})` : ""}
+                          </span>
+                        </div>
+                      </div>
+                    </TableCell>
+
+                    <TableCell className="py-3 px-4 whitespace-nowrap">
+                      {getActionBadge(log.action)}
+                    </TableCell>
+
+                    <TableCell className="py-3 px-4">
                       <div className="flex flex-col min-w-0">
-                        <span className="font-semibold text-foreground text-xs truncate">
-                          {log.actor.fullName}
+                        <span className="font-medium text-foreground text-xs truncate">
+                          {displayTargetName}
                         </span>
-                        <span className="text-[10px] text-muted-foreground font-mono truncate">
-                          {log.actor.ipAddress} &bull; {log.actor.role}
-                          {log.actor.studentCode ? ` (${log.actor.studentCode})` : ""}
+                        <span className="text-[10px] text-muted-foreground truncate font-mono">
+                          {displaySubtext}
                         </span>
                       </div>
-                    </div>
-                  </TableCell>
-
-                  <TableCell className="py-3 px-4 whitespace-nowrap">
-                    {getActionBadge(log.action)}
-                  </TableCell>
-
-                  <TableCell className="py-3 px-4">
-                    <div className="flex flex-col min-w-0">
-                      <span className="font-medium text-foreground text-xs truncate">
-                        {toSafeString(log.target.name)}
-                      </span>
-                      <span className="text-[10px] text-muted-foreground truncate font-mono">
-                        {toSafeString(log.target.type)}
-                        {log.context?.classCode ? ` &bull; ${toSafeString(log.context.classCode)}` : ""}
-                      </span>
-                    </div>
-                  </TableCell>
+                    </TableCell>
 
                   <TableCell className="py-3 px-4 whitespace-nowrap">
                     {getSeverityBadge(log.severity)}
@@ -342,8 +383,9 @@ export function AuditTable({
                     </Button>
                   </TableCell>
                 </TableRow>
-              ))
-            )}
+              );
+            })
+          )}
           </TableBody>
         </Table>
       </div>

@@ -320,7 +320,7 @@ export function SyllabusStructureBuilder({
         deliverables: [
           {
             code: "DELIV_3_1",
-            name: "Prototype tương tác & Báo cáo tổng kết đồ án",
+            name: "Prototype tương tác & Báo cáo tổng kết dự án",
             description: "Bản báo cáo hoàn chỉnh bảo vệ trước hội đồng",
             orderIndex: 1,
             outcomeCodes: ["LO3"],
@@ -388,7 +388,7 @@ export function SyllabusStructureBuilder({
               className="h-8 text-xs font-semibold gap-1.5 cursor-pointer shadow-2xs border-amber-500/40 text-amber-900 dark:text-amber-100 hover:bg-amber-500/10"
             >
               <SparklesIcon className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
-              Nạp cấu trúc mẫu đồ án SE (SWP/SWR)
+              Nạp cấu trúc mẫu dự án SE (SWP/SWR)
             </Button>
             <Button
               onClick={handleSave}
@@ -638,7 +638,7 @@ export function SyllabusStructureBuilder({
                 </Badge>
               </div>
               <p className="text-[11px] text-muted-foreground pt-0.5">
-                Thiết lập các đợt nghiệm thu đồ án, sản phẩm bàn giao (SRS, GitHub, Jira) và % trọng số đánh giá.
+                Thiết lập các đợt nghiệm thu dự án, sản phẩm bàn giao (SRS, GitHub, Jira) và % trọng số đánh giá.
               </p>
             </div>
             {!isImmutable && (
@@ -759,7 +759,7 @@ export function SyllabusStructureBuilder({
               ))
             ) : (
               <div className="p-8 text-center text-xs text-muted-foreground border border-dashed border-border rounded-2xl">
-                Chưa có giai đoạn đồ án nào được thiết lập.
+                Chưa có giai đoạn dự án nào được thiết lập.
               </div>
             )}
           </div>

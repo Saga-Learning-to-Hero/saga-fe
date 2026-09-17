@@ -117,7 +117,7 @@ export function IntegrationsView({ user }: IntegrationsViewProps) {
             Tính năng chỉ áp dụng cho tài khoản Sinh viên
           </h2>
           <p className="text-xs text-muted-foreground max-w-md mx-auto leading-relaxed">
-            Liên kết tài khoản Jira và GitHub cá nhân chỉ dành cho tài khoản Sinh viên nhằm đối soát tác giả commit mã nguồn và người thực hiện nhiệm vụ trong các đồ án học phần.
+            Liên kết tài khoản Jira và GitHub cá nhân chỉ dành cho tài khoản Sinh viên nhằm đối soát tác giả commit mã nguồn và người thực hiện nhiệm vụ trong các dự án học phần.
           </p>
           <Button
             onClick={handleBack}
@@ -233,7 +233,7 @@ export function IntegrationsView({ user }: IntegrationsViewProps) {
         <div className="space-y-1">
           <p className="font-bold text-foreground">Bảo mật & Quyền truy cập</p>
           <p>
-            SAGA chỉ dùng quyền đọc (read-only) để ghi nhận commit GitHub và task Jira của bạn trong đồ án, không chỉnh sửa code hay can thiệp dữ liệu cá nhân.
+            SAGA chỉ dùng quyền đọc (read-only) để ghi nhận commit GitHub và task Jira của bạn trong dự án, không chỉnh sửa code hay can thiệp dữ liệu cá nhân.
           </p>
         </div>
       </div>

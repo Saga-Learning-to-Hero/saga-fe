@@ -130,7 +130,7 @@ export function CourseOverviewPage({ courseId }: CourseOverviewPageProps) {
   return (
     <LecturerPageShell
       title="Tổng quan tiến độ & Tình trạng lớp học phần"
-      description={`${course?.subjectName || course?.name || "Lớp học phần"} · Theo dõi sĩ số, nhóm đồ án và các cảnh báo tiến độ.`}
+      description={`${course?.subjectName || course?.name || "Lớp học phần"} · Theo dõi sĩ số, nhóm dự án và các cảnh báo tiến độ.`}
       badges={
         <>
           <Badge
@@ -181,7 +181,7 @@ export function CourseOverviewPage({ courseId }: CourseOverviewPageProps) {
         <OverviewStatCard
           icon={<FolderKanbanIcon className="size-5" />}
           iconBoxClass="bg-blue-500/10 text-blue-600 dark:text-blue-400"
-          label="Tổng số nhóm đồ án"
+          label="Tổng số nhóm dự án"
           value={summary.teamCount}
           subValue="nhóm"
           badge={

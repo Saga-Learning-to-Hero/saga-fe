@@ -14,10 +14,7 @@ import {
   ArrowRightIcon,
   GraduationCapIcon,
   CodeIcon,
-  CopyIcon,
-  CheckIcon,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
 import {
   Dialog,
   DialogContent,
@@ -37,6 +34,8 @@ import {
   TableCell,
 } from "@/components/ui/table";
 import type { AuditLogItem } from "../types/audit-log";
+import { ExpandableId } from "./expandable-id";
+import { useAuditNameResolver } from "../hooks/use-audit-name-resolver";
 
 interface AuditDetailDialogProps {
   log: AuditLogItem | null;
@@ -56,98 +55,50 @@ function renderSafeValue(val: unknown): string {
   return String(val);
 }
 
-interface ExpandableIdProps {
-  id: string;
-  prefix?: string;
-  className?: string;
-  badge?: boolean;
-}
-
-function ExpandableId({ id, prefix, className, badge }: ExpandableIdProps) {
-  const [isExpanded, setIsExpanded] = useState(false);
-  const [isCopied, setIsCopied] = useState(false);
-
-  if (!id) return null;
-
-  const isLong = id.length > 10;
-  const shortPart = isLong ? id.slice(0, 8) : id;
-
-  const handleCopy = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (typeof navigator !== "undefined" && navigator.clipboard) {
-      navigator.clipboard.writeText(id);
-      setIsCopied(true);
-      setTimeout(() => setIsCopied(false), 1600);
-    }
-  };
-
-  const handleToggle = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setIsExpanded(!isExpanded);
-  };
-
-  if (!isLong) {
-    return (
-      <span className={cn("font-mono text-foreground font-medium", className)}>
-        {prefix}
-        {id}
-      </span>
-    );
-  }
-
-  return (
-    <span
-      className={cn(
-        "inline-flex items-center gap-1 font-mono transition-colors",
-        badge
-          ? "border border-border/80 bg-muted/40 hover:bg-muted/70 px-2 py-0.5 rounded-lg text-[10px]"
-          : "hover:bg-muted/50 px-1.5 py-0.5 rounded-md text-[11px]",
-        className
-      )}
-    >
-      {prefix && (
-        <span className="text-muted-foreground font-sans select-none text-[10px]">
-          {prefix}
-        </span>
-      )}
-      <button
-        type="button"
-        onClick={handleToggle}
-        title={isExpanded ? "Nhấn để thu gọn" : "Nhấn để xem đầy đủ ID"}
-        className="text-foreground hover:text-primary transition-colors cursor-pointer text-left break-all inline-flex items-center gap-0.5 group/btn"
-      >
-        <span>{isExpanded ? id : shortPart}</span>
-        {!isExpanded && (
-          <span className="text-primary font-bold px-1 py-0.2 rounded bg-primary/15 group-hover/btn:bg-primary/25 text-[10px] tracking-widest leading-none">
-            ...
-          </span>
-        )}
-      </button>
-
-      <button
-        type="button"
-        onClick={handleCopy}
-        title={isCopied ? "Đã sao chép" : "Sao chép ID"}
-        className="p-0.5 text-muted-foreground hover:text-primary transition-opacity cursor-pointer opacity-60 hover:opacity-100 shrink-0 ml-0.5"
-      >
-        {isCopied ? (
-          <CheckIcon className="size-3 text-success animate-in zoom-in-50 duration-150" />
-        ) : (
-          <CopyIcon className="size-3" />
-        )}
-      </button>
-    </span>
-  );
-}
-
 export function AuditDetailDialog({
   log,
   isOpen,
   onClose,
 }: AuditDetailDialogProps) {
   const [showRawJson, setShowRawJson] = useState(false);
+  const {
+    resolveCourseName,
+    resolveClassName,
+    resolveUserInfo,
+    resolveTargetName,
+    resolveValueToName,
+  } = useAuditNameResolver();
 
   if (!log) return null;
+
+  // Giải mã Actor
+  const actorUserInfo = resolveUserInfo(log.actor.id);
+  const actorFullName =
+    log.actor.fullName && log.actor.fullName !== "Hệ thống SAGA"
+      ? log.actor.fullName
+      : actorUserInfo?.fullName || log.actor.fullName || "Hệ thống SAGA";
+  const actorEmail =
+    log.actor.email && log.actor.email !== "system@saga.local"
+      ? log.actor.email
+      : actorUserInfo?.email || log.actor.email;
+  const actorStudentCode = log.actor.studentCode || actorUserInfo?.studentCode;
+
+  // Giải mã Context
+  const resolvedCourseName =
+    resolveCourseName(log.context?.courseId) || log.context?.courseName;
+  const resolvedClassName =
+    resolveClassName(log.context?.classId) || log.context?.className;
+
+  // Giải mã Target
+  const displayTargetName = resolveTargetName(
+    log.target.type,
+    log.target.id,
+    log.target.name
+  );
+  const targetUserInfo =
+    log.target.type.toUpperCase().includes("USER") && log.target.id
+      ? resolveUserInfo(log.target.id)
+      : null;
 
   const renderSeverityIcon = () => {
     switch (log.severity) {
@@ -189,9 +140,13 @@ export function AuditDetailDialog({
     log.context &&
     (log.context.classCode ||
       log.context.className ||
+      log.context.classId ||
       log.context.courseId ||
+      log.context.courseName ||
       log.context.teamId ||
+      log.context.teamName ||
       log.context.projectId ||
+      log.context.projectName ||
       log.context.source);
 
   return (
@@ -210,9 +165,8 @@ export function AuditDetailDialog({
                 </DialogTitle>
                 {renderSeverityBadge()}
               </div>
-              <DialogDescription className="text-xs font-mono text-muted-foreground mt-0.5 truncate">
-                Request ID:{" "}
-                <strong className="text-foreground">{log.requestId}</strong>
+              <DialogDescription className="text-xs text-muted-foreground mt-0.5">
+                Nhật ký hoạt động ghi nhận lúc {new Date(log.timestamp).toLocaleString("vi-VN")}
               </DialogDescription>
             </div>
           </div>
@@ -247,19 +201,22 @@ export function AuditDetailDialog({
                 <UserIcon className="w-3.5 h-3.5 text-primary" />
                 Tài khoản thực hiện (Actor)
               </p>
-              <p className="font-bold text-foreground text-xs">{log.actor.fullName}</p>
-              <p className="text-muted-foreground text-[11px]">{log.actor.email}</p>
-              <div className="flex items-center gap-1.5 pt-1">
+              <p className="font-bold text-foreground text-xs">{actorFullName}</p>
+              <p className="text-muted-foreground text-[11px]">{actorEmail}</p>
+              <div className="flex items-center gap-1.5 pt-1 flex-wrap">
                 <Badge variant="outline" className="text-[10px] border-border">
                   Vai trò: {log.actor.role}
                 </Badge>
-                {log.actor.studentCode && (
+                {actorStudentCode && (
                   <Badge
                     variant="outline"
                     className="text-[10px] font-mono border-primary/30 text-primary"
                   >
-                    MSSV: {log.actor.studentCode}
+                    MSSV: {actorStudentCode}
                   </Badge>
+                )}
+                {!actorFullName && log.actor.id && (
+                  <ExpandableId id={log.actor.id} prefix="ID: " badge />
                 )}
               </div>
             </div>
@@ -292,33 +249,61 @@ export function AuditDetailDialog({
                 Ngữ cảnh học thuật (Academic Context)
               </p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px]">
-                {log.context?.className && (
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Lớp học phần / Niên khóa:</span>
-                    <span className="font-semibold text-foreground">
-                      {log.context.className}{" "}
-                      {log.context.classCode ? `(${log.context.classCode})` : ""}
-                    </span>
-                  </div>
-                )}
-                {log.context?.courseId && (
+                {(resolvedClassName || log.context?.classCode || log.context?.classId) && (
                   <div className="flex justify-between items-center gap-2">
-                    <span className="text-muted-foreground shrink-0">Mã khóa học (Course ID):</span>
-                    <ExpandableId id={log.context.courseId} />
+                    <span className="text-muted-foreground shrink-0">Lớp niên khóa:</span>
+                    <div className="flex items-center gap-1.5 flex-wrap justify-end">
+                      {resolvedClassName || log.context?.classCode ? (
+                        <span className="font-semibold text-foreground">
+                          {resolvedClassName || log.context?.classCode}
+                          {log.context?.classCode && resolvedClassName && !resolvedClassName.includes(log.context.classCode)
+                            ? ` (${log.context.classCode})`
+                            : ""}
+                        </span>
+                      ) : (
+                        log.context?.classId && <ExpandableId id={log.context.classId} badge />
+                      )}
+                    </div>
                   </div>
                 )}
-                {log.context?.teamId && (
+                {(resolvedCourseName || log.context?.courseId) && (
                   <div className="flex justify-between items-center gap-2">
-                    <span className="text-muted-foreground shrink-0">Nhóm đồ án (Team ID):</span>
-                    <ExpandableId id={log.context.teamId} />
+                    <span className="text-muted-foreground shrink-0">Lớp học phần:</span>
+                    <div className="flex items-center gap-1.5 flex-wrap justify-end">
+                      {resolvedCourseName ? (
+                        <span className="font-semibold text-foreground">{resolvedCourseName}</span>
+                      ) : (
+                        log.context?.courseId && <ExpandableId id={log.context.courseId} badge />
+                      )}
+                    </div>
                   </div>
                 )}
-                {log.context?.projectId && (
-                  <div className="flex justify-between items-center gap-2">
-                    <span className="text-muted-foreground shrink-0">Dự án (Project ID):</span>
-                    <ExpandableId id={log.context.projectId} />
+                <div className="flex justify-between items-center gap-2">
+                  <span className="text-muted-foreground shrink-0">Nhóm dự án:</span>
+                  <div className="flex items-center gap-1.5 flex-wrap justify-end">
+                    {log.context?.teamName ? (
+                      <span className="font-semibold text-foreground">
+                        {log.context.teamNo != null &&
+                          !log.context.teamName.toLowerCase().includes("nhóm") &&
+                          !log.context.teamName.toLowerCase().includes("team")
+                          ? `Nhóm ${log.context.teamNo} - ${log.context.teamName}`
+                          : log.context.teamName}
+                      </span>
+                    ) : (
+                      <span className="italic text-muted-foreground/80">Không có</span>
+                    )}
                   </div>
-                )}
+                </div>
+                <div className="flex justify-between items-center gap-2">
+                  <span className="text-muted-foreground shrink-0">Dự án:</span>
+                  <div className="flex items-center gap-1.5 flex-wrap justify-end">
+                    {log.context?.projectName ? (
+                      <span className="font-semibold text-foreground">{log.context.projectName}</span>
+                    ) : (
+                      <span className="italic text-muted-foreground/80">Không có</span>
+                    )}
+                  </div>
+                </div>
                 {log.context?.source && (
                   <div className="flex justify-between col-span-1 sm:col-span-2">
                     <span className="text-muted-foreground">Nguồn phát sinh:</span>
@@ -335,20 +320,26 @@ export function AuditDetailDialog({
           <div className="space-y-2">
             <p className="font-semibold text-foreground">Nội dung chi tiết sự kiện:</p>
             <div className="p-3 rounded-xl bg-muted/30 border border-border/60 text-xs text-foreground leading-relaxed">
-              {renderSafeValue(log.description)}
+              Thao tác [{log.action}] trên {log.target.type}: {displayTargetName}
             </div>
           </div>
 
           <div className="flex items-center justify-between p-3 rounded-xl bg-muted/20 border border-border/60">
-            <div>
+            <div className="min-w-0 flex-1 pr-2">
               <p className="text-[11px] text-muted-foreground">Đối tượng bị tác động (Target):</p>
-              <p className="font-semibold text-foreground text-xs mt-0.5">{renderSafeValue(log.target.name)}</p>
+              <p className="font-semibold text-foreground text-xs mt-0.5 truncate">{displayTargetName}</p>
+              {targetUserInfo && (
+                <p className="text-[10px] text-muted-foreground font-mono mt-0.5 truncate">
+                  {targetUserInfo.email} {targetUserInfo.studentCode ? `• MSSV: ${targetUserInfo.studentCode}` : ""}
+                </p>
+              )}
             </div>
-            <div className="flex items-center gap-1.5 flex-wrap justify-end">
+            <div className="flex items-center gap-1.5 flex-wrap justify-end shrink-0">
               <Badge variant="secondary" className="text-[11px]">
                 Loại: {renderSafeValue(log.target.type)}
               </Badge>
-              {log.target.id && (
+              {/* Chỉ hiển thị ID nếu hoàn toàn không có tên thay thế */}
+              {(!displayTargetName || displayTargetName === log.target.id || displayTargetName.includes("#")) && log.target.id && (
                 <ExpandableId
                   id={renderSafeValue(log.target.id)}
                   prefix="ID: "
@@ -388,28 +379,35 @@ export function AuditDetailDialog({
                     </TableRow>
                   </TableHeader>
                   <TableBody className="divide-y divide-border/60">
-                    {log.changes.map((change, idx) => (
-                      <TableRow key={idx}>
-                        <TableCell className="py-2 px-3 font-mono font-semibold text-foreground">
-                          {renderSafeValue(change.field)}
-                        </TableCell>
-                        <TableCell className="py-2 px-3 text-muted-foreground font-mono text-[11px]">
-                          {change.oldValue ? (
-                            <span className="line-through text-destructive/80">
-                              {renderSafeValue(change.oldValue)}
+                    {log.changes.map((change, idx) => {
+                      const oldResolved = resolveValueToName(change.field, change.oldValue);
+                      const newResolved = resolveValueToName(change.field, change.newValue);
+                      const displayOld = oldResolved || change.oldValue;
+                      const displayNew = newResolved || change.newValue;
+
+                      return (
+                        <TableRow key={idx}>
+                          <TableCell className="py-2 px-3 font-mono font-semibold text-foreground">
+                            {renderSafeValue(change.field)}
+                          </TableCell>
+                          <TableCell className="py-2 px-3 text-muted-foreground font-mono text-[11px]">
+                            {displayOld ? (
+                              <span className="line-through text-destructive/80">
+                                {renderSafeValue(displayOld)}
+                              </span>
+                            ) : (
+                              <span className="italic text-muted-foreground/60">Trống</span>
+                            )}
+                          </TableCell>
+                          <TableCell className="py-2 px-3 text-foreground font-mono text-[11px] font-medium">
+                            <span className="text-success inline-flex items-center gap-1">
+                              <ArrowRightIcon className="w-3 h-3 shrink-0" />
+                              {renderSafeValue(displayNew)}
                             </span>
-                          ) : (
-                            <span className="italic text-muted-foreground/60">Trống</span>
-                          )}
-                        </TableCell>
-                        <TableCell className="py-2 px-3 text-foreground font-mono text-[11px] font-medium">
-                          <span className="text-success inline-flex items-center gap-1">
-                            <ArrowRightIcon className="w-3 h-3 shrink-0" />
-                            {renderSafeValue(change.newValue)}
-                          </span>
-                        </TableCell>
-                      </TableRow>
-                    ))}
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
                   </TableBody>
                 </Table>
               </div>

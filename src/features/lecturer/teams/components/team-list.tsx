@@ -129,7 +129,7 @@ export function TeamList({ courseId, courseCode }: TeamListProps) {
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h2 className="text-base font-extrabold text-foreground">Danh sách nhóm đồ án</h2>
+          <h2 className="text-base font-extrabold text-foreground">Danh sách nhóm dự án</h2>
           <p className="text-xs text-muted-foreground">
             Quản lý thành viên từng nhóm và theo dõi tiến độ khởi tạo dự án thực tế.
           </p>

@@ -93,14 +93,14 @@ Chia đều toàn bộ khối lượng công việc thành **3 trục nghiệp v
 
 ### 👤 DEV 2: Lớp Học, Phân Nhóm & Toàn Bộ Trọng Số Slicing Pie (Courses, Teams & Weights)
 
-- **Mục tiêu**: Quản lý không gian lớp học của giảng viên, theo dõi sinh viên ACTIVE, phân chia sinh viên vào các nhóm đồ án, và **phụ trách toàn bộ hệ thống Trọng số Slicing Pie (cấp Lớp & cấp Nhóm) cùng đánh giá đóng góp DEC-002**.
+- **Mục tiêu**: Quản lý không gian lớp học của giảng viên, theo dõi sinh viên ACTIVE, phân chia sinh viên vào các nhóm dự án, và **phụ trách toàn bộ hệ thống Trọng số Slicing Pie (cấp Lớp & cấp Nhóm) cùng đánh giá đóng góp DEC-002**.
 - **Đặc thù UI**: Bảng lớp học giảng dạy, Danh sách sinh viên đang học thực tế, bộ xử lý **Excel Team Uploader**, **Giao diện điều chỉnh Trọng số Slicing Pie (Slider/Input tổng 100%)** và **Bảng đối soát tỷ lệ % đóng góp thực tế của thành viên**.
 - **Danh mục API phụ trách (11 API Nền tảng + 8 API MỚI CẦN LÀM)**:
   1. **Không gian Lớp của Giảng viên (Part E1 – E3)**:
      - `GET /api/lecturer/courses` (Danh sách lớp giảng viên được phân công)
      - `GET /api/lecturer/courses/{courseId}` (Chi tiết thông tin lớp học phần)
      - `GET /api/lecturer/courses/{courseId}/roster` (Xem danh sách sinh viên ACTIVE)
-  2. **Tổ chức Nhóm Đồ án (Lecturer Team Management - Part E4 – E7)**:
+  2. **Tổ chức Nhóm dự án (Lecturer Team Management - Part E4 – E7)**:
      - `GET /api/lecturer/courses/{courseId}/teams/template` (Tải file mẫu chia nhóm)
      - `POST /api/lecturer/courses/{courseId}/teams/import/preview` (Upload xem trước danh sách nhóm, Leader, Member)
      - `POST /api/lecturer/courses/{courseId}/teams/import/confirm` (Xác nhận tạo nhóm hàng loạt)
@@ -108,7 +108,7 @@ Chia đều toàn bộ khối lượng công việc thành **3 trục nghiệp v
   3. **Sinh viên xem Môn & Nhóm (Part F, G1)**:
      - `GET /api/student/courses` (Môn học sinh viên đang tham gia)
      - `GET /api/student/courses/{courseId}/team` (Sinh viên xem nhóm và vai trò của mình)
-  4. **Điều phối Nhóm Đồ án Bổ sung**:
+  4. **Điều phối Nhóm dự án Bổ sung**:
      - `PUT /api/lecturer/courses/{courseId}/teams/{teamId}/leader` (Chỉ định / thay đổi Trưởng nhóm mới)
      - `PATCH /api/lecturer/courses/{courseId}/team-members/{teamMemberId}/team` (Chuyển thành viên sang nhóm khác trong lớp)
   5. **Cấu hình Trọng số Slice Đóng góp Lớp học (Slicing Pie Weights - DEC-002 - 4 API MỚI)**:
@@ -117,7 +117,7 @@ Chia đều toàn bộ khối lượng công việc thành **3 trục nghiệp v
      - `PUT /api/lecturer/courses/{courseId}/contribution-config-mode` (Chuyển đổi chế độ trọng số: `COURSE` vs `PROJECT_GROUP`)
      - `GET /api/lecturer/courses/{courseId}/contribution-team-weights` (Xem nhóm nào đã thiết lập trọng số riêng)
   6. **Cấu hình Trọng số Nhóm Dự án (Project Group Weights - 2 API MỚI)**:
-     - `GET /api/projects/{projectId}/group-weights` (Xem trọng số riêng của nhóm đồ án)
+     - `GET /api/projects/{projectId}/group-weights` (Xem trọng số riêng của nhóm dự án)
      - `PUT /api/projects/{projectId}/group-weights` (Team Leader cập nhật bộ trọng số riêng khi lớp cho phép)
   7. **Đánh giá & Điều phối Đóng góp Nhóm (Team Contribution Evaluation - DEC-002 - 2 API MỚI)**:
      - `GET /api/teams/{teamId}/contribution-evaluation` (Tính toán tự động tỷ lệ % đóng góp thực tế của từng thành viên)
@@ -127,11 +127,11 @@ Chia đều toàn bộ khối lượng công việc thành **3 trục nghiệp v
 
 ### 👤 DEV 3: Không Gian Dự Án, Tích Hợp GH/Jira & Chiếu Đồng Bộ Dữ Liệu (Project, Integrations & Sync)
 
-- **Mục tiêu**: Xây dựng không gian làm việc của nhóm đồ án, Team Leader tạo dự án, kết nối GitHub App & Jira Software, xử lý luồng xác thực OAuth 2 tầng, và **phụ trách toàn bộ động cơ Chiếu & Đồng bộ Dữ liệu (Project Projections & Sync Engine)**.
+- **Mục tiêu**: Xây dựng không gian làm việc của nhóm dự án, Team Leader tạo dự án, kết nối GitHub App & Jira Software, xử lý luồng xác thực OAuth 2 tầng, và **phụ trách toàn bộ động cơ Chiếu & Đồng bộ Dữ liệu (Project Projections & Sync Engine)**.
 - **Đặc thù UI**: Luồng kết nối nhiều bước (Multi-step Integration Wizard), xử lý OAuth Redirect / Popup, Callback Route Handlers, Thẻ tóm tắt tích hợp, **Nút kích hoạt đồng bộ backfill kèm thanh tiến trình**, và **Bảng Kanban / Nhật ký Commit chiếu liên kết**.
 - **Danh mục API phụ trách (18 API Nền tảng + 5 API MỚI CẦN LÀM + Hoàn thiện Unit Tests)**:
   1. **Khởi tạo Dự án Nhóm (Part H)**:
-     - `GET /api/student/project-types` (Danh mục loại đồ án)
+     - `GET /api/student/project-types` (Danh mục loại dự án)
      - `GET /api/student/courses/{courseId}/project` (Xem thông tin dự án hiện tại)
      - `POST /api/student/courses/{courseId}/project` (Chỉ Team Leader tạo dự án)
   2. **Tích hợp GitHub Workspace Nhóm (Part I)**:

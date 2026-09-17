@@ -23,7 +23,7 @@ export const MOCK_AUDIT_LOGS: AuditLogItem[] = [
       type: "USER",
       code: "SE174567",
     },
-    description: "Khóa vĩnh viễn tài khoản sinh viên do gian lận Commit Git trên đồ án tốt nghiệp.",
+    description: "Khóa vĩnh viễn tài khoản sinh viên do gian lận Commit Git trên dự án tốt nghiệp.",
     changes: [
       {
         field: "status",
@@ -33,7 +33,7 @@ export const MOCK_AUDIT_LOGS: AuditLogItem[] = [
       {
         field: "banReason",
         oldValue: null,
-        newValue: "Gian lận chỉ số đóng góp mã nguồn trên GitHub repository đồ án SWP490.",
+        newValue: "Gian lận chỉ số đóng góp mã nguồn trên GitHub repository dự án SWP490.",
       },
     ],
     status: "SUCCESS",
@@ -56,7 +56,7 @@ export const MOCK_AUDIT_LOGS: AuditLogItem[] = [
     severity: "INFO",
     target: {
       id: "crs-01",
-      name: "SWP490_FA26 - Đồ án KTPM Fall 2026",
+      name: "SWP490_FA26 - dự án KTPM Fall 2026",
       type: "COURSE",
       code: "SWP490_FA26",
     },
@@ -92,7 +92,7 @@ export const MOCK_AUDIT_LOGS: AuditLogItem[] = [
       type: "COURSE",
       code: "EXE201_FA26",
     },
-    description: "Mở học phần đồ án mới EXE201_FA26 gán cho GV TS. Nguyễn Lê Trúc Quỳnh phụ trách.",
+    description: "Mở học phần dự án mới EXE201_FA26 gán cho GV TS. Nguyễn Lê Trúc Quỳnh phụ trách.",
     changes: [
       {
         field: "code",

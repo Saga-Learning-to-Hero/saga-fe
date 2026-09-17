@@ -134,7 +134,7 @@ export function SprintModal({
         const finalSprint: Sprint = {
           id: sprint?.id || `sprint-${Date.now()}`,
           name: form.name,
-          goal: form.goal || "Mục tiêu Sprint nâng cao tiến độ đồ án",
+          goal: form.goal || "Mục tiêu Sprint nâng cao tiến độ dự án",
           status: sprint?.status || "PLANNED",
           startDate: form.startDate,
           endDate: form.endDate,

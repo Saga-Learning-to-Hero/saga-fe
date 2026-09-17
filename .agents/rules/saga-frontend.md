@@ -97,7 +97,7 @@ npm run build   # Build production tối ưu hóa tĩnh — BẮT BUỘC PASS 10
 
 ## 5. Quy Chuẩn Thuật Ngữ Học Thuật Chuyên Ngành SE & Hệ Thống FPT (Academic & SE Standards)
 
-Để đảm bảo tính nhất quán, chuyên nghiệp và chuẩn mực khi trình bày trước Hội đồng Đồ án Tốt nghiệp (Capstone Defense), toàn bộ giao diện và mã nguồn phân hệ Admin/Học thuật phải tuân thủ nghiêm ngặt các thuật ngữ sau:
+Để đảm bảo tính nhất quán, chuyên nghiệp và chuẩn mực khi trình bày trước Hội đồng dự án Tốt nghiệp (Capstone Defense), toàn bộ giao diện và mã nguồn phân hệ Admin/Học thuật phải tuân thủ nghiêm ngặt các thuật ngữ sau:
 
 ### 📚 A. Khung Chương Trình & Đề Cương Chi Tiết (FLM Curriculum & Syllabus)
 1. **Môn học (`Subject`)**:
@@ -109,10 +109,10 @@ npm run build   # Build production tối ưu hóa tĩnh — BẮT BUỘC PASS 10
      - `DRAFT`: **Bản nháp biên soạn** (cho phép thêm/sửa/xóa CLOs, Units, Phases).
      - `PUBLISHED`: **Bản chuẩn áp dụng** (đã ban hành chính thức, cấu trúc bị KHÓA BẤT BIẾN - *Immutable* để bảo toàn tính toàn vẹn dữ liệu đánh giá).
      - `ARCHIVED`: **Đã lưu trữ** (phiên bản cũ đã ngưng áp dụng).
-3. **Cấu trúc 3 trụ cột của Đề cương chi tiết Đồ án Kỹ thuật phần mềm**:
+3. **Cấu trúc 3 trụ cột của Đề cương chi tiết dự án Kỹ thuật phần mềm**:
    - **CLOs (`Course Learning Outcomes`)**: Chuẩn đầu ra môn học — Định nghĩa các năng lực, kỹ năng chuyên ngành sinh viên cần đạt được sau khi hoàn thành môn học.
    - **Learning Units**: Nội dung đào tạo & Bài học — Phân rã kiến thức lý thuyết/thực hành theo từng tuần học.
-   - **Phases & Deliverables**: Các mốc Sprint đồ án & Sản phẩm bàn giao — Thiết lập các đợt nghiệm thu Sprint (Inception/SRS, Architecture/Design, MVP/Coding, Final Defense), sản phẩm bàn giao thực tế (Tài liệu SRS, Mockup, Repo GitHub, Jira Board) và % trọng số đánh giá đóng góp.
+   - **Phases & Deliverables**: Các mốc Sprint dự án & Sản phẩm bàn giao — Thiết lập các đợt nghiệm thu Sprint (Inception/SRS, Architecture/Design, MVP/Coding, Final Defense), sản phẩm bàn giao thực tế (Tài liệu SRS, Mockup, Repo GitHub, Jira Board) và % trọng số đánh giá đóng góp.
 
 ### 🏫 B. Phân Định Rõ 2 Loại Lớp Học Trong Hệ Thống FPT
 Tuyệt đối không sử dụng cụm từ "lớp hành chính" gây mơ hồ. Hệ thống phân định rõ ràng:

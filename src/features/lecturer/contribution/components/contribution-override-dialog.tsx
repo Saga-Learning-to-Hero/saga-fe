@@ -44,7 +44,7 @@ function getInitials(name: string) {
 const QUICK_PERCENT_PRESETS = [10, 15, 20, 25, 30];
 
 const REASON_SUGGESTIONS = [
-  "Biên bản họp nhóm đồ án đồng thuận điều chỉnh",
+  "Biên bản họp nhóm dự án đồng thuận điều chỉnh",
   "Bổ sung công sức hỗ trợ khâu kiểm thử & sửa lỗi",
   "Đặc thù đề tài R&D cần bổ sung tỷ trọng tài liệu SRS",
   "Cân đối lại công sức do hỗ trợ hoàn thiện sản phẩm",

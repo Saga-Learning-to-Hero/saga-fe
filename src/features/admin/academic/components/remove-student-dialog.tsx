@@ -160,7 +160,7 @@ export function RemoveStudentDialog({
                     Cơ chế rút tên an toàn (Soft-withdrawal):
                   </p>
                   <p className="leading-relaxed">
-                    Sinh viên sẽ chuyển sang trạng thái <strong>Đã rút (WITHDRAWN)</strong> và bị thu hồi quyền truy cập nhóm đồ án.
+                    Sinh viên sẽ chuyển sang trạng thái <strong>Đã rút (WITHDRAWN)</strong> và bị thu hồi quyền truy cập nhóm dự án.
                   </p>
                   <p className="leading-relaxed text-foreground/80">
                     Toàn bộ lịch sử commit mã nguồn, nhiệm vụ Jira, phiên làm việc và bằng chứng đóng góp đã có vẫn được bảo lưu trọn vẹn trong cơ sở dữ liệu.

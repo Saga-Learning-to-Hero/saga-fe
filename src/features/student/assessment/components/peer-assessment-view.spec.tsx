@@ -215,7 +215,7 @@ describe("PeerAssessmentView", () => {
       expect(screen.getByText(/Tiêu chí: 4/)).toBeTruthy();
       expect(screen.getByText(/Tiêu chí môn học/)).toBeTruthy();
       expect(screen.getByText(/Đã gửi 1\/2/)).toBeTruthy();
-      expect(screen.queryByText(/sắp mở|đang chờ API|nhóm đồ án/i)).toBeNull();
+      expect(screen.queryByText(/sắp mở|đang chờ API|nhóm dự án/i)).toBeNull();
       expect(mocks.defaultRubricEnabled.value).toBe(false);
       expect(mocks.candidatesEnabled.value).toBe(true);
     }

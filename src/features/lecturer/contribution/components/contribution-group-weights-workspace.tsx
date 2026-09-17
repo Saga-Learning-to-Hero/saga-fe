@@ -100,7 +100,7 @@ export function ContributionGroupWeightsWorkspace({
 
       <div className="space-y-2 lg:hidden">
         <Label htmlFor="group-weight-team" className="text-xs font-bold text-foreground">
-          Chọn nhóm đồ án
+          Chọn nhóm dự án
         </Label>
         <CustomSelect
           id="group-weight-team"
@@ -118,7 +118,7 @@ export function ContributionGroupWeightsWorkspace({
       <div className="grid gap-5 lg:grid-cols-[300px_minmax(0,1fr)]">
         <Card className="hidden overflow-hidden rounded-2xl border border-border/80 bg-card shadow-xs lg:block">
           <div className="border-b border-border/60 bg-muted/30 px-4 py-3">
-            <span className="text-xs font-bold text-foreground">Danh sách nhóm đồ án</span>
+            <span className="text-xs font-bold text-foreground">Danh sách nhóm dự án</span>
           </div>
           <ul className="max-h-[36rem] overflow-y-auto p-2 space-y-1">
             {sortedTeams.map((team) => {

@@ -162,7 +162,7 @@ export function CourseDialog({
                 {editingCourse ? "Cập nhật Khóa học / Học phần" : "Mở Khóa học / Học phần mới"}
               </DialogTitle>
               <DialogDescription className="text-xs text-muted-foreground mt-0.5">
-                Thiết lập học phần đồ án, gán môn học, học kỳ, lớp sinh viên và giảng viên.
+                Thiết lập học phần dự án, gán môn học, học kỳ, lớp sinh viên và giảng viên.
               </DialogDescription>
             </div>
           </DialogHeader>
@@ -184,7 +184,7 @@ export function CourseDialog({
             <div className="space-y-1.5">
               <label className="text-xs font-semibold text-foreground">Tên Khóa học / Học phần *</label>
               <Input
-                placeholder="VD: Đồ án Kỹ thuật phần mềm - Fall 2026"
+                placeholder="VD: dự án Kỹ thuật phần mềm - Fall 2026"
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 required

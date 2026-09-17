@@ -22,7 +22,10 @@ const mockAuditItem: AdminAuditLogItemResponse = {
   contextClassNameSnapshot: "K17 Software Engineering",
   contextCourseId: "course-uuid-01",
   contextTeamId: "team-uuid-01",
+  contextTeamNoSnapshot: 1,
+  contextTeamNameSnapshot: "Team 01 - Alpha",
   contextProjectId: "project-uuid-01",
+  contextProjectNameSnapshot: "SAGA System",
   action: "USER_STATUS_CHANGE",
   entityType: "USER",
   entityId: "user-uuid-target",
@@ -122,6 +125,9 @@ describe("AdminAuditService - Quản lý Nhật ký kiểm toán hệ thống", 
       expect(item.category).toBe("AUTH_SECURITY");
       expect(item.context?.classCode).toBe("SE1705");
       expect(item.context?.courseId).toBe("course-uuid-01");
+      expect(item.context?.teamNo).toBe(1);
+      expect(item.context?.teamName).toBe("Team 01 - Alpha");
+      expect(item.context?.projectName).toBe("SAGA System");
       expect(item.changes?.length).toBe(1);
       expect(item.changes?.[0].field).toBe("status");
       expect(item.changes?.[0].oldValue).toBe("ACTIVE");
@@ -212,7 +218,7 @@ describe("AdminAuditService - Quản lý Nhật ký kiểm toán hệ thống", 
       expect(mapped.actor.fullName).toBe("Hệ thống SAGA");
       expect(mapped.actor.role).toBe("SYSTEM");
       expect(mapped.context?.className).toBeUndefined();
-      expect(mapped.target.name).toBe("TEST_ENTITY #entity-0");
+      expect(mapped.target.name).toBe("TEST_ENTITY");
     }
   );
 
@@ -330,6 +336,60 @@ describe("AdminAuditService - Quản lý Nhật ký kiểm toán hệ thống", 
       expect(typeof diff[0].newValue).toBe("string");
       expect(diff[0].oldValue).toContain("Nguyen Van A");
       expect(diff[0].newValue).toContain("Nguyen Van B");
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID15",
+      type: "N",
+      executedDate: "17/09/2026",
+      description: "mapAdminAuditLogResponseToItem anh xa dung contextProjectNameSnapshot vao target.name khi action la PROJECT_UPDATED",
+    },
+    () => {
+      const projectLogItem: AdminAuditLogItemResponse = {
+        id: "log-proj-01",
+        occurredAt: "2026-09-17T06:07:30.542Z",
+        actorUserId: "user-uuid-01",
+        actorFullNameSnapshot: "Le Hoang Hai",
+        action: "PROJECT_UPDATED",
+        entityType: "PROJECT",
+        entityId: "proj-uuid-100",
+        contextProjectId: "proj-uuid-100",
+        contextProjectNameSnapshot: "SAGA Hệ thống Quản trị dự án",
+      };
+
+      const mapped = mapAdminAuditLogResponseToItem(projectLogItem);
+      expect(mapped.target.name).toBe("SAGA Hệ thống Quản trị dự án");
+      expect(mapped.context?.projectName).toBe("SAGA Hệ thống Quản trị dự án");
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID16",
+      type: "N",
+      executedDate: "17/09/2026",
+      description: "mapAdminAuditLogResponseToItem anh xa dung contextTeamNameSnapshot va contextTeamNoSnapshot khi doi ten Team",
+    },
+    () => {
+      const teamLogItem: AdminAuditLogItemResponse = {
+        id: "log-team-01",
+        occurredAt: "2026-09-17T06:07:30.542Z",
+        actorUserId: "user-uuid-02",
+        actorFullNameSnapshot: "Tran Thi B",
+        action: "TEAM_RENAME",
+        entityType: "TEAM",
+        entityId: "team-uuid-200",
+        contextTeamId: "team-uuid-200",
+        contextTeamNoSnapshot: 2,
+        contextTeamNameSnapshot: "Chiến binh SAGA",
+      };
+
+      const mapped = mapAdminAuditLogResponseToItem(teamLogItem);
+      expect(mapped.target.name).toBe("Chiến binh SAGA");
+      expect(mapped.context?.teamNo).toBe(2);
+      expect(mapped.context?.teamName).toBe("Chiến binh SAGA");
     }
   );
 });

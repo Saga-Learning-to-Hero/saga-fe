@@ -43,7 +43,7 @@ export function ContributionView() {
   const myRole = teamQuery.data?.myRole;
   const teamId = teamQuery.data?.teamId;
   const projectId = teamQuery.data?.projectId;
-  const teamName = teamQuery.data?.teamName || (teamQuery.data?.teamNo ? `Nhóm ${teamQuery.data.teamNo}` : "Nhóm đồ án");
+  const teamName = teamQuery.data?.teamName || (teamQuery.data?.teamNo ? `Nhóm ${teamQuery.data.teamNo}` : "Nhóm dự án");
   const isLeader = myRole === "LEADER";
 
   const evaluationQuery = useContributionEvaluation(teamId || "", {
@@ -87,7 +87,7 @@ export function ContributionView() {
       <div className="max-w-[1600px] mx-auto py-16">
         <Card className="rounded-2xl border border-dashed border-border/80 p-8 text-center shadow-xs">
           <p className="text-sm font-semibold text-foreground">
-            Bạn chưa được phân vào nhóm đồ án trong lớp học phần này
+            Bạn chưa được phân vào nhóm dự án trong lớp học phần này
           </p>
           <p className="mt-1 text-xs text-muted-foreground">
             Vui lòng liên hệ Giảng viên phụ trách để được phân nhóm trước khi truy cập bảng điểm đóng góp Slicing Pie.

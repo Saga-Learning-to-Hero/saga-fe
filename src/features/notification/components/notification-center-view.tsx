@@ -114,7 +114,7 @@ export function NotificationCenterView() {
             Trung tâm thông báo
           </h1>
           <p className="text-xs sm:text-sm text-muted-foreground">
-            Xem toàn bộ thông báo phát sóng từ giảng viên, nhóm đồ án và quản trị hệ thống.
+            Xem toàn bộ thông báo phát sóng từ giảng viên, nhóm dự án và quản trị hệ thống.
           </p>
         </div>
 

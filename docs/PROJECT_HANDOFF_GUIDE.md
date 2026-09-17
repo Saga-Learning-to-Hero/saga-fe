@@ -4,7 +4,7 @@
 
 ## 1. Mục đích sản phẩm và nguyên tắc làm việc
 
-SAGA là frontend cho hệ thống theo dõi và đánh giá quá trình làm đồ án phần mềm. Hệ thống có ba vai trò:
+SAGA là frontend cho hệ thống theo dõi và đánh giá quá trình làm dự án phần mềm. Hệ thống có ba vai trò:
 
 - **Quản trị viên**: quản trị dữ liệu học thuật, lớp học phần, danh sách sinh viên và đề cương.
 - **Giảng viên**: chọn lớp được phân công, theo dõi lớp/nhóm, phân nhóm bằng Excel và xem các màn hình phân tích.

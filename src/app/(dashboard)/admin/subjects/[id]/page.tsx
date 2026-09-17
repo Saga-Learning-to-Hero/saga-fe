@@ -360,7 +360,7 @@ export default function SubjectDetailPage({
                   ) : null}
                 </div>
                 <p className="text-[11px] text-muted-foreground">
-                  Chuẩn đầu ra môn học (CLOs), nội dung đào tạo (Units) và các mốc bàn giao Sprint đồ án.
+                  Chuẩn đầu ra môn học (CLOs), nội dung đào tạo (Units) và các mốc bàn giao Sprint dự án.
                 </p>
               </div>
             </div>
@@ -505,7 +505,7 @@ export default function SubjectDetailPage({
             <div className="p-12 text-center space-y-3 bg-card border border-border rounded-2xl">
               <p className="text-sm font-bold text-foreground">Chưa có phiên bản đề cương nào cho môn học này</p>
               <p className="text-xs text-muted-foreground">
-                Bấm nút &quot;Tạo bản đề cương mới&quot; ở tab Danh sách Phiên bản để bắt đầu cấu hình chuẩn đầu ra (CLOs) và tiêu chí đồ án.
+                Bấm nút &quot;Tạo bản đề cương mới&quot; ở tab Danh sách Phiên bản để bắt đầu cấu hình chuẩn đầu ra (CLOs) và tiêu chí dự án.
               </p>
             </div>
           )}

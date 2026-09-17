@@ -179,13 +179,13 @@ export function ContributionEvaluationPage({ courseId }: ContributionEvaluationP
     teams.length > 0 ? (
       <div className="w-full min-w-[220px] sm:w-72">
         <Label htmlFor="grades-team" className="sr-only">
-          Chọn nhóm đồ án
+          Chọn nhóm dự án
         </Label>
         <CustomSelect
           id="grades-team"
           value={teamBelongsToCourse ? requestedTeamId : ""}
           onChange={handleSelectTeam}
-          placeholder="Chọn nhóm đồ án"
+          placeholder="Chọn nhóm dự án"
           options={teams.map((item) => ({
             value: item.teamId,
             label: item.teamName ? `Team #${item.teamNo} — ${item.teamName}` : `Nhóm ${item.teamNo}`,
@@ -215,7 +215,7 @@ export function ContributionEvaluationPage({ courseId }: ContributionEvaluationP
       >
         <Card className="rounded-2xl border border-dashed border-border/80 p-8 text-center shadow-xs">
           <p className="text-sm font-semibold text-foreground">
-            Lớp học phần chưa có nhóm đồ án nào
+            Lớp học phần chưa có nhóm dự án nào
           </p>
           <p className="mt-1 text-xs text-muted-foreground">
             Vui lòng phân nhóm trước khi xem và đánh giá bảng điểm Slicing Pie.

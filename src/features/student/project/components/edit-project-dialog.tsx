@@ -70,7 +70,7 @@ function EditProjectDialogContent({
                 Chỉnh sửa thông tin dự án
               </h3>
               <p className="text-xs text-muted-foreground">
-                Dành riêng cho Trưởng nhóm đồ án (Active Team Leader)
+                Dành riêng cho Trưởng nhóm dự án (Active Team Leader)
               </p>
             </div>
           </div>
@@ -105,7 +105,7 @@ function EditProjectDialogContent({
                   if (errorMsg) setErrorMsg(null);
                 }}
                 maxLength={120}
-                placeholder="Nhập tên dự án đồ án..."
+                placeholder="Nhập tên dự án dự án..."
                 className="h-9 text-xs rounded-xl"
                 disabled={updateMutation.isPending}
                 required

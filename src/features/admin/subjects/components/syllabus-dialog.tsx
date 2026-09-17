@@ -204,7 +204,7 @@ function SyllabusForm({
               </Label>
               <Input
                 id="title-vietnamese"
-                placeholder="Ví dụ: Yêu cầu phần mềm, Đồ án phát triển phần mềm..."
+                placeholder="Ví dụ: Yêu cầu phần mềm, dự án phát triển phần mềm..."
                 value={titleVietnamese}
                 onChange={(e) => setTitleVietnamese(e.target.value)}
                 disabled={isSubmitting}

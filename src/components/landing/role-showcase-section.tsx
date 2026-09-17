@@ -39,7 +39,7 @@ const roles = [
       "So sánh trực quan mức độ cân bằng công việc giữa các thành viên",
       "Xuất báo cáo định lượng phục vụ chấm điểm từng Sprint",
     ],
-    previewTitle: "Radar Giám sát Đồ án Học phần",
+    previewTitle: "Radar Giám sát dự án Học phần",
     previewMetric: "32 Nhóm Đang Theo dõi",
     previewDetail: "Phát hiện 2 nhóm có rủi ro thành viên thụ động",
   },
@@ -53,7 +53,7 @@ const roles = [
     highlights: [
       "Bằng chứng số liệu đối chiếu chi tiết đến từng file và task",
       "Nhật ký hệ thống an ninh bảo đảm tính toàn vẹn dữ liệu",
-      "Chuẩn hóa quy trình đánh giá đồ án công nghệ thông tin",
+      "Chuẩn hóa quy trình đánh giá dự án công nghệ thông tin",
     ],
     previewTitle: "Báo cáo Kiểm định Chất lượng",
     previewMetric: "100% Khách quan",
@@ -76,7 +76,7 @@ export function RoleShowcaseSection() {
             Giải pháp cho Mọi Đối tượng
           </h2>
           <p className="text-muted-foreground text-sm sm:text-base leading-relaxed">
-            Từ sinh viên làm đồ án đến giảng viên và hội đồng nghiệm thu.
+            Từ sinh viên làm dự án đến giảng viên và hội đồng nghiệm thu.
           </p>
         </div>
 

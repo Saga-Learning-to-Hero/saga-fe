@@ -307,7 +307,7 @@ export function CourseRoster({ courseId, onSwitchToTeams }: CourseRosterProps) {
                 <TableHead className="px-4 text-xs font-bold text-muted-foreground">Họ và tên sinh viên</TableHead>
                 <TableHead className="px-4 text-xs font-bold text-muted-foreground">Email trường</TableHead>
                 <TableHead className="px-4 text-xs font-bold text-muted-foreground">Lớp niên khóa</TableHead>
-                <TableHead className="px-4 text-xs font-bold text-muted-foreground">Nhóm đồ án</TableHead>
+                <TableHead className="px-4 text-xs font-bold text-muted-foreground">Nhóm dự án</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody className="divide-y divide-border/60">

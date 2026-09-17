@@ -481,7 +481,7 @@ Project Type dùng để phân loại hướng dự án, không điều khiển 
 | `/api/admin/lecturers` | Đã dùng |
 | `/api/admin/courses/{courseId}/roster/**` | Đã dùng |
 | `/api/admin/users/**` | Đã dùng |
-| `/api/admin/audit-logs` | Chưa dùng; UI mock |
+| `/api/admin/audit-logs` | Đã dùng (tích hợp API thật, phân trang, lọc timestamp, snapshot actor/class/team/project) |
 | `/api/admin/dev/email-test` | Không cần UI production |
 
 ### 8.3 Lecturer và assessment
@@ -612,7 +612,7 @@ Hiện mỗi request graph có thể kích hoạt/rebuild projection theo implem
 ### P0 — Sai dữ liệu/quyền hoặc chặn luồng chính
 
 - [x] Thay Admin Users mock bằng `/api/admin/users` và kiểm thử đổi status.
-- [ ] Thay Admin Audit Log mock bằng `/api/admin/audit-logs`.
+- [x] Thay Admin Audit Log mock bằng `/api/admin/audit-logs` (tích hợp API thật, hỗ trợ snapshot team/project/class/actor).
 - [ ] Xác minh logout/login tài khoản khác xóa query cache, selected course/project/team và reconnect SSE đúng context mới.
 - [ ] Xác minh Graph SAGA-75 không rò dữ liệu project/student cũ và đúng authorization.
 - [ ] Xác minh production DTO Task luôn có `startDate`, `dueDate`, `parent` với null rõ ràng.

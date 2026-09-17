@@ -747,7 +747,7 @@ Session Admin.
 {
   "code": "SWP391",
   "nameEnglish": "Software Development Project",
-  "nameVietnamese": "Đồ án phát triển phần mềm"
+  "nameVietnamese": "dự án phát triển phần mềm"
 }
 ```
 
@@ -762,7 +762,7 @@ Session Admin.
   "id": "94ced810-3c75-4bfb-b188-c48c2f29651b",
   "code": "SWP391",
   "nameEnglish": "Software Development Project",
-  "nameVietnamese": "Đồ án phát triển phần mềm",
+  "nameVietnamese": "dự án phát triển phần mềm",
   "status": "ACTIVE",
   "createdAt": "2026-09-01T00:00:00",
   "updatedAt": "2026-09-01T00:00:00",
@@ -819,7 +819,7 @@ ADMIN.
 {
   "code": "SWP391",
   "nameEnglish": "Software Development Project",
-  "nameVietnamese": "Đồ án phát triển phần mềm",
+  "nameVietnamese": "dự án phát triển phần mềm",
   "status": "ACTIVE"
 }
 ```

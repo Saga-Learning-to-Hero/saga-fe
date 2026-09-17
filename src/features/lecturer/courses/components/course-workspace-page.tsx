@@ -37,8 +37,8 @@ export function CourseWorkspacePage({ courseId }: CourseWorkspacePageProps) {
 
   return (
     <LecturerPageShell
-      title="Quản lý Sinh viên & Phân nhóm đồ án"
-      description={`${course?.subjectCode || "Môn học"} · Danh sách sinh viên đang học và phân nhóm đồ án bằng Excel.`}
+      title="Quản lý Sinh viên & Phân nhóm dự án"
+      description={`${course?.subjectCode || "Môn học"} · Danh sách sinh viên đang học và phân nhóm dự án bằng Excel.`}
       badges={
         <>
           <Badge

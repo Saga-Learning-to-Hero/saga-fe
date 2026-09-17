@@ -6,10 +6,11 @@ import type { AuditLogItem } from "../types/audit-log";
 
 interface AuditStatsProps {
   logs: AuditLogItem[];
+  totalCount?: number;
 }
 
-export function AuditStats({ logs }: AuditStatsProps) {
-  const totalLogs = logs.length;
+export function AuditStats({ logs, totalCount }: AuditStatsProps) {
+  const displayTotal = totalCount !== undefined ? totalCount : logs.length;
   const securityLogs = logs.filter((l) => l.category === "AUTH_SECURITY").length;
   const academicLogs = logs.filter((l) => l.category === "ACADEMIC").length;
   const alertLogs = logs.filter((l) => l.severity === "WARNING" || l.severity === "CRITICAL").length;
@@ -20,7 +21,7 @@ export function AuditStats({ logs }: AuditStatsProps) {
         <CardContent className="p-4 flex items-center justify-between">
           <div className="space-y-0.5">
             <p className="text-xs font-medium text-muted-foreground">Tổng số sự kiện</p>
-            <p className="text-2xl font-bold text-foreground tracking-tight">{totalLogs}</p>
+            <p className="text-2xl font-bold text-foreground tracking-tight">{displayTotal}</p>
             <p className="text-[11px] text-muted-foreground">Nhật ký đã ghi nhận</p>
           </div>
           <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0">

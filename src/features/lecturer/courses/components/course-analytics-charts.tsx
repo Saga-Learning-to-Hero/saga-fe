@@ -240,7 +240,7 @@ export function CourseAnalyticsCharts({ teams }: CourseAnalyticsChartsProps) {
 
         <div className="mt-2 flex items-center justify-between pt-2 border-t border-border/50 text-xs text-muted-foreground">
           <span>Tổng sinh viên đã vào nhóm: <strong className="font-mono text-foreground">{totalMembers}</strong></span>
-          <span>Số nhóm đồ án: <strong className="font-mono text-foreground">{totalTeams}</strong></span>
+          <span>Số nhóm dự án: <strong className="font-mono text-foreground">{totalTeams}</strong></span>
         </div>
       </Card>
     </div>

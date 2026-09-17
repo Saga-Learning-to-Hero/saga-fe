@@ -1,9 +1,18 @@
 "use client";
 
-import { SearchIcon, XIcon, FilterIcon } from "lucide-react";
+import {
+  SearchIcon,
+  XIcon,
+  FilterIcon,
+  CalendarIcon,
+  UserIcon,
+  DatabaseIcon,
+  SparklesIcon,
+} from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { CustomSelect, type CustomSelectOption } from "@/components/common/custom-select";
 import type { AuditFilterState } from "../types/audit-log";
 
 interface AuditToolbarProps {
@@ -14,6 +23,23 @@ interface AuditToolbarProps {
   totalCount: number;
 }
 
+const ENTITY_TYPE_OPTIONS: CustomSelectOption[] = [
+  { value: "ALL", label: "Tất cả đối tượng (ALL)" },
+  { value: "USER", label: "Người dùng (USER)", subLabel: "Tài khoản hệ thống" },
+  { value: "COURSE", label: "Lớp học phần (COURSE)", subLabel: "Khóa học mở trong kỳ" },
+  { value: "CLASS", label: "Lớp sinh viên (CLASS)", subLabel: "Lớp niên khóa" },
+  { value: "SUBJECT", label: "Môn học (SUBJECT)", subLabel: "Đề cương & môn học" },
+  { value: "jira_integration", label: "Tích hợp Jira (jira_integration)", subLabel: "Webhook & liên kết repo" },
+];
+
+const COMMON_ACTIONS = [
+  { value: "USER_STATUS_CHANGE", label: "Đổi trạng thái" },
+  { value: "JIRA_INTEGRATION_DISCONNECTED", label: "Ngắt Jira" },
+  { value: "COURSE_CREATE", label: "Tạo lớp học phần" },
+  { value: "CLASS_CREATE", label: "Tạo lớp sinh viên" },
+  { value: "USER_BAN", label: "Khóa tài khoản" },
+];
+
 export function AuditToolbar({
   filters,
   onFilterChange,
@@ -22,103 +48,165 @@ export function AuditToolbar({
   totalCount,
 }: AuditToolbarProps) {
   const isFiltered =
-    filters.search !== "" ||
-    filters.category !== "ALL" ||
-    filters.severity !== "ALL" ||
-    filters.timeRange !== "ALL";
+    Boolean(filters.action && filters.action !== "ALL" && filters.action.trim()) ||
+    Boolean(filters.entityType && filters.entityType !== "ALL" && filters.entityType.trim()) ||
+    Boolean(filters.actorUserId && filters.actorUserId.trim()) ||
+    Boolean(filters.entityId && filters.entityId.trim()) ||
+    Boolean(filters.fromDate && filters.fromDate.trim()) ||
+    Boolean(filters.toDate && filters.toDate.trim());
+
+
 
   return (
     <Card className="rounded-2xl border border-border shadow-xs bg-card">
-      <CardContent className="p-3.5 space-y-3">
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-          <div className="relative flex-1 max-w-md">
-            <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
-            <Input
-              type="text"
-              placeholder="Tìm theo người thực hiện, email, IP, đối tượng..."
-              value={filters.search}
-              onChange={(e) => onFilterChange({ search: e.target.value })}
-              className="pl-9 pr-8 h-9 text-xs rounded-xl"
-            />
-            {filters.search && (
-              <button
-                onClick={() => onFilterChange({ search: "" })}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground cursor-pointer"
-              >
-                <XIcon className="w-3.5 h-3.5" />
-              </button>
-            )}
+      <CardContent className="p-4 space-y-3.5">
+        {/* Hàng 1: Bộ lọc chính (Hành động action, Loại đối tượng entityType, Thời gian from - to) */}
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-3 items-end">
+          {/* 1. Hành động (action) */}
+          <div className="md:col-span-4 space-y-1">
+            <label className="text-[11px] font-semibold text-muted-foreground flex items-center gap-1.5">
+              <SearchIcon className="size-3 text-primary" />
+              Hành động (Action)
+            </label>
+            <div className="relative">
+              <Input
+                type="text"
+                placeholder="Nhập hành động (vd: USER_STATUS_CHANGE)..."
+                value={filters.action === "ALL" ? "" : filters.action}
+                onChange={(e) => onFilterChange({ action: e.target.value })}
+                className="h-9 text-xs rounded-xl pr-7 font-mono"
+              />
+              {filters.action && filters.action !== "ALL" && (
+                <button
+                  type="button"
+                  onClick={() => onFilterChange({ action: "ALL" })}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground cursor-pointer"
+                  title="Xóa hành động"
+                >
+                  <XIcon className="size-3.5" />
+                </button>
+              )}
+            </div>
           </div>
 
-          <div className="flex items-center gap-1 bg-muted/60 border border-border/80 rounded-xl p-1 shrink-0">
-            {(
-              [
-                { value: "ALL", label: "Tất cả thời gian" },
-                { value: "TODAY", label: "Hôm nay" },
-                { value: "7_DAYS", label: "7 ngày qua" },
-                { value: "30_DAYS", label: "30 ngày" },
-              ] as const
-            ).map((tab) => (
-              <Button
-                key={tab.value}
-                type="button"
-                variant={filters.timeRange === tab.value ? "default" : "ghost"}
-                size="sm"
-                onClick={() => onFilterChange({ timeRange: tab.value })}
-                className={`h-7 px-2.5 text-xs font-medium rounded-lg ${filters.timeRange === tab.value ? "shadow-2xs" : "text-muted-foreground hover:text-foreground"
-                  }`}
-              >
-                {tab.label}
-              </Button>
-            ))}
+          {/* 2. Loại đối tượng (entityType) */}
+          <div className="md:col-span-3 space-y-1">
+            <label className="text-[11px] font-semibold text-muted-foreground flex items-center gap-1.5">
+              <DatabaseIcon className="size-3 text-primary" />
+              Loại đối tượng (Entity Type)
+            </label>
+            <CustomSelect
+              id="audit-entity-type-filter"
+              value={filters.entityType || "ALL"}
+              onChange={(val) => onFilterChange({ entityType: val })}
+              options={ENTITY_TYPE_OPTIONS}
+              placeholder="Chọn loại đối tượng..."
+              className="h-9 text-xs rounded-xl"
+            />
+          </div>
+
+          {/* 3. Khoảng thời gian (from - to) khớp với cột Thời gian (Timestamp) */}
+          <div className="md:col-span-5 space-y-1">
+            <div className="flex items-center justify-between">
+              <label className="text-[11px] font-semibold text-muted-foreground flex items-center gap-1.5">
+                <CalendarIcon className="size-3 text-primary" />
+                Thời gian (Timestamp: From &bull; To)
+              </label>
+              {(filters.fromDate || filters.toDate) && (
+                <button
+                  type="button"
+                  onClick={() => onFilterChange({ fromDate: "", toDate: "" })}
+                  className="text-[10px] text-destructive hover:underline cursor-pointer"
+                  title="Xóa khoảng thời gian"
+                >
+                  Xóa ngày
+                </button>
+              )}
+            </div>
+
+            <div className="flex items-center gap-2">
+              <Input
+                type="date"
+                value={filters.fromDate}
+                onChange={(e) => onFilterChange({ fromDate: e.target.value })}
+                className="h-9 text-xs rounded-xl flex-1 font-mono"
+                title="Từ mốc thời gian (from)"
+              />
+              <span className="text-muted-foreground text-xs font-semibold shrink-0">&rarr;</span>
+              <Input
+                type="date"
+                value={filters.toDate}
+                onChange={(e) => onFilterChange({ toDate: e.target.value })}
+                className="h-9 text-xs rounded-xl flex-1 font-mono"
+                title="Đến mốc thời gian (to)"
+              />
+            </div>
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-border/60">
-          <div className="flex flex-wrap items-center gap-2">
-            <div className="flex items-center gap-1 bg-muted/40 border border-border/60 rounded-xl p-1">
-              {(
-                [
-                  { value: "ALL", label: "Tất cả nhóm" },
-                  { value: "AUTH_SECURITY", label: "Bảo mật & Tài khoản" },
-                  { value: "ACADEMIC", label: "Học thuật" },
-                ] as const
-              ).map((tab) => (
-                <Button
-                  key={tab.value}
+        {/* Hàng gợi ý nhanh hành động phổ biến */}
+        <div className="flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground pt-0.5">
+          <span className="text-[11px] flex items-center gap-1">
+            <SparklesIcon className="size-3 text-primary" />
+            Gợi ý hành động:
+          </span>
+          {COMMON_ACTIONS.map((item) => (
+            <button
+              key={item.value}
+              type="button"
+              onClick={() => onFilterChange({ action: item.value })}
+              className={`text-[10px] font-mono px-2 py-0.5 rounded-md border transition-colors cursor-pointer ${
+                filters.action === item.value
+                  ? "bg-primary text-primary-foreground border-primary"
+                  : "bg-muted/40 hover:bg-muted/80 text-foreground border-border/60"
+              }`}
+            >
+              {item.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Hàng 2: Bộ lọc nâng cao theo UUID (actorUserId, entityId) + Nút đặt lại + Bộ đếm */}
+        <div className="pt-2.5 border-t border-border/60 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
+          <div className="flex flex-wrap items-center gap-2.5 flex-1">
+            <div className="relative min-w-[200px] flex-1 max-w-xs">
+              <UserIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground pointer-events-none" />
+              <Input
+                type="text"
+                placeholder="Mã actorUserId (UUID)..."
+                value={filters.actorUserId}
+                onChange={(e) => onFilterChange({ actorUserId: e.target.value })}
+                className="pl-8 pr-7 h-8 text-[11px] rounded-lg font-mono"
+              />
+              {filters.actorUserId && (
+                <button
                   type="button"
-                  variant={filters.category === tab.value ? "default" : "ghost"}
-                  size="sm"
-                  onClick={() => onFilterChange({ category: tab.value })}
-                  className={`h-6 px-2 text-[11px] font-medium rounded-md ${filters.category === tab.value ? "shadow-2xs" : "text-muted-foreground"
-                    }`}
+                  onClick={() => onFilterChange({ actorUserId: "" })}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground cursor-pointer"
                 >
-                  {tab.label}
-                </Button>
-              ))}
+                  <XIcon className="size-3" />
+                </button>
+              )}
             </div>
 
-            <div className="flex items-center gap-1 bg-muted/40 border border-border/60 rounded-xl p-1">
-              {(
-                [
-                  { value: "ALL", label: "Tất cả mức độ" },
-                  { value: "INFO", label: "Thông tin" },
-                  { value: "WARNING", label: "Cảnh báo" },
-                  { value: "CRITICAL", label: "Nghiêm trọng" },
-                ] as const
-              ).map((tab) => (
-                <Button
-                  key={tab.value}
+            <div className="relative min-w-[200px] flex-1 max-w-xs">
+              <DatabaseIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground pointer-events-none" />
+              <Input
+                type="text"
+                placeholder="Mã entityId (UUID)..."
+                value={filters.entityId}
+                onChange={(e) => onFilterChange({ entityId: e.target.value })}
+                className="pl-8 pr-7 h-8 text-[11px] rounded-lg font-mono"
+              />
+              {filters.entityId && (
+                <button
                   type="button"
-                  variant={filters.severity === tab.value ? "default" : "ghost"}
-                  size="sm"
-                  onClick={() => onFilterChange({ severity: tab.value })}
-                  className={`h-6 px-2 text-[11px] font-medium rounded-md ${filters.severity === tab.value ? "shadow-2xs" : "text-muted-foreground"
-                    }`}
+                  onClick={() => onFilterChange({ entityId: "" })}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground cursor-pointer"
                 >
-                  {tab.label}
-                </Button>
-              ))}
+                  <XIcon className="size-3" />
+                </button>
+              )}
             </div>
 
             {isFiltered && (
@@ -126,15 +214,16 @@ export function AuditToolbar({
                 variant="ghost"
                 size="sm"
                 onClick={onReset}
-                className="h-7 text-xs text-destructive hover:bg-destructive/10 cursor-pointer"
+                className="h-8 text-xs text-destructive hover:bg-destructive/10 cursor-pointer"
               >
+                <XIcon className="size-3.5 mr-1" />
                 Đặt lại bộ lọc
               </Button>
             )}
           </div>
 
-          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-            <FilterIcon className="w-3.5 h-3.5 text-muted-foreground" />
+          <div className="flex items-center gap-1.5 text-xs text-muted-foreground shrink-0 justify-end">
+            <FilterIcon className="size-3.5 text-muted-foreground" />
             <span>
               Hiển thị <strong className="text-foreground">{filteredCount}</strong> / {totalCount} sự kiện
             </span>

@@ -1,6 +1,6 @@
 # Kiến Trúc & Luồng Nghiệp Vụ Chính: Phân Hệ Quản Trị Học Thuật & Đề Cương (Admin Academic & Syllabus Main Flow)
 
-Tài liệu này giải thích chi tiết **Luồng chính (Main Flow)** của phân hệ Quản trị Học thuật (**Admin Academic**) và Quản lý Đề cương Môn học (**Syllabus FLM**) do **Dev 1** phụ trách trong hệ thống SAGA. Tài liệu giúp các thành viên trong nhóm hiểu rõ bản chất nghiệp vụ từ Frontend đến Backend và tự tin trả lời phỏng vấn trước Hội đồng Đồ án Tốt nghiệp.
+Tài liệu này giải thích chi tiết **Luồng chính (Main Flow)** của phân hệ Quản trị Học thuật (**Admin Academic**) và Quản lý Đề cương Môn học (**Syllabus FLM**) do **Dev 1** phụ trách trong hệ thống SAGA. Tài liệu giúp các thành viên trong nhóm hiểu rõ bản chất nghiệp vụ từ Frontend đến Backend và tự tin trả lời phỏng vấn trước Hội đồng dự án Tốt nghiệp.
 
 ---
 
@@ -105,7 +105,7 @@ Admin bấm vào nút **"Roster"** trên thẻ lớp học phần để chuyển
 
 ## 3. Các Cơ Chế Kỹ Thuật Đỉnh Cao Của Frontend (Technical Highlights)
 
-Để mang lại trải nghiệm người dùng tức thời và đạt chuẩn công nghệ đồ án tốt nghiệp xuất sắc, phân hệ của Dev 1 đã áp dụng các kỹ thuật:
+Để mang lại trải nghiệm người dùng tức thời và đạt chuẩn công nghệ dự án tốt nghiệp xuất sắc, phân hệ của Dev 1 đã áp dụng các kỹ thuật:
 
 ### ⚡ 1. Cập Nhật Giao Diện Lạc Quan & Đồng Bộ Bộ Nhớ Đệm Tức Thời (< 16ms)
 * **Kỹ thuật**: Khi Admin tạo mới hoặc chỉnh sửa Học kỳ, Lớp hành chính, Lớp học phần, hay Đề cương:
@@ -131,7 +131,7 @@ Admin bấm vào nút **"Roster"** trên thẻ lớp học phần để chuyển
 
 ### ⚡ 5. Hệ Thống Kiểm Thử Đơn Vị Đạt Chuẩn 100% Pass (Vitest Suite)
 * Toàn bộ các API Service của Dev 1 (`AcademicService`, `CourseService`, `RosterService`, `SubjectService`, `SyllabusService`) đều có file test tương ứng.
-* Đạt **97/97 ca kiểm thử thành công (100% Pass Rate)**, được phân loại rõ ràng theo chuẩn báo cáo đồ án tốt nghiệp FPT:
+* Đạt **97/97 ca kiểm thử thành công (100% Pass Rate)**, được phân loại rõ ràng theo chuẩn báo cáo dự án tốt nghiệp FPT:
   * **Ca Thông thường (`N` - Normal)**: Happy path, HTTP 200 OK.
   * **Ca Bất thường (`A` - Abnormal)**: Thiếu trường bắt buộc, sai định dạng, HTTP 400/404/500 Exception.
   * **Ca Giá trị biên (`B` - Boundary)**: Tổng trọng số bằng 0%, tổng trọng số khác 100%, danh sách rỗng `[]`.
@@ -142,7 +142,7 @@ Admin bấm vào nút **"Roster"** trên thẻ lớp học phần để chuyển
 
 ### ❓ Câu 1: Tại sao hệ thống lại tách riêng `Subject` (Môn học) và `Syllabus` (Đề cương) thành 2 thực thể độc lập mà không gộp chung vào 1 bảng?
 * **Trả lời**:
-  * Một môn học (`Subject`) như `SWP391` có thể tồn tại qua nhiều năm, nhưng đề cương và tiêu chí đánh giá (`Syllabus`) thường xuyên thay đổi qua từng kỳ hoặc từng năm học (ví dụ: bổ sung tiêu chí kiểm thử, đổi trọng số đồ án).
+  * Một môn học (`Subject`) như `SWP391` có thể tồn tại qua nhiều năm, nhưng đề cương và tiêu chí đánh giá (`Syllabus`) thường xuyên thay đổi qua từng kỳ hoặc từng năm học (ví dụ: bổ sung tiêu chí kiểm thử, đổi trọng số dự án).
   * Việc tách riêng cho phép **Quản lý đa phiên bản (Multi-versioning)**: Môn học đóng vai trò danh mục cha, bên dưới có thể chứa nhiều phiên bản đề cương (`v1.0 - FA25`, `v2.0 - SP26`). Khi mở lớp học phần, nhà trường có thể linh hoạt chọn đúng phiên bản đề cương áp dụng cho kỳ đó.
 
 ### ❓ Câu 2: Nếu một Lớp học phần đang diễn ra, Giảng viên hoặc Admin có được phép sửa lại trọng số bài nộp trong Đề cương không?

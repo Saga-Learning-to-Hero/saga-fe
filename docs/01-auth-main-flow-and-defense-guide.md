@@ -1,6 +1,6 @@
 # Kiến Trúc & Luồng Nghiệp Vụ Chính: Module Xác Thực (Auth Main Flow)
 
-Tài liệu này giải thích chi tiết **Luồng chính (Main Flow)** của phân hệ Xác thực (**Authentication**) trong hệ thống SAGA, giúp thành viên nhóm hiểu rõ bản chất kỹ thuật từ Frontend đến Backend và tự tin trả lời phỏng vấn trước Hội đồng Đồ án Tốt nghiệp.
+Tài liệu này giải thích chi tiết **Luồng chính (Main Flow)** của phân hệ Xác thực (**Authentication**) trong hệ thống SAGA, giúp thành viên nhóm hiểu rõ bản chất kỹ thuật từ Frontend đến Backend và tự tin trả lời phỏng vấn trước Hội đồng dự án Tốt nghiệp.
 
 ---
 

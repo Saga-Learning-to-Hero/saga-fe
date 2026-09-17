@@ -239,7 +239,7 @@ export function SliceWeightsForm({
               Thiết lập trọng số tiêu chí Slicing Pie
             </h3>
             <p className="text-xs text-muted-foreground">
-              Chọn mẫu cấu hình nhanh hoặc tùy chỉnh tỷ lệ % cho 4 tiêu chí cốt lõi của đồ án.
+              Chọn mẫu cấu hình nhanh hoặc tùy chỉnh tỷ lệ % cho 4 tiêu chí cốt lõi của dự án.
             </p>
           </div>
 

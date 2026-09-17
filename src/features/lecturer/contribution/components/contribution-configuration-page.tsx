@@ -103,7 +103,7 @@ export function ContributionConfigurationPage({
   return (
     <LecturerPageShell
       title="Cấu hình trọng số Slicing Pie"
-      description="Thiết lập tỷ lệ trọng số các tiêu chí đóng góp Slicing Pie (Code, Testing, Document, Research) áp dụng chung cho lớp hoặc riêng theo từng nhóm đồ án."
+      description="Thiết lập tỷ lệ trọng số các tiêu chí đóng góp Slicing Pie (Code, Testing, Document, Research) áp dụng chung cho lớp hoặc riêng theo từng nhóm dự án."
       badges={
         <button
           type="button"
@@ -124,7 +124,7 @@ export function ContributionConfigurationPage({
             className: "h-8.5 text-xs font-bold shadow-xs",
           })}
         >
-          Phân nhóm đồ án
+          Phân nhóm dự án
         </Link>
       }
       isLoading={
@@ -333,8 +333,8 @@ export function ContributionConfigurationPage({
             </AlertDialogTitle>
             <AlertDialogDescription className="text-xs text-muted-foreground leading-relaxed">
               {pendingMode === "PROJECT_GROUP"
-                ? "Mỗi nhóm đồ án sẽ áp dụng bộ trọng số riêng theo dự án của mình. Điểm số và tỷ lệ đóng góp của sinh viên sẽ được tính toán lại ngay lập tức."
-                : "Mọi nhóm đồ án sẽ đồng loạt quay về áp dụng chung một bộ trọng số của lớp. Điểm số và tỷ lệ đóng góp sẽ được tính toán lại theo chuẩn chung."}
+                ? "Mỗi nhóm dự án sẽ áp dụng bộ trọng số riêng theo dự án của mình. Điểm số và tỷ lệ đóng góp của sinh viên sẽ được tính toán lại ngay lập tức."
+                : "Mọi nhóm dự án sẽ đồng loạt quay về áp dụng chung một bộ trọng số của lớp. Điểm số và tỷ lệ đóng góp sẽ được tính toán lại theo chuẩn chung."}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="mt-4 gap-2">
@@ -397,7 +397,7 @@ export function ContributionConfigurationPage({
               <p className="text-xs text-muted-foreground">
                 {serverMode === "COURSE"
                   ? "Mọi nhóm trong lớp học phần đều áp dụng chung một bộ trọng số Slicing Pie chuẩn do giảng viên ban hành."
-                  : "Mỗi nhóm đồ án được tự do tùy biến bộ trọng số riêng theo đặc thù kỹ thuật và phương pháp của dự án."}
+                  : "Mỗi nhóm dự án được tự do tùy biến bộ trọng số riêng theo đặc thù kỹ thuật và phương pháp của dự án."}
               </p>
             </div>
 
@@ -412,7 +412,7 @@ export function ContributionConfigurationPage({
               <div className="rounded-2xl border border-border/60 p-3.5 space-y-1">
                 <p className="font-bold text-purple-600 dark:text-purple-400">2. Chế độ Riêng theo nhóm (PROJECT_GROUP)</p>
                 <p className="text-muted-foreground text-[11px] leading-relaxed">
-                  Mỗi nhóm đồ án có thể tùy chỉnh trọng số riêng (ví dụ: nhóm nặng về kiểm thử, nhóm tập trung R&D). Giúp đánh giá công bằng theo tính chất thực tế của từng đề tài.
+                  Mỗi nhóm dự án có thể tùy chỉnh trọng số riêng (ví dụ: nhóm nặng về kiểm thử, nhóm tập trung R&D). Giúp đánh giá công bằng theo tính chất thực tế của từng đề tài.
                 </p>
               </div>
             </div>
