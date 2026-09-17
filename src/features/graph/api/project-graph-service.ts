@@ -59,6 +59,9 @@ function buildGraphQuery(params?: string | null | GraphSubgraphFilterParams): st
   if (typeof params.includeCommits === "boolean") {
     searchParams.set("includeCommits", String(params.includeCommits));
   }
+  if (typeof params.usedCriteriaOnly === "boolean") {
+    searchParams.set("usedCriteriaOnly", String(params.usedCriteriaOnly));
+  }
 
   const qs = searchParams.toString();
   return qs ? `?${qs}` : "";
