@@ -1,5 +1,5 @@
 import { describe, expect, vi, beforeEach } from "vitest";
-import { render, screen, fireEvent } from "@testing-library/react";
+import { render, screen, fireEvent, within } from "@testing-library/react";
 import { fptTest } from "@/testing/fpt-test-helper";
 import type { ProjectSprintResponse } from "@/features/student/sprint-progress/types/jira-task-types";
 import type {
@@ -235,17 +235,32 @@ describe("LecturerPeerReviewPage", () => {
     },
     () => {
       renderPage();
+      const metrics = screen.getByTestId("peer-review-statistics-metrics");
+      const filters = screen.getByTestId("peer-review-statistics-filters");
+      expect(
+        metrics.compareDocumentPosition(filters) & Node.DOCUMENT_POSITION_FOLLOWING
+      ).toBeTruthy();
       expect(screen.getByText("Số lượt đã đánh giá").parentElement?.textContent).toContain("1");
       expect(screen.getByText("Điểm trung bình").parentElement?.textContent).toContain("9/10");
       expect(screen.getByText("Các lượt đánh giá")).toBeTruthy();
       expect(screen.getByText("Người đánh giá")).toBeTruthy();
       expect(screen.getAllByText("Người được đánh giá").length).toBeGreaterThan(0);
-      expect(screen.getByText("An")).toBeTruthy();
+      expect(screen.getAllByText("An").length).toBeGreaterThan(0);
       expect(screen.getAllByText("Binh").length).toBeGreaterThan(0);
       expect(screen.getByTestId("peer-review-card-sprint").textContent).toBe("Sprint 1");
       expect(screen.getByTestId("peer-review-comment").textContent).toContain("Nhận xét từ An");
       expect(screen.getByTestId("peer-review-comment").textContent).toContain("Dành cho Binh");
       expect(screen.getByText("Phối hợp tốt")).toBeTruthy();
+      const criterionRows = screen.getAllByTestId("peer-review-criterion-row");
+      const qualityRow = criterionRows.find((row) =>
+        row.textContent?.includes("Hoàn thành & Chất lượng")
+      );
+      expect(qualityRow).toBeTruthy();
+      expect(
+        within(qualityRow as HTMLElement).getByLabelText(
+          "Hoàn thành & Chất lượng: 5 trên 5 sao"
+        )
+      ).toBeTruthy();
       expect(screen.queryByText("Phân bố điểm")).toBeNull();
       expect(screen.queryByText("Ma trận đánh giá")).toBeNull();
       expect(screen.queryByText("Bảng đánh giá chi tiết")).toBeNull();
@@ -341,7 +356,7 @@ describe("LecturerPeerReviewPage", () => {
       expect(screen.getByText(/Chưa tải được chi tiết tiêu chí/)).toBeTruthy();
       expect(screen.getByText("Số lượt đã đánh giá")).toBeTruthy();
       expect(screen.getByText("Các lượt đánh giá")).toBeTruthy();
-      expect(screen.getByText("An")).toBeTruthy();
+      expect(screen.getAllByText("An").length).toBeGreaterThan(0);
       expect(screen.getAllByText("Binh").length).toBeGreaterThan(0);
       expect(screen.queryByText("Không tải được tiêu chí đánh giá")).toBeNull();
       expect(screen.queryByTestId("peer-review-skeleton")).toBeNull();
@@ -446,8 +461,10 @@ describe("LecturerPeerReviewPage", () => {
       expect(screen.getAllByTestId("peer-review-card")).toHaveLength(2);
       expect(screen.getByText("Số lượt đã đánh giá").parentElement?.textContent).toContain("2");
 
-      fireEvent.click(document.getElementById("peer-review-reviewee") as HTMLButtonElement);
-      fireEvent.click(screen.getByText("SE2"));
+      const trigger = document.getElementById("peer-review-reviewee") as HTMLButtonElement;
+      fireEvent.click(trigger);
+      const dropdown = trigger.parentElement?.querySelector(".absolute") as HTMLElement;
+      fireEvent.click(within(dropdown).getByText("SE2"));
       const filterHref = String(mocks.navigation.replace.mock.calls.at(-1)?.[0] || "");
       expect(filterHref).toContain("teamId=team-1");
       expect(filterHref).toContain("sprintId=sprint-1");
@@ -502,6 +519,58 @@ describe("LecturerPeerReviewPage", () => {
       expect(screen.queryByTestId("peer-review-card")).toBeNull();
       expect(screen.getByText("Chưa có thành viên nào đánh giá Chi trong Sprint này.")).toBeTruthy();
       expect(screen.getByText("Số lượt đã đánh giá").parentElement?.textContent).toContain("1");
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID13",
+      type: "N",
+      executedDate: "18/09/2026",
+      description: "Chon thanh vien o cot trai doi URL revieweeId",
+    },
+    () => {
+      renderPage();
+      const items = screen.getAllByTestId("peer-review-reviewee-item");
+      const binh = items.find((item) => item.getAttribute("data-reviewee-id") === "stu-2");
+      fireEvent.click(binh as HTMLElement);
+      const lastHref = String(mocks.navigation.replace.mock.calls.at(-1)?.[0] || "");
+      expect(lastHref).toContain("revieweeId=stu-2");
+      expect(lastHref).toContain("teamId=team-1");
+      expect(lastHref).toContain("sprintId=sprint-1");
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID14",
+      type: "N",
+      executedDate: "18/09/2026",
+      description: "Tong quan nhom hien thi toan bo luot danh gia theo nguoi duoc danh gia",
+    },
+    () => {
+      mocks.reviewsQuery.data = {
+        ...mocks.reviewsQuery.data,
+        reviews: [
+          ...mocks.reviewsQuery.data.reviews,
+          {
+            ...mocks.reviewsQuery.data.reviews[0],
+            id: "pr-2",
+            reviewerId: "stu-2",
+            reviewerName: "Binh",
+            revieweeId: "stu-1",
+            revieweeName: "An",
+            starRating: 8,
+            comment: null,
+          },
+        ],
+      };
+      renderPage();
+      expect(screen.getAllByTestId("peer-review-card")).toHaveLength(2);
+      expect(screen.getByText("Người được đánh giá: An")).toBeTruthy();
+      expect(screen.getByText("Người được đánh giá: Binh")).toBeTruthy();
+      fireEvent.click(screen.getAllByTestId("peer-review-reviewee-item")[0]);
+      expect(String(mocks.navigation.replace.mock.calls.at(-1)?.[0] || "")).not.toContain("revieweeId=");
     }
   );
 });

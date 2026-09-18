@@ -40,7 +40,13 @@ export const ADMIN_NAV: NavGroup[] = [
     label: "",
     roles: ["ADMIN"],
     items: [
-      { id: "admin-dashboard", title: "Tổng quan hệ thống", href: "/admin/dashboard", icon: "LayoutDashboard", match: "exact" },
+      {
+        id: "admin-dashboard",
+        title: "Tổng quan hệ thống",
+        href: "/admin/dashboard",
+        icon: "LayoutDashboard",
+        match: "exact",
+      },
     ],
   },
   {
@@ -48,9 +54,27 @@ export const ADMIN_NAV: NavGroup[] = [
     label: "Quản trị học thuật",
     roles: ["ADMIN"],
     items: [
-      { id: "admin-users", title: "Tài khoản người dùng", href: "/admin/users", icon: "Users", match: "exact" },
-      { id: "admin-academic", title: "Lớp học & Học kỳ", href: "/admin/academic", icon: "Database", match: "prefix" },
-      { id: "admin-subjects", title: "Môn học và đề cương", href: "/admin/subjects", icon: "BookOpen", match: "prefix" },
+      {
+        id: "admin-users",
+        title: "Tài khoản người dùng",
+        href: "/admin/users",
+        icon: "Users",
+        match: "exact",
+      },
+      {
+        id: "admin-academic",
+        title: "Lớp học & Học kỳ",
+        href: "/admin/academic",
+        icon: "Database",
+        match: "prefix",
+      },
+      {
+        id: "admin-subjects",
+        title: "Môn học và đề cương",
+        href: "/admin/subjects",
+        icon: "BookOpen",
+        match: "prefix",
+      },
     ],
   },
   {
@@ -58,8 +82,20 @@ export const ADMIN_NAV: NavGroup[] = [
     label: "Hạ tầng & An ninh",
     roles: ["ADMIN"],
     items: [
-      { id: "admin-audit", title: "Nhật ký hệ thống", href: "/admin/audit-log", icon: "ScrollText", match: "exact" },
-      { id: "admin-notifications", title: "Thông báo hệ thống", href: "/admin/notifications", icon: "Bell", match: "exact" },
+      {
+        id: "admin-audit",
+        title: "Nhật ký hệ thống",
+        href: "/admin/audit-log",
+        icon: "ScrollText",
+        match: "exact",
+      },
+      {
+        id: "admin-notifications",
+        title: "Thông báo hệ thống",
+        href: "/admin/notifications",
+        icon: "Bell",
+        match: "exact",
+      },
     ],
   },
 ];
@@ -89,7 +125,7 @@ export function getLecturerNavItems(courseId: string): NavItem[] {
     },
     {
       id: "course-grades",
-      title: "Đánh giá & Bảng điểm",
+      title: "Bảng đóng góp",
       href: lecturerCourseGradesPath(courseId),
       icon: "ScrollText",
       match: "exact",
@@ -183,19 +219,33 @@ export function getNavGroups(
           label: "Giảng dạy",
           roles: ["LECTURER"],
           items: [
-            { id: "lecturer-courses", title: "Lớp học phần của tôi", href: "/lecturer/courses", icon: "BookOpen", match: "exact" },
+            {
+              id: "lecturer-courses",
+              title: "Lớp học phần của tôi",
+              href: "/lecturer/courses",
+              icon: "BookOpen",
+              match: "exact",
+            },
           ],
         },
       ];
     }
-    const courseLabel = courseCode ? `Lớp học · ${courseCode.toUpperCase()}` : "Lớp học";
+    const courseLabel = courseCode
+      ? `Lớp học · ${courseCode.toUpperCase()}`
+      : "Lớp học";
     return [
       {
         id: "lecturer-back",
         label: "",
         roles: ["LECTURER"],
         items: [
-          { id: "lecturer-back-courses", title: "Đổi lớp học phần", href: "/lecturer/courses", icon: "ArrowLeft", match: "exact" },
+          {
+            id: "lecturer-back-courses",
+            title: "Đổi lớp học phần",
+            href: "/lecturer/courses",
+            icon: "ArrowLeft",
+            match: "exact",
+          },
         ],
       },
       {
@@ -214,7 +264,13 @@ export function getNavGroups(
         label: "Học tập",
         roles: ["STUDENT"],
         items: [
-          { id: "student-courses", title: "Khóa học của tôi", href: "/student/courses", icon: "BookOpen", match: "exact" },
+          {
+            id: "student-courses",
+            title: "Khóa học của tôi",
+            href: "/student/courses",
+            icon: "BookOpen",
+            match: "exact",
+          },
         ],
       },
     ];
@@ -230,7 +286,13 @@ export function getNavGroups(
       label: "",
       roles: ["STUDENT"],
       items: [
-        { id: "student-back-courses", title: "Đổi khóa học", href: "/student/courses", icon: "ArrowLeft", match: "exact" },
+        {
+          id: "student-back-courses",
+          title: "Đổi khóa học",
+          href: "/student/courses",
+          icon: "ArrowLeft",
+          match: "exact",
+        },
       ],
     },
     {
@@ -265,7 +327,10 @@ export function getInitials(name?: string | null): string {
   const words = cleanName.split(/\s+/).filter((w) => w.length > 0);
 
   if (words.length === 0) {
-    const rawWords = name.trim().split(/\s+/).filter((w) => w.length > 0);
+    const rawWords = name
+      .trim()
+      .split(/\s+/)
+      .filter((w) => w.length > 0);
     if (rawWords.length === 0) return "U";
     if (rawWords.length === 1) return rawWords[0].slice(0, 2).toUpperCase();
     return `${rawWords[0][0]}${rawWords[rawWords.length - 1][0]}`.toUpperCase();
@@ -280,5 +345,3 @@ export function getInitials(name?: string | null): string {
 
   return `${firstChar}${lastChar}`.toUpperCase();
 }
-
-

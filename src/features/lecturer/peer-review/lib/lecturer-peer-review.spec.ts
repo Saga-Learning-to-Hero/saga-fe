@@ -4,11 +4,14 @@ import type { ProjectSprintResponse } from "@/features/student/sprint-progress/t
 import {
   buildPeerReviewKpis,
   buildReviewMatrix,
+  buildRevieweeSummaries,
   buildScorePercentDistribution,
+  filterRevieweeSummaries,
   formatScoreOutOfMax,
   formatSprintState,
   formatTeamOptionLabel,
   getPeerReviewMaxScore,
+  groupReviewsByReviewee,
   isLongComment,
   pickDefaultLecturerPeerReviewSprintId,
   resolveCriteriaColumns,
@@ -235,6 +238,97 @@ describe("lecturer-peer-review helpers", () => {
       expect(isLongComment("ngan")).toBe(false);
       expect(isLongComment("x".repeat(90))).toBe(true);
       expect(isLongComment("dong 1\ndong 2")).toBe(true);
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID09",
+      type: "N",
+      executedDate: "18/09/2026",
+      description: "Tong hop nguoi duoc danh gia sap theo ten va danh dau du luot",
+    },
+    () => {
+      const summaries = buildRevieweeSummaries(
+        [
+          { studentProfileId: "b", fullName: "Binh", studentCode: "SE2" },
+          { studentProfileId: "a", fullName: "An", studentCode: "SE1" },
+          { studentProfileId: "c", fullName: "Chi", studentCode: "SE3" },
+        ],
+        reviews,
+        3
+      );
+      expect(summaries.map((item) => item.name)).toEqual(["An", "Binh", "Chi"]);
+      expect(summaries.find((item) => item.id === "a")?.receivedCount).toBe(2);
+      expect(summaries.find((item) => item.id === "a")?.hasEnoughReviews).toBe(true);
+      expect(summaries.find((item) => item.id === "c")?.receivedCount).toBe(0);
+      expect(summaries.find((item) => item.id === "c")?.hasEnoughReviews).toBe(false);
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID10",
+      type: "B",
+      executedDate: "18/09/2026",
+      description: "Loc theo ten co dau hoac ma, keyword rong giu nguyen",
+    },
+    () => {
+      const summaries = buildRevieweeSummaries(
+        [
+          { studentProfileId: "a", fullName: "Nguyễn An", studentCode: "SE1" },
+          { studentProfileId: "b", fullName: "Binh", studentCode: "HE2" },
+        ],
+        [],
+        2
+      );
+      expect(filterRevieweeSummaries(summaries, "nguyen")).toHaveLength(1);
+      expect(filterRevieweeSummaries(summaries, "HE2")[0]?.id).toBe("b");
+      expect(filterRevieweeSummaries(summaries, "   ")).toHaveLength(2);
+      expect(filterRevieweeSummaries(summaries, "xyz")).toHaveLength(0);
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID11",
+      type: "A",
+      executedDate: "18/09/2026",
+      description: "Nhom danh gia theo nguoi duoc danh gia bo qua thanh vien chua nhan luot",
+    },
+    () => {
+      const summaries = buildRevieweeSummaries(
+        [
+          { studentProfileId: "a", fullName: "An" },
+          { studentProfileId: "b", fullName: "B" },
+          { studentProfileId: "c", fullName: "C" },
+        ],
+        reviews,
+        3
+      );
+      const groups = groupReviewsByReviewee(reviews, summaries);
+      expect(groups.map((item) => item.reviewee.id)).toEqual(["a", "b"]);
+      expect(groups[0]?.reviews).toHaveLength(2);
+      expect(groups.find((item) => item.reviewee.id === "c")).toBeUndefined();
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID12",
+      type: "B",
+      executedDate: "18/09/2026",
+      description: "Danh sach rong va teamSize 1 khong bao du luot",
+    },
+    () => {
+      expect(buildRevieweeSummaries([], [], 0)).toEqual([]);
+      const single = buildRevieweeSummaries(
+        [{ studentProfileId: "a", fullName: "An", studentCode: "SE1" }],
+        [],
+        1
+      );
+      expect(single[0]?.hasEnoughReviews).toBe(false);
+      expect(groupReviewsByReviewee([], single)).toEqual([]);
     }
   );
 });

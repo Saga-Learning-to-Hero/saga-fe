@@ -29,7 +29,7 @@ import {
   pickDefaultLecturerPeerReviewSprintId,
   resolvePeerReviewViewState,
 } from "../lib/lecturer-peer-review";
-import { PeerReviewOverviewPanels } from "./peer-review-overview-panels";
+import { PeerReviewWorkspace } from "./peer-review-workspace";
 
 interface LecturerPeerReviewPageProps {
   courseId: string;
@@ -37,9 +37,9 @@ interface LecturerPeerReviewPageProps {
 
 function PeerReviewSummarySkeleton() {
   return (
-    <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5" data-testid="peer-review-skeleton" aria-hidden>
-      {Array.from({ length: 5 }, (_, index) => (
-        <div key={index} className="h-24 animate-pulse rounded-2xl bg-muted/60" />
+    <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4" data-testid="peer-review-skeleton" aria-hidden>
+      {Array.from({ length: 4 }, (_, index) => (
+        <div key={index} className="h-20 animate-pulse rounded-2xl bg-muted/60" />
       ))}
     </div>
   );
@@ -268,7 +268,7 @@ export function LecturerPeerReviewPage({ courseId }: LecturerPeerReviewPageProps
 
   const filters = (
     <div className="grid gap-3 sm:grid-cols-2">
-      <div className="space-y-1.5">
+      <div className="min-w-0 flex-1 space-y-1.5">
         <Label htmlFor="peer-review-team" className="text-[11px] font-semibold text-muted-foreground">
           Nhóm
         </Label>
@@ -283,7 +283,7 @@ export function LecturerPeerReviewPage({ courseId }: LecturerPeerReviewPageProps
           }))}
         />
       </div>
-      <div className="space-y-1.5">
+      <div className="min-w-0 flex-1 space-y-1.5">
         <Label htmlFor="peer-review-sprint" className="text-[11px] font-semibold text-muted-foreground">
           Sprint
         </Label>
@@ -361,13 +361,14 @@ export function LecturerPeerReviewPage({ courseId }: LecturerPeerReviewPageProps
             </Button>
           </Card>
         ) : null}
-        <PeerReviewOverviewPanels
+        <PeerReviewWorkspace
           reviews={reviews}
           rubric={rubricQuery.data || null}
           members={team?.members || []}
           selectedRevieweeId={effectiveRevieweeId}
           fallbackSprintName={selectedSprintName}
           rubricError={viewState === "partial"}
+          filters={filters}
           onSelectReviewee={handleSelectReviewee}
           onRetryRubric={() => void rubricQuery.refetch()}
         />
@@ -381,9 +382,6 @@ export function LecturerPeerReviewPage({ courseId }: LecturerPeerReviewPageProps
       title="Đánh giá chéo theo Sprint"
       description="Chọn một nhóm, rồi chọn Sprint của đúng dự án nhóm đó. Giảng viên chỉ xem, không nộp đánh giá."
     >
-      <Card className="relative z-20 overflow-visible rounded-2xl border border-border/80 bg-card/90 p-4 shadow-xs">
-        {filters}
-      </Card>
       <div className="relative z-0">{mainContent}</div>
     </LecturerPageShell>
   );

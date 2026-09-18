@@ -163,6 +163,8 @@ function calculateDonutSegments(
   let currentOffset = 0;
   for (const field of SLICE_WEIGHT_FIELDS) {
     const val = Number.isFinite(weights[field]) && weights[field] > 0 ? weights[field] : 0;
+    if (val <= 0) continue;
+
     const length = (val / totalSafe) * circumference;
     segments.push({
       field,
@@ -367,6 +369,7 @@ export function SliceWeightsForm({
                 {donutSegments.map((seg) => (
                   <circle
                     key={seg.field}
+                    data-testid={`slice-donut-segment-${seg.field}`}
                     cx="70"
                     cy="70"
                     r="56"
@@ -398,11 +401,12 @@ export function SliceWeightsForm({
 
             <div className="space-y-2">
               <div className="flex h-2.5 w-full overflow-hidden rounded-full bg-muted">
-                {SLICE_WEIGHT_FIELDS.map((field) => {
-                  const val = Number.isFinite(weights[field]) && weights[field] > 0 ? weights[field] : 0;
+                {donutSegments.map(({ field }) => {
+                  const val = weights[field];
                   return (
                     <div
                       key={field}
+                      data-testid={`slice-bar-segment-${field}`}
                       style={{
                         width: `${total > 0 ? (val / total) * 100 : 0}%`,
                         backgroundColor: FIELD_CONFIG[field].strokeColor,
@@ -452,6 +456,7 @@ export function SliceWeightsForm({
                 return (
                   <div
                     key={field}
+                    data-testid={`slice-legend-${field}`}
                     className="flex items-center justify-between rounded-xl border border-border/60 bg-muted/20 p-2.5"
                   >
                     <div className="flex items-center gap-2">

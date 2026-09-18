@@ -436,7 +436,7 @@ Project Type dùng để phân loại hướng dự án, không điều khiển 
 | GRAPH-005 | Sprint peer-review graph | ✓ | ✓ | ✓ | `DONE/VERIFY`; yêu cầu sprint trước khi gọi API |
 | PEER-001 | Default/team rubric | ✓ | ✓ | ✓ | `DONE`; Student fallback default rubric và Lecturer dùng team rubric |
 | PEER-002 | Sprint review candidates | ✓ | ✓ | ✓ | `DONE`; Student UI khóa theo review window/trạng thái |
-| PEER-003 | Submit/list peer reviews | ✓ | ✓ | ✓ | `DONE/VERIFY`; Student submit một lần, Lecturer xem list theo team/sprint; còn E2E quyền và deadline |
+| PEER-003 | Submit/list peer reviews | ✓ | ✓ | ✓ | `DONE/VERIFY`; Student submit một lần; Lecturer workspace hai cột (Tổng quan nhóm / sinh viên), giữ query `teamId`/`sprintId`/`revieweeId`; không đổi API, quyền hay công thức; còn E2E quyền và deadline |
 | CONT-001 | Student contribution dashboard | ✓ | ✓ | ✓ | `DONE`; dùng evaluation data, tên/tooltip phải rõ |
 | CONT-002 | Warning evidence/peer review | ✓ | ✓ | ✓ | `DONE`; diễn đạt là cảnh báo dữ liệu, không kết luận gian lận |
 | PROG-003 | Team & Member Activity Heatmap | ✓ | ✓ | ✓ | `DONE`; `GET /api/courses/{courseId}/teams/{teamId}/heatmap`, hỗ trợ toàn nhóm hoặc từng sinh viên, hiển thị lưới nhịp độ hoạt động GitHub-style |

@@ -76,3 +76,17 @@ export interface PeerReviewKpis {
   membersWithoutReviewCount: number;
   commentedCount: number;
 }
+
+export interface RevieweeSummary {
+  id: string;
+  name: string;
+  studentCode: string | null;
+  receivedCount: number;
+  averageScore: number | null;
+  hasEnoughReviews: boolean;
+}
+
+export interface RevieweeReviewGroup {
+  reviewee: RevieweeSummary;
+  reviews: LecturerPeerReviewItem[];
+}

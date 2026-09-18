@@ -9,6 +9,8 @@ import type {
   PeerReviewViewState,
   ReviewMatrixCell,
   ReviewMatrixMember,
+  RevieweeReviewGroup,
+  RevieweeSummary,
   ScorePercentBucket,
   ScorePercentBucketId,
 } from "../types/lecturer-peer-review";
@@ -325,4 +327,107 @@ export function formatPeerReviewDateTime(value?: string | null): string {
     hour: "2-digit",
     minute: "2-digit",
   });
+}
+
+function normalizePeerReviewSearch(value: string): string {
+  return value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/đ/g, "d")
+    .replace(/Đ/g, "d")
+    .trim()
+    .toLowerCase();
+}
+
+export function buildRevieweeSummaries(
+  members: Array<{ studentProfileId: string; fullName: string; studentCode?: string | null }>,
+  reviews: LecturerPeerReviewItem[],
+  teamSize?: number
+): RevieweeSummary[] {
+  const byId = new Map<string, RevieweeSummary>();
+  for (const member of members) {
+    const id = member.studentProfileId.trim();
+    if (!id) continue;
+    byId.set(id, {
+      id,
+      name: member.fullName.trim() || id,
+      studentCode: member.studentCode?.trim() || null,
+      receivedCount: 0,
+      averageScore: null,
+      hasEnoughReviews: false,
+    });
+  }
+  for (const review of reviews) {
+    if (!byId.has(review.revieweeId)) {
+      byId.set(review.revieweeId, {
+        id: review.revieweeId,
+        name: review.revieweeName,
+        studentCode: null,
+        receivedCount: 0,
+        averageScore: null,
+        hasEnoughReviews: false,
+      });
+    }
+  }
+
+  const size = Number.isFinite(teamSize) && (teamSize as number) > 0 ? (teamSize as number) : byId.size;
+  const expectedReceived = size > 1 ? size - 1 : 0;
+
+  for (const summary of byId.values()) {
+    const received = reviews.filter((review) => review.revieweeId === summary.id);
+    const scored = received.filter((review) => review.starRating !== null);
+    summary.receivedCount = received.length;
+    summary.averageScore =
+      scored.length > 0
+        ? scored.reduce((sum, review) => sum + (review.starRating || 0), 0) / scored.length
+        : null;
+    summary.hasEnoughReviews = expectedReceived > 0 && summary.receivedCount >= expectedReceived;
+  }
+
+  return [...byId.values()].sort((left, right) => left.name.localeCompare(right.name, "vi"));
+}
+
+export function filterRevieweeSummaries(summaries: RevieweeSummary[], keyword: string): RevieweeSummary[] {
+  const needle = normalizePeerReviewSearch(keyword);
+  if (!needle) return summaries;
+  return summaries.filter((item) => {
+    const haystack = normalizePeerReviewSearch(`${item.name} ${item.studentCode || ""}`);
+    return haystack.includes(needle);
+  });
+}
+
+export function groupReviewsByReviewee(
+  reviews: LecturerPeerReviewItem[],
+  summaries: RevieweeSummary[]
+): RevieweeReviewGroup[] {
+  const byId = new Map<string, LecturerPeerReviewItem[]>();
+  for (const review of reviews) {
+    const current = byId.get(review.revieweeId) || [];
+    current.push(review);
+    byId.set(review.revieweeId, current);
+  }
+
+  const groups: RevieweeReviewGroup[] = [];
+  const seen = new Set<string>();
+  for (const summary of summaries) {
+    const grouped = byId.get(summary.id) || [];
+    if (grouped.length === 0) continue;
+    groups.push({ reviewee: summary, reviews: grouped });
+    seen.add(summary.id);
+  }
+  for (const [revieweeId, grouped] of byId) {
+    if (seen.has(revieweeId) || grouped.length === 0) continue;
+    groups.push({
+      reviewee: {
+        id: revieweeId,
+        name: grouped[0]?.revieweeName || revieweeId,
+        studentCode: null,
+        receivedCount: grouped.length,
+        averageScore: null,
+        hasEnoughReviews: false,
+      },
+      reviews: grouped,
+    });
+  }
+  return groups;
 }

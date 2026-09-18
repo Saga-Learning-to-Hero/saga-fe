@@ -88,6 +88,111 @@ const WEEKDAYS = [
   { key: "sun", short: "CN", full: "Chủ Nhật" },
 ];
 
+interface HeatmapCellTooltipProps {
+  cell: HeatmapCell;
+  formattedDate: string;
+}
+
+export function HeatmapCellTooltip({
+  cell,
+  formattedDate,
+}: HeatmapCellTooltipProps) {
+  const metrics = [
+    {
+      label: "Commit Git",
+      value: cell.commits,
+      icon: GitCommit,
+      iconClass: "bg-blue-500/10 text-blue-600 dark:text-blue-400",
+    },
+    {
+      label: "Task Jira",
+      value: cell.tasks,
+      icon: CheckSquare,
+      iconClass: "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400",
+    },
+    {
+      label: "Đánh giá chéo",
+      value: cell.peerReviews,
+      icon: Users,
+      iconClass: "bg-purple-500/10 text-purple-600 dark:text-purple-400",
+    },
+    {
+      label: "Bình luận",
+      value: cell.comments,
+      icon: MessageSquare,
+      iconClass: "bg-teal-500/10 text-teal-600 dark:text-teal-400",
+    },
+    {
+      label: "Tài liệu",
+      value: cell.documents,
+      icon: FileText,
+      iconClass: "bg-amber-500/10 text-amber-600 dark:text-amber-400",
+    },
+  ];
+
+  return (
+    <div className="w-72 max-w-[calc(100vw-2rem)]">
+      <div className="flex items-start justify-between gap-3 border-b border-border/60 bg-muted/20 px-3.5 py-3">
+        <div className="min-w-0">
+          <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+            Ngày hoạt động
+          </p>
+          <p className="mt-0.5 text-sm font-extrabold text-foreground">
+            {formattedDate}
+          </p>
+        </div>
+        <span className="shrink-0 rounded-lg bg-amber-500/10 px-2.5 py-1 font-mono text-xs font-black text-amber-700 dark:text-amber-300">
+          +{cell.totalScore} điểm
+        </span>
+      </div>
+
+      <div className="grid grid-cols-2 gap-2 p-3">
+        {metrics.map((metric, index) => {
+          const Icon = metric.icon;
+          const isLastOddItem = index === metrics.length - 1 && metrics.length % 2 !== 0;
+
+          return (
+            <div
+              key={metric.label}
+              className={cn(
+                "flex min-w-0 items-center gap-2 rounded-xl border border-border/60 bg-background px-2.5 py-2",
+                isLastOddItem && "col-span-2"
+              )}
+            >
+              <span
+                className={cn(
+                  "flex size-7 shrink-0 items-center justify-center rounded-lg",
+                  metric.iconClass
+                )}
+              >
+                <Icon className="size-3.5" aria-hidden />
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block truncate text-[10px] font-medium text-muted-foreground">
+                  {metric.label}
+                </span>
+                <span className="block font-mono text-sm font-black text-foreground">
+                  {metric.value}
+                </span>
+              </span>
+            </div>
+          );
+        })}
+      </div>
+
+      <div className="flex items-center justify-between gap-3 border-t border-border/60 bg-primary/5 px-3.5 py-2.5">
+        <span className="inline-flex items-center gap-2 text-xs font-semibold text-muted-foreground">
+          <Flame className="size-4 text-emerald-600 dark:text-emerald-400" aria-hidden />
+          Tổng hoạt động
+        </span>
+        <strong className="font-mono text-base font-black text-foreground">
+          {cell.totalActivities}
+        </strong>
+      </div>
+    </div>
+  );
+}
+
 export function ActivityHeatmapGrid({
   courseId,
   teamId,
@@ -599,7 +704,10 @@ export function ActivityHeatmapGrid({
 
                           return (
                             <Tooltip key={item.date}>
-                              <TooltipTrigger className="w-full text-left">
+                              <TooltipTrigger
+                                className="w-full text-left"
+                                aria-label={`${formattedDate}: ${item.cell.totalActivities} hoạt động, ${item.cell.totalScore} điểm`}
+                              >
                                 <div
                                   className={cn(
                                     "h-12 sm:h-14 rounded-lg border transition-all cursor-pointer flex flex-col items-center justify-center select-none hover:shadow-md hover:scale-[1.05] hover:z-10 relative",
@@ -624,59 +732,13 @@ export function ActivityHeatmapGrid({
 
                               <TooltipContent
                                 side="top"
-                                className="bg-popover text-popover-foreground p-3 rounded-xl border border-border/80 shadow-2xl text-xs z-50 min-w-[200px]"
+                                sideOffset={10}
+                                className="block overflow-hidden rounded-2xl border border-border/80 bg-popover p-0 text-popover-foreground shadow-xl"
                               >
-                                <div className="font-bold border-b border-border/60 pb-1.5 mb-2 flex items-center justify-between gap-4">
-                                  <span>{formattedDate}</span>
-                                  <span className="text-amber-500 font-mono text-[11px]">
-                                    +{item.cell.totalScore} pts
-                                  </span>
-                                </div>
-
-                                <div className="space-y-1 text-[11px]">
-                                  <div className="flex items-center justify-between gap-6">
-                                    <span className="flex items-center gap-1.5 text-muted-foreground whitespace-nowrap">
-                                      <span className="w-2 h-2 rounded-full bg-blue-500 shrink-0" />
-                                      Commits
-                                    </span>
-                                    <strong className="text-foreground font-mono">{item.cell.commits}</strong>
-                                  </div>
-                                  <div className="flex items-center justify-between gap-6">
-                                    <span className="flex items-center gap-1.5 text-muted-foreground whitespace-nowrap">
-                                      <span className="w-2 h-2 rounded-full bg-indigo-500 shrink-0" />
-                                      Tasks
-                                    </span>
-                                    <strong className="text-foreground font-mono">{item.cell.tasks}</strong>
-                                  </div>
-                                  <div className="flex items-center justify-between gap-6">
-                                    <span className="flex items-center gap-1.5 text-muted-foreground whitespace-nowrap">
-                                      <span className="w-2 h-2 rounded-full bg-purple-500 shrink-0" />
-                                      Reviews
-                                    </span>
-                                    <strong className="text-foreground font-mono">{item.cell.peerReviews}</strong>
-                                  </div>
-                                  <div className="flex items-center justify-between gap-6">
-                                    <span className="flex items-center gap-1.5 text-muted-foreground whitespace-nowrap">
-                                      <span className="w-2 h-2 rounded-full bg-teal-500 shrink-0" />
-                                      Comments
-                                    </span>
-                                    <strong className="text-foreground font-mono">{item.cell.comments}</strong>
-                                  </div>
-                                  <div className="flex items-center justify-between gap-6">
-                                    <span className="flex items-center gap-1.5 text-muted-foreground whitespace-nowrap">
-                                      <span className="w-2 h-2 rounded-full bg-amber-500 shrink-0" />
-                                      Docs
-                                    </span>
-                                    <strong className="text-foreground font-mono">{item.cell.documents}</strong>
-                                  </div>
-                                </div>
-
-                                <div className="border-t border-border/60 pt-1.5 mt-2 flex items-center justify-between text-[11px]">
-                                  <span className="text-muted-foreground">Total</span>
-                                  <strong className="text-foreground font-mono">
-                                    {item.cell.totalActivities}
-                                  </strong>
-                                </div>
+                                <HeatmapCellTooltip
+                                  cell={item.cell}
+                                  formattedDate={formattedDate}
+                                />
                               </TooltipContent>
                             </Tooltip>
                           );
