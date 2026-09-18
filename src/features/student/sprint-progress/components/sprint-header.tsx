@@ -10,6 +10,7 @@ import {
   CalendarIcon,
   FlameIcon,
   CheckCircle2Icon,
+  TrendingDownIcon,
 } from "lucide-react";
 import type { Sprint } from "../types/sprint-progress";
 import { Badge } from "@/components/ui/badge";
@@ -27,8 +28,8 @@ interface SprintHeaderProps {
   sprints: Sprint[];
   selectedSprintId: string;
   onSelectSprint: (sprintId: string) => void;
-  activeView: "BOARD" | "BACKLOG" | "TIMELINE";
-  onSelectView: (view: "BOARD" | "BACKLOG" | "TIMELINE") => void;
+  activeView: "BOARD" | "BACKLOG" | "TIMELINE" | "ANALYTICS";
+  onSelectView: (view: "BOARD" | "BACKLOG" | "TIMELINE" | "ANALYTICS") => void;
   searchQuery: string;
   onSearchChange: (q: string) => void;
   selectedAssigneeId: string | null;
@@ -244,9 +245,20 @@ export function SprintHeader({
             <GanttChartSquareIcon className="w-3.5 h-3.5 text-emerald-500" />
             <span>Lộ trình Timeline</span>
           </button>
+
+          <button
+            onClick={() => onSelectView("ANALYTICS")}
+            className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer select-none ${activeView === "ANALYTICS"
+              ? "bg-card text-foreground shadow-xs border border-border/50"
+              : "text-muted-foreground hover:text-foreground"
+              }`}
+          >
+            <TrendingDownIcon className="w-3.5 h-3.5 text-amber-500" />
+            <span>Biểu đồ & Nhịp độ</span>
+          </button>
         </div>
 
-        {activeView !== "TIMELINE" && (
+        {activeView !== "TIMELINE" && activeView !== "ANALYTICS" && (
           <div className="flex flex-wrap items-center gap-2.5 flex-1 lg:justify-end">
             {activeView === "BOARD" && (
               <div className="w-full sm:w-64 shrink-0">

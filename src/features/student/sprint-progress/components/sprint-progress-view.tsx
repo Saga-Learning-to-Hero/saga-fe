@@ -38,6 +38,7 @@ import {
   restoreLocalSprintOverride,
   setLocalSprintOverride,
 } from "../lib/optimistic-sprint-state";
+import { ActivityHeatmapGrid, SprintBurndownChart } from "@/features/analytics";
 
 export function SprintProgressView() {
   const { user: authUser } = useAuthStore();
@@ -122,7 +123,7 @@ export function SprintProgressView() {
   }, [team?.members, taskOptions?.assignableUsers]);
 
   const [userSelectedSprintId, setUserSelectedSprintId] = useState<string | null>(null);
-  const [activeView, setActiveView] = useState<"BOARD" | "BACKLOG" | "TIMELINE">("BOARD");
+  const [activeView, setActiveView] = useState<"BOARD" | "BACKLOG" | "TIMELINE" | "ANALYTICS">("BOARD");
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [selectedAssigneeId, setSelectedAssigneeId] = useState<string | null>(null);
 
@@ -552,6 +553,40 @@ export function SprintProgressView() {
             setIsSprintModalOpen(true);
           }}
         />
+      )}
+
+      {!isTasksError && !isSprintsError && activeView === "ANALYTICS" && courseId && team?.teamId && (
+        <div className="space-y-6">
+          <SprintBurndownChart
+            courseId={courseId}
+            teamId={team.teamId}
+            sprints={sprints.map((s) => ({
+              id: s.id,
+              name: s.name,
+              startDate: s.startDate,
+              endDate: s.endDate,
+            }))}
+            initialSprintId={selectedSprintId === "backlog" ? undefined : selectedSprintId}
+            onSelectSprint={setUserSelectedSprintId}
+          />
+          <ActivityHeatmapGrid
+            courseId={courseId}
+            teamId={team.teamId}
+            sprints={sprints.map((s) => ({
+              id: s.id,
+              name: s.name,
+              startDate: s.startDate,
+              endDate: s.endDate,
+            }))}
+            students={teamMembers.map((m) => ({
+              studentId: m.studentCode,
+              fullName: m.name,
+              studentCode: m.studentCode,
+              avatar: m.avatar,
+            }))}
+            initialSprintId={selectedSprintId === "backlog" ? undefined : selectedSprintId}
+          />
+        </div>
       )}
 
       {isIssueModalOpen && (

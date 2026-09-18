@@ -114,20 +114,20 @@ export function StudentDashboardAnalytics() {
           <UsersIcon className="mx-auto size-8 text-amber-600 dark:text-amber-400" />
           <div className="space-y-1">
             <h2 className="text-base font-bold text-foreground">
-              Chỉ trưởng nhóm và giảng viên xem được bảng tiến độ nhóm
+              Bảng tiến độ tổng quan giới hạn cho Trưởng nhóm & Giảng viên
             </h2>
-            <p className="text-xs text-muted-foreground">
-              Quyền xem tổng quan tiến độ dự án được giới hạn cho trưởng nhóm và giảng viên. Bạn vẫn có thể theo dõi tasks và commits của nhóm.
+            <p className="text-xs text-muted-foreground max-w-xl mx-auto">
+              Quyền xem tổng quan tiến độ dự án chỉ dành cho trưởng nhóm và giảng viên. Bạn có thể xem biểu đồ tiến độ và lưới hoạt động chi tiết tại trang Tiến độ Sprint.
             </p>
           </div>
-          <div className="flex flex-wrap items-center justify-center gap-2">
+          <div className="flex flex-wrap items-center justify-center gap-2 pt-1">
             <Link
               href={studentCoursePath("/student/sprint-progress", courseId)}
               prefetch={true}
               className={cn(buttonVariants({ size: "sm" }), "text-xs")}
             >
               <KanbanIcon className="size-3.5" />
-              Xem task
+              Xem tiến độ Sprint & Nhịp độ
             </Link>
             <Link
               href={studentCoursePath("/student/commits", courseId)}
