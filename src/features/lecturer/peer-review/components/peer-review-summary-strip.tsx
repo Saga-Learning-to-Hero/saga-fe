@@ -30,9 +30,9 @@ export function PeerReviewSummaryStrip({ kpis, filters }: PeerReviewSummaryStrip
       : Math.min(Math.max(kpis.completionRate, 0), 100);
 
   return (
-    <Card className="overflow-hidden rounded-2xl border border-border/80 bg-card shadow-xs">
+    <Card className="relative z-20 overflow-visible rounded-2xl border border-border/80 bg-card shadow-xs">
       <div
-        className="grid sm:grid-cols-2 xl:grid-cols-[1.35fr_1fr_1fr_1fr]"
+        className="grid overflow-hidden rounded-t-2xl sm:grid-cols-2 xl:grid-cols-[1.35fr_1fr_1fr_1fr]"
         data-testid="peer-review-statistics-metrics"
       >
         <section className="border-b border-border/60 bg-primary/5 p-4 sm:col-span-2 xl:col-span-1 xl:border-r xl:border-b-0">
@@ -111,7 +111,7 @@ export function PeerReviewSummaryStrip({ kpis, filters }: PeerReviewSummaryStrip
       </div>
       {filters ? (
         <div
-          className="flex flex-col gap-3 border-t border-border/60 bg-muted/15 p-4 lg:flex-row lg:items-end lg:justify-between"
+          className="relative z-30 flex flex-col gap-3 rounded-b-2xl border-t border-border/60 bg-muted/15 p-4 lg:flex-row lg:items-end lg:justify-between"
           data-testid="peer-review-statistics-filters"
         >
           <div className="flex items-center gap-2.5">

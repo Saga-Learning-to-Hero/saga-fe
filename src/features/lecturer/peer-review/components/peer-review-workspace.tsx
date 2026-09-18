@@ -114,7 +114,7 @@ export function PeerReviewWorkspace({
         />
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-[340px_minmax(0,1fr)] lg:items-start xl:grid-cols-[360px_minmax(0,1fr)]">
+      <div className="relative z-0 grid gap-4 lg:grid-cols-[340px_minmax(0,1fr)] lg:items-start xl:grid-cols-[360px_minmax(0,1fr)]">
         <div className="hidden lg:sticky lg:top-28 lg:z-10 lg:block lg:self-start">
           <PeerReviewRevieweeList
             summaries={visibleSummaries}
