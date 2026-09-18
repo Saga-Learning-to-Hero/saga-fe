@@ -48,6 +48,8 @@ import {
 import { ReplaceTeamLeaderDialog } from "./replace-team-leader-dialog";
 import { MoveTeamMemberDialog } from "./move-team-member-dialog";
 import { cn } from "@/lib/utils";
+import { ActivityHeatmapGrid, SprintBurndownChart } from "@/features/analytics";
+import { useProjectSprints } from "@/features/student/sprint-progress/hooks/use-project-sprints";
 
 interface TeamProjectDetailPageProps {
   courseId: string;
@@ -77,6 +79,9 @@ export function TeamProjectDetailPage({ courseId, teamId }: TeamProjectDetailPag
   const projectId = team?.projectId ?? null;
   const hasOtherTeams = teams.some((item) => item.teamId !== team?.teamId);
   const progressQuery = useProjectProgress(projectId, { enabled: Boolean(projectId) });
+  const { data: sprints = [] } = useProjectSprints(projectId || "", {
+    enabled: Boolean(projectId),
+  });
   useProjectRealtime(projectId, { enabled: Boolean(projectId) });
   const progress = normalizeProjectProgress(progressQuery.data);
 
@@ -294,6 +299,31 @@ export function TeamProjectDetailPage({ courseId, teamId }: TeamProjectDetailPag
                 members={progress.memberProgress}
                 selectedStudentId={detailStudentId}
                 onSelectMember={setDetailStudentId}
+              />
+              <SprintBurndownChart
+                courseId={courseId}
+                teamId={teamId}
+                sprints={sprints.map((s) => ({
+                  id: s.id,
+                  name: s.name,
+                  startDate: s.startDate,
+                  endDate: s.endDate,
+                }))}
+              />
+              <ActivityHeatmapGrid
+                courseId={courseId}
+                teamId={teamId}
+                sprints={sprints.map((s) => ({
+                  id: s.id,
+                  name: s.name,
+                  startDate: s.startDate,
+                  endDate: s.endDate,
+                }))}
+                students={members.map((m) => ({
+                  studentId: m.studentProfileId,
+                  fullName: m.fullName,
+                  studentCode: m.studentCode,
+                }))}
               />
             </>
           ) : null}

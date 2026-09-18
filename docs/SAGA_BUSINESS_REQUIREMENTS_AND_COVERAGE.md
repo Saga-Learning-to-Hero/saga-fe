@@ -439,6 +439,8 @@ Project Type dùng để phân loại hướng dự án, không điều khiển 
 | PEER-003 | Submit/list peer reviews | ✓ | ✓ | ✓ | `DONE/VERIFY`; Student submit một lần, Lecturer xem list theo team/sprint; còn E2E quyền và deadline |
 | CONT-001 | Student contribution dashboard | ✓ | ✓ | ✓ | `DONE`; dùng evaluation data, tên/tooltip phải rõ |
 | CONT-002 | Warning evidence/peer review | ✓ | ✓ | ✓ | `DONE`; diễn đạt là cảnh báo dữ liệu, không kết luận gian lận |
+| PROG-003 | Team & Member Activity Heatmap | ✓ | ✓ | ✓ | `DONE`; `GET /api/courses/{courseId}/teams/{teamId}/heatmap`, hỗ trợ toàn nhóm hoặc từng sinh viên, hiển thị lưới nhịp độ hoạt động GitHub-style |
+| PROG-004 | Sprint Burndown Chart | ✓ | ✓ | ✓ | `DONE`; `GET /api/courses/{courseId}/teams/{teamId}/sprints/{sprintId}/burndown`, đối soát đường lý tưởng với thực tế và số lượng task hoàn thành |
 
 ### 7.9 Thông báo, Web Push và Realtime Signal (Notification Center)
 
@@ -563,6 +565,13 @@ Project Type dùng để phân loại hướng dự án, không điều khiển 
 | `POST /api/lecturer/courses/{courseId}/notifications` | Đã dùng (kèm Idempotency-Key) |
 | `POST /api/lecturer/teams/{teamId}/notifications` | Đã dùng (kèm Idempotency-Key) |
 | `POST /api/lecturer/courses/{courseId}/students/{studentId}/notifications` | Đã dùng (kèm Idempotency-Key) |
+
+### 8.9 Team Activity Analytics (Heatmap & Sprint Burndown)
+
+| Endpoint | FE hiện tại |
+| --- | --- |
+| `GET /api/courses/{courseId}/teams/{teamId}/heatmap` | Đã dùng (Lưới nhịp độ hoạt động toàn nhóm hoặc cá nhân, tính điểm activity, filter theo ngày và thành viên) |
+| `GET /api/courses/{courseId}/teams/{teamId}/sprints/{sprintId}/burndown` | Đã dùng (Biểu đồ Sprint Burndown đối soát idealRemaining, actualRemaining và doneCount) |
 
 ---
 
