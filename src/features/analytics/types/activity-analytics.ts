@@ -1,25 +1,30 @@
+export interface HeatmapActor {
+  studentId: string;
+  studentCode: string | null;
+  fullName: string | null;
+  avatar: string | null;
+}
+
 export interface HeatmapCell {
   date: string;
   commits: number;
   peerReviews: number;
-  comments: number;
   documents: number;
   tasks: number;
   totalActivities: number;
-  totalScore: number;
+  actors?: HeatmapActor[];
 }
 
 export interface StudentHeatmap {
   studentId: string;
   studentCode: string | null;
   fullName: string | null;
+  avatar: string | null;
   commits: number;
   peerReviews: number;
-  comments: number;
   documents: number;
   tasks: number;
   totalActivities: number;
-  totalScore: number;
   cells: HeatmapCell[];
 }
 
@@ -41,7 +46,6 @@ export interface GetHeatmapParams {
 
 export interface BurndownPoint {
   date: string;
-  idealRemaining: number;
   actualRemaining: number;
   doneCount: number;
 }

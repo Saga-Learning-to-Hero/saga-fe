@@ -515,7 +515,7 @@ export default function AdminCourseDetailPage({ params }: PageProps) {
                 <div className="flex items-start justify-between gap-2.5">
                   <div className="flex items-center gap-3 min-w-0">
                     <Avatar className="w-10 h-10 rounded-xl shrink-0 shadow-2xs border border-border">
-                      <AvatarImage src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${sv.studentCode}`} />
+                      <AvatarImage src={sv.avatarUrl || undefined} alt={sv.fullName} />
                       <AvatarFallback className="text-xs font-bold bg-primary text-primary-foreground rounded-xl">
                         {getInitials(sv.fullName)}
                       </AvatarFallback>
@@ -607,7 +607,7 @@ export default function AdminCourseDetailPage({ params }: PageProps) {
                     <TableCell className="py-3 px-4">
                       <div className="flex items-center gap-3">
                         <Avatar className="w-8 h-8 rounded-xl shrink-0">
-                          <AvatarImage src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${sv.studentCode}`} />
+                          <AvatarImage src={sv.avatarUrl || undefined} alt={sv.fullName} />
                           <AvatarFallback className="text-[10px] font-bold bg-primary text-primary-foreground rounded-xl">
                             {getInitials(sv.fullName)}
                           </AvatarFallback>

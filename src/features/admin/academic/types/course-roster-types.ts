@@ -69,6 +69,8 @@ export interface CourseRosterEntry {
   accountState?: string | null;
   enrolledAt?: string | null;
   status?: RosterEnrollmentStatus;
+  avatarUrl?: string | null;
+  avatar?: string | null;
   id?: string;
 }
 

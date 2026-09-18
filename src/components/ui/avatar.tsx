@@ -1,36 +1,93 @@
 "use client"
 
 import * as React from "react"
-import { Avatar as AvatarPrimitive } from "@base-ui/react/avatar"
-
 import { cn } from "@/lib/utils"
+
+interface AvatarContextValue {
+  status: "idle" | "loading" | "loaded" | "error"
+  setStatus: (status: "idle" | "loading" | "loaded" | "error") => void
+}
+
+const AvatarContext = React.createContext<AvatarContextValue | null>(null)
+
+interface AvatarProps extends React.ComponentProps<"div"> {
+  size?: "default" | "sm" | "lg"
+}
 
 function Avatar({
   className,
   size = "default",
+  children,
   ...props
-}: AvatarPrimitive.Root.Props & {
-  size?: "default" | "sm" | "lg"
-}) {
+}: AvatarProps) {
+  const [status, setStatus] = React.useState<"idle" | "loading" | "loaded" | "error">("idle")
+
   return (
-    <AvatarPrimitive.Root
-      data-slot="avatar"
-      data-size={size}
-      className={cn(
-        "group/avatar relative flex size-8 shrink-0 rounded-full select-none after:absolute after:inset-0 after:rounded-full after:border after:border-border after:mix-blend-darken data-[size=lg]:size-10 data-[size=sm]:size-6 dark:after:mix-blend-lighten",
-        className
-      )}
-      {...props}
-    />
+    <AvatarContext.Provider value={{ status, setStatus }}>
+      <div
+        data-slot="avatar"
+        data-size={size}
+        className={cn(
+          "group/avatar relative flex size-8 shrink-0 overflow-hidden rounded-full select-none after:absolute after:inset-0 after:rounded-full after:border after:border-border after:mix-blend-darken data-[size=lg]:size-10 data-[size=sm]:size-6 dark:after:mix-blend-lighten",
+          className
+        )}
+        {...props}
+      >
+        {children}
+      </div>
+    </AvatarContext.Provider>
   )
 }
 
-function AvatarImage({ className, ...props }: AvatarPrimitive.Image.Props) {
+interface AvatarImageProps extends React.ComponentProps<"img"> {
+  onLoadingStatusChange?: (status: "loaded" | "error") => void
+}
+
+function AvatarImage({
+  className,
+  src,
+  alt = "",
+  onLoadingStatusChange,
+  ...props
+}: AvatarImageProps) {
+  const context = React.useContext(AvatarContext)
+  const imgRef = React.useRef<HTMLImageElement>(null)
+
+  React.useEffect(() => {
+    if (!src) {
+      context?.setStatus("error")
+      onLoadingStatusChange?.("error")
+      return
+    }
+
+    if (imgRef.current?.complete && imgRef.current?.naturalWidth > 0) {
+      context?.setStatus("loaded")
+      onLoadingStatusChange?.("loaded")
+    } else {
+      context?.setStatus("loading")
+    }
+  }, [src, context, onLoadingStatusChange])
+
+  if (!src) return null
+
   return (
-    <AvatarPrimitive.Image
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      ref={imgRef}
       data-slot="avatar-image"
+      src={src}
+      alt={alt}
+      onLoad={() => {
+        context?.setStatus("loaded")
+        onLoadingStatusChange?.("loaded")
+      }}
+      onError={() => {
+        context?.setStatus("error")
+        onLoadingStatusChange?.("error")
+      }}
       className={cn(
-        "aspect-square size-full rounded-full object-cover",
+        "aspect-square size-full object-cover",
+        context?.status !== "loaded" && "hidden",
         className
       )}
       {...props}
@@ -40,17 +97,26 @@ function AvatarImage({ className, ...props }: AvatarPrimitive.Image.Props) {
 
 function AvatarFallback({
   className,
+  children,
   ...props
-}: AvatarPrimitive.Fallback.Props) {
+}: React.ComponentProps<"div">) {
+  const context = React.useContext(AvatarContext)
+
+  if (context?.status === "loaded") {
+    return null
+  }
+
   return (
-    <AvatarPrimitive.Fallback
+    <div
       data-slot="avatar-fallback"
       className={cn(
         "flex size-full items-center justify-center rounded-full bg-muted text-sm text-muted-foreground group-data-[size=sm]/avatar:text-xs",
         className
       )}
       {...props}
-    />
+    >
+      {children}
+    </div>
   )
 }
 

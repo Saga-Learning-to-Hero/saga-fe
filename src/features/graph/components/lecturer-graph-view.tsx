@@ -265,24 +265,7 @@ export function LecturerGraphView({
   const displayGraphData = useMemo(() => {
     const rawData = graphQuery.data;
     if (!rawData) return { nodes: [], edges: [] };
-    const enrichedNodes = rawData.nodes.map((node) => {
-      const nodeData = node.data;
-      if (nodeData.type !== "STUDENT") return node;
-      const avatar =
-        nodeData.avatar ||
-        `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(nodeData.subLabel || nodeData.label)}`;
-      return {
-        ...node,
-        data: {
-          ...nodeData,
-          avatar,
-        },
-      };
-    });
-    return {
-      ...rawData,
-      nodes: enrichedNodes,
-    };
+    return rawData;
   }, [graphQuery.data]);
 
   const structuralStats = useMemo(() => {

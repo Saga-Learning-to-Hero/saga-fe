@@ -18,6 +18,7 @@ export interface PeerReviewCandidate {
   studentId: string;
   studentCode: string | null;
   fullName: string;
+  avatarUrl?: string | null;
   alreadyReviewed: boolean;
   existingReviewId: string | null;
   existingTotalStarRating: number | null;

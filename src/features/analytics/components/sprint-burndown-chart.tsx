@@ -5,7 +5,6 @@ import {
   TrendingDown,
   Calendar,
   CheckCircle2,
-  AlertTriangle,
   Layers,
   Info,
   Flame,
@@ -62,7 +61,6 @@ interface CustomTooltipProps {
 function CustomBurndownTooltip({ active, payload, label }: CustomTooltipProps) {
   if (!active || !payload || payload.length === 0) return null;
 
-  const ideal = payload.find((p) => p.dataKey === "idealRemaining")?.value ?? 0;
   const actual = payload.find((p) => p.dataKey === "actualRemaining")?.value ?? 0;
   const done = payload.find((p) => p.dataKey === "doneCount")?.value ?? 0;
 
@@ -75,24 +73,14 @@ function CustomBurndownTooltip({ active, payload, label }: CustomTooltipProps) {
     })
     : label;
 
-  const diff = actual - ideal;
-
   return (
-    <div className="bg-popover text-popover-foreground p-3.5 rounded-2xl border border-border/80 shadow-2xl space-y-2.5 text-xs min-w-[240px]">
+    <div className="bg-popover text-popover-foreground p-3.5 rounded-2xl border border-border/80 shadow-2xl space-y-2.5 text-xs min-w-[220px]">
       <div className="font-bold border-b border-border/60 pb-1.5 flex items-center justify-between">
         <span className="capitalize">{formattedDate}</span>
         <span className="font-mono text-[11px] text-muted-foreground">{label}</span>
       </div>
 
       <div className="space-y-2 pt-0.5">
-        <div className="flex items-center justify-between text-muted-foreground">
-          <span className="flex items-center gap-1.5">
-            <span className="w-2.5 h-0.5 bg-slate-400 rounded-full" />
-            Ideal Remaining:
-          </span>
-          <strong className="text-foreground font-mono font-bold">{ideal} tasks</strong>
-        </div>
-
         <div className="flex items-center justify-between text-muted-foreground">
           <span className="flex items-center gap-1.5">
             <span className="w-2.5 h-2.5 bg-blue-500 rounded-full" />
@@ -108,23 +96,6 @@ function CustomBurndownTooltip({ active, payload, label }: CustomTooltipProps) {
           </span>
           <strong className="text-emerald-500 font-mono font-bold">{done} tasks</strong>
         </div>
-      </div>
-
-      <div className="border-t border-border/60 pt-2 text-[11px] flex items-center justify-between">
-        <span className="text-muted-foreground">Variance:</span>
-        {diff > 0 ? (
-          <span className="text-amber-500 font-mono font-semibold">
-            Chậm {diff} tasks so với kế hoạch
-          </span>
-        ) : diff < 0 ? (
-          <span className="text-emerald-500 font-mono font-semibold">
-            Nhanh hơn {Math.abs(diff)} tasks
-          </span>
-        ) : (
-          <span className="text-foreground font-mono font-semibold">
-            Đúng theo kế hoạch
-          </span>
-        )}
       </div>
     </div>
   );
@@ -189,8 +160,6 @@ export function SprintBurndownChart({
         totalScope: 0,
         currentActual: 0,
         doneCount: 0,
-        isOnTrack: true,
-        variance: 0,
         progressPercent: 0,
       };
     }
@@ -209,10 +178,6 @@ export function SprintBurndownChart({
         ? latestPoint.doneCount
         : Math.max(0, totalScope - currentActual);
 
-    const idealRemaining = latestPoint?.idealRemaining ?? 0;
-    const variance = currentActual - idealRemaining;
-    const isOnTrack = variance <= 0;
-
     const progressPercent =
       totalScope > 0 ? Math.round((doneCount / totalScope) * 100) : 0;
 
@@ -220,8 +185,6 @@ export function SprintBurndownChart({
       totalScope,
       currentActual,
       doneCount,
-      isOnTrack,
-      variance,
       progressPercent,
     };
   }, [data]);
@@ -301,26 +264,14 @@ export function SprintBurndownChart({
 
         <div className="p-3.5 rounded-2xl bg-muted/20 border border-border/60">
           <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1">
-            {summary.isOnTrack ? (
-              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
-            ) : (
-              <AlertTriangle className="w-3.5 h-3.5 text-amber-500" />
-            )}
-            <span>Sprint Status</span>
+            <TrendingDown className="w-3.5 h-3.5 text-primary" />
+            <span>Tiến độ hoàn thành</span>
           </div>
-          <div className="text-sm font-bold pt-0.5">
-            {summary.isOnTrack ? (
-              <span className="inline-flex items-center gap-1 text-emerald-600 dark:text-emerald-400">
-                On Track
-              </span>
-            ) : (
-              <span className="inline-flex items-center gap-1 text-amber-600 dark:text-amber-400">
-                Behind Schedule (+{summary.variance} tasks)
-              </span>
-            )}
+          <div className="text-xl font-extrabold text-foreground font-mono">
+            {summary.progressPercent}%
           </div>
           <div className="text-[10px] text-muted-foreground mt-0.5">
-            So với kế hoạch ban đầu
+            {summary.doneCount} trên tổng số {summary.totalScope} task
           </div>
         </div>
       </div>
@@ -387,16 +338,6 @@ export function SprintBurndownChart({
                 />
 
                 <Line
-                  type="linear"
-                  dataKey="idealRemaining"
-                  name="Ideal Remaining"
-                  stroke="#94A3B8"
-                  strokeWidth={2}
-                  strokeDasharray="5 5"
-                  dot={false}
-                />
-
-                <Line
                   type="monotone"
                   dataKey="actualRemaining"
                   name="Actual Remaining"
@@ -411,10 +352,6 @@ export function SprintBurndownChart({
 
           <div className="flex flex-wrap items-center justify-between gap-3 text-xs text-muted-foreground pt-2 border-t border-border/60">
             <div className="flex items-center gap-4">
-              <div className="flex items-center gap-1.5">
-                <span className="w-4 h-0.5 border-t-2 border-dashed border-slate-400" />
-                <span>Ideal Remaining</span>
-              </div>
               <div className="flex items-center gap-1.5">
                 <span className="w-3 h-3 rounded-full bg-blue-500" />
                 <span className="font-semibold text-foreground">Actual Remaining</span>

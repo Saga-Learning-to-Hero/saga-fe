@@ -73,6 +73,8 @@ export interface StudentTeamMember {
   studentCode: string;
   fullName: string;
   role: "LEADER" | "MEMBER" | string;
+  avatar?: string | null;
+  avatarUrl?: string | null;
 }
 
 export interface StudentTeamResponse {

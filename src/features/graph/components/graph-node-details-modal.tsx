@@ -101,11 +101,7 @@ export function GraphNodeDetailsModal({
   };
   const IconComponent = config.icon;
   const isStudent = nodeData.type === "STUDENT";
-  const avatarUrl =
-    nodeData.avatar ||
-    (isStudent
-      ? `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(nodeData.subLabel || nodeData.label)}`
-      : undefined);
+  const avatarUrl = nodeData.avatar?.trim() || undefined;
 
   return createPortal(
     <div

@@ -57,7 +57,7 @@ export const useAuthStore = create<AuthState>()(
             name: res.user.fullName,
             fullName: res.user.fullName,
             email: res.user.email,
-            avatar: res.user.avatarUrl || `https://api.dicebear.com/9.x/avataaars/svg?seed=${res.user.id}`,
+            avatar: res.user.avatarUrl || "",
             role: res.user.role,
             status: "ACTIVE",
           };
@@ -83,7 +83,7 @@ export const useAuthStore = create<AuthState>()(
               name: res.user.fullName,
               fullName: res.user.fullName,
               email: res.user.email,
-              avatar: res.user.avatarUrl || `https://api.dicebear.com/9.x/avataaars/svg?seed=${res.user.id}`,
+              avatar: res.user.avatarUrl || "",
               role: res.user.role,
               status: "ACTIVE",
             };

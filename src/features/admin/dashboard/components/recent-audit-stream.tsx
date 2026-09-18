@@ -1,13 +1,18 @@
-"use client";
-
+import { useMemo } from "react";
 import Link from "next/link";
 import { ScrollTextIcon, ArrowRightIcon, UserCogIcon, BookOpenIcon, DatabaseIcon, ShieldCheckIcon } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { MOCK_AUDIT_LOGS } from "@/features/admin/audit-log/data/mock-audit-logs";
+import { useAdminAuditLogs } from "@/features/admin/audit-log/hooks/use-admin-audit";
+import { mapAdminAuditLogResponseToItem } from "@/features/admin/audit-log/types/audit-log";
 
 export function RecentAuditAndQuickActionsSection() {
-  const recentLogs = MOCK_AUDIT_LOGS.slice(0, 5);
+  const { data, isLoading } = useAdminAuditLogs({ page: 0, size: 5 });
+
+  const recentLogs = useMemo(() => {
+    if (!data?.items) return [];
+    return data.items.map(mapAdminAuditLogResponseToItem);
+  }, [data]);
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
@@ -37,53 +42,65 @@ export function RecentAuditAndQuickActionsSection() {
         </CardHeader>
 
         <CardContent className="p-4 space-y-3">
-          {recentLogs.map((log) => (
-            <div
-              key={log.id}
-              className="flex items-start justify-between gap-3 pb-3 border-b border-border/40 last:border-0 last:pb-0"
-            >
-              <div className="space-y-0.5 min-w-0">
-                <div className="flex items-center gap-2">
-                  <span className="font-semibold text-foreground text-xs truncate">
-                    {log.actor.fullName}
-                  </span>
-                  <Badge variant="outline" className="text-[10px] py-0 px-1.5 border-border">
-                    {log.actor.role}
-                  </Badge>
-                  <span className="text-[10px] text-muted-foreground font-mono">
-                    {log.actor.ipAddress}
-                  </span>
-                </div>
-                <p className="text-xs text-muted-foreground line-clamp-1">
-                  {log.description}
-                </p>
-              </div>
-
-              <div className="shrink-0 text-right space-y-1">
-                {log.severity === "CRITICAL" && (
-                  <Badge className="bg-danger-muted text-danger border-0 text-[10px] font-semibold">
-                    Nghiêm trọng
-                  </Badge>
-                )}
-                {log.severity === "WARNING" && (
-                  <Badge className="bg-warning-muted text-warning border-0 text-[10px] font-semibold">
-                    Cảnh báo
-                  </Badge>
-                )}
-                {log.severity === "INFO" && (
-                  <Badge className="bg-primary/10 text-primary border-0 text-[10px] font-semibold">
-                    Thông tin
-                  </Badge>
-                )}
-                <p className="text-[10px] text-muted-foreground font-mono">
-                  {new Date(log.timestamp).toLocaleTimeString("vi-VN", {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}
-                </p>
-              </div>
+          {isLoading ? (
+            <div className="space-y-3">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="h-12 rounded-xl bg-muted/40 animate-pulse" />
+              ))}
             </div>
-          ))}
+          ) : recentLogs.length === 0 ? (
+            <div className="py-8 text-center text-xs text-muted-foreground">
+              Chưa có sự kiện nhật ký nào được ghi nhận trong hệ thống.
+            </div>
+          ) : (
+            recentLogs.map((log) => (
+              <div
+                key={log.id}
+                className="flex items-start justify-between gap-3 pb-3 border-b border-border/40 last:border-0 last:pb-0"
+              >
+                <div className="space-y-0.5 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <span className="font-semibold text-foreground text-xs truncate">
+                      {log.actor.fullName}
+                    </span>
+                    <Badge variant="outline" className="text-[10px] py-0 px-1.5 border-border">
+                      {log.actor.role}
+                    </Badge>
+                    <span className="text-[10px] text-muted-foreground font-mono">
+                      {log.actor.ipAddress}
+                    </span>
+                  </div>
+                  <p className="text-xs text-muted-foreground line-clamp-1">
+                    {log.description}
+                  </p>
+                </div>
+
+                <div className="shrink-0 text-right space-y-1">
+                  {log.severity === "CRITICAL" && (
+                    <Badge className="bg-destructive/15 text-destructive border-0 text-[10px] font-semibold">
+                      Nghiêm trọng
+                    </Badge>
+                  )}
+                  {log.severity === "WARNING" && (
+                    <Badge className="bg-amber-500/15 text-amber-600 dark:text-amber-400 border-0 text-[10px] font-semibold">
+                      Cảnh báo
+                    </Badge>
+                  )}
+                  {log.severity === "INFO" && (
+                    <Badge className="bg-primary/10 text-primary border-0 text-[10px] font-semibold">
+                      Thông tin
+                    </Badge>
+                  )}
+                  <p className="text-[10px] text-muted-foreground font-mono">
+                    {new Date(log.timestamp).toLocaleTimeString("vi-VN", {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                  </p>
+                </div>
+              </div>
+            ))
+          )}
         </CardContent>
       </Card>
 

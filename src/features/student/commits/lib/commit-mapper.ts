@@ -44,7 +44,7 @@ export function mapProjectCommitToCommitItem(
   const authorName = member?.fullName || member?.name || commit.authorExternalId || "GitHub Committer";
   const studentCode = member?.studentCode || "";
   const username = commit.authorExternalId || "author";
-  const avatar = member?.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(username)}`;
+  const avatar = member?.avatar || "";
 
   const repoName = commit.repositoryFullName
     ? commit.repositoryFullName.split("/").pop() || commit.repositoryFullName

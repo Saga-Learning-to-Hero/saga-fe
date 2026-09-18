@@ -116,9 +116,7 @@ export function PeerReviewModal({
       .toUpperCase()
     : "SV";
 
-  const avatarUrl = candidate
-    ? `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(candidate.studentCode || candidate.fullName)}`
-    : "";
+  const avatarUrl = candidate?.avatarUrl || undefined;
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>

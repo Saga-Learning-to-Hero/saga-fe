@@ -96,7 +96,7 @@ export function CommitsView() {
         studentCode: m.studentCode,
         fullName: m.fullName,
         name: m.fullName,
-        avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(m.fullName || m.studentCode)}`,
+        avatar: m.avatar || "",
       })),
     [team?.members]
   );

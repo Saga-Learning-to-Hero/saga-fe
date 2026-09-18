@@ -720,7 +720,7 @@ export function PeerAssessmentView() {
                         .map((w) => w[0])
                         .join("")
                         .toUpperCase();
-                      const avatarUrl = `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(candidate.studentCode || candidate.fullName)}`;
+                      const avatarUrl = candidate.avatarUrl || undefined;
 
                       return (
                         <div

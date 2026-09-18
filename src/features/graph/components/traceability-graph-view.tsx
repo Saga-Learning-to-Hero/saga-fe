@@ -232,9 +232,6 @@ export function TraceabilityGraphView() {
       if (!avatar && isCurrentUser && currentUser?.avatar) {
         avatar = currentUser.avatar;
       }
-      if (!avatar) {
-        avatar = `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(nodeData.subLabel || nodeData.label)}`;
-      }
 
       return {
         ...node,

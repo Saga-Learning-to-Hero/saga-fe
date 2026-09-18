@@ -591,12 +591,8 @@ export function CytoscapeGraphCanvas({
           }
         }
 
-        const avatarUrl =
-          n.avatar ||
-          (n.type === "STUDENT"
-            ? `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(n.subLabel || n.label)}`
-            : undefined);
-        const hasImage = Boolean(avatarUrl && avatarUrl.trim().length > 0);
+        const avatarUrl = n.avatar?.trim() || undefined;
+        const hasImage = Boolean(avatarUrl && avatarUrl.length > 0);
 
         return {
           group: "nodes" as const,
@@ -734,6 +730,29 @@ export function CytoscapeGraphCanvas({
   }, [showEdgeLabels]);
 
   useEffect(() => {
+    const studentImages = normalizedNodes
+      .filter((n) => n.avatar && n.avatar.trim().length > 0)
+      .map((n) => n.avatar!);
+
+    if (studentImages.length === 0) return;
+
+    let isMounted = true;
+    studentImages.forEach((url) => {
+      const img = new Image();
+      img.onload = () => {
+        if (isMounted && cyRef.current && !cyRef.current.destroyed?.()) {
+          cyRef.current.style().update();
+        }
+      };
+      img.src = url;
+    });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [normalizedNodes]);
+
+  useEffect(() => {
     if (!containerRef.current) return;
 
     const elements = buildElements(normalizedNodes, normalizedEdges);
@@ -837,7 +856,7 @@ export function CytoscapeGraphCanvas({
             "background-fit": "cover",
             "background-clip": "node",
             "background-opacity": 1,
-            "background-image-crossorigin": "anonymous",
+            "background-color": "#ffffff",
           },
         },
         {
