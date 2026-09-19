@@ -116,7 +116,7 @@ export function SprintProgressView() {
         id: m.studentCode,
         studentCode: m.studentCode,
         name: m.fullName,
-        avatar: "",
+        avatar: m.avatar || m.avatarUrl || "",
         accountId: matchedJiraUser?.accountId || null,
       };
     });

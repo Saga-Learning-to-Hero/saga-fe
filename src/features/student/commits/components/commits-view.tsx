@@ -120,7 +120,7 @@ export function CommitsView() {
           studentCode: m.studentCode,
           fullName: m.fullName,
           name: m.fullName,
-          avatar: m.avatar || "",
+          avatar: m.avatar || m.avatarUrl || "",
         });
       }
     });
