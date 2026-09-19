@@ -21,8 +21,55 @@ export function isCompletedStatus(status?: string | null): boolean {
   return DONE_STATUSES.some((token) => value.includes(token));
 }
 
-export function isDoneWithoutLinkedCommit(task: Pick<PipelineTask, "status" | "linkedCommitCount">): boolean {
-  return isCompletedStatus(task.status) && task.linkedCommitCount === 0;
+export function isDocumentOrResearchTask(task: {
+  title?: string | null;
+  issueTypeName?: string | null;
+  labels?: string[] | null;
+}): boolean {
+  const title = (task.title || "").toLowerCase();
+  const issueType = (task.issueTypeName || "").toLowerCase();
+  const labels = (task.labels || []).map((l) => l.toLowerCase());
+
+  const docKeywords = [
+    "tài liệu",
+    "báo cáo",
+    "report",
+    "srs",
+    "document",
+    "documentation",
+    "research",
+    "khảo sát",
+    "nghiên cứu",
+    "slide",
+    "thuyết trình",
+    "biên bản",
+    "meeting note",
+  ];
+
+  const isDocByTitle = docKeywords.some((kw) => title.includes(kw));
+  const isDocByIssueType = ["documentation", "document", "research", "report"].some((t) =>
+    issueType.includes(t)
+  );
+  const isDocByLabel = labels.some(
+    (l) => l.includes("document") || l.includes("research") || l.includes("doc")
+  );
+
+  return isDocByTitle || isDocByIssueType || isDocByLabel;
+}
+
+export function isDoneWithoutLinkedCommit(
+  task: Pick<PipelineTask, "status" | "linkedCommitCount"> & {
+    title?: string | null;
+    issueTypeName?: string | null;
+    labels?: string[] | null;
+    hasEvidence?: boolean;
+    evidenceCount?: number;
+  }
+): boolean {
+  if (!isCompletedStatus(task.status)) return false;
+  if ((task.linkedCommitCount ?? 0) > 0) return false;
+  if (task.hasEvidence === true || (task.evidenceCount ?? 0) > 0) return false;
+  return true;
 }
 
 export function mapMembersFromProgress(members: ProjectProgressMemberSummary[]): PipelineMember[] {
@@ -75,6 +122,7 @@ export function mapPipelineTasks(tasks: ProjectTaskResponse[]): PipelineTask[] {
       storyPoint: typeof task.storyPoint === "number" ? task.storyPoint : null,
       priority: task.priority || task.priorityDetail?.name || null,
       linkedCommitCount: task.linkedCommitCount || 0,
+      labels: task.labels || [],
     };
   });
 }

@@ -9,6 +9,7 @@ import {
   filterPipelineTasks,
   findTaskLaneMember,
   groupTasksIntoLanes,
+  isDocumentOrResearchTask,
   isDoneWithoutLinkedCommit,
   mapMembersFromProgress,
   mapMembersFromTeam,
@@ -417,6 +418,61 @@ describe("pipeline-mapper", () => {
       );
 
       expect(filtered.map((item) => item.id)).toEqual(["task-manual"]);
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID15",
+      type: "N",
+      executedDate: "19/09/2026",
+      description: "isDoneWithoutLinkedCommit tra ve false khi task da co tep hoac link minh chung",
+    },
+    () => {
+      const taskWithEvidence = {
+        status: "DONE",
+        linkedCommitCount: 0,
+        hasEvidence: true,
+        evidenceCount: 2,
+      };
+      expect(isDoneWithoutLinkedCommit(taskWithEvidence)).toBe(false);
+
+      const taskWithEvidenceCountOnly = {
+        status: "DONE",
+        linkedCommitCount: 0,
+        evidenceCount: 1,
+      };
+      expect(isDoneWithoutLinkedCommit(taskWithEvidenceCountOnly)).toBe(false);
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID16",
+      type: "N",
+      executedDate: "19/09/2026",
+      description: "isDocumentOrResearchTask nhan dien dung task bao cao tai lieu nghien cuu",
+    },
+    () => {
+      expect(isDocumentOrResearchTask({ title: "Làm và chỉnh sửa tài liệu Report 1" })).toBe(true);
+      expect(isDocumentOrResearchTask({ title: "Viết báo cáo SRS" })).toBe(true);
+      expect(isDocumentOrResearchTask({ title: "Khảo sát công nghệ", issueTypeName: "Research" })).toBe(true);
+      expect(isDocumentOrResearchTask({ title: "Coding UI", labels: ["saga:document"] })).toBe(true);
+      expect(isDocumentOrResearchTask({ title: "Fix bug auth API", issueTypeName: "Task" })).toBe(false);
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID17",
+      type: "B",
+      executedDate: "19/09/2026",
+      description: "isDoneWithoutLinkedCommit tra ve true cho task Done 0 commit khi chua co minh chung",
+    },
+    () => {
+      expect(isDoneWithoutLinkedCommit({ status: "DONE", linkedCommitCount: 0 })).toBe(true);
+      expect(isDoneWithoutLinkedCommit({ status: "TODO", linkedCommitCount: 0 })).toBe(false);
+      expect(isDoneWithoutLinkedCommit({ status: "DONE", linkedCommitCount: 1 })).toBe(false);
     }
   );
 });

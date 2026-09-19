@@ -107,8 +107,8 @@ export function IssueDetailsModal({
   currentUserStudentCode,
 }: IssueDetailsModalProps) {
   const isEditing = Boolean(issue);
-  const isOwner = issue ? issue.assignee.studentCode === currentUserStudentCode : true;
-  const canEdit = isTeamLeader || isOwner;
+  const isOwner = issue ? issue.assignee.studentCode === currentUserStudentCode : false;
+  const canEdit = isEditing ? (isTeamLeader || isOwner) : isTeamLeader;
 
   const { data: taskOptions } = useTaskOptions(projectId, {
     enabled: Boolean(isOpen && projectId && isJiraConnected),
@@ -270,7 +270,12 @@ export function IssueDetailsModal({
     };
 
     if (assignableUsers && assignableUsers.length > 0) {
-      const jiraOptions = assignableUsers.map((user) => {
+      const filteredUsers = assignableUsers.filter((user) => {
+        const name = (user.displayName || "").toLowerCase();
+        return !name.includes("agent") && !name.includes("bot");
+      });
+
+      const jiraOptions = filteredUsers.map((user) => {
         const matched = matchJiraUserWithMember(user.displayName, teamMembers);
         return {
           value: user.accountId,
