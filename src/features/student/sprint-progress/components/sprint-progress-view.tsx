@@ -313,7 +313,7 @@ export function SprintProgressView() {
     } catch {
       setLocalTaskOverrides((prev) => ({ ...prev, [issueId]: previousOverride || {} }));
       setLocalCustomIssues(previousCustomIssues);
-      toast.error("KhÃ´ng thá»ƒ cáº­p nháº­t tráº¡ng thÃ¡i Task trÃªn Jira.");
+      toast.error("Không thể cập nhật trạng thái Task trên Jira.");
     }
   };
 
@@ -540,6 +540,9 @@ export function SprintProgressView() {
           currentUserStudentCode={currentUserStudentCode}
           courseId={courseId}
           projectId={projectId}
+          teamMembers={teamMembers}
+          assignableUsers={taskOptions?.assignableUsers}
+          onStatusChange={handleMoveTaskStatus}
         />
       )}
 

@@ -25,10 +25,16 @@ import { renderTypeIcon, renderPriorityIcon } from "./sprint-board-view";
 import { groupSprintIssuesByParent } from "../lib/issue-collection";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { getAssigneeAvatarClass, getAssigneeInitials } from "../lib/assignee-avatar";
 import { QuickCreateTask } from "./quick-create-task";
 import { TaskDueDate } from "./task-due-date";
+import { QuickStoryPointsEdit } from "./quick-story-points-edit";
+import { QuickStatusEdit } from "./quick-status-edit";
+import {
+  QuickAssigneeEdit,
+  type AssigneeMemberInfo,
+  type JiraAssignableUserInfo,
+} from "./quick-assignee-edit";
+import type { IssueStatus } from "../types/sprint-progress";
 
 interface SprintBacklogViewProps {
   sprints: Sprint[];
@@ -40,11 +46,14 @@ interface SprintBacklogViewProps {
   onStartSprint: (sprintId: string) => void;
   onCompleteSprint: (sprintId: string) => void;
   onEditSprint: (sprint: Sprint) => void;
+  onStatusChange?: (issueId: string, newStatus: IssueStatus) => Promise<void> | void;
   updatingSprintId?: string | null;
   isTeamLeader: boolean;
   currentUserStudentCode: string;
   courseId: string;
   projectId?: string | null;
+  teamMembers?: AssigneeMemberInfo[];
+  assignableUsers?: JiraAssignableUserInfo[];
 }
 
 export function SprintBacklogView({
@@ -57,11 +66,14 @@ export function SprintBacklogView({
   onStartSprint,
   onCompleteSprint,
   onEditSprint,
+  onStatusChange,
   updatingSprintId,
   isTeamLeader,
   currentUserStudentCode,
   courseId,
   projectId,
+  teamMembers,
+  assignableUsers,
 }: SprintBacklogViewProps) {
   const [collapsedSprints, setCollapsedSprints] = useState<Record<string, boolean>>({});
   const [expandedSubtaskParents, setExpandedSubtaskParents] = useState<Record<string, boolean>>({});
@@ -209,18 +221,14 @@ export function SprintBacklogView({
         <div className="flex items-center gap-2.5 shrink-0 text-xs">
           {renderPriorityIcon(issue.priority)}
 
-          <Badge
-            variant="outline"
-            className={
-              issue.status === "DONE"
-                ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 font-bold text-[10px]"
-                : issue.status === "IN_PROGRESS"
-                  ? "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/30 font-bold text-[10px]"
-                  : "text-[10px] font-medium"
-            }
-          >
-            {issue.status}
-          </Badge>
+          <QuickStatusEdit
+            issueId={issue.id}
+            issueKey={issue.key}
+            status={issue.status}
+            isTeamLeader={isTeamLeader}
+            isOwner={issue.assignee?.studentCode === currentUserStudentCode}
+            onStatusChange={onStatusChange}
+          />
 
           <TaskDueDate dueDate={issue.dueDate} status={issue.status} />
 
@@ -251,15 +259,23 @@ export function SprintBacklogView({
             <NetworkIcon className="w-3 h-3" />
           </Link>
 
-          <Badge variant="secondary" className="font-mono text-[10px] px-2 py-0.5">
-            {issue.storyPoints} SP
-          </Badge>
+          <QuickStoryPointsEdit
+            issueId={issue.id}
+            issueKey={issue.key}
+            storyPoints={issue.storyPoints}
+            projectId={projectId}
+            isTeamLeader={isTeamLeader}
+          />
 
-          <Avatar title={issue.assignee.name} className="w-5.5 h-5.5 border shrink-0">
-            <AvatarFallback className={`text-[8px] font-bold ${getAssigneeAvatarClass(issue.assignee.id)}`}>
-              {getAssigneeInitials(issue.assignee.name)}
-            </AvatarFallback>
-          </Avatar>
+          <QuickAssigneeEdit
+            issueId={issue.id}
+            issueKey={issue.key}
+            currentAssignee={issue.assignee}
+            teamMembers={teamMembers}
+            assignableUsers={assignableUsers}
+            projectId={projectId}
+            isTeamLeader={isTeamLeader}
+          />
         </div>
       </div>
     );
@@ -471,17 +487,19 @@ export function SprintBacklogView({
                         </>
                       )}
 
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => onCreateIssueClick(sprint.id)}
-                        title="Tạo với đầy đủ thông tin"
-                        className="h-7.5 text-xs font-semibold rounded-xl gap-1 cursor-pointer hover:bg-primary/10 hover:text-primary hover:border-primary/40 px-2.5"
-                      >
-                        <PlusIcon className="w-3 h-3" />
-                        <span>Thêm task</span>
-                      </Button>
+                      {isTeamLeader && (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => onCreateIssueClick(sprint.id)}
+                          title="Tạo với đầy đủ thông tin"
+                          className="h-7.5 text-xs font-semibold rounded-xl gap-1 cursor-pointer hover:bg-primary/10 hover:text-primary hover:border-primary/40 px-2.5"
+                        >
+                          <PlusIcon className="w-3 h-3" />
+                          <span>Thêm task</span>
+                        </Button>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -492,16 +510,18 @@ export function SprintBacklogView({
                   {sprintHierarchy.workItems.length === 0 ? (
                     <div className="m-3 p-4 rounded-xl border border-dashed border-border/70 hover:border-primary/50 bg-muted/10 hover:bg-muted/20 transition-all flex items-center justify-between gap-3 text-xs text-muted-foreground">
                       <span>Kéo thả task từ Backlog vào đây để phân bổ cho Sprint này</span>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => onCreateIssueClick(sprint.id)}
-                        className="h-7 text-xs font-semibold rounded-lg gap-1 cursor-pointer shrink-0"
-                      >
-                        <PlusIcon className="w-3 h-3" />
-                        <span>Tạo task mới</span>
-                      </Button>
+                      {isTeamLeader && (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => onCreateIssueClick(sprint.id)}
+                          className="h-7 text-xs font-semibold rounded-lg gap-1 cursor-pointer shrink-0"
+                        >
+                          <PlusIcon className="w-3 h-3" />
+                          <span>Tạo task mới</span>
+                        </Button>
+                      )}
                     </div>
                   ) : (
                     sprintHierarchy.workItems.map((issue) => {
@@ -598,19 +618,21 @@ export function SprintBacklogView({
               </div>
             </div>
 
-            <div className="flex items-center gap-2 shrink-0 self-end sm:self-auto">
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => onCreateIssueClick("backlog")}
-                title="Tạo với đầy đủ thông tin"
-                className="h-7.5 text-xs font-semibold rounded-xl gap-1 cursor-pointer hover:bg-primary/10 hover:text-primary hover:border-primary/40 px-2.5"
-              >
-                <PlusIcon className="w-3 h-3" />
-                <span>Thêm task vào Backlog</span>
-              </Button>
-            </div>
+            {isTeamLeader && (
+              <div className="flex items-center gap-2 shrink-0 self-end sm:self-auto">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => onCreateIssueClick("backlog")}
+                  title="Tạo với đầy đủ thông tin"
+                  className="h-7.5 text-xs font-semibold rounded-xl gap-1 cursor-pointer hover:bg-primary/10 hover:text-primary hover:border-primary/40 px-2.5"
+                >
+                  <PlusIcon className="w-3 h-3" />
+                  <span>Thêm task vào Backlog</span>
+                </Button>
+              </div>
+            )}
           </div>
         </div>
 

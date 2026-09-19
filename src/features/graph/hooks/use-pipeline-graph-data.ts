@@ -14,11 +14,15 @@ import {
 import { useProjectRealtime } from "@/features/student/project/hooks/use-project-realtime";
 import { useProjectTasksData } from "@/features/student/sprint-progress/hooks/use-project-tasks";
 import { getApiErrorCode, getApiErrorMessage, getApiErrorStatus } from "@/lib/api-error";
+import { useQueries } from "@tanstack/react-query";
+import { TASK_EVIDENCE_QUERY_KEYS } from "@/features/student/sprint-progress/hooks/use-task-evidence";
+import { TaskEvidenceService } from "@/features/student/sprint-progress/api/task-evidence-service";
 import {
   collectPipelineSprints,
   computePipelineStats,
   filterPipelineTasks,
   groupTasksIntoLanes,
+  isCompletedStatus,
   mapMembersFromProgress,
   mapMembersFromTeam,
   mapPipelineCommits,
@@ -137,16 +141,73 @@ export function usePipelineGraphData({
     }
     return counts;
   }, [taskCommitLinksQuery.data]);
-  const scopedTasks = useMemo(
-    () =>
-      taskCommitLinksQuery.isSuccess
-        ? tasks.map((task) => ({
-          ...task,
-          linkedCommitCount: scopedLinkCounts.get(task.id) || 0,
-        }))
-        : tasks,
-    [scopedLinkCounts, taskCommitLinksQuery.isSuccess, tasks]
-  );
+  const candidateTasks = useMemo(() => {
+    return tasks.filter((t) => {
+      if (!isCompletedStatus(t.status)) return false;
+      const count = taskCommitLinksQuery.isSuccess
+        ? scopedLinkCounts.get(t.id) || 0
+        : t.linkedCommitCount || 0;
+      return count === 0;
+    });
+  }, [scopedLinkCounts, taskCommitLinksQuery.isSuccess, tasks]);
+
+  const candidateFileQueries = useQueries({
+    queries: candidateTasks.map((task) => ({
+      queryKey: TASK_EVIDENCE_QUERY_KEYS.files(task.id),
+      queryFn: async () => {
+        try {
+          return await TaskEvidenceService.getFiles(task.id);
+        } catch {
+          return [];
+        }
+      },
+      enabled: Boolean(enabled && task.id),
+      staleTime: 1000 * 30,
+    })),
+  });
+
+  const candidateWebLinkQueries = useQueries({
+    queries: candidateTasks.map((task) => ({
+      queryKey: TASK_EVIDENCE_QUERY_KEYS.webLinks(task.id),
+      queryFn: async () => {
+        try {
+          return await TaskEvidenceService.getWebLinks(task.id);
+        } catch {
+          return [];
+        }
+      },
+      enabled: Boolean(enabled && task.id),
+      staleTime: 1000 * 30,
+    })),
+  });
+
+  const taskEvidenceMap = useMemo(() => {
+    const map = new Map<string, number>();
+    candidateTasks.forEach((task, idx) => {
+      const fileCount = candidateFileQueries[idx]?.data?.length || 0;
+      const linkCount = candidateWebLinkQueries[idx]?.data?.length || 0;
+      map.set(task.id, fileCount + linkCount);
+    });
+    return map;
+  }, [candidateTasks, candidateFileQueries, candidateWebLinkQueries]);
+
+  const scopedTasks = useMemo(() => {
+    const baseTasks = taskCommitLinksQuery.isSuccess
+      ? tasks.map((task) => ({
+        ...task,
+        linkedCommitCount: scopedLinkCounts.get(task.id) || 0,
+      }))
+      : tasks;
+
+    return baseTasks.map((task) => {
+      const evidenceCount = taskEvidenceMap.get(task.id) || 0;
+      return {
+        ...task,
+        evidenceCount,
+        hasEvidence: evidenceCount > 0,
+      };
+    });
+  }, [scopedLinkCounts, taskCommitLinksQuery.isSuccess, tasks, taskEvidenceMap]);
   const hasCommitScope = selectedRepoId !== "ALL" || selectedBranchName !== "ALL";
   const scopedTaskIds = useMemo(
     () =>
@@ -228,7 +289,7 @@ export function usePipelineGraphData({
 
   return {
     members,
-    tasks,
+    tasks: scopedTasks,
     filteredTasks,
     lanes,
     sprints,

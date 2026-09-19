@@ -31,14 +31,14 @@ Quy tắc bảo trì bắt buộc:
 
 | Hạng mục | Giá trị tại thời điểm kiểm tra |
 | --- | --- |
-| Frontend | `saga-fe`, nhánh `feat/SAGA-89-dong-bo-be-phan-trang-va-task-hierarchy` |
+| Frontend | `saga-fe`, nhánh `feat/SAGA-90-dong-bo-task-evidence-va-chinh-sua-nhanh` |
 | Backend | `saga-be`, nhánh `main` |
 | FE framework | Next.js 16, React, TypeScript, TanStack Query |
 | Dữ liệu nghiệp vụ chính | REST từ Backend; Jira/GitHub được đồng bộ thành projection trong SAGA |
 | Dữ liệu Graph | Neo4j projection do Backend tạo, FE chỉ truy vấn và trực quan hóa |
 | Realtime | SSE chỉ báo thay đổi; sau event FE phải refetch REST canonical |
-| FE unit regression | 762/762 tests passed ngày 19/09/2026, 0 lint errors/warnings, production build passed 34/34 pages |
-| Lưu ý | SAGA-89 đã đồng bộ contract phân trang BE (`size=50`), Task Hierarchy (parent/subtask), nhận diện Merge Commit và API Task Evidence |
+| FE unit regression | 794/794 tests passed ngày 19/09/2026, 0 lint errors/warnings, production build passed |
+| Lưu ý | SAGA-90 đồng bộ hiển thị Task Evidence (tệp/link) ở tầng ngoài Pipeline Flow, tối ưu bố cục Cytoscape Multi-Column chống đè node và bổ sung công cụ chỉnh sửa nhanh Assignee, Status, Story Points cho Leader |
 
 ### 1.1 Mục đích sử dụng
 

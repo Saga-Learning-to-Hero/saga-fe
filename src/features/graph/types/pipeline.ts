@@ -25,6 +25,9 @@ export interface PipelineTask {
   storyPoint: number | null;
   priority: string | null;
   linkedCommitCount: number;
+  labels?: string[];
+  evidenceCount?: number;
+  hasEvidence?: boolean;
 }
 
 export interface PipelineCommit {

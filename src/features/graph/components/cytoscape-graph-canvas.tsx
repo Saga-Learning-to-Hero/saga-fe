@@ -338,8 +338,7 @@ export function CytoscapeGraphCanvas({
           taskIndexMap.set(taskNode.id(), idx);
         });
 
-        const colArtifacts = [...colCommits, ...colIdentities, ...colOther];
-        const artifactTaskMap = new Map<string, number>();
+        const commitTaskMap = new Map<string, number>();
         taskConnectedEdges.forEach((edge) => {
           const label = edge.data("label");
           const srcId = edge.source().id();
@@ -347,18 +346,61 @@ export function CytoscapeGraphCanvas({
 
           if (label === "EVIDENCED_BY" || label === "IMPLEMENTS") {
             if (taskIndexMap.has(srcId)) {
-              artifactTaskMap.set(tgtId, taskIndexMap.get(srcId)!);
+              if (!commitTaskMap.has(tgtId) || taskIndexMap.get(srcId)! < commitTaskMap.get(tgtId)!) {
+                commitTaskMap.set(tgtId, taskIndexMap.get(srcId)!);
+              }
             } else if (taskIndexMap.has(tgtId)) {
-              artifactTaskMap.set(srcId, taskIndexMap.get(tgtId)!);
+              if (!commitTaskMap.has(srcId) || taskIndexMap.get(tgtId)! < commitTaskMap.get(srcId)!) {
+                commitTaskMap.set(srcId, taskIndexMap.get(tgtId)!);
+              }
             }
           }
         });
 
-        colArtifacts.sort((a, b) => {
-          const taskIdxA = artifactTaskMap.has(a.id()) ? artifactTaskMap.get(a.id())! : 999;
-          const taskIdxB = artifactTaskMap.has(b.id()) ? artifactTaskMap.get(b.id())! : 999;
+        colCommits.sort((a, b) => {
+          const taskIdxA = commitTaskMap.has(a.id()) ? commitTaskMap.get(a.id())! : 999;
+          const taskIdxB = commitTaskMap.has(b.id()) ? commitTaskMap.get(b.id())! : 999;
           if (taskIdxA !== taskIdxB) {
             return taskIdxA - taskIdxB;
+          }
+          const labelA = (a.data("label") || "") as string;
+          const labelB = (b.data("label") || "") as string;
+          return labelA.localeCompare(labelB, "vi", { numeric: true, sensitivity: "base" });
+        });
+
+        const identityToStudentMap = new Map<string, string>();
+        const identityToCommitsMap = new Map<string, string[]>();
+        taskConnectedEdges.forEach((edge) => {
+          const label = edge.data("label");
+          const srcId = edge.source().id();
+          const tgtId = edge.target().id();
+
+          if (label === "MAPS_TO") {
+            if (studentIndexMap.has(tgtId)) {
+              identityToStudentMap.set(srcId, tgtId);
+            } else if (studentIndexMap.has(srcId)) {
+              identityToStudentMap.set(tgtId, srcId);
+            }
+          } else if (label === "AUTHORED_BY") {
+            if (colCommits.some((c) => c.id() === srcId)) {
+              const list = identityToCommitsMap.get(tgtId) || [];
+              list.push(srcId);
+              identityToCommitsMap.set(tgtId, list);
+            } else if (colCommits.some((c) => c.id() === tgtId)) {
+              const list = identityToCommitsMap.get(srcId) || [];
+              list.push(tgtId);
+              identityToCommitsMap.set(srcId, list);
+            }
+          }
+        });
+
+        colIdentities.sort((a, b) => {
+          const studentIdA = identityToStudentMap.get(a.id());
+          const studentIdB = identityToStudentMap.get(b.id());
+          const sIdxA = studentIdA && studentIndexMap.has(studentIdA) ? studentIndexMap.get(studentIdA)! : 999;
+          const sIdxB = studentIdB && studentIndexMap.has(studentIdB) ? studentIndexMap.get(studentIdB)! : 999;
+          if (sIdxA !== sIdxB) {
+            return sIdxA - sIdxB;
           }
           const labelA = (a.data("label") || "") as string;
           const labelB = (b.data("label") || "") as string;
@@ -375,14 +417,19 @@ export function CytoscapeGraphCanvas({
         });
 
         const hasProject = colProject.length > 0;
-        const xProject = -540;
-        const xStudent = hasProject ? -260 : -360;
-        const xTask = hasProject ? 80 : 40;
-        const xSprint = hasProject ? 440 : 400;
-        const xCriteria = hasProject ? 440 : 380;
-        const xArtifact = colCriteria.length > 0 || colSprints.length > 0 ? 740 : 560;
+        const hasSprints = colSprints.length > 0;
+        const hasCriteria = colCriteria.length > 0;
+        const hasCommits = colCommits.length > 0;
 
-        const taskSpacingY = 58;
+        const xProject = -720;
+        const xSprint = -480;
+        const xStudent = hasSprints || hasProject ? -220 : -260;
+        const xTask = 80;
+        const xCriteria = 380;
+        const xCommit = hasCriteria ? 680 : 440;
+        const xIdentity = hasCommits ? (hasCriteria ? 960 : 740) : (hasCriteria ? 680 : 440);
+
+        const taskSpacingY = 56;
         const totalTasksHeight = (colTasks.length - 1) * taskSpacingY;
         const startTaskY = -totalTasksHeight / 2;
         const taskYMap = new Map<string, number>();
@@ -412,7 +459,7 @@ export function CytoscapeGraphCanvas({
             }
           });
 
-          const minGap = 90;
+          const minGap = 105;
           for (let i = 1; i < studentYTargets.length; i++) {
             if (studentYTargets[i] < studentYTargets[i - 1] + minGap) {
               studentYTargets[i] = studentYTargets[i - 1] + minGap;
@@ -430,7 +477,7 @@ export function CytoscapeGraphCanvas({
 
         if (colProject.length > 0) {
           const projCount = colProject.length;
-          const projSpacingY = 120;
+          const projSpacingY = 110;
           const projStartY = -((projCount - 1) * projSpacingY) / 2;
           colProject.forEach((node, i) => {
             positions[node.id()] = {
@@ -442,7 +489,7 @@ export function CytoscapeGraphCanvas({
 
         if (colSprints.length > 0) {
           const sprintCount = colSprints.length;
-          const sprintSpacingY = 90;
+          const sprintSpacingY = 100;
           const sprintStartY = -((sprintCount - 1) * sprintSpacingY) / 2;
           colSprints.forEach((node, i) => {
             positions[node.id()] = {
@@ -454,7 +501,7 @@ export function CytoscapeGraphCanvas({
 
         if (colCriteria.length > 0) {
           const critCount = colCriteria.length;
-          const critSpacingY = 80;
+          const critSpacingY = 95;
           const critStartY = -((critCount - 1) * critSpacingY) / 2;
           colCriteria.forEach((node, i) => {
             positions[node.id()] = {
@@ -464,19 +511,90 @@ export function CytoscapeGraphCanvas({
           });
         }
 
-        if (colArtifacts.length > 0) {
-          const artCount = colArtifacts.length;
-          const artSpacingY = 48;
-          const artStartY = -((artCount - 1) * artSpacingY) / 2;
-          colArtifacts.forEach((node, i) => {
-            const linkedTaskIdx = artifactTaskMap.get(node.id());
-            let targetY = artStartY + i * artSpacingY;
+        if (colCommits.length > 0) {
+          const minCommitGap = 52;
+          const commitYTargets: number[] = [];
+
+          colCommits.forEach((cNode, idx) => {
+            const linkedTaskIdx = commitTaskMap.get(cNode.id());
+            let targetY = 0;
             if (linkedTaskIdx !== undefined && colTasks[linkedTaskIdx]) {
-              targetY = taskYMap.get(colTasks[linkedTaskIdx].id()) ?? targetY;
+              targetY = taskYMap.get(colTasks[linkedTaskIdx].id()) ?? 0;
+            } else {
+              const defaultStartY = -((colCommits.length - 1) * minCommitGap) / 2;
+              targetY = defaultStartY + idx * minCommitGap;
             }
+            commitYTargets.push(targetY);
+          });
+
+          for (let i = 1; i < commitYTargets.length; i++) {
+            if (commitYTargets[i] < commitYTargets[i - 1] + minCommitGap) {
+              commitYTargets[i] = commitYTargets[i - 1] + minCommitGap;
+            }
+          }
+
+          const commitCenter = (commitYTargets[0] + commitYTargets[commitYTargets.length - 1]) / 2;
+          colCommits.forEach((cNode, i) => {
+            positions[cNode.id()] = {
+              x: xCommit,
+              y: commitYTargets[i] - commitCenter,
+            };
+          });
+        }
+
+        if (colIdentities.length > 0) {
+          const minIdGap = 68;
+          const idYTargets: number[] = [];
+
+          colIdentities.forEach((idNode, idx) => {
+            let targetY = 0;
+            const mappedStudentId = identityToStudentMap.get(idNode.id());
+            if (mappedStudentId && positions[mappedStudentId]) {
+              targetY = positions[mappedStudentId].y;
+            } else {
+              const linkedCommitIds = identityToCommitsMap.get(idNode.id());
+              if (linkedCommitIds && linkedCommitIds.length > 0) {
+                let sumY = 0;
+                let count = 0;
+                linkedCommitIds.forEach((cId) => {
+                  if (positions[cId]) {
+                    sumY += positions[cId].y;
+                    count++;
+                  }
+                });
+                targetY = count > 0 ? sumY / count : 0;
+              } else {
+                const defaultStartY = -((colIdentities.length - 1) * minIdGap) / 2;
+                targetY = defaultStartY + idx * minIdGap;
+              }
+            }
+            idYTargets.push(targetY);
+          });
+
+          for (let i = 1; i < idYTargets.length; i++) {
+            if (idYTargets[i] < idYTargets[i - 1] + minIdGap) {
+              idYTargets[i] = idYTargets[i - 1] + minIdGap;
+            }
+          }
+
+          const idCenter = (idYTargets[0] + idYTargets[idYTargets.length - 1]) / 2;
+          colIdentities.forEach((idNode, i) => {
+            positions[idNode.id()] = {
+              x: xIdentity,
+              y: idYTargets[i] - idCenter,
+            };
+          });
+        }
+
+        if (colOther.length > 0) {
+          const otherCount = colOther.length;
+          const otherSpacingY = 60;
+          const otherStartY = -((otherCount - 1) * otherSpacingY) / 2;
+          const xOther = (colIdentities.length > 0 ? xIdentity : (colCommits.length > 0 ? xCommit : xTask)) + 240;
+          colOther.forEach((node, i) => {
             positions[node.id()] = {
-              x: xArtifact,
-              y: targetY,
+              x: xOther,
+              y: otherStartY + i * otherSpacingY,
             };
           });
         }
@@ -864,6 +982,22 @@ export function CytoscapeGraphCanvas({
           style: {
             "font-family": "monospace",
             "font-size": "10px",
+          },
+        },
+        {
+          selector: 'node[nodeType = "IDENTITY"]',
+          style: {
+            "font-family": "monospace",
+            "font-size": "9px",
+            "text-max-width": "50px",
+            "text-wrap": "ellipsis",
+          },
+        },
+        {
+          selector: 'node[nodeType = "SPRINT"]',
+          style: {
+            "font-size": "11px",
+            "font-weight": 800,
           },
         },
         {

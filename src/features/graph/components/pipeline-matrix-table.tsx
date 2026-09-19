@@ -1,9 +1,9 @@
 "use client";
 
-import { AlertTriangleIcon, CheckSquareIcon, GitCommitIcon } from "lucide-react";
+import { AlertTriangleIcon, CheckSquareIcon, GitCommitIcon, PaperclipIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { isDoneWithoutLinkedCommit } from "../lib/pipeline-mapper";
+import { isDoneWithoutLinkedCommit, isDocumentOrResearchTask } from "../lib/pipeline-mapper";
 import type { PipelineCommit, PipelineTask } from "../types/pipeline";
 
 interface PipelineMatrixTableProps {
@@ -67,14 +67,16 @@ export function PipelineMatrixTable({
               <tbody className="divide-y divide-border/50">
                 {tasks.map((task) => {
                   const selected = task.id === selectedTaskId;
+                  const isDoc = isDocumentOrResearchTask(task);
+                  const hasEvidence = (task.evidenceCount ?? 0) > 0 || task.hasEvidence === true;
                   const warning = isDoneWithoutLinkedCommit(task);
                   return (
                     <tr
                       key={task.id}
                       onClick={() => onSelectTask(task.id)}
                       className={`cursor-pointer transition-colors ${selected
-                          ? "bg-primary/10 font-medium text-foreground hover:bg-primary/15"
-                          : "hover:bg-muted/30"
+                        ? "bg-primary/10 font-medium text-foreground hover:bg-primary/15"
+                        : "hover:bg-muted/30"
                         }`}
                     >
                       <td className="p-3.5 pl-4 whitespace-nowrap">
@@ -91,15 +93,26 @@ export function PipelineMatrixTable({
                           <Badge className={`text-[10px] font-bold ${statusClass(task.status)}`}>
                             {task.status}
                           </Badge>
-                          {warning && (
+                          {hasEvidence && task.linkedCommitCount === 0 ? (
                             <Badge
                               variant="outline"
-                              className="border-destructive/40 bg-destructive/10 text-[10px] font-bold text-destructive"
+                              className="border-purple-500/40 bg-purple-500/10 text-[10px] font-bold text-purple-600 dark:text-purple-400"
+                            >
+                              <PaperclipIcon className="mr-1 size-3" />
+                              Đã có minh chứng
+                            </Badge>
+                          ) : warning ? (
+                            <Badge
+                              variant="outline"
+                              className={isDoc
+                                ? "border-amber-500/40 bg-amber-500/10 text-[10px] font-bold text-amber-600 dark:text-amber-400"
+                                : "border-destructive/40 bg-destructive/10 text-[10px] font-bold text-destructive"
+                              }
                             >
                               <AlertTriangleIcon className="mr-1 size-3" />
-                              Thiếu Commit
+                              {isDoc ? "Cần minh chứng" : "Thiếu Commit"}
                             </Badge>
-                          )}
+                          ) : null}
                         </div>
                       </td>
                       <td className="p-3.5 text-muted-foreground whitespace-nowrap">
@@ -109,10 +122,25 @@ export function PipelineMatrixTable({
                         {task.assigneeDisplayName || "Chưa phân công"}
                       </td>
                       <td className="p-3.5 pr-4 text-right whitespace-nowrap">
-                        <span className="inline-flex items-center gap-1 font-mono font-bold text-foreground">
-                          <GitCommitIcon className="size-3 text-primary" />
-                          {task.linkedCommitCount}
-                        </span>
+                        {task.linkedCommitCount > 0 ? (
+                          <span className="inline-flex items-center gap-1 font-mono font-bold text-foreground">
+                            <GitCommitIcon className="size-3 text-primary" />
+                            {task.linkedCommitCount}
+                          </span>
+                        ) : hasEvidence ? (
+                          <Badge
+                            variant="outline"
+                            className="border-purple-500/40 bg-purple-500/10 text-[10px] font-bold text-purple-600 dark:text-purple-400"
+                          >
+                            <PaperclipIcon className="mr-1 size-3" />
+                            {task.evidenceCount ? `${task.evidenceCount} tệp` : "Đã có minh chứng"}
+                          </Badge>
+                        ) : (
+                          <span className={`inline-flex items-center gap-1 font-mono font-bold ${warning ? "text-destructive" : "text-muted-foreground"}`}>
+                            <GitCommitIcon className="size-3 text-muted-foreground" />
+                            0
+                          </span>
+                        )}
                       </td>
                     </tr>
                   );

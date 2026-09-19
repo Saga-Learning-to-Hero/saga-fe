@@ -7,12 +7,13 @@ import {
   ChevronDownIcon,
   ChevronUpIcon,
   GitCommitIcon,
+  PaperclipIcon,
   UserIcon,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { teamRoleLabel } from "@/features/progress/lib/progress-format";
 import { UNASSIGNED_LANE_ID } from "../types/pipeline";
-import { isDoneWithoutLinkedCommit } from "../lib/pipeline-mapper";
+import { isDoneWithoutLinkedCommit, isDocumentOrResearchTask } from "../lib/pipeline-mapper";
 import type { PipelineCommit, PipelineLane, PipelineTask } from "../types/pipeline";
 
 interface PipelineFlowViewProps {
@@ -48,15 +49,19 @@ function TaskCard({
   selected: boolean;
   onSelect: () => void;
 }) {
+  const isDoc = isDocumentOrResearchTask(task);
+  const hasEvidence = (task.evidenceCount ?? 0) > 0 || task.hasEvidence === true;
   const warning = isDoneWithoutLinkedCommit(task);
   return (
     <button
       type="button"
       onClick={onSelect}
       className={`w-full cursor-pointer rounded-2xl border p-3.5 text-left transition-all ${selected
-          ? "border-primary bg-primary/10 shadow-xs ring-1 ring-primary/40"
-          : warning
-            ? "border-destructive/30 bg-destructive/5 hover:border-destructive/50"
+        ? "border-primary bg-primary/10 shadow-xs ring-1 ring-primary/40"
+        : warning
+          ? "border-destructive/30 bg-destructive/5 hover:border-destructive/50"
+          : hasEvidence && task.linkedCommitCount === 0
+            ? "border-purple-500/30 bg-purple-500/5 hover:border-purple-500/50"
             : "border-border/70 bg-muted/15 hover:border-border hover:bg-muted/30"
         }`}
     >
@@ -80,10 +85,15 @@ function TaskCard({
           <GitCommitIcon className="size-3" />
           {task.linkedCommitCount}
         </span>
-        {warning ? (
-          <span className="inline-flex items-center gap-1 font-semibold text-destructive">
+        {hasEvidence ? (
+          <span className="inline-flex items-center gap-1 font-semibold text-purple-600 dark:text-purple-400">
+            <PaperclipIcon className="size-3" />
+            Đã có tệp minh chứng {task.evidenceCount ? `(${task.evidenceCount})` : ""}
+          </span>
+        ) : warning ? (
+          <span className={`inline-flex items-center gap-1 font-semibold ${isDoc ? "text-amber-600 dark:text-amber-400" : "text-destructive"}`}>
             <AlertTriangleIcon className="size-3" />
-            Hoàn thành chưa có Commit liên kết
+            {isDoc ? "Cần nộp tệp / liên kết minh chứng" : "Hoàn thành chưa có Commit liên kết"}
           </span>
         ) : null}
       </div>
