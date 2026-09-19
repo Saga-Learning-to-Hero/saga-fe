@@ -218,17 +218,8 @@ export function SprintBacklogView({
           )}
         </div>
 
-        <div className="flex items-center gap-2.5 shrink-0 text-xs">
+        <div className="flex items-center gap-2 shrink-0 text-xs">
           {renderPriorityIcon(issue.priority)}
-
-          <QuickStatusEdit
-            issueId={issue.id}
-            issueKey={issue.key}
-            status={issue.status}
-            isTeamLeader={isTeamLeader}
-            isOwner={issue.assignee?.studentCode === currentUserStudentCode}
-            onStatusChange={onStatusChange}
-          />
 
           <TaskDueDate dueDate={issue.dueDate} status={issue.status} />
 
@@ -259,23 +250,37 @@ export function SprintBacklogView({
             <NetworkIcon className="w-3 h-3" />
           </Link>
 
-          <QuickStoryPointsEdit
-            issueId={issue.id}
-            issueKey={issue.key}
-            storyPoints={issue.storyPoints}
-            projectId={projectId}
-            isTeamLeader={isTeamLeader}
-          />
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="flex items-center gap-1.5 rounded-xl border border-border/60 bg-muted/40 p-0.5"
+          >
+            <QuickStatusEdit
+              issueId={issue.id}
+              issueKey={issue.key}
+              status={issue.status}
+              isTeamLeader={isTeamLeader}
+              isOwner={issue.assignee?.studentCode === currentUserStudentCode}
+              onStatusChange={onStatusChange}
+            />
 
-          <QuickAssigneeEdit
-            issueId={issue.id}
-            issueKey={issue.key}
-            currentAssignee={issue.assignee}
-            teamMembers={teamMembers}
-            assignableUsers={assignableUsers}
-            projectId={projectId}
-            isTeamLeader={isTeamLeader}
-          />
+            <QuickStoryPointsEdit
+              issueId={issue.id}
+              issueKey={issue.key}
+              storyPoints={issue.storyPoints}
+              projectId={projectId}
+              isTeamLeader={isTeamLeader}
+            />
+
+            <QuickAssigneeEdit
+              issueId={issue.id}
+              issueKey={issue.key}
+              currentAssignee={issue.assignee}
+              teamMembers={teamMembers}
+              assignableUsers={assignableUsers}
+              projectId={projectId}
+              isTeamLeader={isTeamLeader}
+            />
+          </div>
         </div>
       </div>
     );

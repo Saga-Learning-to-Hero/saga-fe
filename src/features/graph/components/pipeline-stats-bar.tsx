@@ -7,9 +7,16 @@ import type { PipelineStats } from "../types/pipeline";
 interface PipelineStatsBarProps {
   stats: PipelineStats;
   isLoadingCommits?: boolean;
+  onFilterAnomalies?: () => void;
+  isAnomaliesActive?: boolean;
 }
 
-export function PipelineStatsBar({ stats, isLoadingCommits = false }: PipelineStatsBarProps) {
+export function PipelineStatsBar({
+  stats,
+  isLoadingCommits = false,
+  onFilterAnomalies,
+  isAnomaliesActive = false,
+}: PipelineStatsBarProps) {
   const linkedRatio =
     stats.totalTasks > 0
       ? Math.round((stats.tasksWithLinkedCommits / stats.totalTasks) * 100)
@@ -68,10 +75,25 @@ export function PipelineStatsBar({ stats, isLoadingCommits = false }: PipelineSt
 
       <div className="flex items-center gap-2">
         {stats.doneWithoutLinkedCommits > 0 ? (
-          <Badge className="gap-1.5 border border-destructive/30 bg-destructive/10 text-[10px] font-bold text-destructive">
-            <AlertTriangleIcon className="size-3.5" />
-            {stats.doneWithoutLinkedCommits} Task hoàn thành chưa có Commit liên kết
-          </Badge>
+          onFilterAnomalies ? (
+            <button
+              type="button"
+              onClick={onFilterAnomalies}
+              className={`inline-flex items-center gap-1.5 rounded-xl border px-3 py-1 text-[11px] font-bold transition-all cursor-pointer ${
+                isAnomaliesActive
+                  ? "border-destructive bg-destructive/20 text-destructive shadow-xs ring-2 ring-destructive/30"
+                  : "border-destructive/30 bg-destructive/10 text-destructive hover:border-destructive/60 hover:bg-destructive/15"
+              }`}
+            >
+              <AlertTriangleIcon className="size-3.5" />
+              <span>{stats.doneWithoutLinkedCommits} Task hoàn thành chưa có Commit</span>
+            </button>
+          ) : (
+            <Badge className="gap-1.5 border border-destructive/30 bg-destructive/10 text-[10px] font-bold text-destructive">
+              <AlertTriangleIcon className="size-3.5" />
+              {stats.doneWithoutLinkedCommits} Task hoàn thành chưa có Commit liên kết
+            </Badge>
+          )
         ) : (
           <Badge className="border border-emerald-500/30 bg-emerald-500/10 text-[10px] font-bold text-emerald-700 dark:text-emerald-300">
             Không có Task hoàn thành thiếu Commit

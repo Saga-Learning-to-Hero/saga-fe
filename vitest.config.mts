@@ -3,6 +3,7 @@ import path from "node:path";
 
 export default defineConfig({
   test: {
+    include: ["tests/**/*.spec.{ts,tsx}"],
     environment: "jsdom",
     globals: true,
     setupFiles: ["./vitest.setup.ts"],
@@ -11,7 +12,7 @@ export default defineConfig({
       provider: "v8",
       reporter: ["text", "json", "html"],
       include: ["src/**/api/*.ts", "src/lib/*.ts"],
-      exclude: ["**/*.spec.ts", "**/*.test.ts", "**/node_modules/**", "**/types/**"],
+      exclude: ["**/*.spec.ts", "**/*.test.ts", "**/node_modules/**", "**/types/**", "tests/**"],
     },
   },
   resolve: {
