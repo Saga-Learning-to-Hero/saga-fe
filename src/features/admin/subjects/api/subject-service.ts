@@ -4,12 +4,18 @@ import type {
   PatchSubjectRequest,
   SubjectResponse,
   GetSubjectsParams,
+  SubjectPageResponse,
 } from "../types/subject-types";
 
 export class SubjectService {
-  static async getSubjects(params?: GetSubjectsParams): Promise<SubjectResponse[]> {
-    const response = await apiClient.get<SubjectResponse[]>("/api/admin/subjects", {
-      params,
+  static async getSubjects(params?: GetSubjectsParams): Promise<SubjectPageResponse> {
+    const queryParams: GetSubjectsParams = {
+      page: 0,
+      size: 50,
+      ...params,
+    };
+    const response = await apiClient.get<SubjectPageResponse>("/api/admin/subjects", {
+      params: queryParams,
     });
     return response.data;
   }

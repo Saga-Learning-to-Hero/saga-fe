@@ -39,6 +39,15 @@ export interface GetCoursesParams {
   academicClassId?: string;
   subjectId?: string;
   lecturerId?: string;
+  page?: number;
+  size?: number;
+}
+
+export interface CoursePageResponse {
+  items: CourseResponse[];
+  page: number;
+  size: number;
+  total: number;
 }
 
 export interface AdminLecturerResponse {
@@ -52,6 +61,15 @@ export interface AdminLecturerResponse {
 export interface GetAdminLecturersParams {
   active?: boolean;
   search?: string;
+  page?: number;
+  size?: number;
+}
+
+export interface AdminLecturerPageResponse {
+  items: AdminLecturerResponse[];
+  page: number;
+  size: number;
+  total: number;
 }
 
 export type RosterEnrollmentStatus = "ENROLLED" | "INVITED" | "DROPPED";

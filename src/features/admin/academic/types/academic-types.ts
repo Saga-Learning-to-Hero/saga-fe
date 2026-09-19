@@ -50,3 +50,16 @@ export interface AcademicClassResponse {
   createdAt: string;
   updatedAt?: string;
 }
+
+export interface GetClassesParams {
+  semesterId?: string;
+  page?: number;
+  size?: number;
+}
+
+export interface AcademicClassPageResponse {
+  items: AcademicClassResponse[];
+  page: number;
+  size: number;
+  total: number;
+}

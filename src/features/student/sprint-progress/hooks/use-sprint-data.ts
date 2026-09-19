@@ -10,6 +10,10 @@ export const JIRA_SPRINT_QUERY_KEYS = {
     [...JIRA_SPRINT_QUERY_KEYS.all, "task-options", projectId] as const,
   taskTransitions: (projectId?: string | null, taskId?: string | null) =>
     [...JIRA_SPRINT_QUERY_KEYS.all, "task-transitions", projectId, taskId] as const,
+  parentTaskOptions: (projectId?: string | null, params?: unknown) =>
+    [...JIRA_SPRINT_QUERY_KEYS.all, "parent-task-options", projectId, params] as const,
+  taskEvidence: (projectId?: string | null, taskId?: string | null, params?: unknown) =>
+    [...JIRA_SPRINT_QUERY_KEYS.all, "task-evidence", projectId, taskId, params] as const,
 };
 
 export * from "./use-project-sprints";

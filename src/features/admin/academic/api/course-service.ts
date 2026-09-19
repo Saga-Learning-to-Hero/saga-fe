@@ -4,12 +4,18 @@ import type {
   PatchCourseRequest,
   CourseResponse,
   GetCoursesParams,
+  CoursePageResponse,
 } from "../types/course-roster-types";
 
 export class CourseService {
-  static async getCourses(params?: GetCoursesParams): Promise<CourseResponse[]> {
-    const response = await apiClient.get<CourseResponse[]>("/api/admin/courses", {
-      params,
+  static async getCourses(params?: GetCoursesParams): Promise<CoursePageResponse> {
+    const queryParams: GetCoursesParams = {
+      page: 0,
+      size: 50,
+      ...params,
+    };
+    const response = await apiClient.get<CoursePageResponse>("/api/admin/courses", {
+      params: queryParams,
     });
     return response.data;
   }

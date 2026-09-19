@@ -34,12 +34,14 @@ describe("CourseService", () => {
       description: "Lấy danh sách lớp học phần của Admin thành công",
     },
     async () => {
-      vi.spyOn(apiClient, "get").mockResolvedValueOnce({ data: [mockCourse] });
+      vi.spyOn(apiClient, "get").mockResolvedValueOnce({
+        data: { items: [mockCourse], page: 0, size: 50, total: 1 },
+      });
 
       const res = await CourseService.getCourses({ semesterId: mockCourse.semesterId });
 
-      expect(res).toHaveLength(1);
-      expect(res[0].id).toBe(mockCourse.id);
+      expect(res.items).toHaveLength(1);
+      expect(res.items[0].id).toBe(mockCourse.id);
     }
   );
 

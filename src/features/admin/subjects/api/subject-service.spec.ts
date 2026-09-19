@@ -28,12 +28,14 @@ describe("SubjectService", () => {
       description: "Lấy danh sách môn học thành công",
     },
     async () => {
-      vi.spyOn(apiClient, "get").mockResolvedValueOnce({ data: [mockSubject] });
+      vi.spyOn(apiClient, "get").mockResolvedValueOnce({
+        data: { items: [mockSubject], page: 0, size: 50, total: 1 },
+      });
 
       const res = await SubjectService.getSubjects({ status: "ACTIVE" });
 
-      expect(res).toHaveLength(1);
-      expect(res[0].code).toBe("SWP391");
+      expect(res.items).toHaveLength(1);
+      expect(res.items[0].code).toBe("SWP391");
     }
   );
 

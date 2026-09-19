@@ -13,23 +13,22 @@ export interface ResolvedUser {
 }
 
 export function useAuditNameResolver() {
-  // Lấy dữ liệu danh mục từ cache TanStack Query (staleTime 5 phút)
   const coursesQuery = useCourses(undefined, { enabled: true });
-  const classesQuery = useAdminClasses({ enabled: true });
+  const classesQuery = useAdminClasses(undefined, { enabled: true });
   const usersQuery = useAdminUsers({ size: 100 }, { enabled: true });
   const subjectsQuery = useSubjects(undefined, { enabled: true });
 
-  // Map khóa học (Course ID -> Tên khóa học)
   const courseMap = useMemo(() => {
     const map = new Map<string, string>();
-    if (coursesQuery.data && Array.isArray(coursesQuery.data)) {
-      for (const c of coursesQuery.data) {
-        if (!c.id) continue;
-        const code = c.courseCode?.trim();
-        const name = c.name?.trim();
-        const display = code && name && code !== name ? `${code} - ${name}` : name || code || c.id;
-        map.set(c.id, display);
-      }
+    const coursesList = Array.isArray(coursesQuery.data)
+      ? coursesQuery.data
+      : coursesQuery.data?.items ?? [];
+    for (const c of coursesList) {
+      if (!c.id) continue;
+      const code = c.courseCode?.trim();
+      const name = c.name?.trim();
+      const display = code && name && code !== name ? `${code} - ${name}` : name || code || c.id;
+      map.set(c.id, display);
     }
     return map;
   }, [coursesQuery.data]);
@@ -37,14 +36,15 @@ export function useAuditNameResolver() {
   // Map lớp sinh viên / niên khóa (Class ID -> Tên lớp & Mã lớp)
   const classMap = useMemo(() => {
     const map = new Map<string, string>();
-    if (classesQuery.data && Array.isArray(classesQuery.data)) {
-      for (const cl of classesQuery.data) {
-        if (!cl.id) continue;
-        const code = (cl.code || cl.classCode || "").trim();
-        const name = (cl.name || "").trim();
-        const display = name && code && name !== code ? `${name} (${code})` : name || code || cl.id;
-        map.set(cl.id, display);
-      }
+    const classesList = Array.isArray(classesQuery.data)
+      ? classesQuery.data
+      : classesQuery.data?.items ?? [];
+    for (const cl of classesList) {
+      if (!cl.id) continue;
+      const code = (cl.code || cl.classCode || "").trim();
+      const name = (cl.name || "").trim();
+      const display = name && code && name !== code ? `${name} (${code})` : name || code || cl.id;
+      map.set(cl.id, display);
     }
     return map;
   }, [classesQuery.data]);
@@ -69,14 +69,15 @@ export function useAuditNameResolver() {
   // Map môn học (Subject ID -> Mã môn & Tên môn học)
   const subjectMap = useMemo(() => {
     const map = new Map<string, string>();
-    if (subjectsQuery.data && Array.isArray(subjectsQuery.data)) {
-      for (const s of subjectsQuery.data) {
-        if (!s.id) continue;
-        const code = s.code?.trim();
-        const name = (s.nameVietnamese || s.nameEnglish || "").trim();
-        const display = code && name && code !== name ? `${code} - ${name}` : name || code || s.id;
-        map.set(s.id, display);
-      }
+    const subjectsList = Array.isArray(subjectsQuery.data)
+      ? subjectsQuery.data
+      : subjectsQuery.data?.items ?? [];
+    for (const s of subjectsList) {
+      if (!s.id) continue;
+      const code = s.code?.trim();
+      const name = (s.nameVietnamese || s.nameEnglish || "").trim();
+      const display = code && name && code !== name ? `${code} - ${name}` : name || code || s.id;
+      map.set(s.id, display);
     }
     return map;
   }, [subjectsQuery.data]);

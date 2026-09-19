@@ -76,12 +76,14 @@ describe("AcademicService", () => {
       description: "Lấy danh sách lớp hành chính thành công",
     },
     async () => {
-      vi.spyOn(apiClient, "get").mockResolvedValueOnce({ data: [mockClass] });
+      vi.spyOn(apiClient, "get").mockResolvedValueOnce({
+        data: { items: [mockClass], page: 0, size: 50, total: 1 },
+      });
 
       const res = await AcademicService.getClasses();
 
-      expect(res).toHaveLength(1);
-      expect(res[0].code).toBe("SE1705");
+      expect(res.items).toHaveLength(1);
+      expect(res.items[0].code).toBe("SE1705");
     }
   );
 

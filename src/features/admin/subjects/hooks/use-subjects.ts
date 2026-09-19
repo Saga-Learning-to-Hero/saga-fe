@@ -6,6 +6,7 @@ import type {
   CreateSubjectRequest,
   PatchSubjectRequest,
   GetSubjectsParams,
+  SubjectPageResponse,
 } from "../types/subject-types";
 
 export const SUBJECT_QUERY_KEYS = {
@@ -51,10 +52,13 @@ export function useSubjectDetail(id: string) {
     initialData: () => {
       const direct = queryClient.getQueryData<SubjectResponse>(SUBJECT_QUERY_KEYS.detail(id));
       if (direct) return direct;
-      const queries = queryClient.getQueriesData<SubjectResponse[]>({ queryKey: ["subjects", "list"] });
+      const queries = queryClient.getQueriesData<SubjectPageResponse | SubjectResponse[]>({ queryKey: ["subjects", "list"] });
       for (const [, list] of queries) {
         if (Array.isArray(list)) {
           const found = list.find((s) => s.id === id);
+          if (found) return found;
+        } else if (list && Array.isArray(list.items)) {
+          const found = list.items.find((s) => s.id === id);
           if (found) return found;
         }
       }
@@ -63,7 +67,7 @@ export function useSubjectDetail(id: string) {
     initialDataUpdatedAt: () => {
       const state = queryClient.getQueryState(SUBJECT_QUERY_KEYS.detail(id));
       if (state?.dataUpdatedAt) return state.dataUpdatedAt;
-      const queries = queryClient.getQueriesData<SubjectResponse[]>({ queryKey: ["subjects", "list"] });
+      const queries = queryClient.getQueriesData<SubjectPageResponse | SubjectResponse[]>({ queryKey: ["subjects", "list"] });
       for (const [key] of queries) {
         const queryState = queryClient.getQueryState(key);
         if (queryState?.dataUpdatedAt) return queryState.dataUpdatedAt;

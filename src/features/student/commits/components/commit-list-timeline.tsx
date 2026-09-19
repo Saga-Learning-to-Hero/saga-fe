@@ -136,6 +136,12 @@ export function CommitListTimeline({
                               </Badge>
                             )}
 
+                            {commit.isMerge && (
+                              <Badge className="bg-purple-500/15 text-purple-600 dark:text-purple-400 border-purple-500/30 text-[10px] font-mono font-bold shrink-0">
+                                Merge
+                              </Badge>
+                            )}
+
                             <p
                               onClick={() => setActiveCommit(commit)}
                               className="text-xs sm:text-sm font-semibold text-foreground leading-snug group-hover:text-primary transition-colors cursor-pointer hover:underline"

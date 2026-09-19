@@ -101,4 +101,98 @@ describe("AdminLecturerService", () => {
       await expect(AdminLecturerService.getLecturers()).rejects.toThrow("Access Denied: Admin role required");
     }
   );
+
+  fptTest(
+    {
+      id: "UTCID06",
+      type: "N",
+      executedDate: "19/09/2026",
+      description: "Lay danh sach giang vien phan trang thanh cong voi tham so mac dinh",
+    },
+    async () => {
+      const mockPagedResponse = {
+        items: [mockLecturer],
+        page: 0,
+        size: 50,
+        total: 1,
+      };
+      vi.spyOn(apiClient, "get").mockResolvedValueOnce({ data: mockPagedResponse });
+
+      const res = await AdminLecturerService.getPagedLecturers();
+
+      expect(res.items).toHaveLength(1);
+      expect(res.total).toBe(1);
+      expect(apiClient.get).toHaveBeenCalledWith("/api/admin/lecturers/paged", {
+        params: { page: 0, size: 50 },
+      });
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID07",
+      type: "N",
+      executedDate: "19/09/2026",
+      description: "Lay danh sach giang vien phan trang voi bo loc search va active",
+    },
+    async () => {
+      const mockPagedResponse = {
+        items: [mockLecturer],
+        page: 1,
+        size: 20,
+        total: 21,
+      };
+      vi.spyOn(apiClient, "get").mockResolvedValueOnce({ data: mockPagedResponse });
+
+      const res = await AdminLecturerService.getPagedLecturers({
+        page: 1,
+        size: 20,
+        search: "Nguyen",
+        active: true,
+      });
+
+      expect(res.items).toHaveLength(1);
+      expect(res.page).toBe(1);
+      expect(apiClient.get).toHaveBeenCalledWith("/api/admin/lecturers/paged", {
+        params: { page: 1, size: 20, search: "Nguyen", active: true },
+      });
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID08",
+      type: "B",
+      executedDate: "19/09/2026",
+      description: "Tra ve items rong khi trang khong chua du lieu",
+    },
+    async () => {
+      const mockPagedResponse = {
+        items: [],
+        page: 5,
+        size: 50,
+        total: 0,
+      };
+      vi.spyOn(apiClient, "get").mockResolvedValueOnce({ data: mockPagedResponse });
+
+      const res = await AdminLecturerService.getPagedLecturers({ page: 5 });
+
+      expect(res.items).toEqual([]);
+      expect(res.total).toBe(0);
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID09",
+      type: "A",
+      executedDate: "19/09/2026",
+      description: "Nem loi khi API phan trang giang vien tra ve 500",
+    },
+    async () => {
+      vi.spyOn(apiClient, "get").mockRejectedValueOnce(new Error("Internal Server Error"));
+
+      await expect(AdminLecturerService.getPagedLecturers()).rejects.toThrow("Internal Server Error");
+    }
+  );
 });

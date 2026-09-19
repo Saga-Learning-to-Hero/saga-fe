@@ -11,6 +11,8 @@ import type {
   PatchSemesterRequest,
   CreateAcademicClassRequest,
   PatchAcademicClassRequest,
+  GetClassesParams,
+  AcademicClassPageResponse,
 } from "../types/academic-types";
 import type {
   CourseResponse,
@@ -20,17 +22,19 @@ import type {
   ConfirmRosterImportRequest,
   GetAdminLecturersParams,
   AddStudentToCourseRequest,
+  CoursePageResponse,
 } from "../types/course-roster-types";
 
 export const ACADEMIC_QUERY_KEYS = {
   semesters: ["academic", "semesters"] as const,
   activeSemester: ["academic", "semesters", "active"] as const,
   semesterDetail: (id: string) => ["academic", "semesters", id] as const,
-  classes: ["academic", "classes"] as const,
+  classes: (params?: GetClassesParams) => ["academic", "classes", params] as const,
   courses: (params?: GetCoursesParams) => ["academic", "courses", params] as const,
   courseDetail: (id: string) => ["academic", "courseDetail", id] as const,
   roster: (courseId: string) => ["academic", "roster", courseId] as const,
   lecturers: (params?: GetAdminLecturersParams) => ["academic", "lecturers", params] as const,
+  pagedLecturers: (params?: GetAdminLecturersParams) => ["academic", "pagedLecturers", params] as const,
 };
 
 export function prefetchSemestersQuery(queryClient: QueryClient) {
@@ -41,10 +45,10 @@ export function prefetchSemestersQuery(queryClient: QueryClient) {
   }).catch(() => { });
 }
 
-export function prefetchClassesQuery(queryClient: QueryClient) {
+export function prefetchClassesQuery(queryClient: QueryClient, params?: GetClassesParams) {
   return queryClient.prefetchQuery({
-    queryKey: ACADEMIC_QUERY_KEYS.classes,
-    queryFn: () => AcademicService.getClasses(),
+    queryKey: ACADEMIC_QUERY_KEYS.classes(params),
+    queryFn: () => AcademicService.getClasses(params),
     staleTime: 1000 * 60 * 5,
   }).catch(() => { });
 }
@@ -177,10 +181,10 @@ export function useSetActiveSemester() {
   });
 }
 
-export function useAdminClasses(options?: { enabled?: boolean }) {
+export function useAdminClasses(params?: GetClassesParams, options?: { enabled?: boolean }) {
   return useQuery({
-    queryKey: ACADEMIC_QUERY_KEYS.classes,
-    queryFn: () => AcademicService.getClasses(),
+    queryKey: ACADEMIC_QUERY_KEYS.classes(params),
+    queryFn: () => AcademicService.getClasses(params),
     staleTime: 1000 * 60 * 5,
     enabled: options?.enabled ?? true,
   });
@@ -192,11 +196,19 @@ export function useCreateAdminClass() {
   return useMutation({
     mutationFn: (data: CreateAcademicClassRequest) => AcademicService.createClass(data),
     onSuccess: (newClass) => {
-      queryClient.setQueryData<AcademicClassResponse[]>(ACADEMIC_QUERY_KEYS.classes, (old) => {
-        if (!old) return [newClass];
-        return [newClass, ...old.filter((c) => c.id !== newClass.id)];
-      });
-      queryClient.invalidateQueries({ queryKey: ACADEMIC_QUERY_KEYS.classes });
+      queryClient.setQueryData<AcademicClassPageResponse | AcademicClassResponse[]>(
+        ACADEMIC_QUERY_KEYS.classes(undefined),
+        (old) => {
+          if (!old) return { items: [newClass], page: 0, size: 50, total: 1 };
+          if (Array.isArray(old)) return [newClass, ...old.filter((c) => c.id !== newClass.id)];
+          return {
+            ...old,
+            total: old.total + 1,
+            items: [newClass, ...old.items.filter((c) => c.id !== newClass.id)],
+          };
+        }
+      );
+      queryClient.invalidateQueries({ queryKey: ["academic", "classes"] });
       const displayCode = newClass.classCode || newClass.code || newClass.name || "";
       toast.success(`Đã tạo lớp hành chính ${displayCode} thành công.`);
     },
@@ -219,11 +231,18 @@ export function usePatchAdminClass() {
     mutationFn: ({ id, data }: { id: string; data: PatchAcademicClassRequest }) =>
       AcademicService.patchClass(id, data),
     onSuccess: (updatedClass) => {
-      queryClient.setQueryData<AcademicClassResponse[]>(ACADEMIC_QUERY_KEYS.classes, (old) => {
-        if (!old) return [updatedClass];
-        return old.map((c) => (c.id === updatedClass.id ? { ...c, ...updatedClass } : c));
-      });
-      queryClient.invalidateQueries({ queryKey: ACADEMIC_QUERY_KEYS.classes });
+      queryClient.setQueryData<AcademicClassPageResponse | AcademicClassResponse[]>(
+        ACADEMIC_QUERY_KEYS.classes(undefined),
+        (old) => {
+          if (!old) return { items: [updatedClass], page: 0, size: 50, total: 1 };
+          if (Array.isArray(old)) return old.map((c) => (c.id === updatedClass.id ? { ...c, ...updatedClass } : c));
+          return {
+            ...old,
+            items: old.items.map((c) => (c.id === updatedClass.id ? { ...c, ...updatedClass } : c)),
+          };
+        }
+      );
+      queryClient.invalidateQueries({ queryKey: ["academic", "classes"] });
       const displayCode = updatedClass.classCode || updatedClass.code || updatedClass.name || "";
       toast.success(`Đã cập nhật thông tin lớp hành chính ${displayCode}.`);
     },
@@ -257,10 +276,13 @@ export function useCourseDetail(courseId: string) {
     enabled: Boolean(courseId && courseId.trim()),
     staleTime: 1000 * 60 * 5,
     initialData: () => {
-      const cachedCourses = queryClient.getQueryData<CourseResponse[]>(
+      const cached = queryClient.getQueryData<CoursePageResponse | CourseResponse[]>(
         ACADEMIC_QUERY_KEYS.courses(undefined)
       );
-      return cachedCourses?.find((c) => c.id === courseId);
+      if (Array.isArray(cached)) {
+        return cached.find((c) => c.id === courseId);
+      }
+      return cached?.items?.find((c) => c.id === courseId);
     },
   });
 }
@@ -271,10 +293,18 @@ export function useCreateCourse() {
   return useMutation({
     mutationFn: (data: CreateCourseRequest) => CourseService.createCourse(data),
     onSuccess: (newCourse) => {
-      queryClient.setQueryData<CourseResponse[]>(ACADEMIC_QUERY_KEYS.courses(undefined), (old) => {
-        if (!old) return [newCourse];
-        return [newCourse, ...old.filter((c) => c.id !== newCourse.id)];
-      });
+      queryClient.setQueryData<CoursePageResponse | CourseResponse[]>(
+        ACADEMIC_QUERY_KEYS.courses(undefined),
+        (old) => {
+          if (!old) return { items: [newCourse], page: 0, size: 50, total: 1 };
+          if (Array.isArray(old)) return [newCourse, ...old.filter((c) => c.id !== newCourse.id)];
+          return {
+            ...old,
+            total: old.total + 1,
+            items: [newCourse, ...old.items.filter((c) => c.id !== newCourse.id)],
+          };
+        }
+      );
       queryClient.invalidateQueries({ queryKey: ["academic", "courses"] });
       const displayCode = newCourse.courseCode || newCourse.classCode || newCourse.name || "";
       toast.success(`Đã tạo lớp học phần ${displayCode} thành công.`);
@@ -293,10 +323,17 @@ export function usePatchCourse() {
     mutationFn: ({ id, data }: { id: string; data: PatchCourseRequest }) =>
       CourseService.patchCourse(id, data),
     onSuccess: (updated) => {
-      queryClient.setQueryData<CourseResponse[]>(ACADEMIC_QUERY_KEYS.courses(undefined), (old) => {
-        if (!old) return [];
-        return old.map((c) => (c.id === updated.id ? { ...c, ...updated } : c));
-      });
+      queryClient.setQueryData<CoursePageResponse | CourseResponse[]>(
+        ACADEMIC_QUERY_KEYS.courses(undefined),
+        (old) => {
+          if (!old) return { items: [updated], page: 0, size: 50, total: 1 };
+          if (Array.isArray(old)) return old.map((c) => (c.id === updated.id ? { ...c, ...updated } : c));
+          return {
+            ...old,
+            items: old.items.map((c) => (c.id === updated.id ? { ...c, ...updated } : c)),
+          };
+        }
+      );
       queryClient.invalidateQueries({ queryKey: ["academic", "courses"] });
       toast.success("Đã cập nhật thông tin lớp học phần.");
     },
@@ -423,6 +460,18 @@ export function useAdminLecturers(
   return useQuery({
     queryKey: ACADEMIC_QUERY_KEYS.lecturers(params),
     queryFn: () => AdminLecturerService.getLecturers(params),
+    staleTime: 1000 * 60 * 5,
+    enabled: options?.enabled ?? true,
+  });
+}
+
+export function usePagedAdminLecturers(
+  params?: GetAdminLecturersParams,
+  options?: { enabled?: boolean }
+) {
+  return useQuery({
+    queryKey: ACADEMIC_QUERY_KEYS.pagedLecturers(params),
+    queryFn: () => AdminLecturerService.getPagedLecturers(params),
     staleTime: 1000 * 60 * 5,
     enabled: options?.enabled ?? true,
   });

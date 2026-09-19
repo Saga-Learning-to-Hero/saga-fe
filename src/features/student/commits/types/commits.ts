@@ -37,6 +37,8 @@ export interface CommitItem {
   jiraKey?: string; // VD: SAGA-105
   isSyncedToJira: boolean;
   commitUrl?: string;
+  isMerge?: boolean;
+  parentCount?: number | null;
 }
 
 export interface CommitStats {

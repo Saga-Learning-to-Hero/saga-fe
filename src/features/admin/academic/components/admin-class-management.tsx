@@ -37,7 +37,8 @@ export function AdminClassManagement() {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingClass, setEditingClass] = useState<AcademicClassResponse | null>(null);
 
-  const { data: adminClasses = [], isLoading } = useAdminClasses();
+  const { data: adminClassesPage, isLoading } = useAdminClasses();
+  const adminClasses = useMemo(() => adminClassesPage?.items ?? [], [adminClassesPage?.items]);
   const { data: semesters = [] } = useSemesters({ enabled: isFormOpen });
   const createMutation = useCreateAdminClass();
   const patchMutation = usePatchAdminClass();

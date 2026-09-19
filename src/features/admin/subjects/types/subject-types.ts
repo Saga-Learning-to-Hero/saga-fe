@@ -35,4 +35,13 @@ export interface GetSubjectsParams {
   code?: string;
   status?: SubjectStatus;
   q?: string;
+  page?: number;
+  size?: number;
+}
+
+export interface SubjectPageResponse {
+  items: SubjectResponse[];
+  page: number;
+  size: number;
+  total: number;
 }

@@ -6,6 +6,8 @@ import type {
   CreateAcademicClassRequest,
   PatchAcademicClassRequest,
   AcademicClassResponse,
+  GetClassesParams,
+  AcademicClassPageResponse,
 } from "../types/academic-types";
 
 export class AcademicService {
@@ -24,8 +26,8 @@ export class AcademicService {
     return response.data;
   }
 
-  static async getActiveSemester(): Promise<SemesterResponse | null> {
-    const response = await apiClient.get<SemesterResponse | null>("/api/admin/semesters/active");
+  static async getActiveSemester(): Promise<SemesterResponse> {
+    const response = await apiClient.get<SemesterResponse>("/api/admin/semesters/active");
     return response.data;
   }
 
@@ -52,6 +54,9 @@ export class AcademicService {
     if (!data.endDate) {
       throw new Error("Throw ValidationException: End date is required");
     }
+    if (new Date(data.startDate) > new Date(data.endDate)) {
+      throw new Error("Throw ValidationException: Start date must be before end date");
+    }
 
     const payload: CreateSemesterRequest = {
       code: data.code.trim().toUpperCase(),
@@ -73,17 +78,21 @@ export class AcademicService {
     }
 
     const payload: PatchSemesterRequest = {};
-    if (data.code && data.code.trim()) {
-      payload.code = data.code.trim().toUpperCase();
+    if (data.code !== undefined) {
+      const codeVal = data.code.trim().toUpperCase();
+      if (!codeVal) throw new Error("Throw ValidationException: Semester code cannot be empty");
+      payload.code = codeVal;
     }
-    if (data.name && data.name.trim()) {
-      payload.name = data.name.trim();
+    if (data.name !== undefined) {
+      const nameVal = data.name.trim();
+      if (!nameVal) throw new Error("Throw ValidationException: Semester name cannot be empty");
+      payload.name = nameVal;
     }
-    if (data.startDate) {
-      payload.startDate = data.startDate;
-    }
-    if (data.endDate) {
-      payload.endDate = data.endDate;
+    if (data.startDate !== undefined) payload.startDate = data.startDate;
+    if (data.endDate !== undefined) payload.endDate = data.endDate;
+
+    if (payload.startDate && payload.endDate && new Date(payload.startDate) > new Date(payload.endDate)) {
+      throw new Error("Throw ValidationException: Start date must be before end date");
     }
 
     const response = await apiClient.patch<SemesterResponse>(
@@ -93,8 +102,15 @@ export class AcademicService {
     return response.data;
   }
 
-  static async getClasses(): Promise<AcademicClassResponse[]> {
-    const response = await apiClient.get<AcademicClassResponse[]>("/api/admin/classes");
+  static async getClasses(params?: GetClassesParams): Promise<AcademicClassPageResponse> {
+    const queryParams: GetClassesParams = {
+      page: 0,
+      size: 50,
+      ...params,
+    };
+    const response = await apiClient.get<AcademicClassPageResponse>("/api/admin/classes", {
+      params: queryParams,
+    });
     return response.data;
   }
 

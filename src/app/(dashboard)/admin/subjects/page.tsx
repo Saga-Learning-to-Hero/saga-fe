@@ -17,7 +17,8 @@ import type {
 } from "@/features/admin/subjects/types/subject-types";
 
 export default function AdminSubjectsPage() {
-  const { data: subjects = [], isLoading, isFetching, refetch } = useSubjects();
+  const { data: subjectsPage, isLoading, isFetching, refetch } = useSubjects();
+  const subjects = subjectsPage?.items ?? [];
   const createMutation = useCreateSubject();
   const updateMutation = useUpdateSubject();
 
@@ -56,7 +57,7 @@ export default function AdminSubjectsPage() {
           </div>
           <div>
             <h1 className="text-xl font-bold text-foreground tracking-tight">
-              Quản Lý Môn Học & Đề Cương (FLM Curriculum)
+              Quản Lý Môn Học & Đề Cương
             </h1>
             <p className="text-xs text-muted-foreground">
               Danh mục môn học chuyên ngành SE và các phiên bản đề cương chi tiết (Syllabus).

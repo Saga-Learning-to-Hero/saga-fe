@@ -64,10 +64,13 @@ export function CourseManagement() {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingCourse, setEditingCourse] = useState<CourseResponse | null>(null);
 
-  const { data: courses = [], isLoading } = useCourses();
-  const { data: subjects = [] } = useSubjects(undefined, { enabled: isFormOpen });
+  const { data: coursesPage, isLoading } = useCourses();
+  const courses = useMemo(() => coursesPage?.items ?? [], [coursesPage?.items]);
+  const { data: subjectsPage } = useSubjects(undefined, { enabled: isFormOpen });
+  const subjects = useMemo(() => subjectsPage?.items ?? [], [subjectsPage?.items]);
   const { data: semesters = [] } = useSemesters({ enabled: isFormOpen });
-  const { data: adminClasses = [] } = useAdminClasses({ enabled: isFormOpen });
+  const { data: adminClassesPage } = useAdminClasses(undefined, { enabled: isFormOpen });
+  const adminClasses = useMemo(() => adminClassesPage?.items ?? [], [adminClassesPage?.items]);
 
   const queryClient = useQueryClient();
   const createMutation = useCreateCourse();
@@ -303,7 +306,7 @@ export function CourseManagement() {
                     onMouseEnter={() => handlePrefetchCourse(crs.id)}
                     className="w-full inline-flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold bg-primary/10 hover:bg-primary text-primary hover:text-primary-foreground transition-all duration-150 cursor-pointer shadow-2xs group-hover:shadow-xs"
                   >
-                    <span>Quản lý Roster sinh viên</span>
+                    <span>Quản lý sinh viên</span>
                     <ArrowRightIcon className="w-3.5 h-3.5" />
                   </Link>
                 </div>
@@ -368,7 +371,7 @@ export function CourseManagement() {
                           onMouseEnter={() => handlePrefetchCourse(crs.id)}
                           className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold bg-primary/10 hover:bg-primary text-primary hover:text-primary-foreground transition-colors cursor-pointer"
                         >
-                          <span>Roster</span>
+                          <span>Danh sách SV</span>
                           <ArrowRightIcon className="w-3 h-3" />
                         </Link>
                         <DropdownMenu>

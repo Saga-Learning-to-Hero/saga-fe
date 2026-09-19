@@ -53,13 +53,15 @@ export function CommitsView() {
   });
 
   const {
-    data: rawCommits = [],
+    data: commitsPage,
     isLoading: isLoadingCommits,
     isError: isCommitsError,
     error: commitsError,
     isRefetching: isRefetchingCommits,
     refetch: refetchCommits,
   } = useProjectCommits(projectId, { enabled: Boolean(projectId) });
+
+  const rawCommits = useMemo(() => commitsPage?.items ?? [], [commitsPage?.items]);
 
   const {
     data: syncStatuses = [],

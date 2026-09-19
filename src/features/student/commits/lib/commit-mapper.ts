@@ -79,6 +79,12 @@ export function mapProjectCommitToCommitItem(
       commit.repositoryFullName && commit.sha
         ? `https://github.com/${commit.repositoryFullName}/commit/${commit.sha}`
         : undefined,
+    isMerge:
+      commit.isMerge ??
+      (commit.parentCount !== null && commit.parentCount !== undefined
+        ? commit.parentCount > 1
+        : false),
+    parentCount: commit.parentCount ?? null,
   };
 }
 

@@ -122,12 +122,6 @@ export default function AdminAuditLogPage() {
               <h1 className="text-xl font-bold text-foreground tracking-tight">
                 Nhật ký hoạt động hệ thống (Audit Logs)
               </h1>
-              <Badge
-                variant="outline"
-                className="border-primary/30 bg-primary/10 text-primary text-[10px] font-mono font-bold"
-              >
-                REST API / Audit Store
-              </Badge>
             </div>
             <p className="text-xs text-muted-foreground mt-0.5">
               Theo dõi lịch sử hoạt động, bảo mật và thay đổi dữ liệu được lưu trữ bất biến tại cơ sở dữ liệu kiểm toán.

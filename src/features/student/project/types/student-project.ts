@@ -251,13 +251,26 @@ export interface TaskLinkedCommitItem {
   message: string;
   authorExternalId?: string | null;
   authorStudentId?: string | null;
-  /** Git ref do backend chiếu từ GitHub; không phải lúc nào cũng có. */
   headRef?: string | null;
   committedAt: string;
   createdAt: string;
+  parentCount?: number | null;
+  isMerge?: boolean | null;
 }
 
 export type ProjectCommitItem = TaskLinkedCommitItem;
+
+export interface GetProjectCommitsParams {
+  page?: number;
+  size?: number;
+}
+
+export interface ProjectCommitPageResponse {
+  items: TaskLinkedCommitItem[];
+  page: number;
+  size: number;
+  total: number;
+}
 
 export interface ProjectProgressTaskSummary {
   total: number;

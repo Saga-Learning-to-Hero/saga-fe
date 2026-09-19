@@ -4,6 +4,7 @@ import { useMemo } from "react";
 import { normalizeProjectProgress } from "@/features/progress/lib/progress-format";
 import type { StudentTeamMember } from "@/features/student/courses/types/student-course";
 import { useProjectIntegrations } from "@/features/student/project/hooks/useProjectIntegrations";
+import type { TaskLinkedCommitItem } from "@/features/student/project/types/student-project";
 import {
   useProjectCommits,
   useProjectProgress,
@@ -96,8 +97,8 @@ export function usePipelineGraphData({
   );
   const selectedRepoId =
     baseSanitizedFilter.repoId &&
-    baseSanitizedFilter.repoId !== "ALL" &&
-    repositories.some((repository) => repository.id === baseSanitizedFilter.repoId)
+      baseSanitizedFilter.repoId !== "ALL" &&
+      repositories.some((repository) => repository.id === baseSanitizedFilter.repoId)
       ? baseSanitizedFilter.repoId
       : "ALL";
   const branchesQuery = useProjectRepositoryBranches(
@@ -108,9 +109,9 @@ export function usePipelineGraphData({
   const branches = useMemo(() => branchesQuery.data?.branches || [], [branchesQuery.data]);
   const selectedBranchName =
     selectedRepoId !== "ALL" &&
-    baseSanitizedFilter.branchName &&
-    baseSanitizedFilter.branchName !== "ALL" &&
-    branches.some((branch) => branch.name === baseSanitizedFilter.branchName)
+      baseSanitizedFilter.branchName &&
+      baseSanitizedFilter.branchName !== "ALL" &&
+      branches.some((branch) => branch.name === baseSanitizedFilter.branchName)
       ? baseSanitizedFilter.branchName
       : "ALL";
   const sanitizedFilter = useMemo(
@@ -140,9 +141,9 @@ export function usePipelineGraphData({
     () =>
       taskCommitLinksQuery.isSuccess
         ? tasks.map((task) => ({
-            ...task,
-            linkedCommitCount: scopedLinkCounts.get(task.id) || 0,
-          }))
+          ...task,
+          linkedCommitCount: scopedLinkCounts.get(task.id) || 0,
+        }))
         : tasks,
     [scopedLinkCounts, taskCommitLinksQuery.isSuccess, tasks]
   );
@@ -163,10 +164,18 @@ export function usePipelineGraphData({
     () => groupTasksIntoLanes(filteredTasks, members),
     [filteredTasks, members]
   );
+  const rawCommits = useMemo((): TaskLinkedCommitItem[] => {
+    if (!commitsQuery.data) return [];
+    if (Array.isArray(commitsQuery.data)) return commitsQuery.data;
+    return commitsQuery.data.items || [];
+  }, [commitsQuery.data]);
+
   const selectedCommits = useMemo(() => {
     if (!effectiveTaskId) return [];
-    const commitById = new Map((commitsQuery.data || []).map((commit) => [commit.id, commit]));
-    const commits = (taskCommitLinksQuery.data?.links || [])
+    const commitById = new Map<string, TaskLinkedCommitItem>(
+      rawCommits.map((commit) => [commit.id, commit])
+    );
+    const commits: TaskLinkedCommitItem[] = (taskCommitLinksQuery.data?.links || [])
       .filter((link) => link.taskId === effectiveTaskId)
       .map((link) =>
         commitById.get(link.commitId) || {
@@ -181,15 +190,15 @@ export function usePipelineGraphData({
         }
       );
     return mapPipelineCommits(commits, members);
-  }, [commitsQuery.data, effectiveTaskId, members, taskCommitLinksQuery.data]);
+  }, [effectiveTaskId, members, rawCommits, taskCommitLinksQuery.data]);
   const stats = useMemo(
     () =>
       computePipelineStats(
         members,
         scopedTasks,
-        commitsQuery.isSuccess ? (commitsQuery.data || []).length : null
+        commitsQuery.isSuccess ? rawCommits.length : null
       ),
-    [commitsQuery.data, commitsQuery.isSuccess, members, scopedTasks]
+    [commitsQuery.isSuccess, members, rawCommits.length, scopedTasks]
   );
 
   const progressForbidden =
@@ -205,11 +214,12 @@ export function usePipelineGraphData({
   const isBothMissing = integrationsQuery.isSuccess && !isJiraActive && !isGithubActive;
   const isJiraMissingOnly = integrationsQuery.isSuccess && !isJiraActive && isGithubActive;
   const isGithubMissingOnly = integrationsQuery.isSuccess && isJiraActive && !isGithubActive;
+
   const isIntegrationsConnectedButUnsynced =
     integrationsQuery.isSuccess &&
     isBothActive &&
     tasks.length === 0 &&
-    (commitsQuery.data || []).length === 0;
+    rawCommits.length === 0;
 
   const integrationsUnsynced =
     integrationsQuery.isSuccess &&
@@ -267,7 +277,7 @@ export function usePipelineGraphData({
     refetchTaskCommits: taskCommitLinksQuery.refetch,
     realtimeStatus: realtime.status,
     queryPlan: commitsPlan,
-    allCommits: commitsQuery.data || [],
+    allCommits: rawCommits,
     progressData: progressQuery.data || null,
     integrationsData: integrationsQuery.data || null,
   };

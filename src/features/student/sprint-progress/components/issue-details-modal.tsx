@@ -39,6 +39,7 @@ import {
   useTransitionTask,
   useTaskOptions,
   useProjectTaskDetail,
+  useParentTaskOptions,
 } from "../hooks/use-project-tasks";
 
 function parseIssueStatus(status?: string | null, jiraStatusName?: string | null): IssueStatus {
@@ -115,6 +116,23 @@ export function IssueDetailsModal({
   const { data: taskDetail } = useProjectTaskDetail(projectId, issue?.id, {
     enabled: Boolean(isOpen && projectId && issue?.id),
   });
+  const { data: parentOptionsData } = useParentTaskOptions(
+    projectId,
+    { excludeTaskId: issue?.id, size: 50 },
+    { enabled: Boolean(isOpen && projectId) }
+  );
+  const parentOptions = useMemo(() => {
+    const list = parentOptionsData?.items || [];
+    return [
+      { value: "", label: "Không có Task cha (Root Task)" },
+      ...list.map((item) => ({
+        value: item.id,
+        label: `${item.externalKey ? `[${item.externalKey}] ` : ""}${item.title}`,
+        subLabel: item.status,
+      })),
+    ];
+  }, [parentOptionsData]);
+
   const createTaskMutation = useCreateProjectTask();
   const patchTaskMutation = usePatchProjectTask();
   const deleteTaskMutation = useDeleteProjectTask();
@@ -188,6 +206,7 @@ export function IssueDetailsModal({
       sprintId: initialSprintId,
       startDate: issue?.startDate || taskDetail?.startDate || "",
       dueDate: issue?.dueDate || taskDetail?.dueDate || "",
+      parentTaskId: taskDetail?.parentTask?.id || "",
     };
   });
 
@@ -214,6 +233,7 @@ export function IssueDetailsModal({
         labels: Array.isArray(taskDetail.labels) ? taskDetail.labels : prev.labels,
         startDate: taskDetail.startDate ?? prev.startDate,
         dueDate: taskDetail.dueDate ?? prev.dueDate,
+        parentTaskId: taskDetail.parentTask?.id ?? prev.parentTaskId,
       }));
     }
   }
@@ -369,6 +389,8 @@ export function IssueDetailsModal({
             clearStartDate?: boolean;
             dueDate?: string;
             clearDueDate?: boolean;
+            parentTaskId?: string;
+            clearParent?: boolean;
           } = {
             summary: form.summary.trim() || issue.summary,
           };
@@ -447,6 +469,15 @@ export function IssueDetailsModal({
             patchData.labels = form.labels;
           }
 
+          const originalParentId = taskDetail?.parentTask?.id || "";
+          if (form.parentTaskId !== originalParentId) {
+            if (!form.parentTaskId) {
+              patchData.clearParent = true;
+            } else {
+              patchData.parentTaskId = form.parentTaskId;
+            }
+          }
+
           if (Object.keys(patchData).length > 0) {
             const res = await patchTaskMutation.mutateAsync({
               projectId,
@@ -482,6 +513,7 @@ export function IssueDetailsModal({
               labels: form.labels,
               startDate: form.startDate.trim() || undefined,
               dueDate: form.dueDate.trim() || undefined,
+              parentTaskId: form.parentTaskId || undefined,
             },
           });
           savedKey = res.externalKey || savedKey;
@@ -837,6 +869,21 @@ export function IssueDetailsModal({
                   />
                 </div>
 
+                <div className="space-y-1.5">
+                  <Label htmlFor="issue-parent-task" className="text-xs font-semibold flex items-center gap-1.5 text-foreground">
+                    <span>Task cha (Parent Task)</span>
+                    <span className="text-[11px] font-normal text-muted-foreground">(Tùy chọn)</span>
+                  </Label>
+                  <CustomSelect
+                    id="issue-parent-task"
+                    disabled={!canEdit}
+                    value={form.parentTaskId}
+                    onChange={(val) => setForm((f) => ({ ...f, parentTaskId: val }))}
+                    placeholder="Chọn Task cha..."
+                    options={parentOptions}
+                  />
+                </div>
+
                 <div className="space-y-1.5 sm:col-span-2">
                   <Label htmlFor="issue-labels" className="text-xs font-semibold flex items-center gap-1.5 text-foreground">
                     <TagIcon className="w-3.5 h-3.5 text-blue-500" />
@@ -854,6 +901,34 @@ export function IssueDetailsModal({
                 </div>
               </div>
             </div>
+
+            {taskDetail?.subtasks && taskDetail.subtasks.length > 0 && (
+              <div className="p-4 sm:p-5 rounded-2xl bg-muted/20 border border-border/60 space-y-3">
+                <div className="flex items-center justify-between pb-2 border-b border-border/40">
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                    <span>Danh sách Task con (Subtasks)</span>
+                    <span className="font-mono text-[10px] bg-muted px-2 py-0.5 rounded-md border border-border font-semibold text-foreground">
+                      {taskDetail.subtasks.length}
+                    </span>
+                  </h4>
+                </div>
+                <div className="space-y-1.5">
+                  {taskDetail.subtasks.map((sub) => (
+                    <div
+                      key={sub.id}
+                      className="flex items-center justify-between p-2.5 rounded-xl bg-card border border-border/60 text-xs"
+                    >
+                      <span className="font-medium text-foreground truncate mr-2">
+                        {sub.title}
+                      </span>
+                      <span className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-muted/50 border border-border text-muted-foreground shrink-0 font-semibold">
+                        {sub.status}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
           {issue && (
