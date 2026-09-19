@@ -1,83 +1,129 @@
-# 📊 Student Activity Graph - Frontend MVP
+# SAGA — Student Activity Graph Based Continuous Assessment
 
-Dự án này là hệ thống đánh giá quá trình liên tục (Continuous Assessment) dựa trên đồ thị (Graph-Based) của sinh viên.
-Hệ thống tích hợp sâu với GitHub (Commits, PRs) và Jira (Tasks, Sprints) để tính toán tỷ lệ đóng góp của từng thành viên.
+> **Hệ thống Đánh giá Quá trình Liên tục dựa trên Đồ thị cho Project-Based Learning**  
+> Dự án Tốt nghiệp Capstone · FPT University · 2026
 
-## 🛠 Tech Stack Chốt Hạ
-* **Framework:** Next.js (App Router) + TypeScript.
-* **Styling:** Tailwind CSS + shadcn/ui.
-* **Graph Rendering:** Cytoscape.js (Cập nhật Imperative, Không nhét vào React State).
-* **Server State:** TanStack Query (Quản lý API caching, refetching).
-* **Client State:** Zustand (Chỉ lưu UI tĩnh như theme, filters).
-* **Real-time:** Server-Sent Events (SSE) kèm kiểm tra version.
+SAGA tích hợp sâu với **GitHub** (Commits, PRs) và **Jira** (Tasks, Sprints) để mô hình hóa toàn bộ hoạt động học tập của sinh viên thành đồ thị ngữ nghĩa (Neo4j), từ đó đánh giá tỷ lệ đóng góp công sức minh bạch và có thể giải thích (Explainable AI).
 
 ---
 
-## 📂 Kiến Trúc Thư Mục (Feature-Sliced Design)
-Dự án áp dụng chặt chẽ kiến trúc chia theo tính năng (Feature-Based). Mọi nghiệp vụ phải nằm trong thư mục `src/features/`.
+## Ngăn Xếp Công Nghệ
+
+| Tầng | Công nghệ | Phiên bản |
+| :--- | :--- | :--- |
+| **Framework** | Next.js App Router + TypeScript | 16.3.5 |
+| **UI Runtime** | React | 19.2.8 |
+| **Styling** | Tailwind CSS v4 + shadcn/ui | — |
+| **Graph** | Cytoscape.js | ^3.34.1 |
+| **Charts** | Recharts | ^3.10.1 |
+| **Server State** | TanStack React Query | ^5.102.2 |
+| **Client State** | Zustand | ^5.0.15 |
+| **HTTP** | Axios | ^1.19.0 |
+| **Validation** | Zod | ^4.5.4 |
+| **Thông báo** | Sonner | ^2.0.8 |
+| **Icon** | Lucide React | ^1.33.0 |
+| **Testing** | Vitest + Testing Library | — |
+
+---
+
+## Cấu Trúc Thư Mục
 
 ```text
-src/
-├── app/                  # Lớp Routing (Next.js App Router). Chỉ gọi Component, KHÔNG viết logic ở đây.
-├── features/             # LỚP NGHIỆP VỤ CỐT LÕI (Chia theo Domain)
-│   ├── auth/             # Logic đăng nhập, phân quyền, OAuth2 (Jira/GitHub credentials)
-│   ├── dashboard/        # Bảng điều khiển chung, thống kê tổng quan
-│   ├── graph/            # Lõi hiển thị đồ thị (Cytoscape.js, Web Worker)
-│   ├── tasks/            # Quản lý Task kéo từ Jira về (Bảng, danh sách)
-│   ├── assessment/       # Nghiệp vụ tính điểm, trọng số, tỷ lệ đóng góp (Continuous Assessment)
-│   └── integrations/     # Quản lý cấu hình liên kết Jira, GitHub Webhooks của user
+saga-fe/
+├── src/
+│   ├── app/                        # Next.js App Router — chỉ routing, không viết logic
+│   │   ├── (auth)/                 # Tuyến không bảo vệ (Login)
+│   │   ├── (dashboard)/            # Tuyến bảo vệ có App Shell
+│   │   │   ├── admin/              # Quản trị viên (/admin/*)
+│   │   │   ├── lecturer/           # Giảng viên (/lecturer/*)
+│   │   │   └── student/            # Sinh viên (/student/*)
+│   │   └── (marketing)/            # Landing Page
+│   │
+│   ├── features/                   # Toàn bộ nghiệp vụ phân theo Domain
+│   │   ├── admin/                  # Quản lý Users, Academic, Subjects, Audit Log
+│   │   ├── auth/                   # Đăng nhập, phân quyền, Role Routes
+│   │   ├── analytics/              # Activity Heatmap, thống kê
+│   │   ├── graph/                  # Cytoscape Engine, Traceability, Pipeline, SNA
+│   │   ├── integrations/           # Jira / GitHub OAuth & Webhook
+│   │   ├── lecturer/               # Courses, Contribution, Peer Review, Teams
+│   │   ├── notification/           # SSE Realtime, Notification Center
+│   │   ├── profile/                # Hồ sơ cá nhân, liên kết tài khoản
+│   │   ├── progress/               # Tiến độ Sprint
+│   │   └── student/                # Assessment, Commits, Contribution, Dashboard,
+│   │                               # Project, Sprint Progress, Courses, Graph
+│   │
+│   ├── components/
+│   │   ├── common/                 # SagaLogo, CustomSelect, ThemeToggle...
+│   │   ├── layout/                 # Sidebar, TopNavHeader, NavConfig
+│   │   └── ui/                     # shadcn/ui nguyên bản
+│   │
+│   ├── lib/                        # Axios client, helpers, formatters
+│   ├── providers/                  # QueryClient, Tooltip Provider
+│   ├── store/                      # Zustand Global Stores
+│   ├── testing/                    # Vitest helpers, FPT Reporter
+│   └── types/                      # TypeScript interfaces & enums dùng chung
 │
-├── components/           # UI Components dùng chung (Button, Modal, Layout, Navbar)
-├── hooks/                # Custom Hooks toàn cục (useSSE, useDebounce...)
-├── lib/                  # Cấu hình thư viện (Axios interceptors, QueryClient)
-└── types/                # Định nghĩa TypeScript toàn cục (API Responses, Models)
+├── tests/
+│   └── unit/                       # 81 Unit Test file ánh xạ 1-1 với src/
+│
+├── docs/
+│   ├── SAGA_BUSINESS_REQUIREMENTS_AND_COVERAGE.md   # Canonical spec
+│   ├── PROJECT_HANDOFF_GUIDE.md                     # Hướng dẫn bàn giao
+│   ├── api/                        # Contract API & OpenAPI spec
+│   ├── architecture/               # SAGA_GRAPHS_SPECIFICATION.md
+│   └── capstone-defense/           # Tài liệu bảo vệ đề tài
+│
+└── .agents/
+    └── rules/                      # Quy chuẩn phát triển bắt buộc đọc trước khi code
+```
 
-📝 HƯỚNG DẪN DÀNH CHO FE DEV: CÁCH TẠO MỘT TÍNH NĂNG MỚI
-Khi bạn được giao code một tính năng mới (Ví dụ: Thêm chức năng xem "Lịch sử Commit"), TUYỆT ĐỐI KHÔNG tạo file lung tung. Hãy làm theo 4 bước sau:
+---
 
-1. Xác định Domain (Tính năng thuộc nhóm nào?):
-Thuộc nhóm liên kết hệ thống -> Chui vào thư mục src/features/integrations/. Nếu là tính năng hoàn toàn mới, hãy tạo một thư mục mới trong features/ (VD: features/commits/).
+## Lệnh Phát Triển
 
-2. Tạo cấu trúc bên trong thư mục Feature mới:
-Bất kỳ một Feature nào cũng phải có đủ các thư mục con sau (nếu có sử dụng):
+```bash
+npm run dev          # Khởi động dev server (Turbopack)
+npm run build        # Build production (bắt buộc pass 34/34 trang)
+npm run lint         # ESLint — bắt buộc 0 Error, 0 Warning
+npm run test         # Vitest — bắt buộc 794/794 tests pass
+npm run test:watch   # Vitest chế độ watch
+npm run test:coverage  # Báo cáo độ phủ test
+```
 
-/components: Chứa giao diện (VD: CommitList.tsx).
+---
 
-/api: Chứa các hàm gọi TanStack Query (VD: getCommits.ts).
+## Phân Quyền 3 Vai Trò
 
-/store: Chứa trạng thái Zustand của riêng tính năng đó (nếu cần).
+| Vai trò | Namespace | Điều hướng sau đăng nhập |
+| :--- | :--- | :--- |
+| **Quản trị viên** | `/admin/*` | `/admin/dashboard` |
+| **Giảng viên** | `/lecturer/*` | `/lecturer/courses` |
+| **Sinh viên** | `/student/*` | `/student/courses` |
 
-/types: Chứa interface TypeScript của dữ liệu trả về.
+Layout shell tự động chọn theo vai trò: Admin dùng **Sidebar dọc**, Giảng viên & Sinh viên dùng **Top Header Navigation 2 tầng**.
 
-3. Khai báo API chuẩn:
-Không gọi Axios trực tiếp trong Component. Viết hàm ở /api, sau đó dùng TanStack Query:
+---
 
-TypeScript
-// features/commits/api/useCommits.ts
-export const useCommits = (taskId: string) => {
-  return useQuery({
-    queryKey: ['commits', taskId],
-    queryFn: () => axios.get(`/api/tasks/${taskId}/commits`),
-  });
-};
-4. Gọi vào App Router:
-Ra ngoài thư mục src/app/, tạo file page.tsx và gọi cái component bạn vừa làm vào.
+## Quy Trình Trước Khi Commit
 
-⚠️ 3 NGUYÊN TẮC SỐNG CÒN VỀ HIỆU NĂNG (ĐẶC BIỆT LÀ GRAPH)
-Xử Lý Cytoscape.js (Chống Treo Trình Duyệt)
+```bash
+npm run lint      # 0 Error, 0 Warning
+npm run test      # 794/794 pass
+npm run build     # 34/34 trang
+git push
+```
 
-Bắt buộc Lazy Load: Component chứa Canvas bắt buộc phải dùng next/dynamic với ssr: false.
+Xem thêm quy chuẩn Git, commit message và PR workflow tại [`.agents/rules/git-and-workflow.md`](.agents/rules/git-and-workflow.md).
 
-KHÔNG lưu Nodes/Edges vào React State: Khi có dữ liệu realtime, lưu reference bằng useRef và cập nhật trực tiếp vào Canvas bằng lệnh cy.batch(). Đừng để Next.js re-render 10,000 node!
+---
 
-Xử Lý State (Tách bạch rõ ràng)
+## Tài Liệu Dự Án
 
-TanStack Query dùng để lấy dữ liệu từ Spring Boot (Server State).
-
-Zustand CHỈ dùng để lưu trạng thái giao diện UI (Ví dụ: ID node đang click, bộ lọc, Sidebar mở hay đóng).
-
-Nhận Dữ Liệu Real-Time (SSE)
-
-Mọi đồ thị và bảng điểm đều được Backend bắn qua SSE. Mỗi event có một mã version.
-
-FE phải check: Nếu version mới > version hiện tại + 1 -> Mạng FE vừa bị rớt, mất gói tin -> Phải gọi lại API (TanStack Query) để lấy dữ liệu mới nhất.
+| Tài liệu | Mô tả |
+| :--- | :--- |
+| [`docs/SAGA_BUSINESS_REQUIREMENTS_AND_COVERAGE.md`](docs/SAGA_BUSINESS_REQUIREMENTS_AND_COVERAGE.md) | Đặc tả nghiệp vụ & độ phủ (Canonical) |
+| [`docs/PROJECT_HANDOFF_GUIDE.md`](docs/PROJECT_HANDOFF_GUIDE.md) | Hướng dẫn bàn giao & onboarding |
+| [`docs/architecture/SAGA_GRAPHS_SPECIFICATION.md`](docs/architecture/SAGA_GRAPHS_SPECIFICATION.md) | Đặc tả kỹ thuật 5 đồ thị Neo4j |
+| [`docs/api/`](docs/api/) | Contract API & OpenAPI spec |
+| [`docs/capstone-defense/`](docs/capstone-defense/) | Tài liệu bảo vệ hội đồng |
+| [`.agents/rules/`](.agents/rules/) | Quy chuẩn phát triển bắt buộc |
