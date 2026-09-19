@@ -33,7 +33,7 @@ Mục tiêu của người kế nhiệm là thay đổi đúng phạm vi task, d
    - `graph-and-neo4j.md`: ngữ nghĩa, UX và hiệu năng Cytoscape.
    - `git-and-workflow.md`: branch, commit, PR và danh tính Git.
 
-4. Với task API, lấy `docs/FRONTEND_API_STEP_BY_STEP.md` làm nguồn contract chính; kiểm tra `docs/openapi.json` nếu cần đối chiếu. `docs/02-api-integration-task-assignment.md` chỉ định phạm vi theo Dev/task.
+4. Với task API, lấy `docs/api/FRONTEND_API_STEP_BY_STEP.md` hoặc `docs/api/FE_API_INTEGRATION_GUIDE_VI.md` làm nguồn contract chính; kiểm tra `docs/api/openapi.json` nếu cần đối chiếu. `docs/capstone-defense/02-api-integration-task-assignment.md` chỉ định phạm vi theo Dev/task.
 5. Trước khi pull/merge/rebase `dev`, bảo toàn thay đổi local. Sau đó kiểm tra lại hai lệnh `git var` ở bước 1. Pull không được phép tự đổi local Git identity; không hard-code tên/email bất kỳ thành viên nào vào rule chung.
 
 ### Git workflow
@@ -421,11 +421,14 @@ npm run start
 - [ ] Commit tiếng Việt đúng format, push/PR chỉ khi được yêu cầu.
 
 ## 14. Tài liệu tham chiếu nhanh
-
-- [API tuần tự đầy đủ](FRONTEND_API_STEP_BY_STEP.md)
-- [Phân công tích hợp API](02-api-integration-task-assignment.md)
-- [Luồng auth](01-auth-main-flow-and-defense-guide.md)
-- [Luồng admin học thuật](03-admin-academic-and-syllabus-main-flow-and-defense-guide.md)
-- [OpenAPI](openapi.json)
+ 
+- [API tuần tự đầy đủ](api/FRONTEND_API_STEP_BY_STEP.md)
+- [Cẩm nang tích hợp API Tiếng Việt](api/FE_API_INTEGRATION_GUIDE_VI.md)
+- [Ma trận đối soát API](api/API_INTEGRATION_REGISTRY.md)
+- [Đặc tả 5 đồ thị SAGA](architecture/SAGA_GRAPHS_SPECIFICATION.md)
+- [Phân công tích hợp API](capstone-defense/02-api-integration-task-assignment.md)
+- [Luồng auth](capstone-defense/01-auth-main-flow-and-defense-guide.md)
+- [Luồng admin học thuật](capstone-defense/03-admin-academic-and-syllabus-main-flow-and-defense-guide.md)
+- [OpenAPI](api/openapi.json)
 - [Kết quả unit test](testing/UNIT_TEST_RESULTS.md)
 - [Quy tắc dự án](../.agents/rules/)

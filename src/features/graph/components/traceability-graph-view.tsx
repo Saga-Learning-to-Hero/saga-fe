@@ -570,7 +570,17 @@ export function TraceabilityGraphView() {
             onRetry={() => void pipeline.refetchTaskCommits()}
           />
         ) : null}
-        <PipelineStatsBar stats={pipeline.stats} isLoadingCommits={pipeline.isLoadingCommits} />
+        <PipelineStatsBar
+          stats={pipeline.stats}
+          isLoadingCommits={pipeline.isLoadingCommits}
+          isAnomaliesActive={pipeline.sanitizedFilter.anomaliesOnly}
+          onFilterAnomalies={() => {
+            setPipelineFilter((prev) => ({
+              ...prev,
+              anomaliesOnly: !prev.anomaliesOnly,
+            }));
+          }}
+        />
 
         <PipelineWorkspace
           lanes={pipeline.lanes}
