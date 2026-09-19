@@ -90,8 +90,7 @@ export type GraphType =
   | "OVERVIEW"
   | "CONTRIBUTION"
   | "ACTIVITY"
-  | "ATTRIBUTION"
-  | "PEER_REVIEW";
+  | "ATTRIBUTION";
 
 export interface GraphSubgraphFilterParams {
   sprintId?: string | null;

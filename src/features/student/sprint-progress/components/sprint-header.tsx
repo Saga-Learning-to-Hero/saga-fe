@@ -254,7 +254,7 @@ export function SprintHeader({
               }`}
           >
             <TrendingDownIcon className="w-3.5 h-3.5 text-amber-500" />
-            <span>Biểu đồ & Nhịp độ</span>
+            <span>Heatmap & Burndown</span>
           </button>
         </div>
 

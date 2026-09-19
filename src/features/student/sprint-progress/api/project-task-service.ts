@@ -6,7 +6,14 @@ import type {
   ProjectTaskOptionsResponse,
   ProjectTaskTransitionItem,
   TransitionProjectTaskRequest,
+  TaskParentOptionsResponse,
+  GetTaskParentOptionsParams,
 } from "../types/jira-task-types";
+import type {
+  TaskEvidenceGroupedResponse,
+  TaskEvidencePageResponse,
+  GetTaskEvidenceParams,
+} from "../types/task-evidence";
 
 export class ProjectTaskService {
   static async getTasks(projectId: string): Promise<ProjectTaskResponse[]> {
@@ -148,6 +155,46 @@ export class ProjectTaskService {
     const res = await apiClient.post<ProjectTaskResponse>(
       `/api/projects/${encodeURIComponent(cleanProjectId)}/tasks/${encodeURIComponent(cleanTaskId)}/transition`,
       data
+    );
+    return res.data;
+  }
+
+  static async getParentOptions(
+    projectId: string,
+    params?: GetTaskParentOptionsParams
+  ): Promise<TaskParentOptionsResponse> {
+    if (!projectId || !projectId.trim()) {
+      throw new Error("Throw ValidationException: Project ID is required");
+    }
+    const cleanProjectId = projectId.trim();
+    const queryParams: GetTaskParentOptionsParams = {
+      page: 0,
+      size: 50,
+      ...params,
+    };
+    const res = await apiClient.get<TaskParentOptionsResponse>(
+      `/api/projects/${encodeURIComponent(cleanProjectId)}/tasks/parent-options`,
+      { params: queryParams }
+    );
+    return res.data;
+  }
+
+  static async getTaskEvidence(
+    projectId: string,
+    taskId: string,
+    params?: GetTaskEvidenceParams
+  ): Promise<TaskEvidenceGroupedResponse | TaskEvidencePageResponse> {
+    if (!projectId || !projectId.trim()) {
+      throw new Error("Throw ValidationException: Project ID is required");
+    }
+    if (!taskId || !taskId.trim()) {
+      throw new Error("Throw ValidationException: Task ID is required");
+    }
+    const cleanProjectId = projectId.trim();
+    const cleanTaskId = taskId.trim();
+    const res = await apiClient.get<TaskEvidenceGroupedResponse | TaskEvidencePageResponse>(
+      `/api/projects/${encodeURIComponent(cleanProjectId)}/tasks/${encodeURIComponent(cleanTaskId)}/evidence`,
+      { params }
     );
     return res.data;
   }

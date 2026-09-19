@@ -49,13 +49,14 @@ export function TaskLinkedCommitsList({
   selectedShas = [],
 }: TaskLinkedCommitsListProps) {
   const {
-    data: commits = [],
+    data: commitsPage,
     isLoading,
     isRefetching,
     refetch,
   } = useTaskCommits(projectId, taskId, {
     enabled: Boolean(projectId && taskId),
   });
+  const commits = commitsPage?.items ?? [];
 
   if (!projectId || !taskId) {
     return null;
@@ -89,8 +90,8 @@ export function TaskLinkedCommitsList({
               size="sm"
               onClick={() => onSelectAllCommits(validShas)}
               className={`h-7 px-2 text-[11px] font-semibold gap-1 cursor-pointer transition-colors ${isAllSelected
-                  ? "bg-violet-600 text-white hover:bg-violet-700 border-0"
-                  : "text-violet-600 dark:text-violet-400 border-violet-500/30 hover:bg-violet-500/10"
+                ? "bg-violet-600 text-white hover:bg-violet-700 border-0"
+                : "text-violet-600 dark:text-violet-400 border-violet-500/30 hover:bg-violet-500/10"
                 }`}
             >
               <ShieldCheckIcon className="w-3 h-3" />
@@ -134,8 +135,8 @@ export function TaskLinkedCommitsList({
               <div
                 key={commit.id}
                 className={`p-3 rounded-xl bg-card border transition-all space-y-1.5 ${isSelected
-                    ? "border-violet-500/50 bg-violet-500/[0.04]"
-                    : "border-border/70 hover:border-primary/40 hover:bg-muted/20"
+                  ? "border-violet-500/50 bg-violet-500/[0.04]"
+                  : "border-border/70 hover:border-primary/40 hover:bg-muted/20"
                   }`}
               >
                 <div className="flex items-center justify-between gap-2">
@@ -161,8 +162,8 @@ export function TaskLinkedCommitsList({
                         size="sm"
                         onClick={() => onSelectCommit(commit.sha)}
                         className={`h-6 px-2 text-[10px] font-semibold gap-1 rounded-md cursor-pointer transition-all ${isSelected
-                            ? "bg-violet-600 text-white hover:bg-violet-700 border-0"
-                            : "text-violet-600 dark:text-violet-400 border-violet-500/30 hover:bg-violet-500/10"
+                          ? "bg-violet-600 text-white hover:bg-violet-700 border-0"
+                          : "text-violet-600 dark:text-violet-400 border-violet-500/30 hover:bg-violet-500/10"
                           }`}
                       >
                         {isSelected ? (

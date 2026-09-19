@@ -3,7 +3,6 @@ import type {
   ProjectSyncResponse,
   ProjectTaskItem,
   ProjectSyncStatusItem,
-  TaskLinkedCommitItem,
   ProjectProgressResponse,
   ProjectMemberProgressResponse,
   ProjectGitBranchListResponse,
@@ -12,6 +11,8 @@ import type {
   ProjectCommitDetailResponse,
   UpdateStudentProjectRequest,
   StudentTeamProjectResponse,
+  ProjectCommitPageResponse,
+  GetProjectCommitsParams,
 } from "../types/student-project";
 
 const TASK_COMMIT_LINK_PAGE_SIZE = 200;
@@ -52,8 +53,9 @@ export class ProjectProjectionService {
 
   static async getTaskCommits(
     projectId: string,
-    taskId: string
-  ): Promise<TaskLinkedCommitItem[]> {
+    taskId: string,
+    params?: GetProjectCommitsParams
+  ): Promise<ProjectCommitPageResponse> {
     if (!projectId || projectId.trim() === "") {
       throw new Error("Throw ValidationException: Project ID is required");
     }
@@ -62,19 +64,34 @@ export class ProjectProjectionService {
     }
     const cleanProjectId = projectId.trim();
     const cleanTaskId = taskId.trim();
-    const res = await apiClient.get<TaskLinkedCommitItem[]>(
-      `/api/projects/${encodeURIComponent(cleanProjectId)}/tasks/${encodeURIComponent(cleanTaskId)}/commits`
+    const queryParams: GetProjectCommitsParams = {
+      page: 0,
+      size: 50,
+      ...params,
+    };
+    const res = await apiClient.get<ProjectCommitPageResponse>(
+      `/api/projects/${encodeURIComponent(cleanProjectId)}/tasks/${encodeURIComponent(cleanTaskId)}/commits`,
+      { params: queryParams }
     );
     return res.data;
   }
 
-  static async getProjectCommits(projectId: string): Promise<TaskLinkedCommitItem[]> {
+  static async getProjectCommits(
+    projectId: string,
+    params?: GetProjectCommitsParams
+  ): Promise<ProjectCommitPageResponse> {
     if (!projectId || projectId.trim() === "") {
       throw new Error("Throw ValidationException: Project ID is required");
     }
     const cleanProjectId = projectId.trim();
-    const res = await apiClient.get<TaskLinkedCommitItem[]>(
-      `/api/projects/${encodeURIComponent(cleanProjectId)}/commits`
+    const queryParams: GetProjectCommitsParams = {
+      page: 0,
+      size: 50,
+      ...params,
+    };
+    const res = await apiClient.get<ProjectCommitPageResponse>(
+      `/api/projects/${encodeURIComponent(cleanProjectId)}/commits`,
+      { params: queryParams }
     );
     return res.data;
   }

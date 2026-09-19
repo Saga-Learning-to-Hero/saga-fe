@@ -31,14 +31,14 @@ Quy tắc bảo trì bắt buộc:
 
 | Hạng mục | Giá trị tại thời điểm kiểm tra |
 | --- | --- |
-| Frontend | `saga-fe`, nhánh `feat/SAGA-76-notification-center-and-firebase-web-push`, commit `6a05e3c` |
+| Frontend | `saga-fe`, nhánh `feat/SAGA-89-dong-bo-be-phan-trang-va-task-hierarchy` |
 | Backend | `saga-be`, nhánh `main` |
 | FE framework | Next.js 16, React, TypeScript, TanStack Query |
 | Dữ liệu nghiệp vụ chính | REST từ Backend; Jira/GitHub được đồng bộ thành projection trong SAGA |
 | Dữ liệu Graph | Neo4j projection do Backend tạo, FE chỉ truy vấn và trực quan hóa |
 | Realtime | SSE chỉ báo thay đổi; sau event FE phải refetch REST canonical |
-| FE unit regression | 66/66 files, 643/643 tests passed ngày 16/09/2026; chi tiết tại `docs/testing/CURRENT_REGRESSION_2026-09-16.md` |
-| Lưu ý | SAGA-75 Graph và SAGA-76 Notification đã có data layer, UI và unit/component test; vẫn cần E2E với BE deployed, Jira/GitHub/Firebase thật trước khi coi là nghiệm thu production |
+| FE unit regression | 762/762 tests passed ngày 19/09/2026, 0 lint errors/warnings, production build passed 34/34 pages |
+| Lưu ý | SAGA-89 đã đồng bộ contract phân trang BE (`size=50`), Task Hierarchy (parent/subtask), nhận diện Merge Commit và API Task Evidence |
 
 ### 1.1 Mục đích sử dụng
 
@@ -342,11 +342,11 @@ Project Type dùng để phân loại hướng dự án, không điều khiển 
 | ID | Nghiệp vụ | BE | FE data | UI | Trạng thái/Ghi chú |
 | --- | --- | --- | --- | --- | --- |
 | ADM-001 | Semester CRUD-lite và active semester | ✓ | ✓ | ✓ | `DONE` |
-| ADM-002 | Subject CRUD-lite | ✓ | ✓ | ✓ | `DONE` |
+| ADM-002 | Subject CRUD-lite | ✓ | ✓ | ✓ | `DONE` (BE phân trang `page, size, total, items`; FE cố định `size=50` bảo toàn trải nghiệm danh mục) |
 | ADM-003 | Syllabus version, structure, publish, archive | ✓ | ✓ | ✓ | `DONE` |
-| ADM-004 | Academic Class create/list/detail/update | ✓ | ✓ | ✓ | `DONE` |
-| ADM-005 | Course create/list/detail/update | ✓ | ✓ | ✓ | `DONE` |
-| ADM-006 | Lecturer directory | ✓ | ✓ | ✓ | `DONE` |
+| ADM-004 | Academic Class create/list/detail/update | ✓ | ✓ | ✓ | `DONE` (BE phân trang `page, size, total, items`; FE cố định `size=50`) |
+| ADM-005 | Course create/list/detail/update | ✓ | ✓ | ✓ | `DONE` (BE phân trang `page, size, total, items`; FE cố định `size=50`) |
+| ADM-006 | Lecturer directory | ✓ | ✓ | ✓ | `DONE` (BE hỗ trợ phân trang `/api/admin/lecturers/paged` kèm endpoint dropdown) |
 | ADM-007 | Roster template/list/import preview-confirm/add/remove/cancel invite | ✓ | ✓ | ✓ | `DONE` |
 | ADM-008 | User list/detail/status | ✓ | ✓ | ✓ | `DONE` (GET `/api/admin/users`, GET `/api/admin/users/{userId}`, PATCH `/api/admin/users/{userId}/status`; SSE `ACCOUNT_DISABLED` & HTTP 403 fallback) |
 | ADM-009 | Audit log list/filter | ✓ | ✓ | ✓ | `DONE` (GET `/api/admin/audit-logs`) |
@@ -390,11 +390,11 @@ Project Type dùng để phân loại hướng dự án, không điều khiển 
 | TASK-002 | Task create/patch/delete | ✓ | ✓ | ✓ | `DONE`; quick create chỉ gửi field tối thiểu |
 | TASK-003 | Task transition và transition options | ✓ | ✓ | ✓ | `DONE` |
 | TASK-004 | Move task vào/ra sprint | ✓ | ✓ | ✓ | `DONE` |
-| TASK-005 | Task type và Subtask parent | ✓ | ✓ | ✓ | `DONE` nếu DTO production trả parent; không suy đoán parent |
+| TASK-005 | Task type và Subtask parent | ✓ | ✓ | ✓ | `DONE` (BE & FE đồng bộ `parentTask`, `subtasks`, `parentTaskId`, `clearParent`, endpoint `GET /tasks/parent-options` phân trang và UI chọn Task cha/Subtasks) |
 | TASK-006 | Start Date/Due Date create-edit-clear-hydrate | ✓ | ✓ | ✓ | `VERIFY`; cần xác minh deploy trả đủ hai key kể cả null |
 | TASK-007 | Kanban/Backlog/Timeline | ✓ | ✓ | ✓ | `DONE`; card chỉ cần due date, backlog cảnh báo giống Jira |
 | SPR-001 | Sprint list/detail/create/update/delete | ✓ | ✓ | ✓ | `DONE` |
-| COM-001 | Project commit list/filter | ✓ | ✓ | ✓ | `DONE` |
+| COM-001 | Project commit list/filter | ✓ | ✓ | ✓ | `DONE` (BE & FE đồng bộ phân trang `page, size, total, items`, nhận diện Merge Commit `isMerge`, `parentCount` và badge "Merge") |
 | COM-002 | Commits của một task | ✓ | ✓ | ✓ | `DONE`; lazy load cho inspector |
 | COM-003 | Canonical batch task–commit links theo repo/branch | ✓ | ✓ | ✓ | `DONE/VERIFY`; filter phải dựa response BE, không parse message |
 | COM-004 | Repository branch list | ✓ | ✓ | ✓ | `DONE` |
@@ -422,6 +422,7 @@ Project Type dùng để phân loại hướng dự án, không điều khiển 
 | EVD-005 | File list/upload/download/delete | ✓ | ✓ | ✓ | `DONE` |
 | EVD-006 | Contribution confirmation SHA/PR | ✓ | ✓ | ✓ | `DONE`; selection ở UI chỉ là draft đến khi bấm xác nhận |
 | EVD-007 | Step-up + retry confirmation | ✓ | ✓ | ✓ | `DONE/VERIFY` với test 403 → reauth → retry một lần |
+| EVD-008 | Task Evidence unified aggregation | ✓ | ✓ | ✓ | `DONE` (`GET /api/projects/{projectId}/tasks/{taskId}/evidence` gom nhóm hoặc phân trang) |
 
 ### 7.8 Progress, Graph, Peer Review và Contribution
 

@@ -55,9 +55,15 @@ export function StudentDashboardAnalytics() {
   const progress = normalizeProjectProgress(progressQuery.data);
   const members = progress?.memberProgress ?? [];
 
+  const commits = useMemo(() => {
+    if (!commitsQuery.data) return [];
+    if (Array.isArray(commitsQuery.data)) return commitsQuery.data;
+    return commitsQuery.data.items ?? [];
+  }, [commitsQuery.data]);
+
   const weeklyData = useMemo(
-    () => buildWeeklyCommitBuckets(commitsQuery.data ?? []),
-    [commitsQuery.data]
+    () => buildWeeklyCommitBuckets(commits),
+    [commits]
   );
 
   const openMemberDetail = (studentId: string) => {

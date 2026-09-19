@@ -10,6 +10,7 @@ import {
   NetworkIcon,
   FolderGit2Icon,
   FileCodeIcon,
+  GitBranchIcon,
 } from "lucide-react";
 import Link from "next/link";
 import type { CommitItem } from "../types/commits";
@@ -136,9 +137,16 @@ export function CommitListTimeline({
                               </Badge>
                             )}
 
+                            {commit.isMerge && (
+                              <Badge className="bg-purple-500/15 text-purple-600 dark:text-purple-400 border-purple-500/30 text-[10px] font-mono font-bold shrink-0">
+                                Merge
+                              </Badge>
+                            )}
+
                             <p
                               onClick={() => setActiveCommit(commit)}
                               className="text-xs sm:text-sm font-semibold text-foreground leading-snug group-hover:text-primary transition-colors cursor-pointer hover:underline"
+                              title="Nhấn để xem chi tiết commit, thay đổi mã nguồn (+/- lines) và danh sách file"
                             >
                               {commit.message}
                             </p>
@@ -179,6 +187,19 @@ export function CommitListTimeline({
                                 <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground">
                                   <FolderGit2Icon className="w-3 h-3 text-muted-foreground/70" />
                                   {commit.repoName}
+                                </span>
+                              </>
+                            )}
+
+                            {commit.branchName && commit.branchName !== "Không xác định" && (
+                              <>
+                                <span className="text-border">•</span>
+                                <span
+                                  className="inline-flex items-center gap-1 text-[11px] font-mono text-muted-foreground bg-muted/60 px-1.5 py-0.5 rounded-md border border-border/50 max-w-[240px] truncate"
+                                  title={`Nhánh Git: ${commit.branchName}`}
+                                >
+                                  <GitBranchIcon className="w-3 h-3 text-primary/70 shrink-0" />
+                                  <span className="truncate">{commit.branchName}</span>
                                 </span>
                               </>
                             )}
@@ -259,6 +280,16 @@ export function CommitListTimeline({
         gitCommitId={activeCommit?.id || null}
         fallbackShortHash={activeCommit?.shortHash}
         fallbackMessage={activeCommit?.message}
+        fallbackCommit={
+          activeCommit
+            ? {
+              commitHash: activeCommit.hash,
+              commitMessage: activeCommit.message,
+              authorName: activeCommit.author.name,
+              committedDate: activeCommit.createdAt,
+            }
+            : undefined
+        }
       />
     </div>
   );

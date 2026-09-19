@@ -73,6 +73,8 @@ export interface ProjectTaskResponse {
   externalUpdatedAt?: string | null;
   createdAt: string;
   updatedAt: string;
+  parentTask?: { id: string; title: string } | null;
+  subtasks?: { id: string; title: string; status: string }[] | null;
 }
 
 export interface CreateProjectTaskRequest {
@@ -87,6 +89,7 @@ export interface CreateProjectTaskRequest {
   labels?: string[];
   dueDate?: string | null;
   startDate?: string | null;
+  parentTaskId?: string | null;
 }
 
 export interface PatchProjectTaskRequest {
@@ -104,6 +107,30 @@ export interface PatchProjectTaskRequest {
   clearDueDate?: boolean;
   startDate?: string | null;
   clearStartDate?: boolean;
+  parentTaskId?: string | null;
+  clearParent?: boolean;
+}
+
+export interface TaskParentOptionItem {
+  id: string;
+  title: string;
+  status: string;
+  parentTaskId?: string | null;
+  externalKey?: string | null;
+}
+
+export interface TaskParentOptionsResponse {
+  items: TaskParentOptionItem[];
+  page: number;
+  size: number;
+  total: number;
+}
+
+export interface GetTaskParentOptionsParams {
+  q?: string;
+  page?: number;
+  size?: number;
+  excludeTaskId?: string;
 }
 
 export interface ProjectTaskOptionItem {

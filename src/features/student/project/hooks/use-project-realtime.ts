@@ -139,7 +139,7 @@ export function useProjectRealtime(
         case "SPRINTS_CHANGED":
           invalidateSprints();
           invalidateProgress();
-          scheduleGraphInvalidation(pid, ["OVERVIEW", "ACTIVITY", "PEER_REVIEW"]);
+          scheduleGraphInvalidation(pid, ["OVERVIEW", "ACTIVITY"]);
           break;
         case "COMMITS_CHANGED":
           invalidateCommits();

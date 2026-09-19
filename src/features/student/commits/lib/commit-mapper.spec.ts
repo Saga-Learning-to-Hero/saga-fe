@@ -70,4 +70,60 @@ describe("commit-mapper", () => {
       });
     }
   );
+  fptTest(
+    {
+      id: "UTCID04",
+      type: "N",
+      executedDate: "19/09/2026",
+      description: "mapProjectCommitToCommitItem nhan dien commit merge khi message bat dau bang Merge pull request du isMerge null",
+    },
+    () => {
+      const result = mapProjectCommitToCommitItem({
+        ...commit,
+        isMerge: null,
+        parentCount: null,
+        message: "Merge pull request #39 from Saga-Learning-to-Hero/feat/SAGA-84-lecturer-grade-and-review-ui",
+      });
+
+      expect(result.isMerge).toBe(true);
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID05",
+      type: "N",
+      executedDate: "19/09/2026",
+      description: "mapProjectCommitToCommitItem nhan dien commit merge khi message bat dau bang Merge branch du isMerge null",
+    },
+    () => {
+      const result = mapProjectCommitToCommitItem({
+        ...commit,
+        isMerge: null,
+        parentCount: null,
+        message: "Merge branch 'dev' of https://github.com/Saga-Learning-to-Hero/saga-fe into feat/SAGA-77",
+      });
+
+      expect(result.isMerge).toBe(true);
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID06",
+      type: "B",
+      executedDate: "19/09/2026",
+      description: "mapProjectCommitToCommitItem giu nguyen isMerge false cho commit thong thuong",
+    },
+    () => {
+      const result = mapProjectCommitToCommitItem({
+        ...commit,
+        isMerge: null,
+        parentCount: null,
+        message: "feat: [FE][SAGA-86] Tich hop API Burndown Chart",
+      });
+
+      expect(result.isMerge).toBe(false);
+    }
+  );
 });

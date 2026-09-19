@@ -12,7 +12,6 @@ vi.mock("../api/project-graph-service", () => ({
     getStudentContributionGraph: vi.fn(),
     getSprintActivityGraph: vi.fn(),
     getProjectAttributionGraph: vi.fn(),
-    getSprintPeerReviewGraph: vi.fn(),
   },
 }));
 
@@ -70,21 +69,6 @@ describe("useProjectGraph", () => {
 
     expect(result.current.fetchStatus).toBe("idle");
     expect(ProjectGraphService.getSprintActivityGraph).not.toHaveBeenCalled();
-  });
-
-  it("UTCID03 - [A] Abnormal: Peer Review khong duoc enabled khi thieu sprintId", async () => {
-    const { result } = renderHook(
-      () =>
-        useProjectGraph({
-          projectId: "p-1",
-          graphType: "PEER_REVIEW",
-          sprintId: "",
-        }),
-      { wrapper: createWrapper() }
-    );
-
-    expect(result.current.fetchStatus).toBe("idle");
-    expect(ProjectGraphService.getSprintPeerReviewGraph).not.toHaveBeenCalled();
   });
 
   it("UTCID04 - [A] Abnormal: Contribution khong duoc enabled khi thieu studentProfileId", async () => {

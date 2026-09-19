@@ -136,13 +136,16 @@ describe("ProjectProjectionService", () => {
       description: "getTaskCommits goi GET voi projectId va taskId hop le",
     },
     async () => {
-      const mockCommits = [{ id: "c1", sha: "abc1234" }];
-      vi.mocked(apiClient.get).mockResolvedValueOnce({ data: mockCommits });
+      const mockPageResponse = { items: [{ id: "c1", sha: "abc1234" }], page: 0, size: 50, total: 1 };
+      vi.mocked(apiClient.get).mockResolvedValueOnce({ data: mockPageResponse });
 
       const result = await ProjectProjectionService.getTaskCommits(mockProjectId, mockTaskId);
 
-      expect(apiClient.get).toHaveBeenCalledWith("/api/projects/proj-123/tasks/task-456/commits");
-      expect(result).toEqual(mockCommits);
+      expect(apiClient.get).toHaveBeenCalledWith(
+        "/api/projects/proj-123/tasks/task-456/commits",
+        { params: { page: 0, size: 50 } }
+      );
+      expect(result).toEqual(mockPageResponse);
     }
   );
 
@@ -168,13 +171,16 @@ describe("ProjectProjectionService", () => {
       description: "getProjectCommits goi GET voi projectId hop le",
     },
     async () => {
-      const mockCommits = [{ id: "c1", sha: "sha-1" }];
-      vi.mocked(apiClient.get).mockResolvedValueOnce({ data: mockCommits });
+      const mockPageResponse = { items: [{ id: "c1", sha: "sha-1" }], page: 0, size: 50, total: 1 };
+      vi.mocked(apiClient.get).mockResolvedValueOnce({ data: mockPageResponse });
 
       const result = await ProjectProjectionService.getProjectCommits(mockProjectId);
 
-      expect(apiClient.get).toHaveBeenCalledWith("/api/projects/proj-123/commits");
-      expect(result).toEqual(mockCommits);
+      expect(apiClient.get).toHaveBeenCalledWith(
+        "/api/projects/proj-123/commits",
+        { params: { page: 0, size: 50 } }
+      );
+      expect(result).toEqual(mockPageResponse);
     }
   );
 

@@ -56,7 +56,7 @@ export function useProjectGraph({
   if (isQueryEnabled) {
     if (graphType === "CONTRIBUTION") {
       isQueryEnabled = Boolean(resolvedStudentProfileId);
-    } else if (graphType === "ACTIVITY" || graphType === "PEER_REVIEW") {
+    } else if (graphType === "ACTIVITY") {
       isQueryEnabled = Boolean(trimmedSprint || subgraphParams?.sprintId);
     }
   }
@@ -94,13 +94,6 @@ export function useProjectGraph({
           );
         case "ATTRIBUTION":
           return ProjectGraphService.getProjectAttributionGraph(trimmedProject, mergedParams, signal);
-        case "PEER_REVIEW":
-          return ProjectGraphService.getSprintPeerReviewGraph(
-            trimmedProject,
-            effectiveSprint!,
-            subgraphParams || undefined,
-            signal
-          );
       }
     },
     enabled: isQueryEnabled,

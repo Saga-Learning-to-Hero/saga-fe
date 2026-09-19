@@ -246,7 +246,7 @@ describe("TraceabilityGraphView", () => {
     },
     () => {
       renderView();
-      const activityBtn = screen.getByText("Hoạt động Sprint");
+      const activityBtn = screen.getByText("Tiến độ Sprint");
       fireEvent.click(activityBtn);
 
       expect(graphQueryMock).toHaveBeenCalledWith(

@@ -10,6 +10,7 @@ import type {
   ProjectSyncResponse,
   ProjectSyncStatusItem,
   ProjectTaskCommitLinkQuery,
+  GetProjectCommitsParams,
 } from "../types/student-project";
 
 export const PROJECT_PROJECTION_QUERY_KEYS = {
@@ -117,23 +118,38 @@ export function useProjectSyncStatus(
 export function useTaskCommits(
   projectId?: string | null,
   taskId?: string | null,
-  options?: { enabled?: boolean }
+  optionsOrParams?: { enabled?: boolean } | (GetProjectCommitsParams & { enabled?: boolean })
 ) {
+  const enabled = optionsOrParams?.enabled ?? true;
+  const params: GetProjectCommitsParams | undefined =
+    optionsOrParams && ("page" in optionsOrParams || "size" in optionsOrParams)
+      ? { page: optionsOrParams.page, size: optionsOrParams.size }
+      : undefined;
+
   return useQuery({
-    queryKey: PROJECT_PROJECTION_QUERY_KEYS.taskCommits(projectId, taskId),
-    queryFn: () => ProjectProjectionService.getTaskCommits(projectId!, taskId!),
+    queryKey: [...PROJECT_PROJECTION_QUERY_KEYS.taskCommits(projectId, taskId), params] as const,
+    queryFn: () => ProjectProjectionService.getTaskCommits(projectId!, taskId!, params),
     enabled:
-      (options?.enabled ?? true) &&
+      enabled &&
       Boolean(projectId && projectId.trim() && taskId && taskId.trim()),
     staleTime: 1000 * 30,
   });
 }
 
-export function useProjectCommits(projectId?: string | null, options?: { enabled?: boolean }) {
+export function useProjectCommits(
+  projectId?: string | null,
+  optionsOrParams?: { enabled?: boolean } | (GetProjectCommitsParams & { enabled?: boolean })
+) {
+  const enabled = optionsOrParams?.enabled ?? true;
+  const params: GetProjectCommitsParams | undefined =
+    optionsOrParams && ("page" in optionsOrParams || "size" in optionsOrParams)
+      ? { page: optionsOrParams.page, size: optionsOrParams.size }
+      : undefined;
+
   return useQuery({
-    queryKey: PROJECT_PROJECTION_QUERY_KEYS.commits(projectId),
-    queryFn: () => ProjectProjectionService.getProjectCommits(projectId!),
-    enabled: (options?.enabled ?? true) && Boolean(projectId && projectId.trim()),
+    queryKey: [...PROJECT_PROJECTION_QUERY_KEYS.commits(projectId), params] as const,
+    queryFn: () => ProjectProjectionService.getProjectCommits(projectId!, params),
+    enabled: enabled && Boolean(projectId && projectId.trim()),
     staleTime: 1000 * 30,
   });
 }

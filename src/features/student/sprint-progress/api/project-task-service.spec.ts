@@ -333,4 +333,104 @@ describe("ProjectTaskService", () => {
       );
     }
   );
+
+  fptTest(
+    {
+      id: "UTCID15",
+      type: "N",
+      executedDate: "19/09/2026",
+      description: "Lay danh sach TaskParentOptionItem cho projectId thanh cong",
+    },
+    async () => {
+      const mockParentOptions = {
+        items: [
+          {
+            id: "task-p-1",
+            title: "Parent Feature Task",
+            status: "IN_PROGRESS",
+            externalKey: "SAGA-10",
+            parentTaskId: null,
+          },
+        ],
+        page: 0,
+        size: 50,
+        total: 1,
+      };
+      vi.spyOn(apiClient, "get").mockResolvedValueOnce({ data: mockParentOptions });
+
+      const res = await ProjectTaskService.getParentOptions(mockProjectId, {
+        excludeTaskId: mockTaskId,
+      });
+
+      expect(res.items).toHaveLength(1);
+      expect(res.items[0].title).toBe("Parent Feature Task");
+      expect(res.items[0].externalKey).toBe("SAGA-10");
+      expect(apiClient.get).toHaveBeenCalledWith(
+        `/api/projects/${mockProjectId}/tasks/parent-options`,
+        {
+          params: { page: 0, size: 50, excludeTaskId: mockTaskId },
+        }
+      );
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID16",
+      type: "A",
+      executedDate: "19/09/2026",
+      description: "Nem ValidationException khi projectId rong khi goi getParentOptions",
+    },
+    async () => {
+      await expect(ProjectTaskService.getParentOptions("   ")).rejects.toThrow(
+        "Throw ValidationException: Project ID is required"
+      );
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID17",
+      type: "N",
+      executedDate: "19/09/2026",
+      description: "Lay du lieu TaskEvidence thanh cong",
+    },
+    async () => {
+      const mockEvidence = {
+        taskId: mockTaskId,
+        taskKey: "SAGA-15",
+        summary: "Task Evidence Test",
+        commits: [],
+        pullRequests: [],
+        jiraIssues: [],
+        totalItems: 0,
+      };
+      vi.spyOn(apiClient, "get").mockResolvedValueOnce({ data: mockEvidence });
+
+      const res = await ProjectTaskService.getTaskEvidence(mockProjectId, mockTaskId);
+
+      expect(res).toBeDefined();
+      expect(apiClient.get).toHaveBeenCalledWith(
+        `/api/projects/${mockProjectId}/tasks/${mockTaskId}/evidence`,
+        { params: undefined }
+      );
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID18",
+      type: "A",
+      executedDate: "19/09/2026",
+      description: "Nem ValidationException khi projectId hoac taskId rong khi goi getTaskEvidence",
+    },
+    async () => {
+      await expect(ProjectTaskService.getTaskEvidence("", mockTaskId)).rejects.toThrow(
+        "Throw ValidationException: Project ID is required"
+      );
+      await expect(ProjectTaskService.getTaskEvidence(mockProjectId, "")).rejects.toThrow(
+        "Throw ValidationException: Task ID is required"
+      );
+    }
+  );
 });

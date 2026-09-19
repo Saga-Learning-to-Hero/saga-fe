@@ -2,7 +2,6 @@
 
 import { useState, useMemo, useEffect } from "react";
 import { AlertCircleIcon, RefreshCwIcon, UserCogIcon } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { UserStats } from "@/features/admin/users/components/user-stats";
 import { UserToolbar } from "@/features/admin/users/components/user-toolbar";
@@ -116,12 +115,6 @@ export default function AdminUsersPage() {
               <h1 className="text-xl font-bold text-foreground tracking-tight">
                 Quản lý Tài khoản (Giảng viên & Sinh viên)
               </h1>
-              <Badge
-                variant="outline"
-                className="border-primary/30 bg-primary/10 text-primary text-[10px] font-mono font-bold"
-              >
-                REST API / Hệ thống IAM
-              </Badge>
             </div>
             <p className="text-xs text-muted-foreground">
               Quản trị danh sách tài khoản Giảng viên & Sinh viên chuyên ngành Kỹ thuật phần mềm (SE) và kiểm soát trạng thái truy cập.

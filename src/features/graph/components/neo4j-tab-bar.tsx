@@ -5,7 +5,6 @@ import {
   LayersIcon,
   ActivityIcon,
   FingerprintIcon,
-  UsersIcon,
   ArrowLeftIcon,
   CalendarIcon,
   SlidersHorizontalIcon,
@@ -16,7 +15,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import type { GraphDrillDownStudent } from "../lib/student-profile-id";
 
-export type Neo4jTabMode = "OVERVIEW" | "ACTIVITY" | "ATTRIBUTION" | "PEER_REVIEW";
+export type Neo4jTabMode = "OVERVIEW" | "ACTIVITY" | "ATTRIBUTION";
 
 export interface Neo4jTabBarProps {
   tab: Neo4jTabMode;
@@ -101,7 +100,7 @@ export function Neo4jTabBar({
                 }`}
             >
               <ActivityIcon className="size-3.5 text-teal-600 dark:text-teal-400" />
-              <span>Hoạt động Sprint</span>
+              <span>Tiến độ Sprint</span>
             </button>
             <button
               type="button"
@@ -112,18 +111,7 @@ export function Neo4jTabBar({
                 }`}
             >
               <FingerprintIcon className="size-3.5 text-amber-600 dark:text-amber-400" />
-              <span>Đối soát danh tính</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => onTabChange("PEER_REVIEW")}
-              className={`flex cursor-pointer items-center gap-1.5 rounded-lg px-3 py-1.5 transition-all ${tab === "PEER_REVIEW"
-                ? "bg-card text-foreground shadow-2xs"
-                : "text-muted-foreground hover:text-foreground"
-                }`}
-            >
-              <UsersIcon className="size-3.5 text-emerald-600 dark:text-emerald-400" />
-              <span>Mạng đánh giá chéo</span>
+              <span>Minh chứng đóng góp</span>
             </button>
           </div>
         )}
@@ -155,13 +143,13 @@ export function Neo4jTabBar({
                 <CustomSelect
                   id={selectId}
                   value={
-                    tab === "ACTIVITY" || tab === "PEER_REVIEW"
+                    tab === "ACTIVITY"
                       ? selectedSprintId || ""
                       : selectedSprintId || "ALL"
                   }
                   onChange={onSprintChange}
-                  options={tab === "ACTIVITY" || tab === "PEER_REVIEW" ? sprintOptions : allSprintOptions}
-                  placeholder={tab === "ACTIVITY" || tab === "PEER_REVIEW" ? "Chọn Sprint..." : "Tất cả Sprint"}
+                  options={tab === "ACTIVITY" ? sprintOptions : allSprintOptions}
+                  placeholder={tab === "ACTIVITY" ? "Chọn Sprint..." : "Tất cả Sprint"}
                 />
               </div>
             </div>

@@ -108,7 +108,7 @@ export function TraceabilityGraphView() {
     if (neo4jSprintId && neo4jSprintId !== "ALL") {
       return neo4jSprintId;
     }
-    if (neo4jTab === "ACTIVITY" || neo4jTab === "PEER_REVIEW") {
+    if (neo4jTab === "ACTIVITY") {
       return defaultSprintId;
     }
     return null;
@@ -118,7 +118,7 @@ export function TraceabilityGraphView() {
     setNeo4jTab(tab);
     setFocusedNodeId(null);
     if (
-      (tab === "ACTIVITY" || tab === "PEER_REVIEW") &&
+      tab === "ACTIVITY" &&
       (neo4jSprintId === "ALL" || !neo4jSprintId) &&
       defaultSprintId
     ) {
@@ -126,7 +126,7 @@ export function TraceabilityGraphView() {
     }
   };
 
-  const isSprintRequired = (neo4jTab === "ACTIVITY" || neo4jTab === "PEER_REVIEW") && !activeDrillDownStudent;
+  const isSprintRequired = neo4jTab === "ACTIVITY" && !activeDrillDownStudent;
   const hasRequiredSprint = Boolean(effectiveSprintId);
 
   const activeGraphType: GraphType = activeDrillDownStudent ? "CONTRIBUTION" : neo4jTab;
@@ -353,7 +353,7 @@ export function TraceabilityGraphView() {
           </div>
           <h3 className="text-base font-bold text-foreground">Dự án chưa có Sprint</h3>
           <p className="text-xs text-muted-foreground max-w-sm">
-            Chế độ {neo4jTab === "ACTIVITY" ? "Hoạt động Sprint" : "Mạng đánh giá chéo"} yêu cầu dự án cần có ít nhất một Sprint từ Jira để phân tích.
+            Chế độ {neo4jTab === "ACTIVITY" ? "Tiến độ Sprint" : "Đồ thị"} yêu cầu dự án cần có ít nhất một Sprint từ Jira để phân tích.
           </p>
         </div>
       );
@@ -410,7 +410,7 @@ export function TraceabilityGraphView() {
           nodes={displayGraphData.nodes}
           edges={displayGraphData.edges}
           onSelectNode={(node) => setSelectedNode(node)}
-          layoutName={neo4jTab === "PEER_REVIEW" ? "circle" : "breadthfirst"}
+          layoutName="breadthfirst"
           isUpdating={graphQuery.isFetching && !graphQuery.isLoading}
         />
         <GraphStatsSummary

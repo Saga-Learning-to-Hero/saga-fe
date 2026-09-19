@@ -5,10 +5,15 @@ import {
   GitBranchIcon,
   SearchIcon,
   XIcon,
+  GitCommitIcon,
+  GitMergeIcon,
+  GitPullRequestIcon,
 } from "lucide-react";
 import type { Repository, Branch } from "../types/commits";
 import { Input } from "@/components/ui/input";
 import { CustomSelect } from "@/components/common/custom-select";
+
+export type CommitMergeFilter = "all" | "exclude_merge" | "only_merge";
 
 interface CommitFilterBarProps {
   repositories: Repository[];
@@ -17,6 +22,9 @@ interface CommitFilterBarProps {
   branches: Branch[];
   selectedBranchName: string;
   onSelectBranch: (branchName: string) => void;
+  mergeFilter?: CommitMergeFilter;
+  onMergeFilterChange?: (filter: CommitMergeFilter) => void;
+  mergeCount?: number;
   searchQuery: string;
   onSearchChange: (q: string) => void;
 }
@@ -28,13 +36,16 @@ export function CommitFilterBar({
   branches,
   selectedBranchName,
   onSelectBranch,
+  mergeFilter = "all",
+  onMergeFilterChange,
+  mergeCount = 0,
   searchQuery,
   onSearchChange,
 }: CommitFilterBarProps) {
   return (
     <div className="relative z-30 p-3 rounded-2xl bg-card/60 border border-border/70 backdrop-blur-xs shadow-2xs space-y-3">
-      <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-        <div className="relative z-40 w-full sm:w-64">
+      <div className="flex flex-col md:flex-row md:items-center gap-3">
+        <div className="relative z-40 w-full md:w-60">
           <CustomSelect
             value={selectedRepoId}
             onChange={onSelectRepo}
@@ -46,7 +57,7 @@ export function CommitFilterBar({
           />
         </div>
 
-        <div className="relative z-40 w-full sm:w-56">
+        <div className="relative z-40 w-full md:w-52">
           <CustomSelect
             value={selectedBranchName}
             onChange={onSelectBranch}
@@ -66,6 +77,35 @@ export function CommitFilterBar({
             ]}
           />
         </div>
+
+        {onMergeFilterChange && (
+          <div className="relative z-40 w-full md:w-56">
+            <CustomSelect
+              value={mergeFilter}
+              onChange={(val) => onMergeFilterChange(val as CommitMergeFilter)}
+              options={[
+                {
+                  value: "all",
+                  label: "Tất cả commit",
+                  subLabel: mergeCount > 0 ? `(${mergeCount} merge)` : undefined,
+                  icon: <GitCommitIcon className="w-3.5 h-3.5 text-blue-500" />,
+                },
+                {
+                  value: "exclude_merge",
+                  label: "Loại bỏ commit Merge",
+                  subLabel: "Chỉ commit code",
+                  icon: <GitPullRequestIcon className="w-3.5 h-3.5 text-emerald-500" />,
+                },
+                {
+                  value: "only_merge",
+                  label: "Chỉ commit Merge",
+                  subLabel: "Gộp nhánh PR",
+                  icon: <GitMergeIcon className="w-3.5 h-3.5 text-purple-500" />,
+                },
+              ]}
+            />
+          </div>
+        )}
 
         <div className="relative flex-1 min-w-[200px]">
           <SearchIcon className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
@@ -90,3 +130,4 @@ export function CommitFilterBar({
     </div>
   );
 }
+

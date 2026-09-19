@@ -164,44 +164,4 @@ export const ProjectGraphService = {
     const res = await apiClient.get<CytoscapeGraphResponse>(url, { signal });
     return res.data;
   },
-
-  async getSprintPeerReviewGraph(
-    projectId: string,
-    sprintIdOrParams: string | GraphSubgraphFilterParams,
-    paramsOrSignal?: GraphSubgraphFilterParams | AbortSignal,
-    signal?: AbortSignal
-  ): Promise<CytoscapeGraphResponse> {
-    const trimmedProject = projectId?.trim();
-    if (!trimmedProject) {
-      throw new Error("projectId is required");
-    }
-
-    let sprintId = "";
-    let queryParams: GraphSubgraphFilterParams | undefined;
-    let abortSignal: AbortSignal | undefined;
-
-    if (typeof sprintIdOrParams === "string") {
-      sprintId = sprintIdOrParams.trim();
-      if (paramsOrSignal instanceof AbortSignal) {
-        abortSignal = paramsOrSignal;
-      } else {
-        queryParams = paramsOrSignal;
-        abortSignal = signal;
-      }
-    } else {
-      sprintId = sprintIdOrParams.sprintId?.trim() || "";
-      queryParams = sprintIdOrParams;
-      abortSignal = paramsOrSignal instanceof AbortSignal ? paramsOrSignal : signal;
-    }
-
-    if (!sprintId) {
-      throw new Error("sprintId is required");
-    }
-
-    const query = buildGraphQuery(queryParams ? { ...queryParams, sprintId: undefined } : undefined);
-    const url = `/api/projects/${cleanId(trimmedProject)}/sprints/${cleanId(sprintId)}/graph/peer-review${query}`;
-
-    const res = await apiClient.get<CytoscapeGraphResponse>(url, { signal: abortSignal });
-    return res.data;
-  },
 };

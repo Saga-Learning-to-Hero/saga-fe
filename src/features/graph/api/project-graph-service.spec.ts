@@ -120,24 +120,6 @@ describe("ProjectGraphService", () => {
     });
   });
 
-  describe("getSprintPeerReviewGraph", () => {
-    it("UTCID10 - [N] Normal: Goi dung endpoint peer-review voi sprintId bat buoc", async () => {
-      const mockData = { nodes: [], edges: [] };
-      vi.mocked(apiClient.get).mockResolvedValueOnce({ data: mockData });
-
-      const result = await ProjectGraphService.getSprintPeerReviewGraph("p-1", "sp-1");
-      expect(apiClient.get).toHaveBeenCalledWith("/api/projects/p-1/sprints/sp-1/graph/peer-review", {
-        signal: undefined,
-      });
-      expect(result).toEqual(mockData);
-    });
-
-    it("UTCID11 - [A] Abnormal: Nem loi khi thieu sprintId cho peer-review", async () => {
-      await expect(ProjectGraphService.getSprintPeerReviewGraph("p-1", "")).rejects.toThrow("sprintId is required");
-      expect(apiClient.get).not.toHaveBeenCalled();
-    });
-  });
-
   describe("Subgraph Filter Params", () => {
     it("UTCID12 - [N] Normal: Overview nhan GraphSubgraphFilterParams va serialize day du cac query params", async () => {
       const mockData = {

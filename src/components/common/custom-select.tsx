@@ -19,6 +19,7 @@ interface CustomSelectProps {
   placeholder?: string;
   className?: string;
   dropdownClassName?: string;
+  triggerClassName?: string;
   disabled?: boolean;
 }
 
@@ -30,6 +31,7 @@ export function CustomSelect({
   placeholder = "Chọn một mục...",
   className,
   dropdownClassName,
+  triggerClassName,
   disabled = false,
 }: CustomSelectProps) {
   const [isOpen, setIsOpen] = useState(false);
@@ -78,7 +80,8 @@ export function CustomSelect({
         className={cn(
           "w-full h-9 px-3 text-xs rounded-xl bg-background border border-border text-foreground transition-all duration-150 flex items-center justify-between gap-2 outline-none cursor-pointer select-none",
           isOpen ? "border-primary ring-2 ring-primary/15 shadow-xs" : "hover:border-border/80",
-          disabled && "opacity-50 cursor-not-allowed"
+          disabled && "opacity-50 cursor-not-allowed",
+          triggerClassName
         )}
       >
         <div className="flex items-center gap-2 truncate">
