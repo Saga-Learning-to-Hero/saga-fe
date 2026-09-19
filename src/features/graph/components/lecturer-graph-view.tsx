@@ -59,7 +59,7 @@ interface LecturerGraphViewProps {
   initialViewMode?: "GRAPH" | "PIPELINE";
 }
 
-type Neo4jTabMode = "OVERVIEW" | "ACTIVITY" | "ATTRIBUTION" | "PEER_REVIEW";
+type Neo4jTabMode = "OVERVIEW" | "ACTIVITY" | "ATTRIBUTION";
 
 export function LecturerGraphView({
   courseId,
@@ -159,7 +159,7 @@ export function LecturerGraphView({
     if (neo4jSprintId && neo4jSprintId !== "ALL") {
       return neo4jSprintId;
     }
-    if (neo4jTab === "ACTIVITY" || neo4jTab === "PEER_REVIEW") {
+    if (neo4jTab === "ACTIVITY") {
       return defaultSprintId;
     }
     return null;
@@ -169,7 +169,7 @@ export function LecturerGraphView({
     setNeo4jTab(tab);
     setFocusedNodeId(null);
     if (
-      (tab === "ACTIVITY" || tab === "PEER_REVIEW") &&
+      tab === "ACTIVITY" &&
       (neo4jSprintId === "ALL" || !neo4jSprintId) &&
       defaultSprintId
     ) {
@@ -177,7 +177,7 @@ export function LecturerGraphView({
     }
   };
 
-  const isSprintRequired = (neo4jTab === "ACTIVITY" || neo4jTab === "PEER_REVIEW") && !activeDrillDownStudent;
+  const isSprintRequired = neo4jTab === "ACTIVITY" && !activeDrillDownStudent;
   const hasRequiredSprint = Boolean(effectiveNeo4jSprintId);
 
   const activeGraphType: GraphType = activeDrillDownStudent ? "CONTRIBUTION" : neo4jTab;
@@ -556,7 +556,7 @@ export function LecturerGraphView({
           </div>
           <h3 className="text-base font-bold text-foreground">Dự án chưa có Sprint</h3>
           <p className="text-xs text-muted-foreground max-w-sm">
-            Chế độ {neo4jTab === "ACTIVITY" ? "Hoạt động Sprint" : "Mạng đánh giá chéo"} yêu cầu dự án cần có ít nhất một Sprint từ Jira để phân tích.
+            Chế độ {neo4jTab === "ACTIVITY" ? "Tiến độ Sprint" : "Đồ thị"} yêu cầu dự án cần có ít nhất một Sprint từ Jira để phân tích.
           </p>
         </div>
       );
@@ -636,7 +636,7 @@ export function LecturerGraphView({
           nodes={displayGraphData.nodes}
           edges={displayGraphData.edges}
           onSelectNode={(node) => setSelectedGraphNode(node)}
-          layoutName={neo4jTab === "PEER_REVIEW" ? "circle" : "breadthfirst"}
+          layoutName="breadthfirst"
           isUpdating={graphQuery.isFetching && !graphQuery.isLoading}
         />
         <GraphStatsSummary

@@ -35,11 +35,21 @@ export function mapProjectCommitToCommitItem(
   commit: TaskLinkedCommitItem,
   teamMembers: CommitTeamMember[] = []
 ): CommitItem {
-  const member = teamMembers.find(
-    (m) =>
-      (commit.authorStudentId && (m.id === commit.authorStudentId || m.studentCode === commit.authorStudentId)) ||
-      (commit.authorExternalId && m.studentCode && commit.authorExternalId.toLowerCase().includes(m.studentCode.toLowerCase()))
-  );
+  const authorStudentId = commit.authorStudentId?.trim().toLowerCase();
+  const authorExternalId = commit.authorExternalId?.trim().toLowerCase();
+
+  const member = teamMembers.find((m) => {
+    const memberId = m.id?.trim().toLowerCase();
+    const memberCode = m.studentCode?.trim().toLowerCase();
+
+    if (authorStudentId && (memberId === authorStudentId || memberCode === authorStudentId)) {
+      return true;
+    }
+    if (authorExternalId && memberCode && (authorExternalId === memberCode || authorExternalId.includes(memberCode))) {
+      return true;
+    }
+    return false;
+  });
 
   const authorName = member?.fullName || member?.name || commit.authorExternalId || "GitHub Committer";
   const studentCode = member?.studentCode || "";
@@ -80,10 +90,9 @@ export function mapProjectCommitToCommitItem(
         ? `https://github.com/${commit.repositoryFullName}/commit/${commit.sha}`
         : undefined,
     isMerge:
-      commit.isMerge ??
-      (commit.parentCount !== null && commit.parentCount !== undefined
-        ? commit.parentCount > 1
-        : false),
+      commit.isMerge === true ||
+      (commit.parentCount !== null && commit.parentCount !== undefined && commit.parentCount > 1) ||
+      Boolean(commit.message && /^(merge\s+|merge\b)/i.test(commit.message.trim())),
     parentCount: commit.parentCount ?? null,
   };
 }

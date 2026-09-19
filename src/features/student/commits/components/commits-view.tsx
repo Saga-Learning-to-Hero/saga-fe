@@ -10,10 +10,11 @@ import {
 } from "lucide-react";
 import type { CommitStats, CommitItem } from "../types/commits";
 import { CommitStatsCards } from "./commit-stats-cards";
-import { CommitFilterBar } from "./commit-filter-bar";
+import { CommitFilterBar, type CommitMergeFilter } from "./commit-filter-bar";
 import { CommitListTimeline } from "./commit-list-timeline";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { TablePagination } from "@/components/common/table-pagination";
 import { useStudentMyTeam } from "@/features/student/courses/hooks/use-student-courses";
 import { useStudentCourseContext } from "@/features/student/courses/hooks/use-student-course-context";
 import {
@@ -21,6 +22,7 @@ import {
   useProjectRepositoryBranches,
   useProjectSyncStatus,
   useSyncProject,
+  useProjectProgress,
 } from "@/features/student/project/hooks/useProjectSync";
 import { useProjectIntegrations } from "@/features/student/project/hooks/useProjectIntegrations";
 import { useProjectRealtime } from "@/features/student/project/hooks/use-project-realtime";
@@ -30,6 +32,7 @@ import { toast } from "sonner";
 import {
   mapProjectCommitToCommitItem,
   extractReposAndBranches,
+  type CommitTeamMember,
 } from "../lib/commit-mapper";
 
 export function CommitsView() {
@@ -44,6 +47,10 @@ export function CommitsView() {
   const { data: team } = useStudentMyTeam(courseId, { enabled: Boolean(courseId) });
   const projectId = team?.projectId || effectiveCourse?.projectId || "";
 
+  const { data: projectProgress } = useProjectProgress(projectId, {
+    enabled: Boolean(projectId),
+  });
+
   const { data: integrations, refetch: refetchIntegrations } = useProjectIntegrations(projectId, {
     enabled: Boolean(projectId),
   });
@@ -52,6 +59,10 @@ export function CommitsView() {
     enabled: Boolean(projectId && integrations?.github?.status === "ACTIVE"),
   });
 
+  const [page, setPage] = useState<number>(1);
+  const [pageSize, setPageSize] = useState<number>(50);
+  const [mergeFilter, setMergeFilter] = useState<CommitMergeFilter>("all");
+
   const {
     data: commitsPage,
     isLoading: isLoadingCommits,
@@ -59,7 +70,11 @@ export function CommitsView() {
     error: commitsError,
     isRefetching: isRefetchingCommits,
     refetch: refetchCommits,
-  } = useProjectCommits(projectId, { enabled: Boolean(projectId) });
+  } = useProjectCommits(projectId, {
+    page: page - 1,
+    size: pageSize,
+    enabled: Boolean(projectId),
+  });
 
   const rawCommits = useMemo(() => commitsPage?.items ?? [], [commitsPage?.items]);
 
@@ -91,21 +106,53 @@ export function CommitsView() {
   const isGitHubSyncFailed = (githubSyncStatus?.status || "").toUpperCase() === "FAILED";
   const lastGitHubSyncedAt = githubSyncStatus?.completedAt || null;
 
-  const teamMembers = useMemo(
-    () =>
-      (team?.members || []).map((m) => ({
-        id: m.studentCode,
-        studentCode: m.studentCode,
-        fullName: m.fullName,
-        name: m.fullName,
-        avatar: m.avatar || "",
-      })),
-    [team?.members]
-  );
+  const teamMembers = useMemo(() => {
+    const progressMembers = projectProgress?.memberProgress || [];
+    const teamMems = team?.members || [];
+
+    const memberMap = new Map<string, CommitTeamMember>();
+
+    teamMems.forEach((m) => {
+      const code = m.studentCode?.trim().toLowerCase();
+      if (code) {
+        memberMap.set(code, {
+          id: m.studentCode,
+          studentCode: m.studentCode,
+          fullName: m.fullName,
+          name: m.fullName,
+          avatar: m.avatar || "",
+        });
+      }
+    });
+
+    progressMembers.forEach((pm) => {
+      const studentCodeKey = pm.studentCode?.trim().toLowerCase();
+      const existing = studentCodeKey ? memberMap.get(studentCodeKey) : undefined;
+      const fullItem: CommitTeamMember = {
+        id: pm.studentId,
+        studentCode: pm.studentCode,
+        fullName: pm.fullName,
+        name: pm.fullName,
+        avatar: existing?.avatar || "",
+      };
+      if (pm.studentId) {
+        memberMap.set(pm.studentId.trim().toLowerCase(), fullItem);
+      }
+      if (studentCodeKey) {
+        memberMap.set(studentCodeKey, fullItem);
+      }
+    });
+
+    return Array.from(memberMap.values());
+  }, [team?.members, projectProgress?.memberProgress]);
 
   const allCommits: CommitItem[] = useMemo(() => {
     return rawCommits.map((c) => mapProjectCommitToCommitItem(c, teamMembers));
   }, [rawCommits, teamMembers]);
+
+  const mergeCommitCount = useMemo(() => {
+    return allCommits.filter((c) => c.isMerge).length;
+  }, [allCommits]);
 
   const { repositories, branches: repoBranchesMap } = useMemo(() => {
     const res = extractReposAndBranches(rawCommits);
@@ -200,6 +247,7 @@ export function CommitsView() {
   const handleSelectRepo = (repoId: string) => {
     setSelectedRepoId(repoId);
     setSelectedBranchName("all");
+    setPage(1);
   };
 
   const handleRefresh = async () => {
@@ -240,6 +288,12 @@ export function CommitsView() {
       ) {
         return false;
       }
+      if (mergeFilter === "exclude_merge" && commit.isMerge) {
+        return false;
+      }
+      if (mergeFilter === "only_merge" && !commit.isMerge) {
+        return false;
+      }
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase();
         const matchMessage = commit.message.toLowerCase().includes(q);
@@ -261,13 +315,22 @@ export function CommitsView() {
     selectedRepo.name,
     selectedRepo.fullPath,
     effectiveSelectedBranchName,
+    mergeFilter,
     searchQuery,
   ]);
 
   const liveBranchCount = liveBranchesData?.branchCount;
 
   const stats: CommitStats = useMemo(() => {
-    const totalCommits = filteredCommits.length;
+    const isAnyFilterActive =
+      Boolean(searchQuery.trim()) ||
+      effectiveSelectedBranchName !== "all" ||
+      mergeFilter !== "all" ||
+      (selectedRepo && selectedRepo.id !== "all");
+
+    const totalCommits = isAnyFilterActive
+      ? filteredCommits.length
+      : (commitsPage?.total ?? filteredCommits.length);
     const hasDiffStats = filteredCommits.some(
       (commit) => commit.additions !== null && commit.deletions !== null
     );
@@ -298,6 +361,11 @@ export function CommitsView() {
     liveBranchCount,
     currentRepoBranches.length,
     lastGitHubSyncedAt,
+    commitsPage?.total,
+    effectiveSelectedBranchName,
+    mergeFilter,
+    searchQuery,
+    selectedRepo,
   ]);
 
   const githubRepositoryUrl = useMemo(() => {
@@ -432,9 +500,21 @@ export function CommitsView() {
             onSelectRepo={handleSelectRepo}
             branches={currentRepoBranches}
             selectedBranchName={effectiveSelectedBranchName}
-            onSelectBranch={setSelectedBranchName}
+            onSelectBranch={(branch) => {
+              setSelectedBranchName(branch);
+              setPage(1);
+            }}
+            mergeFilter={mergeFilter}
+            onMergeFilterChange={(filter) => {
+              setMergeFilter(filter);
+              setPage(1);
+            }}
+            mergeCount={mergeCommitCount}
             searchQuery={searchQuery}
-            onSearchChange={setSearchQuery}
+            onSearchChange={(query) => {
+              setSearchQuery(query);
+              setPage(1);
+            }}
           />
 
           <CommitListTimeline
@@ -444,6 +524,23 @@ export function CommitsView() {
             courseId={courseId}
             projectId={projectId}
           />
+
+          {commitsPage && commitsPage.total > 0 && (
+            <div className="pt-2">
+              <TablePagination
+                page={page}
+                pageSize={pageSize}
+                totalItems={commitsPage.total}
+                onPageChange={setPage}
+                onPageSizeChange={(newSize) => {
+                  setPageSize(newSize);
+                  setPage(1);
+                }}
+                pageSizeOptions={[20, 50, 100]}
+                itemLabel="commit"
+              />
+            </div>
+          )}
         </>
       )}
     </div>

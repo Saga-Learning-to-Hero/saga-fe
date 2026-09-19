@@ -497,9 +497,8 @@ describe("LecturerGraphView", () => {
       });
 
       expect(screen.getByText("Tổng quan nhóm")).toBeTruthy();
-      expect(screen.getByText("Hoạt động Sprint")).toBeTruthy();
-      expect(screen.getByText("Đối soát danh tính")).toBeTruthy();
-      expect(screen.getByText("Mạng đánh giá chéo")).toBeTruthy();
+      expect(screen.getByText("Tiến độ Sprint")).toBeTruthy();
+      expect(screen.getByText("Minh chứng đóng góp")).toBeTruthy();
 
       expect(graphQueryMock).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -524,7 +523,7 @@ describe("LecturerGraphView", () => {
         initialViewMode: "GRAPH",
       });
 
-      const activityTab = screen.getByText("Hoạt động Sprint");
+      const activityTab = screen.getByText("Tiến độ Sprint");
       fireEvent.click(activityTab);
 
       expect(graphQueryMock).toHaveBeenCalledWith(
