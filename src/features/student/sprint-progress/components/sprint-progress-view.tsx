@@ -568,6 +568,7 @@ export function SprintProgressView() {
               name: s.name,
               startDate: s.startDate,
               endDate: s.endDate,
+              state: s.status,
             }))}
             initialSprintId={selectedSprintId === "backlog" ? undefined : selectedSprintId}
             onSelectSprint={setUserSelectedSprintId}

@@ -1,8 +1,12 @@
 "use client";
 
+import { useEffect, useSyncExternalStore } from "react";
+import { createPortal } from "react-dom";
 import { ClockIcon, XIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { TaskWorkSessionTimeline } from "./task-work-session-timeline";
+
+const emptySubscribe = () => () => { };
 
 interface TaskWorkSessionTimelineDialogProps {
   open: boolean;
@@ -21,11 +25,34 @@ export function TaskWorkSessionTimelineDialog({
   taskTitle,
   taskKey,
 }: TaskWorkSessionTimelineDialogProps) {
-  if (!open || !projectId || !taskId) return null;
+  const mounted = useSyncExternalStore(
+    emptySubscribe,
+    () => true,
+    () => false
+  );
 
-  return (
-    <div className="fixed inset-0 z-[70] bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-      <div className="bg-card border border-border/80 rounded-3xl w-full max-w-2xl max-h-[92vh] flex flex-col shadow-2xl overflow-hidden">
+  useEffect(() => {
+    if (!open) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onOpenChange(false);
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [open, onOpenChange]);
+
+  if (!open || !projectId || !taskId || !mounted || typeof document === "undefined") return null;
+
+  return createPortal(
+    <div
+      className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in-0 duration-200"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onOpenChange(false);
+      }}
+    >
+      <div
+        className="bg-card border border-border/80 rounded-3xl w-full max-w-2xl max-h-[92vh] flex flex-col shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200"
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className="p-5 border-b border-border/60 flex items-center justify-between shrink-0 bg-muted/20">
           <div className="flex items-center gap-2.5 min-w-0 pr-2">
             <div className="size-8 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
@@ -39,10 +66,10 @@ export function TaskWorkSessionTimelineDialog({
                   </span>
                 )}
                 <h3 className="text-sm font-extrabold text-foreground truncate">
-                  {taskTitle ? `Dòng thời gian: ${taskTitle}` : "Dòng thời gian công việc"}
+                  Dòng thời gian: {taskTitle || taskKey || "Chi tiết công việc"}
                 </h3>
               </div>
-              <p className="text-[11px] text-muted-foreground truncate">
+              <p className="text-xs text-muted-foreground mt-0.5">
                 Lịch sử các phiên làm việc và commit mã nguồn đã liên kết
               </p>
             </div>
@@ -74,6 +101,7 @@ export function TaskWorkSessionTimelineDialog({
           </Button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
