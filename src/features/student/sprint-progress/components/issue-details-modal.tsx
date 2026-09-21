@@ -32,6 +32,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TaskLinkedCommitsList } from "./task-linked-commits-list";
 import { TaskEvidencePanel } from "./task-evidence-panel";
 import { TaskWorkSessionControl } from "./task-work-session-control";
+import { TaskWorkSessionTimeline } from "./task-work-session-timeline";
 import { LabelsMultiSelect } from "./labels-multi-select";
 import {
   useCreateProjectTask,
@@ -320,7 +321,7 @@ export function IssueDetailsModal({
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedCommitShas, setSelectedCommitShas] = useState("");
-  const [activeEvidenceTab, setActiveEvidenceTab] = useState("commits");
+  const [activeEvidenceTab, setActiveEvidenceTab] = useState("timeline");
 
   const handleToggleCommitSha = (sha: string) => {
     setSelectedCommitShas((prev) => {
@@ -1018,6 +1019,10 @@ export function IssueDetailsModal({
           {issue && (
             <Tabs value={activeEvidenceTab} onValueChange={setActiveEvidenceTab} className="space-y-4 pt-1">
               <TabsList className="w-full h-auto min-h-10 justify-start overflow-x-auto rounded-xl bg-muted/60">
+                <TabsTrigger value="timeline" className="shrink-0 text-xs font-semibold">
+                  <HistoryIcon className="w-3.5 h-3.5" />
+                  Dòng thời gian
+                </TabsTrigger>
                 <TabsTrigger value="commits" className="shrink-0 text-xs font-semibold">
                   <GitCommitIcon className="w-3.5 h-3.5" />
                   Commits
@@ -1031,6 +1036,13 @@ export function IssueDetailsModal({
                   Đóng góp
                 </TabsTrigger>
               </TabsList>
+
+              <TabsContent value="timeline">
+                <TaskWorkSessionTimeline
+                  projectId={projectId}
+                  taskId={issue.id}
+                />
+              </TabsContent>
 
               <TabsContent value="commits">
                 <TaskLinkedCommitsList

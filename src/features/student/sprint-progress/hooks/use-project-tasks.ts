@@ -8,6 +8,7 @@ import type {
   GetTaskParentOptionsParams,
 } from "../types/jira-task-types";
 import type { GetTaskEvidenceParams } from "../types/task-evidence";
+import type { GetTaskWorkSessionTimelineParams } from "../types/work-session-timeline";
 import { getApiErrorCode } from "@/lib/api-error";
 import { JIRA_SPRINT_QUERY_KEYS } from "./use-sprint-data";
 
@@ -254,6 +255,23 @@ export function useTaskEvidenceUnified(
   return useQuery({
     queryKey: JIRA_SPRINT_QUERY_KEYS.taskEvidence(projectId, taskId, params),
     queryFn: () => ProjectTaskService.getTaskEvidence(projectId!, taskId!, params),
+    enabled:
+      Boolean(projectId && projectId.trim() && taskId && taskId.trim()) &&
+      (options?.enabled ?? true),
+    staleTime: 1000 * 30,
+  });
+}
+
+export function useTaskWorkSessionTimeline(
+  projectId?: string | null,
+  taskId?: string | null,
+  params?: GetTaskWorkSessionTimelineParams,
+  options?: { enabled?: boolean }
+) {
+  return useQuery({
+    queryKey: JIRA_SPRINT_QUERY_KEYS.taskTimeline(projectId, taskId, params),
+    queryFn: () =>
+      ProjectTaskService.getTaskWorkSessionTimeline(projectId!, taskId!, params),
     enabled:
       Boolean(projectId && projectId.trim() && taskId && taskId.trim()) &&
       (options?.enabled ?? true),

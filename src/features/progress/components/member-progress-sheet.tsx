@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import {
+  ClockIcon,
   GitCommitIcon,
   LayersIcon,
   ListTodoIcon,
@@ -19,6 +20,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
+import { TaskWorkSessionTimelineDialog } from "@/features/student/sprint-progress/components/task-work-session-timeline-dialog";
 import { getAssigneeAvatarClass, getAssigneeInitials } from "@/features/student/sprint-progress/lib/assignee-avatar";
 import { useMemberProgress } from "@/features/student/project/hooks/useProjectSync";
 import { getApiErrorCode, getApiErrorMessage } from "@/lib/api-error";
@@ -47,6 +49,11 @@ export function MemberProgressSheet({
   const data = query.data;
   const notInTeam = getApiErrorCode(query.error) === "TEAM_NOT_FOUND";
   const [taskFilter, setTaskFilter] = useState<"ALL" | "IN_PROGRESS" | "DONE">("ALL");
+  const [timelineTask, setTimelineTask] = useState<{
+    id: string;
+    title?: string | null;
+    key?: string | null;
+  } | null>(null);
 
   const totalAssigned =
     data?.taskSummary?.assigned ?? data?.taskSummary?.assignedTotal ?? 0;
@@ -347,10 +354,17 @@ export function MemberProgressSheet({
                     {filteredTasks.map((task) => (
                       <div
                         key={task.id}
-                        className="rounded-xl border border-border/70 bg-card p-3 hover:border-primary/50 transition-all shadow-2xs space-y-1.5"
+                        onClick={() =>
+                          setTimelineTask({
+                            id: task.id,
+                            title: task.title,
+                            key: task.externalKey,
+                          })
+                        }
+                        className="rounded-xl border border-border/70 bg-card p-3 hover:border-primary/60 transition-all shadow-2xs space-y-1.5 cursor-pointer group"
                       >
                         <div className="flex items-start justify-between gap-2">
-                          <span className="text-xs font-semibold text-foreground leading-snug">
+                          <span className="text-xs font-semibold text-foreground group-hover:text-primary transition-colors leading-snug">
                             {task.title}
                           </span>
                           <Badge
@@ -365,9 +379,10 @@ export function MemberProgressSheet({
                         </div>
                         <div className="flex items-center justify-between text-[10px] font-mono text-muted-foreground">
                           <span className="text-primary font-bold">{task.externalKey}</span>
-                          {task.externalUpdatedAt && (
-                            <span>cập nhật {formatDateTime(task.externalUpdatedAt)}</span>
-                          )}
+                          <span className="inline-flex items-center gap-1 text-primary group-hover:underline font-sans">
+                            <ClockIcon className="size-3" />
+                            <span>Xem dòng thời gian</span>
+                          </span>
                         </div>
                       </div>
                     ))}
@@ -390,6 +405,15 @@ export function MemberProgressSheet({
           </Button>
         </div>
       </SheetContent>
+
+      <TaskWorkSessionTimelineDialog
+        open={Boolean(timelineTask)}
+        onOpenChange={(open) => !open && setTimelineTask(null)}
+        projectId={projectId || ""}
+        taskId={timelineTask?.id || ""}
+        taskTitle={timelineTask?.title}
+        taskKey={timelineTask?.key}
+      />
     </Sheet>
   );
 }

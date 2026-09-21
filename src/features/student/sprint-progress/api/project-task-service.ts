@@ -14,6 +14,10 @@ import type {
   TaskEvidencePageResponse,
   GetTaskEvidenceParams,
 } from "../types/task-evidence";
+import type {
+  TaskWorkSessionTimelineResponse,
+  GetTaskWorkSessionTimelineParams,
+} from "../types/work-session-timeline";
 
 export class ProjectTaskService {
   static async getTasks(projectId: string): Promise<ProjectTaskResponse[]> {
@@ -199,6 +203,26 @@ export class ProjectTaskService {
     const cleanTaskId = taskId.trim();
     const res = await apiClient.get<TaskEvidenceGroupedResponse | TaskEvidencePageResponse>(
       `/api/projects/${encodeURIComponent(cleanProjectId)}/tasks/${encodeURIComponent(cleanTaskId)}/evidence`,
+      { params }
+    );
+    return res.data;
+  }
+
+  static async getTaskWorkSessionTimeline(
+    projectId: string,
+    taskId: string,
+    params?: GetTaskWorkSessionTimelineParams
+  ): Promise<TaskWorkSessionTimelineResponse> {
+    if (!projectId || !projectId.trim()) {
+      throw new Error("Throw ValidationException: Project ID is required");
+    }
+    if (!taskId || !taskId.trim()) {
+      throw new Error("Throw ValidationException: Task ID is required");
+    }
+    const cleanProjectId = projectId.trim();
+    const cleanTaskId = taskId.trim();
+    const res = await apiClient.get<TaskWorkSessionTimelineResponse>(
+      `/api/projects/${encodeURIComponent(cleanProjectId)}/tasks/${encodeURIComponent(cleanTaskId)}/work-session-timeline`,
       { params }
     );
     return res.data;

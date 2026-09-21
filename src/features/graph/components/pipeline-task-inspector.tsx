@@ -6,6 +6,7 @@ import {
   CalendarIcon,
   CheckCircle2Icon,
   CheckSquareIcon,
+  ClockIcon,
   DownloadIcon,
   ExternalLinkIcon,
   FileCodeIcon,
@@ -25,6 +26,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { PipelineCommit, PipelineTask } from "../types/pipeline";
 import { CommitDetailModal } from "@/features/student/commits/components/commit-detail-modal";
+import { TaskWorkSessionTimelineDialog } from "@/features/student/sprint-progress/components/task-work-session-timeline-dialog";
 import {
   useTaskFiles,
   useTaskWebLinks,
@@ -100,6 +102,7 @@ function PipelineTaskInspectorInternal({
   const [showAllForTaskId, setShowAllForTaskId] = useState<string | null>(null);
   const [selectedCommit, setSelectedCommit] = useState<PipelineCommit | null>(null);
   const [downloadingFileId, setDownloadingFileId] = useState<string | null>(null);
+  const [isTimelineOpen, setIsTimelineOpen] = useState(false);
 
   const { data: files = [], isLoading: isFilesLoading } = useTaskFiles(selectedTask?.id);
   const { data: webLinks = [], isLoading: isLinksLoading } = useTaskWebLinks(selectedTask?.id);
@@ -207,6 +210,19 @@ function PipelineTaskInspectorInternal({
             )}
           </div>
         </div>
+
+        {projectId && (
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => setIsTimelineOpen(true)}
+            className="w-full h-8 text-xs font-semibold gap-1.5 rounded-xl border-primary/25 bg-primary/5 text-primary hover:bg-primary/10 hover:border-primary/40 cursor-pointer transition-colors"
+          >
+            <ClockIcon className="size-3.5" />
+            <span>Dòng thời gian phiên làm việc & commit</span>
+          </Button>
+        )}
 
         {isDoneAnomaly && (
           <div className="flex items-start gap-2 rounded-xl border border-destructive/30 bg-destructive/10 p-2.5 text-xs font-semibold text-destructive">
@@ -472,6 +488,17 @@ function PipelineTaskInspectorInternal({
             authorName: selectedCommit.authorLabel,
             committedDate: selectedCommit.committedAt,
           }}
+        />
+      )}
+
+      {projectId && selectedTask && (
+        <TaskWorkSessionTimelineDialog
+          open={isTimelineOpen}
+          onOpenChange={setIsTimelineOpen}
+          projectId={projectId}
+          taskId={selectedTask.id}
+          taskTitle={selectedTask.title}
+          taskKey={selectedTask.key}
         />
       )}
     </div>

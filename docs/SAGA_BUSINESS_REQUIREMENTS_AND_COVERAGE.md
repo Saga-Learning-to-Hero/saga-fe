@@ -31,14 +31,14 @@ Quy tắc bảo trì bắt buộc:
 
 | Hạng mục | Giá trị tại thời điểm kiểm tra |
 | --- | --- |
-| Frontend | `saga-fe`, nhánh `feat/SAGA-93-multi-jira-sources-and-failover` |
+| Frontend | `saga-fe`, nhánh `feat/SAGA-96-task-work-session-timeline` |
 | Backend | `saga-be`, nhánh `main` |
 | FE framework | Next.js 16, React, TypeScript, TanStack Query |
 | Dữ liệu nghiệp vụ chính | REST từ Backend; Jira/GitHub được đồng bộ thành projection trong SAGA |
 | Dữ liệu Graph | Neo4j projection do Backend tạo, FE chỉ truy vấn và trực quan hóa |
 | Realtime | SSE chỉ báo thay đổi; sau event FE phải refetch REST canonical |
-| FE unit regression | Đạt 100% tests passed, 0 lint errors/warnings, production build passed |
-| Lưu ý | SAGA-93 bổ sung Quản lý đa nguồn Jira (Multi-Jira Sources), thu hồi mềm Soft Disconnect bảo toàn dữ liệu lịch sử, quy trình Chuyển giao công việc an toàn Failover Wizard (Preview, Async Execution 202, Polling Run, Reconcile cho trường hợp bất định) và Anti-Duplication |
+| FE unit regression | Đạt 100% tests passed (848/848 tests), 0 lint errors/warnings, production build passed |
+| Lưu ý | SAGA-96 bổ sung Dòng thời gian Phiên làm việc và Commit (Work Session & Commit Timeline) qua API `GET /api/projects/{projectId}/tasks/{taskId}/work-session-timeline`, tích hợp trên cả không gian Sinh viên (IssueDetailsModal) và Giảng viên (MemberProgressSheet & PipelineTaskInspector) |
 
 ### 1.1 Mục đích sử dụng
 
@@ -434,6 +434,7 @@ Project Type dùng để phân loại hướng dự án, không điều khiển 
 | EVD-006 | Contribution confirmation SHA/PR | ✓ | ✓ | ✓ | `DONE`; selection ở UI chỉ là draft đến khi bấm xác nhận |
 | EVD-007 | Step-up + retry confirmation | ✓ | ✓ | ✓ | `DONE/VERIFY` với test 403 → reauth → retry một lần |
 | EVD-008 | Task Evidence unified aggregation | ✓ | ✓ | ✓ | `DONE` (`GET /api/projects/{projectId}/tasks/{taskId}/evidence` gom nhóm hoặc phân trang) |
+| EVD-009 | Task Work Session & Commit Timeline | ✓ | ✓ | ✓ | `DONE` (`GET /api/projects/{projectId}/tasks/{taskId}/work-session-timeline`, tích hợp popup timeline đối soát phiên làm việc và commit cho Sinh viên trong IssueDetailsModal, Giảng viên trong MemberProgressSheet và PipelineTaskInspector) |
 
 ### 7.8 Progress, Graph, Peer Review và Contribution
 
