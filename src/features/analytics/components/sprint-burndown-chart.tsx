@@ -28,6 +28,7 @@ interface SprintOption {
   name: string;
   startDate?: string | null;
   endDate?: string | null;
+  state?: string | null;
 }
 
 interface SprintBurndownChartProps {
@@ -108,11 +109,20 @@ export function SprintBurndownChart({
   initialSprintId,
   onSelectSprint,
 }: SprintBurndownChartProps) {
-  const [selectedSprintId, setSelectedSprintId] = useState<string>(
-    initialSprintId || (sprints[0]?.id ?? "")
+  const [selectedSprintId, setSelectedSprintId] = useState<string>("");
+  const defaultSprintId = useMemo(
+    () =>
+      sprints.find((sprint) => sprint.id === initialSprintId)?.id ??
+      sprints.find((sprint) => sprint.state?.toLowerCase() === "active")?.id ??
+      sprints[0]?.id ??
+      "",
+    [initialSprintId, sprints]
   );
-
-  const activeSprintId = initialSprintId || selectedSprintId;
+  const activeSprintId = sprints.some(
+    (sprint) => sprint.id === selectedSprintId
+  )
+    ? selectedSprintId
+    : defaultSprintId;
 
   const handleSprintChange = (sprintId: string) => {
     setSelectedSprintId(sprintId);

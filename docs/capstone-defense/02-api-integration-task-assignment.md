@@ -119,9 +119,9 @@ Chia đều toàn bộ khối lượng công việc thành **3 trục nghiệp v
   6. **Cấu hình Trọng số Nhóm Dự án (Project Group Weights - 2 API MỚI)**:
      - `GET /api/projects/{projectId}/group-weights` (Xem trọng số riêng của nhóm dự án)
      - `PUT /api/projects/{projectId}/group-weights` (Team Leader cập nhật bộ trọng số riêng khi lớp cho phép)
-  7. **Đánh giá & Điều phối Đóng góp Nhóm (Team Contribution Evaluation - DEC-002 - 2 API MỚI)**:
+  7. **Đánh giá Đóng góp Nhóm (Team Contribution Evaluation - DEC-002)**:
      - `GET /api/teams/{teamId}/contribution-evaluation` (Tính toán tự động tỷ lệ % đóng góp thực tế của từng thành viên)
-     - `POST /api/teams/{teamId}/contribution-override` (Ghi đè thủ công tỷ lệ % đóng góp khi nhóm có biên bản thỏa thuận)
+     - FE hiển thị kết quả canonical ở chế độ chỉ đọc; không cung cấp thao tác ghi đè tỷ lệ cuối.
 
 ---
 

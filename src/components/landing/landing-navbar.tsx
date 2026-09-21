@@ -83,7 +83,7 @@ export function LandingNavbar() {
                   className: "gap-1.5 font-bold px-4 py-2 h-9 shadow-xs rounded-xl text-sm",
                 })}
               >
-                <span>Vào ứng dụng</span>
+                <span>Vào hệ thống</span>
                 <ArrowRightIcon className="w-3.5 h-3.5" />
               </Link>
 

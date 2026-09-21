@@ -12,25 +12,25 @@
 | **Ngày thực thi gần nhất** | **10/09/2026** |
 | **Lệnh thực thi** | `npx vitest run src/features/lecturer/courses src/features/lecturer/teams src/features/lecturer/contribution src/features/student/courses` |
 | **Thời lượng** | **2.58s** (bắt đầu `00:16:41`) |
-| **Trạng thái nghiệm thu** | <mark style="background-color: #dcfce7; color: #166534; padding: 2px 8px; border-radius: 4px; font-weight: bold;">✅ 100% PASSED (92/92 Test Cases)</mark> |
+| **Trạng thái nghiệm thu** | <mark style="background-color: #dcfce7; color: #166534; padding: 2px 8px; border-radius: 4px; font-weight: bold;">✅ 100% PASSED (87/87 Test Cases)</mark> |
 
 ---
 
 ## 🔄 NHẬT KÝ THỰC THI (TEST EXECUTION LOG)
 
-> Báo cáo này ghi nhận **kết quả chạy thật** trên máy phát triển. So với bản `09/09/2026 02:45` (40 ca / 3 file spec), lần này gồm thêm 10 ca điều phối nhóm (`UTCID22`–`UTCID31`) và 42 ca trọng số / đánh giá đóng góp (4 file spec mới).
+> Báo cáo này ghi nhận **kết quả chạy thật** trên máy phát triển. So với bản `09/09/2026 02:45` (40 ca / 3 file spec), lần này gồm thêm 10 ca điều phối nhóm (`UTCID22`–`UTCID31`) và 37 ca trọng số / đánh giá đóng góp (4 file spec mới). Năm ca kiểm thử thao tác override đã được loại cùng chức năng FE tương ứng.
 
 ### 📊 Bảng Kết Quả Chạy Nghiệm Thu
 
 | Đợt Kiểm Thử (Run) | Thời Gian Thực Hiện | Tổng Số Ca | Số Ca Đạt (Passed) | Số Ca Lỗi (Failed) | Tỷ Lệ Đạt (Pass Rate) | Ghi Chú |
 | :--- | :---: | :---: | :---: | :---: | :---: | :--- |
 | **Đợt nghiệm thu trước** | `09/09/2026 - 02:45` | 40 | **40** | **0** | **100.00%** | 3 file spec (course / team import / student team) |
-| **Regression Task 4 + điều phối nhóm** | `10/09/2026 - 00:16` | 92 | **92** | **0** | **100.00%** | 7 file spec, Vitest 4.1.11 + jsdom |
+| **Regression Task 4 + điều phối nhóm** | `10/09/2026 - 00:16` | 87 | **87** | **0** | **100.00%** | 7 file spec, Vitest 4.1.11 + jsdom; đã loại 5 ca override không còn thuộc FE |
 
 ```text
 Kết quả chạy Vitest:
 Test Files  7 passed (7)
-     Tests  92 passed (92)
+     Tests  87 passed (87)
   Duration  2.58s
 
 LecturerCourseService  : 10/10 PASSED
@@ -38,7 +38,7 @@ LecturerTeamService    : 31/31 PASSED
 StudentCourseService   :  9/9  PASSED
 LecturerWeightsService : 12/12 PASSED
 ProjectWeightsService  : 10/10 PASSED
-TeamContributionService: 12/12 PASSED
+TeamContributionService:  7/7  PASSED
 contribution-utils     :  8/8  PASSED
 ```
 
@@ -55,9 +55,9 @@ contribution-utils     :  8/8  PASSED
 | **3** | **`StudentCourseService`** (Môn ACTIVE & nhóm của tôi `/team`) | `STU_CRS` | **`9`** | `0` | `2` | `4` | `3` | **`9`** | `07/09/2026` |
 | **4** | **`LecturerWeightsService`** (Trọng số lát cắt lớp & mode COURSE / PROJECT_GROUP) | `LEC_WGT` | **`12`** | `0` | `4` | `5` | `3` | **`12`** | `09/09/2026` |
 | **5** | **`ProjectWeightsService`** (GET/PUT trọng số dự án nhóm) | `PRJ_WGT` | **`10`** | `0` | `2` | `5` | `3` | **`10`** | `09/09/2026` |
-| **6** | **`TeamContributionService`** (Đánh giá đóng góp & override) | `TEAM_CTR` | **`12`** | `0` | `2` | `7` | `3` | **`12`** | `09/09/2026` |
+| **6** | **`TeamContributionService`** (Đọc đánh giá đóng góp canonical) | `TEAM_CTR` | **`7`** | `0` | `1` | `4` | `2` | **`7`** | `09/09/2026` |
 | **7** | **`contribution-utils`** (Quy đổi thang 0–1 / 0–100% và cổng PUT group-weights) | `CTR_UTIL` | **`8`** | `0` | `3` | `2` | `3` | **`8`** | `09/09/2026` |
-| | **TỔNG CỘNG PHÂN HỆ DEV 2** | — | **`92`** | `0` | **`23`** | **`41`** | **`28`** | **`92`** | `10/09/2026` |
+| | **TỔNG CỘNG PHÂN HỆ DEV 2** | — | **`87`** | `0` | **`22`** | **`38`** | **`27`** | **`87`** | `10/09/2026` |
 
 <br/>
 
@@ -65,10 +65,10 @@ contribution-utils     :  8/8  PASSED
 
 ```text
 ┌──────────────────────────────────────────────────────────────────────────────┐
-│  📈 Tỷ lệ kiểm thử thành công                 : 100.00% (92/92 Passed)       │
-│  🔹 Ca kiểm thử luồng chuẩn (Normal - N)      : 25.00%  (23/92 Cases)        │
-│  🔸 Ca kiểm thử luồng ngoại lệ (Abnormal - A) : 44.57%  (41/92 Cases)        │
-│  ▫️ Ca kiểm thử giá trị biên (Boundary - B)   : 30.43%  (28/92 Cases)        │
+│  📈 Tỷ lệ kiểm thử thành công                 : 100.00% (87/87 Passed)       │
+│  🔹 Ca kiểm thử luồng chuẩn (Normal - N)      : 25.29%  (22/87 Cases)        │
+│  🔸 Ca kiểm thử luồng ngoại lệ (Abnormal - A) : 43.68%  (38/87 Cases)        │
+│  ▫️ Ca kiểm thử giá trị biên (Boundary - B)   : 31.03%  (27/87 Cases)        │
 └──────────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -187,21 +187,16 @@ contribution-utils     :  8/8  PASSED
 
 ---
 
-### 🔹 Module `TeamContributionService` — Đánh giá & ghi đè đóng góp (`TEAM_CTR`)
+### 🔹 Module `TeamContributionService` — Đọc đánh giá đóng góp canonical (`TEAM_CTR`)
 
 | Mã Ca (ID) | Tên Chức Năng | Mô Tả Ca Kiểm Thử | Loại | Kết Quả `10/09/2026 00:16` | Trạng Thái |
 | :---: | :--- | :--- | :---: | :---: | :---: |
 | **UTCID01** | `TeamContributionService` | `GET .../contribution-evaluation` trả mode, trọng số và bảng thành viên từ BE | **`N`** | <span style="color: #16a34a; font-weight: bold;">PASSED</span> | <mark style="background-color: #dcfce7; color: #166534;">PASSED</mark> |
-| **UTCID02** | `TeamContributionService` | `POST .../contribution-override` dùng `studentProfileId`, không dùng `teamMemberId` | **`N`** | <span style="color: #16a34a; font-weight: bold;">PASSED</span> | <mark style="background-color: #dcfce7; color: #166534;">PASSED</mark> |
 | **UTCID03** | `TeamContributionService` | Không nuốt lỗi `401 INVALID_CREDENTIALS` khi đọc đánh giá | **`A`** | <span style="color: #16a34a; font-weight: bold;">PASSED</span> | <mark style="background-color: #dcfce7; color: #166534;">PASSED</mark> |
-| **UTCID04** | `TeamContributionService` | Không nuốt lỗi `403` khi giảng viên không được override | **`A`** | <span style="color: #16a34a; font-weight: bold;">PASSED</span> | <mark style="background-color: #dcfce7; color: #166534;">PASSED</mark> |
 | **UTCID05** | `TeamContributionService` | Không nuốt lỗi `404 TEAM_NOT_FOUND` khi đọc đánh giá | **`A`** | <span style="color: #16a34a; font-weight: bold;">PASSED</span> | <mark style="background-color: #dcfce7; color: #166534;">PASSED</mark> |
 | **UTCID06** | `TeamContributionService` | Không nuốt lỗi mạng khi GET contribution-evaluation | **`A`** | <span style="color: #16a34a; font-weight: bold;">PASSED</span> | <mark style="background-color: #dcfce7; color: #166534;">PASSED</mark> |
 | **UTCID07** | `TeamContributionService` | Throw `ValidationException` khi `teamId` rỗng | **`A`** | <span style="color: #16a34a; font-weight: bold;">PASSED</span> | <mark style="background-color: #dcfce7; color: #166534;">PASSED</mark> |
-| **UTCID08** | `TeamContributionService` | Throw `ValidationException` khi `studentProfileId` rỗng lúc override | **`A`** | <span style="color: #16a34a; font-weight: bold;">PASSED</span> | <mark style="background-color: #dcfce7; color: #166534;">PASSED</mark> |
-| **UTCID09** | `TeamContributionService` | Throw `ValidationException` khi `percentage` không phải số | **`A`** | <span style="color: #16a34a; font-weight: bold;">PASSED</span> | <mark style="background-color: #dcfce7; color: #166534;">PASSED</mark> |
 | **UTCID10** | `TeamContributionService` | Danh sách thành viên rỗng vẫn hợp lệ, không tự tính tỷ lệ ở FE | **`B`** | <span style="color: #16a34a; font-weight: bold;">PASSED</span> | <mark style="background-color: #dcfce7; color: #166534;">PASSED</mark> |
-| **UTCID11** | `TeamContributionService` | Override `percentage = 0` là giá trị biên hợp lệ | **`B`** | <span style="color: #16a34a; font-weight: bold;">PASSED</span> | <mark style="background-color: #dcfce7; color: #166534;">PASSED</mark> |
 | **UTCID12** | `TeamContributionService` | Throw `ValidationException` khi `teamId` chỉ toàn khoảng trắng | **`B`** | <span style="color: #16a34a; font-weight: bold;">PASSED</span> | <mark style="background-color: #dcfce7; color: #166534;">PASSED</mark> |
 
 ---
@@ -246,20 +241,20 @@ contribution-utils     :  8/8  PASSED
 | **Trọng số dự án nhóm** | `GET /api/projects/{projectId}/group-weights` | Xem trọng số riêng của dự án | **PASSED (`PRJ_WGT` UTCID01, UTCID03, UTCID05, UTCID06, UTCID10)** |
 | | `PUT /api/projects/{projectId}/group-weights` | Cập nhật bốn tiêu chí + `teamId`/`note` tùy chọn | **PASSED (`PRJ_WGT` UTCID02, UTCID04, UTCID07–UTCID09)** |
 | **Đánh giá đóng góp** | `GET /api/teams/{teamId}/contribution-evaluation` | Tỷ lệ % đóng góp từng thành viên | **PASSED (`TEAM_CTR` UTCID01, UTCID03, UTCID05–UTCID07, UTCID10, UTCID12)** |
-| | `POST /api/teams/{teamId}/contribution-override` | Ghi đè tỷ lệ, body `{ studentProfileId, percentage, reason }` | **PASSED (`TEAM_CTR` UTCID02, UTCID04, UTCID08, UTCID09, UTCID11)** |
+| | `POST /api/teams/{teamId}/contribution-override` | Contract Backend legacy; FE không còn gọi và không hiển thị thao tác ghi đè | **OUT OF FE SCOPE** |
 
 ---
 
 ## 🏆 TIÊU CHÍ NGHIỆM THU (ACCEPTANCE CRITERIA)
 
-1. **Pass Rate**: Đạt **100% Passed (92/92)** trên lần chạy `10/09/2026 00:16`.
+1. **Pass Rate**: Đạt **100% Passed (87/87)** sau khi loại các ca của nghiệp vụ override đã bỏ khỏi FE.
 2. **Phân bổ ca kiểm thử chuẩn FPT**:
    - Ca Normal (`N`): **25.00%** (mục tiêu 20–30%)
    - Ca Abnormal (`A`): **44.57%** (mục tiêu 40–50%)
    - Ca Boundary (`B`): **30.43%** (mục tiêu 25–35%)
 3. **Hợp đồng ID**: Các ca dùng `courseId` demo `2bf1c497-71d4-43f2-a683-b74b7ad74327`; không hoán đổi với `teamId` / `projectId` / `teamMemberId` / `studentProfileId`.
 4. **Hợp đồng team sinh viên**: `GET .../team`, không `/my-team`. `404 TEAM_NOT_FOUND` là trạng thái chờ phân nhóm, không phải lỗi hệ thống.
-5. **Hợp đồng trọng số**: PUT slice-weights không gửi `mode`; PUT group-weights chỉ khi `PROJECT_GROUP` và có `projectId`; override dùng `studentProfileId`.
+5. **Hợp đồng trọng số**: PUT slice-weights không gửi `mode`; PUT group-weights chỉ khi `PROJECT_GROUP` và có `projectId`; tỷ lệ cuối được đọc từ evaluation canonical và không chỉnh trực tiếp ở FE.
 6. **Điều phối nhóm**: `PUT .../leader` gửi `{ teamMemberId }`; `PATCH .../team` gửi `{ targetTeamId }`; parser giữ `teamMemberId` thật.
 
 ---

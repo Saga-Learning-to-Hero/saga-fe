@@ -58,7 +58,9 @@ export function DashboardPage() {
       subLabel: `${getSemesterStatusLabel(semester.periodStatus)}${semester.active ? " · Học kỳ hiện tại" : ""}`,
     })
   );
-  const selectValue = selectedSemesterId ?? summary?.selectedSemester.id ?? "";
+  const selectValue = summaryQuery.isError
+    ? (summary?.selectedSemester.id ?? "")
+    : (selectedSemesterId ?? summary?.selectedSemester.id ?? "");
   const requestedSemester = semesterOptions.find(
     (semester) => semester.value === selectedSemesterId
   );

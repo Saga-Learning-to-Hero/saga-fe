@@ -22,6 +22,7 @@ interface CustomSelectProps {
   triggerClassName?: string;
   disabled?: boolean;
   onOptionIntent?: (value: string) => void;
+  inlineDropdown?: boolean;
 }
 
 export function CustomSelect({
@@ -35,6 +36,7 @@ export function CustomSelect({
   triggerClassName,
   disabled = false,
   onOptionIntent,
+  inlineDropdown = false,
 }: CustomSelectProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [openUpward, setOpenUpward] = useState(false);
@@ -73,12 +75,22 @@ export function CustomSelect({
   };
 
   return (
-    <div ref={containerRef} className={cn("relative w-full", isOpen && "z-50", className)}>
+    <div
+      ref={containerRef}
+      className={cn(
+        "relative w-full",
+        isOpen && !inlineDropdown && "z-50",
+        isOpen && inlineDropdown && "space-y-1",
+        className
+      )}
+    >
       <button
         id={id}
         type="button"
         disabled={disabled}
         onClick={handleToggle}
+        aria-expanded={isOpen}
+        aria-haspopup="listbox"
         className={cn(
           "w-full h-9 px-3 text-xs rounded-xl bg-background border border-border text-foreground transition-all duration-150 flex items-center justify-between gap-2 outline-none cursor-pointer select-none",
           isOpen ? "border-primary ring-2 ring-primary/15 shadow-xs" : "hover:border-border/80",
@@ -104,9 +116,15 @@ export function CustomSelect({
 
       {isOpen && (
         <div
+          role="listbox"
           className={cn(
-            "absolute z-50 left-0 right-0 max-h-60 overflow-y-auto rounded-xl bg-popover p-1 border border-border shadow-lg animate-in fade-in-0 zoom-in-95 duration-150 scrollbar-thin",
-            openUpward ? "bottom-[calc(100%+4px)]" : "top-[calc(100%+4px)]",
+            "z-50 left-0 right-0 max-h-60 overflow-y-auto rounded-xl bg-popover p-1 border border-border shadow-lg animate-in fade-in-0 zoom-in-95 duration-150 scrollbar-thin",
+            inlineDropdown
+              ? "relative"
+              : cn(
+                  "absolute",
+                  openUpward ? "bottom-[calc(100%+4px)]" : "top-[calc(100%+4px)]"
+                ),
             dropdownClassName
           )}
         >
@@ -120,9 +138,18 @@ export function CustomSelect({
               return (
                 <div
                   key={option.value}
+                  role="option"
+                  aria-selected={isSelected}
+                  tabIndex={0}
                   onClick={() => handleSelect(option.value)}
                   onPointerEnter={() => onOptionIntent?.(option.value)}
                   onFocus={() => onOptionIntent?.(option.value)}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter" || event.key === " ") {
+                      event.preventDefault();
+                      handleSelect(option.value);
+                    }
+                  }}
                   className={cn(
                     "relative flex items-center justify-between gap-2 px-2.5 py-2 rounded-lg text-xs cursor-pointer transition-colors select-none",
                     isSelected

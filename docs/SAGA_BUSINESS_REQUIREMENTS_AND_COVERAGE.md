@@ -89,7 +89,7 @@ SAGA là hệ thống hỗ trợ quản lý và đánh giá liên tục cho dự
 - duy trì liên kết truy xuất nguồn gốc `Student → Task → Commit/Evidence`;
 - trực quan hóa quan hệ bằng graph Neo4j;
 - tính tỷ lệ đóng góp theo bốn nhóm tiêu chí và điều chỉnh bằng peer review;
-- cho giảng viên xem tiến độ, cấu hình trọng số và xác nhận/ghi đè kết quả có kiểm soát;
+- cho giảng viên xem tiến độ, cấu hình trọng số và đối soát kết quả đóng góp;
 - lưu audit, trạng thái đồng bộ và sự kiện realtime.
 
 ### 2.1 Những gì SAGA không được diễn giải sai
@@ -119,7 +119,7 @@ Bảng này là checklist chức năng cấp cao dành cho tài liệu báo cáo
 | SCOPE-11 | Tiến độ và dashboard | Project summary; member detail; task status; sprint progress; Task–Commit activity; freshness; insight thay vì chỉ đếm dữ liệu |
 | SCOPE-12 | Graph truy xuất nguồn gốc | Graph project/student/sprint/attribution/peer-review; node/edge canonical; filter; tooltip; anomaly flag có giải thích và quyền theo role |
 | SCOPE-13 | Peer Review | Rubric; candidates; submit; list/result; giới hạn theo sprint/team; chống tự đánh giá hoặc submit sai đối tượng theo rule BE |
-| SCOPE-14 | Contribution | Bốn nhóm CODE/TEST/DOCUMENT/RESEARCH; mode COURSE/PROJECT_GROUP; evidence eligibility; peer coefficient; normalization; warning; override có audit |
+| SCOPE-14 | Contribution | Bốn nhóm CODE/TEST/DOCUMENT/RESEARCH; mode COURSE/PROJECT_GROUP; evidence eligibility; peer coefficient; normalization; warning; kết quả cuối do Backend tính canonical và Lecturer xem ở chế độ chỉ đọc |
 | SCOPE-15 | Quản trị và kiểm toán | User status; audit log; integration/sync observability; lỗi có mã; dữ liệu mock không xuất hiện trong bản production/report |
 | SCOPE-16 | Chất lượng hệ thống | Authorization server-side; isolation theo account/course/project; timezone nhất quán; accessibility/responsive; test; không N+1/refetch storm |
 | SCOPE-17 | Trung tâm thông báo & Web Push | Hộp thư thông báo canonical (REST); User-scoped SSE; Firebase Web Push FCM; bell badge/preview/sheet; broadcast Admin; targeted notification Giảng viên theo 4 scope; Idempotency-Key và điều phối đăng xuất tập trung |
@@ -141,7 +141,7 @@ Bảng này là checklist chức năng cấp cao dành cho tài liệu báo cáo
 - Đọc Task/Sprint/Commit/Graph của project: sinh viên phải là active team member; giảng viên phải được phân course; không tự cấp quyền cho Admin nếu policy hiện hành không cho phép.
 - Progress tổng hợp project: theo source hiện tại dành cho giảng viên được phân công hoặc active Team Leader; thành viên thường không được suy rộng quyền.
 - Peer review candidates/submit: sinh viên thuộc team; danh sách kết quả có thể được xem bởi thành viên team, giảng viên được phân hoặc Admin theo policy.
-- Contribution override: Lecturer/Admin; sinh viên không được tự override.
+- Contribution result: Lecturer/Admin được xem và đối soát; FE không cung cấp thao tác ghi đè tỷ lệ cuối.
 - Tạo project và cấu hình integration/sync: phải kiểm tra vai trò Leader ở Backend.
 
 ---
@@ -272,7 +272,7 @@ POST contribution-confirmations
 2. Pipeline Flow dùng để hiểu Member → Task → Commit.
 3. Audit Matrix dùng để rà task thiếu commit/thừa bất thường; hai view dùng chung filter và inspector.
 4. Lecturer cấu hình bốn nhóm trọng số `CODE/TEST/DOCUMENT/RESEARCH` ở mức course hoặc project group.
-5. Peer review theo sprint điều chỉnh tỷ lệ tương đối; override là thao tác có quyền và phải audit.
+5. Peer review theo sprint điều chỉnh tỷ lệ tương đối; tỷ lệ cuối do Backend tính và chuẩn hóa.
 
 ---
 
@@ -306,7 +306,7 @@ POST contribution-confirmations
 - Integration: Jira/GitHub connection, repository, sprint, task, commit, pull request, review, comment, sync/webhook log.
 - Traceability: Task–Commit, Task–PR, issue links và lịch sử mapping.
 - Evidence: Work Session, Web Link, File, Contribution Confirmation.
-- Assessment: Peer Review, Rubric, Contribution Weight/Override/Result.
+- Assessment: Peer Review, Rubric, Contribution Weight/Result.
 - Graph: Graph processing run và Neo4j projection.
 - Governance: Audit log, notification/outbox, warning/security records.
 
@@ -328,7 +328,7 @@ Project Type dùng để phân loại hướng dự án, không điều khiển 
 - Task cần `DONE` và thuộc sprint hợp lệ để đi vào kết quả theo rule hiện hành.
 - `DOCUMENT` và `RESEARCH` cần file hoặc web link phù hợp; commit chỉ là một dạng evidence, không tự sinh điểm.
 - Không redistribution tỷ trọng của nhóm tiêu chí không có dữ liệu nếu công thức Backend không quy định.
-- Kết quả peer review/override được áp dụng sau base contribution và chuẩn hóa tổng theo contract Backend.
+- Kết quả peer review được áp dụng sau base contribution và chuẩn hóa tổng theo contract Backend.
 
 ---
 
@@ -360,7 +360,7 @@ Project Type dùng để phân loại hướng dự án, không điều khiển 
 | ADM-007 | Roster template/list/import preview-confirm/add/remove/cancel invite | ✓ | ✓ | ✓ | `DONE` |
 | ADM-008 | User list/detail/status | ✓ | ✓ | ✓ | `DONE` (GET `/api/admin/users`, GET `/api/admin/users/{userId}`, PATCH `/api/admin/users/{userId}/status`; SSE `ACCOUNT_DISABLED` & HTTP 403 fallback) |
 | ADM-009 | Audit log list/filter | ✓ | ✓ | ✓ | `DONE` (GET `/api/admin/audit-logs`) |
-| ADM-010 | Admin dashboard KPI/chart/recent activity | ✓ | ✓ | ✓ | `DONE`; summary canonical theo semester gồm KPI, weekly timeline, unconnected teams, integration pulse và cache freshness; recent audit dùng API riêng; không mock provider health/project health/sprint milestone chưa có contract |
+| ADM-010 | Admin dashboard KPI/chart/recent activity | ✓ | ✓ | ✓ | `DONE`; summary canonical theo semester gồm KPI, weekly timeline, unconnected teams, integration pulse và cache freshness; đổi học kỳ giữ snapshot gần nhất, hủy request lỗi thời, prefetch theo intent và cache FE 5 phút; Recharts được lazy-load; recent audit dùng API riêng; không mock provider health/project health/sprint milestone chưa có contract |
 | ADM-011 | Dev email test, landing, privacy, terms | ✓ | — | — | `INTERNAL`/server pages |
 
 ### 7.3 Lecturer course, team và contribution
@@ -368,14 +368,14 @@ Project Type dùng để phân loại hướng dự án, không điều khiển 
 | ID | Nghiệp vụ | BE | FE data | UI | Trạng thái/Ghi chú |
 | --- | --- | --- | --- | --- | --- |
 | LEC-001 | Course list/detail/roster/progress | ✓ | ✓ | ✓ | `DONE` |
-| LEC-002 | Team list/template/import preview-confirm | ✓ | ✓ | ✓ | `DONE` |
+| LEC-002 | Team list/template/import preview-confirm | ✓ | ✓ | ✓ | `DONE`; list/detail dùng trạng thái nghiệp vụ, không hiển thị UUID nội bộ của project/team |
 | LEC-003 | Đổi Team Leader | ✓ | ✓ | ✓ | `DONE` |
 | LEC-004 | Chuyển member giữa team | ✓ | ✓ | ✓ | `DONE` |
 | LEC-005 | Cấu hình contribution weights theo course | ✓ | ✓ | ✓ | `DONE` |
 | LEC-006 | Chọn mode `COURSE`/`PROJECT_GROUP` | ✓ | ✓ | ✓ | `DONE` |
 | LEC-007 | Xem/sửa project group weights | ✓ | ✓ | ✓ | `DONE` |
 | LEC-008 | Xem contribution evaluation | ✓ | ✓ | ✓ | `DONE` |
-| LEC-009 | Contribution override | ✓ | ✓ | ✓ | `DONE`; phải audit và kiểm tra quyền |
+| LEC-009 | Contribution evaluation read-only | ✓ | ✓ | ✓ | `DONE`; Lecturer xem tỷ lệ canonical, minh chứng và warning; FE không cho ghi đè tỷ lệ cuối |
 | LEC-010 | Lecturer canonical graph | ✓ | ✓ | ✓ | `DONE/VERIFY`; đủ năm mode canonical và unit/component test, còn E2E authorization/latency với dữ liệu lớn |
 
 ### 7.4 Student course, project và integration
@@ -444,7 +444,7 @@ Project Type dùng để phân loại hướng dự án, không điều khiển 
 | PROG-002 | Member progress detail | ✓ | ✓ | ✓ | `DONE`; drawer chỉ là inspector, không thay dữ liệu dashboard tổng |
 | GRAPH-001 | Project graph overview | ✓ | ✓ | ✓ | `DONE/VERIFY`; còn E2E dữ liệu lớn và authorization |
 | GRAPH-002 | Student contribution graph | ✓ | ✓ | ✓ | `DONE/VERIFY`; lazy query theo mode/student/sprint |
-| GRAPH-003 | Sprint activity graph | ✓ | ✓ | ✓ | `DONE/VERIFY`; yêu cầu sprint trước khi gọi API |
+| GRAPH-003 | Sprint activity graph | ✓ | ✓ | ✓ | `DONE/VERIFY`; Lecturer Graph mặc định mở Sprint activity của Sprint `active` (fallback Sprint đầu tiên), đổi nhóm tự reset về Sprint hiện tại; yêu cầu sprint trước khi gọi API |
 | GRAPH-004 | Attribution graph | ✓ | ✓ | ✓ | `DONE/VERIFY`; hỗ trợ anomaly filter và subgraph params |
 | GRAPH-005 | Sprint peer-review graph | ✓ | ✓ | ✓ | `DONE/VERIFY`; yêu cầu sprint trước khi gọi API |
 | PEER-001 | Default/team rubric | ✓ | ✓ | ✓ | `DONE`; Student fallback default rubric và Lecturer dùng team rubric |
@@ -453,7 +453,7 @@ Project Type dùng để phân loại hướng dự án, không điều khiển 
 | CONT-001 | Student contribution dashboard | ✓ | ✓ | ✓ | `DONE`; dùng evaluation data, tên/tooltip phải rõ |
 | CONT-002 | Warning evidence/peer review | ✓ | ✓ | ✓ | `DONE`; diễn đạt là cảnh báo dữ liệu, không kết luận gian lận |
 | PROG-003 | Team & Member Activity Heatmap | ✓ | ✓ | ✓ | `DONE`; `GET /api/courses/{courseId}/teams/{teamId}/heatmap`, hỗ trợ toàn nhóm hoặc từng sinh viên, hiển thị lưới nhịp độ hoạt động GitHub-style |
-| PROG-004 | Sprint Burndown Chart | ✓ | ✓ | ✓ | `DONE`; `GET /api/courses/{courseId}/teams/{teamId}/sprints/{sprintId}/burndown`, đối soát đường lý tưởng với thực tế và số lượng task hoàn thành |
+| PROG-004 | Sprint Burndown Chart | ✓ | ✓ | ✓ | `DONE`; `GET /api/courses/{courseId}/teams/{teamId}/sprints/{sprintId}/burndown`, mặc định chọn Sprint `active` (fallback Sprint đầu tiên), đối soát đường lý tưởng với thực tế và số lượng task hoàn thành |
 
 ### 7.9 Thông báo, Web Push và Realtime Signal (Notification Center)
 
@@ -508,7 +508,7 @@ Project Type dùng để phân loại hướng dự án, không điều khiển 
 | Contribution slice weights/config mode/team weights | Đã dùng |
 | `/api/projects/{projectId}/group-weights` | Đã dùng |
 | `/api/teams/{teamId}/contribution-evaluation` | Đã dùng |
-| `/api/teams/{teamId}/contribution-override` | Đã dùng |
+| `/api/teams/{teamId}/contribution-override` | Backend còn contract; FE chủ động không tích hợp vì đã bỏ nghiệp vụ ghi đè thủ công |
 | `/api/peer-review-rubrics/default` | Đã dùng làm fallback rubric cho Student |
 | `/api/teams/{teamId}/peer-review-rubric` | Đã dùng cho Student và Lecturer |
 | `/api/teams/{teamId}/sprints/{sprintId}/peer-reviews/candidates` | Đã dùng cho Student |
@@ -649,6 +649,7 @@ Hiện mỗi request graph có thể kích hoạt/rebuild projection theo implem
 
 ### P2 — Hiệu năng, khả dụng và báo cáo
 
+- [x] Admin Dashboard giữ snapshot khi đổi học kỳ, prefetch theo intent, hủy request lỗi thời và lazy-load thư viện chart.
 - [ ] Đo latency/rebuild cost của Graph API; bổ sung cache/version/graph-specific event nếu cần.
 - [ ] Với project lớn, ưu tiên summary/chart/heatmap/swimlane và chỉ lazy-load subgraph khi drill-down; không render toàn bộ Task/Commit thành node mặc định.
 - [x] Admin Dashboard dùng aggregate `/api/admin/dashboard/summary`, không còn mock; force refresh dùng single-flight/cache metadata và FE hiển thị rõ snapshot `refreshPending`.
@@ -684,7 +685,7 @@ Hiện mỗi request graph có thể kích hoạt/rebuild projection theo implem
 - [ ] Import team, đổi leader, chuyển member.
 - [ ] Xem progress tổng và member detail mà không làm đổi dashboard tổng.
 - [ ] Cấu hình mode/weights và project group weights.
-- [ ] Xem evaluation, warning và tạo override đúng quyền.
+- [ ] Xem evaluation, warning và minh chứng đúng quyền; xác minh UI không có thao tác ghi đè tỷ lệ cuối.
 - [ ] Xem graph canonical với filter/project/team/student/sprint đúng.
 - [ ] Xem peer review sau khi FE tích hợp.
 
