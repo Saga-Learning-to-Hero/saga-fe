@@ -1,102 +1,113 @@
-"use client";
-
-import { UsersIcon, GraduationCapIcon, GitCommitIcon, RadioIcon, ArrowUpRightIcon } from "lucide-react";
+import {
+  ArrowDownRightIcon,
+  ArrowUpRightIcon,
+  GitCommitIcon,
+  GraduationCapIcon,
+  Link2Icon,
+  UsersIcon,
+} from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
-import type { DashboardKPIs } from "../types/dashboard";
+import { formatDashboardPercent } from "../lib/dashboard-format";
+import type { AdminDashboardKpis } from "../types/dashboard";
 
 interface DashboardKPIsProps {
-  kpis: DashboardKPIs;
+  kpis: AdminDashboardKpis;
 }
 
 export function DashboardKPIsSection({ kpis }: DashboardKPIsProps) {
+  const growth = kpis.studentsGrowthPercentage;
+  const GrowthIcon = growth !== null && growth < 0
+    ? ArrowDownRightIcon
+    : ArrowUpRightIcon;
+
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-      <Card className="rounded-2xl border border-border/80 shadow-xs bg-card hover:border-primary/40 hover:shadow-md transition-all duration-200 relative overflow-hidden group">
-        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary to-primary/40 opacity-0 group-hover:opacity-100 transition-opacity" />
-        <CardContent className="p-4 flex items-center justify-between">
-          <div className="space-y-1">
-            <p className="text-xs font-medium text-muted-foreground">Sinh viên ghi danh (Enrolled)</p>
-            <div className="flex items-baseline gap-2">
-              <span className="text-2xl font-extrabold text-foreground font-mono tracking-tight">
-                {kpis.totalStudents}
-              </span>
-              <span className="text-[11px] text-success font-semibold inline-flex items-center">
-                <ArrowUpRightIcon className="w-3 h-3" />
-                +{kpis.studentsGrowth}%
-              </span>
-            </div>
-            <p className="text-[11px] text-muted-foreground">Tổng sinh viên trong hệ thống kỳ này</p>
-          </div>
-          <div className="w-11 h-11 rounded-2xl bg-primary/10 flex items-center justify-center text-primary shrink-0 group-hover:scale-105 transition-transform">
-            <UsersIcon className="w-5 h-5" />
-          </div>
-        </CardContent>
-      </Card>
+    <section
+      aria-label="Chỉ số tổng quan học kỳ"
+      className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4"
+    >
+      <MetricCard
+        icon={<UsersIcon className="size-5" />}
+        iconClassName="bg-primary/10 text-primary"
+        title="Sinh viên đang học"
+        value={kpis.totalStudents.toLocaleString("vi-VN")}
+        detail={
+          growth === null ? (
+            "Chưa có học kỳ trước để đối chiếu"
+          ) : (
+            <span
+              className={
+                growth < 0
+                  ? "inline-flex items-center gap-1 text-danger"
+                  : "inline-flex items-center gap-1 text-success"
+              }
+            >
+              <GrowthIcon className="size-3.5" />
+              {formatDashboardPercent(Math.abs(growth))} so với {kpis.comparedSemesterCode}
+            </span>
+          )
+        }
+      />
 
-      <Card className="rounded-2xl border border-border/80 shadow-xs bg-card hover:border-info/40 hover:shadow-md transition-all duration-200 relative overflow-hidden group">
-        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-info to-info/40 opacity-0 group-hover:opacity-100 transition-opacity" />
-        <CardContent className="p-4 flex items-center justify-between">
-          <div className="space-y-1">
-            <p className="text-xs font-medium text-muted-foreground">Lớp học phần (Course Sections)</p>
-            <div className="flex items-baseline gap-2">
-              <span className="text-2xl font-extrabold text-foreground font-mono tracking-tight">
-                {kpis.totalGroups}
-              </span>
-              <span className="text-[11px] text-info font-semibold">
-                {kpis.connectedGroupsRate}% đồng bộ
-              </span>
-            </div>
-            <p className="text-[11px] text-muted-foreground">
-              Đã cấu hình Workspace Jira & GitHub
-            </p>
-          </div>
-          <div className="w-11 h-11 rounded-2xl bg-info-muted flex items-center justify-center text-info shrink-0 group-hover:scale-105 transition-transform">
-            <GraduationCapIcon className="w-5 h-5" />
-          </div>
-        </CardContent>
-      </Card>
+      <MetricCard
+        icon={<GraduationCapIcon className="size-5" />}
+        iconClassName="bg-info-muted text-info"
+        title="Lớp học phần"
+        value={kpis.totalCourses.toLocaleString("vi-VN")}
+        detail={`${kpis.totalTeams.toLocaleString("vi-VN")} nhóm đồ án`}
+      />
 
-      <Card className="rounded-2xl border border-border/80 shadow-xs bg-card hover:border-success/40 hover:shadow-md transition-all duration-200 relative overflow-hidden group">
-        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-success to-success/40 opacity-0 group-hover:opacity-100 transition-opacity" />
-        <CardContent className="p-4 flex items-center justify-between">
-          <div className="space-y-1">
-            <p className="text-xs font-medium text-muted-foreground">Chỉ số Traceability</p>
-            <div className="flex items-baseline gap-2">
-              <span className="text-2xl font-extrabold text-success font-mono tracking-tight">
-                {kpis.traceabilityRate}%
-              </span>
-              <span className="text-[11px] text-muted-foreground font-medium">Chuẩn dữ liệu</span>
-            </div>
-            <p className="text-[11px] text-muted-foreground">
-              Commit đã map chuẩn về Jira Task
-            </p>
-          </div>
-          <div className="w-11 h-11 rounded-2xl bg-success-muted flex items-center justify-center text-success shrink-0 group-hover:scale-105 transition-transform">
-            <GitCommitIcon className="w-5 h-5" />
-          </div>
-        </CardContent>
-      </Card>
+      <MetricCard
+        icon={<Link2Icon className="size-5" />}
+        iconClassName="bg-success-muted text-success"
+        title="Nhóm đã kết nối"
+        value={`${kpis.connectedTeamsCount}/${kpis.totalTeams}`}
+        detail={`${formatDashboardPercent(kpis.connectedTeamsRate)} có đủ Jira và GitHub`}
+      />
 
-      <Card className="rounded-2xl border border-border/80 shadow-xs bg-card hover:border-warning/40 hover:shadow-md transition-all duration-200 relative overflow-hidden group">
-        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-warning to-warning/40 opacity-0 group-hover:opacity-100 transition-opacity" />
-        <CardContent className="p-4 flex items-center justify-between">
-          <div className="space-y-1">
-            <p className="text-xs font-medium text-muted-foreground">Sự kiện Webhook (24h)</p>
-            <div className="flex items-baseline gap-2">
-              <span className="text-2xl font-extrabold text-foreground font-mono tracking-tight">
-                {kpis.webhookEvents24h}
-              </span>
-              <span className="text-[11px] text-warning font-semibold">Thời gian thực</span>
-            </div>
-            <p className="text-[11px] text-muted-foreground">
-              Tổng {kpis.totalCommitsSynced.toLocaleString()} commits đã đồng bộ
-            </p>
+      <MetricCard
+        icon={<GitCommitIcon className="size-5" />}
+        iconClassName="bg-warning-muted text-warning"
+        title="Tỷ lệ commit liên kết task"
+        value={formatDashboardPercent(kpis.traceabilityRate)}
+        detail={`${kpis.totalCommitsSynced.toLocaleString("vi-VN")} commits · ${kpis.totalJiraTasksSynced.toLocaleString("vi-VN")} Jira tasks`}
+      />
+    </section>
+  );
+}
+
+interface MetricCardProps {
+  icon: React.ReactNode;
+  iconClassName: string;
+  title: string;
+  value: string;
+  detail: React.ReactNode;
+}
+
+function MetricCard({
+  icon,
+  iconClassName,
+  title,
+  value,
+  detail,
+}: MetricCardProps) {
+  return (
+    <Card className="rounded-2xl border-border/80 bg-card shadow-xs">
+      <CardContent className="flex min-h-32 items-start justify-between gap-4 p-4">
+        <div className="min-w-0 space-y-2">
+          <p className="text-xs font-medium text-muted-foreground">{title}</p>
+          <p className="font-mono text-2xl font-extrabold tracking-tight text-foreground">
+            {value}
+          </p>
+          <div className="text-[11px] leading-4 text-muted-foreground">
+            {detail}
           </div>
-          <div className="w-11 h-11 rounded-2xl bg-warning-muted flex items-center justify-center text-warning shrink-0 group-hover:scale-105 transition-transform">
-            <RadioIcon className="w-5 h-5" />
-          </div>
-        </CardContent>
-      </Card>
-    </div>
+        </div>
+        <div
+          className={`flex size-11 shrink-0 items-center justify-center rounded-2xl ${iconClassName}`}
+        >
+          {icon}
+        </div>
+      </CardContent>
+    </Card>
   );
 }

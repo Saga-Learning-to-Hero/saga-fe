@@ -274,6 +274,7 @@ POST contribution-confirmations
 | --- | --- |
 | Account role | `STUDENT`, `LECTURER`, `ADMIN` |
 | Account status | `ACTIVE`, `INACTIVE`, `SUSPENDED`, `PENDING` |
+| Semester period | `UPCOMING`, `IN_PROGRESS`, `COMPLETED`; tách biệt với cờ platform `active` |
 | Enrollment | `ACTIVE`, `WITHDRAWN`, `COMPLETED` |
 | Team role | `LEADER`, `MEMBER`, `MENTOR` |
 | Task status | `TODO`, `IN_PROGRESS`, `IN_REVIEW`, `DONE`, `BLOCKED` |
@@ -287,6 +288,7 @@ POST contribution-confirmations
 | Sync type | `FULL`, `INCREMENTAL`, `RECONCILE`, `INITIAL`, `WEBHOOK_REFRESH` |
 | Link source | Tự động, thủ công hoặc reconciliation theo enum/DTO BE hiện hành |
 | Trace source | `COMMIT_MESSAGE`, `BRANCH_NAME`, `PR_TITLE`, `PR_BODY`, `MANUAL`, `RECONCILIATION` |
+| Admin integration gap | `PROJECT`, `JIRA`, `GITHUB`, `BOTH` |
 
 ### 6.1 Thực thể chính
 
@@ -350,7 +352,7 @@ Project Type dùng để phân loại hướng dự án, không điều khiển 
 | ADM-007 | Roster template/list/import preview-confirm/add/remove/cancel invite | ✓ | ✓ | ✓ | `DONE` |
 | ADM-008 | User list/detail/status | ✓ | ✓ | ✓ | `DONE` (GET `/api/admin/users`, GET `/api/admin/users/{userId}`, PATCH `/api/admin/users/{userId}/status`; SSE `ACCOUNT_DISABLED` & HTTP 403 fallback) |
 | ADM-009 | Audit log list/filter | ✓ | ✓ | ✓ | `DONE` (GET `/api/admin/audit-logs`) |
-| ADM-010 | Admin dashboard KPI/chart/recent activity | — | — | Mock | `MOCK/ABSENT`; cần thống nhất API aggregate hoặc ghép API có sẵn |
+| ADM-010 | Admin dashboard KPI/chart/recent activity | ✓ | ✓ | ✓ | `DONE`; summary canonical theo semester gồm KPI, weekly timeline, unconnected teams, integration pulse và cache freshness; recent audit dùng API riêng; không mock provider health/project health/sprint milestone chưa có contract |
 | ADM-011 | Dev email test, landing, privacy, terms | ✓ | — | — | `INTERNAL`/server pages |
 
 ### 7.3 Lecturer course, team và contribution
@@ -637,7 +639,7 @@ Hiện mỗi request graph có thể kích hoạt/rebuild projection theo implem
 
 - [ ] Đo latency/rebuild cost của Graph API; bổ sung cache/version/graph-specific event nếu cần.
 - [ ] Với project lớn, ưu tiên summary/chart/heatmap/swimlane và chỉ lazy-load subgraph khi drill-down; không render toàn bộ Task/Commit thành node mặc định.
-- [ ] Có API hoặc chiến lược aggregate cho Admin Dashboard thay vì mock.
+- [x] Admin Dashboard dùng aggregate `/api/admin/dashboard/summary`, không còn mock; force refresh dùng single-flight/cache metadata và FE hiển thị rõ snapshot `refreshPending`.
 - [ ] Bổ sung WebAuthn step-up UI nếu phạm vi sản phẩm yêu cầu.
 - [ ] Theo dõi `lastSyncedAt`, trạng thái SSE và lỗi sync riêng; không gộp thành một badge mơ hồ.
 - [ ] Chuẩn hóa timezone report (UTC lưu trữ, timezone nghiệp vụ để group ngày/tuần).
@@ -662,7 +664,7 @@ Hiện mỗi request graph có thể kích hoạt/rebuild projection theo implem
 - [ ] Quản lý class/course/lecturer/roster.
 - [ ] Xem và cập nhật user bằng API thật.
 - [ ] Xem audit log bằng API thật.
-- [ ] Dashboard không dùng số liệu mock trong bản nộp.
+- [x] Dashboard không dùng số liệu mock trong bản nộp; nullable KPI không bị đổi thành 0 và integration pulse không bị diễn giải thành provider health.
 
 ### Lecturer
 

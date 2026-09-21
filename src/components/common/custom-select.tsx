@@ -21,6 +21,7 @@ interface CustomSelectProps {
   dropdownClassName?: string;
   triggerClassName?: string;
   disabled?: boolean;
+  onOptionIntent?: (value: string) => void;
 }
 
 export function CustomSelect({
@@ -33,6 +34,7 @@ export function CustomSelect({
   dropdownClassName,
   triggerClassName,
   disabled = false,
+  onOptionIntent,
 }: CustomSelectProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [openUpward, setOpenUpward] = useState(false);
@@ -119,6 +121,8 @@ export function CustomSelect({
                 <div
                   key={option.value}
                   onClick={() => handleSelect(option.value)}
+                  onPointerEnter={() => onOptionIntent?.(option.value)}
+                  onFocus={() => onOptionIntent?.(option.value)}
                   className={cn(
                     "relative flex items-center justify-between gap-2 px-2.5 py-2 rounded-lg text-xs cursor-pointer transition-colors select-none",
                     isSelected

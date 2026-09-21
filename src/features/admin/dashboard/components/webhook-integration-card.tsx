@@ -1,156 +1,166 @@
-"use client";
-
-import { CheckCircle2Icon, AlertTriangleIcon, ActivityIcon } from "lucide-react";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
+import {
+  ActivityIcon,
+  AlertTriangleIcon,
+  Clock3Icon,
+  GitBranchIcon,
+  InfoIcon,
+  RadioTowerIcon,
+} from "lucide-react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from "@/components/ui/table";
-import type { IntegrationServiceStatus, UnconnectedGroupAlert } from "../types/dashboard";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  formatDashboardDateTime,
+  getMissingServiceLabel,
+} from "../lib/dashboard-format";
+import type {
+  AdminDashboardIntegrationPulse,
+  AdminDashboardMissingService,
+  AdminDashboardUnconnectedTeam,
+} from "../types/dashboard";
 
 interface WebhookIntegrationSectionProps {
-  integrations: IntegrationServiceStatus[];
-  unconnectedGroups: UnconnectedGroupAlert[];
+  integrationPulse: AdminDashboardIntegrationPulse[];
+  unconnectedTeams: AdminDashboardUnconnectedTeam[];
 }
 
 export function WebhookIntegrationSection({
-  integrations,
-  unconnectedGroups,
+  integrationPulse,
+  unconnectedTeams,
 }: WebhookIntegrationSectionProps) {
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-      <Card className="rounded-2xl border border-border shadow-xs bg-card lg:col-span-1 flex flex-col justify-between">
-        <CardHeader className="p-4 pb-3 border-b border-border/60">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
-                <ActivityIcon className="w-4 h-4" />
-              </div>
-              <div>
-                <CardTitle className="text-sm font-bold text-foreground">
-                  Trạng thái Webhook & APIs
-                </CardTitle>
-                <CardDescription className="text-[11px] text-muted-foreground">
-                  Kết nối Jira Cloud & GitHub Webhooks
-                </CardDescription>
-              </div>
+    <section
+      aria-label="Tích hợp Jira GitHub và cảnh báo nhóm"
+      className="grid grid-cols-1 gap-4 xl:grid-cols-12"
+    >
+      <Card className="rounded-2xl border-border/80 bg-card shadow-xs xl:order-2 xl:col-span-4">
+        <CardHeader className="border-b border-border/60 p-4 pb-3">
+          <div className="flex items-start gap-2.5">
+            <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+              <ActivityIcon className="size-5" />
             </div>
-            <span className="flex h-2.5 w-2.5 relative">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-success opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-success"></span>
-            </span>
+            <div>
+              <CardTitle className="text-sm font-bold text-foreground">
+                Webhook activity
+              </CardTitle>
+              <CardDescription className="text-[11px] text-muted-foreground">
+                Unique deliveries trong 24 giờ và 7 ngày.
+              </CardDescription>
+            </div>
           </div>
         </CardHeader>
 
-        <CardContent className="p-4 space-y-3 flex-1 flex flex-col justify-around">
-          {integrations.map((svc) => (
-            <div
-              key={svc.service}
-              className="p-3 rounded-xl bg-muted/30 border border-border/60 space-y-2"
-            >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <span className="font-bold text-xs text-foreground">{svc.name}</span>
-                </div>
-                <Badge className="bg-success-muted text-success border-0 text-[10px] font-semibold flex items-center gap-1">
-                  <CheckCircle2Icon className="w-3 h-3" />
-                  Sẵn sàng (Operational)
-                </Badge>
-              </div>
-
-              <div className="grid grid-cols-3 gap-2 pt-1 text-[11px]">
-                <div>
-                  <p className="text-muted-foreground text-[10px]">Độ trễ (Latency)</p>
-                  <p className="font-mono font-bold text-foreground">{svc.latencyMs} ms</p>
-                </div>
-                <div>
-                  <p className="text-muted-foreground text-[10px]">Events (24h)</p>
-                  <p className="font-mono font-bold text-foreground">{svc.eventsProcessed24h}</p>
-                </div>
-                <div>
-                  <p className="text-muted-foreground text-[10px]">Thành công</p>
-                  <p className="font-mono font-bold text-success">{svc.successRate}%</p>
-                </div>
-              </div>
-            </div>
+        <CardContent className="space-y-3 p-4">
+          {integrationPulse.map((pulse) => (
+            <IntegrationPulseCard key={pulse.service} pulse={pulse} />
           ))}
 
-          <div className="p-2.5 rounded-xl bg-primary/5 border border-primary/15 text-[11px] text-muted-foreground flex items-center gap-2">
-            <span className="text-primary font-bold">Lưu ý:</span>
-            <span>Dữ liệu được cập nhật tự động khi Backend nhận Webhook mới.</span>
+          <div className="flex items-start gap-2 rounded-xl border border-primary/15 bg-primary/5 p-2.5 text-[10px] leading-4 text-muted-foreground">
+            <InfoIcon className="mt-0.5 size-3 shrink-0 text-primary" />
+            <span>
+              Đây là số webhook đã nhận, không phải health check của Jira hoặc GitHub.
+            </span>
           </div>
         </CardContent>
       </Card>
 
-      <Card className="rounded-2xl border border-border shadow-xs bg-card lg:col-span-2">
-        <CardHeader className="p-4 pb-3 border-b border-border/60">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-warning-muted flex items-center justify-center text-warning">
-                <AlertTriangleIcon className="w-4 h-4" />
+      <Card className="overflow-hidden rounded-2xl border-border/80 bg-card shadow-xs xl:order-1 xl:col-span-8">
+        <CardHeader className="border-b border-border/60 p-4 pb-3">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div className="flex items-start gap-2.5">
+              <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-warning-muted text-warning">
+                <AlertTriangleIcon className="size-5" />
               </div>
               <div>
                 <CardTitle className="text-sm font-bold text-foreground">
-                  Cảnh báo tích hợp Workspace (Integration Alerts)
+                  Nhóm chưa hoàn tất tích hợp
                 </CardTitle>
                 <CardDescription className="text-[11px] text-muted-foreground">
-                  Danh sách lớp học phần / nhóm chưa hoàn tất liên kết Jira hoặc GitHub
+                  Nhóm chưa có project hoặc chưa kết nối đủ Jira và GitHub trong học kỳ đang chọn.
                 </CardDescription>
               </div>
             </div>
-            <Badge variant="outline" className="text-xs text-warning border-warning/40">
-              {unconnectedGroups.length} nhóm cần rà soát
+            <Badge
+              variant="outline"
+              className="border-warning/40 text-[11px] text-warning"
+            >
+              {unconnectedTeams.length} nhóm
             </Badge>
           </div>
         </CardHeader>
 
         <CardContent className="p-0">
-          <div className="overflow-x-auto">
-            <Table className="w-full text-left text-xs border-collapse">
-              <TableHeader className="bg-muted/40 border-b border-border">
+          <div className="max-h-96 overflow-auto">
+            <Table className="min-w-[760px] text-xs">
+              <TableHeader className="sticky top-0 z-10 bg-muted/95 backdrop-blur">
                 <TableRow>
-                  <TableHead className="py-2.5 px-3.5 text-xs font-semibold w-[70px]">Mã nhóm</TableHead>
-                  <TableHead className="py-2.5 px-3.5 text-xs font-semibold min-w-[200px]">Tên đề tài</TableHead>
-                  <TableHead className="py-2.5 px-3.5 text-xs font-semibold whitespace-nowrap w-[150px]">GV Hướng dẫn</TableHead>
-                  <TableHead className="py-2.5 px-3.5 text-xs font-semibold whitespace-nowrap w-[130px]">Dịch vụ thiếu</TableHead>
+                  <TableHead className="px-3.5 py-2.5">Nhóm</TableHead>
+                  <TableHead className="px-3.5 py-2.5">Lớp học phần</TableHead>
+                  <TableHead className="px-3.5 py-2.5">Giảng viên</TableHead>
+                  <TableHead className="px-3.5 py-2.5">Thiếu cấu hình</TableHead>
+                  <TableHead className="px-3.5 py-2.5 text-right">Thời gian chờ</TableHead>
                 </TableRow>
               </TableHeader>
-
-              <TableBody className="divide-y divide-border/60">
-                {unconnectedGroups.length === 0 ? (
+              <TableBody>
+                {unconnectedTeams.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={4} className="text-center py-8 text-muted-foreground text-xs">
-                      Tất cả các nhóm dự án đã kết nối đầy đủ Jira & GitHub!
+                    <TableCell
+                      colSpan={5}
+                      className="h-28 text-center text-xs text-muted-foreground"
+                    >
+                      Tất cả nhóm trong học kỳ đã có project và kết nối đủ Jira, GitHub.
                     </TableCell>
                   </TableRow>
                 ) : (
-                  unconnectedGroups.map((grp) => (
-                    <TableRow key={grp.id} className="hover:bg-muted/30 transition-colors">
-                      <TableCell className="py-2.5 px-3.5 font-mono font-bold text-foreground">
-                        <Badge variant="outline" className="font-mono text-[11px] border-primary/30 text-primary">
-                          {grp.groupCode}
-                        </Badge>
+                  unconnectedTeams.map((team) => (
+                    <TableRow key={team.teamId}>
+                      <TableCell className="px-3.5 py-3">
+                        <p className="font-semibold text-foreground">
+                          Nhóm {team.teamNo} · {team.teamName}
+                        </p>
+                        <p className="mt-0.5 font-mono text-[10px] text-muted-foreground">
+                          {team.teamId.slice(0, 8)}
+                        </p>
                       </TableCell>
-                      <TableCell className="py-2.5 px-3.5 font-medium text-foreground text-xs truncate max-w-[240px]">
-                        {grp.projectName}
+                      <TableCell className="px-3.5 py-3 font-mono text-[11px] text-muted-foreground">
+                        {team.courseCode ?? "Chưa có mã lớp"}
                       </TableCell>
-                      <TableCell className="py-2.5 px-3.5 text-muted-foreground whitespace-nowrap text-xs">
-                        {grp.mentorName}
+                      <TableCell className="px-3.5 py-3">
+                        <p className="text-xs text-foreground">
+                          {team.lecturerName ?? "Chưa phân công"}
+                        </p>
+                        {team.lecturerEmail ? (
+                          <p className="mt-0.5 text-[10px] text-muted-foreground">
+                            {team.lecturerEmail}
+                          </p>
+                        ) : null}
                       </TableCell>
-                      <TableCell className="py-2.5 px-3.5 whitespace-nowrap">
-                        {grp.missingService === "BOTH" && (
-                          <Badge className="bg-danger-muted text-danger border-0 text-[10px] font-semibold">
-                            Chưa nối cả 2
-                          </Badge>
-                        )}
-                        {grp.missingService === "JIRA" && (
-                          <Badge className="bg-warning-muted text-warning border-0 text-[10px] font-semibold">
-                            Thiếu Jira
-                          </Badge>
-                        )}
-                        {grp.missingService === "GITHUB" && (
-                          <Badge className="bg-info-muted text-info border-0 text-[10px] font-semibold">
-                            Thiếu GitHub
-                          </Badge>
-                        )}
+                      <TableCell className="px-3.5 py-3">
+                        <MissingServiceBadge service={team.missingService} />
+                      </TableCell>
+                      <TableCell className="px-3.5 py-3 text-right">
+                        <span
+                          className={
+                            team.daysSinceCreated > 7
+                              ? "font-mono font-semibold text-danger"
+                              : "font-mono text-muted-foreground"
+                          }
+                        >
+                          {team.daysSinceCreated} ngày
+                        </span>
                       </TableCell>
                     </TableRow>
                   ))
@@ -160,6 +170,67 @@ export function WebhookIntegrationSection({
           </div>
         </CardContent>
       </Card>
+    </section>
+  );
+}
+
+function IntegrationPulseCard({
+  pulse,
+}: {
+  pulse: AdminDashboardIntegrationPulse;
+}) {
+  const isGithub = pulse.service === "GITHUB";
+  const Icon = isGithub ? GitBranchIcon : RadioTowerIcon;
+
+  return (
+    <div className="rounded-xl border border-border/70 bg-muted/25 p-3">
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2">
+          <div className="flex size-7 items-center justify-center rounded-lg bg-background text-foreground shadow-xs">
+            <Icon className="size-3.5" />
+          </div>
+          <span className="text-xs font-bold text-foreground">
+            {isGithub ? "GitHub" : "Jira"}
+          </span>
+        </div>
+      </div>
+      <div className="mt-3 grid grid-cols-2 gap-2">
+        <div>
+          <p className="text-[10px] text-muted-foreground">24 giờ qua</p>
+          <p className="font-mono text-base font-bold text-foreground">
+            {pulse.uniqueEventsReceived24h.toLocaleString("vi-VN")}
+          </p>
+        </div>
+        <div>
+          <p className="text-[10px] text-muted-foreground">7 ngày qua</p>
+          <p className="font-mono text-base font-bold text-foreground">
+            {pulse.uniqueEventsReceived7d.toLocaleString("vi-VN")}
+          </p>
+        </div>
+      </div>
+      <p className="mt-2 flex items-center gap-1.5 text-[10px] text-muted-foreground">
+        <Clock3Icon className="size-3" />
+        Gần nhất: {formatDashboardDateTime(pulse.lastUniqueEventAt)}
+      </p>
     </div>
+  );
+}
+
+function MissingServiceBadge({
+  service,
+}: {
+  service: AdminDashboardMissingService;
+}) {
+  const className =
+    service === "PROJECT" || service === "BOTH"
+      ? "bg-danger-muted text-danger"
+      : service === "JIRA"
+        ? "bg-warning-muted text-warning"
+        : "bg-info-muted text-info";
+
+  return (
+    <Badge className={`border-0 text-[10px] font-semibold ${className}`}>
+      {getMissingServiceLabel(service)}
+    </Badge>
   );
 }

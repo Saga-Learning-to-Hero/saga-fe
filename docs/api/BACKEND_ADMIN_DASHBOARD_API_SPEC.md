@@ -1,305 +1,242 @@
-# TÀI LIỆU ĐẶC TẢ KỸ THUẬT: API ADMIN DASHBOARD SUMMARY
-> **Dành cho Đội ngũ Backend (`saga-be`)**  
-> **Phiên bản:** 2.1 (Hoàn thiện 100% Khung thời gian, Biểu đồ Sức khỏe Đồ án & Tiến độ Sprint)  
-> **Mục tiêu:** Cung cấp API tổng hợp điều hành toàn hệ thống cho màn hình `/admin/dashboard`.
+# ĐẶC TẢ API ADMIN DASHBOARD SUMMARY
 
----
+> **Phiên bản:** 3.0 — As-built contract
+> **Đối tượng:** `saga-be`, `saga-fe`, QA và nhóm làm báo cáo
+> **Endpoint canonical:** `GET /api/admin/dashboard/summary`
+> **Cập nhật:** 20/09/2026
 
-## 1. TỔNG QUAN NGHIỆP VỤ & PHẠM VI THỜI GIAN (TIME SCOPES)
+## 1. Mục tiêu và nguồn dữ liệu
 
-Bảng điều khiển Quản trị viên (Admin Dashboard) phân tách rõ ràng **3 tầng phạm vi thời gian** để phục vụ các mục tiêu giám sát khác nhau:
+Admin Dashboard cung cấp một snapshot điều hành theo học kỳ gồm:
 
-```text
-┌────────────────────────────────────────────────────────────────────────────────────────┐
-│ TẦNG 1: PHẠM VI HỌC KỲ (SEMESTER SCOPE: startDate -> endDate)                         │
-│ • Tổng sinh viên, số lớp học phần, tổng nhóm đồ án thuộc học kỳ được chọn             │
-│ • Tỷ lệ tăng trưởng % so với học kỳ liền trước (Previous Semester Comparison)           │
-│ • Tỷ lệ Traceability tổng thể và tổng khối lượng Commits / Jira Tasks tích lũy         │
-│ • Phân bổ sức khỏe dự án: Số nhóm Đúng tiến độ, Có rủi ro, Chậm trễ                  │
-│ • Tiến độ nghiệm thu trung bình của các Sprint trong kỳ (Sprint 1 -> Sprint 4)        │
-├────────────────────────────────────────────────────────────────────────────────────────┤
-│ TẦNG 2: PHÂN RÃ THEO CHUỖI TUẦN HỌC (WEEKLY TIMELINE: Tuần 1 -> Tuần N)               │
-│ • Cắt lát từ semester.startDate theo bước nhảy 7 ngày (Thứ Hai 00:00 -> Chủ Nhật 23:59) │
-│ • Biểu đồ Commits vs Tasks qua từng tuần để thấy nhịp độ làm việc của sinh viên        │
-│ • Đánh dấu tuần hiện tại (isCurrentWeek: true)                                         │
-├────────────────────────────────────────────────────────────────────────────────────────┤
-│ TẦNG 3: NHỊP TIM HẠ TẦNG THỜI GIAN THỰC (REALTIME PULSE: 24h & 7 ngày gần nhất)        │
-│ • Số lượng Webhook events Jira/GitHub nhận được trong 24 giờ qua                       │
-│ • Trạng thái sẵn sàng (OPERATIONAL/DOWN), độ trễ (latencyMs), thời điểm ping cuối       │
-│ • Cảnh báo nhóm chưa kết nối kèm số ngày trễ (daysSinceCreated)                        │
-└────────────────────────────────────────────────────────────────────────────────────────┘
+- quy mô sinh viên, lớp học phần và nhóm đồ án;
+- mức độ kết nối Jira/GitHub và Traceability Task–Commit;
+- hoạt động Commit/Task Done theo từng lát tuần của học kỳ;
+- danh sách nhóm chưa có Project hoặc chưa kết nối đủ tích hợp;
+- nhịp nhận webhook Jira/GitHub trên toàn hệ thống;
+- metadata cache để FE giải thích độ tươi của dữ liệu.
+
+REST response của endpoint này là nguồn dữ liệu canonical cho dashboard. FE không tự tổng hợp từ nhiều endpoint, không dùng mock fallback và không suy ra health của Jira/GitHub từ số event.
+
+## 2. Endpoint, quyền và query
+
+```http
+GET /api/admin/dashboard/summary?semesterId=<UUID>&forceRefresh=false
+Cookie: SAGA_SESSION=...
 ```
 
----
+| Thành phần | Contract |
+| --- | --- |
+| Quyền | Chỉ `ADMIN`; `/api/admin/**` được bảo vệ bằng `hasRole("ADMIN")` trong `SecurityConfig` |
+| `semesterId` | Tùy chọn. Bỏ trống thì dùng platform active semester trong `active_semester_setting` |
+| `forceRefresh` | Tùy chọn, mặc định `false`; yêu cầu refresh summary và integration pulse theo single-flight lock |
+| Workload | `HEAVY_READ` |
+| Lỗi không có active semester | `404 SEMESTER_NOT_FOUND` |
+| Lỗi semester không tồn tại/đã xóa | `404 SEMESTER_NOT_FOUND` |
+| Date range semester không hợp lệ | `400 SEMESTER_DATE_RANGE_INVALID` |
 
-## 2. CHI TIẾT HỢP ĐỒNG API (API CONTRACT)
+`forceRefresh=true` không được hiểu là xóa cache rồi cho mọi request cùng query DB. Một request là owner tính lại; follower chờ generation mới. Nếu timeout nhưng còn snapshot cũ, BE có thể trả snapshot đó với `cacheMetadata.refreshPending=true`.
 
-### 2.1 Thông tin Endpoint
-- **HTTP Method**: `GET`
-- **Đường dẫn**: `/api/admin/dashboard/summary`
-- **Quyền truy cập**: `@PreAuthorize("hasRole('ADMIN')")` (Cookie session `SAGA_SESSION`).
-- **Query Parameters**:
-  - `semesterId` *(UUID, tùy chọn)*: 
-    - Nếu truyền: BE trả về số liệu của đúng học kỳ đó.
-    - Nếu KHÔNG truyền: BE tự động lấy **Học kỳ đang Active** (`isDefault = true`).
-  - `forceRefresh` *(Boolean, tùy chọn, mặc định `false`)*: Bỏ qua Redis Cache để quét và tính toán lại ngay lập tức.
-
----
-
-### 2.2 Cấu Trúc JSON Response Hoàn Chỉnh (`AdminDashboardSummaryResponse`)
+## 3. Response canonical
 
 ```json
 {
   "selectedSemester": {
-    "id": "7b8f9e12-3456-4789-a012-3b4c5d6e7f8a",
+    "id": "semester-uuid",
     "code": "FA26",
     "name": "Fall 2026",
-    "startDate": "2026-09-01T00:00:00Z",
-    "endDate": "2026-12-15T23:59:59Z",
-    "totalWeeks": 15,
-    "currentWeekIndex": 8,
-    "isActive": true
+    "startDate": "2026-09-01",
+    "endDate": "2026-12-15",
+    "totalWeeks": 16,
+    "currentWeekIndex": 3,
+    "active": true
   },
   "availableSemesters": [
     {
-      "id": "7b8f9e12-3456-4789-a012-3b4c5d6e7f8a",
+      "id": "semester-uuid",
       "code": "FA26",
       "name": "Fall 2026",
-      "status": "ACTIVE"
-    },
-    {
-      "id": "4a1b2c3d-1111-2222-3333-5e6f7a8b9c0d",
-      "code": "SU26",
-      "name": "Summer 2026",
-      "status": "COMPLETED"
-    },
-    {
-      "id": "9f8e7d6c-5555-6666-7777-1a2b3c4d5e6f",
-      "code": "SP27",
-      "name": "Spring 2027",
-      "status": "UPCOMING"
+      "startDate": "2026-09-01",
+      "endDate": "2026-12-15",
+      "active": true,
+      "periodStatus": "IN_PROGRESS"
     }
   ],
   "kpis": {
-    "totalStudents": 148,
+    "totalStudents": 120,
     "studentsGrowthPercentage": 12.5,
     "comparedSemesterCode": "SU26",
-    "totalCourses": 32,
-    "totalTeams": 28,
-    "connectedTeamsCount": 24,
-    "connectedTeamsRate": 85.7,
-    "traceabilityRate": 92.4,
-    "totalCommitsSynced": 1420,
-    "totalJiraTasksSynced": 380,
-    "webhookEvents24h": 312,
-    "webhookEvents7d": 1845
+    "totalCourses": 8,
+    "totalTeams": 24,
+    "connectedTeamsCount": 20,
+    "connectedTeamsRate": 83.3333333333,
+    "totalCommitsSynced": 900,
+    "totalJiraTasksSynced": 400,
+    "traceabilityRate": 62.5
   },
   "weeklyTimeline": [
     {
       "weekIndex": 1,
       "weekLabel": "Tuần 01",
-      "startDate": "2026-09-01T00:00:00Z",
-      "endDate": "2026-09-07T23:59:59Z",
+      "startDate": "2026-09-01",
+      "endDate": "2026-09-07",
       "isCurrentWeek": false,
-      "commits": 120,
-      "tasksCompleted": 45,
-      "traceabilityRate": 82.0
-    },
-    {
-      "weekIndex": 2,
-      "weekLabel": "Tuần 02",
-      "startDate": "2026-09-08T00:00:00Z",
-      "endDate": "2026-09-14T23:59:59Z",
-      "isCurrentWeek": false,
-      "commits": 210,
-      "tasksCompleted": 78,
-      "traceabilityRate": 88.5
-    },
-    {
-      "weekIndex": 8,
-      "weekLabel": "Tuần 08 (Hiện tại)",
-      "startDate": "2026-10-20T00:00:00Z",
-      "endDate": "2026-10-26T23:59:59Z",
-      "isCurrentWeek": true,
-      "commits": 290,
-      "tasksCompleted": 85,
-      "traceabilityRate": 94.0
-    }
-  ],
-  "projectHealthDistribution": {
-    "totalTeams": 32,
-    "onTrackCount": 24,
-    "onTrackRate": 75.0,
-    "atRiskCount": 5,
-    "atRiskRate": 15.6,
-    "delayedCount": 3,
-    "delayedRate": 9.4
-  },
-  "sprintMilestones": [
-    {
-      "sprintNo": 1,
-      "name": "Sprint 1 (Khởi tạo & Đặc tả SRS)",
-      "completionRate": 100.0,
-      "status": "COMPLETED"
-    },
-    {
-      "sprintNo": 2,
-      "name": "Sprint 2 (Kiến trúc & MVP Coding)",
-      "completionRate": 96.8,
-      "status": "COMPLETED"
-    },
-    {
-      "sprintNo": 3,
-      "name": "Sprint 3 (Tích hợp & Core Logic)",
-      "completionRate": 87.5,
-      "status": "IN_PROGRESS"
-    },
-    {
-      "sprintNo": 4,
-      "name": "Sprint 4 (Testing & Nghiệm thu)",
-      "completionRate": 46.8,
-      "status": "IN_PROGRESS"
-    }
-  ],
-  "integrationsHealth": [
-    {
-      "service": "GITHUB",
-      "name": "GitHub App & Webhooks",
-      "status": "OPERATIONAL",
-      "latencyMs": 115,
-      "eventsProcessed24h": 218,
-      "successRate": 99.8,
-      "lastPing": "2026-09-17T15:00:00Z"
-    },
-    {
-      "service": "JIRA",
-      "name": "Jira Cloud OAuth2 & Webhooks",
-      "status": "OPERATIONAL",
-      "latencyMs": 145,
-      "eventsProcessed24h": 94,
-      "successRate": 99.4,
-      "lastPing": "2026-09-17T15:00:00Z"
+      "commits": 12,
+      "tasksCompleted": 4,
+      "traceabilityRate": 83.3333333333
     }
   ],
   "unconnectedTeamsAlert": [
     {
-      "teamId": "9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d",
+      "teamId": "team-uuid",
       "teamNo": 7,
-      "teamName": "EduConnect - Nền tảng gia sư",
-      "courseCode": "SWP490_FA26_SE1705",
-      "lecturerName": "TS. Trần Minh Thuận",
-      "lecturerEmail": "thuan.tm@fpt.edu.vn",
-      "missingService": "JIRA",
-      "createdAt": "2026-09-03T08:00:00Z",
-      "daysSinceCreated": 14
+      "teamName": "SAGA Team",
+      "courseCode": "SWP391_FA26",
+      "lecturerName": "Nguyen Van A",
+      "lecturerEmail": "a@fpt.edu.vn",
+      "missingService": "BOTH",
+      "createdAt": "2026-09-05T00:00:00",
+      "daysSinceCreated": 15
+    }
+  ],
+  "integrationPulse": [
+    {
+      "service": "GITHUB",
+      "uniqueEventsReceived24h": 123,
+      "uniqueEventsReceived7d": 456,
+      "lastUniqueEventAt": "2026-09-19T10:00:00"
     },
     {
-      "teamId": "1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d",
-      "teamNo": 12,
-      "teamName": "SmartFarm - Hệ thống IoT",
-      "courseCode": "SWP391_FA26_SE1708",
-      "lecturerName": "ThS. Đỗ Khắc Nghĩa",
-      "lecturerEmail": "nghia.dk@fpt.edu.vn",
-      "missingService": "BOTH",
-      "createdAt": "2026-09-01T09:30:00Z",
-      "daysSinceCreated": 16
+      "service": "JIRA",
+      "uniqueEventsReceived24h": 94,
+      "uniqueEventsReceived7d": 382,
+      "lastUniqueEventAt": null
     }
   ],
   "cacheMetadata": {
-    "cachedAt": "2026-09-17T15:10:00Z",
-    "expiresAt": "2026-09-17T15:20:00Z",
-    "ttlSecondsRemaining": 600
+    "cachedAt": "2026-09-20T04:00:00Z",
+    "expiresAt": "2026-09-20T04:10:00Z",
+    "ttlSecondsRemaining": 580,
+    "refreshPending": false
   }
 }
 ```
 
----
+## 4. Semantics theo từng phần
 
-## 3. THUẬT TOÁN TÍNH TOÁN & LOGIC CHI TIẾT PHÍA BACKEND
+### 4.1 Học kỳ
 
-### 3.1 Thuật toán Chia Tuần Học Kỳ (Week Slicing Algorithm)
-Trong `AdminDashboardService.java`:
-1. Lấy `startDate` và `endDate` của `Semester`:
-   - Nếu `startDate` hoặc `endDate` bị `null`, fallback theo mốc mặc định (10 tuần, mỗi tuần 7 ngày tính từ ngày tạo kỳ).
-2. Duyệt vòng lặp từ `week = 1` đến khi vượt quá `endDate` (hoặc tối đa 15 tuần):
-   ```java
-   LocalDateTime weekStart = semesterStart.plusDays((weekIndex - 1) * 7);
-   LocalDateTime weekEnd = weekStart.plusDays(7).minusSeconds(1);
-   if (weekEnd.isAfter(semesterEnd)) {
-       weekEnd = semesterEnd;
-   }
-   boolean isCurrent = now.isAfter(weekStart) && now.isBefore(weekEnd);
-   ```
-3. Truy vấn `COUNT(c.id)` từ `commits` và `COUNT(t.id)` từ `tasks` có `created_at` / `committed_at` nằm trong khoảng `[weekStart, weekEnd]`.
-4. Nếu học kỳ được chọn là **Học kỳ đã kết thúc trong quá khứ**: `isCurrentWeek` sẽ là `false` cho tất cả các tuần.
-5. Nếu học kỳ là **Học kỳ tương lai (chưa bắt đầu)**: Các tuần trả về số liệu 0.
+- `startDate` và `endDate` là date-only `YYYY-MM-DD`, không phải timestamp.
+- `selectedSemester.active` cho biết semester đang chọn có phải platform active semester hay không.
+- `availableSemesters[].periodStatus` là trạng thái theo ngày: `UPCOMING | IN_PROGRESS | COMPLETED`.
+- `currentWeekIndex` là tuần 1-based chứa thời điểm hiện tại; trả `null` với kỳ quá khứ/tương lai.
+- `totalWeeks = ceil(số ngày inclusive / 7)`, không giới hạn 15 tuần và không snap về thứ Hai.
 
----
+### 4.2 KPI
 
-### 3.2 Thuật toán Phân Bổ Sức Khỏe Dự Án (`projectHealthDistribution`)
-- **Đúng tiến độ (`ON_TRACK`)**: Nhóm có tỷ lệ Task hoàn thành $\ge 70\%$ trong Sprint hiện tại và có commit liên tục trong 7 ngày gần nhất.
-- **Có rủi ro (`AT_RISK`)**: Nhóm có tỷ lệ Task hoàn thành $< 50\%$, hoặc không có commit mới trong 5–7 ngày qua, hoặc xuất hiện cảnh báo MSR Anomaly (Task Done nhưng 0 commit).
-- **Chậm trễ (`DELAYED`)**: Nhóm chưa tạo dự án, chưa kết nối Jira/GitHub quá 7 ngày, hoặc không có bất kỳ commit nào được đẩy lên trong suốt Sprint.
+| Field | Định nghĩa |
+| --- | --- |
+| `totalStudents` | Sinh viên enrollment `ACTIVE` thuộc course non-deleted trong semester |
+| `studentsGrowthPercentage` | Tăng trưởng so với semester trước; nullable nếu không có mẫu so sánh hoặc mẫu số bằng 0 |
+| `comparedSemesterCode` | Mã semester trước; nullable nếu không có semester trước |
+| `totalCourses` | Course non-deleted trong semester |
+| `totalTeams` | Team thuộc các course đó, kể cả team chưa có Project |
+| `connectedTeamsCount` | Team có Project, Jira `ACTIVE` và ít nhất một Git repository `ACTIVE` |
+| `connectedTeamsRate` | `connectedTeamsCount / totalTeams * 100`; nullable khi không có team |
+| `totalCommitsSynced` | Tổng commit raw trong scope, gồm merge commit |
+| `totalJiraTasksSynced` | Task non-deleted trong project thuộc scope |
+| `traceabilityRate` | Tỷ lệ non-merge commit có ít nhất một Task–Commit link; nullable khi mẫu số bằng 0 |
 
----
+### 4.3 Weekly timeline
 
-### 3.3 Thuật toán Tính Tỷ Lệ Tăng Trưởng Sinh Viên (`studentsGrowthPercentage`)
-1. Xác định học kỳ liền kề trước đó (`previousSemester`):
-   ```sql
-   SELECT * FROM semester 
-   WHERE start_date < :currentSemesterStart AND deleted_at IS NULL 
-   ORDER BY start_date DESC LIMIT 1;
-   ```
-2. Đếm số sinh viên đăng ký của kỳ hiện tại ($N_{current}$) và kỳ trước ($N_{previous}$):
-   $$\text{growthPercentage} = \frac{N_{current} - N_{previous}}{N_{previous}} \times 100$$
-3. Nếu $N_{previous} = 0$, gán `growthPercentage = 0.0`.
+- Mỗi phần tử là một lát liên tục tối đa 7 ngày, neo từ `semester.startDate`.
+- `commits` loại merge commit đã biết (`parentCount > 1`) và bucket theo `coalesce(committedAt, createdAt)`.
+- `tasksCompleted` là task **hiện đang** `DONE`, bucket theo `coalesce(completedAt, resolvedAt, createdAt)`. Đây không phải lịch sử chuyển trạng thái bất biến.
+- `traceabilityRate` dùng cùng semantic non-merge commit như KPI và có thể `null`.
+- `isCurrentWeek` là field duy nhất đánh dấu tuần hiện tại; `weekLabel` không nối hậu tố tùy biến.
 
----
+### 4.4 Cảnh báo nhóm chưa kết nối
 
-### 3.4 Thuật toán Nhận Diện Nhóm Chưa Kết Nối (`unconnectedTeamsAlert`)
-Một nhóm (`Team`) được coi là chưa kết nối nếu:
-- Không có `project_id` (Chưa tạo dự án trên SAGA).
-- Hoặc đã tạo dự án nhưng thiếu liên kết GitHub (`missingService = "GITHUB"`).
-- Hoặc thiếu cấu hình Jira (`missingService = "JIRA"`).
-- Hoặc thiếu cả hai (`missingService = "BOTH"`).
-- Bổ sung `daysSinceCreated = ChronoUnit.DAYS.between(team.getCreatedAt(), LocalDateTime.now())` để FE highlight nhóm nào bị trễ $> 7$ ngày (viền đỏ khẩn cấp).
+`unconnectedTeamsAlert` luôn là mảng, không trả `null`. Một team chỉ xuất hiện một lần.
 
----
+| `missingService` | Ý nghĩa |
+| --- | --- |
+| `PROJECT` | Team chưa có Project |
+| `JIRA` | Có Project và GitHub active nhưng Jira chưa active |
+| `GITHUB` | Có Project và Jira active nhưng chưa có Git repository active |
+| `BOTH` | Có Project nhưng cả Jira và GitHub đều chưa active |
 
-### 3.5 Chiến Lược Caching Redis Tối Ưu
-- **Tên Key**: `admin:dashboard:summary:{semesterId}`
-- **TTL**: `600 giây` (10 phút).
-- Khi có request kèm `forceRefresh=true`:
-  1. `redisTemplate.delete(cacheKey);`
-  2. Tính toán lại toàn bộ số liệu.
-  3. Ghi đè lại cache mới với TTL 10 phút.
+`courseCode`, `lecturerName`, `lecturerEmail` có thể `null`. FE có thể highlight `daysSinceCreated > 7`, nhưng BE không lọc bỏ các team mới tạo.
 
----
+### 4.5 Integration pulse
 
-## 4. DANH SÁCH FILE CẦN TẠO MỚI TRÊN `saga-be`
+`integrationPulse` là metric platform-wide và không đổi theo `semesterId`. Danh sách luôn có hai service theo thứ tự `GITHUB`, `JIRA`.
 
-```text
-saga-be/src/main/java/com/saga/be/
-├── controller/
-│   └── AdminDashboardController.java          # @GetMapping("/api/admin/dashboard/summary")
-├── dto/admin/dashboard/
-│   ├── AdminDashboardSummaryResponse.java     # Response DTO tổng thể
-│   ├── DashboardSemesterDto.java              # Thông tin kỳ học & tuần hiện tại
-│   ├── AvailableSemesterDto.java              # Danh sách kỳ học đổ dropdown
-│   ├── DashboardKpisDto.java                  # Các thẻ KPI tổng quan
-│   ├── DashboardWeeklyTimelineDto.java        # Chuỗi dữ liệu hoạt động theo tuần
-│   ├── ProjectHealthDistributionDto.java      # Phân bổ sức khỏe nhóm (Đúng tiến độ/Rủi ro/Chậm)
-│   ├── SprintMilestoneProgressDto.java        # Tiến độ nghiệm thu Sprint 1 -> 4
-│   ├── DashboardIntegrationHealthDto.java     # Sức khỏe Jira/GitHub Webhooks
-│   ├── DashboardUnconnectedTeamDto.java       # Danh sách nhóm cảnh báo trễ
-│   └── DashboardCacheMetaDto.java             # Metadata cache Redis
-└── service/admin/
-    └── AdminDashboardService.java             # Nghiệp vụ tổng hợp, chia tuần & cache
+- Một event là một unique first-seen delivery `(provider, deliveryId)`.
+- Redelivery/duplicate không tăng count.
+- `lastUniqueEventAt` nullable nếu provider chưa có delivery.
+- `0` event không có nghĩa provider đang down.
+- Không được suy ra hoặc hiển thị `OPERATIONAL`, latency hay success rate từ response này.
+
+### 4.6 Cache
+
+- Summary cache: `saga:admin:dashboard:summary:v3:{semesterId}`, TTL 600 giây.
+- Pulse cache: `saga:admin:dashboard:integration-pulse:v1`, TTL 60 giây.
+- `ttlSecondsRemaining` có thể `null` nếu TTL không xác định.
+- `refreshPending=true` yêu cầu FE thông báo đang dùng snapshot gần nhất, không hiển thị refresh thành công hoàn toàn.
+
+## 5. Những field không thuộc contract hiện tại
+
+BE hiện **không trả** và FE **không được mock** các field sau:
+
+- `projectHealthDistribution`;
+- `sprintMilestones`;
+- `integrationsHealth`;
+- provider `status`, `latencyMs`, `successRate`, `lastPing`.
+
+Nếu cần các insight trên trong release sau, phải có task BE riêng với định nghĩa, source of truth, timezone và test rõ ràng. Không dùng số event webhook để thay thế health check.
+
+## 6. Audit log
+
+Recent activity trên dashboard tiếp tục dùng endpoint riêng:
+
+```http
+GET /api/admin/audit-logs?page=0&size=5
 ```
 
----
+Không gộp audit log vào summary response.
 
-## 5. PHẦN AUDIT LOGS (KHÔNG CẦN VIẾT MỚI)
-- Frontend sẽ gọi trực tiếp endpoint có sẵn:
-  `GET /api/admin/audit-logs?page=0&size=5` từ `com.saga.be.controller.AdminAuditLogController.java`.
-- Backend **hoàn toàn không cần** viết thêm API hay gộp audit log vào response của dashboard.
+## 7. Đối soát triển khai ngày 20/09/2026
+
+| Hạng mục | BE | FE | Ghi chú |
+| --- | :---: | :---: | --- |
+| Endpoint và phân quyền ADMIN | ✓ | ✓ | Session cookie qua `apiClient` |
+| Chọn active/explicit semester | ✓ | ✓ | Selector dùng `availableSemesters` |
+| KPI nullable semantics | ✓ | ✓ | Không đổi `null` thành `0%` |
+| Weekly Task–Commit chart | ✓ | ✓ | Grouped bars + Traceability line |
+| Unconnected teams | ✓ | ✓ | Hỗ trợ `PROJECT`, highlight >7 ngày |
+| Integration pulse | ✓ | ✓ | Không gắn nhãn health giả |
+| Cache metadata/refresh pending | ✓ | ✓ | Có freshness và warning |
+| Force refresh single-flight | ✓ | ✓ | FE dùng response trả về làm cache canonical |
+| Recent audit activity | ✓ | ✓ | API riêng |
+| Project health/sprint milestone/provider health | — | — | Ngoài contract hiện tại; không mock |
+
+## 8. File triển khai chính
+
+### Backend
+
+- `AdminDashboardController`
+- `AdminDashboardService`
+- `AdminDashboardQueryService`
+- `AdminDashboardPulseService`
+- `dto/admin/dashboard/*`
+- `SecurityConfig`
+- `AdminDashboardControllerWebTest` và các test service/cache/temporal/alert liên quan
+
+### Frontend
+
+- `src/features/admin/dashboard/api/admin-dashboard-service.ts`
+- `src/features/admin/dashboard/hooks/use-admin-dashboard.ts`
+- `src/features/admin/dashboard/types/dashboard.ts`
+- `src/features/admin/dashboard/components/*`
+- `tests/unit/features/admin/dashboard/*`

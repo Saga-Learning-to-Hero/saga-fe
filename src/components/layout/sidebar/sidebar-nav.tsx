@@ -30,6 +30,7 @@ import {
   prefetchSemestersQuery,
 } from "@/features/admin/academic/hooks/use-academic";
 import { prefetchSubjectsQuery } from "@/features/admin/subjects/hooks/use-subjects";
+import { prefetchAdminDashboardSummary } from "@/features/admin/dashboard/hooks/use-admin-dashboard";
 import { cn } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
@@ -83,6 +84,8 @@ function NavLink({
       void prefetchSemestersQuery(queryClient);
     } else if (item.href === "/admin/subjects") {
       void prefetchSubjectsQuery(queryClient);
+    } else if (item.href === "/admin/dashboard") {
+      void prefetchAdminDashboardSummary(queryClient);
     }
   };
 
@@ -102,7 +105,14 @@ function NavLink({
     return (
       <Tooltip>
         <TooltipTrigger
-          render={<Link href={item.href} prefetch={true} onMouseEnter={handleHoverPrefetch} />}
+          render={
+            <Link
+              href={item.href}
+              prefetch={true}
+              onMouseEnter={handleHoverPrefetch}
+              onFocus={handleHoverPrefetch}
+            />
+          }
           className={linkCls}
         >
           <Icon
@@ -124,6 +134,7 @@ function NavLink({
       href={item.href}
       prefetch={true}
       onMouseEnter={handleHoverPrefetch}
+      onFocus={handleHoverPrefetch}
       className={linkCls}
     >
       <Icon
