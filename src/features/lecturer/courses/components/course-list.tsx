@@ -10,6 +10,7 @@ import {
   GraduationCapIcon,
   SearchIcon,
   SparklesIcon,
+  UsersIcon,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -28,19 +29,22 @@ import { cn } from "@/lib/utils";
 function CourseListSkeleton() {
   return (
     <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
-      {Array.from({ length: 3 }).map((_, index) => (
+      {Array.from({ length: 6 }).map((_, index) => (
         <Card
           key={index}
-          className="animate-pulse rounded-2xl border border-border bg-card p-5 shadow-xs"
+          className="animate-pulse rounded-2xl border border-border/70 bg-card p-6 shadow-xs"
         >
-          <div className="space-y-3.5">
+          <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <div className="h-5 w-28 rounded bg-muted" />
-              <div className="h-5 w-16 rounded bg-muted" />
+              <div className="size-10 rounded-xl bg-muted" />
+              <div className="h-5 w-24 rounded-lg bg-muted" />
             </div>
-            <div className="h-6 w-3/4 rounded bg-muted" />
-            <div className="h-16 rounded-2xl bg-muted/60" />
-            <div className="h-9 w-full rounded-xl bg-muted" />
+            <div className="space-y-2">
+              <div className="h-4 w-20 rounded bg-muted" />
+              <div className="h-6 w-3/4 rounded bg-muted" />
+            </div>
+            <div className="h-20 rounded-xl bg-muted/50" />
+            <div className="h-10 w-full rounded-xl bg-muted" />
           </div>
         </Card>
       ))}
@@ -57,7 +61,7 @@ function CourseListCard({
 }) {
   const href = lecturerCourseDashboardPath(course.id);
   const subjectLabel = course.subjectName || course.name;
-  const classLabel = course.classCode || course.className || "Chưa gắn lớp sinh viên";
+  const classLabel = course.classCode || course.className || "Chưa gắn lớp niên khóa";
   const semesterLabel = course.semesterName
     ? `${course.semesterName} (${course.semesterCode || ""})`
     : course.semesterCode || "Học kỳ hiện tại";
@@ -67,23 +71,25 @@ function CourseListCard({
       onMouseEnter={() => {
         onPrefetch(course.id);
       }}
-      className="group flex flex-col justify-between rounded-2xl border border-border/80 bg-card/90 p-5 shadow-xs transition-all duration-200 hover:-translate-y-1 hover:border-primary/40 hover:shadow-lg sm:p-6"
+      className="group relative flex flex-col justify-between overflow-hidden rounded-2xl border border-border/80 bg-card p-6 shadow-xs transition-all duration-200 hover:-translate-y-1 hover:border-primary/50 hover:shadow-md"
     >
+      <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-primary/80 via-primary to-accent opacity-0 transition-opacity duration-200 group-hover:opacity-100" />
+
       <CardContent className="space-y-4 p-0">
         <div className="flex items-start justify-between gap-3">
-          <div className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
-            <BookOpenIcon className="size-5" />
+          <div className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary transition-all duration-200 group-hover:bg-primary group-hover:text-primary-foreground group-hover:shadow-sm">
+            <BookOpenIcon className="size-6" />
           </div>
           <div className="flex flex-wrap items-center justify-end gap-1.5">
             <Badge
               variant="outline"
-              className="border-primary/25 bg-primary/5 px-2.5 py-0.5 font-mono text-xs font-bold text-primary"
+              className="border-primary/30 bg-primary/5 px-2.5 py-0.5 font-mono text-xs font-bold text-primary"
             >
               {course.courseCode}
             </Badge>
             <Badge
               variant="secondary"
-              className="bg-muted px-2.5 py-0.5 font-mono text-xs font-semibold text-foreground"
+              className="border border-border/60 bg-muted/60 px-2.5 py-0.5 font-mono text-xs font-semibold text-foreground"
             >
               {classLabel}
             </Badge>
@@ -101,14 +107,18 @@ function CourseListCard({
           </h3>
         </div>
 
-        <div className="space-y-2 rounded-xl border border-border/60 bg-muted/30 p-3 text-xs">
+        <div className="space-y-2 rounded-xl border border-border/60 bg-muted/25 p-3.5 text-xs">
           <div className="flex items-center gap-2 text-muted-foreground">
-            <CalendarIcon className="size-3.5 shrink-0 text-primary/70" />
+            <CalendarIcon className="size-3.5 shrink-0 text-primary" />
             <span className="truncate font-medium">{semesterLabel}</span>
+          </div>
+          <div className="flex items-center gap-2 text-muted-foreground">
+            <UsersIcon className="size-3.5 shrink-0 text-primary" />
+            <span className="truncate font-medium">Lớp sinh viên: {classLabel}</span>
           </div>
           {course.syllabusVersionLabel && (
             <div className="flex items-center gap-2 text-muted-foreground">
-              <FileTextIcon className="size-3.5 shrink-0 text-primary/70" />
+              <FileTextIcon className="size-3.5 shrink-0 text-primary" />
               <span className="truncate font-mono font-medium">
                 Đề cương: {course.syllabusVersionLabel}
               </span>
@@ -168,56 +178,57 @@ export function CourseList() {
     });
   }, [courses, deferredQuery, selectedSemester]);
 
-  const displayName = user?.fullName || user?.name || "Thầy/Cô";
+  const displayName = user?.fullName || user?.name || "Giảng viên";
 
   return (
     <div className="mx-auto max-w-[1600px] space-y-8 pb-12">
-      <div className="relative overflow-hidden rounded-3xl border border-primary/20 bg-gradient-to-br from-primary to-primary/70 px-7 py-8 text-white shadow-lg sm:p-8">
-        <div className="pointer-events-none absolute -right-16 -top-16 size-64 rounded-full bg-white/10 blur-2xl" />
-        <div className="relative flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
-          <div className="max-w-2xl space-y-2">
-            <Badge className="border-0 bg-white/20 px-3 py-1 text-xs font-semibold text-white">
-              <SparklesIcon className="mr-1 h-3.5 w-3.5" />
-              Không gian giảng dạy SAGA
-            </Badge>
-            <h1 className="text-2xl font-extrabold tracking-tight sm:text-3xl">
-              Xin chào, {displayName}
+      <div className="relative overflow-hidden rounded-3xl border border-border/80 bg-card p-6 shadow-sm sm:p-8">
+        <div className="pointer-events-none absolute -right-20 -top-20 size-72 rounded-full bg-primary/10 blur-3xl" />
+        <div className="pointer-events-none absolute -bottom-20 -left-20 size-72 rounded-full bg-accent/10 blur-3xl" />
+
+        <div className="relative flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+          <div className="max-w-3xl space-y-2.5">
+            <div className="inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/10 px-3 py-1 text-xs font-bold text-primary">
+              <SparklesIcon className="size-3.5" />
+              <span>Hệ thống Giám sát & Đánh giá Đồ án SAGA</span>
+            </div>
+            <h1 className="text-2xl font-extrabold tracking-tight text-foreground sm:text-3xl">
+              Không gian Giảng dạy của {displayName}
             </h1>
-            <p className="text-xs leading-relaxed text-white/80 sm:text-sm">
-              Chọn một lớp học phần được phân công để theo dõi tổng quan sĩ số, quản lý phân nhóm dự án và giám sát tiến độ thực hiện.
+            <p className="text-xs leading-relaxed text-muted-foreground sm:text-sm">
+              Chọn lớp học phần phụ trách để theo dõi sức khỏe các nhóm, kiểm tra tiến độ Sprint, đối soát nguồn gốc mã nguồn Git và đánh giá tỷ lệ đóng góp thực tế của sinh viên.
             </p>
           </div>
-          <div className="flex shrink-0 items-center gap-3">
-            <div className="min-w-[110px] rounded-2xl border border-white/20 bg-white/15 p-4 text-center text-white backdrop-blur-md">
-              <span className="block text-2xl font-black leading-none">
+
+          <div className="grid grid-cols-2 gap-3 sm:flex sm:items-center">
+            <div className="min-w-[130px] rounded-2xl border border-border/80 bg-muted/30 p-4 text-center">
+              <span className="block font-mono text-2xl font-black text-foreground">
                 {isLoading ? "…" : courses.length}
               </span>
-              <span className="mt-1 block text-[11px] font-semibold text-white/75">
-                Lớp phụ trách
+              <span className="mt-1 block text-xs font-semibold text-muted-foreground">
+                Lớp học phần
               </span>
             </div>
-            {semesters.length > 0 && (
-              <div className="min-w-[110px] rounded-2xl border border-white/20 bg-white/15 p-4 text-center text-white backdrop-blur-md">
-                <span className="block text-2xl font-black leading-none">
-                  {isLoading ? "…" : semesters.length}
-                </span>
-                <span className="mt-1 block text-[11px] font-semibold text-white/75">
-                  Học kỳ
-                </span>
-              </div>
-            )}
+            <div className="min-w-[130px] rounded-2xl border border-border/80 bg-muted/30 p-4 text-center">
+              <span className="block font-mono text-2xl font-black text-foreground">
+                {isLoading ? "…" : (semesters.length > 0 ? semesters.length : 1)}
+              </span>
+              <span className="mt-1 block text-xs font-semibold text-muted-foreground">
+                Học kỳ hoạt động
+              </span>
+            </div>
           </div>
         </div>
       </div>
 
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         {semesters.length > 1 ? (
-          <div className="flex items-center gap-1.5 overflow-x-auto pb-1">
+          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
             <button
               type="button"
               onClick={() => setSelectedSemester("ALL")}
               className={cn(
-                "rounded-xl px-3.5 py-1.5 text-xs font-bold transition-all cursor-pointer shrink-0",
+                "cursor-pointer shrink-0 rounded-xl px-4 py-2 text-xs font-bold transition-all",
                 selectedSemester === "ALL"
                   ? "bg-primary text-primary-foreground shadow-xs"
                   : "bg-muted/70 text-muted-foreground hover:bg-muted hover:text-foreground"
@@ -231,7 +242,7 @@ export function CourseList() {
                 type="button"
                 onClick={() => setSelectedSemester(s.code)}
                 className={cn(
-                  "rounded-xl px-3.5 py-1.5 text-xs font-bold transition-all cursor-pointer shrink-0",
+                  "cursor-pointer shrink-0 rounded-xl px-4 py-2 text-xs font-bold transition-all",
                   selectedSemester === s.code
                     ? "bg-primary text-primary-foreground shadow-xs"
                     : "bg-muted/70 text-muted-foreground hover:bg-muted hover:text-foreground"
@@ -244,12 +255,12 @@ export function CourseList() {
         ) : <div />}
 
         <div className="relative w-full sm:max-w-xs">
-          <SearchIcon className="absolute left-3 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
+          <SearchIcon className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             value={searchQuery}
             onChange={(event) => setSearchQuery(event.target.value)}
-            placeholder="Tìm mã lớp học phần, môn, lớp..."
-            className="h-9 rounded-xl pl-9 text-xs"
+            placeholder="Tìm mã lớp học phần, môn học, lớp..."
+            className="h-10 rounded-xl pl-9 text-xs"
           />
         </div>
       </div>
@@ -258,7 +269,7 @@ export function CourseList() {
         <CourseListSkeleton />
       ) : isError ? (
         <Card className="rounded-2xl border border-dashed border-destructive/30 p-8 text-center">
-          <p className="text-sm font-semibold text-foreground">Không tải được danh sách lớp</p>
+          <p className="text-sm font-semibold text-foreground">Không tải được danh sách lớp học phần</p>
           <p className="mt-1 text-xs text-muted-foreground">
             {getApiErrorMessage(error, "Vui lòng thử lại.")}
           </p>
@@ -272,25 +283,28 @@ export function CourseList() {
           </Button>
         </Card>
       ) : courses.length === 0 ? (
-        <Card className="grid min-h-52 place-items-center rounded-2xl border border-dashed border-border bg-card p-8">
+        <Card className="grid min-h-60 place-items-center rounded-2xl border border-dashed border-border bg-card p-8">
           <div className="text-center">
-            <GraduationCapIcon className="mx-auto mb-3 size-8 text-muted-foreground/40" />
-            <p className="text-sm font-semibold">Bạn chưa được phân công lớp học phần nào.</p>
+            <GraduationCapIcon className="mx-auto mb-3 size-10 text-muted-foreground/40" />
+            <p className="text-sm font-semibold text-foreground">Bạn chưa được phân công lớp học phần nào</p>
             <p className="mt-1 text-xs text-muted-foreground">
-              Khi quản trị viên gán lớp, danh sách sẽ xuất hiện tại đây.
+              Khi quản trị viên phân công lớp giảng dạy, danh sách sẽ hiển thị tại đây.
             </p>
           </div>
         </Card>
       ) : filteredCourses.length === 0 ? (
-        <Card className="grid min-h-52 place-items-center rounded-2xl border border-dashed border-border bg-card p-8">
+        <Card className="grid min-h-60 place-items-center rounded-2xl border border-dashed border-border bg-card p-8">
           <div className="text-center">
-            <SearchIcon className="mx-auto mb-3 size-8 text-muted-foreground/40" />
-            <p className="text-sm font-semibold">Không tìm thấy lớp học phần phù hợp</p>
+            <SearchIcon className="mx-auto mb-3 size-10 text-muted-foreground/40" />
+            <p className="text-sm font-semibold text-foreground">Không tìm thấy lớp học phần phù hợp</p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Vui lòng thử tìm kiếm với từ khóa khác hoặc xóa bộ lọc.
+            </p>
             <Button
               variant="outline"
               size="sm"
               onClick={() => setSearchQuery("")}
-              className="mt-3 cursor-pointer text-xs"
+              className="mt-4 cursor-pointer text-xs"
             >
               Xóa bộ lọc
             </Button>

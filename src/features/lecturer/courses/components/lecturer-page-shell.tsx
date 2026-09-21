@@ -55,7 +55,7 @@ export function LecturerPageShell({
   return (
     <div className="mx-auto w-full max-w-[1600px] space-y-6 pb-12">
       {effectiveBackLink && (
-        <div className="-mb-2">
+        <div>
           <Link
             href={effectiveBackLink.href}
             prefetch={true}

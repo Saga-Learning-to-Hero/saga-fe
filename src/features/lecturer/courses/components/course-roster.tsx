@@ -14,9 +14,9 @@ import {
 } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { LeaderBadge } from "@/components/common/leader-badge";
+import { MemberRoleBadge } from "@/components/common/leader-badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import {
   Table,
@@ -108,12 +108,7 @@ export function CourseRoster({ courseId, onSwitchToTeams }: CourseRosterProps) {
   if (isLoading || teamsQuery.isLoading) {
     return (
       <div className="space-y-4">
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <div className="h-20 animate-pulse rounded-2xl bg-muted/60" />
-          <div className="h-20 animate-pulse rounded-2xl bg-muted/60" />
-          <div className="h-20 animate-pulse rounded-2xl bg-muted/60" />
-          <div className="h-20 animate-pulse rounded-2xl bg-muted/60" />
-        </div>
+        <div className="h-20 animate-pulse rounded-2xl bg-muted/60" />
         <div className="h-80 animate-pulse rounded-2xl bg-muted/60" />
       </div>
     );
@@ -131,65 +126,59 @@ export function CourseRoster({ courseId, onSwitchToTeams }: CourseRosterProps) {
 
   return (
     <div className="space-y-5">
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Card className="rounded-2xl border border-border/80 bg-card p-4 shadow-xs">
-          <CardContent className="flex items-center gap-3.5 p-0">
-            <div className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+      <Card className="rounded-2xl border border-border/80 bg-card p-4 shadow-xs">
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-4 sm:divide-x sm:divide-border/60">
+          <div className="flex items-center gap-3.5 sm:px-3">
+            <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
               <UsersIcon className="size-5" />
             </div>
-            <div className="min-w-0 flex-1">
-              <p className="text-xs font-semibold text-muted-foreground truncate">Sĩ số sinh viên đang học</p>
-              <div className="flex items-baseline gap-1.5 mt-0.5">
-                <span className="font-mono text-2xl font-black text-foreground">{totalCount}</span>
-                <span className="text-xs font-medium text-muted-foreground">sinh viên</span>
+            <div>
+              <p className="text-xs font-semibold text-muted-foreground">Sĩ số sinh viên</p>
+              <div className="flex items-baseline gap-1 mt-0.5">
+                <span className="font-mono text-xl font-black text-foreground">{totalCount}</span>
+                <span className="text-xs text-muted-foreground">sinh viên</span>
               </div>
             </div>
-          </CardContent>
-        </Card>
+          </div>
 
-        <Card className="rounded-2xl border border-border/80 bg-card p-4 shadow-xs">
-          <CardContent className="flex items-center gap-3.5 p-0">
-            <div className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400">
+          <div className="flex items-center gap-3.5 sm:px-3">
+            <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400">
               <GraduationCapIcon className="size-5" />
             </div>
-            <div className="min-w-0 flex-1">
-              <p className="text-xs font-semibold text-muted-foreground truncate">Lớp sinh viên niên khóa</p>
-              <div className="flex items-baseline gap-1.5 mt-0.5">
-                <span className="font-mono text-2xl font-black text-foreground">{uniqueClassesCount}</span>
-                <span className="text-xs font-medium text-muted-foreground">lớp sinh hoạt</span>
+            <div>
+              <p className="text-xs font-semibold text-muted-foreground">Lớp niên khóa</p>
+              <div className="flex items-baseline gap-1 mt-0.5">
+                <span className="font-mono text-xl font-black text-foreground">{uniqueClassesCount}</span>
+                <span className="text-xs text-muted-foreground">lớp sinh hoạt</span>
               </div>
             </div>
-          </CardContent>
-        </Card>
+          </div>
 
-        <Card className="rounded-2xl border border-border/80 bg-card p-4 shadow-xs">
-          <CardContent className="flex items-center gap-3.5 p-0">
-            <div className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+          <div className="flex items-center gap-3.5 sm:px-3">
+            <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
               <CheckCircle2Icon className="size-5" />
             </div>
-            <div className="min-w-0 flex-1">
-              <p className="text-xs font-semibold text-muted-foreground truncate">Đã vào nhóm</p>
-              <div className="flex items-center justify-between gap-1.5 mt-0.5">
-                <div className="flex items-baseline gap-1">
-                  <span className="font-mono text-2xl font-black text-foreground">{assignedCount}</span>
-                  <span className="font-mono text-xs font-semibold text-muted-foreground">/ {totalCount}</span>
-                </div>
+            <div>
+              <p className="text-xs font-semibold text-muted-foreground">Đã vào nhóm</p>
+              <div className="flex items-baseline gap-1 mt-0.5">
+                <span className="font-mono text-xl font-black text-emerald-600 dark:text-emerald-400">
+                  {assignedCount}
+                </span>
+                <span className="text-xs text-muted-foreground">/ {totalCount}</span>
                 <Badge
                   variant="outline"
-                  className="border-emerald-500/30 bg-emerald-500/10 font-mono text-[11px] font-bold text-emerald-600 dark:text-emerald-400"
+                  className="ml-1 border-emerald-500/30 bg-emerald-500/10 font-mono text-[10px] font-bold text-emerald-600 dark:text-emerald-400 px-1.5 py-0"
                 >
                   {assignedPercentage}%
                 </Badge>
               </div>
             </div>
-          </CardContent>
-        </Card>
+          </div>
 
-        <Card className="rounded-2xl border border-border/80 bg-card p-4 shadow-xs">
-          <CardContent className="flex items-center gap-3.5 p-0">
+          <div className="flex items-center gap-3.5 sm:px-3">
             <div
               className={cn(
-                "flex size-11 shrink-0 items-center justify-center rounded-xl",
+                "flex size-10 shrink-0 items-center justify-center rounded-xl",
                 unassignedCount > 0
                   ? "bg-amber-500/10 text-amber-700 dark:text-amber-400"
                   : "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
@@ -201,30 +190,30 @@ export function CourseRoster({ courseId, onSwitchToTeams }: CourseRosterProps) {
                 <UserCheck2Icon className="size-5" />
               )}
             </div>
-            <div className="min-w-0 flex-1">
-              <p className="text-xs font-semibold text-muted-foreground truncate">Chưa có nhóm</p>
-              <div className="flex items-center justify-between gap-1.5 mt-0.5">
-                <span className="font-mono text-2xl font-black text-foreground">{unassignedCount}</span>
+            <div>
+              <p className="text-xs font-semibold text-muted-foreground">Chưa có nhóm</p>
+              <div className="flex items-baseline gap-1 mt-0.5">
+                <span className="font-mono text-xl font-black text-foreground">{unassignedCount}</span>
                 {unassignedCount > 0 ? (
                   <Badge
                     variant="outline"
-                    className="border-amber-500/30 bg-amber-500/10 font-mono text-[11px] font-bold text-amber-700 dark:text-amber-300"
+                    className="ml-1 border-amber-500/30 bg-amber-500/10 font-mono text-[10px] font-bold text-amber-700 dark:text-amber-300 px-1.5 py-0"
                   >
                     Cần xếp nhóm
                   </Badge>
                 ) : (
                   <Badge
                     variant="outline"
-                    className="border-emerald-500/30 bg-emerald-500/10 font-mono text-[11px] font-bold text-emerald-600 dark:text-emerald-400"
+                    className="ml-1 border-emerald-500/30 bg-emerald-500/10 font-mono text-[10px] font-bold text-emerald-600 dark:text-emerald-400 px-1.5 py-0"
                   >
-                    100% có nhóm
+                    Đầy đủ 100%
                   </Badge>
                 )}
               </div>
             </div>
-          </CardContent>
-        </Card>
-      </div>
+          </div>
+        </div>
+      </Card>
 
       <div className="flex flex-col gap-3.5 sm:flex-row sm:items-center sm:justify-between">
         <div className="space-y-1">
@@ -254,7 +243,9 @@ export function CourseRoster({ courseId, onSwitchToTeams }: CourseRosterProps) {
               size="sm"
               className={cn(
                 "h-7 text-xs font-semibold cursor-pointer rounded-lg shadow-2xs",
-                unassignedCount > 0 && statusFilter !== "UNASSIGNED" && "border-amber-500/40 text-amber-700 dark:text-amber-400 bg-amber-500/5"
+                unassignedCount > 0 &&
+                statusFilter !== "UNASSIGNED" &&
+                "border-amber-500/40 text-amber-700 dark:text-amber-400 bg-amber-500/5"
               )}
               onClick={() => setStatusFilter("UNASSIGNED")}
             >
@@ -305,9 +296,10 @@ export function CourseRoster({ courseId, onSwitchToTeams }: CourseRosterProps) {
                 <TableHead className="w-14 px-4 text-center text-xs font-bold text-muted-foreground">#</TableHead>
                 <TableHead className="px-4 text-xs font-bold text-muted-foreground">Mã sinh viên</TableHead>
                 <TableHead className="px-4 text-xs font-bold text-muted-foreground">Họ và tên sinh viên</TableHead>
-                <TableHead className="px-4 text-xs font-bold text-muted-foreground">Email trường</TableHead>
                 <TableHead className="px-4 text-xs font-bold text-muted-foreground">Lớp niên khóa</TableHead>
+                <TableHead className="px-4 text-xs font-bold text-muted-foreground">Email trường</TableHead>
                 <TableHead className="px-4 text-xs font-bold text-muted-foreground">Nhóm dự án</TableHead>
+                <TableHead className="px-4 text-xs font-bold text-muted-foreground">Vai trò</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody className="divide-y divide-border/60">
@@ -319,7 +311,7 @@ export function CourseRoster({ courseId, onSwitchToTeams }: CourseRosterProps) {
                       {index + 1}
                     </TableCell>
                     <TableCell className="px-4">
-                      <span className="inline-block rounded-md bg-primary/10 px-2 py-0.5 font-mono text-xs font-bold text-primary">
+                      <span className="inline-block rounded-md bg-primary/10 px-2 py-0.5 font-mono text-xs font-black text-primary">
                         {entry.studentCode}
                       </span>
                     </TableCell>
@@ -334,34 +326,38 @@ export function CourseRoster({ courseId, onSwitchToTeams }: CourseRosterProps) {
                       </div>
                     </TableCell>
                     <TableCell className="px-4">
+                      <Badge variant="secondary" className="font-mono text-[11px] font-semibold">
+                        {entry.classCode || "Chưa gắn lớp"}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="px-4">
                       <div className="flex items-center gap-1.5 font-mono text-xs text-muted-foreground">
                         <MailIcon className="size-3 text-muted-foreground/70" />
                         <span>{entry.email}</span>
                       </div>
                     </TableCell>
                     <TableCell className="px-4">
-                      <Badge variant="secondary" className="font-mono text-[11px] font-semibold">
-                        {entry.classCode || "Chưa gắn lớp"}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="px-4">
                       {teamInfo ? (
                         <Link
                           href={lecturerCourseTeamPath(courseId, teamInfo.teamId)}
                           prefetch={true}
-                          className="inline-flex items-center gap-1.5 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-1 text-xs font-bold text-emerald-700 dark:text-emerald-400 hover:bg-emerald-500/20 transition-colors"
+                          className="inline-flex items-center gap-1.5 rounded-lg border border-primary/25 bg-primary/5 px-2.5 py-1 text-xs font-bold text-primary hover:bg-primary/15 transition-colors"
                         >
                           <span className="font-mono">Team #{teamInfo.teamNo}</span>
                           <span className="font-medium text-foreground/80">— {teamInfo.teamName}</span>
-                          {teamInfo.isLeader && (
-                            <LeaderBadge variant="icon-only" />
-                          )}
                         </Link>
                       ) : (
                         <span className="inline-flex items-center gap-1 rounded-lg border border-amber-500/30 bg-amber-500/10 px-2.5 py-1 text-xs font-bold text-amber-700 dark:text-amber-400">
                           <AlertCircleIcon className="size-3" />
                           Chưa phân nhóm
                         </span>
+                      )}
+                    </TableCell>
+                    <TableCell className="px-4">
+                      {teamInfo ? (
+                        <MemberRoleBadge role={teamInfo.isLeader ? "LEADER" : "MEMBER"} />
+                      ) : (
+                        <span className="text-xs text-muted-foreground/60">—</span>
                       )}
                     </TableCell>
                   </TableRow>

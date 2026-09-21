@@ -26,8 +26,12 @@ export function lecturerCourseWeightSettingsPath(courseId: string) {
   return lecturerCourseContributionPath(courseId);
 }
 
-export function lecturerCourseGraphPath(courseId: string) {
-  return `/lecturer/courses/${courseId}/graph`;
+export function lecturerCourseGraphPath(courseId: string, teamId?: string | null) {
+  const base = `/lecturer/courses/${courseId}/graph`;
+  const trimmed = typeof teamId === "string" ? teamId.trim() : "";
+  if (!trimmed) return base;
+  const params = new URLSearchParams({ teamId: trimmed });
+  return `${base}?${params.toString()}`;
 }
 
 export function lecturerCoursePeerReviewsPath(
