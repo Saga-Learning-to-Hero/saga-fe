@@ -4,18 +4,18 @@
 
 | Thuộc tính | Giá trị |
 | --- | --- |
-| Lần chạy gần nhất | 16/09/2026 |
-| Nhánh | `feat/SAGA-76-notification-center-and-firebase-web-push` |
-| Commit kiểm tra | `6a05e3c` |
+| Lần chạy gần nhất | 20/09/2026 |
+| Nhánh | `feat/SAGA-91-admin-dashboard` |
+| Commit kiểm tra | Chưa commit — bản chờ review |
 | Lệnh thực thi | `npm test` |
 | Framework | Vitest 4.1.11 + jsdom |
-| Test files | **66 passed / 66** |
-| Test cases | **643 passed / 643** |
+| Test files | **85 passed / 85** |
+| Test cases | **811 passed / 811** |
 | Failed | **0** |
-| Normal / Abnormal / Boundary | **270 / 228 / 145** |
-| Thời gian Vitest báo cáo | **14.24s** |
+| Normal / Abnormal / Boundary | **354 / 268 / 189** |
+| Thời gian Vitest báo cáo | **18.90s** |
 
-Nguồn chi tiết canonical: [Current regression 16/09/2026](CURRENT_REGRESSION_2026-09-16.md).
+Nguồn chi tiết canonical: [Current regression 20/09/2026](CURRENT_REGRESSION_2026-09-20.md).
 
 Không dùng các số `39 files / 425 tests`, `240/240` hoặc `17 test files` của snapshot cũ làm kết quả hiện hành.
 
@@ -23,16 +23,17 @@ Không dùng các số `39 files / 425 tests`, `240/240` hoặc `17 test files` 
 
 | Nhóm kiểm thử | Files | Tests | N | A | B | Báo cáo chi tiết |
 | --- | ---: | ---: | ---: | ---: | ---: | --- |
-| Xác thực, lỗi API và hồ sơ | 7 | 70 | 20 | 35 | 15 | [Mục 1](CURRENT_REGRESSION_2026-09-16.md#1-xác-thực-lỗi-api-và-hồ-sơ) |
-| Quản trị học thuật | 6 | 84 | 33 | 35 | 16 | [Mục 2](CURRENT_REGRESSION_2026-09-16.md#2-quản-trị-học-thuật) |
-| Giảng viên, course, team, contribution và peer review | 13 | 143 | 43 | 56 | 44 | [Mục 3](CURRENT_REGRESSION_2026-09-16.md#3-giảng-viên-course-team-contribution-và-peer-review) |
-| Student course, project, integrations và realtime | 7 | 63 | 29 | 19 | 15 | [Mục 4](CURRENT_REGRESSION_2026-09-16.md#4-student-course-project-integrations-và-realtime) |
-| Notification Center, user realtime và Web Push | 5 | 42 | 23 | 13 | 6 | [Mục 5](CURRENT_REGRESSION_2026-09-16.md#5-notification-center-user-realtime-và-web-push) |
-| Student peer review | 7 | 43 | 14 | 18 | 11 | [Mục 6](CURRENT_REGRESSION_2026-09-16.md#6-student-peer-review) |
-| Sprint, Jira tasks, commits và evidence | 10 | 97 | 52 | 30 | 15 | [Mục 7](CURRENT_REGRESSION_2026-09-16.md#7-sprint-jira-tasks-commits-và-evidence) |
-| Graph và Pipeline | 9 | 75 | 43 | 16 | 16 | [Mục 8](CURRENT_REGRESSION_2026-09-16.md#8-graph-và-pipeline) |
-| Progress và student contribution | 2 | 26 | 13 | 6 | 7 | [Mục 9](CURRENT_REGRESSION_2026-09-16.md#9-progress-và-student-contribution) |
-| **Tổng cộng** | **66** | **643** | **270** | **228** | **145** | |
+| Xác thực, lỗi API và hồ sơ | 8 | 80 | 24 | 38 | 18 | [Snapshot](CURRENT_REGRESSION_2026-09-20.md) |
+| Admin học thuật, users và audit | 11 | 134 | 57 | 47 | 30 | [Snapshot](CURRENT_REGRESSION_2026-09-20.md) |
+| Admin Dashboard và analytics | 7 | 36 | 17 | 9 | 10 | [Báo cáo SAGA-91](06_ADMIN_DASHBOARD_UNIT_TEST_REPORT.md) |
+| Giảng viên | 14 | 150 | 46 | 57 | 47 | [Snapshot](CURRENT_REGRESSION_2026-09-20.md) |
+| Student course, project, integrations và realtime | 7 | 72 | 32 | 23 | 17 | [Snapshot](CURRENT_REGRESSION_2026-09-20.md) |
+| Notification Center, user realtime và Web Push | 5 | 43 | 24 | 13 | 6 | [Snapshot](CURRENT_REGRESSION_2026-09-20.md) |
+| Student peer review | 7 | 43 | 14 | 18 | 11 | [Snapshot](CURRENT_REGRESSION_2026-09-20.md) |
+| Sprint, Jira tasks, commits và evidence | 13 | 121 | 67 | 35 | 19 | [Snapshot](CURRENT_REGRESSION_2026-09-20.md) |
+| Graph và Pipeline | 11 | 106 | 60 | 22 | 24 | [Snapshot](CURRENT_REGRESSION_2026-09-20.md) |
+| Progress và student contribution | 2 | 26 | 13 | 6 | 7 | [Snapshot](CURRENT_REGRESSION_2026-09-20.md) |
+| **Tổng cộng** | **85** | **811** | **354** | **268** | **189** | |
 
 `N` = Normal, `A` = Abnormal, `B` = Boundary. Custom reporter mặc định coi test không có nhãn loại là Normal.
 
@@ -40,12 +41,14 @@ Không dùng các số `39 files / 425 tests`, `240/240` hoặc `17 test files` 
 
 Các file dưới đây được giữ để truy vết từng đợt nghiệm thu. Số liệu trong chúng không thay thế regression hiện hành:
 
-1. [Regression 14/09/2026 — 39 files, 425 tests](CURRENT_REGRESSION_2026-09-14.md)
-2. [01 — Auth](01_AUTH_UNIT_TEST_REPORT.md)
-3. [02 — Admin academic](02_ADMIN_ACADEMIC_UNIT_TEST_REPORT.md)
-4. [03 — Lecturer, course, team](03_LECTURER_COURSE_TEAM_UNIT_TEST_REPORT.md)
-5. [04 — Student project & integrations](04_STUDENT_PROJECT_INTEGRATIONS_UNIT_TEST_REPORT.md)
-6. [05 — Task evidence & work sessions](05_TASK_EVIDENCE_WORK_SESSIONS_UNIT_TEST_REPORT.md)
+1. [Regression 16/09/2026 — 66 files, 643 tests](CURRENT_REGRESSION_2026-09-16.md)
+2. [Regression 14/09/2026 — 39 files, 425 tests](CURRENT_REGRESSION_2026-09-14.md)
+3. [01 — Auth](01_AUTH_UNIT_TEST_REPORT.md)
+4. [02 — Admin academic](02_ADMIN_ACADEMIC_UNIT_TEST_REPORT.md)
+5. [03 — Lecturer, course, team](03_LECTURER_COURSE_TEAM_UNIT_TEST_REPORT.md)
+6. [04 — Student project & integrations](04_STUDENT_PROJECT_INTEGRATIONS_UNIT_TEST_REPORT.md)
+7. [05 — Task evidence & work sessions](05_TASK_EVIDENCE_WORK_SESSIONS_UNIT_TEST_REPORT.md)
+8. [06 — Admin Dashboard SAGA-91](06_ADMIN_DASHBOARD_UNIT_TEST_REPORT.md)
 
 ## Cách chạy và giới hạn coverage
 
@@ -56,8 +59,8 @@ npm run lint
 npx tsc --noEmit
 ```
 
-- `npm test` là nguồn pass/fail và số lượng test trong báo cáo này.
-- `npm run test:coverage` ngày 16/09/2026 cũng chạy thành công 66 files/643 tests và ghi nhận phạm vi được instrument như sau:
+- `npm test` ngày 20/09/2026 là nguồn pass/fail và số lượng test hiện hành trong báo cáo này.
+- Bảng coverage dưới đây là snapshot gần nhất ngày 16/09/2026 trên 66 files/643 tests; chưa chạy lại coverage cho snapshot 20/09/2026 nên không được hiểu là coverage của 811 test hiện hành.
 
 | Metric | Covered / Total | Tỷ lệ |
 | --- | ---: | ---: |
@@ -73,15 +76,17 @@ npx tsc --noEmit
 
 ## Cấu trúc file test
 
-Giữ unit/component test colocated cạnh source là phù hợp với kiến trúc feature-based hiện tại:
+Unit/component test hiện được tập trung theo cấu trúc phản chiếu source:
 
 ```text
-src/features/notification/api/
-├── notification-service.ts
-└── notification-service.spec.ts
+tests/unit/features/admin/dashboard/
+├── api/admin-dashboard-service.spec.ts
+├── components/dashboard-sections.spec.tsx
+├── hooks/use-admin-dashboard.spec.tsx
+└── lib/dashboard-format.spec.ts
 ```
 
-Không nên di chuyển hàng loạt 66 file test sang một thư mục riêng vì sẽ làm mất tính đồng sở hữu giữa module và test mà không cải thiện khả năng chạy test. Chỉ tạo thư mục cấp cao riêng cho test xuyên module:
+Giữ cấu trúc này nhất quán; không trộn trở lại test vào source nếu không có quyết định kiến trúc chung. Test xuyên module tiếp tục tách riêng:
 
 ```text
 tests/
