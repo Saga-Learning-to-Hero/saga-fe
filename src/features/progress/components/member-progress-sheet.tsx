@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import {
+  ArrowLeftIcon,
   ClockIcon,
   GitCommitIcon,
   LayersIcon,
@@ -20,7 +21,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
-import { TaskWorkSessionTimelineDialog } from "@/features/student/sprint-progress/components/task-work-session-timeline-dialog";
+import { TaskWorkSessionTimeline } from "@/features/student/sprint-progress/components/task-work-session-timeline";
 import { getAssigneeAvatarClass, getAssigneeInitials } from "@/features/student/sprint-progress/lib/assignee-avatar";
 import { useMemberProgress } from "@/features/student/project/hooks/useProjectSync";
 import { getApiErrorCode, getApiErrorMessage } from "@/lib/api-error";
@@ -106,314 +107,378 @@ export function MemberProgressSheet({
   );
 
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
+    <Sheet
+      open={open}
+      onOpenChange={(nextOpen) => {
+        if (!nextOpen) setTimelineTask(null);
+        onOpenChange(nextOpen);
+      }}
+    >
       <SheetContent
         side="right"
         className="w-full sm:max-w-2xl md:max-w-3xl data-[side=right]:sm:max-w-2xl data-[side=right]:md:max-w-3xl overflow-hidden p-0 flex flex-col bg-card border-l border-border/70 shadow-2xl"
       >
-        <SheetHeader className="p-5 border-b border-border/60 bg-muted/20 shrink-0">
-          <div className="flex items-start justify-between gap-3 pr-8">
-            <div className="flex items-center gap-3">
-              <Avatar className="size-12 rounded-2xl border border-border/80 shadow-2xs">
-                {avatarUrl ? (
-                  <AvatarImage
-                    src={avatarUrl}
-                    alt={data?.fullName || "Avatar"}
-                    className="rounded-2xl object-cover"
-                  />
-                ) : null}
-                <AvatarFallback
-                  className={cn("rounded-2xl font-mono text-xs font-bold", avatarColorClass)}
-                >
-                  {initials}
-                </AvatarFallback>
-              </Avatar>
-              <div className="space-y-1 text-left">
-                <SheetTitle className="text-base font-extrabold text-foreground flex items-center gap-2">
-                  <span>{data?.fullName || "Chi tiết tiến độ thành viên"}</span>
-                </SheetTitle>
-                <div className="flex flex-wrap items-center gap-1.5">
-                  <Badge variant="outline" className="font-mono text-[10px] px-1.5 py-0">
-                    {data?.studentCode || "..."}
-                  </Badge>
-                  <MemberRoleBadge role={data?.teamRole} />
+        {timelineTask ? (
+          <>
+            <SheetHeader className="p-5 border-b border-border/60 bg-muted/20 shrink-0">
+              <div className="flex items-start justify-between gap-3 pr-8">
+                <div className="flex items-center gap-3 min-w-0">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setTimelineTask(null)}
+                    className="size-8 shrink-0 rounded-xl hover:bg-muted text-muted-foreground hover:text-foreground cursor-pointer"
+                    aria-label="Quay lại danh sách task"
+                  >
+                    <ArrowLeftIcon className="size-4" />
+                  </Button>
+                  <div className="space-y-1 text-left min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      {timelineTask.key && (
+                        <span className="font-mono text-xs font-black text-primary bg-primary/10 px-1.5 py-0.5 rounded-md border border-primary/20 shrink-0">
+                          {timelineTask.key}
+                        </span>
+                      )}
+                      <SheetTitle className="text-base font-extrabold text-foreground truncate">
+                        {timelineTask.title || "Dòng thời gian công việc"}
+                      </SheetTitle>
+                    </div>
+                    <SheetDescription className="text-xs text-muted-foreground truncate">
+                      Lịch sử các phiên làm việc và commit của thành viên {data?.fullName || ""}
+                    </SheetDescription>
+                  </div>
                 </div>
               </div>
-            </div>
-          </div>
-          <SheetDescription className="text-xs text-muted-foreground text-left mt-2">
-            Số liệu đối soát tự động từ Jira và GitHub. Không suy ra điểm đóng góp từ số lượng commit.
-          </SheetDescription>
-        </SheetHeader>
+            </SheetHeader>
 
-        <div className="flex-1 overflow-y-auto p-5 space-y-5 custom-scrollbar">
-          {query.isLoading ? (
-            <div className="flex flex-col items-center justify-center gap-2 py-16 text-xs text-muted-foreground">
-              <Loader2Icon className="size-6 animate-spin text-primary" />
-              <span>Đang tải số liệu thành viên từ máy chủ...</span>
+            <div className="flex-1 overflow-y-auto p-5 space-y-4 custom-scrollbar">
+              <TaskWorkSessionTimeline
+                projectId={projectId}
+                taskId={timelineTask.id}
+              />
             </div>
-          ) : notInTeam ? (
-            <div className="rounded-2xl border border-dashed border-amber-500/40 bg-amber-500/5 p-6 text-center">
-              <p className="text-sm font-bold text-foreground">Thành viên không còn thuộc nhóm</p>
-              <p className="mt-1.5 text-xs text-muted-foreground">
-                Máy chủ ghi nhận người này không còn là thành viên hoạt động của dự án.
-              </p>
-            </div>
-          ) : query.isError ? (
-            <div className="rounded-2xl border border-dashed border-destructive/40 bg-destructive/5 p-6 text-center">
-              <p className="text-sm font-bold text-destructive">Không thể tải thông tin thành viên</p>
-              <p className="mt-1.5 text-xs text-muted-foreground">
-                {getApiErrorMessage(query.error, "Vui lòng kiểm tra lại kết nối.")}
-              </p>
+
+            <div className="p-4 border-t border-border/60 bg-muted/20 flex items-center justify-between shrink-0">
               <Button
                 type="button"
-                size="sm"
                 variant="outline"
-                className="mt-3.5 h-8 text-xs cursor-pointer"
-                onClick={() => void query.refetch()}
+                size="sm"
+                className="cursor-pointer text-xs h-8 px-3 rounded-xl gap-1.5"
+                onClick={() => setTimelineTask(null)}
               >
-                Thử lại
+                <ArrowLeftIcon className="size-3.5" />
+                <span>Quay lại danh sách</span>
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="cursor-pointer text-xs h-8 px-4 rounded-xl"
+                onClick={() => onOpenChange(false)}
+              >
+                Đóng
               </Button>
             </div>
-          ) : data ? (
-            <>
-              <div className="rounded-2xl border border-border/70 bg-muted/10 p-4 space-y-3 shadow-2xs">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <div className="w-7 h-7 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center">
-                      <ListTodoIcon className="w-3.5 h-3.5" />
+          </>
+        ) : (
+          <>
+            <SheetHeader className="p-5 border-b border-border/60 bg-muted/20 shrink-0">
+              <div className="flex items-start justify-between gap-3 pr-8">
+                <div className="flex items-center gap-3">
+                  <Avatar className="size-12 rounded-2xl border border-border/80 shadow-2xs">
+                    {avatarUrl ? (
+                      <AvatarImage
+                        src={avatarUrl}
+                        alt={data?.fullName || "Avatar"}
+                        className="rounded-2xl object-cover"
+                      />
+                    ) : null}
+                    <AvatarFallback
+                      className={cn("rounded-2xl font-mono text-xs font-bold", avatarColorClass)}
+                    >
+                      {initials}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="space-y-1 text-left">
+                    <SheetTitle className="text-base font-extrabold text-foreground flex items-center gap-2">
+                      <span>{data?.fullName || "Chi tiết tiến độ thành viên"}</span>
+                    </SheetTitle>
+                    <div className="flex flex-wrap items-center gap-1.5">
+                      <Badge variant="outline" className="font-mono text-[10px] px-1.5 py-0">
+                        {data?.studentCode || "..."}
+                      </Badge>
+                      <MemberRoleBadge role={data?.teamRole} />
                     </div>
-                    <span className="text-xs font-bold text-foreground">Tiến độ Đầu việc (Jira Tasks)</span>
-                  </div>
-                  <span className="font-mono text-xs font-bold text-foreground">
-                    {completedTasks}/{totalAssigned} SP ({taskCompletionRate}%)
-                  </span>
-                </div>
-
-                <div className="w-full h-2 rounded-full bg-muted overflow-hidden border border-border/40">
-                  <div
-                    className="h-full bg-emerald-500 rounded-full transition-all duration-300"
-                    style={{ width: `${Math.min(100, taskCompletionRate)}%` }}
-                  />
-                </div>
-
-                <div className="grid grid-cols-3 gap-2 pt-1 text-center font-mono">
-                  <div className="rounded-xl border border-border/60 bg-card p-2">
-                    <span className="text-[10px] text-muted-foreground block font-sans">Đã xong</span>
-                    <span className="text-sm font-extrabold text-emerald-600 dark:text-emerald-400">
-                      {data.taskSummary.completed ?? 0}
-                    </span>
-                  </div>
-                  <div className="rounded-xl border border-border/60 bg-card p-2">
-                    <span className="text-[10px] text-muted-foreground block font-sans">Chưa xong</span>
-                    <span className="text-sm font-extrabold text-amber-600 dark:text-amber-400">
-                      {data.taskSummary.incomplete ?? 0}
-                    </span>
-                  </div>
-                  <div className="rounded-xl border border-border/60 bg-card p-2">
-                    <span className="text-[10px] text-muted-foreground block font-sans">Đang làm</span>
-                    <span className="text-sm font-extrabold text-primary">
-                      {inProgressTasks}
-                    </span>
                   </div>
                 </div>
               </div>
+              <SheetDescription className="text-xs text-muted-foreground text-left mt-2">
+                Số liệu đối soát tự động từ Jira và GitHub. Không suy ra điểm đóng góp từ số lượng commit.
+              </SheetDescription>
+            </SheetHeader>
 
-              <div className="rounded-2xl border border-border/70 bg-muted/10 p-4 space-y-3 shadow-2xs">
-                <div className="flex items-center gap-2">
-                  <div className="w-7 h-7 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400 flex items-center justify-center">
-                    <GitCommitIcon className="w-3.5 h-3.5" />
-                  </div>
-                  <span className="text-xs font-bold text-foreground">Minh chứng Kỹ thuật (GitHub Commits)</span>
+            <div className="flex-1 overflow-y-auto p-5 space-y-5 custom-scrollbar">
+              {query.isLoading ? (
+                <div className="flex flex-col items-center justify-center gap-2 py-16 text-xs text-muted-foreground">
+                  <Loader2Icon className="size-6 animate-spin text-primary" />
+                  <span>Đang tải số liệu thành viên từ máy chủ...</span>
                 </div>
-
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
-                  <div className="rounded-xl border border-border/60 bg-card p-2.5">
-                    <span className="text-[10px] text-muted-foreground block">Tổng Commits</span>
-                    <span className="font-mono text-base font-extrabold text-foreground">
-                      {data.commitSummary.total}
-                    </span>
-                  </div>
-                  <div className="rounded-xl border border-border/60 bg-card p-2.5">
-                    <span className="text-[10px] text-muted-foreground block">Đã gắn mã Jira</span>
-                    <span className="font-mono text-base font-extrabold text-foreground">
-                      {data.commitSummary.linkedToTasks}
-                    </span>
-                    <span className="text-[10px] text-muted-foreground font-mono ml-1">
-                      (
-                      {formatLinkedCommitRatio(
-                        data.commitSummary.linkedToTasks,
-                        data.commitSummary.total
-                      )}
-                      )
-                    </span>
-                  </div>
-                  <div className="rounded-xl border border-border/60 bg-card p-2.5 col-span-2 sm:col-span-1">
-                    <span className="text-[10px] text-muted-foreground block">Task có commit</span>
-                    <span className="font-mono text-base font-extrabold text-foreground">
-                      {data.commitSummary.tasksWithLinkedCommits}
-                    </span>
-                  </div>
+              ) : notInTeam ? (
+                <div className="rounded-2xl border border-dashed border-amber-500/40 bg-amber-500/5 p-6 text-center">
+                  <p className="text-sm font-bold text-foreground">Thành viên không còn thuộc nhóm</p>
+                  <p className="mt-1.5 text-xs text-muted-foreground">
+                    Máy chủ ghi nhận người này không còn là thành viên hoạt động của dự án.
+                  </p>
                 </div>
-
-                <div className="text-[11px] text-muted-foreground flex items-center justify-between pt-1 border-t border-border/40">
-                  <span>Lần commit gần nhất:</span>
-                  <span className="font-mono text-foreground font-medium">
-                    {formatDateTime(
-                      data.commitSummary.lastCommitAt ?? data.commitSummary.lastCommittedAt
-                    )}
-                  </span>
+              ) : query.isError ? (
+                <div className="rounded-2xl border border-dashed border-destructive/40 bg-destructive/5 p-6 text-center">
+                  <p className="text-sm font-bold text-destructive">Không thể tải thông tin thành viên</p>
+                  <p className="mt-1.5 text-xs text-muted-foreground">
+                    {getApiErrorMessage(query.error, "Vui lòng kiểm tra lại kết nối.")}
+                  </p>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    className="mt-3.5 h-8 text-xs cursor-pointer"
+                    onClick={() => void query.refetch()}
+                  >
+                    Thử lại
+                  </Button>
                 </div>
-              </div>
-
-              <div className="rounded-2xl border border-border/70 bg-muted/10 p-4 space-y-3 shadow-2xs">
-                <div className="flex items-center gap-2">
-                  <div className="w-7 h-7 rounded-xl bg-teal-500/10 text-teal-600 dark:text-teal-400 flex items-center justify-center">
-                    <ShieldCheckIcon className="w-3.5 h-3.5" />
-                  </div>
-                  <span className="text-xs font-bold text-foreground">Tài liệu & Phiên làm việc</span>
-                </div>
-
-                <div className="grid grid-cols-4 gap-2 text-center font-mono">
-                  <div className="rounded-xl border border-border/60 bg-card p-2">
-                    <span className="text-[10px] text-muted-foreground block font-sans">Phiên</span>
-                    <span className="text-sm font-extrabold text-foreground">
-                      {data.evidenceSummary.workSessions}
-                    </span>
-                  </div>
-                  <div className="rounded-xl border border-border/60 bg-card p-2">
-                    <span className="text-[10px] text-muted-foreground block font-sans">Tệp</span>
-                    <span className="text-sm font-extrabold text-foreground">
-                      {data.evidenceSummary.files}
-                    </span>
-                  </div>
-                  <div className="rounded-xl border border-border/60 bg-card p-2">
-                    <span className="text-[10px] text-muted-foreground block font-sans">Web</span>
-                    <span className="text-sm font-extrabold text-foreground">
-                      {data.evidenceSummary.webLinks}
-                    </span>
-                  </div>
-                  <div className="rounded-xl border border-border/60 bg-card p-2">
-                    <span className="text-[10px] text-muted-foreground block font-sans">Xác nhận</span>
-                    <span className="text-sm font-extrabold text-foreground">
-                      {data.evidenceSummary.confirmations}
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="space-y-3 pt-2">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <LayersIcon className="w-4 h-4 text-primary" />
-                    <h3 className="text-xs font-bold text-foreground">
-                      Danh sách Task được phân công ({data.assignedTasks.length})
-                    </h3>
-                  </div>
-
-                  <div className="flex items-center gap-1 p-0.5 rounded-lg border border-border/60 bg-muted/40">
-                    <button
-                      type="button"
-                      onClick={() => setTaskFilter("ALL")}
-                      className={`px-2 py-0.5 text-[10px] font-semibold rounded-md transition-all cursor-pointer ${taskFilter === "ALL"
-                        ? "bg-card text-foreground shadow-2xs font-bold"
-                        : "text-muted-foreground hover:text-foreground"
-                        }`}
-                    >
-                      Tất cả
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setTaskFilter("IN_PROGRESS")}
-                      className={`px-2 py-0.5 text-[10px] font-semibold rounded-md transition-all cursor-pointer ${taskFilter === "IN_PROGRESS"
-                        ? "bg-card text-foreground shadow-2xs font-bold"
-                        : "text-muted-foreground hover:text-foreground"
-                        }`}
-                    >
-                      Đang làm
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setTaskFilter("DONE")}
-                      className={`px-2 py-0.5 text-[10px] font-semibold rounded-md transition-all cursor-pointer ${taskFilter === "DONE"
-                        ? "bg-card text-foreground shadow-2xs font-bold"
-                        : "text-muted-foreground hover:text-foreground"
-                        }`}
-                    >
-                      Đã xong
-                    </button>
-                  </div>
-                </div>
-
-                {filteredTasks.length === 0 ? (
-                  <div className="rounded-2xl border border-dashed border-border/80 p-6 text-center text-xs text-muted-foreground">
-                    Không có task nào trong trạng thái này.
-                  </div>
-                ) : (
-                  <div className="space-y-2 max-h-[440px] overflow-y-auto custom-scrollbar pr-1">
-                    {filteredTasks.map((task) => (
-                      <div
-                        key={task.id}
-                        onClick={() =>
-                          setTimelineTask({
-                            id: task.id,
-                            title: task.title,
-                            key: task.externalKey,
-                          })
-                        }
-                        className="rounded-xl border border-border/70 bg-card p-3 hover:border-primary/60 transition-all shadow-2xs space-y-1.5 cursor-pointer group"
-                      >
-                        <div className="flex items-start justify-between gap-2">
-                          <span className="text-xs font-semibold text-foreground group-hover:text-primary transition-colors leading-snug">
-                            {task.title}
-                          </span>
-                          <Badge
-                            variant="outline"
-                            className={`text-[9px] font-mono shrink-0 ${(task.status || "").toUpperCase() === "DONE"
-                              ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30"
-                              : "bg-muted text-muted-foreground"
-                              }`}
-                          >
-                            {task.status}
-                          </Badge>
+              ) : data ? (
+                <>
+                  <div className="rounded-2xl border border-border/70 bg-muted/10 p-4 space-y-3 shadow-2xs">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="w-7 h-7 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center">
+                          <ListTodoIcon className="w-3.5 h-3.5" />
                         </div>
-                        <div className="flex items-center justify-between text-[10px] font-mono text-muted-foreground">
-                          <span className="text-primary font-bold">{task.externalKey}</span>
-                          <span className="inline-flex items-center gap-1 text-primary group-hover:underline font-sans">
-                            <ClockIcon className="size-3" />
-                            <span>Xem dòng thời gian</span>
-                          </span>
-                        </div>
+                        <span className="text-xs font-bold text-foreground">Tiến độ Đầu việc (Jira Tasks)</span>
                       </div>
-                    ))}
+                      <span className="font-mono text-xs font-bold text-foreground">
+                        {completedTasks}/{totalAssigned} SP ({taskCompletionRate}%)
+                      </span>
+                    </div>
+
+                    <div className="w-full h-2 rounded-full bg-muted overflow-hidden border border-border/40">
+                      <div
+                        className="h-full bg-emerald-500 rounded-full transition-all duration-300"
+                        style={{ width: `${Math.min(100, taskCompletionRate)}%` }}
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-2 pt-1 text-center font-mono">
+                      <div className="rounded-xl border border-border/60 bg-card p-2">
+                        <span className="text-[10px] text-muted-foreground block font-sans">Đã xong</span>
+                        <span className="text-sm font-extrabold text-emerald-600 dark:text-emerald-400">
+                          {data.taskSummary.completed ?? 0}
+                        </span>
+                      </div>
+                      <div className="rounded-xl border border-border/60 bg-card p-2">
+                        <span className="text-[10px] text-muted-foreground block font-sans">Chưa xong</span>
+                        <span className="text-sm font-extrabold text-amber-600 dark:text-amber-400">
+                          {data.taskSummary.incomplete ?? 0}
+                        </span>
+                      </div>
+                      <div className="rounded-xl border border-border/60 bg-card p-2">
+                        <span className="text-[10px] text-muted-foreground block font-sans">Đang làm</span>
+                        <span className="text-sm font-extrabold text-primary">
+                          {inProgressTasks}
+                        </span>
+                      </div>
+                    </div>
                   </div>
-                )}
-              </div>
-            </>
-          ) : null}
-        </div>
 
-        <div className="p-4 border-t border-border/60 bg-muted/20 flex justify-end shrink-0">
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            className="cursor-pointer text-xs h-8 px-4 rounded-xl"
-            onClick={() => onOpenChange(false)}
-          >
-            Đóng
-          </Button>
-        </div>
+                  <div className="rounded-2xl border border-border/70 bg-muted/10 p-4 space-y-3 shadow-2xs">
+                    <div className="flex items-center gap-2">
+                      <div className="w-7 h-7 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400 flex items-center justify-center">
+                        <GitCommitIcon className="w-3.5 h-3.5" />
+                      </div>
+                      <span className="text-xs font-bold text-foreground">Minh chứng Kỹ thuật (GitHub Commits)</span>
+                    </div>
+
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+                      <div className="rounded-xl border border-border/60 bg-card p-2.5">
+                        <span className="text-[10px] text-muted-foreground block">Tổng Commits</span>
+                        <span className="font-mono text-base font-extrabold text-foreground">
+                          {data.commitSummary.total}
+                        </span>
+                      </div>
+                      <div className="rounded-xl border border-border/60 bg-card p-2.5">
+                        <span className="text-[10px] text-muted-foreground block">Đã gắn mã Jira</span>
+                        <span className="font-mono text-base font-extrabold text-foreground">
+                          {data.commitSummary.linkedToTasks}
+                        </span>
+                        <span className="text-[10px] text-muted-foreground font-mono ml-1">
+                          (
+                          {formatLinkedCommitRatio(
+                            data.commitSummary.linkedToTasks,
+                            data.commitSummary.total
+                          )}
+                          )
+                        </span>
+                      </div>
+                      <div className="rounded-xl border border-border/60 bg-card p-2.5 col-span-2 sm:col-span-1">
+                        <span className="text-[10px] text-muted-foreground block">Task có commit</span>
+                        <span className="font-mono text-base font-extrabold text-foreground">
+                          {data.commitSummary.tasksWithLinkedCommits}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="text-[11px] text-muted-foreground flex items-center justify-between pt-1 border-t border-border/40">
+                      <span>Lần commit gần nhất:</span>
+                      <span className="font-mono text-foreground font-medium">
+                        {formatDateTime(
+                          data.commitSummary.lastCommitAt ?? data.commitSummary.lastCommittedAt
+                        )}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="rounded-2xl border border-border/70 bg-muted/10 p-4 space-y-3 shadow-2xs">
+                    <div className="flex items-center gap-2">
+                      <div className="w-7 h-7 rounded-xl bg-teal-500/10 text-teal-600 dark:text-teal-400 flex items-center justify-center">
+                        <ShieldCheckIcon className="w-3.5 h-3.5" />
+                      </div>
+                      <span className="text-xs font-bold text-foreground">Tài liệu & Phiên làm việc</span>
+                    </div>
+
+                    <div className="grid grid-cols-4 gap-2 text-center font-mono">
+                      <div className="rounded-xl border border-border/60 bg-card p-2">
+                        <span className="text-[10px] text-muted-foreground block font-sans">Phiên</span>
+                        <span className="text-sm font-extrabold text-foreground">
+                          {data.evidenceSummary.workSessions}
+                        </span>
+                      </div>
+                      <div className="rounded-xl border border-border/60 bg-card p-2">
+                        <span className="text-[10px] text-muted-foreground block font-sans">Tệp</span>
+                        <span className="text-sm font-extrabold text-foreground">
+                          {data.evidenceSummary.files}
+                        </span>
+                      </div>
+                      <div className="rounded-xl border border-border/60 bg-card p-2">
+                        <span className="text-[10px] text-muted-foreground block font-sans">Web</span>
+                        <span className="text-sm font-extrabold text-foreground">
+                          {data.evidenceSummary.webLinks}
+                        </span>
+                      </div>
+                      <div className="rounded-xl border border-border/60 bg-card p-2">
+                        <span className="text-[10px] text-muted-foreground block font-sans">Xác nhận</span>
+                        <span className="text-sm font-extrabold text-foreground">
+                          {data.evidenceSummary.confirmations}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="space-y-3 pt-2">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <LayersIcon className="w-4 h-4 text-primary" />
+                        <h3 className="text-xs font-bold text-foreground">
+                          Danh sách Task được phân công ({data.assignedTasks.length})
+                        </h3>
+                      </div>
+
+                      <div className="flex items-center gap-1 p-0.5 rounded-lg border border-border/60 bg-muted/40">
+                        <button
+                          type="button"
+                          onClick={() => setTaskFilter("ALL")}
+                          className={`px-2 py-0.5 text-[10px] font-semibold rounded-md transition-all cursor-pointer ${taskFilter === "ALL"
+                            ? "bg-card text-foreground shadow-2xs font-bold"
+                            : "text-muted-foreground hover:text-foreground"
+                            }`}
+                        >
+                          Tất cả
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setTaskFilter("IN_PROGRESS")}
+                          className={`px-2 py-0.5 text-[10px] font-semibold rounded-md transition-all cursor-pointer ${taskFilter === "IN_PROGRESS"
+                            ? "bg-card text-foreground shadow-2xs font-bold"
+                            : "text-muted-foreground hover:text-foreground"
+                            }`}
+                        >
+                          Đang làm
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setTaskFilter("DONE")}
+                          className={`px-2 py-0.5 text-[10px] font-semibold rounded-md transition-all cursor-pointer ${taskFilter === "DONE"
+                            ? "bg-card text-foreground shadow-2xs font-bold"
+                            : "text-muted-foreground hover:text-foreground"
+                            }`}
+                        >
+                          Đã xong
+                        </button>
+                      </div>
+                    </div>
+
+                    {filteredTasks.length === 0 ? (
+                      <div className="rounded-2xl border border-dashed border-border/80 p-6 text-center text-xs text-muted-foreground">
+                        Không có task nào trong trạng thái này.
+                      </div>
+                    ) : (
+                      <div className="space-y-2 max-h-[440px] overflow-y-auto custom-scrollbar pr-1">
+                        {filteredTasks.map((task) => (
+                          <div
+                            key={task.id}
+                            onClick={() =>
+                              setTimelineTask({
+                                id: task.id,
+                                title: task.title,
+                                key: task.externalKey,
+                              })
+                            }
+                            className="rounded-xl border border-border/70 bg-card p-3 hover:border-primary/60 transition-all shadow-2xs space-y-1.5 cursor-pointer group"
+                          >
+                            <div className="flex items-start justify-between gap-2">
+                              <span className="text-xs font-semibold text-foreground group-hover:text-primary transition-colors leading-snug">
+                                {task.title}
+                              </span>
+                              <Badge
+                                variant="outline"
+                                className={`text-[9px] font-mono shrink-0 ${(task.status || "").toUpperCase() === "DONE"
+                                  ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30"
+                                  : "bg-muted text-muted-foreground"
+                                  }`}
+                              >
+                                {task.status}
+                              </Badge>
+                            </div>
+                            <div className="flex items-center justify-between text-[10px] font-mono text-muted-foreground">
+                              <span className="text-primary font-bold">{task.externalKey}</span>
+                              <span className="inline-flex items-center gap-1 text-primary group-hover:underline font-sans">
+                                <ClockIcon className="size-3" />
+                                <span>Xem dòng thời gian</span>
+                              </span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </>
+              ) : null}
+            </div>
+
+            <div className="p-4 border-t border-border/60 bg-muted/20 flex justify-end shrink-0">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="cursor-pointer text-xs h-8 px-4 rounded-xl"
+                onClick={() => onOpenChange(false)}
+              >
+                Đóng
+              </Button>
+            </div>
+          </>
+        )}
       </SheetContent>
-
-      <TaskWorkSessionTimelineDialog
-        open={Boolean(timelineTask)}
-        onOpenChange={(open) => !open && setTimelineTask(null)}
-        projectId={projectId || ""}
-        taskId={timelineTask?.id || ""}
-        taskTitle={timelineTask?.title}
-        taskKey={timelineTask?.key}
-      />
     </Sheet>
   );
 }
