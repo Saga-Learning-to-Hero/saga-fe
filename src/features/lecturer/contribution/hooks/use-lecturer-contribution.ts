@@ -7,7 +7,6 @@ import { TeamContributionService } from "../api/team-contribution-service";
 import { getApiErrorCode, getApiErrorMessage } from "@/lib/api-error";
 import type {
   ContributionConfigModeRequest,
-  ContributionOverrideRequest,
   ContributionSliceWeightsRequest,
   ProjectGroupWeightsRequest,
 } from "../types/contribution";
@@ -18,7 +17,6 @@ function getContributionErrorMessage(error: unknown, fallback: string): string {
   }
   return getApiErrorMessage(error, fallback);
 }
-
 export const CONTRIBUTION_QUERY_KEYS = {
   sliceWeights: (courseId: string) => ["contributionSliceWeights", courseId] as const,
   teamWeights: (courseId: string) => ["contributionTeamWeights", courseId] as const,
@@ -145,22 +143,6 @@ export function useUpdateProjectGroupWeights(context: {
     },
     onError: (error: unknown) => {
       toast.error(getApiErrorMessage(error, "Không thể lưu trọng số dự án nhóm."));
-    },
-  });
-}
-
-export function useOverrideContribution(teamId: string) {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: (payload: ContributionOverrideRequest) =>
-      TeamContributionService.overrideContribution(teamId, payload),
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: CONTRIBUTION_QUERY_KEYS.evaluation(teamId) });
-      toast.success("Đã điều chỉnh tỷ lệ đóng góp. Số liệu được lấy lại từ máy chủ.");
-    },
-    onError: (error: unknown) => {
-      toast.error(getApiErrorMessage(error, "Không thể điều chỉnh tỷ lệ đóng góp."));
     },
   });
 }

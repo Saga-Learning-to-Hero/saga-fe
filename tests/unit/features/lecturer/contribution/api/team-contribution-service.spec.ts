@@ -72,39 +72,6 @@ describe("TeamContributionService", () => {
 
   fptTest(
     {
-      id: "UTCID02",
-      type: "N",
-      executedDate: "09/09/2026",
-      description: "POST contribution-override dung studentProfileId, khong dung teamMemberId",
-    },
-    async () => {
-      const postSpy = vi.spyOn(apiClient, "post").mockResolvedValueOnce({
-        data: {
-          id: "override-1",
-          studentProfileId: mockStudentProfileId,
-          oldValue: 42,
-          newValue: 35,
-          reason: "Biên bản thỏa thuận nhóm",
-        },
-      });
-
-      const payload = {
-        studentProfileId: mockStudentProfileId,
-        percentage: 35,
-        reason: "Biên bản thỏa thuận nhóm",
-      };
-      const res = await TeamContributionService.overrideContribution(mockTeamId, payload);
-
-      expect(postSpy).toHaveBeenCalledWith(
-        `/api/teams/${mockTeamId}/contribution-override`,
-        payload
-      );
-      expect(res.newValue).toBe(35);
-    }
-  );
-
-  fptTest(
-    {
       id: "UTCID03",
       type: "A",
       executedDate: "09/09/2026",
@@ -118,31 +85,6 @@ describe("TeamContributionService", () => {
       await expect(TeamContributionService.getEvaluation(mockTeamId)).rejects.toMatchObject({
         code: "INVALID_CREDENTIALS",
         status: 401,
-      });
-    }
-  );
-
-  fptTest(
-    {
-      id: "UTCID04",
-      type: "A",
-      executedDate: "09/09/2026",
-      description: "Khong nuot loi 403 khi giang vien khong duoc override",
-    },
-    async () => {
-      vi.spyOn(apiClient, "post").mockRejectedValueOnce(
-        apiError("Không có quyền điều chỉnh", "LECTURER_COURSE_FORBIDDEN", 403)
-      );
-
-      await expect(
-        TeamContributionService.overrideContribution(mockTeamId, {
-          studentProfileId: mockStudentProfileId,
-          percentage: 30,
-          reason: "Lý do",
-        })
-      ).rejects.toMatchObject({
-        code: "LECTURER_COURSE_FORBIDDEN",
-        status: 403,
       });
     }
   );
@@ -198,42 +140,6 @@ describe("TeamContributionService", () => {
 
   fptTest(
     {
-      id: "UTCID08",
-      type: "A",
-      executedDate: "09/09/2026",
-      description: "Throw ValidationException khi studentProfileId rong luc override",
-    },
-    async () => {
-      await expect(
-        TeamContributionService.overrideContribution(mockTeamId, {
-          studentProfileId: "",
-          percentage: 20,
-          reason: "Lý do",
-        })
-      ).rejects.toThrow("Throw ValidationException: Student profile ID is required");
-    }
-  );
-
-  fptTest(
-    {
-      id: "UTCID09",
-      type: "A",
-      executedDate: "09/09/2026",
-      description: "Throw ValidationException khi percentage khong phai so",
-    },
-    async () => {
-      await expect(
-        TeamContributionService.overrideContribution(mockTeamId, {
-          studentProfileId: mockStudentProfileId,
-          percentage: Number.NaN,
-          reason: "Lý do",
-        })
-      ).rejects.toThrow("Throw ValidationException: Percentage is required");
-    }
-  );
-
-  fptTest(
-    {
       id: "UTCID10",
       type: "B",
       executedDate: "09/09/2026",
@@ -247,35 +153,6 @@ describe("TeamContributionService", () => {
       const res = await TeamContributionService.getEvaluation(mockTeamId);
 
       expect(res.members).toEqual([]);
-    }
-  );
-
-  fptTest(
-    {
-      id: "UTCID11",
-      type: "B",
-      executedDate: "09/09/2026",
-      description: "Override percentage = 0 la gia tri bien hop le",
-    },
-    async () => {
-      const postSpy = vi.spyOn(apiClient, "post").mockResolvedValueOnce({
-        data: {
-          id: "override-0",
-          studentProfileId: mockStudentProfileId,
-          oldValue: 42,
-          newValue: 0,
-          reason: "Không tham gia",
-        },
-      });
-
-      const res = await TeamContributionService.overrideContribution(mockTeamId, {
-        studentProfileId: mockStudentProfileId,
-        percentage: 0,
-        reason: "Không tham gia",
-      });
-
-      expect(postSpy).toHaveBeenCalled();
-      expect(res.newValue).toBe(0);
     }
   );
 

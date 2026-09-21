@@ -96,20 +96,6 @@ export type ContributionEvaluation = {
   members: ContributionMember[];
 };
 
-export type ContributionOverrideRequest = {
-  studentProfileId: string;
-  percentage: number;
-  reason: string;
-};
-
-export type ContributionOverrideResponse = {
-  id: string;
-  studentProfileId: string;
-  oldValue: number | null;
-  newValue: number | null;
-  reason: string;
-};
-
 export const EMPTY_SLICE_WEIGHTS: ContributionSliceWeightValues = {
   codeWeight: 0,
   testWeight: 0,
@@ -120,7 +106,6 @@ export const EMPTY_SLICE_WEIGHTS: ContributionSliceWeightValues = {
 function toNumber(value: unknown, fallback = 0): number {
   return typeof value === "number" && Number.isFinite(value) ? value : fallback;
 }
-
 function toNullableNumber(value: unknown): number | null {
   return typeof value === "number" && Number.isFinite(value) ? value : null;
 }
@@ -236,16 +221,5 @@ export function parseContributionEvaluation(value: unknown, teamId: string): Con
     configMode: parseContributionConfigMode(source.configMode ?? source.mode),
     sliceWeights: parseSliceWeightValues(source.sliceWeights),
     members,
-  };
-}
-
-export function parseContributionOverride(value: unknown): ContributionOverrideResponse {
-  const source = (value ?? {}) as Record<string, unknown>;
-  return {
-    id: typeof source.id === "string" ? source.id : "",
-    studentProfileId: typeof source.studentProfileId === "string" ? source.studentProfileId : "",
-    oldValue: toNullableNumber(source.oldValue),
-    newValue: toNullableNumber(source.newValue),
-    reason: typeof source.reason === "string" ? source.reason : "",
   };
 }
