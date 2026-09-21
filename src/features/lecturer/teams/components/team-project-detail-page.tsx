@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import {
   ArrowRightLeftIcon,
@@ -48,6 +48,10 @@ import { ReplaceTeamLeaderDialog } from "./replace-team-leader-dialog";
 import { MoveTeamMemberDialog } from "./move-team-member-dialog";
 import { ActivityHeatmapGrid, SprintBurndownChart } from "@/features/analytics";
 import { useProjectSprints } from "@/features/student/sprint-progress/hooks/use-project-sprints";
+import { useTaskOptions } from "@/features/student/sprint-progress/hooks/use-project-tasks";
+import { scopeSprintsToJiraSource } from "@/features/student/sprint-progress/lib/jira-source-scope";
+import { JiraSourceSwitcher } from "@/features/student/project/components/jira-source-switcher";
+import { useProjectJiraSourceSelection } from "@/features/student/project/hooks/use-project-jira-source-selection";
 import { useProjectProgress } from "@/features/student/project/hooks/useProjectSync";
 import { formatDateTime, normalizeProjectProgress } from "@/features/progress/lib/progress-format";
 import { ProjectProgressSummary } from "@/features/progress/components/project-progress-summary";
@@ -85,9 +89,21 @@ export function TeamProjectDetailPage({ courseId, teamId }: TeamProjectDetailPag
   });
   const progress = normalizeProjectProgress(progressQuery.data);
 
-  const { data: sprints = [] } = useProjectSprints(projectId || "", {
+  const jiraSource = useProjectJiraSourceSelection(projectId, { readerMode: true });
+  const { data: allSprints = [] } = useProjectSprints(projectId || "", jiraSource.effectiveSourceId, {
     enabled: Boolean(projectId),
   });
+  const { data: taskOptions } = useTaskOptions(projectId, {
+    enabled: Boolean(projectId && jiraSource.effectiveSourceId),
+    jiraIntegrationId: jiraSource.effectiveSourceId,
+  });
+  const sprints = useMemo(
+    () =>
+      jiraSource.effectiveSourceId
+        ? scopeSprintsToJiraSource(allSprints, taskOptions?.sprints)
+        : allSprints,
+    [allSprints, jiraSource.effectiveSourceId, taskOptions?.sprints]
+  );
 
   const backLink = {
     href: lecturerCourseTeamsPath(courseId),
@@ -378,7 +394,14 @@ export function TeamProjectDetailPage({ courseId, teamId }: TeamProjectDetailPag
 
         {hasProject ? (
           <div className="space-y-6">
+            <JiraSourceSwitcher
+              sources={jiraSource.activeSources}
+              value={jiraSource.effectiveSourceId}
+              onChange={jiraSource.selectSource}
+            />
+
             <SprintBurndownChart
+              key={`burndown-${jiraSource.effectiveSourceId || "default"}`}
               courseId={courseId}
               teamId={teamId}
               sprints={sprints.map((s) => ({
@@ -391,6 +414,7 @@ export function TeamProjectDetailPage({ courseId, teamId }: TeamProjectDetailPag
             />
 
             <ActivityHeatmapGrid
+              key={`heatmap-${jiraSource.effectiveSourceId || "default"}`}
               courseId={courseId}
               teamId={teamId}
               sprints={sprints.map((s) => ({

@@ -9,6 +9,7 @@ import { useCreateProjectTask } from "../hooks/use-project-tasks";
 
 interface QuickCreateTaskProps {
   projectId?: string | null;
+  jiraIntegrationId?: string;
   sprintId?: string;
   sprintExternalId?: string;
   sprintName?: string;
@@ -18,6 +19,7 @@ interface QuickCreateTaskProps {
 
 export function QuickCreateTask({
   projectId,
+  jiraIntegrationId,
   sprintId,
   sprintExternalId,
   sprintName,
@@ -110,6 +112,7 @@ export function QuickCreateTask({
         projectId,
         data: {
           summary: trimmed,
+          jiraIntegrationId,
           sprintExternalId: targetExternalSprintId,
         },
       });

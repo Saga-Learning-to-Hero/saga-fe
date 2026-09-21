@@ -35,6 +35,7 @@ import type { PipelineFilterState } from "../types/pipeline";
 interface UsePipelineGraphDataOptions {
   enabled: boolean;
   projectId: string | null;
+  jiraIntegrationId?: string;
   selectedTaskId: string | null;
   teamMembers: StudentTeamMember[];
   filter: PipelineFilterState;
@@ -43,6 +44,7 @@ interface UsePipelineGraphDataOptions {
 export function usePipelineGraphData({
   enabled,
   projectId,
+  jiraIntegrationId,
   selectedTaskId,
   teamMembers,
   filter,
@@ -59,7 +61,15 @@ export function usePipelineGraphData({
     enabled: plan.progressEnabled,
   });
   const tasksQuery = useProjectTasksData(plan.tasksProjectId);
-  const tasks = useMemo(() => mapPipelineTasks(tasksQuery.data || []), [tasksQuery.data]);
+  const tasks = useMemo(() => {
+    const sourceTasks = jiraIntegrationId
+      ? (tasksQuery.data || []).filter(
+          (task) =>
+            (task.source?.integrationId || task.jiraIntegrationId) === jiraIntegrationId
+        )
+      : tasksQuery.data || [];
+    return mapPipelineTasks(sourceTasks);
+  }, [jiraIntegrationId, tasksQuery.data]);
   const effectiveTaskId =
     selectedTaskId && tasks.some((task) => task.id === selectedTaskId) ? selectedTaskId : null;
   const commitsPlan = resolvePipelineQueryPlan({
@@ -269,7 +279,11 @@ export function usePipelineGraphData({
 
   const jiraStatus = integrationsQuery.data?.jira?.status || null;
   const githubStatus = integrationsQuery.data?.github?.status || null;
-  const isJiraActive = jiraStatus === "ACTIVE";
+  const isJiraActive =
+    jiraStatus === "ACTIVE" ||
+    (integrationsQuery.data?.jiraSources || []).some(
+      (source) => source.connectionStatus === "ACTIVE"
+    );
   const isGithubActive = githubStatus === "ACTIVE";
   const isBothActive = isJiraActive && isGithubActive;
   const isBothMissing = integrationsQuery.isSuccess && !isJiraActive && !isGithubActive;

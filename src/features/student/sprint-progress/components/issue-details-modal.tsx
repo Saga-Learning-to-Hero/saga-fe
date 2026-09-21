@@ -81,6 +81,7 @@ interface IssueDetailsModalProps {
   issue: SprintIssue | null;
   projectId?: string;
   isJiraConnected?: boolean;
+  defaultJiraIntegrationId?: string;
   defaultSprintId?: string;
   sprints: Sprint[];
   teamMembers: { id: string; name: string; avatar: string; studentCode: string }[];
@@ -97,6 +98,7 @@ export function IssueDetailsModal({
   issue,
   projectId,
   isJiraConnected = true,
+  defaultJiraIntegrationId,
   defaultSprintId,
   sprints,
   teamMembers,
@@ -124,10 +126,12 @@ export function IssueDetailsModal({
     () => jiraSources?.filter((s) => s.connectionStatus === "ACTIVE") || [],
     [jiraSources]
   );
-  const defaultJiraSourceId = activeJiraSources[0]?.integrationId;
+  const defaultJiraSourceId =
+    activeJiraSources.find((source) => source.integrationId === defaultJiraIntegrationId)
+      ?.integrationId || activeJiraSources[0]?.integrationId;
 
   const [selectedJiraSourceId, setSelectedJiraSourceId] = useState<string | undefined>(
-    issue?.jiraIntegrationId || undefined
+    issue?.jiraIntegrationId || defaultJiraIntegrationId || undefined
   );
 
   const effectiveJiraIntegrationId =
@@ -229,7 +233,11 @@ export function IssueDetailsModal({
       startDate: issue?.startDate || taskDetail?.startDate || "",
       dueDate: issue?.dueDate || taskDetail?.dueDate || "",
       parentTaskId: taskDetail?.parentTask?.id || "",
-      jiraIntegrationId: issue?.jiraIntegrationId || taskDetail?.jiraIntegrationId || undefined,
+      jiraIntegrationId:
+        issue?.jiraIntegrationId ||
+        taskDetail?.jiraIntegrationId ||
+        defaultJiraIntegrationId ||
+        undefined,
     };
   });
 

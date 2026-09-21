@@ -19,17 +19,16 @@ import {
   getTopLevelSprintIssues,
   mergeProjectedAndLocalIssues,
 } from "../lib/issue-collection";
-import { Loader2Icon, AlertCircleIcon, LayersIcon } from "lucide-react";
+import { Loader2Icon, AlertCircleIcon } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { CustomSelect } from "@/components/common/custom-select";
 import {
   useProjectSprints,
   useAssignTaskToSprint,
   usePatchSprint,
 } from "../hooks/use-project-sprints";
 import { useProjectTasksData, useTransitionTask, useTaskOptions } from "../hooks/use-project-tasks";
-import { useProjectIntegrations } from "@/features/student/project/hooks/useProjectIntegrations";
+import { useProjectJiraSourceSelection } from "@/features/student/project/hooks/use-project-jira-source-selection";
 import { useProjectRealtime } from "@/features/student/project/hooks/use-project-realtime";
 import { useProjectSyncStatus, useSyncProject } from "@/features/student/project/hooks/useProjectSync";
 import { toast } from "sonner";
@@ -40,6 +39,11 @@ import {
   setLocalSprintOverride,
 } from "../lib/optimistic-sprint-state";
 import { ActivityHeatmapGrid, SprintBurndownChart } from "@/features/analytics";
+import {
+  scopeIssuesToJiraSource,
+  scopeSprintsToJiraSource,
+} from "../lib/jira-source-scope";
+import { JiraSourceSwitcher } from "@/features/student/project/components/jira-source-switcher";
 
 export function SprintProgressView() {
   const { user: authUser } = useAuthStore();
@@ -48,26 +52,13 @@ export function SprintProgressView() {
   const { data: team } = useStudentMyTeam(courseId, { enabled: Boolean(courseId) });
   const projectId = team?.projectId || effectiveCourse?.projectId || "";
 
-  const { data: projectIntegrations } = useProjectIntegrations(projectId, {
-    enabled: Boolean(projectId),
-  });
-
-  const activeJiraSources = useMemo(() => {
-    return (projectIntegrations?.jiraSources || []).filter(
-      (s) => s.connectionStatus === "ACTIVE"
-    );
-  }, [projectIntegrations?.jiraSources]);
-
-  const [selectedSourceId, setSelectedSourceId] = useState<string | null>(null);
-
-  const effectiveSourceId = useMemo(() => {
-    if (selectedSourceId && activeJiraSources.some((s) => s.integrationId === selectedSourceId)) {
-      return selectedSourceId;
-    }
-    return activeJiraSources[0]?.integrationId || undefined;
-  }, [selectedSourceId, activeJiraSources]);
-
-  const isJiraConnected = activeJiraSources.length > 0 || projectIntegrations?.jira?.status === "ACTIVE";
+  const jiraSource = useProjectJiraSourceSelection(projectId);
+  const projectIntegrations = jiraSource.integrationsQuery.data;
+  const activeJiraSources = jiraSource.activeSources;
+  const effectiveSourceId = jiraSource.effectiveSourceId;
+  const isJiraConnected =
+    activeJiraSources.length > 0 ||
+    jiraSource.integrationsQuery.data?.jira?.status === "ACTIVE";
 
   const {
     data: projectTasks = [],
@@ -182,19 +173,25 @@ export function SprintProgressView() {
   }, [projectTasks, teamMembers, localTaskOverrides, localCustomIssues]);
 
   const scopedIssues = useMemo(() => {
-    if (!effectiveSourceId) return rawIssues;
-    return rawIssues.filter(
-      (i) => !i.jiraIntegrationId || i.jiraIntegrationId === effectiveSourceId
+    return scopeIssuesToJiraSource(
+      rawIssues,
+      effectiveSourceId,
+      activeJiraSources.length
     );
-  }, [rawIssues, effectiveSourceId]);
+  }, [rawIssues, effectiveSourceId, activeJiraSources.length]);
 
   const topLevelIssues = useMemo(() => getTopLevelSprintIssues(scopedIssues), [scopedIssues]);
 
+  const sourceScopedApiSprints = useMemo(() => {
+    if (!effectiveSourceId) return apiSprints;
+    return scopeSprintsToJiraSource(apiSprints, taskOptions?.sprints, scopedIssues);
+  }, [apiSprints, effectiveSourceId, scopedIssues, taskOptions?.sprints]);
+
   const sprints: Sprint[] = useMemo(() => {
-    if (!apiSprints || apiSprints.length === 0) {
+    if (!sourceScopedApiSprints || sourceScopedApiSprints.length === 0) {
       return [];
     }
-    return apiSprints.map((s) => {
+    return sourceScopedApiSprints.map((s) => {
       const sId = String(s.id);
       const sprintIssues = topLevelIssues.filter((i) => i.sprintId === sId);
       const completedIssues = sprintIssues.filter((i) => i.status === "DONE");
@@ -212,7 +209,7 @@ export function SprintProgressView() {
         completedStoryPoints: completedPoints,
       };
     });
-  }, [apiSprints, topLevelIssues]);
+  }, [sourceScopedApiSprints, topLevelIssues]);
 
   const epics: Epic[] = useMemo(() => {
     const epicMap = new Map<string, Epic>();
@@ -294,7 +291,7 @@ export function SprintProgressView() {
   }, [rawIssues]);
 
   const filteredIssues = useMemo(() => {
-    return rawIssues.filter((issue) => {
+    return scopedIssues.filter((issue) => {
       if (activeView === "BOARD" && issue.sprintId !== selectedSprintId) return false;
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase();
@@ -317,7 +314,7 @@ export function SprintProgressView() {
       }
       return true;
     });
-  }, [rawIssues, activeView, selectedSprintId, searchQuery, selectedAssigneeId, teamMembers]);
+  }, [scopedIssues, activeView, selectedSprintId, searchQuery, selectedAssigneeId, teamMembers]);
 
   const boardIssues = useMemo(() => getTopLevelSprintIssues(filteredIssues), [filteredIssues]);
 
@@ -430,30 +427,18 @@ export function SprintProgressView() {
       />
 
       {activeJiraSources.length > 1 && (
-        <div className="flex flex-wrap items-center justify-between gap-3 p-3 px-4 rounded-2xl border border-blue-500/30 bg-blue-500/[0.04]">
-          <div className="flex items-center gap-2.5 flex-wrap">
-            <div className="flex items-center gap-1.5 text-xs font-bold text-foreground">
-              <LayersIcon className="w-4 h-4 text-blue-500" />
-              <span>Nguồn Jira hiển thị:</span>
-            </div>
-            <div className="w-72">
-              <CustomSelect
-                id="jira-source-switcher"
-                value={effectiveSourceId || ""}
-                onChange={(val) => setSelectedSourceId(val)}
-                options={activeJiraSources.map((s) => ({
-                  value: s.integrationId,
-                  label: `${s.projectKey || "JIRA"} · ${s.siteName}`,
-                  subLabel: `Bảng: ${s.boardId || "Mặc định"}`,
-                }))}
-                className="text-xs"
-              />
-            </div>
-          </div>
-          <span className="text-[11px] text-muted-foreground">
-            Dự án có {activeJiraSources.length} nguồn Jira hoạt động song song. Chọn nguồn để xem bảng Sprint tương ứng.
-          </span>
-        </div>
+        <JiraSourceSwitcher
+          sources={activeJiraSources}
+          value={effectiveSourceId}
+          onChange={(val) => {
+            jiraSource.selectSource(val);
+            setUserSelectedSprintId(null);
+            setActiveIssueForModal(null);
+            setIsIssueModalOpen(false);
+            setActiveSprintForModal(null);
+            setIsSprintModalOpen(false);
+          }}
+        />
       )}
 
       {isLoadingTasks && (
@@ -554,6 +539,7 @@ export function SprintProgressView() {
         <SprintBacklogView
           sprints={sprints}
           issues={filteredIssues}
+          jiraIntegrationId={effectiveSourceId}
           onIssueClick={handleOpenIssueModal}
           onCreateIssueClick={(targetSprintId) => {
             setActiveIssueForModal(null);
@@ -652,6 +638,7 @@ export function SprintProgressView() {
           issue={activeIssueForModal}
           projectId={projectId}
           isJiraConnected={isJiraConnected}
+          defaultJiraIntegrationId={effectiveSourceId}
           defaultSprintId={defaultSprintIdForModal}
           sprints={sprints}
           teamMembers={teamMembers}
@@ -670,6 +657,7 @@ export function SprintProgressView() {
           isOpen={isSprintModalOpen}
           sprint={activeSprintForModal}
           projectId={projectId}
+          jiraIntegrationId={effectiveSourceId}
           onClose={() => setIsSprintModalOpen(false)}
           onSave={() => {
             setIsSprintModalOpen(false);

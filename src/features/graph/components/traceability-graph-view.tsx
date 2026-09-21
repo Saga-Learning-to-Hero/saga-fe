@@ -7,6 +7,10 @@ import { type CustomSelectOption } from "@/components/common/custom-select";
 import { useStudentCourseContext } from "@/features/student/courses/hooks/use-student-course-context";
 import { useStudentMyTeam } from "@/features/student/courses/hooks/use-student-courses";
 import { useProjectSprints } from "@/features/student/sprint-progress/hooks/use-project-sprints";
+import { useTaskOptions } from "@/features/student/sprint-progress/hooks/use-project-tasks";
+import { scopeSprintsToJiraSource } from "@/features/student/sprint-progress/lib/jira-source-scope";
+import { JiraSourceSwitcher } from "@/features/student/project/components/jira-source-switcher";
+import { useProjectJiraSourceSelection } from "@/features/student/project/hooks/use-project-jira-source-selection";
 import { getApiErrorMessage } from "@/lib/api-error";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
 import { CytoscapeGraphCanvas } from "./cytoscape-graph-canvas";
@@ -37,7 +41,21 @@ export function TraceabilityGraphView() {
   const teamQuery = useStudentMyTeam(courseId, { enabled: Boolean(courseId) });
   const projectId = teamQuery.data?.projectId || null;
 
-  const sprintsQuery = useProjectSprints(projectId, { enabled: Boolean(projectId) });
+  const jiraSource = useProjectJiraSourceSelection(projectId);
+  const sprintsQuery = useProjectSprints(projectId, jiraSource.effectiveSourceId, {
+    enabled: Boolean(projectId),
+  });
+  const taskOptionsQuery = useTaskOptions(projectId, {
+    enabled: Boolean(projectId && jiraSource.effectiveSourceId),
+    jiraIntegrationId: jiraSource.effectiveSourceId,
+  });
+  const sourceSprints = useMemo(
+    () =>
+      jiraSource.effectiveSourceId
+        ? scopeSprintsToJiraSource(sprintsQuery.data || [], taskOptionsQuery.data?.sprints)
+        : sprintsQuery.data || [],
+    [jiraSource.effectiveSourceId, sprintsQuery.data, taskOptionsQuery.data?.sprints]
+  );
 
   const [viewMode, setViewMode] = useState<"FLOW" | "GRAPH">("GRAPH");
   const [neo4jTab, setNeo4jTab] = useState<Neo4jTabMode>("OVERVIEW");
@@ -77,26 +95,27 @@ export function TraceabilityGraphView() {
   const pipeline = usePipelineGraphData({
     enabled: pipelineOpen,
     projectId,
+    jiraIntegrationId: jiraSource.effectiveSourceId,
     selectedTaskId,
     teamMembers: teamQuery.data?.members || [],
     filter: pipelineFilter,
   });
 
   const sprintOptions: CustomSelectOption[] = useMemo(() => {
-    const list = sprintsQuery.data || [];
+    const list = sourceSprints;
     return list.map((s) => ({
       value: s.id,
       label: s.name,
       subLabel: s.state ? `Trạng thái: ${s.state}` : undefined,
     }));
-  }, [sprintsQuery.data]);
+  }, [sourceSprints]);
 
   const defaultSprintId = useMemo(() => {
-    const list = sprintsQuery.data || [];
+    const list = sourceSprints;
     if (list.length === 0) return null;
     const active = list.find((s) => s.state?.toLowerCase() === "active");
     return active ? active.id : list[0].id;
-  }, [sprintsQuery.data]);
+  }, [sourceSprints]);
 
   const neo4jSprintId = selectedSprintState !== null ? selectedSprintState : (defaultSprintId || "ALL");
 
@@ -677,6 +696,19 @@ export function TraceabilityGraphView() {
           </div>
         </div>
       </div>
+
+      <JiraSourceSwitcher
+        sources={jiraSource.activeSources}
+        value={jiraSource.effectiveSourceId}
+        onChange={(integrationId) => {
+          jiraSource.selectSource(integrationId);
+          setSelectedSprintState(null);
+          setSelectedTaskId(null);
+          setFocusedNodeId(null);
+          setFocusedNodeLabel(null);
+          setPipelineFilter((current) => ({ ...current, sprintId: "ALL" }));
+        }}
+      />
 
       <div className="animate-in fade-in-0 space-y-4 duration-200">
         <GraphFilterBar

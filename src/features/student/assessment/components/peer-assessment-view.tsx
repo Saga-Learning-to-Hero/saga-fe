@@ -26,6 +26,10 @@ import {
 } from "@/features/student/courses/hooks/use-student-courses";
 import { useStudentCourseContext } from "@/features/student/courses/hooks/use-student-course-context";
 import { useProjectSprints } from "@/features/student/sprint-progress/hooks/use-project-sprints";
+import { useTaskOptions } from "@/features/student/sprint-progress/hooks/use-project-tasks";
+import { scopeSprintsToJiraSource } from "@/features/student/sprint-progress/lib/jira-source-scope";
+import { JiraSourceSwitcher } from "@/features/student/project/components/jira-source-switcher";
+import { useProjectJiraSourceSelection } from "@/features/student/project/hooks/use-project-jira-source-selection";
 import { getApiErrorCode, getApiErrorMessage } from "@/lib/api-error";
 import { cn } from "@/lib/utils";
 import { PeerAssessmentHeader } from "./peer-assessment-header";
@@ -136,10 +140,21 @@ export function PeerAssessmentView() {
 
   const projectId = team?.projectId || null;
   const teamId = team?.teamId || null;
-  const sprintsQuery = useProjectSprints(projectId, {
+  const jiraSource = useProjectJiraSourceSelection(projectId);
+  const sprintsQuery = useProjectSprints(projectId, jiraSource.effectiveSourceId, {
     enabled: assessmentState === "READY" && Boolean(projectId),
   });
-  const sprints = sprintsQuery.data || [];
+  const taskOptionsQuery = useTaskOptions(projectId, {
+    enabled: assessmentState === "READY" && Boolean(projectId && jiraSource.effectiveSourceId),
+    jiraIntegrationId: jiraSource.effectiveSourceId,
+  });
+  const sprints = useMemo(
+    () =>
+      jiraSource.effectiveSourceId
+        ? scopeSprintsToJiraSource(sprintsQuery.data || [], taskOptionsQuery.data?.sprints)
+        : sprintsQuery.data || [],
+    [jiraSource.effectiveSourceId, sprintsQuery.data, taskOptionsQuery.data?.sprints]
+  );
   const defaultSprintId =
     pickDefaultPeerReviewSprintId(sprints, now) || sprints[0]?.id || "";
   const effectiveSprintId = sprints.some(
@@ -167,7 +182,9 @@ export function PeerAssessmentView() {
     defaultRubricQuery.data,
   );
   const candidatesQuery = usePeerReviewCandidates(teamId, effectiveSprintId, {
-    enabled: Boolean(teamId && effectiveSprintId && windowOpen),
+    enabled:
+      assessmentState === "READY" &&
+      Boolean(teamId && effectiveSprintId && windowOpen),
   });
 
   const candidates = useMemo(
@@ -469,6 +486,17 @@ export function PeerAssessmentView() {
             </div>
 
             <div className="mt-4 space-y-2">
+              <JiraSourceSwitcher
+                compact
+                sources={jiraSource.activeSources}
+                value={jiraSource.effectiveSourceId}
+                onChange={(integrationId) => {
+                  jiraSource.selectSource(integrationId);
+                  setSelectedSprintId("");
+                  setSelectedCandidate(null);
+                }}
+                className="mb-3"
+              />
               <Label
                 htmlFor="peer-sprint"
                 className="text-[11px] font-semibold text-muted-foreground"

@@ -267,4 +267,66 @@ describe("usePipelineGraphData", () => {
       expect(realtimeMock).toHaveBeenCalledWith("proj-1", { enabled: true });
     }
   );
+
+  fptTest(
+    {
+      id: "UTCID05",
+      type: "N",
+      executedDate: "21/09/2026",
+      description: "Pipeline chi hien Task cua Jira source dang duoc chon",
+    },
+    () => {
+      tasksMock.mockReturnValue(
+        idleQuery({
+          isSuccess: true,
+          data: [
+            {
+              id: "task-a",
+              externalKey: "A-1",
+              title: "Task site A",
+              status: "TODO",
+              issueTypeName: "Task",
+              linkedCommitCount: 0,
+              source: { integrationId: "source-a" },
+            },
+            {
+              id: "task-b",
+              externalKey: "B-1",
+              title: "Task site B",
+              status: "TODO",
+              issueTypeName: "Task",
+              linkedCommitCount: 0,
+              source: { integrationId: "source-b" },
+            },
+          ],
+        })
+      );
+      integrationsMock.mockReturnValue(
+        idleQuery({
+          isSuccess: true,
+          data: {
+            jira: null,
+            jiraSources: [{ integrationId: "source-b", connectionStatus: "ACTIVE" }],
+            github: null,
+          },
+        })
+      );
+
+      const { result } = renderHook(
+        () =>
+          usePipelineGraphData({
+            enabled: true,
+            projectId: "proj-1",
+            jiraIntegrationId: "source-b",
+            selectedTaskId: null,
+            teamMembers: [],
+            filter: { studentId: "ALL", sprintId: "ALL", anomaliesOnly: false },
+          }),
+        { wrapper }
+      );
+
+      expect(result.current.tasks.map((task) => task.id)).toEqual(["task-b"]);
+      expect(result.current.isJiraActive).toBe(true);
+    }
+  );
 });

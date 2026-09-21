@@ -20,6 +20,7 @@ interface SprintModalProps {
   isOpen: boolean;
   sprint: Sprint | null;
   projectId?: string;
+  jiraIntegrationId?: string;
   onClose: () => void;
   onSave: (sprint: Sprint) => void;
 }
@@ -28,6 +29,7 @@ export function SprintModal({
   isOpen,
   sprint,
   projectId,
+  jiraIntegrationId,
   onClose,
   onSave,
 }: SprintModalProps) {
@@ -116,6 +118,7 @@ export function SprintModal({
               goal: form.goal?.trim() || undefined,
               startDate: toIsoDateString(form.startDate),
               endDate: toIsoDateString(form.endDate),
+              jiraIntegrationId,
             },
           });
           const finalSprint: Sprint = {

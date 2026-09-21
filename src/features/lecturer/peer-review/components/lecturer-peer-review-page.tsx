@@ -19,6 +19,10 @@ import {
 import { pickDefaultGradesTeamId } from "@/features/lecturer/contribution/lib/contribution-utils";
 import { useLecturerTeams } from "@/features/lecturer/teams/hooks/use-lecturer-teams";
 import { useProjectSprints } from "@/features/student/sprint-progress/hooks/use-project-sprints";
+import { useTaskOptions } from "@/features/student/sprint-progress/hooks/use-project-tasks";
+import { scopeSprintsToJiraSource } from "@/features/student/sprint-progress/lib/jira-source-scope";
+import { JiraSourceSwitcher } from "@/features/student/project/components/jira-source-switcher";
+import { useProjectJiraSourceSelection } from "@/features/student/project/hooks/use-project-jira-source-selection";
 import { getApiErrorCode } from "@/lib/api-error";
 import { cn } from "@/lib/utils";
 import { useLecturerPeerReviewRubric, useLecturerSprintPeerReviews } from "../hooks/use-lecturer-peer-review";
@@ -65,8 +69,21 @@ export function LecturerPeerReviewPage({ courseId }: LecturerPeerReviewPageProps
   const team = teams.find((item) => item.teamId === effectiveTeamId) || null;
   const hasProject = Boolean(team?.projectId);
 
-  const sprintsQuery = useProjectSprints(team?.projectId, { enabled: hasProject });
-  const sprints = sprintsQuery.data || [];
+  const jiraSource = useProjectJiraSourceSelection(team?.projectId, { readerMode: true });
+  const sprintsQuery = useProjectSprints(team?.projectId, jiraSource.effectiveSourceId, {
+    enabled: hasProject,
+  });
+  const taskOptionsQuery = useTaskOptions(team?.projectId, {
+    enabled: Boolean(hasProject && jiraSource.effectiveSourceId),
+    jiraIntegrationId: jiraSource.effectiveSourceId,
+  });
+  const sprints = useMemo(
+    () =>
+      jiraSource.effectiveSourceId
+        ? scopeSprintsToJiraSource(sprintsQuery.data || [], taskOptionsQuery.data?.sprints)
+        : sprintsQuery.data || [],
+    [jiraSource.effectiveSourceId, sprintsQuery.data, taskOptionsQuery.data?.sprints]
+  );
   const defaultSprintId = pickDefaultLecturerPeerReviewSprintId(sprints);
   const sprintBelongsToProject = sprints.some((sprint) => sprint.id === requestedSprintId);
   const effectiveSprintId = sprintBelongsToProject ? requestedSprintId : defaultSprintId || "";
@@ -267,7 +284,7 @@ export function LecturerPeerReviewPage({ courseId }: LecturerPeerReviewPageProps
   }
 
   const filters = (
-    <div className="grid gap-3 sm:grid-cols-2">
+    <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
       <div className="min-w-0 flex-1 space-y-1.5">
         <Label htmlFor="peer-review-team" className="text-[11px] font-semibold text-muted-foreground">
           Nhóm
@@ -283,6 +300,24 @@ export function LecturerPeerReviewPage({ courseId }: LecturerPeerReviewPageProps
           }))}
         />
       </div>
+      {jiraSource.hasMultipleSources && (
+        <div className="min-w-0 flex-1 space-y-1.5">
+          <Label className="text-[11px] font-semibold text-muted-foreground">
+            Nguồn Jira
+          </Label>
+          <JiraSourceSwitcher
+            compact
+            sources={jiraSource.activeSources}
+            value={jiraSource.effectiveSourceId}
+            onChange={(integrationId) => {
+              jiraSource.selectSource(integrationId);
+              router.replace(
+                lecturerCoursePeerReviewsPath(courseId, { teamId: effectiveTeamId })
+              );
+            }}
+          />
+        </div>
+      )}
       <div className="min-w-0 flex-1 space-y-1.5">
         <Label htmlFor="peer-review-sprint" className="text-[11px] font-semibold text-muted-foreground">
           Sprint

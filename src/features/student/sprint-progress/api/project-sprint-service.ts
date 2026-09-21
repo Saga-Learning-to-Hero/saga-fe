@@ -61,6 +61,7 @@ export class ProjectSprintService {
         goal: data.goal?.trim() || undefined,
         startDate: data.startDate || undefined,
         endDate: data.endDate || undefined,
+        jiraIntegrationId: data.jiraIntegrationId?.trim() || undefined,
       }
     );
     return res.data;

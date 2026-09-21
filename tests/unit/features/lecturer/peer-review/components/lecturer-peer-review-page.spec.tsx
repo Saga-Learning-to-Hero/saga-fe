@@ -120,13 +120,34 @@ vi.mock("@/features/lecturer/teams/hooks/use-lecturer-teams", () => ({
 }));
 
 vi.mock("@/features/student/sprint-progress/hooks/use-project-sprints", () => ({
-  useProjectSprints: (_projectId?: string | null, options?: { enabled?: boolean }) => {
-    mocks.sprintsEnabled.value = options?.enabled;
-    if (options?.enabled === false) {
+  useProjectSprints: (
+    _projectId?: string | null,
+    integrationIdOrOptions?: string | null | { enabled?: boolean },
+    options?: { enabled?: boolean }
+  ) => {
+    const effectiveOptions =
+      typeof integrationIdOrOptions === "object" && integrationIdOrOptions !== null
+        ? integrationIdOrOptions
+        : options;
+    mocks.sprintsEnabled.value = effectiveOptions?.enabled;
+    if (effectiveOptions?.enabled === false) {
       return { ...mocks.sprintsQuery, data: [], isSuccess: false };
     }
     return mocks.sprintsQuery;
   },
+}));
+
+vi.mock("@/features/student/sprint-progress/hooks/use-project-tasks", () => ({
+  useTaskOptions: () => ({ data: undefined, isLoading: false, isError: false }),
+}));
+
+vi.mock("@/features/student/project/hooks/use-project-jira-source-selection", () => ({
+  useProjectJiraSourceSelection: () => ({
+    activeSources: [],
+    effectiveSourceId: undefined,
+    hasMultipleSources: false,
+    selectSource: vi.fn(),
+  }),
 }));
 
 vi.mock("@/features/lecturer/peer-review/hooks/use-lecturer-peer-review", () => ({

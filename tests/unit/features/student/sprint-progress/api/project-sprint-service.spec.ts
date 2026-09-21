@@ -66,14 +66,22 @@ describe("ProjectSprintService", () => {
       description: "Tao Sprint moi thanh cong",
     },
     async () => {
-      vi.spyOn(apiClient, "post").mockResolvedValueOnce({ data: mockSprint });
+      const postSpy = vi.spyOn(apiClient, "post").mockResolvedValueOnce({ data: mockSprint });
 
       const res = await ProjectSprintService.createSprint(mockProjectId, {
         name: "Sprint 1",
         goal: "Hoàn thiện MVP",
+        jiraIntegrationId: "jira-source-b",
       });
 
       expect(res.name).toBe("Sprint 1");
+      expect(postSpy).toHaveBeenCalledWith(`/api/projects/${mockProjectId}/sprints`, {
+        name: "Sprint 1",
+        goal: "Hoàn thiện MVP",
+        startDate: undefined,
+        endDate: undefined,
+        jiraIntegrationId: "jira-source-b",
+      });
     }
   );
 

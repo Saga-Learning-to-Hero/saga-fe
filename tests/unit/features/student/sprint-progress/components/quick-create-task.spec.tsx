@@ -126,6 +126,7 @@ describe("QuickCreateTask", () => {
       render(
         <QuickCreateTask
           projectId="proj-123"
+          jiraIntegrationId="jira-source-2"
           canCreate={true}
           sprintId="sprint-uuid-1"
           sprintExternalId="239"
@@ -146,6 +147,7 @@ describe("QuickCreateTask", () => {
           projectId: "proj-123",
           data: {
             summary: "Thiet ke giao dien moi",
+            jiraIntegrationId: "jira-source-2",
             sprintExternalId: "239",
           },
         });
@@ -184,6 +186,7 @@ describe("QuickCreateTask", () => {
           projectId: "proj-123",
           data: {
             summary: "Nghiem thu backlog task",
+            jiraIntegrationId: undefined,
             sprintExternalId: undefined,
           },
         });
@@ -220,6 +223,7 @@ describe("QuickCreateTask", () => {
           projectId: "proj-123",
           data: {
             summary: "Task submit bang Enter",
+            jiraIntegrationId: undefined,
             sprintExternalId: "239",
           },
         });

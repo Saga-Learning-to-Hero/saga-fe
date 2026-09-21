@@ -221,6 +221,9 @@ Payload SSE không phải dữ liệu để render trực tiếp. FE phải ch�
 4. Repo được gán role canonical `FRONTEND`, `BACKEND` hoặc `OTHER`.
 5. Sync ban đầu tạo projection Task/Sprint/Commit/link và graph có thể được dựng lại từ dữ liệu đó.
 6. Hệ thống hỗ trợ đa nguồn Jira (`Multi-Jira Sources`): một dự án có thể kết nối nhiều Jira Workspace/Site song song (`status: ACTIVE, REVOKED, FAILED`).
+   - Student và Lecturer phải chọn rõ nguồn Jira đang xem; Kanban, Backlog, Graph/Pipeline, biểu đồ Sprint và đánh giá chéo chỉ dùng Task/Sprint của nguồn đó.
+   - Đổi nguồn phải xóa Sprint/Task selection cũ để không giữ dữ liệu của Jira Site trước; tạo Task/Sprint phải gửi đúng `jiraIntegrationId` đang chọn.
+   - Lecturer chỉ có quyền đọc dữ liệu dự án được phân công. Trong khi endpoint integration summary chưa cho Lecturer đọc, FE dựng danh sách nguồn từ provenance `task.source`; BE cần mở endpoint source-summary read-only theo quyền `requireReader` để vẫn liệt kê được nguồn chưa có task.
 7. Khi ngắt kết nối một Jira source (`DELETE`), Backend chỉ thu hồi ủy quyền (`soft-revoke`), toàn bộ card/task và commit đối soát lịch sử của source đó vẫn được lưu giữ an toàn trong SAGA.
 8. Khi chuyển giao công việc giữa các nguồn Jira, Leader kích hoạt `Failover Wizard`:
    - Chọn nguồn đích (Target Jira Source đang ở trạng thái `ACTIVE`).
@@ -403,8 +406,8 @@ Project Type dùng để phân loại hướng dự án, không điều khiển 
 | TASK-004 | Move task vào/ra sprint | ✓ | ✓ | ✓ | `DONE` |
 | TASK-005 | Task type và Subtask parent | ✓ | ✓ | ✓ | `DONE` (BE & FE đồng bộ `parentTask`, `subtasks`, `parentTaskId`, `clearParent`, endpoint `GET /tasks/parent-options` phân trang và UI chọn Task cha/Subtasks) |
 | TASK-006 | Start Date/Due Date create-edit-clear-hydrate | ✓ | ✓ | ✓ | `VERIFY`; cần xác minh deploy trả đủ hai key kể cả null |
-| TASK-007 | Kanban/Backlog/Timeline | ✓ | ✓ | ✓ | `DONE`; card chỉ cần due date, backlog cảnh báo giống Jira |
-| SPR-001 | Sprint list/detail/create/update/delete | ✓ | ✓ | ✓ | `DONE` |
+| TASK-007 | Kanban/Backlog/Timeline | ✓ | ✓ | ✓ | `DONE`; card chỉ cần due date, backlog cảnh báo giống Jira; Task được scope theo Jira source đang chọn ở cả Student và Lecturer Pipeline |
+| SPR-001 | Sprint list/detail/create/update/delete | ✓ | ✓ | ✓ | `PARTIAL`; FE đã scope theo source bằng `jiraIntegrationId` + Sprint options và reset selection khi đổi Site. Lecturer tạm dựng source selector từ `task.source` vì integration summary dùng quyền thành viên. BE cần cho Lecturer đọc source summary theo `requireReader`, lọc `GET /projects/{id}/sprints` đúng source và bổ sung `jiraIntegrationId/source` vào Sprint response để bỏ workaround FE |
 | COM-001 | Project commit list/filter | ✓ | ✓ | ✓ | `DONE` (BE & FE đồng bộ phân trang `page, size, total, items`, nhận diện Merge Commit `isMerge`, `parentCount` và badge "Merge") |
 | COM-002 | Commits của một task | ✓ | ✓ | ✓ | `DONE`; lazy load cho inspector |
 | COM-003 | Canonical batch task–commit links theo repo/branch | ✓ | ✓ | ✓ | `DONE/VERIFY`; filter phải dựa response BE, không parse message |

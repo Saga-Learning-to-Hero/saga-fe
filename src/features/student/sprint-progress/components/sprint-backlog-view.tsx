@@ -52,6 +52,7 @@ interface SprintBacklogViewProps {
   currentUserStudentCode: string;
   courseId: string;
   projectId?: string | null;
+  jiraIntegrationId?: string;
   teamMembers?: AssigneeMemberInfo[];
   assignableUsers?: JiraAssignableUserInfo[];
 }
@@ -72,6 +73,7 @@ export function SprintBacklogView({
   currentUserStudentCode,
   courseId,
   projectId,
+  jiraIntegrationId,
   teamMembers,
   assignableUsers,
 }: SprintBacklogViewProps) {
@@ -580,6 +582,7 @@ export function SprintBacklogView({
 
                   <QuickCreateTask
                     projectId={projectId}
+                    jiraIntegrationId={jiraIntegrationId}
                     sprintId={sprint.id}
                     sprintExternalId={sprint.externalSprintId != null ? String(sprint.externalSprintId) : undefined}
                     sprintName={sprint.name}
@@ -699,6 +702,7 @@ export function SprintBacklogView({
 
             <QuickCreateTask
               projectId={projectId}
+              jiraIntegrationId={jiraIntegrationId}
               sprintId="backlog"
               sprintName="Backlog"
               canCreate={isTeamLeader}

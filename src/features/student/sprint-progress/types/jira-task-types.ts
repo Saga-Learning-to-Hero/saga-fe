@@ -19,6 +19,7 @@ export interface CreateProjectSprintRequest {
   goal?: string;
   startDate?: string;
   endDate?: string;
+  jiraIntegrationId?: string;
 }
 
 export interface PatchProjectSprintRequest {

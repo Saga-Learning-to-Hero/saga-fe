@@ -22,6 +22,10 @@ import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { useLecturerTeams } from "@/features/lecturer/teams/hooks/use-lecturer-teams";
 import { useProjectSprints } from "@/features/student/sprint-progress/hooks/use-project-sprints";
+import { useTaskOptions } from "@/features/student/sprint-progress/hooks/use-project-tasks";
+import { scopeSprintsToJiraSource } from "@/features/student/sprint-progress/lib/jira-source-scope";
+import { JiraSourceSwitcher } from "@/features/student/project/components/jira-source-switcher";
+import { useProjectJiraSourceSelection } from "@/features/student/project/hooks/use-project-jira-source-selection";
 import { getApiErrorCode, getApiErrorMessage, getApiErrorStatus } from "@/lib/api-error";
 import type { RoleInTeam } from "@/types/auth";
 import { CytoscapeGraphCanvas } from "./cytoscape-graph-canvas";
@@ -174,23 +178,36 @@ export function LecturerGraphView({
     }
   }
 
-  const sprintsQuery = useProjectSprints(projectId, { enabled: Boolean(projectId) });
+  const jiraSource = useProjectJiraSourceSelection(projectId, { readerMode: true });
+  const sprintsQuery = useProjectSprints(projectId, jiraSource.effectiveSourceId, {
+    enabled: Boolean(projectId),
+  });
+  const taskOptionsQuery = useTaskOptions(projectId, {
+    enabled: Boolean(projectId && jiraSource.effectiveSourceId),
+    jiraIntegrationId: jiraSource.effectiveSourceId,
+  });
+  const sourceSprints = useMemo(
+    () =>
+      jiraSource.effectiveSourceId
+        ? scopeSprintsToJiraSource(sprintsQuery.data || [], taskOptionsQuery.data?.sprints)
+        : sprintsQuery.data || [],
+    [jiraSource.effectiveSourceId, sprintsQuery.data, taskOptionsQuery.data?.sprints]
+  );
 
   const sprintOptions: CustomSelectOption[] = useMemo(() => {
-    const list = sprintsQuery.data || [];
-    return list.map((s) => ({
+    return sourceSprints.map((s) => ({
       value: s.id,
       label: s.name,
       subLabel: s.state ? `Trạng thái: ${s.state}` : undefined,
     }));
-  }, [sprintsQuery.data]);
+  }, [sourceSprints]);
 
   const defaultSprintId = useMemo(() => {
-    const list = sprintsQuery.data || [];
+    const list = sourceSprints;
     if (list.length === 0) return null;
     const active = list.find((s) => s.state?.toLowerCase() === "active");
     return active ? active.id : list[0].id;
-  }, [sprintsQuery.data]);
+  }, [sourceSprints]);
 
   const neo4jSprintId = selectedSprintState !== null ? selectedSprintState : (defaultSprintId || "ALL");
 
@@ -361,6 +378,7 @@ export function LecturerGraphView({
   const pipeline = usePipelineGraphData({
     enabled: mainMode === "PIPELINE" && Boolean(projectId),
     projectId,
+    jiraIntegrationId: jiraSource.effectiveSourceId,
     selectedTaskId,
     teamMembers: teamMembersInput,
     filter: pipelineFilter,
@@ -859,6 +877,20 @@ export function LecturerGraphView({
               options={teamSelectOptions}
             />
           </div>
+
+          <JiraSourceSwitcher
+            compact
+            sources={jiraSource.activeSources}
+            value={jiraSource.effectiveSourceId}
+            onChange={(integrationId) => {
+              jiraSource.selectSource(integrationId);
+              setSelectedSprintState(null);
+              setSelectedTaskId(null);
+              setFocusedNodeId(null);
+              setFocusedNodeLabel(null);
+              setPipelineFilter((current) => ({ ...current, sprintId: "ALL" }));
+            }}
+          />
         </div>
 
         <div className="flex flex-wrap items-center gap-2 shrink-0">

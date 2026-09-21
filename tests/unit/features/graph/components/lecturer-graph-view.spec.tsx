@@ -28,6 +28,16 @@ vi.mock("@/features/student/project/hooks/useProjectSync", () => ({
 
 vi.mock("@/features/student/sprint-progress/hooks/use-project-tasks", () => ({
   useProjectTasksData: (...args: unknown[]) => tasksMock(...args),
+  useTaskOptions: () => ({ data: undefined, isLoading: false, isError: false }),
+}));
+
+vi.mock("@/features/student/project/hooks/use-project-jira-source-selection", () => ({
+  useProjectJiraSourceSelection: () => ({
+    activeSources: [],
+    effectiveSourceId: undefined,
+    hasMultipleSources: false,
+    selectSource: vi.fn(),
+  }),
 }));
 
 vi.mock("@/features/student/project/hooks/use-project-realtime", () => ({
