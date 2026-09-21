@@ -34,7 +34,6 @@ export function JiraConnectedCard({
 }: JiraConnectedCardProps) {
   const displayName = identity?.displayName || fallbackName;
   const jiraEmail = identity?.login || fallbackEmail;
-  const accountId = identity?.providerSubject || identity?.id || "Chưa có định danh";
   const firstLinked = formatVietnamDateTime(identity?.linkedAt);
   const lastVerified = formatVietnamDateTime(identity?.lastVerifiedAt || identity?.linkedAt);
   const isPrimary = Boolean(identity?.primary);
@@ -93,9 +92,9 @@ export function JiraConnectedCard({
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-3 border-t border-border/60 text-xs">
         <div className="p-3 rounded-xl bg-background border border-border/60 space-y-1">
-          <span className="text-muted-foreground text-[11px] block">Atlassian ID:</span>
-          <span className="font-mono font-bold text-foreground text-xs block truncate" title={accountId}>
-            {accountId}
+          <span className="text-muted-foreground text-[11px] block">Tài khoản liên kết:</span>
+          <span className="font-mono font-bold text-foreground text-xs block truncate" title={jiraEmail || displayName}>
+            {jiraEmail || displayName}
           </span>
         </div>
         <div className="p-3 rounded-xl bg-background border border-border/60 space-y-1">

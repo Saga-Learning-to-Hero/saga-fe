@@ -7,13 +7,20 @@ import type {
 } from "../types/jira-task-types";
 
 export class ProjectSprintService {
-  static async getSprints(projectId: string): Promise<ProjectSprintResponse[]> {
+  static async getSprints(
+    projectId: string,
+    jiraIntegrationId?: string
+  ): Promise<ProjectSprintResponse[]> {
     if (!projectId || !projectId.trim()) {
       throw new Error("Throw ValidationException: Project ID is required");
     }
     const cleanId = projectId.trim();
+    const params = jiraIntegrationId && jiraIntegrationId.trim()
+      ? { jiraIntegrationId: jiraIntegrationId.trim() }
+      : undefined;
     const res = await apiClient.get<ProjectSprintResponse[]>(
-      `/api/projects/${encodeURIComponent(cleanId)}/sprints`
+      `/api/projects/${encodeURIComponent(cleanId)}/sprints`,
+      { params }
     );
     return res.data;
   }

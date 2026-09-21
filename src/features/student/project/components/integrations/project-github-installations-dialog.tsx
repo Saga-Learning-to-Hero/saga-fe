@@ -163,8 +163,8 @@ export function ProjectGitHubInstallationsDialog({
                     key={String(candidateId)}
                     onClick={() => setSelectedIdState(candidateId)}
                     className={`flex items-center justify-between p-3.5 rounded-xl border transition-all cursor-pointer ${isSelected
-                        ? "border-primary bg-primary/5 shadow-xs"
-                        : "border-border/70 hover:border-border hover:bg-muted/30"
+                      ? "border-primary bg-primary/5 shadow-xs"
+                      : "border-border/70 hover:border-border hover:bg-muted/30"
                       }`}
                   >
                     <div className="flex items-center gap-3 min-w-0">
@@ -193,9 +193,6 @@ export function ProjectGitHubInstallationsDialog({
                             {isOrg ? "Tổ chức" : "Cá nhân"}
                           </Badge>
                         </div>
-                        {candidate.installationId && (
-                          <span className="text-[11px] text-muted-foreground block font-mono">ID: {String(candidate.installationId)}</span>
-                        )}
                       </div>
                     </div>
                   </div>

@@ -104,9 +104,17 @@ export function ProjectJiraSection({
 
     try {
       setIsAddingSource(true);
+      const returnPath = typeof window !== "undefined"
+        ? (() => {
+          const url = new URL(window.location.href);
+          url.searchParams.set("jira_setup", "true");
+          return `${url.pathname}${url.search}`;
+        })()
+        : "/student/project-info?jira_setup=true";
+
       const res = await JiraSourcesService.connectJiraSource(
         projectId,
-        window.location.pathname
+        returnPath
       );
       if (res.authorizationUrl) {
         window.location.href = res.authorizationUrl;
@@ -125,10 +133,18 @@ export function ProjectJiraSection({
 
     try {
       setIsReconnectingId(sourceId);
+      const returnPath = typeof window !== "undefined"
+        ? (() => {
+          const url = new URL(window.location.href);
+          url.searchParams.set("jira_setup", "true");
+          return `${url.pathname}${url.search}`;
+        })()
+        : "/student/project-info?jira_setup=true";
+
       const res = await JiraSourcesService.reconnectJiraSource(
         projectId,
         sourceId,
-        window.location.pathname
+        returnPath
       );
       if (res.authorizationUrl) {
         window.location.href = res.authorizationUrl;
@@ -277,7 +293,7 @@ export function ProjectJiraSection({
                     </div>
 
                     <div className="flex items-center gap-3 text-[11px] text-muted-foreground flex-wrap pt-0.5">
-                      <span>Board ID: <strong className="font-mono text-foreground">{src.boardId ?? "Mặc định"}</strong></span>
+                      <span>Bảng Jira: <strong className="font-mono text-foreground">{src.boardId ?? "Mặc định"}</strong></span>
                       <span>•</span>
                       <span>Đồng bộ thành công: <strong>{formatDateTime(src.lastSuccessfulSyncAt)}</strong></span>
                       {src.consecutiveFailures !== undefined && src.consecutiveFailures !== null && src.consecutiveFailures > 0 && (

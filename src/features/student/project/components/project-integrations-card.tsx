@@ -266,6 +266,7 @@ export function ProjectIntegrationsCard({ projectId, isLeader }: ProjectIntegrat
         onOpenChange={setIsJiraModalOpen}
         projectId={projectId}
         currentJira={integrations?.jira}
+        existingSources={integrations?.jiraSources}
         onAuthorizeNew={() => {
           setIsJiraModalOpen(false);
           void handleRedirectJiraConnect();

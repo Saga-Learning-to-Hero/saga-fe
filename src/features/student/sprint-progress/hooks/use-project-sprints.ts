@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { ProjectSprintService } from "../api/project-sprint-service";
@@ -8,12 +9,38 @@ import type {
 } from "../types/jira-task-types";
 import { getApiErrorCode } from "@/lib/api-error";
 import { JIRA_SPRINT_QUERY_KEYS } from "./use-sprint-data";
+import { useProjectIntegrations } from "@/features/student/project/hooks/useProjectIntegrations";
 
-export function useProjectSprints(projectId?: string | null, options?: { enabled?: boolean }) {
+export function useProjectSprints(
+  projectId?: string | null,
+  jiraIntegrationIdOrOptions?: string | null | { enabled?: boolean; jiraIntegrationId?: string },
+  options?: { enabled?: boolean; jiraIntegrationId?: string }
+) {
+  const explicitIntegrationId = typeof jiraIntegrationIdOrOptions === "string"
+    ? jiraIntegrationIdOrOptions
+    : (typeof jiraIntegrationIdOrOptions === "object" ? jiraIntegrationIdOrOptions?.jiraIntegrationId : options?.jiraIntegrationId);
+
+  const effectiveOptions = typeof jiraIntegrationIdOrOptions === "object" && jiraIntegrationIdOrOptions !== null
+    ? jiraIntegrationIdOrOptions
+    : options;
+
+  const { data: integrations } = useProjectIntegrations(projectId, {
+    enabled: Boolean(projectId && !explicitIntegrationId),
+  });
+
+  const activeSources = useMemo(() => {
+    return (integrations?.jiraSources || []).filter(
+      (s) => s.connectionStatus === "ACTIVE"
+    );
+  }, [integrations?.jiraSources]);
+
+  const resolvedIntegrationId = explicitIntegrationId
+    || (activeSources.length > 1 ? activeSources[0].integrationId : undefined);
+
   return useQuery({
-    queryKey: JIRA_SPRINT_QUERY_KEYS.sprints(projectId),
-    queryFn: () => ProjectSprintService.getSprints(projectId!),
-    enabled: (options?.enabled ?? true) && Boolean(projectId && projectId.trim()),
+    queryKey: [...JIRA_SPRINT_QUERY_KEYS.sprints(projectId), resolvedIntegrationId || "default"],
+    queryFn: () => ProjectSprintService.getSprints(projectId!, resolvedIntegrationId),
+    enabled: (effectiveOptions?.enabled ?? true) && Boolean(projectId && projectId.trim()),
     staleTime: 1000 * 60,
     retry: (failureCount, error) => {
       const code = getApiErrorCode(error);

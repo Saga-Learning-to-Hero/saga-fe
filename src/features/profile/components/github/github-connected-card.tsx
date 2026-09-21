@@ -38,7 +38,6 @@ export function GitHubConnectedCard({
 }: GitHubConnectedCardProps) {
   const username = identity?.login || fallbackUsername;
   const displayName = identity?.displayName || fallbackName;
-  const githubId = identity?.providerSubject || identity?.id || "Chưa có định danh";
   const firstLinked = formatVietnamDateTime(identity?.linkedAt);
   const lastVerified = formatVietnamDateTime(identity?.lastVerifiedAt || identity?.linkedAt);
   const isPrimary = Boolean(identity?.primary);
@@ -115,9 +114,9 @@ export function GitHubConnectedCard({
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-3 border-t border-border/60 text-xs">
         <div className="p-3 rounded-xl bg-background border border-border/60 space-y-1">
-          <span className="text-muted-foreground text-[11px] block">GitHub ID:</span>
-          <span className="font-mono font-bold text-foreground text-xs block truncate" title={githubId}>
-            {githubId}
+          <span className="text-muted-foreground text-[11px] block">Tài khoản GitHub:</span>
+          <span className="font-mono font-bold text-foreground text-xs block truncate" title={username || displayName}>
+            {username ? `@${username}` : displayName}
           </span>
         </div>
         <div className="p-3 rounded-xl bg-background border border-border/60 space-y-1">

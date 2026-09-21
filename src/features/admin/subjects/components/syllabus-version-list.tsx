@@ -164,7 +164,7 @@ export function SyllabusVersionList({
                   </span>
                   {s.externalSyllabusId && (
                     <Badge variant="outline" className="font-mono text-[9px] px-1.5 py-0 text-muted-foreground">
-                      ID: {s.externalSyllabusId}
+                      Mã FLM: {s.externalSyllabusId}
                     </Badge>
                   )}
                 </div>

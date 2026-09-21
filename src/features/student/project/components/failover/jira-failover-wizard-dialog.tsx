@@ -165,7 +165,6 @@ export function JiraFailoverWizardDialog({
       .map((it) => ({
         value: it.id,
         label: it.name,
-        subLabel: `Mã: ${it.id}`,
       })),
   ];
 
@@ -506,7 +505,6 @@ export function JiraFailoverWizardDialog({
                 <div className="flex items-center justify-between">
                   <div>
                     <h4 className="text-xs font-bold text-foreground">Tiến độ chuyển giao công việc</h4>
-                    <p className="text-[11px] text-muted-foreground font-mono">Run ID: {runId}</p>
                   </div>
                   {runData?.status === "PENDING" && (
                     <Badge variant="outline" className="text-amber-500 border-amber-500/30 bg-amber-500/10">

@@ -13,23 +13,37 @@ import {
   useProjectJiraSites, useProjectJiraProjects, useProjectJiraBoards, useUpdateProjectJira,
 } from "../../hooks/useProjectIntegrations";
 import type { ProjectJiraIntegration, UpdateProjectJiraPayload } from "../../types/student-project";
+import type { JiraSourceSummary } from "../../types/jira-sources";
 
 interface ProjectJiraConfigDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   projectId: string;
   currentJira?: ProjectJiraIntegration | null;
+  existingSources?: JiraSourceSummary[];
   onAuthorizeNew?: () => void;
   isAuthorizing?: boolean;
 }
 
 export function ProjectJiraConfigDialog({
-  open, onOpenChange, projectId, currentJira, onAuthorizeNew, isAuthorizing = false,
+  open, onOpenChange, projectId, currentJira, existingSources, onAuthorizeNew, isAuthorizing = false,
 }: ProjectJiraConfigDialogProps) {
   const updateJiraMutation = useUpdateProjectJira();
   const { data: sites = [], isLoading: isLoadingSites, refetch: refetchSites } = useProjectJiraSites(projectId, { enabled: open });
   const [localSiteId, setLocalSiteId] = useState<string | null>(null);
-  const selectedSiteId = localSiteId !== null ? localSiteId : currentJira?.cloudId && sites.some((s) => s.id === currentJira.cloudId) ? currentJira.cloudId : sites[0]?.id || "";
+
+  const selectedSiteId = useMemo(() => {
+    if (localSiteId !== null) return localSiteId;
+    if (sites.length === 0) return "";
+    if (existingSources && existingSources.length > 0) {
+      const newSite = sites.find((s) => !existingSources.some((es) => es.cloudId === s.id));
+      if (newSite) return newSite.id;
+    }
+    if (currentJira?.cloudId && sites.some((s) => s.id === currentJira.cloudId)) {
+      return currentJira.cloudId;
+    }
+    return sites[0]?.id || "";
+  }, [localSiteId, sites, existingSources, currentJira?.cloudId]);
 
   const { data: projects = [], isLoading: isLoadingProjects, refetch: refetchProjects } = useProjectJiraProjects(projectId, selectedSiteId, { enabled: open && Boolean(selectedSiteId) });
   const [localProjectId, setLocalProjectId] = useState<string | null>(null);
@@ -63,9 +77,9 @@ export function ProjectJiraConfigDialog({
     try {
       const payload: UpdateProjectJiraPayload = { cloudId: selectedSiteId, jiraProjectId: selectedProjectId };
       if (selectedBoardId && selectedBoardId !== "NONE") payload.boardId = selectedBoardId;
-      handleOpenChange(false);
       await updateJiraMutation.mutateAsync({ projectId, payload });
       toast.success("Lưu cấu hình Jira cho dự án thành công!");
+      handleOpenChange(false);
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Không thể lưu cấu hình Jira");
     }
@@ -185,16 +199,34 @@ export function ProjectJiraConfigDialog({
           )}
 
           <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
-            <Button type="button" variant="outline" size="sm" onClick={() => handleOpenChange(false)} className="h-8 px-3 text-xs rounded-xl cursor-pointer">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={updateJiraMutation.isPending}
+              onClick={() => handleOpenChange(false)}
+              className="h-8 px-3 text-xs rounded-xl cursor-pointer"
+            >
               Hủy
             </Button>
             <Button
-              type="button" size="sm" onClick={() => void handleSave()}
+              type="button"
+              size="sm"
+              onClick={() => void handleSave()}
               disabled={updateJiraMutation.isPending || !selectedSiteId || !selectedProjectId}
               className="h-8 px-4 text-xs font-semibold rounded-xl bg-blue-600 hover:bg-blue-700 text-white gap-1.5 cursor-pointer shadow-xs"
             >
-              {updateJiraMutation.isPending ? <Loader2Icon className="w-3.5 h-3.5 animate-spin" /> : <CheckCircle2Icon className="w-3.5 h-3.5" />}
-              <span>Lưu cấu hình Jira</span>
+              {updateJiraMutation.isPending ? (
+                <>
+                  <Loader2Icon className="w-3.5 h-3.5 animate-spin" />
+                  <span>Đang lưu cấu hình...</span>
+                </>
+              ) : (
+                <>
+                  <CheckCircle2Icon className="w-3.5 h-3.5" />
+                  <span>Lưu cấu hình Jira</span>
+                </>
+              )}
             </Button>
           </div>
         </div>

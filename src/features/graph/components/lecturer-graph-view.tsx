@@ -106,12 +106,14 @@ export function LecturerGraphView({
 
   const [scopeMode, setScopeMode] = useState<"COMPACT" | "FULL">("COMPACT");
   const [focusedNodeId, setFocusedNodeId] = useState<string | null>(null);
+  const [focusedNodeLabel, setFocusedNodeLabel] = useState<string | null>(null);
 
   const [prevProjectId, setPrevProjectId] = useState(projectId);
   if (projectId !== prevProjectId) {
     setPrevProjectId(projectId);
     setDrillDownStudent(null);
     setFocusedNodeId(null);
+    setFocusedNodeLabel(null);
   }
 
   const activeFocusedNodeId = projectId === prevProjectId ? focusedNodeId : null;
@@ -243,6 +245,7 @@ export function LecturerGraphView({
     fallbackLabel?: string | null
   ) => {
     setFocusedNodeId(null);
+    setFocusedNodeLabel(null);
     setSelectedSprintState("ALL");
     setDrillDownStudent(
       resolveDrillDownStudent(input, {
@@ -330,6 +333,7 @@ export function LecturerGraphView({
     setSelectedGraphNode(null);
     setDrillDownStudent(null);
     setFocusedNodeId(null);
+    setFocusedNodeLabel(null);
     setSelectedSprintState("ALL");
     setNeo4jTab("OVERVIEW");
     setNeo4jFilterType("ALL");
@@ -361,6 +365,42 @@ export function LecturerGraphView({
     teamMembers: teamMembersInput,
     filter: pipelineFilter,
   });
+
+  const focusedTaskDisplay = useMemo(() => {
+    if (!activeFocusedNodeId) return null;
+
+    const rawTaskId = activeFocusedNodeId.replace(/^task:/i, "").trim().toLowerCase();
+
+    const matchedPipelineTask = pipeline.tasks?.find(
+      (t) => t.id.toLowerCase() === rawTaskId || t.key.toLowerCase() === rawTaskId
+    );
+    if (matchedPipelineTask) {
+      return matchedPipelineTask.key
+        ? `${matchedPipelineTask.key} - ${matchedPipelineTask.title}`
+        : matchedPipelineTask.title;
+    }
+
+    const matchedGraphNode = displayGraphData.nodes?.find(
+      (n) =>
+        n.data.id.toLowerCase() === activeFocusedNodeId.toLowerCase() ||
+        n.data.id.toLowerCase() === `task:${rawTaskId}` ||
+        n.data.id.replace(/^task:/i, "").toLowerCase() === rawTaskId
+    );
+    if (matchedGraphNode) {
+      const hasSubLabel =
+        matchedGraphNode.data.subLabel &&
+        matchedGraphNode.data.subLabel !== matchedGraphNode.data.label;
+      return hasSubLabel
+        ? `${matchedGraphNode.data.label} - ${matchedGraphNode.data.subLabel}`
+        : matchedGraphNode.data.label;
+    }
+
+    if (focusedNodeLabel) {
+      return focusedNodeLabel;
+    }
+
+    return activeFocusedNodeId.replace(/^task:/i, "");
+  }, [activeFocusedNodeId, focusedNodeLabel, pipeline.tasks, displayGraphData.nodes]);
 
   const teamSelectOptions = useMemo(
     () =>
@@ -649,17 +689,24 @@ export function LecturerGraphView({
       <div className="space-y-4">
         {activeFocusedNodeId && (
           <div className="flex flex-wrap items-center justify-between gap-3 p-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/25 text-xs font-bold text-emerald-700 dark:text-emerald-400 shadow-xs">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 min-w-0">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping shrink-0" />
-              <span>
-                Đang tập trung đối chiếu Task: <code className="font-mono text-foreground bg-background/80 px-1.5 py-0.5 rounded-md border border-border/60">{activeFocusedNodeId}</code> và các Commit liên kết (EVIDENCED_BY)
+              <span className="truncate">
+                Đang tập trung đối chiếu Task:{" "}
+                <code className="font-mono text-foreground bg-background/80 px-2 py-0.5 rounded-md border border-border/60 font-bold whitespace-nowrap">
+                  {focusedTaskDisplay}
+                </code>{" "}
+                và các Commit liên kết (EVIDENCED_BY)
               </span>
             </div>
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setFocusedNodeId(null)}
-              className="h-7 text-xs rounded-xl cursor-pointer bg-background hover:bg-muted"
+              onClick={() => {
+                setFocusedNodeId(null);
+                setFocusedNodeLabel(null);
+              }}
+              className="h-7 text-xs rounded-xl cursor-pointer bg-background hover:bg-muted shrink-0"
             >
               Quay lại toàn cảnh
             </Button>
@@ -1017,7 +1064,10 @@ export function LecturerGraphView({
       <GraphNodeDetailsModal
         nodeData={selectedGraphNode}
         onClose={() => setSelectedGraphNode(null)}
-        onFocusNode={(nodeId) => setFocusedNodeId(nodeId)}
+        onFocusNode={(nodeId, nodeLabel) => {
+          setFocusedNodeId(nodeId);
+          setFocusedNodeLabel(nodeLabel || null);
+        }}
         projectId={projectId}
         onViewContribution={(studentId) => {
           handleSelectDrillDownStudent(studentId, selectedGraphNode?.label);

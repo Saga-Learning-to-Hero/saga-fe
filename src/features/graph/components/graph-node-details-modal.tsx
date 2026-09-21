@@ -28,7 +28,7 @@ interface GraphNodeDetailsModalProps {
   nodeData: CytoscapeNodeData | null;
   onClose: () => void;
   onViewContribution?: (studentId: string) => void;
-  onFocusNode?: (nodeId: string) => void;
+  onFocusNode?: (nodeId: string, nodeLabel?: string) => void;
   projectId?: string | null;
 }
 
@@ -248,7 +248,11 @@ export function GraphNodeDetailsModal({
                 variant="outline"
                 size="sm"
                 onClick={() => {
-                  onFocusNode(nodeData.id);
+                  const taskLabel =
+                    nodeData.subLabel && nodeData.subLabel !== nodeData.label
+                      ? `${nodeData.label} - ${nodeData.subLabel}`
+                      : nodeData.label;
+                  onFocusNode(nodeData.id, taskLabel);
                   onClose();
                 }}
                 className="h-9 text-xs rounded-xl cursor-pointer text-emerald-600 dark:text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/10"

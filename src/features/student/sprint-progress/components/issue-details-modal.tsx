@@ -779,7 +779,7 @@ export function IssueDetailsModal({
                       options={activeJiraSources.map((source) => ({
                         value: source.integrationId,
                         label: `${source.projectKey ? `[${source.projectKey}] ` : ""}${source.siteName}`,
-                        subLabel: source.cloudId,
+                        subLabel: source.projectKey ? `Dự án Jira: ${source.projectKey}` : undefined,
                       }))}
                     />
                   </div>

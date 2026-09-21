@@ -19,9 +19,10 @@ import {
   getTopLevelSprintIssues,
   mergeProjectedAndLocalIssues,
 } from "../lib/issue-collection";
-import { Loader2Icon, AlertCircleIcon } from "lucide-react";
+import { Loader2Icon, AlertCircleIcon, LayersIcon } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { CustomSelect } from "@/components/common/custom-select";
 import {
   useProjectSprints,
   useAssignTaskToSprint,
@@ -50,7 +51,23 @@ export function SprintProgressView() {
   const { data: projectIntegrations } = useProjectIntegrations(projectId, {
     enabled: Boolean(projectId),
   });
-  const isJiraConnected = projectIntegrations?.jira?.status === "ACTIVE";
+
+  const activeJiraSources = useMemo(() => {
+    return (projectIntegrations?.jiraSources || []).filter(
+      (s) => s.connectionStatus === "ACTIVE"
+    );
+  }, [projectIntegrations?.jiraSources]);
+
+  const [selectedSourceId, setSelectedSourceId] = useState<string | null>(null);
+
+  const effectiveSourceId = useMemo(() => {
+    if (selectedSourceId && activeJiraSources.some((s) => s.integrationId === selectedSourceId)) {
+      return selectedSourceId;
+    }
+    return activeJiraSources[0]?.integrationId || undefined;
+  }, [selectedSourceId, activeJiraSources]);
+
+  const isJiraConnected = activeJiraSources.length > 0 || projectIntegrations?.jira?.status === "ACTIVE";
 
   const {
     data: projectTasks = [],
@@ -66,7 +83,7 @@ export function SprintProgressView() {
     isError: isSprintsError,
     error: sprintsError,
     refetch: refetchSprints,
-  } = useProjectSprints(projectId, {
+  } = useProjectSprints(projectId, effectiveSourceId, {
     enabled: Boolean(projectId && isJiraConnected),
   });
   const { data: syncJobs = [] } = useProjectSyncStatus(projectId, {
@@ -74,6 +91,7 @@ export function SprintProgressView() {
   });
   const { data: taskOptions } = useTaskOptions(projectId, {
     enabled: Boolean(projectId && isJiraConnected),
+    jiraIntegrationId: effectiveSourceId,
   });
   const hasActiveSyncJob = useMemo(
     () =>
@@ -163,7 +181,14 @@ export function SprintProgressView() {
     return mergeProjectedAndLocalIssues(fromApi, localCustomIssues);
   }, [projectTasks, teamMembers, localTaskOverrides, localCustomIssues]);
 
-  const topLevelIssues = useMemo(() => getTopLevelSprintIssues(rawIssues), [rawIssues]);
+  const scopedIssues = useMemo(() => {
+    if (!effectiveSourceId) return rawIssues;
+    return rawIssues.filter(
+      (i) => !i.jiraIntegrationId || i.jiraIntegrationId === effectiveSourceId
+    );
+  }, [rawIssues, effectiveSourceId]);
+
+  const topLevelIssues = useMemo(() => getTopLevelSprintIssues(scopedIssues), [scopedIssues]);
 
   const sprints: Sprint[] = useMemo(() => {
     if (!apiSprints || apiSprints.length === 0) {
@@ -191,7 +216,7 @@ export function SprintProgressView() {
 
   const epics: Epic[] = useMemo(() => {
     const epicMap = new Map<string, Epic>();
-    for (const issue of rawIssues) {
+    for (const issue of scopedIssues) {
       if (issue.epic) {
         if (!epicMap.has(issue.epic.id)) {
           epicMap.set(issue.epic.id, {
@@ -206,13 +231,13 @@ export function SprintProgressView() {
       }
     }
     return Array.from(epicMap.values()).map((epic) => {
-      const epicIssues = rawIssues.filter((i) => i.epic?.id === epic.id);
+      const epicIssues = scopedIssues.filter((i) => i.epic?.id === epic.id);
       const doneCount = epicIssues.filter((i) => i.status === "DONE").length;
       const progressPercent =
         epicIssues.length > 0 ? Math.round((doneCount / epicIssues.length) * 100) : 0;
       return { ...epic, progressPercent };
     });
-  }, [rawIssues]);
+  }, [scopedIssues]);
 
   const productBacklogCount = useMemo(() => {
     return topLevelIssues.filter(
@@ -403,6 +428,33 @@ export function SprintProgressView() {
         lastEvent={lastEvent}
         onReconnectRealtime={reconnectRealtime}
       />
+
+      {activeJiraSources.length > 1 && (
+        <div className="flex flex-wrap items-center justify-between gap-3 p-3 px-4 rounded-2xl border border-blue-500/30 bg-blue-500/[0.04]">
+          <div className="flex items-center gap-2.5 flex-wrap">
+            <div className="flex items-center gap-1.5 text-xs font-bold text-foreground">
+              <LayersIcon className="w-4 h-4 text-blue-500" />
+              <span>Nguồn Jira hiển thị:</span>
+            </div>
+            <div className="w-72">
+              <CustomSelect
+                id="jira-source-switcher"
+                value={effectiveSourceId || ""}
+                onChange={(val) => setSelectedSourceId(val)}
+                options={activeJiraSources.map((s) => ({
+                  value: s.integrationId,
+                  label: `${s.projectKey || "JIRA"} · ${s.siteName}`,
+                  subLabel: `Bảng: ${s.boardId || "Mặc định"}`,
+                }))}
+                className="text-xs"
+              />
+            </div>
+          </div>
+          <span className="text-[11px] text-muted-foreground">
+            Dự án có {activeJiraSources.length} nguồn Jira hoạt động song song. Chọn nguồn để xem bảng Sprint tương ứng.
+          </span>
+        </div>
+      )}
 
       {isLoadingTasks && (
         <div className="flex items-center justify-center gap-2 p-6 rounded-2xl border border-primary/20 bg-primary/5 text-xs text-primary font-medium">

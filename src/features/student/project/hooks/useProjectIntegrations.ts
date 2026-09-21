@@ -240,6 +240,9 @@ export function useUpdateProjectJira() {
         queryKey: PROJECT_INTEGRATIONS_QUERY_KEYS.projectIntegrations(projectId),
         exact: true,
       });
+      await queryClient.invalidateQueries({
+        queryKey: ["projects", projectId, "jira-sources"],
+      });
     },
   });
 }
