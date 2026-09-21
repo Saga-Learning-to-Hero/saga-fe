@@ -387,6 +387,20 @@ export function TraceabilityGraphView() {
       );
     }
 
+    if (!graphQuery.data || displayGraphData.nodes.length === 0) {
+      return (
+        <div className="flex flex-col items-center justify-center p-12 text-center rounded-3xl border border-dashed border-border bg-card/50 space-y-3">
+          <div className="w-12 h-12 rounded-2xl bg-muted text-muted-foreground flex items-center justify-center">
+            <NetworkIcon className="w-6 h-6" />
+          </div>
+          <h3 className="text-base font-bold text-foreground">Chưa có dữ liệu liên kết</h3>
+          <p className="text-xs text-muted-foreground max-w-sm">
+            Dự án hiện chưa có đỉnh hoặc cạnh liên kết nào được ghi nhận từ Neo4j.
+          </p>
+        </div>
+      );
+    }
+
     return (
       <div className="space-y-4">
         {activeFocusedNodeId && (
