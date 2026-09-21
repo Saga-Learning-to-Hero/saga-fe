@@ -433,4 +433,129 @@ describe("ProjectTaskService", () => {
       );
     }
   );
+
+  fptTest(
+    {
+      id: "UTCID19",
+      type: "N",
+      executedDate: "21/09/2026",
+      description: "Lay dong thoi gian phien lam viec va commit cua Task thanh cong",
+    },
+    async () => {
+      const mockTimeline = {
+        task: {
+          id: mockTaskId,
+          externalKey: "SAGA-96",
+          title: "Tich hop Dong thoi gian Phien lam viec",
+        },
+        workSessions: {
+          sessionCount: 3,
+          totalElapsedSeconds: 7200,
+          openSessions: [],
+          sessions: [],
+          page: 0,
+          size: 20,
+          totalElements: 3,
+          totalPages: 1,
+        },
+        commits: {
+          items: [],
+          page: 0,
+          size: 20,
+          totalElements: 0,
+          totalPages: 0,
+        },
+      };
+
+      vi.spyOn(apiClient, "get").mockResolvedValueOnce({ data: mockTimeline });
+
+      const res = await ProjectTaskService.getTaskWorkSessionTimeline(mockProjectId, mockTaskId);
+
+      expect(res).toBeDefined();
+      expect(res.task.id).toBe(mockTaskId);
+      expect(res.task.externalKey).toBe("SAGA-96");
+      expect(res.workSessions.sessionCount).toBe(3);
+      expect(apiClient.get).toHaveBeenCalledWith(
+        `/api/projects/${mockProjectId}/tasks/${mockTaskId}/work-session-timeline`,
+        { params: undefined }
+      );
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID20",
+      type: "A",
+      executedDate: "21/09/2026",
+      description: "Nem ValidationException khi projectId hoac taskId rong khi goi getTaskWorkSessionTimeline",
+    },
+    async () => {
+      await expect(ProjectTaskService.getTaskWorkSessionTimeline("", mockTaskId)).rejects.toThrow(
+        "Throw ValidationException: Project ID is required"
+      );
+      await expect(ProjectTaskService.getTaskWorkSessionTimeline("   ", mockTaskId)).rejects.toThrow(
+        "Throw ValidationException: Project ID is required"
+      );
+      await expect(ProjectTaskService.getTaskWorkSessionTimeline(mockProjectId, "")).rejects.toThrow(
+        "Throw ValidationException: Task ID is required"
+      );
+      await expect(ProjectTaskService.getTaskWorkSessionTimeline(mockProjectId, "   ")).rejects.toThrow(
+        "Throw ValidationException: Task ID is required"
+      );
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID21",
+      type: "B",
+      executedDate: "21/09/2026",
+      description: "Goi getTaskWorkSessionTimeline voi params phan trang va loai tru",
+    },
+    async () => {
+      const mockTimeline = {
+        task: {
+          id: mockTaskId,
+          externalKey: "SAGA-96",
+          title: "Tich hop Dong thoi gian Phien lam viec",
+        },
+        workSessions: {
+          sessionCount: 0,
+          totalElapsedSeconds: 0,
+          openSessions: [],
+          sessions: [],
+          page: 1,
+          size: 10,
+          totalElements: 0,
+          totalPages: 0,
+        },
+        commits: {
+          items: [],
+          page: 1,
+          size: 10,
+          totalElements: 0,
+          totalPages: 0,
+        },
+      };
+
+      vi.spyOn(apiClient, "get").mockResolvedValueOnce({ data: mockTimeline });
+
+      const params = {
+        sessionPage: 1,
+        sessionSize: 10,
+        commitPage: 1,
+        commitSize: 10,
+        excludeCommits: true,
+      };
+
+      const res = await ProjectTaskService.getTaskWorkSessionTimeline(mockProjectId, mockTaskId, params);
+
+      expect(res).toBeDefined();
+      expect(res.task.id).toBe(mockTaskId);
+      expect(apiClient.get).toHaveBeenCalledWith(
+        `/api/projects/${mockProjectId}/tasks/${mockTaskId}/work-session-timeline`,
+        { params }
+      );
+    }
+  );
 });

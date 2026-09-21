@@ -31,14 +31,14 @@ Quy tắc bảo trì bắt buộc:
 
 | Hạng mục | Giá trị tại thời điểm kiểm tra |
 | --- | --- |
-| Frontend | `saga-fe`, nhánh `feat/SAGA-96-task-work-session-timeline` |
+| Frontend | `saga-fe`, nhánh `feat/SAGA-97-unit-test-task-work-session-timeline` |
 | Backend | `saga-be`, nhánh `main` |
 | FE framework | Next.js 16, React, TypeScript, TanStack Query |
 | Dữ liệu nghiệp vụ chính | REST từ Backend; Jira/GitHub được đồng bộ thành projection trong SAGA |
 | Dữ liệu Graph | Neo4j projection do Backend tạo, FE chỉ truy vấn và trực quan hóa |
 | Realtime | SSE chỉ báo thay đổi; sau event FE phải refetch REST canonical |
 | FE unit regression | Đạt 100% tests passed (848/848 tests), 0 lint errors/warnings, production build passed |
-| Lưu ý | SAGA-96 bổ sung Dòng thời gian Phiên làm việc và Commit (Work Session & Commit Timeline) qua API `GET /api/projects/{projectId}/tasks/{taskId}/work-session-timeline`, tích hợp trên cả không gian Sinh viên (IssueDetailsModal) và Giảng viên (MemberProgressSheet & PipelineTaskInspector) |
+| Lưu ý | SAGA-97 bổ sung bộ Unit Tests chuẩn FPT (UTCID19-21) cho API getTaskWorkSessionTimeline trong ProjectTaskService |
 
 ### 1.1 Mục đích sử dụng
 
