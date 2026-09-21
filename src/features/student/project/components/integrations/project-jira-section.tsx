@@ -365,7 +365,7 @@ export function ProjectJiraSection({
                                 className="cursor-pointer gap-2"
                               >
                                 <UnlinkIcon className="size-3.5" />
-                                <span>Ngắt kết nối (Bảo toàn)</span>
+                                <span>Ngắt kết nối</span>
                               </DropdownMenuItem>
                             </>
                           )}
