@@ -1,4 +1,5 @@
 import type { RoleInTeam } from "@/types/auth";
+import type { JiraSourceSummary } from "./jira-sources";
 
 export interface ProjectTypeSummary {
   id: string;
@@ -119,6 +120,7 @@ export interface ProjectJiraIntegration {
 export interface ProjectIntegrationsResponse {
   github: ProjectGitHubIntegration | null;
   jira: ProjectJiraIntegration | null;
+  jiraSources?: JiraSourceSummary[];
 }
 
 export interface ProjectGitHubConnectResponse {

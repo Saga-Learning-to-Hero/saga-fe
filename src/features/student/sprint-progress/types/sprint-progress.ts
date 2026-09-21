@@ -35,6 +35,11 @@ export interface SprintIssue {
   startDate?: string;
   githubCommitCount?: number;
   createdAt: string;
+  superseded?: boolean;
+  migratedFrom?: { taskId: string; externalKey: string } | null;
+  migratedTo?: { taskId: string; externalKey: string } | null;
+  jiraIntegrationId?: string | null;
+  sourceProjectKey?: string | null;
 }
 
 export interface Sprint {

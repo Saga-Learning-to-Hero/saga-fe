@@ -320,6 +320,11 @@ export function SprintBoardView({
                           <span className="text-xs font-mono font-bold text-muted-foreground group-hover:text-primary transition-colors truncate">
                             {issue.key}
                           </span>
+                          {issue.superseded && (
+                            <Badge variant="outline" className="border-rose-500/40 bg-rose-500/10 text-rose-600 dark:text-rose-400 text-[9px] font-bold px-1 py-0 shrink-0">
+                              Lịch sử
+                            </Badge>
+                          )}
                           {!canDrag && (
                             <span title="Chỉ đọc (Task của thành viên khác)">
                               <LockIcon className="w-3 h-3 text-muted-foreground/70 shrink-0" />

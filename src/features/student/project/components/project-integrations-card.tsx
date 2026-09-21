@@ -211,7 +211,9 @@ export function ProjectIntegrationsCard({ projectId, isLeader }: ProjectIntegrat
         ) : (
           <div className="space-y-3.5">
             <ProjectJiraSection
+              projectId={projectId}
               jira={integrations?.jira}
+              jiraSources={integrations?.jiraSources}
               isLeader={isLeader}
               isConnectingJira={connectJiraMutation.isPending}
               isDisconnectingJira={disconnectJiraMutation.isPending}

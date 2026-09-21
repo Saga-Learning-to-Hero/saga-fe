@@ -31,14 +31,14 @@ Quy tắc bảo trì bắt buộc:
 
 | Hạng mục | Giá trị tại thời điểm kiểm tra |
 | --- | --- |
-| Frontend | `saga-fe`, nhánh `feat/SAGA-90-dong-bo-task-evidence-va-chinh-sua-nhanh` |
+| Frontend | `saga-fe`, nhánh `feat/SAGA-93-multi-jira-sources-and-failover` |
 | Backend | `saga-be`, nhánh `main` |
 | FE framework | Next.js 16, React, TypeScript, TanStack Query |
 | Dữ liệu nghiệp vụ chính | REST từ Backend; Jira/GitHub được đồng bộ thành projection trong SAGA |
 | Dữ liệu Graph | Neo4j projection do Backend tạo, FE chỉ truy vấn và trực quan hóa |
 | Realtime | SSE chỉ báo thay đổi; sau event FE phải refetch REST canonical |
-| FE unit regression | 794/794 tests passed ngày 19/09/2026, 0 lint errors/warnings, production build passed |
-| Lưu ý | SAGA-90 đồng bộ hiển thị Task Evidence (tệp/link) ở tầng ngoài Pipeline Flow, tối ưu bố cục Cytoscape Multi-Column chống đè node và bổ sung công cụ chỉnh sửa nhanh Assignee, Status, Story Points cho Leader |
+| FE unit regression | Đạt 100% tests passed, 0 lint errors/warnings, production build passed |
+| Lưu ý | SAGA-93 bổ sung Quản lý đa nguồn Jira (Multi-Jira Sources), thu hồi mềm Soft Disconnect bảo toàn dữ liệu lịch sử, quy trình Chuyển giao công việc an toàn Failover Wizard (Preview, Async Execution 202, Polling Run, Reconcile cho trường hợp bất định) và Anti-Duplication |
 
 ### 1.1 Mục đích sử dụng
 
@@ -110,7 +110,7 @@ Bảng này là checklist chức năng cấp cao dành cho tài liệu báo cáo
 | SCOPE-02 | Quản trị học vụ | Học kỳ active; Subject; Syllabus có version/lifecycle/structure; Academic Class; Course; Lecturer assignment; roster có preview/confirm |
 | SCOPE-03 | Quản lý nhóm | Danh sách nhóm theo course; import; Team Leader; chuyển thành viên; quan hệ Student–Team–Course rõ ràng |
 | SCOPE-04 | Khởi tạo dự án | Một project gắn đúng team/course; tên/mô tả; Project Type tùy chọn; policy Leader; trạng thái chưa/có project rõ ràng |
-| SCOPE-05 | Tích hợp công cụ | Kết nối Jira board và GitHub installation/repositories; personal identity mapping; reconnect/disconnect; repository role canonical |
+| SCOPE-05 | Tích hợp công cụ | Kết nối đa nguồn Jira (Multi-Jira Sources) và GitHub installation/repositories; personal identity mapping; reconnect/soft disconnect; quy trình chuyển giao công việc an toàn Failover Wizard; repository role canonical |
 | SCOPE-06 | Đồng bộ và realtime | Initial/manual/incremental/webhook sync; sync status và last sync; SSE invalidation; REST refetch; khôi phục sau reconnect |
 | SCOPE-07 | Quản lý Sprint và Task | Kanban, Backlog, Timeline; sprint lifecycle; task CRUD/transition; assignee; priority; story point; label; type; parent/subtask; start/due date |
 | SCOPE-08 | Theo dõi GitHub | Commit repository/branch/author/time/message; filter/search; linked/unlinked state; dữ liệu PR/review/comment nếu được đưa vào phạm vi đánh giá |
@@ -220,6 +220,14 @@ Payload SSE không phải dữ liệu để render trực tiếp. FE phải ch�
 3. Leader kết nối Jira board và GitHub installation/repositories.
 4. Repo được gán role canonical `FRONTEND`, `BACKEND` hoặc `OTHER`.
 5. Sync ban đầu tạo projection Task/Sprint/Commit/link và graph có thể được dựng lại từ dữ liệu đó.
+6. Hệ thống hỗ trợ đa nguồn Jira (`Multi-Jira Sources`): một dự án có thể kết nối nhiều Jira Workspace/Site song song (`status: ACTIVE, REVOKED, FAILED`).
+7. Khi ngắt kết nối một Jira source (`DELETE`), Backend chỉ thu hồi ủy quyền (`soft-revoke`), toàn bộ card/task và commit đối soát lịch sử của source đó vẫn được lưu giữ an toàn trong SAGA.
+8. Khi chuyển giao công việc giữa các nguồn Jira, Leader kích hoạt `Failover Wizard`:
+   - Chọn nguồn đích (Target Jira Source đang ở trạng thái `ACTIVE`).
+   - Lọc các task dở dang (`TODO`, `IN_PROGRESS`, `IN_REVIEW`) hoặc task tùy chọn qua bước Preview.
+   - Xác nhận chuyển giao: Backend xử lý bất đồng bộ trả mã `202 Accepted` kèm `runId`; FE polling định kỳ 2.5s.
+   - Nguyên tắc chống trùng lặp (Anti-Duplication): Các task cũ được chuyển trạng thái `superseded = true`, task mới được tạo mang cờ `migratedFrom`.
+   - Cơ chế Reconcile: Đối với các item gặp trạng thái bất định `REMOTE_OUTCOME_UNKNOWN` do timeout mạng, FE cung cấp luồng "Xác minh & Liên kết (Verify & Bind)" thay vì tạo lặp; tuyệt đối không sao chép mù bằng chứng giữa hai nguồn.
 
 ### 5.4 Thực thi Sprint
 
@@ -381,15 +389,16 @@ Project Type dùng để phân loại hướng dự án, không điều khiển 
 | PRJ-003 | Update/delete project | — | — | Không nên coi là xong | `ABSENT` theo controller hiện tại |
 | INT-001 | Xem trạng thái Jira/GitHub project integration | ✓ | ✓ | ✓ | `DONE` |
 | INT-002 | GitHub connect/reconnect/repository selection/disconnect | ✓ | ✓ | ✓ | `DONE` |
-| INT-003 | Jira connect/sites/projects/boards/config/disconnect | ✓ | ✓ | ✓ | `DONE` |
+| INT-003 | Jira connect/sites/projects/boards/config/disconnect | ✓ | ✓ | ✓ | `DONE`; hỗ trợ đa nguồn Jira (Multi-Jira Sources), đồng bộ từng nguồn (202), kết nối lại và ngắt kết nối mềm (soft disconnect bảo toàn dữ liệu) |
 | INT-004 | GitHub repository role | ✓ | ✓ | ✓ | `PARTIAL`; FE đang cho thêm `FULLSTACK/DOCS` nhưng BE chỉ có `FRONTEND/BACKEND/OTHER` |
+| INT-005 | Jira Failover Wizard & Reconciliation | ✓ | ✓ | ✓ | `DONE`; quy trình chuyển giao công việc 4 bước (Target Selection -> Preview/Filter -> Confirm -> Progress Polling 202/runId), xử lý trạng thái bất định `REMOTE_OUTCOME_UNKNOWN` qua Verify & Bind modal |
 
 ### 7.5 Jira Task, Sprint và Git Commit
 
 | ID | Nghiệp vụ | BE | FE data | UI | Trạng thái/Ghi chú |
 | --- | --- | --- | --- | --- | --- |
-| TASK-001 | Task list/options/detail | ✓ | ✓ | ✓ | `DONE` |
-| TASK-002 | Task create/patch/delete | ✓ | ✓ | ✓ | `DONE`; quick create chỉ gửi field tối thiểu |
+| TASK-001 | Task list/options/detail | ✓ | ✓ | ✓ | `DONE`; hỗ trợ đa nguồn Jira (`jiraIntegrationId`), hiển thị badge Lịch sử (`superseded`) và liên kết nguồn/đích chuyển giao (`migratedFrom`, `migratedTo`) |
+| TASK-002 | Task create/patch/delete | ✓ | ✓ | ✓ | `DONE`; quick create chỉ gửi field tối thiểu, form tạo chi tiết cho phép chọn nguồn Jira khi dự án có từ 2 nguồn active trở lên |
 | TASK-003 | Task transition và transition options | ✓ | ✓ | ✓ | `DONE` |
 | TASK-004 | Move task vào/ra sprint | ✓ | ✓ | ✓ | `DONE` |
 | TASK-005 | Task type và Subtask parent | ✓ | ✓ | ✓ | `DONE` (BE & FE đồng bộ `parentTask`, `subtasks`, `parentTaskId`, `clearParent`, endpoint `GET /tasks/parent-options` phân trang và UI chọn Task cha/Subtasks) |
@@ -515,6 +524,7 @@ Project Type dùng để phân loại hướng dự án, không điều khiển 
 | `/api/projects/{projectId}/integrations` | Đã dùng |
 | Project GitHub connect/reconnect/callback/repos/update/delete | Đã dùng |
 | Project Jira connect/sites/projects/boards/update/delete | Đã dùng |
+| `/api/projects/{projectId}/integrations/jira-sources/**` | Đã dùng (GET sources, connect, reconnect, delete soft-revoke, sync 202, failover preview, failover execute 202, failover runs polling, retry, reconcile) |
 | `/api/webhooks/github`, `/api/webhooks/jira` | Provider gọi; FE không gọi |
 
 ### 8.5 Project projection

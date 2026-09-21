@@ -178,6 +178,24 @@ export function SprintBacklogView({
             {issue.key}
           </span>
 
+          {issue.superseded && (
+            <Badge variant="outline" className="border-rose-500/40 bg-rose-500/10 text-rose-600 dark:text-rose-400 text-[9px] font-bold px-1.5 py-0 shrink-0">
+              Lịch sử
+            </Badge>
+          )}
+
+          {issue.migratedTo && (
+            <span className="text-[10px] font-mono text-muted-foreground shrink-0 bg-muted/60 px-1.5 py-0.5 rounded border border-border/50">
+              ➔ {issue.migratedTo.externalKey}
+            </span>
+          )}
+
+          {issue.migratedFrom && (
+            <span className="text-[10px] font-mono text-muted-foreground shrink-0 bg-muted/60 px-1.5 py-0.5 rounded border border-border/50">
+              từ {issue.migratedFrom.externalKey}
+            </span>
+          )}
+
           <span className="text-xs font-semibold text-foreground truncate">
             {issue.summary}
           </span>

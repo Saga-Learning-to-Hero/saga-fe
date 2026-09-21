@@ -104,14 +104,19 @@ export class ProjectTaskService {
   }
 
   static async getTaskOptions(
-    projectId: string
+    projectId: string,
+    jiraIntegrationId?: string
   ): Promise<ProjectTaskOptionsResponse> {
     if (!projectId || !projectId.trim()) {
       throw new Error("Throw ValidationException: Project ID is required");
     }
     const cleanProjectId = projectId.trim();
+    const params = jiraIntegrationId && jiraIntegrationId.trim()
+      ? { jiraIntegrationId: jiraIntegrationId.trim() }
+      : undefined;
     const res = await apiClient.get<ProjectTaskOptionsResponse>(
-      `/api/projects/${encodeURIComponent(cleanProjectId)}/tasks/options`
+      `/api/projects/${encodeURIComponent(cleanProjectId)}/tasks/options`,
+      { params }
     );
     return res.data;
   }
