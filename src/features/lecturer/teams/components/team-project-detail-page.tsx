@@ -8,9 +8,12 @@ import {
   ClockIcon,
   CrownIcon,
   EllipsisIcon,
-  FolderKanbanIcon,
-  NetworkIcon,
+  EyeIcon,
+  GitCommitIcon,
+  GitGraphIcon,
+  ListTodoIcon,
   PieChartIcon,
+  Users2Icon,
   UsersIcon,
 } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -18,16 +21,6 @@ import { Badge } from "@/components/ui/badge";
 import { LeaderBadge, MemberRoleBadge } from "@/components/common/leader-badge";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { MemberProgressSheet } from "@/features/progress/components/member-progress-sheet";
-import {
-  ProgressFactNote,
-  ProjectProgressSummary,
-} from "@/features/progress/components/project-progress-summary";
-import { ProgressMemberTable } from "@/features/progress/components/progress-member-table";
-import { useProjectRealtime } from "@/features/student/project/hooks/use-project-realtime";
-import { useProjectProgress } from "@/features/student/project/hooks/useProjectSync";
-import { normalizeProjectProgress } from "@/features/progress/lib/progress-format";
-import { getApiErrorMessage } from "@/lib/api-error";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -38,18 +31,27 @@ import {
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { LecturerPageShell } from "@/features/lecturer/courses/components/lecturer-page-shell";
 import { useLecturerCourse } from "@/features/lecturer/courses/hooks/use-lecturer-courses";
-import { useLecturerTeams, useMoveTeamMember, useReplaceTeamLeader } from "../hooks/use-lecturer-teams";
+import {
+  useLecturerTeams,
+  useMoveTeamMember,
+  useReplaceTeamLeader,
+} from "../hooks/use-lecturer-teams";
 import { sortTeamMembers, type LecturerTeamMember } from "../types/lecturer-team";
 import {
   lecturerCourseGradesPath,
   lecturerCourseGraphPath,
+  lecturerCoursePeerReviewsPath,
   lecturerCourseTeamsPath,
 } from "@/features/lecturer/courses/lib/course-routes";
 import { ReplaceTeamLeaderDialog } from "./replace-team-leader-dialog";
 import { MoveTeamMemberDialog } from "./move-team-member-dialog";
-import { cn } from "@/lib/utils";
 import { ActivityHeatmapGrid, SprintBurndownChart } from "@/features/analytics";
 import { useProjectSprints } from "@/features/student/sprint-progress/hooks/use-project-sprints";
+import { useProjectProgress } from "@/features/student/project/hooks/useProjectSync";
+import { formatDateTime, normalizeProjectProgress } from "@/features/progress/lib/progress-format";
+import { ProjectProgressSummary } from "@/features/progress/components/project-progress-summary";
+import { MemberProgressSheet } from "@/features/progress/components/member-progress-sheet";
+import { cn } from "@/lib/utils";
 
 interface TeamProjectDetailPageProps {
   courseId: string;
@@ -70,7 +72,6 @@ export function TeamProjectDetailPage({ courseId, teamId }: TeamProjectDetailPag
   const moveMember = useMoveTeamMember(courseId);
   const [leaderCandidate, setLeaderCandidate] = useState<LecturerTeamMember | null>(null);
   const [movingMember, setMovingMember] = useState<LecturerTeamMember | null>(null);
-  const [detailStudentId, setDetailStudentId] = useState<string | null>(null);
 
   const teams = teamsQuery.data?.teams ?? [];
   const team = teams.find((item) => item.teamId === teamId);
@@ -78,15 +79,21 @@ export function TeamProjectDetailPage({ courseId, teamId }: TeamProjectDetailPag
   const hasProject = Boolean(team?.projectId);
   const projectId = team?.projectId ?? null;
   const hasOtherTeams = teams.some((item) => item.teamId !== team?.teamId);
-  const progressQuery = useProjectProgress(projectId, { enabled: Boolean(projectId) });
+
+  const [selectedProgressStudentId, setSelectedProgressStudentId] = useState<string | null>(null);
+  const [openProgressSheet, setOpenProgressSheet] = useState(false);
+
+  const progressQuery = useProjectProgress(projectId, {
+    enabled: Boolean(projectId),
+  });
+  const progress = normalizeProjectProgress(progressQuery.data);
+
   const { data: sprints = [] } = useProjectSprints(projectId || "", {
     enabled: Boolean(projectId),
   });
-  useProjectRealtime(projectId, { enabled: Boolean(projectId) });
-  const progress = normalizeProjectProgress(progressQuery.data);
 
   const backLink = {
-    href: lecturerCourseTeamsPath(courseId, "teams"),
+    href: lecturerCourseTeamsPath(courseId),
     label: "danh sách nhóm",
   };
 
@@ -111,7 +118,7 @@ export function TeamProjectDetailPage({ courseId, teamId }: TeamProjectDetailPag
             Nhóm này không thuộc lớp học phần đang mở. Hãy quay lại danh sách nhóm.
           </p>
           <Link
-            href={lecturerCourseTeamsPath(courseId, "teams")}
+            href={lecturerCourseTeamsPath(courseId)}
             prefetch={true}
             className={cn(buttonVariants({ size: "sm" }), "mt-4 text-xs font-bold")}
           >
@@ -126,269 +133,347 @@ export function TeamProjectDetailPage({ courseId, teamId }: TeamProjectDetailPag
     <LecturerPageShell
       backLink={backLink}
       title={team?.teamName ? `Chi tiết nhóm: ${team.teamName}` : "Dự án nhóm"}
-      description={
-        hasProject
-          ? "Nhóm đã khởi tạo dự án. Giảng viên theo dõi tiến độ task, commit, minh chứng và mở bảng điểm đóng góp riêng."
-          : "Nhóm đã được phân công. Trưởng nhóm cần đăng nhập bằng tài khoản sinh viên để khởi tạo dự án."
-      }
-      badges={
-        <>
-          <Badge
-            variant="outline"
-            className="border-primary/25 bg-primary/10 font-mono text-xs font-bold text-primary"
-          >
-            Team #{team?.teamNo ?? "—"}
-          </Badge>
-          <Badge
-            variant="outline"
-            className={
-              hasProject
-                ? "border-emerald-500/30 bg-emerald-500/10 font-mono text-xs text-emerald-600 dark:text-emerald-400"
-                : "border-amber-500/30 bg-amber-500/10 font-mono text-xs text-amber-600 dark:text-amber-400"
-            }
-          >
-            {hasProject ? (
-              <>
-                <CheckCircle2Icon className="mr-1 size-3" />
-                Dự án đã kết nối
-              </>
-            ) : (
-              <>
-                <ClockIcon className="mr-1 size-3" />
-                Chờ khởi tạo dự án
-              </>
-            )}
-          </Badge>
-        </>
-      }
+      description="Quản lý thành viên, theo dõi tiến độ Burndown và phân tích nhịp độ hoạt động mã nguồn của nhóm."
       isLoading={courseQuery.isLoading || teamsQuery.isLoading}
     >
-      <Card className="rounded-2xl border border-border/80 bg-card p-5 shadow-xs">
-        <div className="mb-4 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <UsersIcon className="size-5 text-primary" />
-            <h2 className="text-base font-extrabold text-foreground">
-              Danh sách thành viên ({members.length})
-            </h2>
-          </div>
-          <span className="font-mono text-xs text-muted-foreground">
-            {team?.teamName}
-          </span>
-        </div>
+      {team && (
+        <Card className="relative overflow-hidden rounded-3xl border border-border/80 bg-card p-6 shadow-xs">
+          <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+            <div className="space-y-3">
+              <div className="flex flex-wrap items-center gap-2">
+                <Badge
+                  variant="outline"
+                  className="border-primary/30 bg-primary/10 font-mono text-xs font-bold text-primary"
+                >
+                  Team #{team.teamNo}
+                </Badge>
+                <Badge
+                  variant="outline"
+                  className={
+                    hasProject
+                      ? "border-emerald-500/30 bg-emerald-500/10 font-mono text-xs font-bold text-emerald-600 dark:text-emerald-400"
+                      : "border-amber-500/30 bg-amber-500/10 font-mono text-xs font-bold text-amber-600 dark:text-amber-400"
+                  }
+                >
+                  {hasProject ? (
+                    <>
+                      <CheckCircle2Icon className="mr-1 size-3" />
+                      Dự án đã kết nối
+                    </>
+                  ) : (
+                    <>
+                      <ClockIcon className="mr-1 size-3" />
+                      Chưa thiết lập dự án
+                    </>
+                  )}
+                </Badge>
+              </div>
 
-        <div className="space-y-2.5">
-          {members.map((member) => {
-            const isLeader = member.role === "LEADER";
-            const canReplaceLeader = Boolean(member.teamMemberId) && !isLeader;
-            const canMoveMember = Boolean(member.teamMemberId) && !isLeader && hasOtherTeams;
-            return (
-              <div
-                key={member.teamMemberId || member.courseEnrollmentId || member.studentProfileId}
+              <div>
+                <h1 className="text-xl font-extrabold tracking-tight text-foreground sm:text-2xl">
+                  {team.teamName}
+                </h1>
+                <p className="mt-1 text-xs text-muted-foreground sm:text-sm">
+                  {hasProject
+                    ? "Theo dõi Sprint, task, commit và tiến độ làm việc của nhóm."
+                    : "Trưởng nhóm cần tạo dự án trên SAGA, sau đó kết nối Jira và GitHub trong phân hệ Sinh viên."}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex shrink-0 flex-wrap items-center gap-2">
+              <Link
+                href={`${lecturerCourseGraphPath(courseId)}?teamId=${team.teamId}`}
+                prefetch={true}
                 className={cn(
-                  "flex flex-col gap-2 rounded-xl border p-3 transition-colors sm:flex-row sm:items-center sm:justify-between",
-                  isLeader
-                    ? "border-amber-500/25 bg-amber-500/5 dark:bg-amber-500/10"
-                    : "border-border/60 bg-muted/20"
+                  buttonVariants({ variant: "outline", size: "sm" }),
+                  "gap-1.5 text-xs font-bold cursor-pointer"
                 )}
               >
-                <div className="flex items-center gap-3">
-                  <Avatar size="sm" className="border border-border/60">
-                    <AvatarFallback
-                      className={cn(
-                        "font-mono text-[11px] font-bold",
-                        isLeader
-                          ? "bg-amber-500/20 text-amber-700 dark:text-amber-300"
-                          : "bg-muted text-muted-foreground"
-                      )}
-                    >
-                      {getInitials(member.fullName)}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-xs font-bold text-foreground">
-                        {member.fullName}
-                      </span>
-                      {isLeader && (
-                        <LeaderBadge variant="icon-only" />
-                      )}
-                    </div>
-                    <span className="font-mono text-[11px] text-muted-foreground">
-                      {member.studentCode}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="flex flex-wrap items-center gap-2">
-                  <MemberRoleBadge role={member.role} />
-
-                  {isLeader && hasOtherTeams ? (
-                    <Tooltip>
-                      <TooltipTrigger className="cursor-help text-[11px] text-muted-foreground">
-                        Đổi trưởng nhóm trước khi chuyển
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        Không thể chuyển trưởng nhóm trực tiếp sang nhóm khác. Hãy chọn thành viên khác làm trưởng nhóm trước.
-                      </TooltipContent>
-                    </Tooltip>
-                  ) : null}
-
-                  {(canReplaceLeader || canMoveMember) && (
-                    <DropdownMenu>
-                      <DropdownMenuTrigger
-                        aria-label={`Thao tác với ${member.fullName || "thành viên"}`}
-                        disabled={replaceLeader.isPending || moveMember.isPending}
-                        className="inline-flex size-8 cursor-pointer items-center justify-center rounded-lg border border-transparent text-muted-foreground transition-colors hover:border-border hover:bg-muted hover:text-foreground disabled:pointer-events-none disabled:opacity-50"
-                      >
-                        <EllipsisIcon className="size-4" />
-                        <span className="sr-only">Thao tác thành viên</span>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="min-w-52">
-                        {canReplaceLeader && (
-                          <DropdownMenuItem onClick={() => setLeaderCandidate(member)}>
-                            <CrownIcon className="size-4 text-amber-500" />
-                            Đặt làm trưởng nhóm
-                          </DropdownMenuItem>
-                        )}
-                        {canReplaceLeader && canMoveMember && <DropdownMenuSeparator />}
-                        {canMoveMember && (
-                          <DropdownMenuItem onClick={() => setMovingMember(member)}>
-                            <ArrowRightLeftIcon className="size-4" />
-                            Chuyển sang nhóm khác
-                          </DropdownMenuItem>
-                        )}
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  )}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </Card>
-
-      {hasProject ? (
-        <div className="space-y-4">
-          <div className="flex items-center gap-2 text-primary">
-            <FolderKanbanIcon className="size-5" />
-            <h2 className="text-sm font-extrabold text-foreground">Tiến độ dự án nhóm</h2>
-          </div>
-          {progressQuery.isLoading && !progressQuery.data ? (
-            <div className="h-40 animate-pulse rounded-2xl bg-muted/60" />
-          ) : progressQuery.isError ? (
-            <Card className="rounded-2xl border border-dashed border-destructive/30 p-6 text-center">
-              <p className="text-sm font-semibold">Không tải được tiến độ dự án</p>
-              <p className="mt-1 text-xs text-muted-foreground">
-                {getApiErrorMessage(progressQuery.error, "Vui lòng thử lại.")}
-              </p>
-              <Button
-                type="button"
-                size="sm"
-                variant="outline"
-                className="mt-3 h-8 cursor-pointer text-xs"
-                onClick={() => void progressQuery.refetch()}
-              >
-                Thử lại
-              </Button>
-            </Card>
-          ) : progress ? (
-            <>
-              <ProjectProgressSummary progress={progress} />
-              <ProgressFactNote />
-              <ProgressMemberTable
-                members={progress.memberProgress}
-                selectedStudentId={detailStudentId}
-                onSelectMember={setDetailStudentId}
-              />
-              <SprintBurndownChart
-                courseId={courseId}
-                teamId={teamId}
-                sprints={sprints.map((s) => ({
-                  id: s.id,
-                  name: s.name,
-                  startDate: s.startDate,
-                  endDate: s.endDate,
-                }))}
-              />
-              <ActivityHeatmapGrid
-                courseId={courseId}
-                teamId={teamId}
-                sprints={sprints.map((s) => ({
-                  id: s.id,
-                  name: s.name,
-                  startDate: s.startDate,
-                  endDate: s.endDate,
-                }))}
-                students={members.map((m) => ({
-                  studentId: m.studentProfileId,
-                  fullName: m.fullName,
-                  studentCode: m.studentCode,
-                }))}
-              />
-            </>
-          ) : null}
-        </div>
-      ) : (
-        <Card className="rounded-2xl border border-dashed border-amber-500/40 bg-amber-500/5 p-6 text-center">
-          <p className="text-sm font-semibold">Nhóm chưa khởi tạo dự án</p>
-          <p className="mt-1 text-xs text-muted-foreground">
-            Bảng tiến độ chỉ mở khi trưởng nhóm đã tạo dự án. Không gọi API progress khi chưa có projectId.
-          </p>
-        </Card>
-      )}
-
-      <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
-        <Card className="rounded-2xl border border-border/80 bg-card p-5 shadow-xs">
-          <CardContent className="space-y-3 p-0">
-            <div className="flex items-center gap-2 text-primary">
-              <FolderKanbanIcon className="size-5" />
-              <h2 className="text-sm font-extrabold text-foreground">Trạng thái khởi tạo</h2>
-            </div>
-            <p className="text-xs text-muted-foreground">
-              {hasProject
-                ? "Dự án đã sẵn sàng. Số liệu task, sprint và commit lấy từ API tiến độ, không tự suy từ mô hình Scrum."
-                : "Chờ trưởng nhóm khởi tạo dự án trước khi theo dõi tiến độ."}
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="flex flex-col justify-between rounded-2xl border border-border/80 bg-card p-5 shadow-xs">
-          <CardContent className="space-y-3 p-0">
-            <div className="flex items-center gap-2 text-primary">
-              <NetworkIcon className="size-5" />
-              <h2 className="text-sm font-extrabold text-foreground">
-                Không gian giám sát & Đánh giá
-              </h2>
-            </div>
-            <p className="text-xs leading-relaxed text-muted-foreground">
-              Đồ thị đối soát và bảng điểm đóng góp là feature riêng, khác với tỉ lệ hoàn thành task ở bảng tiến độ phía trên.
-            </p>
-          </CardContent>
-
-          <div className="mt-4 flex flex-wrap gap-2.5 border-t border-border/60 pt-4">
-            <Link
-              href={lecturerCourseGraphPath(courseId)}
-              prefetch={true}
-              className={cn(buttonVariants({ size: "sm" }), "gap-1.5 text-xs font-bold shadow-xs")}
-            >
-              <NetworkIcon className="size-3.5" />
-              Mở đồ thị đối soát
-            </Link>
-            {team ? (
+                <GitGraphIcon className="size-3.5 text-primary" />
+                Đồ thị đối soát
+              </Link>
               <Link
                 href={lecturerCourseGradesPath(courseId, team.teamId)}
                 prefetch={true}
                 className={cn(
                   buttonVariants({ variant: "outline", size: "sm" }),
-                  "gap-1.5 text-xs font-bold"
+                  "gap-1.5 text-xs font-bold cursor-pointer"
+                )}
+              >
+                <PieChartIcon className="size-3.5" />
+                Bảng điểm nhóm
+              </Link>
+              <Link
+                href={lecturerCoursePeerReviewsPath(courseId, { teamId: team.teamId })}
+                prefetch={true}
+                className={cn(
+                  buttonVariants({ variant: "default", size: "sm" }),
+                  "gap-1.5 text-xs font-bold shadow-xs cursor-pointer"
+                )}
+              >
+                <Users2Icon className="size-3.5" />
+                Đánh giá chéo
+              </Link>
+            </div>
+          </div>
+        </Card>
+      )}
+
+      <div className="space-y-6">
+        {hasProject && progress && (
+          <ProjectProgressSummary progress={progress} />
+        )}
+
+        <Card className="rounded-2xl border border-border/80 bg-card p-5 shadow-xs">
+          <div className="mb-4 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <UsersIcon className="size-5 text-primary" />
+              <h2 className="text-base font-extrabold text-foreground">
+                Danh sách thành viên ({members.length})
+              </h2>
+            </div>
+            <span className="font-mono text-xs text-muted-foreground">
+              {team?.teamName}
+            </span>
+          </div>
+
+          <div className="space-y-2.5">
+            {members.map((member) => {
+              const isLeader = member.role === "LEADER";
+              const canReplaceLeader = Boolean(member.teamMemberId) && !isLeader;
+              const canMoveMember = Boolean(member.teamMemberId) && !isLeader && hasOtherTeams;
+              const memberStats = progress?.memberProgress.find(
+                (p) => p.studentId === member.studentProfileId || p.studentCode === member.studentCode
+              );
+
+              return (
+                <div
+                  key={member.teamMemberId || member.courseEnrollmentId || member.studentProfileId}
+                  className={cn(
+                    "flex flex-col gap-2 rounded-xl border p-3 transition-colors sm:flex-row sm:items-center sm:justify-between",
+                    isLeader
+                      ? "border-amber-500/25 bg-amber-500/5 dark:bg-amber-500/10"
+                      : "border-border/60 bg-muted/20"
+                  )}
+                >
+                  <div className="flex items-center gap-3">
+                    <Avatar size="sm" className="border border-border/60">
+                      <AvatarFallback
+                        className={cn(
+                          "font-mono text-[11px] font-bold",
+                          isLeader
+                            ? "bg-amber-500/20 text-amber-700 dark:text-amber-300"
+                            : "bg-muted text-muted-foreground"
+                        )}
+                      >
+                        {getInitials(member.fullName)}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-xs font-bold text-foreground">
+                          {member.fullName}
+                        </span>
+                        {isLeader && <LeaderBadge variant="icon-only" />}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono text-[11px] text-muted-foreground">
+                          {member.studentCode}
+                        </span>
+                        <span className="text-[11px] text-muted-foreground/60 hidden sm:inline">•</span>
+                        <span className="text-[11px] text-muted-foreground/80 truncate hidden sm:inline">
+                          {member.email}
+                        </span>
+                      </div>
+                      {memberStats && (
+                        <div className="mt-1 flex flex-wrap items-center gap-2">
+                          <span className="inline-flex items-center gap-1 rounded-md bg-primary/10 px-2 py-0.5 font-mono text-[11px] font-semibold text-primary">
+                            <ListTodoIcon className="size-3" />
+                            {memberStats.tasks.completed}/{memberStats.tasks.assigned || memberStats.tasks.assignedTotal} tasks
+                          </span>
+                          <span className="inline-flex items-center gap-1 rounded-md bg-muted px-2 py-0.5 font-mono text-[11px] font-semibold text-muted-foreground">
+                            <GitCommitIcon className="size-3" />
+                            {memberStats.commits.total} commits
+                          </span>
+                          {memberStats.commits.lastCommitAt && (
+                            <span className="hidden sm:inline-flex items-center gap-1 font-mono text-[11px] text-muted-foreground">
+                              <ClockIcon className="size-3" />
+                              {formatDateTime(memberStats.commits.lastCommitAt)}
+                            </span>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-2">
+                    <MemberRoleBadge role={member.role} />
+
+                    {Boolean(member.studentProfileId) && hasProject && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="h-8 gap-1.5 text-xs font-semibold cursor-pointer"
+                        onClick={() => {
+                          setSelectedProgressStudentId(member.studentProfileId);
+                          setOpenProgressSheet(true);
+                        }}
+                      >
+                        <EyeIcon className="size-3.5" />
+                        Tiến độ
+                      </Button>
+                    )}
+
+                    {isLeader && hasOtherTeams ? (
+                      <Tooltip>
+                        <TooltipTrigger className="cursor-help text-[11px] text-muted-foreground">
+                          Đổi trưởng nhóm trước khi chuyển
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          Không thể chuyển trưởng nhóm trực tiếp sang nhóm khác. Hãy chọn thành viên khác làm trưởng nhóm trước.
+                        </TooltipContent>
+                      </Tooltip>
+                    ) : null}
+
+                    {(canReplaceLeader || canMoveMember) && (
+                      <DropdownMenu>
+                        <DropdownMenuTrigger
+                          aria-label={`Thao tác với ${member.fullName || "thành viên"}`}
+                          disabled={replaceLeader.isPending || moveMember.isPending}
+                          className="inline-flex size-8 cursor-pointer items-center justify-center rounded-lg border border-transparent text-muted-foreground transition-colors hover:border-border hover:bg-muted hover:text-foreground disabled:pointer-events-none disabled:opacity-50"
+                        >
+                          <EllipsisIcon className="size-4" />
+                          <span className="sr-only">Thao tác thành viên</span>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="min-w-52">
+                          {canReplaceLeader && (
+                            <DropdownMenuItem
+                              className="cursor-pointer text-xs font-semibold gap-2"
+                              onClick={() => setLeaderCandidate(member)}
+                            >
+                              <CrownIcon className="size-4 text-amber-500" />
+                              Đặt làm trưởng nhóm
+                            </DropdownMenuItem>
+                          )}
+                          {canReplaceLeader && canMoveMember && <DropdownMenuSeparator />}
+                          {canMoveMember && (
+                            <DropdownMenuItem
+                              className="cursor-pointer text-xs font-semibold gap-2"
+                              onClick={() => setMovingMember(member)}
+                            >
+                              <ArrowRightLeftIcon className="size-4" />
+                              Chuyển sang nhóm khác
+                            </DropdownMenuItem>
+                          )}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </Card>
+
+        {hasProject ? (
+          <div className="space-y-6">
+            <SprintBurndownChart
+              courseId={courseId}
+              teamId={teamId}
+              sprints={sprints.map((s) => ({
+                id: s.id,
+                name: s.name,
+                startDate: s.startDate,
+                endDate: s.endDate,
+                state: s.state,
+              }))}
+            />
+
+            <ActivityHeatmapGrid
+              courseId={courseId}
+              teamId={teamId}
+              sprints={sprints.map((s) => ({
+                id: s.id,
+                name: s.name,
+                startDate: s.startDate,
+                endDate: s.endDate,
+              }))}
+              students={members.map((m) => ({
+                studentId: m.studentProfileId,
+                fullName: m.fullName,
+                studentCode: m.studentCode,
+              }))}
+            />
+          </div>
+        ) : (
+          <Card className="rounded-2xl border border-dashed border-amber-500/40 bg-amber-500/5 p-8 text-center">
+            <ClockIcon className="mx-auto mb-2 size-8 text-amber-600 dark:text-amber-400" />
+            <p className="text-sm font-bold text-foreground">Nhóm chưa thiết lập dự án</p>
+            <p className="mx-auto mt-1 max-w-md text-xs text-muted-foreground">
+              Biểu đồ tiến độ và hoạt động Git sẽ xuất hiện sau khi trưởng nhóm tạo dự án và kết nối Jira, GitHub trong phân hệ Sinh viên.
+            </p>
+          </Card>
+        )}
+
+        <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
+          <Card className="flex flex-col justify-between rounded-2xl border border-border/80 bg-card p-5 shadow-xs">
+            <CardContent className="space-y-2 p-0">
+              <div className="flex items-center gap-2 text-primary">
+                <GitGraphIcon className="size-5" />
+                <h3 className="text-sm font-extrabold text-foreground">
+                  Trung tâm Giám sát Đồ thị SNA & Traceability
+                </h3>
+              </div>
+              <p className="text-xs leading-relaxed text-muted-foreground">
+                Xem toàn cảnh mối quan hệ giữa Sinh viên, Task Jira và Git Commits trên không gian đồ thị Cytoscape. Tự động nhận diện các bất thường MSR Anomaly và cảnh báo thành viên bị cô lập.
+              </p>
+            </CardContent>
+
+            <div className="mt-4 border-t border-border/60 pt-4">
+              <Link
+                href={`${lecturerCourseGraphPath(courseId)}?teamId=${teamId}`}
+                prefetch={true}
+                className={cn(
+                  buttonVariants({ size: "sm", variant: "outline" }),
+                  "gap-1.5 text-xs font-bold cursor-pointer"
+                )}
+              >
+                <GitGraphIcon className="size-3.5 text-primary" />
+                Mở đồ thị giám sát nhóm
+              </Link>
+            </div>
+          </Card>
+
+          <Card className="flex flex-col justify-between rounded-2xl border border-border/80 bg-card p-5 shadow-xs">
+            <CardContent className="space-y-2 p-0">
+              <div className="flex items-center gap-2 text-primary">
+                <PieChartIcon className="size-5" />
+                <h3 className="text-sm font-extrabold text-foreground">
+                  Bảng điểm Tổng kết & Tỷ lệ Đóng góp
+                </h3>
+              </div>
+              <p className="text-xs leading-relaxed text-muted-foreground">
+                Xem bảng điểm tổng kết môn học, tỷ lệ chia cổ phần Slicing Pie và đối soát điểm số đóng góp của từng thành viên trong nhóm.
+              </p>
+            </CardContent>
+
+            <div className="mt-4 border-t border-border/60 pt-4">
+              <Link
+                href={lecturerCourseGradesPath(courseId, teamId)}
+                prefetch={true}
+                className={cn(
+                  buttonVariants({ size: "sm", variant: "default" }),
+                  "gap-1.5 text-xs font-bold shadow-xs cursor-pointer"
                 )}
               >
                 <PieChartIcon className="size-3.5" />
                 Xem bảng điểm nhóm
               </Link>
-            ) : null}
-          </div>
-        </Card>
+            </div>
+          </Card>
+        </div>
       </div>
 
       <ReplaceTeamLeaderDialog
@@ -405,15 +490,6 @@ export function TeamProjectDetailPage({ courseId, teamId }: TeamProjectDetailPag
             { teamId: team.teamId, teamMemberId: leaderCandidate.teamMemberId },
             { onSuccess: () => setLeaderCandidate(null) }
           );
-        }}
-      />
-
-      <MemberProgressSheet
-        projectId={projectId}
-        studentId={detailStudentId}
-        open={Boolean(detailStudentId)}
-        onOpenChange={(open) => {
-          if (!open) setDetailStudentId(null);
         }}
       />
 
@@ -434,6 +510,13 @@ export function TeamProjectDetailPage({ courseId, teamId }: TeamProjectDetailPag
             { onSuccess: () => setMovingMember(null) }
           );
         }}
+      />
+
+      <MemberProgressSheet
+        projectId={projectId}
+        studentId={selectedProgressStudentId}
+        open={openProgressSheet}
+        onOpenChange={setOpenProgressSheet}
       />
     </LecturerPageShell>
   );

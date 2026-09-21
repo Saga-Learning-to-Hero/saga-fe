@@ -9,13 +9,23 @@ export const metadata: Metadata = {
 
 export default async function LecturerGraphPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ courseId: string }>;
+  searchParams?: Promise<{ teamId?: string; studentId?: string }>;
 }) {
   const { courseId } = await params;
+  const resolvedSearchParams = searchParams ? await searchParams : undefined;
+  const initialTeamId = resolvedSearchParams?.teamId;
+  const initialStudentId = resolvedSearchParams?.studentId;
+
   return (
     <div className="mx-auto w-full max-w-[1600px] space-y-6 pb-12">
-      <LecturerGraphView courseId={courseId} />
+      <LecturerGraphView
+        courseId={courseId}
+        initialTeamId={initialTeamId}
+        initialStudentId={initialStudentId}
+      />
     </div>
   );
 }

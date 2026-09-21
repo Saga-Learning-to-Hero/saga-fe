@@ -4,7 +4,6 @@ import { useMemo, useState } from "react";
 import {
   AlertTriangleIcon,
   CheckCircle2Icon,
-  DownloadIcon,
   FolderKanbanIcon,
   GitGraphIcon,
   RotateCcwIcon,
@@ -16,7 +15,6 @@ import {
   CalendarIcon,
   AlertCircleIcon,
 } from "lucide-react";
-import { toast } from "sonner";
 import { CustomSelect, type CustomSelectOption } from "@/components/common/custom-select";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -32,7 +30,6 @@ import { GraphNodeDetailsModal } from "./graph-node-details-modal";
 import { Neo4jTabBar } from "./neo4j-tab-bar";
 import { useProjectGraph } from "../hooks/use-project-graph";
 import { usePipelineGraphData } from "../hooks/use-pipeline-graph-data";
-import { buildPipelineTasksCsv, downloadTextFile } from "../lib/pipeline-mapper";
 import {
   mapStudentNodesToMemberOptions,
   resolveDrillDownStudent,
@@ -56,6 +53,7 @@ import { PipelineTaskInspector } from "./pipeline-task-inspector";
 interface LecturerGraphViewProps {
   courseId?: string;
   initialTeamId?: string;
+  initialStudentId?: string;
   initialViewMode?: "GRAPH" | "PIPELINE";
 }
 
@@ -64,6 +62,7 @@ type Neo4jTabMode = "OVERVIEW" | "ACTIVITY" | "ATTRIBUTION";
 export function LecturerGraphView({
   courseId,
   initialTeamId,
+  initialStudentId,
   initialViewMode = "GRAPH",
 }: LecturerGraphViewProps = {}) {
   const teamsQuery = useLecturerTeams(courseId || "", {
@@ -98,13 +97,14 @@ export function LecturerGraphView({
 
   const [mainMode, setMainMode] = useState<"GRAPH" | "PIPELINE">(initialViewMode);
   const [neo4jTab, setNeo4jTab] = useState<Neo4jTabMode>("OVERVIEW");
-  const [drillDownStudent, setDrillDownStudent] = useState<GraphDrillDownStudent | null>(null);
+  const [drillDownStudent, setDrillDownStudent] = useState<GraphDrillDownStudent | null>(() =>
+    initialStudentId ? resolveDrillDownStudent(initialStudentId) : null
+  );
   const [selectedSprintState, setSelectedSprintState] = useState<string | null>(null);
   const [neo4jFilterType, setNeo4jFilterType] = useState<"ALL" | "ANOMALIES_ONLY">("ALL");
   const [selectedGraphNode, setSelectedGraphNode] = useState<CytoscapeNodeData | null>(null);
 
   const [scopeMode, setScopeMode] = useState<"COMPACT" | "FULL">("COMPACT");
-  const [maxNodes, setMaxNodes] = useState<number | null>(100);
   const [focusedNodeId, setFocusedNodeId] = useState<string | null>(null);
 
   const [prevProjectId, setPrevProjectId] = useState(projectId);
@@ -122,13 +122,25 @@ export function LecturerGraphView({
   const [isMobileInspectorOpen, setIsMobileInspectorOpen] = useState(false);
 
   const [pipelineFilter, setPipelineFilter] = useState<PipelineFilterState>({
-    studentId: "ALL",
+    studentId: initialStudentId || "ALL",
     sprintId: "ALL",
     anomalyType: "ALL",
     searchQuery: "",
     repoId: "ALL",
     branchName: "ALL",
   });
+
+  const [prevInitialStudentId, setPrevInitialStudentId] = useState(initialStudentId);
+  if (initialStudentId !== prevInitialStudentId) {
+    setPrevInitialStudentId(initialStudentId);
+    if (initialStudentId) {
+      const resolved = resolveDrillDownStudent(initialStudentId);
+      if (resolved) {
+        setDrillDownStudent(resolved);
+      }
+      setPipelineFilter((prev) => ({ ...prev, studentId: initialStudentId }));
+    }
+  }
 
   const sprintsQuery = useProjectSprints(projectId, { enabled: Boolean(projectId) });
 
@@ -156,6 +168,12 @@ export function LecturerGraphView({
   };
 
   const effectiveNeo4jSprintId = useMemo(() => {
+    if (activeDrillDownStudent) {
+      if (selectedSprintState && selectedSprintState !== "ALL") {
+        return selectedSprintState;
+      }
+      return null;
+    }
     if (neo4jSprintId && neo4jSprintId !== "ALL") {
       return neo4jSprintId;
     }
@@ -163,7 +181,7 @@ export function LecturerGraphView({
       return defaultSprintId;
     }
     return null;
-  }, [neo4jSprintId, neo4jTab, defaultSprintId]);
+  }, [activeDrillDownStudent, selectedSprintState, neo4jSprintId, neo4jTab, defaultSprintId]);
 
   const handleTabChange = (tab: Neo4jTabMode) => {
     setNeo4jTab(tab);
@@ -213,13 +231,8 @@ export function LecturerGraphView({
       hasFilter = true;
     }
 
-    if (maxNodes) {
-      params.maxNodes = maxNodes;
-      hasFilter = true;
-    }
-
     return hasFilter ? params : null;
-  }, [activeFocusedNodeId, scopeMode, activeDrillDownStudent, neo4jTab, neo4jFilterType, maxNodes]);
+  }, [activeFocusedNodeId, scopeMode, activeDrillDownStudent, neo4jTab, neo4jFilterType]);
 
   const isWaitingDefaultSprint = selectedSprintState === null && sprintsQuery.isLoading;
 
@@ -241,6 +254,7 @@ export function LecturerGraphView({
     fallbackLabel?: string | null
   ) => {
     setFocusedNodeId(null);
+    setSelectedSprintState("ALL");
     setDrillDownStudent(
       resolveDrillDownStudent(input, {
         memberOptions: neo4jMemberSelectOptions,
@@ -400,17 +414,6 @@ export function LecturerGraphView({
       repoId: "ALL",
       branchName: "ALL",
     });
-  };
-
-  const handleExportCsv = () => {
-    if (!pipeline.filteredTasks.length) {
-      toast.error("Không có Task nào để xuất file.");
-      return;
-    }
-    const csv = buildPipelineTasksCsv(pipeline.filteredTasks);
-    const filename = `SAGA_Traceability_Nhom_${currentTeam?.teamNo || "team"}.csv`;
-    downloadTextFile(filename, csv);
-    toast.success(`Đã xuất báo cáo ${pipeline.filteredTasks.length} Task thành công!`);
   };
 
   const teamStatusRule = useMemo(() => {
@@ -806,21 +809,6 @@ export function LecturerGraphView({
                   Cảnh báo ({structuralStats.anomalyCount})
                 </button>
               </div>
-
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  const json = JSON.stringify(graphQuery.data || { nodes: [], edges: [] }, null, 2);
-                  downloadTextFile(`neo4j-lecturer-team-${currentTeam?.teamNo || "team"}.json`, json);
-                }}
-                disabled={!graphQuery.data?.nodes.length}
-                className="h-8.5 gap-1.5 text-xs font-semibold cursor-pointer rounded-xl"
-              >
-                <DownloadIcon className="size-3.5" />
-                Xuất JSON
-              </Button>
             </>
           )}
 
@@ -969,20 +957,6 @@ export function LecturerGraphView({
                 </Button>
               )}
             </div>
-
-            <div className="flex items-center gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={handleExportCsv}
-                disabled={!pipeline.filteredTasks.length}
-                className="h-8 gap-1.5 text-xs font-semibold cursor-pointer"
-              >
-                <DownloadIcon className="size-3.5" />
-                Xuất CSV
-              </Button>
-            </div>
           </div>
         </div>
       )}
@@ -995,12 +969,13 @@ export function LecturerGraphView({
           selectedSprintId={effectiveNeo4jSprintId}
           onSprintChange={handleSprintChange}
           drillDownStudent={activeDrillDownStudent}
-          onBackToOverview={() => setDrillDownStudent(null)}
+          onBackToOverview={() => {
+            setDrillDownStudent(null);
+            setSelectedSprintState("ALL");
+          }}
           selectId="lecturer-neo4j-sprint"
           scopeMode={scopeMode}
           onScopeModeChange={setScopeMode}
-          maxNodes={maxNodes}
-          onMaxNodesChange={setMaxNodes}
           memberOptions={neo4jMemberSelectOptions}
           selectedStudentId={activeDrillDownStudent?.studentProfileId || "ALL"}
           onStudentChange={handleSelectDrillDownStudent}

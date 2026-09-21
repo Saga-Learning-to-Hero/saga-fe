@@ -9,12 +9,10 @@ import {
   BrainCircuitIcon,
   ChevronDownIcon,
   Code2Icon,
-  EllipsisIcon,
   FileTextIcon,
   FlaskConicalIcon,
   NetworkIcon,
   ShieldAlertIcon,
-  SlidersHorizontalIcon,
 } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -22,12 +20,6 @@ import { MemberRoleBadge } from "@/components/common/leader-badge";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { CustomSelect } from "@/components/common/custom-select";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { Label } from "@/components/ui/label";
 import {
   Table,
@@ -48,10 +40,7 @@ import {
   lecturerCourseTeamsPath,
   lecturerCoursesPath,
 } from "@/features/lecturer/courses/lib/course-routes";
-import {
-  useContributionEvaluation,
-  useOverrideContribution,
-} from "../hooks/use-lecturer-contribution";
+import { useContributionEvaluation } from "../hooks/use-lecturer-contribution";
 import type { ContributionMember } from "../types/contribution";
 import {
   SLICE_WEIGHT_FIELDS,
@@ -66,7 +55,6 @@ import {
   pickDefaultGradesTeamId,
   toDisplaySliceWeights,
 } from "../lib/contribution-utils";
-import { ContributionOverrideDialog } from "./contribution-override-dialog";
 import { getApiErrorCode } from "@/lib/api-error";
 import { cn } from "@/lib/utils";
 
@@ -140,9 +128,7 @@ export function ContributionEvaluationPage({ courseId }: ContributionEvaluationP
       !invalidTeamId &&
       canFetchContributionEvaluation(teamsQuery.isSuccess, requestedTeamId, teams),
   });
-  const overrideMutation = useOverrideContribution(requestedTeamId);
   const [expandedId, setExpandedId] = useState<string | null>(null);
-  const [overrideMember, setOverrideMember] = useState<ContributionMember | null>(null);
 
   useEffect(() => {
     if (!teamsQuery.isSuccess || requestedTeamId || !defaultTeamId) return;
@@ -506,7 +492,6 @@ export function ContributionEvaluationPage({ courseId }: ContributionEvaluationP
                       onToggle={() =>
                         setExpandedId(expanded ? null : member.studentProfileId || member.studentCode)
                       }
-                      onOverride={() => setOverrideMember(member)}
                     />
                   );
                 })}
@@ -515,29 +500,6 @@ export function ContributionEvaluationPage({ courseId }: ContributionEvaluationP
           </div>
         )}
       </Card>
-
-      <ContributionOverrideDialog
-        open={overrideMember !== null}
-        member={overrideMember}
-        isSaving={overrideMutation.isPending}
-        onOpenChange={(open) => {
-          if (overrideMutation.isPending && !open) return;
-          if (!open) setOverrideMember(null);
-        }}
-        onSubmit={({ percentage, reason }) => {
-          if (!overrideMember?.studentProfileId) return;
-          overrideMutation.mutate(
-            {
-              studentProfileId: overrideMember.studentProfileId,
-              percentage,
-              reason,
-            },
-            {
-              onSuccess: () => setOverrideMember(null),
-            }
-          );
-        }}
-      />
     </LecturerPageShell>
   );
 }
@@ -548,14 +510,12 @@ function MemberRows({
   courseId,
   teamId,
   onToggle,
-  onOverride,
 }: {
   member: ContributionMember;
   expanded: boolean;
   courseId: string;
   teamId: string;
   onToggle: () => void;
-  onOverride: () => void;
 }) {
   const isLeader = member.roleInTeam === "LEADER";
   const finalPercentage = Number(member.finalContributionPercentage) || 0;
@@ -643,7 +603,19 @@ function MemberRows({
           </div>
         </TableCell>
         <TableCell className="text-right">
-          <div className="hidden items-center justify-end gap-1.5 sm:flex">
+          <div className="flex items-center justify-end gap-1">
+            <Link
+              href={`${lecturerCourseGraphPath(courseId)}?teamId=${teamId}&studentId=${member.studentProfileId}`}
+              prefetch={true}
+              className={buttonVariants({
+                variant: "ghost",
+                size: "icon-sm",
+                className: "size-8 text-primary hover:bg-primary/10 cursor-pointer",
+              })}
+              title="Đối soát trên Đồ thị"
+            >
+              <NetworkIcon className="size-3.5" />
+            </Link>
             <Button
               type="button"
               size="sm"
@@ -657,33 +629,6 @@ function MemberRows({
                   }`}
               />
             </Button>
-            <Button
-              type="button"
-              size="sm"
-              variant="outline"
-              className="h-8 cursor-pointer gap-1 text-xs font-semibold shadow-xs"
-              disabled={!member.studentProfileId}
-              onClick={onOverride}
-            >
-              <SlidersHorizontalIcon className="size-3" />
-              Điều chỉnh
-            </Button>
-          </div>
-          <div className="sm:hidden">
-            <DropdownMenu>
-              <DropdownMenuTrigger
-                aria-label={`Thao tác với ${member.fullName || "thành viên"}`}
-                className="inline-flex size-8 cursor-pointer items-center justify-center rounded-lg border border-transparent text-muted-foreground hover:border-border hover:bg-muted hover:text-foreground"
-              >
-                <EllipsisIcon className="size-4" />
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={onToggle}>Xem minh chứng</DropdownMenuItem>
-                <DropdownMenuItem disabled={!member.studentProfileId} onClick={onOverride}>
-                  Điều chỉnh
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
           </div>
         </TableCell>
       </TableRow>
@@ -775,7 +720,7 @@ function MemberRows({
 
               <div className="flex items-center justify-end border-t border-border/40 pt-3">
                 <Link
-                  href={`${lecturerCourseGraphPath(courseId)}?teamId=${teamId}`}
+                  href={`${lecturerCourseGraphPath(courseId)}?teamId=${teamId}&studentId=${member.studentProfileId}`}
                   prefetch={true}
                   className={buttonVariants({
                     variant: "outline",
@@ -784,7 +729,7 @@ function MemberRows({
                   })}
                 >
                   <NetworkIcon className="size-3.5" />
-                  Đối soát trên Đồ thị (Traceability Graph)
+                  Đối soát thành viên trên Đồ thị (Traceability Graph)
                   <ArrowUpRightIcon className="size-3.5" />
                 </Link>
               </div>
