@@ -19,7 +19,7 @@ import {
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { LeaderBadge, MemberRoleBadge } from "@/components/common/leader-badge";
-import { Button, buttonVariants } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   DropdownMenu,
@@ -41,6 +41,7 @@ import {
   lecturerCourseGradesPath,
   lecturerCourseGraphPath,
   lecturerCoursePeerReviewsPath,
+  lecturerCourseTeamMemberPath,
   lecturerCourseTeamsPath,
 } from "@/features/lecturer/courses/lib/course-routes";
 import { ReplaceTeamLeaderDialog } from "./replace-team-leader-dialog";
@@ -50,7 +51,6 @@ import { useProjectSprints } from "@/features/student/sprint-progress/hooks/use-
 import { useProjectProgress } from "@/features/student/project/hooks/useProjectSync";
 import { formatDateTime, normalizeProjectProgress } from "@/features/progress/lib/progress-format";
 import { ProjectProgressSummary } from "@/features/progress/components/project-progress-summary";
-import { MemberProgressSheet } from "@/features/progress/components/member-progress-sheet";
 import { cn } from "@/lib/utils";
 
 interface TeamProjectDetailPageProps {
@@ -79,9 +79,6 @@ export function TeamProjectDetailPage({ courseId, teamId }: TeamProjectDetailPag
   const hasProject = Boolean(team?.projectId);
   const projectId = team?.projectId ?? null;
   const hasOtherTeams = teams.some((item) => item.teamId !== team?.teamId);
-
-  const [selectedProgressStudentId, setSelectedProgressStudentId] = useState<string | null>(null);
-  const [openProgressSheet, setOpenProgressSheet] = useState(false);
 
   const progressQuery = useProjectProgress(projectId, {
     enabled: Boolean(projectId),
@@ -311,19 +308,21 @@ export function TeamProjectDetailPage({ courseId, teamId }: TeamProjectDetailPag
                     <MemberRoleBadge role={member.role} />
 
                     {Boolean(member.studentProfileId) && hasProject && (
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        className="h-8 gap-1.5 text-xs font-semibold cursor-pointer"
-                        onClick={() => {
-                          setSelectedProgressStudentId(member.studentProfileId);
-                          setOpenProgressSheet(true);
-                        }}
+                      <Link
+                        href={lecturerCourseTeamMemberPath(
+                          courseId,
+                          teamId,
+                          member.studentProfileId || member.studentCode
+                        )}
+                        prefetch={true}
+                        className={cn(
+                          buttonVariants({ variant: "outline", size: "sm" }),
+                          "h-8 gap-1.5 text-xs font-semibold cursor-pointer"
+                        )}
                       >
                         <EyeIcon className="size-3.5" />
                         Tiến độ
-                      </Button>
+                      </Link>
                     )}
 
                     {isLeader && hasOtherTeams ? (
@@ -510,13 +509,6 @@ export function TeamProjectDetailPage({ courseId, teamId }: TeamProjectDetailPag
             { onSuccess: () => setMovingMember(null) }
           );
         }}
-      />
-
-      <MemberProgressSheet
-        projectId={projectId}
-        studentId={selectedProgressStudentId}
-        open={openProgressSheet}
-        onOpenChange={setOpenProgressSheet}
       />
     </LecturerPageShell>
   );

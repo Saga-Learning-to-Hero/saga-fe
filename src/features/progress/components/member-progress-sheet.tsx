@@ -136,7 +136,7 @@ export function MemberProgressSheet({
                   <div className="space-y-1 text-left min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
                       {timelineTask.key && (
-                        <span className="font-mono text-xs font-black text-primary bg-primary/10 px-1.5 py-0.5 rounded-md border border-primary/20 shrink-0">
+                        <span className="font-mono text-xs font-black text-primary bg-primary/10 px-1.5 py-0.5 rounded-md border border-primary/20 shrink-0 whitespace-nowrap">
                           {timelineTask.key}
                         </span>
                       )}

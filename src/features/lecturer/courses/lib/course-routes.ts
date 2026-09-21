@@ -75,3 +75,11 @@ export function lecturerCourseTeamEvaluationPath(courseId: string, teamId: strin
 export function lecturerCourseStudentPath(courseId: string, studentId: string) {
   return `/lecturer/courses/${courseId}/students/${studentId}`;
 }
+
+export function lecturerCourseTeamMemberPath(
+  courseId: string,
+  teamId: string,
+  studentId: string
+) {
+  return `/lecturer/courses/${courseId}/teams/${teamId}/members/${studentId}`;
+}

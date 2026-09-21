@@ -58,18 +58,18 @@ export function TaskWorkSessionTimelineDialog({
             <div className="size-8 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
               <ClockIcon className="size-4" />
             </div>
-            <div className="min-w-0">
-              <div className="flex items-center gap-2">
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-2 min-w-0">
                 {taskKey && (
-                  <span className="font-mono text-xs font-black text-primary bg-primary/10 px-1.5 py-0.5 rounded-md border border-primary/20">
+                  <span className="font-mono text-xs font-black text-primary bg-primary/10 px-2 py-0.5 rounded-md border border-primary/20 shrink-0 whitespace-nowrap">
                     {taskKey}
                   </span>
                 )}
-                <h3 className="text-sm font-extrabold text-foreground truncate">
+                <h3 className="text-sm font-extrabold text-foreground truncate min-w-0 flex-1">
                   Dòng thời gian: {taskTitle || taskKey || "Chi tiết công việc"}
                 </h3>
               </div>
-              <p className="text-xs text-muted-foreground mt-0.5">
+              <p className="text-xs text-muted-foreground mt-0.5 truncate">
                 Lịch sử các phiên làm việc và commit mã nguồn đã liên kết
               </p>
             </div>
