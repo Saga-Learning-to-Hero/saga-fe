@@ -104,6 +104,8 @@ html {
    :root — Light mode (Academic Tech: Slate #F8FAFC & Deep Indigo #4F46E5)
    ============================================================ */
 :root {
+  color-scheme: light;
+
   /* --- Shadcn core tokens (light) --- */
   --background:              oklch(0.985 0.005 250);   /* #F8FAFC Slate nhạt */
   --foreground:              oklch(0.14 0.03 260);     /* #0F172A Slate đậm */
@@ -222,6 +224,8 @@ html {
    .dark — Dark mode (Academic Tech: Obsidian Slate #0F172A & Luminous Indigo)
    ============================================================ */
 .dark {
+  color-scheme: dark;
+
   /* --- Shadcn core tokens (dark) --- */
   --background:              oklch(0.12 0.03 260);     /* #0F172A Deep Obsidian */
   --foreground:              oklch(0.96 0.01 250);     /* #F8FAFC */
@@ -368,7 +372,11 @@ html {
     color:            var(--foreground);
   }
 
-  /* --- Scrollbar (Webkit) --- */
+  /* --- Scrollbar (Standard & Webkit) --- */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+  }
   ::-webkit-scrollbar       { width: 6px; height: 6px; }
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb {
@@ -428,22 +436,27 @@ html {
   .animate-marquee:hover {
     animation-play-state: paused;
   }
-  .custom-scrollbar {
+  .custom-scrollbar,
+  .scrollbar-thin {
     scrollbar-width: thin;
     scrollbar-color: var(--border) transparent;
   }
-  .custom-scrollbar::-webkit-scrollbar {
+  .custom-scrollbar::-webkit-scrollbar,
+  .scrollbar-thin::-webkit-scrollbar {
     width: 6px;
     height: 6px;
   }
-  .custom-scrollbar::-webkit-scrollbar-track {
+  .custom-scrollbar::-webkit-scrollbar-track,
+  .scrollbar-thin::-webkit-scrollbar-track {
     background: transparent;
   }
-  .custom-scrollbar::-webkit-scrollbar-thumb {
+  .custom-scrollbar::-webkit-scrollbar-thumb,
+  .scrollbar-thin::-webkit-scrollbar-thumb {
     background: var(--border);
     border-radius: 9999px;
   }
-  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover,
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
     background: var(--muted-foreground);
   }
 }

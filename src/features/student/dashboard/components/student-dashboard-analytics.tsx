@@ -1,17 +1,20 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import {
+  CheckCircle2Icon,
   CrownIcon,
   FolderKanbanIcon,
   GitCommitIcon,
   KanbanIcon,
-  UsersIcon,
+  RefreshCwIcon,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { buttonVariants } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { LeaderBadge } from "@/components/common/leader-badge";
 import { MemberProgressSheet } from "@/features/progress/components/member-progress-sheet";
 import {
   ProgressFactNote,
@@ -21,50 +24,41 @@ import {
   studentCoursePath,
   useStudentCourseContext,
 } from "@/features/student/courses/hooks/use-student-course-context";
-import { useStudentMyTeam } from "@/features/student/courses/hooks/use-student-courses";
 import { useProjectRealtime } from "@/features/student/project/hooks/use-project-realtime";
-import {
-  useProjectCommits,
-  useProjectProgress,
-} from "@/features/student/project/hooks/useProjectSync";
+import { useProjectProgress } from "@/features/student/project/hooks/useProjectSync";
 import { getApiErrorMessage } from "@/lib/api-error";
 import { cn } from "@/lib/utils";
-import {
-  buildWeeklyCommitBuckets,
-  normalizeProjectProgress,
-} from "@/features/progress/lib/progress-format";
-import { StudentTaskCommitCharts } from "./student-task-commit-charts";
+import { normalizeProjectProgress } from "@/features/progress/lib/progress-format";
+import { useStudentDashboard } from "../hooks/use-student-dashboard";
+import { StudentActiveTasksCard } from "./student-active-tasks-card";
+import { StudentAlertsBanner } from "./student-alerts-banner";
+import { StudentRecentCommitsCard } from "./student-recent-commits-card";
+import { StudentWeeklyCommitsChart } from "./student-weekly-commits-chart";
 import { TeamWorkloadComparisonChart } from "./team-workload-comparison-chart";
 import { StudentDashboardSkeleton } from "./student-dashboard-skeleton";
-import { LeaderBadge } from "@/components/common/leader-badge";
 
 export function StudentDashboardAnalytics() {
   const { course, courseId, isLoading: isCoursesLoading, isInvalidCourse } = useStudentCourseContext();
-  const teamQuery = useStudentMyTeam(courseId, { enabled: Boolean(courseId) });
-  const team = teamQuery.data;
-  const isLeader = (team?.myRole || "").toUpperCase() === "LEADER";
-  const projectId = team?.projectId || null;
-  const canLoadProgress = isLeader && Boolean(projectId);
+  const dashboardQuery = useStudentDashboard(courseId, { enabled: Boolean(courseId) });
+  const data = dashboardQuery.data;
 
-  const progressQuery = useProjectProgress(projectId, { enabled: canLoadProgress });
-  const commitsQuery = useProjectCommits(projectId, { enabled: canLoadProgress });
-  useProjectRealtime(projectId, { enabled: canLoadProgress });
-
+  // Trưởng nhóm có thể chọn xem tab Cá nhân (Cockpit) hoặc xem Toàn nhóm
+  const [activeTab, setActiveTab] = useState<"personal" | "team">("personal");
   const [detailStudentId, setDetailStudentId] = useState<string | null>(null);
+
+  const isLeader = Boolean(
+    (data?.student?.teamRole || "").toUpperCase() === "LEADER"
+  );
+
+  const projectId = data?.team?.projectId || null;
+  const canLoadProgress = Boolean(isLeader && projectId && activeTab === "team");
+
+  // Dữ liệu mở rộng cho Trưởng nhóm khi chuyển sang tab Toàn nhóm
+  const progressQuery = useProjectProgress(projectId, { enabled: canLoadProgress });
+  useProjectRealtime(projectId, { enabled: Boolean(projectId) });
 
   const progress = normalizeProjectProgress(progressQuery.data);
   const members = progress?.memberProgress ?? [];
-
-  const commits = useMemo(() => {
-    if (!commitsQuery.data) return [];
-    if (Array.isArray(commitsQuery.data)) return commitsQuery.data;
-    return commitsQuery.data.items ?? [];
-  }, [commitsQuery.data]);
-
-  const weeklyData = useMemo(
-    () => buildWeeklyCommitBuckets(commits),
-    [commits]
-  );
 
   const openMemberDetail = (studentId: string) => {
     setDetailStudentId(studentId);
@@ -74,12 +68,12 @@ export function StudentDashboardAnalytics() {
     return (
       <EmptyPanel
         title="Lớp học phần không còn khả dụng"
-        description="Hãy chọn lại lớp học phần trước khi xem tiến độ nhóm."
+        description="Hãy chọn lại lớp học phần trước khi xem bảng điều khiển."
       />
     );
   }
 
-  if (isCoursesLoading || (Boolean(courseId) && teamQuery.isLoading && !team)) {
+  if (isCoursesLoading || (Boolean(courseId) && dashboardQuery.isLoading && !data)) {
     return <StudentDashboardSkeleton />;
   }
 
@@ -87,147 +81,300 @@ export function StudentDashboardAnalytics() {
     return (
       <EmptyPanel
         title="Chưa chọn lớp học phần"
-        description="Hãy chọn lớp đang học để xem tiến độ dự án nhóm."
+        description="Hãy chọn lớp đang học để xem bảng điều khiển cá nhân."
         href="/student/courses"
         action="Chọn lớp học phần"
       />
     );
   }
 
-  if (teamQuery.isWaitingForTeam) {
+  if (dashboardQuery.isError) {
+    return (
+      <EmptyPanel
+        title="Không tải được dữ liệu bảng điều khiển"
+        description={getApiErrorMessage(dashboardQuery.error, "Vui lòng thử lại.")}
+        onRetry={() => void dashboardQuery.refetch()}
+      />
+    );
+  }
+
+  if (!data) {
+    return (
+      <EmptyPanel
+        title="Chưa có dữ liệu"
+        description="Hiện tại chưa có dữ liệu bảng điều khiển cho lớp học phần này."
+      />
+    );
+  }
+
+  if (!data.team) {
     return (
       <EmptyPanel
         title="Đang chờ giảng viên phân nhóm"
-        description="Bạn đã ghi danh nhưng chưa được gán nhóm nên chưa có bảng tiến độ dự án."
+        description="Bạn đã ghi danh vào lớp học phần nhưng chưa được gán vào nhóm nào."
       />
     );
   }
 
-  if (teamQuery.isError) {
-    return (
-      <EmptyPanel
-        title="Không tải được thông tin nhóm"
-        description={getApiErrorMessage(teamQuery.error, "Vui lòng thử lại.")}
-        onRetry={() => void teamQuery.refetch()}
-      />
-    );
-  }
-
-  if (!isLeader) {
-    return (
-      <Card className="rounded-2xl border border-dashed border-amber-500/40 bg-amber-500/5 p-8 text-center shadow-xs">
-        <CardContent className="space-y-4 p-0">
-          <UsersIcon className="mx-auto size-8 text-amber-600 dark:text-amber-400" />
-          <div className="space-y-1">
-            <h2 className="text-base font-bold text-foreground">
-              Bảng tiến độ tổng quan giới hạn cho Trưởng nhóm & Giảng viên
-            </h2>
-            <p className="text-xs text-muted-foreground max-w-xl mx-auto">
-              Quyền xem tổng quan tiến độ dự án chỉ dành cho trưởng nhóm và giảng viên. Bạn có thể xem biểu đồ tiến độ và lưới hoạt động chi tiết tại trang Tiến độ Sprint.
-            </p>
-          </div>
-          <div className="flex flex-wrap items-center justify-center gap-2 pt-1">
-            <Link
-              href={studentCoursePath("/student/sprint-progress", courseId)}
-              prefetch={true}
-              className={cn(buttonVariants({ size: "sm" }), "text-xs")}
-            >
-              <KanbanIcon className="size-3.5" />
-              Xem tiến độ Sprint & Nhịp độ
-            </Link>
-            <Link
-              href={studentCoursePath("/student/commits", courseId)}
-              prefetch={true}
-              className={cn(buttonVariants({ size: "sm", variant: "outline" }), "text-xs")}
-            >
-              <GitCommitIcon className="size-3.5" />
-              Xem commit
-            </Link>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  if (!projectId) {
+  if (!data.team.projectId) {
     return (
       <EmptyPanel
         title="Nhóm chưa khởi tạo dự án"
-        description="Bảng tiến độ chỉ mở khi nhóm đã có dự án. Hãy vào trang Dự án để khởi tạo."
+        description="Bảng điều khiển sẽ hoạt động đầy đủ khi nhóm của bạn đã khởi tạo dự án và liên kết Jira/GitHub."
         href={studentCoursePath("/student/project-info", courseId)}
-        action="Mở trang dự án"
+        action="Khởi tạo dự án"
       />
     );
   }
 
-  if (progressQuery.isError) {
-    return (
-      <EmptyPanel
-        title="Không tải được bảng tiến độ"
-        description={getApiErrorMessage(progressQuery.error, "Vui lòng thử lại.")}
-        onRetry={() => void progressQuery.refetch()}
-      />
-    );
-  }
+  const { student, team, currentSprint, myMetrics, myActiveTasks, recentCommits, weeklyCommits, actionableAlerts, integrations } = data;
 
-  if (progressQuery.isLoading && !progress) {
-    return <StudentDashboardSkeleton />;
-  }
-
-  if (!progress) {
-    return (
-      <EmptyPanel
-        title="Chưa có dữ liệu tiến độ"
-        description="Hiện tại chưa có dữ liệu tiến độ cho dự án này."
-      />
-    );
-  }
+  const formattedLastCommit = myMetrics.commits.lastCommittedAt
+    ? new Date(myMetrics.commits.lastCommittedAt).toLocaleString("vi-VN", {
+        timeZone: "Asia/Ho_Chi_Minh",
+        day: "2-digit",
+        month: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+      })
+    : "Chưa ghi nhận";
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col justify-between gap-4 rounded-2xl border border-border/80 bg-card/90 p-4 shadow-xs sm:flex-row sm:items-center">
-        <div className="flex items-center gap-3">
-          <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-amber-500/15 text-amber-800 dark:text-amber-400">
-            <CrownIcon className="size-5" />
-          </div>
+      {/* 1. Header Card: Định danh sinh viên, môn học, nhóm & Chuyển đổi tab nếu là Leader */}
+      <div className="flex flex-col justify-between gap-4 rounded-3xl border border-border/80 bg-card/90 p-5 shadow-xs sm:flex-row sm:items-center">
+        <div className="flex items-center gap-3.5">
+          <Avatar className="size-11 rounded-2xl border border-primary/25 shadow-xs" size="lg">
+            <AvatarImage
+              src={student.avatarUrl || undefined}
+              alt={student.fullName}
+              referrerPolicy="no-referrer"
+              className="object-cover rounded-2xl"
+            />
+            <AvatarFallback className="rounded-2xl bg-primary/10 text-primary font-bold text-sm font-mono">
+              {student.studentCode?.slice(0, 2) || "SV"}
+            </AvatarFallback>
+          </Avatar>
           <div>
             <div className="flex flex-wrap items-center gap-2">
               <h2 className="text-base font-bold tracking-tight text-foreground">
-                Bảng tiến độ dự án nhóm
+                {student.fullName}
               </h2>
-              <LeaderBadge size="sm" />
+              <span className="font-mono text-xs text-muted-foreground font-semibold">
+                ({student.studentCode})
+              </span>
+              {isLeader ? (
+                <LeaderBadge size="sm" />
+              ) : (
+                <Badge variant="secondary" className="text-[10px] font-bold">
+                  Thành viên nhóm
+                </Badge>
+              )}
               <Badge variant="outline" className="font-mono text-[10px]">
-                Nhóm {progress.teamNo} · {progress.teamName}
+                Nhóm {team.teamNo} · {team.teamName}
               </Badge>
             </div>
-            <p className="text-xs text-muted-foreground">
-              Số liệu tổng hợp tự động từ tiến độ thực tế các tasks và commits của toàn nhóm.
+            <p className="text-xs text-muted-foreground mt-0.5">
+              Bảng điều khiển cá nhân hóa tự động cập nhật từ hoạt động Jira và GitHub của bạn.
             </p>
           </div>
         </div>
 
+        <div className="flex items-center gap-2 self-end sm:self-center">
+          {isLeader && (
+            <div className="flex items-center rounded-xl border border-border/70 bg-muted/30 p-1">
+              <button
+                type="button"
+                onClick={() => setActiveTab("personal")}
+                className={cn(
+                  "rounded-lg px-3 py-1.5 text-xs font-bold transition-all cursor-pointer",
+                  activeTab === "personal"
+                    ? "bg-card text-foreground shadow-xs"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                Cá nhân
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveTab("team")}
+                className={cn(
+                  "rounded-lg px-3 py-1.5 text-xs font-bold transition-all cursor-pointer flex items-center gap-1",
+                  activeTab === "team"
+                    ? "bg-card text-foreground shadow-xs"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                <CrownIcon className="size-3 text-amber-500" />
+                <span>Tiến độ toàn nhóm</span>
+              </button>
+            </div>
+          )}
+
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => void dashboardQuery.refetch()}
+            disabled={dashboardQuery.isFetching}
+            className="h-8 gap-1.5 text-xs cursor-pointer"
+          >
+            <RefreshCwIcon className={cn("size-3.5", dashboardQuery.isFetching && "animate-spin")} />
+            <span className="hidden sm:inline">Làm mới</span>
+          </Button>
+        </div>
       </div>
 
-      <ProjectProgressSummary progress={progress} />
-      <ProgressFactNote />
+      {/* 2. Nội dung Tab: Cá nhân (Cockpit) hay Toàn nhóm (Leader) */}
+      {activeTab === "personal" ? (
+        <div className="space-y-6">
+          {/* Actionable Alerts Banner */}
+          <StudentAlertsBanner alerts={actionableAlerts} courseId={courseId} />
 
-      <StudentTaskCommitCharts tasks={progress.taskSummary} weeklyData={weeklyData} />
+          {/* 3 Thẻ Chỉ Số KPI Cá Nhân Nổi Bật */}
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+            {/* Thẻ 1: Nhiệm vụ phân công */}
+            <Card className="rounded-2xl border border-border/80 bg-card/90 p-4 shadow-xs">
+              <CardContent className="p-0 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-muted-foreground font-medium">Nhiệm vụ của tôi</span>
+                  <div className="p-1.5 rounded-lg bg-primary/10 text-primary">
+                    <CheckCircle2Icon className="size-4" />
+                  </div>
+                </div>
+                <div className="flex items-baseline justify-between">
+                  <div className="font-mono text-2xl font-black text-foreground">
+                    {myMetrics.tasks.done}{" "}
+                    <span className="text-sm font-normal text-muted-foreground">
+                      / {myMetrics.tasks.totalAssigned} tasks
+                    </span>
+                  </div>
+                  <Badge variant="outline" className="font-mono text-[10px] bg-primary/10 text-primary border-primary/20">
+                    {Math.round(myMetrics.tasks.completionPercent || 0)}%
+                  </Badge>
+                </div>
+                <div className="flex items-center justify-between text-[11px] text-muted-foreground pt-1 border-t border-border/50">
+                  <span>Story Points:</span>
+                  <span className="font-mono font-bold text-foreground">
+                    {myMetrics.tasks.completedStoryPoints || 0} / {myMetrics.tasks.totalStoryPoints || 0} SP
+                  </span>
+                </div>
+              </CardContent>
+            </Card>
 
-      <TeamWorkloadComparisonChart
-        members={members}
-        selectedStudentId={detailStudentId}
-        onSelectMember={openMemberDetail}
-        currentSprintName={progress.currentSprint?.name}
-      />
+            {/* Thẻ 2: Minh chứng Git Commits */}
+            <Card className="rounded-2xl border border-border/80 bg-card/90 p-4 shadow-xs">
+              <CardContent className="p-0 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-muted-foreground font-medium">Minh chứng Git</span>
+                  <div className="p-1.5 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+                    <GitCommitIcon className="size-4" />
+                  </div>
+                </div>
+                <div className="flex items-baseline justify-between">
+                  <div className="font-mono text-2xl font-black text-foreground">
+                    {myMetrics.commits.totalCommits}{" "}
+                    <span className="text-sm font-normal text-muted-foreground">commits</span>
+                  </div>
+                  <Badge
+                    variant="outline"
+                    className="font-mono text-[10px] bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20"
+                  >
+                    {Math.round(myMetrics.commits.traceabilityPercent || 0)}% Traceability
+                  </Badge>
+                </div>
+                <div className="flex items-center justify-between text-[11px] text-muted-foreground pt-1 border-t border-border/50">
+                  <span>Lần commit gần nhất:</span>
+                  <span className="font-mono font-medium text-foreground truncate max-w-[140px]">
+                    {formattedLastCommit}
+                  </span>
+                </div>
+              </CardContent>
+            </Card>
 
-      <MemberProgressSheet
-        projectId={projectId}
-        studentId={detailStudentId}
-        open={Boolean(detailStudentId)}
-        onOpenChange={(open) => {
-          if (!open) setDetailStudentId(null);
-        }}
-      />
+            {/* Thẻ 3: Sprint hiện tại & Đồng bộ */}
+            <Card className="rounded-2xl border border-border/80 bg-card/90 p-4 shadow-xs">
+              <CardContent className="p-0 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-muted-foreground font-medium">Sprint hiện tại</span>
+                  <div className="p-1.5 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400">
+                    <KanbanIcon className="size-4" />
+                  </div>
+                </div>
+                <div className="flex items-baseline justify-between">
+                  <div className="text-base font-bold text-foreground truncate max-w-[180px]" title={currentSprint?.name || "Chưa có Sprint"}>
+                    {currentSprint?.name || "Chưa bắt đầu"}
+                  </div>
+                  {currentSprint?.state && (
+                    <Badge variant="outline" className="text-[10px] uppercase font-bold">
+                      {currentSprint.state}
+                    </Badge>
+                  )}
+                </div>
+                <div className="flex items-center justify-between text-[11px] text-muted-foreground pt-1 border-t border-border/50">
+                  <span>Tiến độ nhóm:</span>
+                  <span className="font-mono font-bold text-foreground">
+                    {currentSprint ? `${currentSprint.completedTasks}/${currentSprint.totalTasks} (${Math.round(currentSprint.completionPercent || 0)}%)` : "N/A"}
+                  </span>
+                </div>
+                {(integrations?.jira?.connected || integrations?.github?.connected) && (
+                  <div className="flex items-center gap-1.5 pt-0.5">
+                    {integrations?.jira?.connected && (
+                      <Badge variant="outline" className="text-[9px] px-1.5 py-0 border-sky-500/30 text-sky-700 dark:text-sky-300">
+                        Jira: {integrations.jira.projectKey || "Đã kết nối"}
+                      </Badge>
+                    )}
+                    {integrations?.github?.connected && (
+                      <Badge variant="outline" className="text-[9px] px-1.5 py-0 border-emerald-500/30 text-emerald-700 dark:text-emerald-300">
+                        GitHub: {integrations.github.repositoryCount ?? 0} repos
+                      </Badge>
+                    )}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Biểu đồ Commit theo tuần & Phân bố Task của tôi */}
+          <StudentWeeklyCommitsChart weeklyCommits={weeklyCommits} tasks={myMetrics.tasks} />
+
+          {/* Grid 2 Cột: Nhiệm vụ đang làm & Nhật ký commit gần đây */}
+          <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
+            <StudentActiveTasksCard tasks={myActiveTasks} courseId={courseId} />
+            <StudentRecentCommitsCard commits={recentCommits} courseId={courseId} />
+          </div>
+        </div>
+      ) : (
+        /* Tab Toàn Nhóm (Dành cho Trưởng nhóm) */
+        <div className="space-y-6">
+          {progressQuery.isLoading ? (
+            <StudentDashboardSkeleton />
+          ) : progress ? (
+            <>
+              <ProjectProgressSummary progress={progress} />
+              <ProgressFactNote />
+              <TeamWorkloadComparisonChart
+                members={members}
+                selectedStudentId={detailStudentId}
+                onSelectMember={openMemberDetail}
+                currentSprintName={progress.currentSprint?.name}
+              />
+              <MemberProgressSheet
+                projectId={projectId}
+                studentId={detailStudentId}
+                open={Boolean(detailStudentId)}
+                onOpenChange={(open) => {
+                  if (!open) setDetailStudentId(null);
+                }}
+              />
+            </>
+          ) : (
+            <EmptyPanel
+              title="Chưa có dữ liệu tiến độ nhóm"
+              description="Hệ thống chưa đồng bộ đủ dữ liệu tiến độ nhóm từ Jira và GitHub."
+            />
+          )}
+        </div>
+      )}
     </div>
   );
 }
