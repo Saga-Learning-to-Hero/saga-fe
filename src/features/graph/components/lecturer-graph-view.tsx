@@ -114,8 +114,38 @@ export function LecturerGraphView({
     setFocusedNodeId(null);
   }
 
-  const activeDrillDownStudent = projectId === prevProjectId ? drillDownStudent : null;
   const activeFocusedNodeId = projectId === prevProjectId ? focusedNodeId : null;
+
+  const activeDrillDownStudent = useMemo<GraphDrillDownStudent | null>(() => {
+    if (projectId !== prevProjectId || !drillDownStudent) return null;
+
+    const studentProfileId = drillDownStudent.studentProfileId;
+    const isRawUuid =
+      drillDownStudent.label === studentProfileId ||
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(drillDownStudent.label);
+
+    if (!isRawUuid && drillDownStudent.label) {
+      return drillDownStudent;
+    }
+
+    const allMembers = teams.flatMap((t) => t.members || []);
+    const matchedMember = allMembers.find(
+      (m) =>
+        m.studentProfileId?.toLowerCase() === studentProfileId.toLowerCase() ||
+        m.studentCode?.toLowerCase() === studentProfileId.toLowerCase()
+    );
+
+    if (matchedMember) {
+      return {
+        studentProfileId: matchedMember.studentProfileId || studentProfileId,
+        label: matchedMember.studentCode
+          ? `${matchedMember.fullName} (${matchedMember.studentCode})`
+          : matchedMember.fullName,
+      };
+    }
+
+    return drillDownStudent;
+  }, [drillDownStudent, prevProjectId, projectId, teams]);
 
   const [pipelineSubView, setPipelineSubView] = useState<"FLOW" | "MATRIX">("FLOW");
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
@@ -195,6 +225,33 @@ export function LecturerGraphView({
     }
   };
 
+  const studentRosterQuery = useProjectGraph({
+    projectId: projectId || "",
+    graphType: "OVERVIEW",
+    sprintId: null,
+    subgraphParams: STUDENT_ROSTER_SUBGRAPH_PARAMS,
+    enabled: mainMode === "GRAPH" && Boolean(projectId),
+  });
+
+  const neo4jMemberSelectOptions = useMemo(
+    () => mapStudentNodesToMemberOptions(studentRosterQuery.data?.nodes),
+    [studentRosterQuery.data]
+  );
+
+  const handleSelectDrillDownStudent = (
+    input: string | null,
+    fallbackLabel?: string | null
+  ) => {
+    setFocusedNodeId(null);
+    setSelectedSprintState("ALL");
+    setDrillDownStudent(
+      resolveDrillDownStudent(input, {
+        memberOptions: neo4jMemberSelectOptions,
+        fallbackLabel,
+      })
+    );
+  };
+
   const isSprintRequired = neo4jTab === "ACTIVITY" && !activeDrillDownStudent;
   const hasRequiredSprint = Boolean(effectiveNeo4jSprintId);
 
@@ -235,33 +292,6 @@ export function LecturerGraphView({
   }, [activeFocusedNodeId, scopeMode, activeDrillDownStudent, neo4jTab, neo4jFilterType]);
 
   const isWaitingDefaultSprint = selectedSprintState === null && sprintsQuery.isLoading;
-
-  const studentRosterQuery = useProjectGraph({
-    projectId: projectId || "",
-    graphType: "OVERVIEW",
-    sprintId: null,
-    subgraphParams: STUDENT_ROSTER_SUBGRAPH_PARAMS,
-    enabled: mainMode === "GRAPH" && Boolean(projectId),
-  });
-
-  const neo4jMemberSelectOptions = useMemo(
-    () => mapStudentNodesToMemberOptions(studentRosterQuery.data?.nodes),
-    [studentRosterQuery.data]
-  );
-
-  const handleSelectDrillDownStudent = (
-    input: string | null,
-    fallbackLabel?: string | null
-  ) => {
-    setFocusedNodeId(null);
-    setSelectedSprintState("ALL");
-    setDrillDownStudent(
-      resolveDrillDownStudent(input, {
-        memberOptions: neo4jMemberSelectOptions,
-        fallbackLabel,
-      })
-    );
-  };
 
   const graphQuery = useProjectGraph({
     projectId: projectId || "",

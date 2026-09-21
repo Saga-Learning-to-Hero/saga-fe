@@ -52,6 +52,26 @@ export function Neo4jTabBar({
     [sprintOptions]
   );
 
+  const drillDownDisplayLabel = useMemo(() => {
+    if (!drillDownStudent) return "";
+    const isRawUuid =
+      drillDownStudent.label === drillDownStudent.studentProfileId ||
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(drillDownStudent.label);
+
+    if (!isRawUuid && drillDownStudent.label) {
+      return drillDownStudent.label;
+    }
+
+    const matched = memberOptions?.find(
+      (m) => m.value.toLowerCase() === drillDownStudent.studentProfileId.toLowerCase()
+    );
+    if (matched) {
+      return matched.label;
+    }
+
+    return drillDownStudent.label;
+  }, [drillDownStudent, memberOptions]);
+
   return (
     <div className="space-y-2.5">
       <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border/80 bg-card p-2.5 shadow-2xs">
@@ -70,7 +90,7 @@ export function Neo4jTabBar({
               <div className="flex items-center gap-2">
                 <span className="text-xs text-muted-foreground">Chi tiết đóng góp:</span>
                 <Badge variant="secondary" className="font-bold text-xs">
-                  {drillDownStudent.label}
+                  {drillDownDisplayLabel}
                 </Badge>
               </div>
             </div>
