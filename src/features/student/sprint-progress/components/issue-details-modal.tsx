@@ -9,7 +9,6 @@ import {
   Trash2Icon,
   TagIcon,
   LockIcon,
-  GitCommitIcon,
   PaperclipIcon,
   ShieldCheckIcon,
   CalendarIcon,
@@ -29,7 +28,6 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { CustomSelect } from "@/components/common/custom-select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { TaskLinkedCommitsList } from "./task-linked-commits-list";
 import { TaskEvidencePanel } from "./task-evidence-panel";
 import { TaskWorkSessionControl } from "./task-work-session-control";
 import { TaskWorkSessionTimeline } from "./task-work-session-timeline";
@@ -1021,11 +1019,7 @@ export function IssueDetailsModal({
               <TabsList className="w-full h-auto min-h-10 justify-start overflow-x-auto rounded-xl bg-muted/60">
                 <TabsTrigger value="timeline" className="shrink-0 text-xs font-semibold">
                   <HistoryIcon className="w-3.5 h-3.5" />
-                  Dòng thời gian
-                </TabsTrigger>
-                <TabsTrigger value="commits" className="shrink-0 text-xs font-semibold">
-                  <GitCommitIcon className="w-3.5 h-3.5" />
-                  Commits
+                  Dòng thời gian & Minh chứng
                 </TabsTrigger>
                 <TabsTrigger value="documents" className="shrink-0 text-xs font-semibold">
                   <PaperclipIcon className="w-3.5 h-3.5" />
@@ -1041,17 +1035,11 @@ export function IssueDetailsModal({
                 <TaskWorkSessionTimeline
                   projectId={projectId}
                   taskId={issue.id}
-                />
-              </TabsContent>
-
-              <TabsContent value="commits">
-                <TaskLinkedCommitsList
-                  taskId={issue.id}
-                  projectId={projectId}
                   onSelectCommit={handleToggleCommitSha}
                   onSelectAllCommits={handleSelectAllCommitShas}
                   onContinueToConfirmation={() => setActiveEvidenceTab("contribution")}
                   selectedShas={selectedShasList}
+                  canSelectCommit={canEdit}
                 />
               </TabsContent>
 
@@ -1069,7 +1057,7 @@ export function IssueDetailsModal({
                   section="contribution"
                   isOwnerOrLeader={canEdit}
                   externalCommitShas={selectedCommitShas}
-                  onRequestCommitSelection={() => setActiveEvidenceTab("commits")}
+                  onRequestCommitSelection={() => setActiveEvidenceTab("timeline")}
                   onConfirmationSuccess={() => setSelectedCommitShas("")}
                 />
               </TabsContent>
