@@ -135,5 +135,22 @@ export function mapProjectTaskToSprintIssue(
     startDate: taskResponse.startDate || (task as ProjectTaskItem).startDate || undefined,
     githubCommitCount: task.linkedCommitCount || 0,
     createdAt: task.createdAt,
+    superseded: Boolean(
+      taskResponse.migration?.superseded ?? taskResponse.superseded ?? false
+    ),
+    migratedFrom: (taskResponse.migration?.migratedFrom ?? taskResponse.migratedFrom)
+      ? {
+        taskId: (taskResponse.migration?.migratedFrom ?? taskResponse.migratedFrom)!.taskId,
+        externalKey: (taskResponse.migration?.migratedFrom ?? taskResponse.migratedFrom)!.externalKey,
+      }
+      : null,
+    migratedTo: (taskResponse.migration?.migratedTo ?? taskResponse.migratedTo)
+      ? {
+        taskId: (taskResponse.migration?.migratedTo ?? taskResponse.migratedTo)!.taskId,
+        externalKey: (taskResponse.migration?.migratedTo ?? taskResponse.migratedTo)!.externalKey,
+      }
+      : null,
+    jiraIntegrationId: taskResponse.source?.integrationId ?? taskResponse.jiraIntegrationId ?? null,
+    sourceProjectKey: taskResponse.source?.projectKey ?? null,
   };
 }

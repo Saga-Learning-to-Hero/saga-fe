@@ -39,10 +39,13 @@ export function useProjectTaskDetail(
   });
 }
 
-export function useTaskOptions(projectId?: string | null, options?: { enabled?: boolean }) {
+export function useTaskOptions(
+  projectId?: string | null,
+  options?: { enabled?: boolean; jiraIntegrationId?: string }
+) {
   return useQuery({
-    queryKey: JIRA_SPRINT_QUERY_KEYS.taskOptions(projectId),
-    queryFn: () => ProjectTaskService.getTaskOptions(projectId!),
+    queryKey: [...JIRA_SPRINT_QUERY_KEYS.taskOptions(projectId), options?.jiraIntegrationId ?? ""],
+    queryFn: () => ProjectTaskService.getTaskOptions(projectId!, options?.jiraIntegrationId),
     enabled: Boolean(projectId && projectId.trim()) && (options?.enabled ?? true),
     staleTime: 1000 * 60 * 5,
     retry: false,

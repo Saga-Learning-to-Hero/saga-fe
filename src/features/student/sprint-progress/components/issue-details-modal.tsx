@@ -13,6 +13,7 @@ import {
   PaperclipIcon,
   ShieldCheckIcon,
   CalendarIcon,
+  HistoryIcon,
 } from "lucide-react";
 import type {
   SprintIssue,
@@ -41,6 +42,7 @@ import {
   useProjectTaskDetail,
   useParentTaskOptions,
 } from "../hooks/use-project-tasks";
+import { useJiraSources } from "@/features/student/project/hooks/use-jira-sources";
 
 function parseIssueStatus(status?: string | null, jiraStatusName?: string | null): IssueStatus {
   const combined = `${status || ""} ${jiraStatusName || ""}`.toUpperCase();
@@ -108,14 +110,35 @@ export function IssueDetailsModal({
 }: IssueDetailsModalProps) {
   const isEditing = Boolean(issue);
   const isOwner = issue ? issue.assignee.studentCode === currentUserStudentCode : false;
-  const canEdit = isEditing ? (isTeamLeader || isOwner) : isTeamLeader;
 
-  const { data: taskOptions } = useTaskOptions(projectId, {
-    enabled: Boolean(isOpen && projectId && isJiraConnected),
-  });
   const { data: taskDetail } = useProjectTaskDetail(projectId, issue?.id, {
     enabled: Boolean(isOpen && projectId && issue?.id),
   });
+
+  const isSuperseded = Boolean(issue?.superseded || taskDetail?.superseded);
+  const canEdit = isSuperseded ? false : (isEditing ? (isTeamLeader || isOwner) : isTeamLeader);
+
+  const { data: jiraSources } = useJiraSources(projectId, {
+    enabled: Boolean(isOpen && projectId),
+  });
+  const activeJiraSources = useMemo(
+    () => jiraSources?.filter((s) => s.connectionStatus === "ACTIVE") || [],
+    [jiraSources]
+  );
+  const defaultJiraSourceId = activeJiraSources[0]?.integrationId;
+
+  const [selectedJiraSourceId, setSelectedJiraSourceId] = useState<string | undefined>(
+    issue?.jiraIntegrationId || undefined
+  );
+
+  const effectiveJiraIntegrationId =
+    selectedJiraSourceId || (!isEditing ? defaultJiraSourceId : (issue?.jiraIntegrationId || taskDetail?.jiraIntegrationId || undefined));
+
+  const { data: taskOptions } = useTaskOptions(projectId, {
+    enabled: Boolean(isOpen && projectId && isJiraConnected),
+    jiraIntegrationId: effectiveJiraIntegrationId,
+  });
+
   const { data: parentOptionsData } = useParentTaskOptions(
     projectId,
     { excludeTaskId: issue?.id, size: 50 },
@@ -207,6 +230,7 @@ export function IssueDetailsModal({
       startDate: issue?.startDate || taskDetail?.startDate || "",
       dueDate: issue?.dueDate || taskDetail?.dueDate || "",
       parentTaskId: taskDetail?.parentTask?.id || "",
+      jiraIntegrationId: issue?.jiraIntegrationId || taskDetail?.jiraIntegrationId || undefined,
     };
   });
 
@@ -519,6 +543,7 @@ export function IssueDetailsModal({
               startDate: form.startDate.trim() || undefined,
               dueDate: form.dueDate.trim() || undefined,
               parentTaskId: form.parentTaskId || undefined,
+              jiraIntegrationId: form.jiraIntegrationId || defaultJiraSourceId || undefined,
             },
           });
           savedKey = res.externalKey || savedKey;
@@ -564,6 +589,11 @@ export function IssueDetailsModal({
         dueDate: form.dueDate || undefined,
         createdAt: issue?.createdAt || new Date().toISOString(),
         githubCommitCount: issue?.githubCommitCount || 0,
+        superseded: issue?.superseded,
+        migratedFrom: issue?.migratedFrom,
+        migratedTo: issue?.migratedTo,
+        jiraIntegrationId: form.jiraIntegrationId || defaultJiraSourceId || issue?.jiraIntegrationId,
+        sourceProjectKey: issue?.sourceProjectKey,
       };
 
       onSave(finalIssue);
@@ -642,11 +672,39 @@ export function IssueDetailsModal({
         </div>
 
         <div className={`p-4 sm:p-6 overflow-y-auto scrollbar-thin space-y-5 ${isEditing ? "flex-1" : ""}`}>
-          {!canEdit && (
+          {!canEdit && !isSuperseded && (
             <div className="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-700 dark:text-amber-300 text-xs font-semibold flex items-center gap-2 animate-in fade-in-0">
               <LockIcon className="w-4 h-4 shrink-0 text-amber-500" />
               <span>
                 Bạn đang xem task của thành viên <strong>{issue?.assignee.name} ({issue?.assignee.studentCode})</strong>. Bạn chỉ có quyền xem thông tin (Chỉ đọc).
+              </span>
+            </div>
+          )}
+
+          {isSuperseded && (
+            <div className="p-3.5 rounded-xl bg-muted/60 border border-border text-xs font-semibold flex items-center justify-between gap-2 animate-in fade-in-0">
+              <div className="flex items-center gap-2">
+                <HistoryIcon className="w-4 h-4 shrink-0 text-muted-foreground" />
+                <div>
+                  <span className="font-bold text-foreground">Thẻ này là dữ liệu lịch sử (Superseded).</span>{" "}
+                  <span className="text-muted-foreground">
+                    Đầu việc này đã được chuyển giao sang nguồn Jira mới trong đợt Failover.
+                  </span>
+                </div>
+              </div>
+              {(taskDetail?.migratedTo || issue?.migratedTo) && (
+                <span className="font-mono text-xs text-primary px-2 py-1 rounded bg-primary/10 border border-primary/20 shrink-0">
+                  Đã chuyển sang: {taskDetail?.migratedTo?.externalKey || issue?.migratedTo?.externalKey || "Task mới"}
+                </span>
+              )}
+            </div>
+          )}
+
+          {(taskDetail?.migratedFrom || issue?.migratedFrom) && (
+            <div className="p-2.5 rounded-xl bg-primary/5 border border-primary/20 text-xs flex items-center gap-2">
+              <span className="text-muted-foreground">Kế thừa chuyển giao từ:</span>
+              <span className="font-mono font-bold text-primary">
+                {taskDetail?.migratedFrom?.externalKey || issue?.migratedFrom?.externalKey}
               </span>
             </div>
           )}
@@ -706,6 +764,27 @@ export function IssueDetailsModal({
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {!isEditing && activeJiraSources.length >= 2 && (
+                  <div className="space-y-1.5 sm:col-span-2">
+                    <Label htmlFor="jira-source" className="text-xs font-semibold flex items-center gap-1.5 text-foreground">
+                      <span>Nguồn Jira (Workspace)</span>
+                      <span className="text-[11px] font-normal text-muted-foreground">(Chọn Jira đích)</span>
+                    </Label>
+                    <CustomSelect
+                      id="jira-source"
+                      value={form.jiraIntegrationId || defaultJiraSourceId || ""}
+                      onChange={(val) => {
+                        setForm((f) => ({ ...f, jiraIntegrationId: val }));
+                        setSelectedJiraSourceId(val);
+                      }}
+                      options={activeJiraSources.map((source) => ({
+                        value: source.integrationId,
+                        label: `${source.projectKey ? `[${source.projectKey}] ` : ""}${source.siteName}`,
+                        subLabel: source.cloudId,
+                      }))}
+                    />
+                  </div>
+                )}
                 <div className="space-y-1.5">
                   <Label htmlFor="issue-type" className="text-xs font-semibold flex items-center gap-1.5 text-foreground">
                     <span>Loại thẻ</span>

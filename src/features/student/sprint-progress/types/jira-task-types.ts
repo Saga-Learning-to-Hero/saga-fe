@@ -1,3 +1,8 @@
+import type {
+  TaskMigrationLink,
+  TaskMigrationSummary,
+} from "@/features/student/project/types/jira-sources";
+
 export interface ProjectSprintResponse {
   id: string;
   externalSprintId?: string | number | null;
@@ -47,6 +52,14 @@ export interface JiraIssueParentSummary {
   externalKey?: string | null;
 }
 
+export interface TaskJiraSourceProvenance {
+  integrationId: string;
+  siteName?: string | null;
+  projectKey?: string | null;
+  boardId?: string | null;
+  connectionStatus?: string | null;
+}
+
 export interface ProjectTaskResponse {
   id: string;
   externalId: string;
@@ -75,6 +88,12 @@ export interface ProjectTaskResponse {
   updatedAt: string;
   parentTask?: { id: string; title: string } | null;
   subtasks?: { id: string; title: string; status: string }[] | null;
+  jiraIntegrationId?: string | null;
+  source?: TaskJiraSourceProvenance | null;
+  superseded?: boolean;
+  migratedFrom?: TaskMigrationLink | null;
+  migratedTo?: TaskMigrationLink | null;
+  migration?: TaskMigrationSummary | null;
 }
 
 export interface CreateProjectTaskRequest {
@@ -90,6 +109,7 @@ export interface CreateProjectTaskRequest {
   dueDate?: string | null;
   startDate?: string | null;
   parentTaskId?: string | null;
+  jiraIntegrationId?: string;
 }
 
 export interface PatchProjectTaskRequest {
