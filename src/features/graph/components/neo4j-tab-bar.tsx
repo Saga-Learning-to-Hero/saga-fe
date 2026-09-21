@@ -7,7 +7,6 @@ import {
   FingerprintIcon,
   ArrowLeftIcon,
   CalendarIcon,
-  SlidersHorizontalIcon,
   UserIcon,
 } from "lucide-react";
 import { CustomSelect, type CustomSelectOption } from "@/components/common/custom-select";
@@ -28,8 +27,6 @@ export interface Neo4jTabBarProps {
   selectId?: string;
   scopeMode?: "COMPACT" | "FULL";
   onScopeModeChange?: (mode: "COMPACT" | "FULL") => void;
-  maxNodes?: number | null;
-  onMaxNodesChange?: (max: number | null) => void;
   memberOptions?: CustomSelectOption[];
   selectedStudentId?: string | null;
   onStudentChange?: (studentId: string) => void;
@@ -46,8 +43,6 @@ export function Neo4jTabBar({
   selectId = "neo4j-tab-sprint-select",
   scopeMode = "COMPACT",
   onScopeModeChange,
-  maxNodes = 100,
-  onMaxNodesChange,
   memberOptions,
   selectedStudentId,
   onStudentChange,
@@ -61,21 +56,39 @@ export function Neo4jTabBar({
     <div className="space-y-2.5">
       <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border/80 bg-card p-2.5 shadow-2xs">
         {drillDownStudent ? (
-          <div className="flex items-center gap-3">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={onBackToOverview}
-              className="h-8.5 rounded-xl gap-1.5 text-xs font-bold cursor-pointer"
-            >
-              <ArrowLeftIcon className="size-3.5" />
-              <span>Quay lại Tổng quan</span>
-            </Button>
-            <div className="flex items-center gap-2">
-              <span className="text-xs text-muted-foreground">Chi tiết đóng góp:</span>
-              <Badge variant="secondary" className="font-bold text-xs">
-                {drillDownStudent.label}
-              </Badge>
+          <div className="flex flex-wrap items-center justify-between gap-3 w-full">
+            <div className="flex items-center gap-3">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={onBackToOverview}
+                className="h-8.5 rounded-xl gap-1.5 text-xs font-bold cursor-pointer"
+              >
+                <ArrowLeftIcon className="size-3.5" />
+                <span>Quay lại Tổng quan</span>
+              </Button>
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-muted-foreground">Chi tiết đóng góp:</span>
+                <Badge variant="secondary" className="font-bold text-xs">
+                  {drillDownStudent.label}
+                </Badge>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 min-w-[220px]">
+              <span className="text-xs font-bold text-muted-foreground whitespace-nowrap flex items-center gap-1">
+                <CalendarIcon className="size-3.5 text-primary" />
+                Sprint:
+              </span>
+              <div className="flex-1">
+                <CustomSelect
+                  id={`${selectId}-drilldown`}
+                  value={selectedSprintId || "ALL"}
+                  onChange={onSprintChange}
+                  options={allSprintOptions}
+                  placeholder="Tất cả Sprint"
+                />
+              </div>
             </div>
           </div>
         ) : (
@@ -178,28 +191,6 @@ export function Neo4jTabBar({
                 >
                   Chi tiết (+ Commit)
                 </button>
-              </div>
-            )}
-
-            {onMaxNodesChange && (
-              <div className="flex items-center gap-1.5">
-                <span className="text-xs font-bold text-muted-foreground whitespace-nowrap flex items-center gap-1">
-                  <SlidersHorizontalIcon className="size-3 text-primary" />
-                  Tối đa:
-                </span>
-                <div className="w-28">
-                  <CustomSelect
-                    id={`${selectId}-max-nodes`}
-                    value={maxNodes ? String(maxNodes) : "ALL"}
-                    onChange={(val) => onMaxNodesChange(val === "ALL" ? null : Number(val))}
-                    options={[
-                      { value: "50", label: "50 node" },
-                      { value: "100", label: "100 node" },
-                      { value: "200", label: "200 node" },
-                      { value: "ALL", label: "Tất cả" },
-                    ]}
-                  />
-                </div>
               </div>
             )}
           </div>

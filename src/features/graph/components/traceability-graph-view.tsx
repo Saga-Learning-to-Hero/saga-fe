@@ -48,7 +48,6 @@ export function TraceabilityGraphView() {
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
 
   const [scopeMode, setScopeMode] = useState<"COMPACT" | "FULL">("COMPACT");
-  const [maxNodes, setMaxNodes] = useState<number | null>(100);
   const [focusedNodeId, setFocusedNodeId] = useState<string | null>(null);
 
   const [pipelineFilter, setPipelineFilter] = useState<PipelineFilterState>({
@@ -105,6 +104,12 @@ export function TraceabilityGraphView() {
   };
 
   const effectiveSprintId = useMemo(() => {
+    if (activeDrillDownStudent) {
+      if (selectedSprintState && selectedSprintState !== "ALL") {
+        return selectedSprintState;
+      }
+      return null;
+    }
     if (neo4jSprintId && neo4jSprintId !== "ALL") {
       return neo4jSprintId;
     }
@@ -112,7 +117,7 @@ export function TraceabilityGraphView() {
       return defaultSprintId;
     }
     return null;
-  }, [neo4jSprintId, neo4jTab, defaultSprintId]);
+  }, [activeDrillDownStudent, selectedSprintState, neo4jSprintId, neo4jTab, defaultSprintId]);
 
   const handleTabChange = (tab: Neo4jTabMode) => {
     setNeo4jTab(tab);
@@ -162,13 +167,8 @@ export function TraceabilityGraphView() {
       hasFilter = true;
     }
 
-    if (maxNodes) {
-      params.maxNodes = maxNodes;
-      hasFilter = true;
-    }
-
     return hasFilter ? params : null;
-  }, [activeFocusedNodeId, scopeMode, activeDrillDownStudent, neo4jTab, neo4jFilterType, maxNodes]);
+  }, [activeFocusedNodeId, scopeMode, activeDrillDownStudent, neo4jTab, neo4jFilterType]);
 
   const isWaitingDefaultSprint = selectedSprintState === null && sprintsQuery.isLoading;
 
@@ -190,6 +190,7 @@ export function TraceabilityGraphView() {
     fallbackLabel?: string | null
   ) => {
     setFocusedNodeId(null);
+    setSelectedSprintState("ALL");
     setDrillDownStudent(
       resolveDrillDownStudent(input, {
         memberOptions: neo4jMemberOptions,
@@ -672,7 +673,6 @@ export function TraceabilityGraphView() {
             setDrillDownStudent(null);
             setFocusedNodeId(null);
             setScopeMode("COMPACT");
-            setMaxNodes(100);
           }}
           anomaliesCount={
             pipelineOpen ? pipeline.stats.doneWithoutLinkedCommits : structuralStats.anomalyCount
@@ -757,11 +757,12 @@ export function TraceabilityGraphView() {
             selectedSprintId={effectiveSprintId}
             onSprintChange={handleSprintChange}
             drillDownStudent={activeDrillDownStudent}
-            onBackToOverview={() => setDrillDownStudent(null)}
+            onBackToOverview={() => {
+              setDrillDownStudent(null);
+              setSelectedSprintState("ALL");
+            }}
             scopeMode={scopeMode}
             onScopeModeChange={setScopeMode}
-            maxNodes={maxNodes}
-            onMaxNodesChange={setMaxNodes}
             memberOptions={neo4jMemberOptions}
             selectedStudentId={activeDrillDownStudent?.studentProfileId || "ALL"}
             onStudentChange={handleSelectDrillDownStudent}
