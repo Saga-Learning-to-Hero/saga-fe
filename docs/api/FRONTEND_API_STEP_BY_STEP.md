@@ -2010,6 +2010,50 @@ Route Lecturer tạo project (`POST /api/lecturer/.../project`): **Chưa đượ
 
 ---
 
+## E8. Dashboard lớp giảng viên (CURRENT_SPRINT)
+
+### Mục đích
+
+Vẽ **một** màn Tổng quan lớp: KPI, task totals, risk policy, card từng nhóm. FE **không** tự tính KPI/risk.
+
+Playbook đầy đủ: `docs/FRONTEND_LECTURER_COURSE_DASHBOARD_API.md`.
+
+### Ai gọi API này
+
+Chỉ LECTURER được phân công course. ADMIN → `403 LECTURER_COURSE_FORBIDDEN`.
+
+### Điều kiện trước khi gọi
+
+`courseId` từ E1. GET không CSRF. Không body.
+
+### Endpoint
+
+`GET /api/lecturer/courses/{courseId}/dashboard`
+
+Query `scope` tùy chọn; chỉ `CURRENT_SPRINT`. FE **omit** query. `ALL_TIME` / `PREVIOUS_SPRINT` → `400 INVALID_DASHBOARD_SCOPE`.
+
+### Response thành công mong đợi
+
+`200` kể cả khi chưa có team / project / sprint active.
+
+Field chính: `courseCode`, `subjectCode`, `subjectName`, `classCode`, `semesterCode`, `generatedAt`, `riskPolicy`, `summary`, `taskStatusTotals`, `teams[]`.
+
+`teams[].risk.level`: `HEALTHY` | `WARNING` | `CRITICAL` | `UNKNOWN`. `teams[].reminder` luôn `null` — không hiện lần nhắc, không gọi notification history.
+
+`%` = `null` khi mẫu số = 0 → hiện “—”, không hiện 0%.
+
+### API gọi tiếp theo
+
+- `projectId != null` → `GET /api/projects/{projectId}/progress` hoặc sprint-activity khi giảng viên mở chi tiết.
+- `projectId == null` → không gọi progress.
+- List team CRUD vẫn `GET /api/lecturer/courses/{courseId}/teams`.
+
+### Lỗi thường gặp
+
+`401` hết phiên; `403 LECTURER_COURSE_FORBIDDEN`; `404 COURSE_NOT_FOUND`.
+
+---
+
 # PART F — Student khởi tạo dashboard
 
 Sau khi STUDENT login (và set password nếu cần), đây là **API dashboard đầu tiên**. Không có query. Chỉ dùng identity session.

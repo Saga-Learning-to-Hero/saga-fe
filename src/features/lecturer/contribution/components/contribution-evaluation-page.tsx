@@ -682,7 +682,7 @@ function MemberRows({
               ) : (
                 <div className="space-y-2">
                   <p className="text-xs font-bold text-foreground">
-                    Phân rã minh chứng & đóng góp qua từng Sprint:
+                    Chi tiết minh chứng & đóng góp qua từng Sprint:
                   </p>
                   <div className="grid gap-2.5 sm:grid-cols-2 xl:grid-cols-4">
                     {member.sprintBreakdowns.map((sprint) => (

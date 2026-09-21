@@ -1,5 +1,6 @@
 import { apiClient } from "@/lib/axios";
 import { requireCourseId } from "@/lib/api-error";
+import type { LecturerCourseDashboardResponse } from "../types/lecturer-course-dashboard";
 import type {
   LecturerCourseProgressResponse,
   LecturerCourseResponse,
@@ -37,6 +38,20 @@ export class LecturerCourseService {
     const data = response.data;
 
     return {
+      courseId: data?.courseId || id,
+      teams: Array.isArray(data?.teams) ? data.teams : [],
+    };
+  }
+
+  static async getCourseDashboard(courseId: string): Promise<LecturerCourseDashboardResponse> {
+    const id = requireCourseId(courseId);
+    const response = await apiClient.get<LecturerCourseDashboardResponse>(
+      `/api/lecturer/courses/${id}/dashboard`
+    );
+    const data = response.data;
+
+    return {
+      ...data,
       courseId: data?.courseId || id,
       teams: Array.isArray(data?.teams) ? data.teams : [],
     };

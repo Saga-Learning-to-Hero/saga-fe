@@ -12,7 +12,12 @@ import {
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
-import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 import {
   Table,
   TableBody,
@@ -52,10 +57,14 @@ export function ContributionTable({
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
   const hasAnyResearch = useMemo(() => {
-    return members.some((m) => (Number(m.researchContributionPercentage) || 0) > 0);
+    return members.some(
+      (m) => (Number(m.researchContributionPercentage) || 0) > 0,
+    );
   }, [members]);
 
-  const courseQuery = courseId ? `?courseId=${encodeURIComponent(courseId)}` : "";
+  const courseQuery = courseId
+    ? `?courseId=${encodeURIComponent(courseId)}`
+    : "";
 
   return (
     <Card className="rounded-2xl border border-border/80 shadow-2xs bg-card overflow-hidden">
@@ -66,10 +75,14 @@ export function ContributionTable({
               Bảng ma trận đối soát tỷ lệ đóng góp (Slicing Pie)
             </CardTitle>
             <CardDescription className="text-xs text-muted-foreground mt-0.5">
-              Quy trình tính toán từ Slice score theo 3 phân loại công sức, hệ số Peer review đến tỷ lệ cuối cùng
+              Quy trình tính toán từ Slice score theo 3 phân loại công sức, hệ
+              số Peer review đến tỷ lệ cuối cùng
             </CardDescription>
           </div>
-          <Badge variant="outline" className="text-[10px] font-mono font-bold self-start sm:self-auto py-1 px-2.5">
+          <Badge
+            variant="outline"
+            className="text-[10px] font-mono font-bold self-start sm:self-auto py-1 px-2.5"
+          >
             DEC-092 Live Evaluation
           </Badge>
         </div>
@@ -82,7 +95,9 @@ export function ContributionTable({
               <TableHead className="sticky left-0 z-10 min-w-48 bg-card text-xs font-bold text-muted-foreground">
                 Thành viên
               </TableHead>
-              <TableHead className="text-xs font-bold text-muted-foreground">Vai trò</TableHead>
+              <TableHead className="text-xs font-bold text-muted-foreground">
+                Vai trò
+              </TableHead>
               <TableHead className="text-right text-xs font-bold text-muted-foreground">
                 Slice Score
               </TableHead>
@@ -126,11 +141,18 @@ export function ContributionTable({
               </TableRow>
             ) : (
               members.map((member) => {
-                const isCurrent = currentStudentCode && member.studentCode === currentStudentCode;
+                const isCurrent =
+                  currentStudentCode &&
+                  member.studentCode === currentStudentCode;
                 const isLeader = member.roleInTeam === "LEADER";
-                const expanded = expandedId === member.studentProfileId || expandedId === member.studentCode;
-                const finalPercentage = Number(member.finalContributionPercentage) || 0;
-                const hasNoEvidence = member.warnings.some((w) => w.toUpperCase().includes("NO_EVIDENCE"));
+                const expanded =
+                  expandedId === member.studentProfileId ||
+                  expandedId === member.studentCode;
+                const finalPercentage =
+                  Number(member.finalContributionPercentage) || 0;
+                const hasNoEvidence = member.warnings.some((w) =>
+                  w.toUpperCase().includes("NO_EVIDENCE"),
+                );
                 const hasWarnings = member.warnings.length > 0;
 
                 return (
@@ -146,7 +168,11 @@ export function ContributionTable({
                     hasAnyResearch={hasAnyResearch}
                     courseQuery={courseQuery}
                     onToggle={() =>
-                      setExpandedId(expanded ? null : member.studentProfileId || member.studentCode)
+                      setExpandedId(
+                        expanded
+                          ? null
+                          : member.studentProfileId || member.studentCode,
+                      )
                     }
                   />
                 );
@@ -186,7 +212,12 @@ function TableRowGroup({
 
   return (
     <>
-      <TableRow className={cn("transition-colors hover:bg-muted/20", isCurrent && "bg-primary/5")}>
+      <TableRow
+        className={cn(
+          "transition-colors hover:bg-muted/20",
+          isCurrent && "bg-primary/5",
+        )}
+      >
         <TableCell className="sticky left-0 z-10 bg-card">
           <div className="flex items-center gap-2.5">
             <Avatar size="sm" className="border border-border/60">
@@ -195,7 +226,7 @@ function TableRowGroup({
                   "font-mono text-[11px] font-bold",
                   isLeader
                     ? "bg-amber-500/20 text-amber-700 dark:text-amber-300"
-                    : "bg-muted text-muted-foreground"
+                    : "bg-muted text-muted-foreground",
                 )}
               >
                 {getInitials(cleanedName)}
@@ -203,9 +234,14 @@ function TableRowGroup({
             </Avatar>
             <div className="space-y-0.5">
               <div className="flex items-center gap-1.5">
-                <p className="text-xs font-bold text-foreground">{cleanedName}</p>
+                <p className="text-xs font-bold text-foreground">
+                  {cleanedName}
+                </p>
                 {isCurrent && (
-                  <Badge variant="outline" className="bg-primary/10 text-primary border-primary/30 text-[9px] px-1 py-0 font-bold">
+                  <Badge
+                    variant="outline"
+                    className="bg-primary/10 text-primary border-primary/30 text-[9px] px-1 py-0 font-bold"
+                  >
                     Tôi
                   </Badge>
                 )}
@@ -266,9 +302,11 @@ function TableRowGroup({
                   "h-full rounded-full transition-all duration-300",
                   finalPercentage > 0
                     ? "bg-gradient-to-r from-primary to-primary/80"
-                    : "bg-muted"
+                    : "bg-muted",
                 )}
-                style={{ width: `${Math.min(Math.max(finalPercentage, 0), 100)}%` }}
+                style={{
+                  width: `${Math.min(Math.max(finalPercentage, 0), 100)}%`,
+                }}
               />
             </div>
           </div>
@@ -283,7 +321,10 @@ function TableRowGroup({
           >
             Chi tiết
             <ChevronDownIcon
-              className={cn("ml-1 size-3.5 transition-transform duration-200", expanded && "rotate-180")}
+              className={cn(
+                "ml-1 size-3.5 transition-transform duration-200",
+                expanded && "rotate-180",
+              )}
             />
           </Button>
         </TableCell>
@@ -291,7 +332,10 @@ function TableRowGroup({
 
       {expanded && (
         <TableRow>
-          <TableCell colSpan={hasAnyResearch ? 11 : 10} className="bg-muted/20 p-4">
+          <TableCell
+            colSpan={hasAnyResearch ? 11 : 10}
+            className="bg-muted/20 p-4"
+          >
             <div className="space-y-4">
               {member.warnings.length > 0 && (
                 <div className="space-y-1.5">
@@ -310,14 +354,14 @@ function TableRowGroup({
                             "rounded-xl border p-2.5 text-xs space-y-0.5",
                             isHigh
                               ? "border-red-500/30 bg-red-500/5 text-red-800 dark:text-red-300"
-                              : "border-amber-500/30 bg-amber-500/10 text-amber-800 dark:text-amber-300"
+                              : "border-amber-500/30 bg-amber-500/10 text-amber-800 dark:text-amber-300",
                           )}
                         >
                           <div className="flex items-center gap-1.5 font-bold">
                             <span
                               className={cn(
                                 "size-1.5 rounded-full shrink-0",
-                                isHigh ? "bg-red-500" : "bg-amber-500"
+                                isHigh ? "bg-red-500" : "bg-amber-500",
                               )}
                             />
                             <span>{parsed.title}</span>
@@ -339,7 +383,7 @@ function TableRowGroup({
               ) : (
                 <div className="space-y-2">
                   <p className="text-xs font-bold text-foreground">
-                    Phân rã minh chứng & đóng góp qua từng Sprint:
+                    Chi tiết minh chứng & đóng góp qua từng Sprint:
                   </p>
                   <div className="grid gap-2.5 sm:grid-cols-2 xl:grid-cols-4">
                     {member.sprintBreakdowns.map((sprint) => (
@@ -352,7 +396,9 @@ function TableRowGroup({
                             {sprint.sprintName || "Sprint"}
                           </span>
                           <span className="font-mono text-xs font-black text-primary">
-                            {formatContributionPercent(sprint.contributionPercentage)}
+                            {formatContributionPercent(
+                              sprint.contributionPercentage,
+                            )}
                           </span>
                         </div>
                         <div className="space-y-1 text-[11px] text-muted-foreground">
@@ -365,7 +411,9 @@ function TableRowGroup({
                           <div className="flex justify-between">
                             <span>Tỷ lệ trước Peer:</span>
                             <span className="font-mono font-bold text-foreground">
-                              {formatContributionPercent(sprint.sliceContributionPercentage)}
+                              {formatContributionPercent(
+                                sprint.sliceContributionPercentage,
+                              )}
                             </span>
                           </div>
                         </div>
@@ -382,7 +430,8 @@ function TableRowGroup({
                   className={buttonVariants({
                     variant: "outline",
                     size: "sm",
-                    className: "h-8 gap-1.5 rounded-lg text-xs font-bold text-primary border-primary/30 hover:bg-primary/10 cursor-pointer",
+                    className:
+                      "h-8 gap-1.5 rounded-lg text-xs font-bold text-primary border-primary/30 hover:bg-primary/10 cursor-pointer",
                   })}
                 >
                   <NetworkIcon className="size-3.5" />

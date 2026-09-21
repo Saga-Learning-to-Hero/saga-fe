@@ -84,7 +84,12 @@ export function useUpdateContributionSliceWeights(courseId: string) {
       LecturerWeightsService.updateSliceWeights(courseId, payload),
     onSuccess: async (data) => {
       queryClient.setQueryData(CONTRIBUTION_QUERY_KEYS.sliceWeights(courseId), data);
-      await queryClient.invalidateQueries({ queryKey: CONTRIBUTION_QUERY_KEYS.evaluations });
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: CONTRIBUTION_QUERY_KEYS.evaluations }),
+        queryClient.invalidateQueries({
+          queryKey: ["lecturerDashboard", courseId] as const,
+        }),
+      ]);
       toast.success("Đã lưu trọng số dùng chung cho lớp học phần.");
     },
     onError: (error: unknown) => {
@@ -105,6 +110,9 @@ export function useUpdateContributionConfigMode(courseId: string) {
         queryClient.invalidateQueries({ queryKey: CONTRIBUTION_QUERY_KEYS.sliceWeights(courseId) }),
         queryClient.invalidateQueries({ queryKey: CONTRIBUTION_QUERY_KEYS.teamWeights(courseId) }),
         queryClient.invalidateQueries({ queryKey: CONTRIBUTION_QUERY_KEYS.evaluations }),
+        queryClient.invalidateQueries({
+          queryKey: ["lecturerDashboard", courseId] as const,
+        }),
       ]);
       toast.success(
         data.mode === "PROJECT_GROUP"
@@ -138,6 +146,9 @@ export function useUpdateProjectGroupWeights(context: {
         queryClient.invalidateQueries({ queryKey: CONTRIBUTION_QUERY_KEYS.groupWeights(projectId) }),
         queryClient.invalidateQueries({ queryKey: CONTRIBUTION_QUERY_KEYS.teamWeights(courseId) }),
         queryClient.invalidateQueries({ queryKey: CONTRIBUTION_QUERY_KEYS.evaluation(teamId) }),
+        queryClient.invalidateQueries({
+          queryKey: ["lecturerDashboard", courseId] as const,
+        }),
       ]);
       toast.success("Đã lưu trọng số của dự án nhóm.");
     },

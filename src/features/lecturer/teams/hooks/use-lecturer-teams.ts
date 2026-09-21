@@ -59,6 +59,9 @@ function invalidateTeamCoordination(queryClient: QueryClient, courseId: string) 
       queryKey: LECTURER_COURSE_QUERY_KEYS.lecturerRoster(courseId),
     }),
     queryClient.invalidateQueries({
+      queryKey: LECTURER_COURSE_QUERY_KEYS.lecturerDashboard(courseId),
+    }),
+    queryClient.invalidateQueries({
       queryKey: CONTRIBUTION_QUERY_KEYS.teamWeights(courseId),
     }),
     queryClient.invalidateQueries({

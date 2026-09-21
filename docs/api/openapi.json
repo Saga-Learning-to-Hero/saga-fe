@@ -4926,6 +4926,64 @@
         ]
       }
     },
+    "/api/lecturer/courses/{courseId}/dashboard": {
+      "get": {
+        "tags": [
+          "Lecturer courses"
+        ],
+        "summary": "Course dashboard aggregate for the assigned lecturer.",
+        "description": "Single GET for the lecturer course overview. Backend owns KPI and risk. Default scope is CURRENT_SPRINT. Do not send ALL_TIME or PREVIOUS_SPRINT. teams[].reminder is always null. Do not use this payload as contribution percentages.",
+        "operationId": "lecturerCourseDashboard",
+        "parameters": [
+          {
+            "name": "courseId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "scope",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "CURRENT_SPRINT"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK — empty teams/sprint still 200",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/LecturerCourseDashboardResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "INVALID_DASHBOARD_SCOPE"
+          },
+          "403": {
+            "description": "LECTURER_COURSE_FORBIDDEN"
+          },
+          "404": {
+            "description": "COURSE_NOT_FOUND"
+          }
+        },
+        "security": [
+          {
+            "SAGA_SESSION": []
+          }
+        ]
+      }
+    },
     "/api/lecturer/courses/{courseId}/contribution-team-weights": {
       "get": {
         "tags": [
@@ -9422,6 +9480,56 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/Entry"
+            }
+          }
+        }
+      },
+      "LecturerCourseDashboardResponse": {
+        "type": "object",
+        "description": "Lecturer course dashboard aggregate. See docs/FRONTEND_LECTURER_COURSE_DASHBOARD_API.md.",
+        "properties": {
+          "courseId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "courseCode": {
+            "type": "string"
+          },
+          "subjectCode": {
+            "type": "string"
+          },
+          "subjectName": {
+            "type": "string"
+          },
+          "classCode": {
+            "type": "string"
+          },
+          "semesterCode": {
+            "type": "string"
+          },
+          "scope": {
+            "type": "string",
+            "enum": [
+              "CURRENT_SPRINT"
+            ]
+          },
+          "generatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "riskPolicy": {
+            "type": "object"
+          },
+          "summary": {
+            "type": "object"
+          },
+          "taskStatusTotals": {
+            "type": "object"
+          },
+          "teams": {
+            "type": "array",
+            "items": {
+              "type": "object"
             }
           }
         }

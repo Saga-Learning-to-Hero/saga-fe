@@ -15,6 +15,7 @@ export const LECTURER_COURSE_QUERY_KEYS = {
   lecturerCourse: (courseId: string) => ["lecturerCourse", courseId] as const,
   lecturerRoster: (courseId: string) => ["lecturerRoster", courseId] as const,
   lecturerCourseProgress: (courseId: string) => ["lecturerCourseProgress", courseId] as const,
+  lecturerDashboard: (courseId: string) => ["lecturerDashboard", courseId] as const,
 };
 
 export function prefetchLecturerCourses(queryClient: QueryClient) {
@@ -125,6 +126,16 @@ export function useLecturerCourseProgress(courseId: string, options?: { enabled?
   return useQuery({
     queryKey: LECTURER_COURSE_QUERY_KEYS.lecturerCourseProgress(courseId),
     queryFn: () => LecturerCourseService.getCourseProgress(courseId),
+    enabled: (options?.enabled ?? true) && Boolean(courseId && courseId.trim()),
+    staleTime: 1000 * 30,
+    refetchOnWindowFocus: true,
+  });
+}
+
+export function useLecturerCourseDashboard(courseId: string, options?: { enabled?: boolean }) {
+  return useQuery({
+    queryKey: LECTURER_COURSE_QUERY_KEYS.lecturerDashboard(courseId),
+    queryFn: () => LecturerCourseService.getCourseDashboard(courseId),
     enabled: (options?.enabled ?? true) && Boolean(courseId && courseId.trim()),
     staleTime: 1000 * 30,
     refetchOnWindowFocus: true,

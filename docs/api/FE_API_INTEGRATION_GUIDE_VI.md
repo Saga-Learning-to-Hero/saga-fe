@@ -985,7 +985,7 @@ GET /api/projects/{projectId}/progress/members/{studentId}
 
 ### Màn hình FE đang dùng
 
-- Course overview giảng viên: `GET /api/lecturer/courses/{courseId}/progress`. Không có course-wide SSE — refetch khi vào trang, khi cửa sổ lấy lại focus, và nút Làm mới. Không polling.
+- Course overview giảng viên: `GET /api/lecturer/courses/{courseId}/dashboard` (một request, scope mặc định `CURRENT_SPRINT`). Không dùng `/progress` thay dashboard. Không có course-wide SSE — refetch khi vào trang, khi cửa sổ lấy lại focus, và nút Làm mới. Không polling.
 - Dashboard sinh viên (`/student/dashboard`): chỉ Leader gọi `GET /api/projects/{projectId}/progress`. Member thường không phát request.
 - Chi tiết nhóm giảng viên: gọi project progress khi đã có `projectId`.
 - Drill-down thành viên: `GET .../progress/members/{studentId}` từ bảng thành viên.
