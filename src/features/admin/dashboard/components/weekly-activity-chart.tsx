@@ -70,7 +70,7 @@ export function WeeklyActivityChart({
               }}
               formatter={(value, name) => {
                 const numericValue = Number(value);
-                if (name === "Traceability") {
+                if (name === "Tỷ lệ đối soát" || name === "Traceability") {
                   return [
                     Number.isFinite(numericValue)
                       ? formatDashboardPercent(numericValue)
@@ -96,7 +96,7 @@ export function WeeklyActivityChart({
             <Bar
               yAxisId="count"
               dataKey="commits"
-              name="Commits"
+              name="Lượt commit"
               fill="#4F6FEA"
               radius={[5, 5, 0, 0]}
               maxBarSize={28}
@@ -104,7 +104,7 @@ export function WeeklyActivityChart({
             <Bar
               yAxisId="count"
               dataKey="tasksCompleted"
-              name="Completed tasks"
+              name="Task hoàn thành"
               fill="#14B8A6"
               radius={[5, 5, 0, 0]}
               maxBarSize={28}
@@ -113,7 +113,7 @@ export function WeeklyActivityChart({
               yAxisId="rate"
               type="monotone"
               dataKey="traceabilityRate"
-              name="Traceability"
+              name="Tỷ lệ đối soát"
               stroke="#F59E0B"
               strokeWidth={2}
               connectNulls={false}

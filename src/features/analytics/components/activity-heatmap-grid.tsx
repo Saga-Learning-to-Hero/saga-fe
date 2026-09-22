@@ -827,10 +827,10 @@ export function ActivityHeatmapGrid({
               <thead>
                 <tr className="bg-muted/30 border-b border-border/60 text-muted-foreground font-semibold">
                   <th className="py-2.5 px-3.5">Thành viên</th>
-                  <th className="py-2.5 px-2 text-center">Git Commits</th>
-                  <th className="py-2.5 px-2 text-center">Jira Tasks</th>
-                  <th className="py-2.5 px-2 text-center">Peer Reviews</th>
-                  <th className="py-2.5 px-2 text-center">Docs & Files</th>
+                  <th className="py-2.5 px-2 text-center">Commit Git</th>
+                  <th className="py-2.5 px-2 text-center">Task Jira</th>
+                  <th className="py-2.5 px-2 text-center">Đánh giá chéo</th>
+                  <th className="py-2.5 px-2 text-center">Tài liệu</th>
                   <th className="py-2.5 px-3 text-right">Tổng hoạt động</th>
                 </tr>
               </thead>

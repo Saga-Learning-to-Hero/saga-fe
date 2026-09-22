@@ -118,7 +118,7 @@ export function StudentWeeklyCommitsChart({
                   Nhịp độ đóng góp mã nguồn
                 </CardTitle>
                 <Badge variant="outline" className="font-mono text-[10px] bg-primary/10 text-primary border-primary/25">
-                  {totalCommits} commits
+                  {totalCommits} commit
                 </Badge>
               </div>
               <CardDescription className="text-xs text-muted-foreground mt-0.5">

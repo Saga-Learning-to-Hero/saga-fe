@@ -79,32 +79,38 @@ export function StudentCourseSelection({ onSelectCourse }: StudentCourseSelectio
 
   return (
     <div className="mx-auto max-w-[1600px] space-y-6 pb-10">
-      <div className="relative overflow-hidden rounded-3xl border border-primary/20 bg-gradient-to-br from-primary to-primary/70 p-6 text-white shadow-md sm:p-8">
+      <div className="relative overflow-hidden rounded-3xl border border-border/80 bg-card p-6 shadow-sm sm:p-8">
+        <div className="pointer-events-none absolute -right-20 -top-20 size-72 rounded-full bg-primary/10 blur-3xl" />
+        <div className="pointer-events-none absolute -bottom-20 -left-20 size-72 rounded-full bg-accent/10 blur-3xl" />
+
         <div className="relative flex flex-col justify-between gap-6 md:flex-row md:items-center">
-          <div className="max-w-2xl space-y-2">
-            <Badge className="border-0 bg-white/20 px-3 py-1 text-xs font-semibold text-white">
-              <SparklesIcon className="mr-1 h-3.5 w-3.5" />
-              Lớp học phần của tôi
-            </Badge>
-            <h1 className="text-2xl font-extrabold tracking-tight sm:text-3xl">
-              Xin chào, {user?.name || "Sinh viên"}
+          <div className="max-w-2xl space-y-2.5">
+            <div className="inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/10 px-3.5 py-1 text-xs font-bold text-primary shadow-xs">
+              <SparklesIcon className="size-3.5 text-primary" />
+              <span>Không gian Học tập & Đồ án SAGA</span>
+            </div>
+            <h1 className="text-2xl font-extrabold tracking-tight text-foreground sm:text-3xl lg:text-4xl">
+              Xin chào,{" "}
+              <span className="bg-gradient-to-r from-primary via-indigo-600 to-cyan-500 bg-clip-text text-transparent dark:from-indigo-400 dark:via-primary dark:to-cyan-300">
+                {user?.name || "Sinh viên"}
+              </span>
             </h1>
-            <p className="text-xs leading-relaxed text-white/80 sm:text-sm">
+            <p className="text-xs leading-relaxed text-muted-foreground sm:text-sm">
               Danh sách các môn học bạn đang theo học trong kỳ. Chọn một lớp học phần để vào không gian dự án và theo dõi tiến độ nhóm.
             </p>
           </div>
           <div className="flex shrink-0 items-center gap-3">
-            <div className="min-w-[110px] rounded-2xl border border-white/20 bg-white/15 p-4 text-center text-white backdrop-blur-md">
-              <span className="block text-2xl font-black leading-none">
+            <div className="min-w-[120px] rounded-2xl border border-border/80 bg-muted/30 p-4 text-center">
+              <span className="block font-mono text-2xl font-black text-foreground">
                 {isLoading ? "…" : semesters.length}
               </span>
-              <span className="text-[11px] font-medium text-white/80">Học kỳ</span>
+              <span className="mt-1 block text-xs font-semibold text-muted-foreground">Học kỳ</span>
             </div>
-            <div className="min-w-[110px] rounded-2xl border border-white/20 bg-white/15 p-4 text-center text-white backdrop-blur-md">
-              <span className="block text-2xl font-black leading-none">
+            <div className="min-w-[120px] rounded-2xl border border-border/80 bg-muted/30 p-4 text-center">
+              <span className="block font-mono text-2xl font-black text-foreground">
                 {isLoading ? "…" : apiCourses.length}
               </span>
-              <span className="text-[11px] font-medium text-white/80">Lớp đang học</span>
+              <span className="mt-1 block text-xs font-semibold text-muted-foreground">Lớp đang học</span>
             </div>
           </div>
         </div>

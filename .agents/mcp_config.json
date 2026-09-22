@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "google-drive": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-gdrive"
+      ],
+      "env": {
+        "GDRIVE_CREDENTIALS_PATH": "C:/Users/ADMIN/.gemini/gdrive-token.json",
+        "GDRIVE_OAUTH_PATH": "C:/Users/ADMIN/.gemini/credentials.json"
+      }
+    }
+  }
+}

@@ -1249,35 +1249,35 @@ export function CytoscapeGraphCanvas({
             <div className="grid grid-cols-2 gap-1.5">
               <div className="flex items-center gap-1.5">
                 <span className="w-3 h-3 rounded-full bg-blue-600 border border-blue-200 shrink-0" />
-                <span className="truncate">Student</span>
+                <span className="truncate">Sinh viên (:Student)</span>
               </div>
               <div className="flex items-center gap-1.5">
                 <span className="w-3 h-3 rounded-xs bg-indigo-600 border border-indigo-200 shrink-0" />
-                <span className="truncate">Team</span>
+                <span className="truncate">Nhóm (:Team)</span>
               </div>
               <div className="flex items-center gap-1.5">
                 <span className="w-3 h-3 rounded-xs bg-cyan-600 border border-cyan-200 shrink-0" />
-                <span className="truncate">Project</span>
+                <span className="truncate">Dự án (:Project)</span>
               </div>
               <div className="flex items-center gap-1.5">
                 <span className="w-3 h-3 rounded-xs bg-teal-600 border border-teal-200 shrink-0" />
-                <span className="truncate">Sprint</span>
+                <span className="truncate">Sprint (:Sprint)</span>
               </div>
               <div className="flex items-center gap-1.5">
                 <span className="w-3 h-3 rounded-xs bg-emerald-600 border border-emerald-200 shrink-0" />
-                <span className="truncate">Task</span>
+                <span className="truncate">Công việc (:Task)</span>
               </div>
               <div className="flex items-center gap-1.5">
                 <span className="w-3 h-3 rounded-xs bg-purple-600 border border-purple-200 shrink-0" />
-                <span className="truncate">Commit</span>
+                <span className="truncate">Mã nguồn (:Commit)</span>
               </div>
               <div className="flex items-center gap-1.5">
                 <span className="w-3 h-3 rotate-45 bg-amber-600 border border-amber-200 shrink-0" />
-                <span className="truncate">Criterion</span>
+                <span className="truncate">Tiêu chí (:Criterion)</span>
               </div>
               <div className="flex items-center gap-1.5">
                 <span className="w-3 h-3 rotate-45 bg-slate-600 border border-slate-200 shrink-0" />
-                <span className="truncate">Identity</span>
+                <span className="truncate">Định danh (:Identity)</span>
               </div>
             </div>
 

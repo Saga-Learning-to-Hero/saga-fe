@@ -99,7 +99,7 @@ export function GraphFilterBar({
                   }`}
               >
                 <NetworkIcon className="size-3.5" />
-                <span>Neo4j Graph</span>
+                <span>Đồ thị Neo4j</span>
               </button>
               <button
                 onClick={() => onSelectViewMode("FLOW")}
@@ -109,7 +109,7 @@ export function GraphFilterBar({
                   }`}
               >
                 <SparklesIcon className="size-3.5" />
-                <span>Pipeline Flow</span>
+                <span>Luồng đối soát</span>
               </button>
             </div>
           )}

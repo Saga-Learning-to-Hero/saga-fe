@@ -31,13 +31,13 @@ Quy tắc bảo trì bắt buộc:
 
 | Hạng mục | Giá trị tại thời điểm kiểm tra |
 | --- | --- |
-| Frontend | `saga-fe`, nhánh `feat/SAGA-97-unit-test-task-work-session-timeline` |
+| Frontend | `saga-fe`, nhánh `dev` |
 | Backend | `saga-be`, nhánh `main` |
 | FE framework | Next.js 16, React, TypeScript, TanStack Query |
 | Dữ liệu nghiệp vụ chính | REST từ Backend; Jira/GitHub được đồng bộ thành projection trong SAGA |
 | Dữ liệu Graph | Neo4j projection do Backend tạo, FE chỉ truy vấn và trực quan hóa |
 | Realtime | SSE chỉ báo thay đổi; sau event FE phải refetch REST canonical |
-| FE unit regression | Đạt 100% tests passed (848/848 tests), 0 lint errors/warnings, production build passed |
+| FE unit regression | Đạt 100% tests passed (898/898 tests), 0 lint errors/warnings, production build passed |
 | Lưu ý | SAGA-97 bổ sung bộ Unit Tests chuẩn FPT (UTCID19-21) cho API getTaskWorkSessionTimeline trong ProjectTaskService |
 
 ### 1.1 Mục đích sử dụng
@@ -90,6 +90,7 @@ SAGA là hệ thống hỗ trợ quản lý và đánh giá liên tục cho dự
 - trực quan hóa quan hệ bằng graph Neo4j;
 - tính tỷ lệ đóng góp theo bốn nhóm tiêu chí và điều chỉnh bằng peer review;
 - cho giảng viên xem tiến độ, cấu hình trọng số và đối soát kết quả đóng góp;
+- cung cấp AI-assisted Commit Intelligence và phân loại học thuật tư vấn trên Task/Commit, với bằng chứng bất biến, kết quả có cấu trúc và Lecturer review, tách biệt khỏi tỷ lệ đóng góp và điểm học phần;
 - lưu audit, trạng thái đồng bộ và sự kiện realtime.
 
 ### 2.1 Những gì SAGA không được diễn giải sai
@@ -97,6 +98,7 @@ SAGA là hệ thống hỗ trợ quản lý và đánh giá liên tục cho dự
 - Số task, commit, phiên làm việc hoặc minh chứng **không tự động là điểm học phần**.
 - Số commit không đồng nghĩa trực tiếp với chất lượng hoặc tỷ lệ đóng góp.
 - Graph là lớp giải thích/truy xuất quan hệ, không phải nguồn tính điểm độc lập.
+- AI finding, confidence, proposal phân loại hoặc `HUMAN_REVIEW_REQUIRED` là bằng chứng tư vấn; không tự động kết luận gian lận, thay đổi tỷ lệ đóng góp hoặc tạo điểm học phần. Phân loại AI chỉ trở thành mapping có thẩm quyền sau Lecturer review theo rule Backend.
 - `Project Type` là metadata phân loại dự án, không phải tiêu chí `CODE/TEST/DOCUMENT/RESEARCH`.
 - “Slicing Pie” là tên phương pháp phân bổ tương đối; không dịch máy thành “lát cắt” trên UI nghiệp vụ.
 
@@ -113,8 +115,8 @@ Bảng này là checklist chức năng cấp cao dành cho tài liệu báo cáo
 | SCOPE-05 | Tích hợp công cụ | Kết nối đa nguồn Jira (Multi-Jira Sources) và GitHub installation/repositories; personal identity mapping; reconnect/soft disconnect; quy trình chuyển giao công việc an toàn Failover Wizard; repository role canonical |
 | SCOPE-06 | Đồng bộ và realtime | Initial/manual/incremental/webhook sync; sync status và last sync; SSE invalidation; REST refetch; khôi phục sau reconnect |
 | SCOPE-07 | Quản lý Sprint và Task | Kanban, Backlog, Timeline; sprint lifecycle; task CRUD/transition; assignee; priority; story point; label; type; parent/subtask; start/due date |
-| SCOPE-08 | Theo dõi GitHub | Commit repository/branch/author/time/message; filter/search; linked/unlinked state; dữ liệu PR/review/comment nếu được đưa vào phạm vi đánh giá |
-| SCOPE-09 | Truy xuất Task–Commit | Liên kết canonical tự động/thủ công/reconciliation; lọc repository/branch; Flow; Audit Matrix; sticky inspector; cảnh báo Done thiếu evidence |
+| SCOPE-08 | Theo dõi GitHub | Commit repository/branch/author/time/message; filter/search; linked/unlinked state; chỉ mô tả PR/review/comment là end-to-end khi provider ingestion, API và UI tương ứng đã hoạt động |
+| SCOPE-09 | Truy xuất Task–Commit | Liên kết canonical tự động và các cơ chế đối soát được hỗ trợ; lọc repository/branch; Flow; Audit Matrix; sticky inspector; cảnh báo Done thiếu evidence; không coi manual-link mutation là đã có nếu chưa tồn tại API/UI xác thực |
 | SCOPE-10 | Minh chứng công việc | Work session server-side; file; web link; commit SHA/PR confirmation; audit; step-up; không mất trạng thái khi reload |
 | SCOPE-11 | Tiến độ và dashboard | Project summary; member detail; task status; sprint progress; Task–Commit activity; freshness; insight thay vì chỉ đếm dữ liệu |
 | SCOPE-12 | Graph truy xuất nguồn gốc | Graph project/student/sprint/attribution/peer-review; node/edge canonical; filter; tooltip; anomaly flag có giải thích và quyền theo role |
@@ -123,6 +125,7 @@ Bảng này là checklist chức năng cấp cao dành cho tài liệu báo cáo
 | SCOPE-15 | Quản trị và kiểm toán | User status; audit log; integration/sync observability; lỗi có mã; dữ liệu mock không xuất hiện trong bản production/report |
 | SCOPE-16 | Chất lượng hệ thống | Authorization server-side; isolation theo account/course/project; timezone nhất quán; accessibility/responsive; test; không N+1/refetch storm |
 | SCOPE-17 | Trung tâm thông báo & Web Push | Hộp thư thông báo canonical (REST); User-scoped SSE; Firebase Web Push FCM; bell badge/preview/sheet; broadcast Admin; targeted notification Giảng viên theo 4 scope; Idempotency-Key và điều phối đăng xuất tập trung |
+| SCOPE-18 | AI-assisted Commit Intelligence và Academic Classification | Phân tích Commit theo project với durable run, exact-SHA evidence snapshot, bounded changed-file/patch evidence, provider-decision metadata, structured-result validation và idempotency; hỗ trợ proposal phân loại Task/Commit theo Syllabus cùng Lecturer confirm/reject/correct; OpenAI provider chỉ hoạt động khi được bật/cấu hình và FE presentation hiện chưa có |
 
 ---
 
@@ -472,6 +475,16 @@ Project Type dùng để phân loại hướng dự án, không điều khiển 
 | NOTIF-007 | Admin system notification composer | ✓ | ✓ | ✓ | `DONE`; POST `/api/admin/notifications/system` kèm Idempotency-Key, live preview, dialog xác nhận |
 | NOTIF-008 | Lecturer targeted notification composer | ✓ | ✓ | ✓ | `DONE`; 4 scope: all-courses, course, team, student; chọn qua CustomSelect; Idempotency-Key và chống 409 |
 
+### 7.10 AI-assisted Commit Intelligence
+
+| ID | Nghiệp vụ | BE | FE data | UI | Trạng thái/Ghi chú |
+| --- | --- | --- | --- | --- | --- |
+| AI-001 | Durable analysis run, evidence snapshot, provider decision và idempotent submission | ✓ | — | — | `BE_ONLY`; lưu run/evidence/provider decision; exact duplicate reuse cùng run, evidence hoặc configuration thay đổi tạo lịch sử mới |
+| AI-002 | Exact-SHA GitHub evidence và structured-result validation | ✓ | — | — | `BE_ONLY`; lấy changed-file manifest và patch hunks theo exact SHA, mặc định tối đa 40 file đủ điều kiện và 256 KiB patch; secret-suspected, generated/lock, unavailable hoặc vượt giới hạn được ghi exclusion rõ ràng; không duyệt toàn repository hoặc đọc file-at-revision |
+| AI-003 | OpenAI provider adapter và lịch sử Commit Intelligence | ✓ | — | — | `BE_ONLY`; OpenAI Responses API dùng strict JSON Schema khi `saga.ai.enabled=true` và có API key; Fake provider deterministic chỉ dùng local/test; FE chưa tích hợp submit/status/history |
+| AI-004 | Task/Commit academic-classification proposal theo Course-pinned Syllabus | ✓ | — | — | `BE_ONLY`; snapshot đúng Syllabus version, PHASE và EXPECTED_DELIVERABLE; `PROPOSED`, `UNCLASSIFIED`, `INSUFFICIENT_EVIDENCE` đều là kết quả tư vấn, không sửa contribution/graph/workflow |
+| AI-005 | Lecturer review cho academic classification | ✓ | — | — | `BE_ONLY`; Lecturer được phân công có thể `CONFIRM`, `REJECT`, `CORRECT`; correction tạo HUMAN mapping mới và giữ nguyên proposal gốc để audit; FE chưa có presentation/review flow |
+
 ---
 
 ## 8. Registry API Backend và mức sử dụng FE
@@ -593,6 +606,19 @@ Project Type dùng để phân loại hướng dự án, không điều khiển 
 | `GET /api/courses/{courseId}/teams/{teamId}/heatmap` | Đã dùng (Lưới nhịp độ hoạt động toàn nhóm hoặc cá nhân, tính điểm activity, filter theo ngày và thành viên) |
 | `GET /api/courses/{courseId}/teams/{teamId}/sprints/{sprintId}/burndown` | Đã dùng (Biểu đồ Sprint Burndown đối soát idealRemaining, actualRemaining và doneCount) |
 
+### 8.10 AI-assisted Commit Intelligence
+
+| Endpoint | FE hiện tại |
+| --- | --- |
+| `POST /api/projects/{projectId}/ai/commits/{gitCommitId}/analyses` | Chưa dùng; Backend submit idempotent, trả `202 Accepted` cho run mới hoặc `200 OK` khi reuse |
+| `GET /api/projects/{projectId}/ai/analyses/{analysisId}` | Chưa dùng; Backend trả trạng thái/kết quả của run đã lưu |
+| `GET /api/projects/{projectId}/ai/commits/{gitCommitId}/analyses` | Chưa dùng; Backend trả lịch sử phân trang theo Commit |
+| `POST /api/projects/{projectId}/ai/tasks/{taskId}/academic-analyses` | Chưa dùng; Backend tạo analysis từ Task snapshot và Course-pinned Syllabus candidates |
+| `POST /api/projects/{projectId}/ai/commits/{gitCommitId}/academic-analyses` | Chưa dùng; Backend tạo academic analysis theo persisted immutable Commit SHA |
+| `GET /api/projects/{projectId}/ai/tasks/{taskId}/academic-classifications` | Chưa dùng; Backend trả lịch sử classification bounded theo Task |
+| `GET /api/projects/{projectId}/ai/commits/{gitCommitId}/academic-classifications` | Chưa dùng; Backend trả lịch sử classification bounded theo Commit |
+| `POST /api/projects/{projectId}/ai/academic-classifications/{id}/review` | Chưa dùng; Lecturer confirm/reject/correct proposal theo quyền project/course |
+
 ---
 
 ## 9. Graph canonical
@@ -651,6 +677,7 @@ Hiện mỗi request graph có thể kích hoạt/rebuild projection theo implem
 - [ ] Dùng `/analytics/sprint-activity` cho chart Task–Commit theo Sprint nếu đây là biểu đồ nghiệp vụ yêu cầu; chart commit theo tuần chỉ là activity phụ.
 - [ ] Sửa Project Type thành optional, nullable và bỏ auto-select.
 - [ ] Chuẩn hóa Repository Role giữa FE/BE; bỏ hoặc map rõ `FULLSTACK`/`DOCS`.
+- [ ] Tích hợp FE cho Commit Intelligence submit/status/history, bounded evidence coverage và academic-classification review; hiển thị rõ partial/unavailable patch coverage, AI proposal so với Lecturer-confirmed/HUMAN correction, và không trình bày finding như điểm hoặc kết luận gian lận.
 
 ### P2 — Hiệu năng, khả dụng và báo cáo
 
@@ -759,7 +786,7 @@ Mục tiêu đầu tiên là kiểm tra độ đầy đủ và đúng nghĩa ngh
 không đánh giá tài liệu chỉ dựa trên việc FE hiện đã call API hay chưa.
 
 Thực hiện:
-1. Lập ma trận SCOPE-01 đến SCOPE-16 với trạng thái trong báo cáo:
+1. Lập ma trận SCOPE-01 đến SCOPE-18 với trạng thái trong báo cáo:
    Đầy đủ / Một phần / Thiếu / Mâu thuẫn / Tuyên bố vượt quá hệ thống.
 2. Kiểm tra actor, permission, end-to-end flow, canonical data,
    Task-Sprint-Commit-Evidence, realtime, Graph, Peer Review và Contribution.
@@ -805,6 +832,10 @@ Thực hiện:
 - `src/main/java/com/saga/be/service`
 - `src/main/java/com/saga/be/domain`
 - `src/main/java/com/saga/be/repository`
+- `src/main/java/com/saga/be/ai`
+- `src/main/java/com/saga/be/service/ai`
+- `docs/AI_AGENT_FOUNDATION.md`
+- `docs/ai-3-academic-classification.md`
 - `src/test`
 
 ### Nguyên tắc bảo trì

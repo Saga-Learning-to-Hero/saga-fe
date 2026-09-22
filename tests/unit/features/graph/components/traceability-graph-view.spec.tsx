@@ -282,13 +282,13 @@ describe("TraceabilityGraphView", () => {
     },
     () => {
       renderView();
-      const pipelineBtn = screen.getByText("Pipeline Flow");
+      const pipelineBtn = screen.getByText(/Luồng đối soát|Pipeline Flow/i);
       fireEvent.click(pipelineBtn);
 
       expect(screen.getByText("Luồng liên kết (Flow)")).toBeTruthy();
       expect(screen.getByText("Ma trận đối soát (Audit matrix)")).toBeTruthy();
 
-      const graphBtn = screen.getByText("Neo4j Graph");
+      const graphBtn = screen.getByText(/Đồ thị Neo4j|Neo4j Graph/i);
       fireEvent.click(graphBtn);
 
       expect(screen.getByText("Tổng quan nhóm")).toBeTruthy();
@@ -427,7 +427,7 @@ describe("TraceabilityGraphView", () => {
     async () => {
       const user = userEvent.setup();
       renderView();
-      await user.click(screen.getByText("Pipeline Flow"));
+      await user.click(screen.getByText(/Luồng đối soát|Pipeline Flow/i));
 
       await user.click(screen.getByRole("button", { name: /Bộ lọc/ }));
       await user.click(screen.getByLabelText("Thành viên"));

@@ -64,7 +64,7 @@ export function DashboardChartsSection({
                   Hoạt động theo tuần
                 </CardTitle>
                 <CardDescription className="mt-0.5 text-xs text-muted-foreground">
-                  Commits, completed tasks và tỷ lệ liên kết Task–Commit theo từng tuần.
+                  Số commit, công việc hoàn thành và tỷ lệ liên kết Task–Commit theo từng tuần.
                 </CardDescription>
               </div>
             </div>
@@ -82,12 +82,12 @@ export function DashboardChartsSection({
                 variant="outline"
                 className="gap-1.5 border-warning/35 bg-warning-muted/30 text-[10px] font-medium text-warning"
               >
-                Traceability tuần này: {formatDashboardPercent(currentWeek?.traceabilityRate ?? null)}
+                Tỷ lệ đối soát tuần này: {formatDashboardPercent(currentWeek?.traceabilityRate ?? null)}
               </Badge>
               <span
-                title="Completed tasks phản ánh trạng thái hiện tại, không phải lịch sử chuyển trạng thái bất biến."
+                title="Số lượng công việc hoàn thành phản ánh trạng thái hiện tại, không phải lịch sử chuyển trạng thái bất biến."
                 className="inline-flex size-6 items-center justify-center rounded-full text-muted-foreground"
-                aria-label="Giải thích số liệu completed tasks"
+                aria-label="Giải thích số liệu công việc hoàn thành"
               >
                 <InfoIcon className="size-3.5" />
               </span>

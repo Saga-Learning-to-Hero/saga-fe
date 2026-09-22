@@ -118,16 +118,9 @@ export function getLecturerNavItems(courseId: string): NavItem[] {
     },
     {
       id: "course-graph",
-      title: "Đồ thị",
+      title: "Đồ thị & Mạng lưới SNA",
       href: lecturerCourseGraphPath(courseId),
       icon: "GitGraph",
-      match: "exact",
-    },
-    {
-      id: "course-grades",
-      title: "Bảng đóng góp",
-      href: lecturerCourseGradesPath(courseId),
-      icon: "ScrollText",
       match: "exact",
     },
     {
@@ -135,6 +128,13 @@ export function getLecturerNavItems(courseId: string): NavItem[] {
       title: "Đánh giá chéo",
       href: lecturerCoursePeerReviewsPath(courseId),
       icon: "UserCheck",
+      match: "exact",
+    },
+    {
+      id: "course-grades",
+      title: "Bảng điểm đóng góp",
+      href: lecturerCourseGradesPath(courseId),
+      icon: "ScrollText",
       match: "exact",
     },
     {
@@ -164,13 +164,6 @@ export function getStudentNavItems(): NavItem[] {
       match: "exact",
     },
     {
-      id: "student-graph",
-      title: "Đồ thị",
-      href: "/student/graph",
-      icon: "GitGraph",
-      match: "exact",
-    },
-    {
       id: "student-sprint",
       title: "Tasks",
       href: "/student/sprint-progress",
@@ -182,6 +175,13 @@ export function getStudentNavItems(): NavItem[] {
       title: "Commits",
       href: "/student/commits",
       icon: "GitCommit",
+      match: "exact",
+    },
+    {
+      id: "student-graph",
+      title: "Đồ thị Traceability",
+      href: "/student/graph",
+      icon: "GitGraph",
       match: "exact",
     },
     {

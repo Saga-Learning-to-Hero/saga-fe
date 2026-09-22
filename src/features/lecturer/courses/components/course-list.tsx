@@ -188,12 +188,15 @@ export function CourseList() {
 
         <div className="relative flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
           <div className="max-w-3xl space-y-2.5">
-            <div className="inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/10 px-3 py-1 text-xs font-bold text-primary">
-              <SparklesIcon className="size-3.5" />
+            <div className="inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/10 px-3.5 py-1 text-xs font-bold text-primary shadow-xs">
+              <SparklesIcon className="size-3.5 text-primary" />
               <span>Hệ thống Giám sát & Đánh giá Đồ án SAGA</span>
             </div>
-            <h1 className="text-2xl font-extrabold tracking-tight text-foreground sm:text-3xl">
-              Không gian Giảng dạy của {displayName}
+            <h1 className="text-2xl font-extrabold tracking-tight text-foreground sm:text-3xl lg:text-4xl">
+              Không gian Giảng dạy của{" "}
+              <span className="bg-gradient-to-r from-primary via-indigo-600 to-cyan-500 bg-clip-text text-transparent dark:from-indigo-400 dark:via-primary dark:to-cyan-300">
+                {displayName}
+              </span>
             </h1>
             <p className="text-xs leading-relaxed text-muted-foreground sm:text-sm">
               Chọn lớp học phần phụ trách để theo dõi sức khỏe các nhóm, kiểm tra tiến độ Sprint, đối soát nguồn gốc mã nguồn Git và đánh giá tỷ lệ đóng góp thực tế của sinh viên.

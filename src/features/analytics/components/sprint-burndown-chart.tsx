@@ -85,17 +85,17 @@ function CustomBurndownTooltip({ active, payload, label }: CustomTooltipProps) {
         <div className="flex items-center justify-between text-muted-foreground">
           <span className="flex items-center gap-1.5">
             <span className="w-2.5 h-2.5 bg-blue-500 rounded-full" />
-            Actual Remaining:
+            Công việc còn lại:
           </span>
-          <strong className="text-blue-500 font-mono font-bold">{actual} tasks</strong>
+          <strong className="text-blue-500 font-mono font-bold">{actual} task</strong>
         </div>
 
         <div className="flex items-center justify-between text-muted-foreground">
           <span className="flex items-center gap-1.5">
             <span className="w-2.5 h-2.5 bg-emerald-500 rounded-full" />
-            Done:
+            Đã hoàn thành:
           </span>
-          <strong className="text-emerald-500 font-mono font-bold">{done} tasks</strong>
+          <strong className="text-emerald-500 font-mono font-bold">{done} task</strong>
         </div>
       </div>
     </div>
@@ -233,10 +233,10 @@ export function SprintBurndownChart({
         <div className="p-3.5 rounded-2xl bg-muted/20 border border-border/60">
           <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1">
             <Layers className="w-3.5 h-3.5 text-primary" />
-            <span>Total Scope</span>
+            <span>Tổng khối lượng</span>
           </div>
           <div className="text-xl font-extrabold text-foreground font-mono">
-            {summary.totalScope} <span className="text-xs font-normal text-muted-foreground font-sans">tasks</span>
+            {summary.totalScope} <span className="text-xs font-normal text-muted-foreground font-sans">task</span>
           </div>
           <div className="text-[10px] text-muted-foreground mt-0.5">
             Tổng số task trong Sprint
@@ -246,7 +246,7 @@ export function SprintBurndownChart({
         <div className="p-3.5 rounded-2xl bg-muted/20 border border-border/60">
           <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1">
             <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
-            <span>Done</span>
+            <span>Đã hoàn thành</span>
           </div>
           <div className="text-xl font-extrabold text-emerald-600 dark:text-emerald-400 font-mono">
             {summary.doneCount}{" "}
@@ -262,10 +262,10 @@ export function SprintBurndownChart({
         <div className="p-3.5 rounded-2xl bg-muted/20 border border-border/60">
           <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1">
             <Flame className="w-3.5 h-3.5 text-blue-500" />
-            <span>Remaining</span>
+            <span>Còn lại</span>
           </div>
           <div className="text-xl font-extrabold text-blue-600 dark:text-blue-400 font-mono">
-            {summary.currentActual} <span className="text-xs font-normal text-muted-foreground font-sans">tasks</span>
+            {summary.currentActual} <span className="text-xs font-normal text-muted-foreground font-sans">task</span>
           </div>
           <div className="text-[10px] text-muted-foreground mt-0.5">
             Task cần hoàn thành
@@ -364,11 +364,11 @@ export function SprintBurndownChart({
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-1.5">
                 <span className="w-3 h-3 rounded-full bg-blue-500" />
-                <span className="font-semibold text-foreground">Actual Remaining</span>
+                <span className="font-semibold text-foreground">Thực tế còn lại</span>
               </div>
               <div className="flex items-center gap-1.5">
                 <span className="w-3 h-3 rounded-xs bg-emerald-500/40 border border-emerald-500" />
-                <span>Done</span>
+                <span>Đã hoàn thành</span>
               </div>
             </div>
 

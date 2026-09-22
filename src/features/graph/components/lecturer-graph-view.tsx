@@ -934,7 +934,7 @@ export function LecturerGraphView({
                 }`}
             >
               <NetworkIcon className="size-3.5 text-primary" />
-              <span>Neo4j Graph</span>
+              <span>Đồ thị Neo4j</span>
             </button>
             <button
               type="button"
@@ -947,7 +947,7 @@ export function LecturerGraphView({
                 : "text-muted-foreground hover:text-foreground"
                 }`}
             >
-              <span>Pipeline</span>
+              <span>Ma trận đối soát</span>
             </button>
           </div>
         </div>
