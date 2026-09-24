@@ -1,6 +1,7 @@
 import axios, { type AxiosInstance, type AxiosResponse, type InternalAxiosRequestConfig } from "axios";
 
-export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "https://saga-be-production.up.railway.app";
+import { API_BASE_URL, getApiBaseUrl, normalizeApiBaseUrl, buildApiUrl } from "./api-config";
+export { API_BASE_URL, getApiBaseUrl, normalizeApiBaseUrl, buildApiUrl };
 
 export function getCookie(name: string): string | null {
   if (typeof document === "undefined") return null;
@@ -55,7 +56,7 @@ export function clearStoredCsrfToken() {
 export async function fetchFreshCsrfToken(): Promise<string | null> {
   try {
     const res = await axios.get<{ parameterName: string; token: string; headerName: string }>(
-      `${API_BASE_URL}/api/auth/csrf`,
+      `${getApiBaseUrl()}/api/auth/csrf`,
       { withCredentials: true }
     );
     cachedCsrfToken = res.data.token;
@@ -110,6 +111,7 @@ if (typeof window !== "undefined") {
 
 apiClient.interceptors.request.use(
   async (config: InternalAxiosRequestConfig) => {
+    config.baseURL = getApiBaseUrl();
     const method = config.method?.toUpperCase();
     const isMutatingMethod = method === "POST" || method === "PUT" || method === "PATCH" || method === "DELETE";
 

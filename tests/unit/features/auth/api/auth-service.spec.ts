@@ -561,15 +561,15 @@ describe("LoginWithGoogleOAuth", () => {
     {
       id: "UTCID28",
       type: "B",
-      executedDate: "06/09/2026",
-      description: "Sử dụng đường dẫn Railway production mặc định khi biến môi trường rỗng",
+      executedDate: "24/09/2026",
+      description: "Sử dụng đường dẫn canonical production mặc định khi biến môi trường rỗng",
     },
     () => {
       const originalEnv = process.env.NEXT_PUBLIC_API_URL;
       delete process.env.NEXT_PUBLIC_API_URL;
 
       const url = AuthService.getGoogleLoginUrl();
-      expect(url).toBe("https://saga-be-production.up.railway.app/oauth2/authorization/google");
+      expect(url).toBe("https://api.saga.autos/oauth2/authorization/google");
 
       process.env.NEXT_PUBLIC_API_URL = originalEnv;
     }
@@ -782,6 +782,24 @@ describe("LoginWithGoogleOAuth", () => {
       await expect(
         AuthService.reauthPassword({ password: "   " })
       ).rejects.toThrow("Throw ValidationException: Password is required");
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID40",
+      type: "B",
+      executedDate: "24/09/2026",
+      description: "Chuan hoa loai bo trailing slash khi bien moi truong co dau gach cheo cuoi",
+    },
+    () => {
+      const originalEnv = process.env.NEXT_PUBLIC_API_URL;
+      process.env.NEXT_PUBLIC_API_URL = "https://api.saga.autos///";
+
+      const url = AuthService.getGoogleLoginUrl();
+      expect(url).toBe("https://api.saga.autos/oauth2/authorization/google");
+
+      process.env.NEXT_PUBLIC_API_URL = originalEnv;
     }
   );
 });

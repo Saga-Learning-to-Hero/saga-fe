@@ -1,4 +1,5 @@
 import { apiClient } from "@/lib/axios";
+import { getApiBaseUrl } from "@/lib/api-config";
 import type {
   CsrfTokenResponse,
   AuthMeResponse,
@@ -121,7 +122,6 @@ export class AuthService {
   }
 
   static getGoogleLoginUrl(): string {
-    const backendOrigin = process.env.NEXT_PUBLIC_API_URL || "https://saga-be-production.up.railway.app";
-    return `${backendOrigin}/oauth2/authorization/google`;
+    return `${getApiBaseUrl()}/oauth2/authorization/google`;
   }
 }
