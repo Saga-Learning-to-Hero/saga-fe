@@ -419,8 +419,8 @@ export function CourseAiProgressTab({ courseId, onNavigateToCredentials }: Cours
                       <CpuIcon className="w-3.5 h-3.5 text-primary" />
                       Mô hình: {currentAnalysis.providerDecision.modelId}
                     </span>
-                    <span>Độ trễ: {currentAnalysis.providerDecision.latencyMs} ms</span>
-                    <span>Tokens: {currentAnalysis.providerDecision.inputUnits + currentAnalysis.providerDecision.outputUnits}</span>
+                    <span>Độ trễ: {currentAnalysis.providerDecision.latencyMs != null ? `${currentAnalysis.providerDecision.latencyMs} ms` : "--"}</span>
+                    <span>Tokens: {(currentAnalysis.providerDecision.inputUnits ?? 0) + (currentAnalysis.providerDecision.outputUnits ?? 0)}</span>
                   </div>
                 )}
               </div>
@@ -439,9 +439,9 @@ export function CourseAiProgressTab({ courseId, onNavigateToCredentials }: Cours
                   <div className="p-3.5 rounded-xl bg-card/60 border border-red-500/20 text-xs space-y-1.5 text-muted-foreground">
                     <div className="font-semibold text-foreground">Gợi ý kiểm tra và khắc phục:</div>
                     <ul className="space-y-1 list-disc list-inside">
-                      <li>Kiểm tra cấu hình mô hình LLM trên máy chủ hoặc thiết lập API Key riêng.</li>
+                      <li>Kiểm tra số dư Credit (số tiền khả dụng) hoặc hạn mức sử dụng trên tài khoản API OpenAI/Gemini cá nhân.</li>
+                      <li>Kiểm tra cấu hình mô hình LLM trên máy chủ hoặc thiết lập lại API Key riêng.</li>
                       <li>Đảm bảo nhóm đã có commit hoặc task Jira để có dữ liệu đối soát.</li>
-                      <li>Thử chạy lại phân tích sau vài giây nếu do quá tải lưu lượng tạm thời.</li>
                     </ul>
                   </div>
 

@@ -8,7 +8,7 @@ export const AI_ERROR_MESSAGES: Record<string, string> = {
   AI_PROVIDER_AUTH_FAILED:
     "Xác thực API Key thất bại (Authentication Failed). Khóa API không hợp lệ hoặc đã hết hạn.",
   AI_PROVIDER_RATE_LIMITED:
-    "Vượt quá giới hạn tần suất gọi API (Rate Limit) của nhà cung cấp LLM. Vui lòng thử lại sau ít phút.",
+    "Tài khoản nhà cung cấp LLM (OpenAI/Gemini) bị giới hạn tần suất gọi hoặc đã hết số dư Credit (Insufficient Quota / Rate Limit). Vui lòng kiểm tra số dư tài khoản API hoặc thử lại sau.",
   AI_PROVIDER_TIMEOUT:
     "Hết thời gian chờ phản hồi từ LLM (Request Timeout). Vui lòng thử lại.",
   AI_RUNTIME_NOT_CONFIGURED:
