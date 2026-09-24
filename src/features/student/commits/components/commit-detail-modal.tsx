@@ -14,7 +14,9 @@ import {
   AlertCircleIcon,
   RefreshCwIcon,
   FolderGit2Icon,
+  SparklesIcon,
 } from "lucide-react";
+import { CommitAiIntelligenceModal } from "@/features/ai";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -114,6 +116,7 @@ export function CommitDetailModal({
   fallbackCommit,
 }: CommitDetailModalProps) {
   const [copiedSha, setCopiedSha] = useState(false);
+  const [showAiModal, setShowAiModal] = useState(false);
   const mounted = useSyncExternalStore(
     emptySubscribe,
     () => true,
@@ -220,6 +223,18 @@ export function CommitDetailModal({
           </div>
 
           <div className="flex items-center gap-1.5 shrink-0">
+            {projectId && gitCommitId && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowAiModal(true)}
+                className="inline-flex items-center gap-1.5 h-8 px-2.5 text-xs font-semibold text-primary border-primary/30 bg-primary/5 hover:bg-primary/10"
+              >
+                <SparklesIcon className="size-3" />
+                <span>Đánh giá AI</span>
+              </Button>
+            )}
+
             {commit?.htmlUrl && (
               <a
                 href={commit.htmlUrl}
@@ -413,6 +428,17 @@ export function CommitDetailModal({
           </Button>
         </div>
       </div>
+
+      {projectId && gitCommitId && (
+        <CommitAiIntelligenceModal
+          projectId={projectId}
+          gitCommitId={gitCommitId}
+          commitHash={sha}
+          commitMessage={message}
+          isOpen={showAiModal}
+          onClose={() => setShowAiModal(false)}
+        />
+      )}
     </div>,
     document.body
   );

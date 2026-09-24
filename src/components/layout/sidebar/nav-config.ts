@@ -7,6 +7,7 @@ import {
   lecturerCourseContributionPath,
   lecturerCoursePeerReviewsPath,
   lecturerCourseTeamsPath,
+  lecturerCourseAiPath,
 } from "@/features/lecturer/courses/lib/course-routes";
 
 export type NavMatchMode = "exact" | "prefix";
@@ -144,6 +145,13 @@ export function getLecturerNavItems(courseId: string): NavItem[] {
       icon: "SlidersHorizontal",
       match: "prefix",
     },
+    {
+      id: "course-ai",
+      title: "Trí tuệ nhân tạo AI",
+      href: lecturerCourseAiPath(courseId),
+      icon: "Sparkles",
+      match: "prefix",
+    },
   ];
 }
 
@@ -196,6 +204,13 @@ export function getStudentNavItems(): NavItem[] {
       title: "Đóng góp",
       href: "/student/contribution",
       icon: "PieChart",
+      match: "exact",
+    },
+    {
+      id: "student-ai",
+      title: "Trí tuệ nhân tạo AI",
+      href: "/student/ai",
+      icon: "Sparkles",
       match: "exact",
     },
   ];

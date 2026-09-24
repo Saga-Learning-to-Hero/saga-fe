@@ -18,6 +18,7 @@ import {
   DatabaseIcon,
   UserCogIcon,
   Link2Icon,
+  SparklesIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { isNavItemActive } from "@/components/layout/sidebar/nav-config";
@@ -50,6 +51,7 @@ const ICON_MAP: Record<string, React.ElementType> = {
   Database: DatabaseIcon,
   UserCog: UserCogIcon,
   Link2: Link2Icon,
+  Sparkles: SparklesIcon,
 };
 
 interface TopNavTabsProps {

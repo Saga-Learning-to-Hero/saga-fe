@@ -475,15 +475,20 @@ Project Type dùng để phân loại hướng dự án, không điều khiển 
 | NOTIF-007 | Admin system notification composer | ✓ | ✓ | ✓ | `DONE`; POST `/api/admin/notifications/system` kèm Idempotency-Key, live preview, dialog xác nhận |
 | NOTIF-008 | Lecturer targeted notification composer | ✓ | ✓ | ✓ | `DONE`; 4 scope: all-courses, course, team, student; chọn qua CustomSelect; Idempotency-Key và chống 409 |
 
-### 7.10 AI-assisted Commit Intelligence
+### 7.10 Trí tuệ nhân tạo (AI-assisted Intelligence & Analytics)
 
 | ID | Nghiệp vụ | BE | FE data | UI | Trạng thái/Ghi chú |
 | --- | --- | --- | --- | --- | --- |
-| AI-001 | Durable analysis run, evidence snapshot, provider decision và idempotent submission | ✓ | — | — | `BE_ONLY`; lưu run/evidence/provider decision; exact duplicate reuse cùng run, evidence hoặc configuration thay đổi tạo lịch sử mới |
-| AI-002 | Exact-SHA GitHub evidence và structured-result validation | ✓ | — | — | `BE_ONLY`; lấy changed-file manifest và patch hunks theo exact SHA, mặc định tối đa 40 file đủ điều kiện và 256 KiB patch; secret-suspected, generated/lock, unavailable hoặc vượt giới hạn được ghi exclusion rõ ràng; không duyệt toàn repository hoặc đọc file-at-revision |
-| AI-003 | OpenAI provider adapter và lịch sử Commit Intelligence | ✓ | — | — | `BE_ONLY`; OpenAI Responses API dùng strict JSON Schema khi `saga.ai.enabled=true` và có API key; Fake provider deterministic chỉ dùng local/test; FE chưa tích hợp submit/status/history |
-| AI-004 | Task/Commit academic-classification proposal theo Course-pinned Syllabus | ✓ | — | — | `BE_ONLY`; snapshot đúng Syllabus version, PHASE và EXPECTED_DELIVERABLE; `PROPOSED`, `UNCLASSIFIED`, `INSUFFICIENT_EVIDENCE` đều là kết quả tư vấn, không sửa contribution/graph/workflow |
-| AI-005 | Lecturer review cho academic classification | ✓ | — | — | `BE_ONLY`; Lecturer được phân công có thể `CONFIRM`, `REJECT`, `CORRECT`; correction tạo HUMAN mapping mới và giữ nguyên proposal gốc để audit; FE chưa có presentation/review flow |
+| AI-001 | Durable analysis run, evidence snapshot, provider decision và idempotent submission | ✓ | ✓ | ✓ | `DONE`; lưu run/evidence/provider decision; exact duplicate reuse cùng run; FE gọi qua `CourseAiService` và `ProjectAiService` |
+| AI-002 | Exact-SHA GitHub evidence và structured-result validation | ✓ | ✓ | ✓ | `DONE`; lấy changed-file manifest và patch hunks theo exact SHA; hiển thị trong `CommitAiIntelligenceModal` và đối soát Task–Commit |
+| AI-003 | OpenAI provider adapter và lịch sử Commit Intelligence | ✓ | ✓ | ✓ | `DONE`; chấm điểm tin nhắn commit (0-100), chất lượng code diff, độ khớp Jira task; tích hợp trực tiếp vào `CommitDetailModal` |
+| AI-004 | Task/Commit academic-classification proposal theo Course-pinned Syllabus | ✓ | ✓ | ✓ | `DONE`; snapshot đúng Syllabus version, PHASE và EXPECTED_DELIVERABLE; hiển thị trong `TaskAiIntelligenceSection` và `CommitAiIntelligenceModal` |
+| AI-005 | Lecturer review và tổng hợp academic classification toàn khóa học | ✓ | ✓ | ✓ | `DONE`; `GET /api/lecturer/courses/{courseId}/ai/academic-classifications` tổng hợp đề xuất toàn lớp, lọc theo artifactType/status, phân trang, cho phép Lecturer thực hiện `CONFIRM`, `REJECT`, `CORRECT` trực tiếp trên Course AI Hub và chi tiết Task/Commit |
+| AI-006 | Cấu hình BYOK & Quản lý API Key theo khóa học | ✓ | ✓ | ✓ | `DONE`; `/api/lecturer/courses/{courseId}/ai-settings` và `/ai-credentials/{role}`, lưu an toàn AES-GCM, hiển thị 4 số cuối và trạng thái khóa tại `/lecturer/courses/[courseId]/ai` |
+| AI-007 | Báo cáo tiến độ khóa học & Xuất file Word (.docx) | ✓ | ✓ | ✓ | `DONE`; `/api/lecturer/courses/{courseId}/ai/progress-analyses`, sinh overview, highlights, concerns, blockers, recommendations và xuất stream .docx |
+| AI-008 | Báo cáo tiến độ nhóm dự án & sinh viên | ✓ | ✓ | ✓ | `DONE`; `/api/projects/{projectId}/ai/team/progress-analyses` và `/students/{studentId}/progress-analyses`, tích hợp trung tâm AI sinh viên tại `/student/ai` |
+| AI-009 | Nhận diện & Cảnh báo rủi ro (Risk Detection) | ✓ | ✓ | ✓ | `DONE`; `/api/projects/{projectId}/ai/team/risk-analyses`, `/students/{studentId}/risk-analyses`, `/tasks/{taskId}/risk-analyses`, hiển thị cấp độ rủi ro, nguyên nhân và đề xuất hành động |
+| AI-010 | Đánh giá thông minh Task (Task Intelligence) | ✓ | ✓ | ✓ | `DONE`; `/api/projects/{projectId}/ai/tasks/{taskId}/intelligence-analyses`, hiển thị độ mạnh minh chứng, cảnh báo làm lệch đề bài `deviationDetected` trong `IssueDetailsModal` |
 
 ---
 
@@ -544,7 +549,7 @@ Project Type dùng để phân loại hướng dự án, không điều khiển 
 | `/api/projects/{projectId}/integrations` | Đã dùng |
 | Project GitHub connect/reconnect/callback/repos/update/delete | Đã dùng |
 | Project Jira connect/sites/projects/boards/update/delete | Đã dùng |
-| `/api/projects/{projectId}/integrations/jira-sources/**` | Đã dùng (GET sources, connect, reconnect, delete soft-revoke, sync 202, failover preview, failover execute 202, failover runs polling, retry, reconcile) |
+| `/api/projects/{projectId}/integrations/jira-sources/**` | Đã dùng (GET sources hỗ trợ Lecturer qua requireReader và Student, connect, reconnect, delete soft-revoke, sync 202, failover preview, failover execute 202, failover runs polling, retry, reconcile) |
 | `/api/webhooks/github`, `/api/webhooks/jira` | Provider gọi; FE không gọi |
 
 ### 8.5 Project projection
@@ -554,7 +559,7 @@ Project Type dùng để phân loại hướng dự án, không điều khiển 
 | Project tasks list/options/detail/create/patch/delete | Đã dùng |
 | Task sprint move/transition/options | Đã dùng |
 | Task commits | Đã dùng |
-| Sprint list/detail/create/patch/delete | Đã dùng |
+| Sprint list/detail/create/patch/delete | Đã dùng (GET sprints hỗ trợ jiraIntegrationId filtering canonical và provenance source) |
 | Project commits | Đã dùng |
 | Canonical `/task-commit-links` | Đã dùng |
 | `/repos/{repoId}/branches` | Đã dùng |
@@ -606,18 +611,28 @@ Project Type dùng để phân loại hướng dự án, không điều khiển 
 | `GET /api/courses/{courseId}/teams/{teamId}/heatmap` | Đã dùng (Lưới nhịp độ hoạt động toàn nhóm hoặc cá nhân, tính điểm activity, filter theo ngày và thành viên) |
 | `GET /api/courses/{courseId}/teams/{teamId}/sprints/{sprintId}/burndown` | Đã dùng (Biểu đồ Sprint Burndown đối soát idealRemaining, actualRemaining và doneCount) |
 
-### 8.10 AI-assisted Commit Intelligence
+### 8.10 Trí tuệ nhân tạo (AI & LLM Services)
 
 | Endpoint | FE hiện tại |
 | --- | --- |
-| `POST /api/projects/{projectId}/ai/commits/{gitCommitId}/analyses` | Chưa dùng; Backend submit idempotent, trả `202 Accepted` cho run mới hoặc `200 OK` khi reuse |
-| `GET /api/projects/{projectId}/ai/analyses/{analysisId}` | Chưa dùng; Backend trả trạng thái/kết quả của run đã lưu |
-| `GET /api/projects/{projectId}/ai/commits/{gitCommitId}/analyses` | Chưa dùng; Backend trả lịch sử phân trang theo Commit |
-| `POST /api/projects/{projectId}/ai/tasks/{taskId}/academic-analyses` | Chưa dùng; Backend tạo analysis từ Task snapshot và Course-pinned Syllabus candidates |
-| `POST /api/projects/{projectId}/ai/commits/{gitCommitId}/academic-analyses` | Chưa dùng; Backend tạo academic analysis theo persisted immutable Commit SHA |
-| `GET /api/projects/{projectId}/ai/tasks/{taskId}/academic-classifications` | Chưa dùng; Backend trả lịch sử classification bounded theo Task |
-| `GET /api/projects/{projectId}/ai/commits/{gitCommitId}/academic-classifications` | Chưa dùng; Backend trả lịch sử classification bounded theo Commit |
-| `POST /api/projects/{projectId}/ai/academic-classifications/{id}/review` | Chưa dùng; Lecturer confirm/reject/correct proposal theo quyền project/course |
+| `GET/PATCH /api/lecturer/courses/{courseId}/ai-settings` | Đã dùng (Bật/tắt tự động hóa AI, platform fallback) |
+| `GET/PUT/DELETE /api/lecturer/courses/{courseId}/ai-credentials/{role}` | Đã dùng (BYOK lưu an toàn API key OpenAI Primary & Secondary) |
+| `POST /api/lecturer/courses/{courseId}/ai/progress-analyses` & `/latest` | Đã dùng (Báo cáo tiến độ lớp học) |
+| `GET /api/lecturer/courses/{courseId}/ai/analyses/{id}/export.docx` | Đã dùng (Xuất file Word .docx khóa học) |
+| `POST /api/projects/{projectId}/ai/team/progress-analyses` & `/latest` | Đã dùng (Báo cáo tiến độ nhóm dự án) |
+| `POST /api/projects/{projectId}/ai/students/{studentId}/progress-analyses` & `/latest` | Đã dùng (Tiến độ cá nhân sinh viên) |
+| `GET /api/projects/{projectId}/ai/analyses/{id}/export.docx` | Đã dùng (Xuất file Word .docx dự án) |
+| `POST /api/projects/{projectId}/ai/team/risk-analyses` & `/latest` | Đã dùng (Quét và đánh giá rủi ro nhóm) |
+| `POST /api/projects/{projectId}/ai/students/{studentId}/risk-analyses` & `/latest` | Đã dùng (Đánh giá rủi ro cá nhân sinh viên) |
+| `POST /api/projects/{projectId}/ai/tasks/{taskId}/risk-analyses` & `/latest` | Đã dùng (Đánh giá rủi ro task) |
+| `POST /api/projects/{projectId}/ai/tasks/{taskId}/intelligence-analyses` & `/latest` | Đã dùng (Kiểm tra độ mạnh minh chứng & lệch đề bài) |
+| `POST /api/projects/{projectId}/ai/commits/{gitCommitId}/analyses` & `/history` | Đã dùng (Commit Intelligence chấm điểm 0-100) |
+| `POST /api/projects/{projectId}/ai/tasks/{taskId}/academic-analyses` | Đã dùng (Đề xuất phân loại task vào đề cương) |
+| `POST /api/projects/{projectId}/ai/commits/{gitCommitId}/academic-analyses` | Đã dùng (Đề xuất phân loại commit vào đề cương) |
+| `GET /api/projects/{projectId}/ai/tasks/{taskId}/academic-classifications` | Đã dùng (Lịch sử phân loại task) |
+| `GET /api/projects/{projectId}/ai/commits/{gitCommitId}/academic-classifications` | Đã dùng (Lịch sử phân loại commit) |
+| `POST /api/projects/{projectId}/ai/academic-classifications/{id}/review` | Đã dùng (Lecturer duyệt CONFIRM/REJECT/CORRECT) |
+| `GET /api/lecturer/courses/{courseId}/ai/academic-classifications` | Đã dùng (Tổng hợp phân loại đề cương toàn khóa học cho Giảng viên, lọc theo artifactType, status, phân trang) |
 
 ---
 

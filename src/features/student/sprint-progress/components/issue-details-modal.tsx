@@ -13,7 +13,9 @@ import {
   ShieldCheckIcon,
   CalendarIcon,
   HistoryIcon,
+  SparklesIcon,
 } from "lucide-react";
+import { TaskAiIntelligenceSection } from "@/features/ai";
 import type {
   SprintIssue,
   IssueStatus,
@@ -1037,6 +1039,10 @@ export function IssueDetailsModal({
                   <ShieldCheckIcon className="w-3.5 h-3.5" />
                   Đóng góp
                 </TabsTrigger>
+                <TabsTrigger value="ai" className="shrink-0 text-xs font-semibold text-primary">
+                  <SparklesIcon className="w-3.5 h-3.5" />
+                  Trí tuệ nhân tạo (AI)
+                </TabsTrigger>
               </TabsList>
 
               <TabsContent value="timeline">
@@ -1067,6 +1073,13 @@ export function IssueDetailsModal({
                   externalCommitShas={selectedCommitShas}
                   onRequestCommitSelection={() => setActiveEvidenceTab("timeline")}
                   onConfirmationSuccess={() => setSelectedCommitShas("")}
+                />
+              </TabsContent>
+
+              <TabsContent value="ai">
+                <TaskAiIntelligenceSection
+                  projectId={projectId}
+                  taskId={issue.id}
                 />
               </TabsContent>
             </Tabs>

@@ -22,6 +22,10 @@ export function lecturerCourseContributionPath(courseId: string) {
   return `/lecturer/courses/${courseId}/contribution-configuration`;
 }
 
+export function lecturerCourseAiPath(courseId: string) {
+  return `/lecturer/courses/${courseId}/ai`;
+}
+
 export function lecturerCourseWeightSettingsPath(courseId: string) {
   return lecturerCourseContributionPath(courseId);
 }

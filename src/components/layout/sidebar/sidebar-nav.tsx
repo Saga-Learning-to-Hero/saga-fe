@@ -22,6 +22,7 @@ import {
   ArrowLeftIcon,
   Link2Icon,
   BellIcon,
+  SparklesIcon,
 } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import {
@@ -57,6 +58,7 @@ const ICON_MAP: Record<string, React.ElementType> = {
   ArrowLeft: ArrowLeftIcon,
   Link2: Link2Icon,
   Bell: BellIcon,
+  Sparkles: SparklesIcon,
 };
 
 interface SidebarNavProps {
