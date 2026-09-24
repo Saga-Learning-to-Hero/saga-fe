@@ -99,10 +99,10 @@ function CourseAiSettingsForm({
           />
           <div className="space-y-1">
             <span className="text-sm font-medium text-foreground block">
-              Cho phép dự phòng khóa nền tảng (Platform Fallback)
+              Cho phép dùng khóa dự phòng của trường
             </span>
             <span className="text-xs text-muted-foreground block leading-relaxed">
-              Nếu Giảng viên chưa cấu hình khóa cá nhân hoặc hết hạn mức, hệ thống sẽ sử dụng quota chung của nhà trường.
+              Nếu chưa cấu hình API Key riêng hoặc hết hạn mức, hệ thống sẽ tự động dùng khóa mặc định của trường.
             </span>
           </div>
         </label>
