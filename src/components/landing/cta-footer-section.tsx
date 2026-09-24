@@ -28,18 +28,18 @@ export function CtaFooterSection() {
         <div className="max-w-4xl mx-auto px-6 text-center space-y-6">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-primary/20 bg-primary/5 text-primary text-xs font-semibold">
             <ShieldCheckIcon className="w-3.5 h-3.5" />
-            Minh bạch hóa 100% hoạt động học tập
+            Minh bạch hóa 100% công sức đồ án phần mềm
           </div>
 
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-foreground tracking-tight leading-tight max-w-2xl mx-auto">
-            Nâng tầm Đánh giá Liên tục ngành SE cùng{" "}
+            Nâng tầm Quản trị & Đánh giá Đồ án SE cùng{" "}
             <span className="bg-gradient-to-r from-primary to-cyan-500 bg-clip-text text-transparent">
               SAGA
             </span>
           </h2>
 
           <p className="text-muted-foreground text-sm sm:text-base max-w-lg mx-auto leading-relaxed">
-            Hệ thống phân tích đồ thị tự động giúp giảng viên và sinh viên theo sát toàn bộ hành trình học tập và dự án phần mềm theo thời gian thực.
+            Hệ thống phân tích đồ thị tự động giúp giảng viên và sinh viên theo sát toàn bộ hành trình đồ án Kỹ thuật Phần mềm theo thời gian thực.
           </p>
 
           <div className="flex flex-wrap items-center justify-center gap-3.5 pt-2">
@@ -75,10 +75,10 @@ export function CtaFooterSection() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8">
             <div className="lg:col-span-2 space-y-3.5">
               <Link href="/" className="inline-block hover:opacity-95 transition-opacity">
-                <SagaLogo size="md" showText={true} showSubtitle={true} subtitleText="Academic Graph Analytics" />
+                <SagaLogo size="md" showText={true} showSubtitle={true} subtitleText="Smart Assessment & Governance Analytics" />
               </Link>
               <p className="text-xs text-muted-foreground leading-relaxed max-w-sm">
-                Nền tảng phân tích đồ thị tri thức và đánh giá liên tục hoạt động học tập, đảm bảo tính công bằng và minh bạch cho sinh viên chuyên ngành Kỹ thuật Phần mềm.
+                Nền tảng phân tích đồ thị tri thức và đánh giá liên tục đồ án học tập, đảm bảo tính công bằng và minh bạch cho sinh viên chuyên ngành Kỹ thuật Phần mềm (SE).
               </p>
               <div className="flex items-center gap-2 pt-0.5">
                 <Badge variant="outline" className="text-[10px] font-mono border-primary/20 text-primary bg-primary/5">
@@ -92,7 +92,7 @@ export function CtaFooterSection() {
 
             <div className="space-y-3">
               <h3 className="text-xs font-bold uppercase tracking-wider text-foreground">
-                Tính năng
+                Tính năng Cốt lõi
               </h3>
               <ul className="space-y-2 text-xs text-muted-foreground">
                 <li>
@@ -107,7 +107,12 @@ export function CtaFooterSection() {
                 </li>
                 <li>
                   <a href="#tinh-nang" className="hover:text-primary transition-colors">
-                    SNA Interaction Monitor
+                    XAI Anomaly & SNA
+                  </a>
+                </li>
+                <li>
+                  <a href="#tinh-nang" className="hover:text-primary transition-colors">
+                    SAGA AI Hub & CLO Review
                   </a>
                 </li>
               </ul>
@@ -125,12 +130,17 @@ export function CtaFooterSection() {
                 </li>
                 <li>
                   <Link href="/dashboard" className="hover:text-primary transition-colors">
-                    Dashboard Quản trị
+                    Không gian làm việc
                   </Link>
                 </li>
                 <li>
                   <Link href="/admin/audit-log" className="hover:text-primary transition-colors">
-                    Nhật ký An ninh
+                    Nhật ký Kiểm toán An ninh
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/admin/academic" className="hover:text-primary transition-colors">
+                    Quản trị Học vụ & Đề cương
                   </Link>
                 </li>
               </ul>
@@ -138,23 +148,24 @@ export function CtaFooterSection() {
 
             <div className="space-y-3">
               <h3 className="text-xs font-bold uppercase tracking-wider text-foreground">
-                Công cụ Tích hợp
+                Hạ tầng Tích hợp
               </h3>
               <ul className="space-y-2 text-xs text-muted-foreground">
-                <li>GitHub Webhooks</li>
-                <li>Jira Cloud API</li>
-                <li>Neo4j Graph DB</li>
-                <li>MySQL Database</li>
+                <li>GitHub Webhooks & PR</li>
+                <li>Jira Cloud Workspace</li>
+                <li>Neo4j AuraDB (Graph)</li>
+                <li>PostgreSQL & Redis Cache</li>
+                <li>MongoDB Audit Trail</li>
               </ul>
             </div>
           </div>
 
           <div className="pt-6 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-muted-foreground">
-            <p>© 2026 Nhóm SAGA — Hệ thống Đánh giá Liên tục Chuyên ngành Kỹ thuật Phần mềm (SE).</p>
+            <p>© 2026 Nhóm SAGA — Smart Assessment & Governance Analytics (SE Capstone Project).</p>
 
             <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 font-medium text-[11px]">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-              Webhooks & Graph API đang hoạt động
+              Polyglot Persistence & AI Hub đang hoạt động
             </div>
           </div>
         </div>

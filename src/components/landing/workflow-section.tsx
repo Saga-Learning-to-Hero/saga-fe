@@ -1,37 +1,37 @@
 "use client";
 
 import {
-  CheckCircleIcon,
   GitBranchIcon,
   NetworkIcon,
   PieChartIcon,
+  BotIcon,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 const quyTrinhCacBuoc = [
   {
     buoc: "01",
-    tieuDe: "Cài đặt Webhook",
-    moTa: "Kết nối GitHub Repo và Jira Project của học phần trong 60 giây.",
+    tieuDe: "Khởi tạo & Tích hợp Công cụ",
+    moTa: "Tạo dự án nhóm, kết nối GitHub Repository và Jira Workspace qua Webhooks tự động trong 60 giây.",
     icon: GitBranchIcon,
   },
   {
     buoc: "02",
-    tieuDe: "Tự động Dựng Đồ thị",
-    moTa: "Mọi commit, PR và task được ánh xạ liên tục lên đồ thị Neo4j.",
+    tieuDe: "Tự động Dựng Đồ thị Neo4j",
+    moTa: "Mọi commit, pull request và task Jira được xâu chuỗi liên tục thành Đồ thị Truy xuất Traceability Graph.",
     icon: NetworkIcon,
   },
   {
     buoc: "03",
-    tieuDe: "Đo lường Slicing Pie",
-    moTa: "Định lượng % công sức thực tế theo từng Sprint học phần.",
-    icon: PieChartIcon,
+    tieuDe: "Giám sát Bất thường & AI Hub",
+    moTa: "Tự động phát hiện MSR Anomaly (báo cáo khống), cô lập Ghosting qua SNA và đối soát chuẩn đầu ra CLO.",
+    icon: BotIcon,
   },
   {
     buoc: "04",
-    tieuDe: "Đánh giá Liên tục",
-    moTa: "Giảng viên và sinh viên nắm bắt năng lực thực tế tức thì.",
-    icon: CheckCircleIcon,
+    tieuDe: "Cổ phần Slicing Pie & Bảo vệ Đồ án",
+    moTa: "Lượng hóa tỷ lệ đóng góp động theo 4 nhóm tiêu chí Code/Test/Doc/Research, sẵn sàng bảo vệ trước Hội đồng.",
+    icon: PieChartIcon,
   },
 ];
 
@@ -40,12 +40,15 @@ export function WorkflowSection() {
     <section id="quy-trinh" className="py-20 border-t border-border/80 bg-background scroll-mt-20">
       <div className="max-w-6xl mx-auto px-6 space-y-12">
         <div className="text-center max-w-lg mx-auto space-y-2">
-          <Badge variant="outline" className="text-primary border-primary/30 bg-primary/5 text-xs">
-            Quy trình
+          <Badge variant="outline" className="text-primary border-primary/30 bg-primary/5 text-xs font-semibold">
+            Quy trình Vận hành
           </Badge>
           <h2 className="text-3xl font-extrabold text-foreground tracking-tight">
-            Vận hành trong 4 Bước Đơn giản
+            4 Bước Đơn giản để Đánh giá Minh bạch
           </h2>
+          <p className="text-xs sm:text-sm text-muted-foreground">
+            Từ khởi tạo tích hợp cho đến khi xuất báo cáo đối soát phục vụ bảo vệ đồ án tốt nghiệp.
+          </p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">

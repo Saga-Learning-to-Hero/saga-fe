@@ -16,48 +16,48 @@ const roles = [
     title: "Dành cho Sinh viên",
     icon: GraduationCapIcon,
     badge: "Bảo vệ Công sức",
-    headline: "Được công nhận đúng năng lực, không sợ bị cướp công",
-    description: "Mọi dòng code, bài kiểm thử và tài liệu bạn hoàn thành đều được tự động lưu vào đồ thị đóng góp cá nhân minh bạch.",
+    headline: "Minh chứng năng lực thực tế, tự tin bảo vệ đồ án trước Hội đồng",
+    description: "Đồ thị Traceability tự động xâu chuỗi mọi commit mã nguồn GitHub và task Jira. Không còn lo lắng bị cướp công hay chịu bất công từ vấn nạn người hưởng lợi thụ động (Free-rider).",
     highlights: [
-      "Điểm số Slicing Pie phản ánh 100% công sức thực tế",
-      "Không còn tình trạng một người gánh team cả nhóm hưởng lợi",
-      "Theo dõi tiến độ và nhận cảnh báo cá nhân trước mỗi đợt review",
+      "Đồ thị truy xuất minh chứng công sức: Sinh viên → Task → Commit với hiệu ứng làm sáng đường đi cá nhân",
+      "Tỷ lệ đóng góp Slicing Pie và đánh giá đồng đẳng (Peer Review) công bằng, minh bạch",
+      "Trợ lý AI Hub cá nhân phân tích tiến độ Sprint và cảnh báo rủi ro kỹ thuật kịp thời",
     ],
     previewTitle: "Bảng Chỉ số Đóng góp Cá nhân",
-    previewMetric: "28.5% Tỷ lệ Công sức",
-    previewDetail: "Ghi nhận 64 Commits · 18 Jira Tasks hoàn tất",
+    previewMetric: "31.4% Tỷ lệ Cổ phần Slicing Pie",
+    previewDetail: "Ghi nhận 64 Commits · 18 Tasks · 100% Traceability",
   },
   {
     id: "lecturer",
     title: "Dành cho Giảng viên",
     icon: UsersIcon,
     badge: "Tiết kiệm 80% Thời gian",
-    headline: "Giám sát toàn diện hàng chục nhóm học phần trong 30 giây",
-    description: "Không cần tự mình mở từng pull request hay tra soát hàng trăm commit. SAGA tự động tổng hợp bức tranh toàn cảnh.",
+    headline: "Giám sát đa nhóm học phần, bắt lỗi báo cáo khống trong 30 giây",
+    description: "Tự động phát hiện các bất thường MSR Anomaly (Task Done nhưng 0 commit) và cô lập Ghosting qua mạng lưới SNA, thay vì phải kiểm tra thủ công hàng trăm pull request.",
     highlights: [
-      "Cảnh báo tự động thành viên có nguy cơ bỏ nhóm (Ghosting)",
-      "So sánh trực quan mức độ cân bằng công việc giữa các thành viên",
-      "Xuất báo cáo định lượng phục vụ chấm điểm từng Sprint",
+      "Trung tâm Giám sát Đa nhóm & Ma trận SNA (Degree Centrality) nhận diện Ghosting vs Key Contributor",
+      "Phát hiện ngay lập tức bất thường MSR Anomaly khi sinh viên báo cáo khống nhiệm vụ",
+      "AI Hub quét rủi ro tiến độ toàn khóa và tự động đối soát sản phẩm bàn giao theo chuẩn CLO Đề cương",
     ],
-    previewTitle: "Radar Giám sát dự án Học phần",
-    previewMetric: "32 Nhóm Đang Theo dõi",
-    previewDetail: "Phát hiện 2 nhóm có rủi ro thành viên thụ động",
+    previewTitle: "Radar Giám sát Đa nhóm Học phần",
+    previewMetric: "32 Nhóm Dự án Giảng dạy",
+    previewDetail: "Tự động quét bất thường MSR & SNA toàn lớp",
   },
   {
     id: "council",
     title: "Hội đồng & Quản trị",
     icon: ScaleIcon,
     badge: "Chuẩn mực Khách quan",
-    headline: "Căn cứ khoa học chuẩn xác để bảo vệ điểm số công bằng",
-    description: "Triệt tiêu hoàn toàn sự tranh cãi hay khiếu nại điểm số nhờ hệ thống dữ liệu liên kết Jira & Git không thể chỉnh sửa ngược.",
+    headline: "Cơ sở khoa học bất biến, triệt tiêu tranh cãi khiếu nại điểm số",
+    description: "Chuỗi minh chứng kỹ thuật được neo chặt vào Git SHA và Jira Webhooks, đi kèm nhật ký kiểm toán MongoDB Audit Trail bất biến bảo vệ sự liêm chính học thuật.",
     highlights: [
-      "Bằng chứng số liệu đối chiếu chi tiết đến từng file và task",
-      "Nhật ký hệ thống an ninh bảo đảm tính toàn vẹn dữ liệu",
-      "Chuẩn hóa quy trình đánh giá dự án công nghệ thông tin",
+      "Bằng chứng số liệu đối chiếu chi tiết từ cấp Khóa học, Nhóm dự án đến từng Sinh viên",
+      "Quản lý Đề cương chi tiết (FLM Syllabus, CLOs, Phases & Deliverables) bất biến",
+      "Nhật ký kiểm toán hệ thống MongoDB Audit Trail chống giả mạo, hỗ trợ phúc khảo chuẩn xác",
     ],
-    previewTitle: "Báo cáo Kiểm định Chất lượng",
-    previewMetric: "100% Khách quan",
-    previewDetail: "Được bảo chứng bởi chuỗi Webhook Git & Jira",
+    previewTitle: "Báo cáo Kiểm định Hội đồng",
+    previewMetric: "100% Minh chứng Bất biến",
+    previewDetail: "Được bảo chứng bởi chuỗi Audit Trail & Neo4j Graph",
   },
 ];
 
@@ -69,14 +69,14 @@ export function RoleShowcaseSection() {
     <section id="goc-nhin" className="py-24 border-t border-border/80 bg-background scroll-mt-20">
       <div className="max-w-6xl mx-auto px-6 space-y-12">
         <div className="text-center space-y-2.5 max-w-xl mx-auto">
-          <Badge variant="outline" className="text-primary border-primary/30 bg-primary/5 text-xs">
-            Góc nhìn Toàn diện
+          <Badge variant="outline" className="text-primary border-primary/30 bg-primary/5 text-xs font-semibold">
+            Góc nhìn Đa chiều
           </Badge>
           <h2 className="text-3xl sm:text-4xl font-extrabold text-foreground tracking-tight">
-            Giải pháp cho Mọi Đối tượng
+            Giải pháp Chuyên biệt cho Từng Vai trò
           </h2>
           <p className="text-muted-foreground text-sm sm:text-base leading-relaxed">
-            Từ sinh viên làm dự án đến giảng viên và hội đồng nghiệm thu.
+            Từ sinh viên thực hiện dự án, giảng viên hướng dẫn cho đến hội đồng thẩm định đồ án tốt nghiệp.
           </p>
         </div>
 
@@ -86,10 +86,11 @@ export function RoleShowcaseSection() {
               <button
                 key={role.id}
                 onClick={() => setActiveTab(idx)}
-                className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${activeTab === idx
-                  ? "bg-card text-foreground shadow-xs border border-border"
-                  : "text-muted-foreground hover:text-foreground hover:bg-card/50"
-                  }`}
+                className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${
+                  activeTab === idx
+                    ? "bg-card text-foreground shadow-xs border border-border"
+                    : "text-muted-foreground hover:text-foreground hover:bg-card/50"
+                }`}
               >
                 <role.icon className={`w-4 h-4 ${activeTab === idx ? "text-primary" : "text-muted-foreground"}`} />
                 {role.title}
