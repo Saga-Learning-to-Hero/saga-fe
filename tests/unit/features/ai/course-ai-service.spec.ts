@@ -21,7 +21,14 @@ describe("CourseAiService", () => {
       description: "getSettings tra ve dung cau hinh AI cua khoa hoc",
     },
     async () => {
-      const mockSettings = { automationEnabled: true, allowPlatformFallback: false };
+      const mockSettings = {
+        automationEnabled: true,
+        allowPlatformFallback: false,
+        primaryBinding: { provider: "GEMINI", modelId: "gemini-3.8-flash" },
+        fallbackEnabled: false,
+        fallbackBindings: [],
+        secondaryBinding: null,
+      };
       vi.mocked(apiClient.get).mockResolvedValueOnce({ data: mockSettings });
 
       const result = await CourseAiService.getSettings(mockCourseId);
@@ -101,8 +108,8 @@ describe("CourseAiService", () => {
 
       const result = await CourseAiService.putCredential(mockCourseId, "PRIMARY", payload);
       expect(apiClient.put).toHaveBeenCalledWith(
-        `/api/lecturer/courses/${mockCourseId}/ai-credentials/PRIMARY`,
-        payload
+        `/api/lecturer/courses/${mockCourseId}/ai-credentials/PRIMARY/openai`,
+        { apiKey: "sk-test-key-12345" }
       );
       expect(result).toEqual(mockCred);
     }
@@ -294,5 +301,205 @@ describe("CourseAiService", () => {
       expect(result.total).toBe(0);
     }
   );
-});
 
+  fptTest(
+    {
+      id: "UTCID13",
+      type: "N",
+      executedDate: "25/09/2026",
+      description: "getProviderCatalog tra ve danh sach catalog provider va freeTierNotice",
+    },
+    async () => {
+      const mockCatalog = {
+        providers: [
+          {
+            provider: "GEMINI",
+            displayName: "Google Gemini",
+            models: [
+              {
+                provider: "GEMINI",
+                modelId: "gemini-3.8-flash",
+                displayName: "Gemini 3.8 Flash",
+                freeTierEligible: true,
+                supportsStructuredOutput: true,
+                recommendedForAutomation: true,
+              },
+            ],
+          },
+        ],
+        freeTierNotice: "Free-tier notice test",
+      };
+      vi.mocked(apiClient.get).mockResolvedValueOnce({ data: mockCatalog });
+
+      const result = await CourseAiService.getProviderCatalog(mockCourseId);
+      expect(apiClient.get).toHaveBeenCalledWith(
+        `/api/lecturer/courses/${mockCourseId}/ai-provider-catalog`
+      );
+      expect(result).toEqual(mockCatalog);
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID14",
+      type: "N",
+      executedDate: "25/09/2026",
+      description: "getAllCredentials tra ve danh sach tat ca credentials da luu",
+    },
+    async () => {
+      const mockList = [
+        {
+          configured: true,
+          provider: "GEMINI",
+          role: "PRIMARY",
+          status: "ACTIVE",
+          lastFour: "x9Qa",
+          updatedAt: "2026-09-25T10:00:00",
+          lastSuccessfulUseAt: null,
+        },
+      ];
+      vi.mocked(apiClient.get).mockResolvedValueOnce({ data: mockList });
+
+      const result = await CourseAiService.getAllCredentials(mockCourseId);
+      expect(apiClient.get).toHaveBeenCalledWith(
+        `/api/lecturer/courses/${mockCourseId}/ai-credentials`
+      );
+      expect(result).toEqual(mockList);
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID15",
+      type: "N",
+      executedDate: "25/09/2026",
+      description: "getCredential voi provider cu the goi dung path /ai-credentials/{role}/{provider}",
+    },
+    async () => {
+      const mockCred = {
+        configured: true,
+        provider: "GEMINI",
+        role: "PRIMARY",
+        status: "UNVERIFIED",
+        lastFour: "9999",
+        updatedAt: null,
+        lastSuccessfulUseAt: null,
+      };
+      vi.mocked(apiClient.get).mockResolvedValueOnce({ data: mockCred });
+
+      const result = await CourseAiService.getCredential(mockCourseId, "PRIMARY", "GEMINI");
+      expect(apiClient.get).toHaveBeenCalledWith(
+        `/api/lecturer/courses/${mockCourseId}/ai-credentials/PRIMARY/GEMINI`
+      );
+      expect(result).toEqual(mockCred);
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID16",
+      type: "N",
+      executedDate: "25/09/2026",
+      description: "putCredential voi provider cu the gui PUT den /ai-credentials/{role}/{provider}",
+    },
+    async () => {
+      const payload = { apiKey: "AIzaSyTest123" };
+      const mockCred = {
+        configured: true,
+        provider: "GEMINI",
+        role: "PRIMARY",
+        status: "UNVERIFIED",
+        lastFour: "e123",
+        updatedAt: "2026-09-25T10:15:00",
+        lastSuccessfulUseAt: null,
+      };
+      vi.mocked(apiClient.put).mockResolvedValueOnce({ data: mockCred });
+
+      const result = await CourseAiService.putCredential(
+        mockCourseId,
+        "PRIMARY",
+        payload,
+        "GEMINI"
+      );
+      expect(apiClient.put).toHaveBeenCalledWith(
+        `/api/lecturer/courses/${mockCourseId}/ai-credentials/PRIMARY/GEMINI`,
+        { apiKey: "AIzaSyTest123" }
+      );
+      expect(result).toEqual(mockCred);
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID17",
+      type: "N",
+      executedDate: "25/09/2026",
+      description: "revokeCredential voi provider cu the gui DELETE den /ai-credentials/{role}/{provider}",
+    },
+    async () => {
+      vi.mocked(apiClient.delete).mockResolvedValueOnce({ data: null });
+
+      await CourseAiService.revokeCredential(mockCourseId, "PRIMARY", "GEMINI");
+      expect(apiClient.delete).toHaveBeenCalledWith(
+        `/api/lecturer/courses/${mockCourseId}/ai-credentials/PRIMARY/GEMINI`
+      );
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID18",
+      type: "N",
+      executedDate: "25/09/2026",
+      description: "updateBindings gui PUT den /ai-settings/bindings va tra ve settings da cap nhat",
+    },
+    async () => {
+      const bindingsPayload = {
+        primaryBinding: { provider: "GEMINI", modelId: "gemini-3.8-flash" },
+        fallbackEnabled: true,
+        fallbackBindings: [{ provider: "OPENROUTER", modelId: "openrouter/free" }],
+        secondaryBinding: { provider: "OPENAI", modelId: "gpt-5.6-terra" },
+      };
+      const mockUpdated = {
+        automationEnabled: true,
+        allowPlatformFallback: false,
+        ...bindingsPayload,
+      };
+      vi.mocked(apiClient.put).mockResolvedValueOnce({ data: mockUpdated });
+
+      const result = await CourseAiService.updateBindings(mockCourseId, bindingsPayload);
+      expect(apiClient.put).toHaveBeenCalledWith(
+        `/api/lecturer/courses/${mockCourseId}/ai-settings/bindings`,
+        bindingsPayload
+      );
+      expect(result).toEqual(mockUpdated);
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID19",
+      type: "A",
+      executedDate: "25/09/2026",
+      description: "Throw error khi updateBindings tra ve ma loi AI_BINDING_INVALID 400",
+    },
+    async () => {
+      vi.mocked(apiClient.put).mockRejectedValueOnce({
+        response: { data: { code: "AI_BINDING_INVALID", message: "Duplicate fallback" } },
+      });
+
+      await expect(
+        CourseAiService.updateBindings(mockCourseId, {
+          fallbackEnabled: true,
+          fallbackBindings: [],
+        })
+      ).rejects.toEqual(
+        expect.objectContaining({
+          response: expect.objectContaining({
+            data: expect.objectContaining({ code: "AI_BINDING_INVALID" }),
+          }),
+        })
+      );
+    }
+  );
+});

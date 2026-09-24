@@ -11,6 +11,7 @@ import {
   RefreshCwIcon,
   CheckCircle2Icon,
   AlertCircleIcon,
+  AlertTriangleIcon,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -23,11 +24,11 @@ import {
 } from "@/features/lecturer/courses/lib/course-routes";
 import {
   useCourseAcademicClassifications,
-  useCourseAiCredential,
   useCourseAiSettings,
+  useAiProviderCatalog,
+  useAllCourseAiCredentials,
 } from "../../hooks/use-lecturer-ai";
 import { CourseAiSettingsCard } from "./course-ai-settings-card";
-import { CourseAiCredentialsCard } from "./course-ai-credentials-card";
 import { CourseAiProgressTab } from "./course-ai-progress-tab";
 import { CourseAiAcademicReviewTab } from "./course-ai-academic-review-tab";
 import { cn } from "@/lib/utils";
@@ -42,11 +43,20 @@ export function LecturerAiHubPage({ courseId }: LecturerAiHubPageProps) {
   const courseQuery = useLecturerCourse(courseId);
   const course = courseQuery.data;
 
-  const credentialQuery = useCourseAiCredential(courseId, "PRIMARY");
-  const credential = credentialQuery.data;
+  const catalogQuery = useAiProviderCatalog(courseId);
 
   const settingsQuery = useCourseAiSettings(courseId);
   const settings = settingsQuery.data;
+
+  const credentialsQuery = useAllCourseAiCredentials(courseId);
+  const credentials = credentialsQuery.data || [];
+
+  const primaryProvider = settings?.primaryBinding?.provider || "OPENAI";
+  const primaryModelId = settings?.primaryBinding?.modelId;
+
+  const primaryCredential = credentials.find(
+    (c) => c.role === "PRIMARY" && c.provider === primaryProvider
+  );
 
   const proposedClassificationsQuery = useCourseAcademicClassifications(courseId, {
     status: "PROPOSED",
@@ -69,14 +79,16 @@ export function LecturerAiHubPage({ courseId }: LecturerAiHubPageProps) {
 
   const handleRefreshAll = () => {
     void courseQuery.refetch();
-    void credentialQuery.refetch();
+    void catalogQuery.refetch();
+    void credentialsQuery.refetch();
     void settingsQuery.refetch();
     void proposedClassificationsQuery.refetch();
   };
 
   const isRefreshing =
     courseQuery.isFetching ||
-    credentialQuery.isFetching ||
+    catalogQuery.isFetching ||
+    credentialsQuery.isFetching ||
     settingsQuery.isFetching ||
     proposedClassificationsQuery.isFetching;
 
@@ -131,23 +143,42 @@ export function LecturerAiHubPage({ courseId }: LecturerAiHubPageProps) {
                 </div>
               </div>
               <div>
-                <div className="text-xl font-black text-foreground font-mono">
-                  {credential?.provider ? credential.provider.toUpperCase() : "OPENAI"}
+                <div className="text-base font-black text-foreground font-mono flex items-center gap-1.5 truncate">
+                  <span>{primaryProvider}</span>
+                  {primaryModelId && (
+                    <span className="text-xs font-normal text-muted-foreground truncate">
+                      · {primaryModelId}
+                    </span>
+                  )}
                 </div>
                 <p className="text-xs text-muted-foreground mt-0.5">
-                  {credential?.configured ? `BYOK (•••• ${credential.lastFour})` : "Dự phòng hệ thống"}
+                  {primaryCredential?.configured
+                    ? `Khóa riêng (•••• ${primaryCredential.lastFour || ""})`
+                    : "Chưa cấu hình khóa"}
                 </p>
               </div>
-              <div className="pt-1">
-                {credential?.configured ? (
-                  <Badge variant="outline" className="text-[11px] gap-1 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 bg-emerald-500/10">
-                    <CheckCircle2Icon className="size-3" />
-                    Khóa riêng đang hoạt động
-                  </Badge>
+              <div className="pt-1 flex flex-wrap items-center gap-1.5">
+                {primaryCredential?.configured ? (
+                  primaryCredential.status === "ACTIVE" ? (
+                    <Badge variant="outline" className="text-[10px] gap-1 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 bg-emerald-500/10">
+                      <CheckCircle2Icon className="size-3" />
+                      Đang hoạt động
+                    </Badge>
+                  ) : (
+                    <Badge variant="outline" className="text-[10px] gap-1 text-sky-600 dark:text-sky-400 border-sky-500/30 bg-sky-500/10">
+                      <AlertCircleIcon className="size-3" />
+                      Đã lưu · Chưa xác minh
+                    </Badge>
+                  )
                 ) : (
-                  <Badge variant="outline" className="text-[11px] gap-1 text-muted-foreground">
-                    <AlertCircleIcon className="size-3" />
-                    Cấu hình mặc định
+                  <Badge variant="outline" className="text-[10px] gap-1 text-amber-600 dark:text-amber-400 border-amber-500/30 bg-amber-500/10">
+                    <AlertTriangleIcon className="size-3" />
+                    Thiếu khóa PRIMARY
+                  </Badge>
+                )}
+                {settings?.fallbackEnabled && (settings.fallbackBindings?.length ?? 0) > 0 && (
+                  <Badge variant="secondary" className="text-[10px]">
+                    Dự phòng: {settings.fallbackBindings.length}
                   </Badge>
                 )}
               </div>
@@ -279,8 +310,8 @@ export function LecturerAiHubPage({ courseId }: LecturerAiHubPageProps) {
               )}
             >
               <KeyRoundIcon className="w-3.5 h-3.5 text-purple-500" />
-              <span>Cấu hình khóa API riêng</span>
-              {credential?.configured ? (
+              <span>Cấu hình mô hình & Khóa API</span>
+              {primaryCredential?.configured ? (
                 <span className="size-1.5 rounded-full bg-emerald-500" />
               ) : null}
             </button>
@@ -299,18 +330,6 @@ export function LecturerAiHubPage({ courseId }: LecturerAiHubPageProps) {
         {activeTab === "credentials" && (
           <div className="space-y-6">
             <CourseAiSettingsCard courseId={courseId} />
-            <CourseAiCredentialsCard
-              courseId={courseId}
-              role="PRIMARY"
-              title="Khóa API chính (PRIMARY - Bắt buộc cho Tự động hóa)"
-              description="Khóa API chính của khóa học, dùng cho Commit Intelligence, Task Intelligence và phân tích rủi ro tự động."
-            />
-            <CourseAiCredentialsCard
-              courseId={courseId}
-              role="SECONDARY"
-              title="Khóa API đối chứng phụ (SECONDARY - Tùy chọn)"
-              description="Chỉ dùng cho Secondary Brain / mô hình đối chứng. Không bắt buộc để hệ thống AI chính hoạt động."
-            />
           </div>
         )}
       </div>

@@ -2,8 +2,10 @@ import { apiClient } from "@/lib/axios";
 import type {
   CourseAiSettingsResponse,
   CourseAiSettingsUpdateRequest,
+  CourseAiBindingsUpdateRequest,
   CourseAiCredentialResponse,
   CourseAiCredentialPutRequest,
+  AiProviderCatalogResponse,
   AiAnalysisResponse,
   AiLatestAnalysisResponse,
   AiProviderRole,
@@ -12,6 +14,13 @@ import type {
 } from "../types";
 
 export const CourseAiService = {
+  async getProviderCatalog(courseId: string): Promise<AiProviderCatalogResponse> {
+    const response = await apiClient.get<AiProviderCatalogResponse>(
+      `/api/lecturer/courses/${courseId}/ai-provider-catalog`
+    );
+    return response.data;
+  },
+
   async getSettings(courseId: string): Promise<CourseAiSettingsResponse> {
     const response = await apiClient.get<CourseAiSettingsResponse>(
       `/api/lecturer/courses/${courseId}/ai-settings`
@@ -30,21 +39,50 @@ export const CourseAiService = {
     return response.data;
   },
 
+  async updateBindings(
+    courseId: string,
+    data: CourseAiBindingsUpdateRequest
+  ): Promise<CourseAiSettingsResponse> {
+    const response = await apiClient.put<CourseAiSettingsResponse>(
+      `/api/lecturer/courses/${courseId}/ai-settings/bindings`,
+      data
+    );
+    return response.data;
+  },
+
+  async getAllCredentials(courseId: string): Promise<CourseAiCredentialResponse[]> {
+    const response = await apiClient.get<CourseAiCredentialResponse[]>(
+      `/api/lecturer/courses/${courseId}/ai-credentials`
+    );
+    return response.data;
+  },
+
   async getCredential(
     courseId: string,
-    role: AiProviderRole
+    role: AiProviderRole,
+    provider?: string
   ): Promise<CourseAiCredentialResponse> {
-    const response = await apiClient.get<CourseAiCredentialResponse>(
-      `/api/lecturer/courses/${courseId}/ai-credentials/${role}`
-    );
+    const path = provider
+      ? `/api/lecturer/courses/${courseId}/ai-credentials/${role}/${provider}`
+      : `/api/lecturer/courses/${courseId}/ai-credentials/${role}`;
+    const response = await apiClient.get<CourseAiCredentialResponse>(path);
     return response.data;
   },
 
   async putCredential(
     courseId: string,
     role: AiProviderRole,
-    data: CourseAiCredentialPutRequest
+    data: CourseAiCredentialPutRequest,
+    provider?: string
   ): Promise<CourseAiCredentialResponse> {
+    const targetProvider = provider || data.provider;
+    if (targetProvider) {
+      const response = await apiClient.put<CourseAiCredentialResponse>(
+        `/api/lecturer/courses/${courseId}/ai-credentials/${role}/${targetProvider}`,
+        { apiKey: data.apiKey }
+      );
+      return response.data;
+    }
     const response = await apiClient.put<CourseAiCredentialResponse>(
       `/api/lecturer/courses/${courseId}/ai-credentials/${role}`,
       data
@@ -52,8 +90,15 @@ export const CourseAiService = {
     return response.data;
   },
 
-  async revokeCredential(courseId: string, role: AiProviderRole): Promise<void> {
-    await apiClient.delete(`/api/lecturer/courses/${courseId}/ai-credentials/${role}`);
+  async revokeCredential(
+    courseId: string,
+    role: AiProviderRole,
+    provider?: string
+  ): Promise<void> {
+    const path = provider
+      ? `/api/lecturer/courses/${courseId}/ai-credentials/${role}/${provider}`
+      : `/api/lecturer/courses/${courseId}/ai-credentials/${role}`;
+    await apiClient.delete(path);
   },
 
   async submitCourseProgress(courseId: string): Promise<AiAnalysisResponse> {

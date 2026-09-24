@@ -30,6 +30,8 @@ export interface AiAnalysisDecisionResponse {
   safeErrorCode: string | null;
   structuredResultJson: string | null;
   completedAt: string | null;
+  aiProvider?: string | null;
+  fallbackAttemptsJson?: string | null;
 }
 
 export interface AiAnalysisResponse {

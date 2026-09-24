@@ -414,13 +414,33 @@ export function CourseAiProgressTab({ courseId, onNavigateToCredentials }: Cours
                 </div>
 
                 {currentAnalysis.providerDecision && (
-                  <div className="flex items-center gap-4 text-muted-foreground font-mono">
+                  <div className="flex flex-wrap items-center gap-4 text-muted-foreground font-mono">
                     {currentAnalysis.providerDecision.modelId && (
                       <span className="flex items-center gap-1">
                         <CpuIcon className="w-3.5 h-3.5 text-primary" />
-                        Mô hình: {currentAnalysis.providerDecision.modelId}
+                        <span>
+                          {currentAnalysis.providerDecision.aiProvider
+                            ? `Đã xử lý bởi ${currentAnalysis.providerDecision.aiProvider} · ${currentAnalysis.providerDecision.modelId}`
+                            : `Mô hình: ${currentAnalysis.providerDecision.modelId}`}
+                        </span>
                       </span>
                     )}
+                    {currentAnalysis.providerDecision.fallbackAttemptsJson && (() => {
+                      try {
+                        const attempts = JSON.parse(currentAnalysis.providerDecision.fallbackAttemptsJson);
+                        if (Array.isArray(attempts) && attempts.length > 1) {
+                          const successful = attempts.find((a: { outcome?: string }) => a.outcome === "SUCCEEDED");
+                          return (
+                            <span className="text-amber-600 dark:text-amber-400 text-xs font-sans">
+                              (Nhà cung cấp chính tạm ngưng hoạt động. Kết quả được xử lý bởi {successful?.provider || currentAnalysis.providerDecision.aiProvider})
+                            </span>
+                          );
+                        }
+                      } catch {
+                        return null;
+                      }
+                      return null;
+                    })()}
                     {currentAnalysis.status !== "FAILED" && currentAnalysis.providerDecision.latencyMs != null && (
                       <span>Độ trễ: {currentAnalysis.providerDecision.latencyMs} ms</span>
                     )}
