@@ -41,7 +41,7 @@ import { useLecturerTeams } from "@/features/lecturer/teams/hooks/use-lecturer-t
 import { CourseAiService } from "../../api/lecturer-ai-api";
 import { ProjectAiService } from "../../api/project-ai-api";
 import { getAiErrorMessage } from "../../lib/ai-error-map";
-import { cn } from "@/lib/utils";
+import { cn, formatVietnamDateTime } from "@/lib/utils";
 import type {
   AiProgressNarrativeResult,
   AiRiskAnalysisResult,
@@ -408,7 +408,7 @@ export function CourseAiProgressTab({ courseId, onNavigateToCredentials }: Cours
                   <AiStatusBadge status={currentAnalysis.status} />
                   {currentAnalysis.completedAt && (
                     <span className="text-muted-foreground font-mono ml-2">
-                      Thời điểm: {new Date(currentAnalysis.completedAt).toLocaleString("vi-VN")}
+                      Thời điểm: {formatVietnamDateTime(currentAnalysis.completedAt)}
                     </span>
                   )}
                 </div>
@@ -482,7 +482,7 @@ export function CourseAiProgressTab({ courseId, onNavigateToCredentials }: Cours
                       </span>
                     )}
                     {currentAnalysis.completedAt && (
-                      <span>Thời điểm: {new Date(currentAnalysis.completedAt).toLocaleString("vi-VN")}</span>
+                      <span>Thời điểm: {formatVietnamDateTime(currentAnalysis.completedAt)}</span>
                     )}
                   </div>
 

@@ -37,7 +37,7 @@ import { getAiErrorMessage } from "../../lib/ai-error-map";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
 import { useStudentCourseContext } from "@/features/student/courses/hooks/use-student-course-context";
 import { useStudentMyTeam } from "@/features/student/courses/hooks/use-student-courses";
-import { cn } from "@/lib/utils";
+import { cn, formatVietnamDateTime } from "@/lib/utils";
 import type {
   AiProgressNarrativeResult,
   AiRiskAnalysisResult,
@@ -428,7 +428,7 @@ export function StudentAiHubPage({ projectId }: StudentAiHubPageProps) {
                     Mã lỗi: {progressAnalysis.failureCode || progressAnalysis.providerDecision?.safeErrorCode || "AI_ANALYSIS_FAILED"}
                   </span>
                   {progressAnalysis.completedAt && (
-                    <span>Thời điểm: {new Date(progressAnalysis.completedAt).toLocaleString("vi-VN")}</span>
+                    <span>Thời điểm: {formatVietnamDateTime(progressAnalysis.completedAt)}</span>
                   )}
                 </div>
                 <div className="pt-2">
@@ -451,7 +451,7 @@ export function StudentAiHubPage({ projectId }: StudentAiHubPageProps) {
                   <AiStatusBadge status={progressAnalysis.status} />
                   {progressAnalysis.completedAt && (
                     <span className="text-xs text-muted-foreground font-mono">
-                      Thời điểm: {new Date(progressAnalysis.completedAt).toLocaleString("vi-VN")}
+                      Thời điểm: {formatVietnamDateTime(progressAnalysis.completedAt)}
                     </span>
                   )}
                 </div>

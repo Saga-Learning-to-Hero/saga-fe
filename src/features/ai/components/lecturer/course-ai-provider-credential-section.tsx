@@ -19,6 +19,7 @@ import {
   usePutCourseAiCredential,
   useRevokeCourseAiCredential,
 } from "../../hooks/use-lecturer-ai";
+import { formatVietnamDate, formatVietnamDateTime } from "@/lib/utils";
 import type { AiProviderRole } from "../../types";
 
 interface CourseAiProviderCredentialSectionProps {
@@ -185,7 +186,7 @@ export function CourseAiProviderCredentialSection({
             <span className="text-muted-foreground block">Cập nhật:</span>
             <span className="font-mono text-foreground">
               {credential?.updatedAt
-                ? new Date(credential.updatedAt).toLocaleDateString("vi-VN")
+                ? formatVietnamDate(credential.updatedAt)
                 : "—"}
             </span>
           </div>
@@ -193,7 +194,7 @@ export function CourseAiProviderCredentialSection({
             <span className="text-muted-foreground block">Lần dùng gần nhất:</span>
             <span className="font-mono text-foreground">
               {credential?.lastSuccessfulUseAt
-                ? new Date(credential.lastSuccessfulUseAt).toLocaleDateString("vi-VN")
+                ? formatVietnamDateTime(credential.lastSuccessfulUseAt)
                 : "Chưa ghi nhận"}
             </span>
           </div>

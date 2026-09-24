@@ -19,6 +19,7 @@ import {
   usePutCourseAiCredential,
   useRevokeCourseAiCredential,
 } from "../../hooks/use-lecturer-ai";
+import { formatVietnamDate, formatVietnamDateTime } from "@/lib/utils";
 import type { AiProviderRole } from "../../types";
 
 interface CourseAiCredentialsCardProps {
@@ -134,8 +135,8 @@ export function CourseAiCredentialsCard({
         <div className="flex items-center gap-3">
           <div
             className={`w-10 h-10 rounded-xl flex items-center justify-center ${role === "PRIMARY"
-                ? "bg-primary/10 text-primary"
-                : "bg-purple-500/10 text-purple-600 dark:text-purple-400"
+              ? "bg-primary/10 text-primary"
+              : "bg-purple-500/10 text-purple-600 dark:text-purple-400"
               }`}
           >
             <KeyRoundIcon className="w-5 h-5" />
@@ -208,7 +209,7 @@ export function CourseAiCredentialsCard({
             <span className="text-muted-foreground block">Cập nhật lần cuối:</span>
             <span className="font-mono text-foreground">
               {credential?.updatedAt
-                ? new Date(credential.updatedAt).toLocaleDateString("vi-VN")
+                ? formatVietnamDate(credential.updatedAt)
                 : "—"}
             </span>
           </div>
@@ -216,7 +217,7 @@ export function CourseAiCredentialsCard({
             <span className="text-muted-foreground block">Lần dùng gần nhất:</span>
             <span className="font-mono text-foreground">
               {credential?.lastSuccessfulUseAt
-                ? new Date(credential.lastSuccessfulUseAt).toLocaleDateString("vi-VN")
+                ? formatVietnamDateTime(credential.lastSuccessfulUseAt)
                 : "Chưa ghi nhận"}
             </span>
           </div>
