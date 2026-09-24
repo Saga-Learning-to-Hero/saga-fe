@@ -94,8 +94,7 @@ export function CourseAiProviderCredentialSection({
   const [confirmRevoke, setConfirmRevoke] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
 
-  const handleSave = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSave = () => {
     if (!apiKey.trim()) return;
     putMutation.mutate(
       { provider, apiKey: apiKey.trim() },
@@ -201,7 +200,7 @@ export function CourseAiProviderCredentialSection({
         </div>
       )}
 
-      <form onSubmit={handleSave} className="space-y-2">
+      <div className="space-y-2">
         <label className="text-[11px] font-medium text-muted-foreground block">
           {isConfigured
             ? `Thay thế khóa API ${providerDisplayName} bằng khóa mới`
@@ -214,6 +213,13 @@ export function CourseAiProviderCredentialSection({
               placeholder={provider === "OPENROUTER" ? "sk-or-v1-..." : provider === "GEMINI" ? "AIzaSy..." : "sk-proj-..."}
               value={apiKey}
               onChange={(e) => setApiKey(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  handleSave();
+                }
+              }}
               className="font-mono text-xs pr-10 h-8"
             />
             <button
@@ -226,10 +232,15 @@ export function CourseAiProviderCredentialSection({
           </div>
 
           <Button
-            type="submit"
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              handleSave();
+            }}
             disabled={!apiKey.trim() || putMutation.isPending}
             size="sm"
-            className="shrink-0 h-8 text-xs gap-1"
+            className="shrink-0 h-8 text-xs gap-1 cursor-pointer"
           >
             {putMutation.isPending ? (
               <Loader2Icon className="w-3.5 h-3.5 animate-spin" />
@@ -253,7 +264,7 @@ export function CourseAiProviderCredentialSection({
                     size="sm"
                     disabled={revokeMutation.isPending}
                     onClick={handleRevoke}
-                    className="h-8 text-xs"
+                    className="h-8 text-xs cursor-pointer"
                   >
                     {revokeMutation.isPending ? "Đang xóa..." : "Xác nhận xóa"}
                   </Button>
@@ -262,7 +273,7 @@ export function CourseAiProviderCredentialSection({
                     variant="outline"
                     size="sm"
                     onClick={() => setConfirmRevoke(false)}
-                    className="h-8 text-xs"
+                    className="h-8 text-xs cursor-pointer"
                   >
                     Hủy
                   </Button>
@@ -273,7 +284,7 @@ export function CourseAiProviderCredentialSection({
                   variant="outline"
                   size="sm"
                   onClick={() => setConfirmRevoke(true)}
-                  className="h-8 text-xs text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/20"
+                  className="h-8 text-xs text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/20 cursor-pointer"
                 >
                   <Trash2Icon className="w-3.5 h-3.5 mr-1" />
                   Xóa
@@ -282,7 +293,7 @@ export function CourseAiProviderCredentialSection({
             </div>
           )}
         </div>
-      </form>
+      </div>
 
       {putMutation.isError && (
         <div className="p-2.5 rounded-lg bg-red-500/10 border border-red-500/20 text-red-600 dark:text-red-400 text-xs flex items-center gap-2">

@@ -232,8 +232,8 @@ function CourseAiMultiProviderForm({
     );
   }, [catalog, secondaryProvider]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
     setErrorMessage(null);
 
     try {
@@ -271,7 +271,7 @@ function CourseAiMultiProviderForm({
     updateBindingsMutation.isPending || updateSettingsMutation.isPending;
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <div className="space-y-6">
       <div className="p-6 rounded-2xl border border-border bg-card shadow-xs space-y-6">
         <div className="flex flex-wrap items-center justify-between gap-4 border-b border-border/60 pb-4">
           <div className="flex items-center gap-3">
@@ -292,7 +292,8 @@ function CourseAiMultiProviderForm({
           </div>
 
           <Button
-            type="submit"
+            type="button"
+            onClick={() => void handleSubmit()}
             disabled={isSaving}
             size="sm"
             className="gap-2 shrink-0 cursor-pointer"
@@ -615,7 +616,7 @@ function CourseAiMultiProviderForm({
           </div>
         </div>
       </div>
-    </form>
+    </div>
   );
 }
 
