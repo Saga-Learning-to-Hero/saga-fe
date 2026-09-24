@@ -211,7 +211,7 @@ export function CourseAiProviderCredentialSection({
           <div className="relative flex-1">
             <Input
               type={showKey ? "text" : "password"}
-              placeholder={provider === "OPENROUTER" ? "sk-or-v1-..." : provider === "GEMINI" ? "AIzaSy..." : "sk-proj-..."}
+              placeholder={provider === "OPENROUTER" ? "sk-or-v1-..." : provider === "GEMINI" ? "AIzaSy..." : provider === "COHERE" ? "Vd: xyz..." : "sk-proj-..."}
               value={apiKey}
               onChange={(e) => setApiKey(e.target.value)}
               onKeyDown={(e) => {

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { getAiProviderDisplayName } from "../../lib/ai-provider-format";
 import { toast } from "sonner";
 import {
   SparklesIcon,
@@ -446,7 +447,7 @@ export function CourseAiProgressTab({ courseId, onNavigateToCredentials }: Cours
                         <div className="flex items-center gap-2 text-primary">
                           <CpuIcon className="w-3.5 h-3.5 shrink-0" />
                           <span className="font-semibold w-40">Model used for this analysis:</span>
-                          <span className="font-mono">{currentAnalysis.providerDecision.modelId} ({currentAnalysis.providerDecision.aiProvider || "Unknown"})</span>
+                          <span className="font-mono">{currentAnalysis.providerDecision.modelId} ({getAiProviderDisplayName(currentAnalysis.providerDecision.aiProvider)})</span>
                         </div>
                       </div>
                     )}
@@ -457,7 +458,7 @@ export function CourseAiProgressTab({ courseId, onNavigateToCredentials }: Cours
                           const successful = attempts.find((a: { outcome?: string }) => a.outcome === "SUCCEEDED");
                           return (
                             <span className="text-amber-600 dark:text-amber-400 text-xs font-sans">
-                              (Nhà cung cấp chính tạm ngưng hoạt động. Kết quả được xử lý bởi {successful?.provider || currentAnalysis.providerDecision.aiProvider})
+                              (Nhà cung cấp chính tạm ngưng hoạt động. Kết quả được xử lý bởi {getAiProviderDisplayName(successful?.provider || currentAnalysis.providerDecision.aiProvider)})
                             </span>
                           );
                         }
@@ -490,7 +491,7 @@ export function CourseAiProgressTab({ courseId, onNavigateToCredentials }: Cours
                   <div className="p-3.5 rounded-xl bg-card/60 border border-red-500/20 text-xs space-y-1.5 text-muted-foreground">
                     <div className="font-semibold text-foreground">Gợi ý kiểm tra và khắc phục:</div>
                     <ul className="space-y-1 list-disc list-inside">
-                      <li>Kiểm tra số dư Credit (số tiền khả dụng) hoặc hạn mức sử dụng trên tài khoản API OpenAI/Gemini cá nhân.</li>
+                      <li>Kiểm tra số dư Credit (số tiền khả dụng) hoặc hạn mức sử dụng trên tài khoản API của nhà cung cấp LLM cá nhân.</li>
                       <li>Kiểm tra cấu hình mô hình LLM trên máy chủ hoặc thiết lập lại API Key riêng.</li>
                       <li>Đảm bảo nhóm đã có commit hoặc task Jira để có dữ liệu đối soát.</li>
                     </ul>
