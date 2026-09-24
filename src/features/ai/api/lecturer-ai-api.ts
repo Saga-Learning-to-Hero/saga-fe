@@ -101,11 +101,11 @@ export const CourseAiService = {
     await apiClient.delete(path);
   },
 
-  async submitCourseProgress(courseId: string): Promise<AiAnalysisResponse> {
+  async submitCourseProgress(courseId: string): Promise<{ analysis: AiAnalysisResponse; httpStatus: number }> {
     const response = await apiClient.post<AiAnalysisResponse>(
       `/api/lecturer/courses/${courseId}/ai/progress-analyses`
     );
-    return response.data;
+    return { analysis: response.data, httpStatus: response.status };
   },
 
   async getLatestCourseProgress(courseId: string): Promise<AiLatestAnalysisResponse> {

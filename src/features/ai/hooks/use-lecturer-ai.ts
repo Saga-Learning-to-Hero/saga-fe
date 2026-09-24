@@ -143,17 +143,25 @@ export function useLatestCourseProgress(courseId: string) {
 }
 
 export function useSubmitCourseProgress(courseId: string) {
-  const queryClient = useQueryClient();
-  return useMutation<AiAnalysisResponse, Error, void>({
+  return useMutation<{ analysis: AiAnalysisResponse; httpStatus: number }, Error, void>({
     mutationFn: () => CourseAiService.submitCourseProgress(courseId),
-    onSuccess: (run) => {
-      queryClient.setQueryData<AiLatestAnalysisResponse>(
-        AI_LECTURER_QUERY_KEYS.latestCourseProgress(courseId),
-        { status: "FOUND", analysis: run }
-      );
-      queryClient.invalidateQueries({
-        queryKey: AI_LECTURER_QUERY_KEYS.latestCourseProgress(courseId),
-      });
+  });
+}
+
+export function useCourseAnalysis(courseId: string, analysisId: string | null) {
+  return useQuery<AiAnalysisResponse>({
+    queryKey: [...AI_LECTURER_QUERY_KEYS.latestCourseProgress(courseId), "run", analysisId],
+    queryFn: () => {
+      if (!analysisId) throw new Error("Missing analysisId");
+      return CourseAiService.getCourseAnalysis(courseId, analysisId);
+    },
+    enabled: Boolean(courseId && analysisId),
+    refetchInterval: (query) => {
+      const status = query.state.data?.status;
+      if (status === "QUEUED" || status === "RUNNING") {
+        return 3000;
+      }
+      return false;
     },
   });
 }

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { toast } from "sonner";
 import {
   SparklesIcon,
   DownloadIcon,
@@ -26,6 +27,8 @@ import { AiRiskBadge } from "../common/ai-risk-badge";
 import {
   useLatestCourseProgress,
   useSubmitCourseProgress,
+  useCourseAiSettings,
+  useCourseAnalysis,
 } from "../../hooks/use-lecturer-ai";
 import {
   useLatestTeamProgress,
@@ -56,6 +59,7 @@ interface CourseAiProgressTabProps {
 export function CourseAiProgressTab({ courseId, onNavigateToCredentials }: CourseAiProgressTabProps) {
   const [scope, setScope] = useState<"COURSE" | "TEAM" | "STUDENT">("COURSE");
   const [subTab, setSubTab] = useState<"PROGRESS" | "RISK">("PROGRESS");
+  const [submittedRunId, setSubmittedRunId] = useState<string | null>(null);
 
   const { data: teamsData, isLoading: isTeamsLoading } = useLecturerTeams(courseId);
   const teams = teamsData?.teams || [];
@@ -71,6 +75,10 @@ export function CourseAiProgressTab({ courseId, onNavigateToCredentials }: Cours
   const currentStudent = teamMembers.find((m) => m.studentProfileId === activeStudentId);
 
   const courseProgressQuery = useLatestCourseProgress(courseId);
+  const specificAnalysisQuery = useCourseAnalysis(courseId, submittedRunId);
+  const settingsQuery = useCourseAiSettings(courseId);
+  const settings = settingsQuery.data;
+
   const submitCourseProgressMutation = useSubmitCourseProgress(courseId);
 
   const teamProgressQuery = useLatestTeamProgress(currentProjectId);
@@ -90,8 +98,8 @@ export function CourseAiProgressTab({ courseId, onNavigateToCredentials }: Cours
   let isCurrentSubmitting = false;
 
   if (scope === "COURSE") {
-    currentAnalysis = courseProgressQuery.data?.analysis || null;
-    isCurrentLoading = courseProgressQuery.isLoading;
+    currentAnalysis = submittedRunId ? specificAnalysisQuery.data || courseProgressQuery.data?.analysis || null : courseProgressQuery.data?.analysis || null;
+    isCurrentLoading = (submittedRunId ? specificAnalysisQuery.isLoading : false) || courseProgressQuery.isLoading;
     isCurrentSubmitting = submitCourseProgressMutation.isPending;
   } else if (scope === "TEAM") {
     if (subTab === "PROGRESS") {
@@ -148,7 +156,19 @@ export function CourseAiProgressTab({ courseId, onNavigateToCredentials }: Cours
 
   const handleTriggerAnalysis = () => {
     if (scope === "COURSE") {
-      submitCourseProgressMutation.mutate();
+      submitCourseProgressMutation.mutate(undefined, {
+        onSuccess: (data) => {
+          setSubmittedRunId(data.analysis.id);
+          if (data.httpStatus === 202) {
+            toast.success("Tiến trình phân tích mới đã được xếp hàng", { description: "AI đang chạy phân tích ngầm..." });
+          } else {
+            toast.info("Đã tái sử dụng phân tích", { description: "Tiến độ hiện tại chưa có biến động mới cần phân tích." });
+          }
+        },
+        onError: () => {
+          toast.error("Lỗi khi gọi phân tích AI");
+        }
+      });
     } else if (scope === "TEAM") {
       if (!currentProjectId) return;
       if (subTab === "PROGRESS") {
@@ -416,14 +436,19 @@ export function CourseAiProgressTab({ courseId, onNavigateToCredentials }: Cours
                 {currentAnalysis.providerDecision && (
                   <div className="flex flex-wrap items-center gap-4 text-muted-foreground font-mono">
                     {currentAnalysis.providerDecision.modelId && (
-                      <span className="flex items-center gap-1">
-                        <CpuIcon className="w-3.5 h-3.5 text-primary" />
-                        <span>
-                          {currentAnalysis.providerDecision.aiProvider
-                            ? `Đã xử lý bởi ${currentAnalysis.providerDecision.aiProvider} · ${currentAnalysis.providerDecision.modelId}`
-                            : `Mô hình: ${currentAnalysis.providerDecision.modelId}`}
-                        </span>
-                      </span>
+                      <div className="flex flex-col gap-1.5 text-[11px] p-2.5 rounded-lg bg-card border border-border shadow-xs mt-1">
+                        {settings?.primaryBinding && (
+                          <div className="flex items-center gap-2 opacity-70">
+                            <span className="font-semibold text-muted-foreground w-40">Current model:</span>
+                            <span className="font-mono">{settings.primaryBinding.modelId} ({settings.primaryBinding.provider})</span>
+                          </div>
+                        )}
+                        <div className="flex items-center gap-2 text-primary">
+                          <CpuIcon className="w-3.5 h-3.5 shrink-0" />
+                          <span className="font-semibold w-40">Model used for this analysis:</span>
+                          <span className="font-mono">{currentAnalysis.providerDecision.modelId} ({currentAnalysis.providerDecision.aiProvider || "Unknown"})</span>
+                        </div>
+                      </div>
                     )}
                     {currentAnalysis.providerDecision.fallbackAttemptsJson && (() => {
                       try {
