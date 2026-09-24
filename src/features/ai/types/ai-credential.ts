@@ -8,11 +8,18 @@ export interface CourseAiSettingsUpdateRequest {
   allowPlatformFallback: boolean;
 }
 
+export type AiCredentialStatus =
+  | "UNVERIFIED"
+  | "ACTIVE"
+  | "DEGRADED"
+  | "INVALID"
+  | "REVOKED";
+
 export interface CourseAiCredentialResponse {
   configured: boolean;
   provider: string | null;
   role: string;
-  status: string | null;
+  status: AiCredentialStatus | string | null;
   lastFour: string | null;
   updatedAt: string | null;
   lastSuccessfulUseAt: string | null;

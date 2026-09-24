@@ -52,21 +52,19 @@ export function BentoGridSection() {
                 <div className="inline-flex p-1 rounded-xl bg-muted border border-border text-xs font-mono">
                   <button
                     onClick={() => setGraphMode("traceability")}
-                    className={`px-3 py-1.5 rounded-lg font-bold transition-all cursor-pointer ${
-                      graphMode === "traceability"
+                    className={`px-3 py-1.5 rounded-lg font-bold transition-all cursor-pointer ${graphMode === "traceability"
                         ? "bg-card text-foreground shadow-xs border border-border"
                         : "text-muted-foreground hover:text-foreground"
-                    }`}
+                      }`}
                   >
                     Traceability Graph
                   </button>
                   <button
                     onClick={() => setGraphMode("sna")}
-                    className={`px-3 py-1.5 rounded-lg font-bold transition-all cursor-pointer ${
-                      graphMode === "sna"
+                    className={`px-3 py-1.5 rounded-lg font-bold transition-all cursor-pointer ${graphMode === "sna"
                         ? "bg-card text-foreground shadow-xs border border-border"
                         : "text-muted-foreground hover:text-foreground"
-                    }`}
+                      }`}
                   >
                     SNA Social Graph
                   </button>

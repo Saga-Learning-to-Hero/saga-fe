@@ -221,7 +221,7 @@ export function LecturerAiHubPage({ courseId }: LecturerAiHubPageProps) {
                   {settings?.automationEnabled ? "Đang bật" : "Thủ công"}
                 </div>
                 <p className="text-xs text-muted-foreground mt-0.5">
-                  {settings?.allowPlatformFallback ? "Bật dự phòng hệ thống" : "Chỉ dùng API Key riêng"}
+                  {settings?.allowPlatformFallback ? "Khóa nền tảng: Cho phép thủ công" : "Khóa nền tảng: Tắt"}
                 </p>
               </div>
               <div className="pt-1">
@@ -302,14 +302,14 @@ export function LecturerAiHubPage({ courseId }: LecturerAiHubPageProps) {
             <CourseAiCredentialsCard
               courseId={courseId}
               role="PRIMARY"
-              title="Khóa API cho Mô hình phân tích chính"
-              description="Mô hình thực thi chính cho việc phân tích code diff, commit, đánh giá task Jira và sinh báo cáo."
+              title="Khóa API chính (PRIMARY - Bắt buộc cho Tự động hóa)"
+              description="Khóa API chính của khóa học, dùng cho Commit Intelligence, Task Intelligence và phân tích rủi ro tự động."
             />
             <CourseAiCredentialsCard
               courseId={courseId}
               role="SECONDARY"
-              title="Khóa API cho Mô hình đối chứng phụ (Tùy chọn)"
-              description="Mô hình đối chứng độc lập nhằm thẩm định chéo, phát hiện bất đồng quan điểm và đánh giá độ tin cậy với mô hình chính."
+              title="Khóa API đối chứng phụ (SECONDARY - Tùy chọn)"
+              description="Chỉ dùng cho Secondary Brain / mô hình đối chứng. Không bắt buộc để hệ thống AI chính hoạt động."
             />
           </div>
         )}

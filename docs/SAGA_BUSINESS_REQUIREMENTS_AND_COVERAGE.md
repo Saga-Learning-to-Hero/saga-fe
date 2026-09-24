@@ -125,7 +125,7 @@ Bảng này là checklist chức năng cấp cao dành cho tài liệu báo cáo
 | SCOPE-15 | Quản trị và kiểm toán | User status; audit log; integration/sync observability; lỗi có mã; dữ liệu mock không xuất hiện trong bản production/report |
 | SCOPE-16 | Chất lượng hệ thống | Authorization server-side; isolation theo account/course/project; timezone nhất quán; accessibility/responsive; test; không N+1/refetch storm |
 | SCOPE-17 | Trung tâm thông báo & Web Push | Hộp thư thông báo canonical (REST); User-scoped SSE; Firebase Web Push FCM; bell badge/preview/sheet; broadcast Admin; targeted notification Giảng viên theo 4 scope; Idempotency-Key và điều phối đăng xuất tập trung |
-| SCOPE-18 | AI-assisted Commit Intelligence và Academic Classification | Phân tích Commit theo project với durable run, exact-SHA evidence snapshot, bounded changed-file/patch evidence, provider-decision metadata, structured-result validation và idempotency; hỗ trợ proposal phân loại Task/Commit theo Syllabus cùng Lecturer confirm/reject/correct; OpenAI provider chỉ hoạt động khi được bật/cấu hình và FE presentation hiện chưa có |
+| SCOPE-18 | AI-assisted Intelligence, Academic Review và BYOK | Phân tích Commit, Task và Risk theo project/course với durable run, exact-SHA evidence snapshot, provider-decision metadata, structured-result validation; hỗ trợ proposal phân loại theo Syllabus cùng Lecturer review; BYOK Course Credential phân định khóa PRIMARY (bắt buộc cho tự động hóa Commit/Task/Risk, không fallback khóa nền tảng khi lỗi/hết quota) và SECONDARY (tùy chọn cho Secondary Brain đối chứng độc lập, không tái sử dụng PRIMARY/platform); allowPlatformFallback chỉ áp dụng cho yêu cầu thủ công hỗ trợ; trạng thái khóa chuẩn UNVERIFIED, ACTIVE, DEGRADED, INVALID, REVOKED |
 
 ---
 

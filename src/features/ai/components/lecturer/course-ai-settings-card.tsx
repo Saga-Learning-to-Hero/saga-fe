@@ -53,7 +53,7 @@ function CourseAiSettingsForm({
               Cấu hình tự động hóa AI của lớp học
             </h3>
             <p className="text-xs text-muted-foreground">
-              Thiết lập chính sách kích hoạt AI và cơ chế dự phòng tài khoản
+              Thiết lập chính sách kích hoạt AI và cơ chế sử dụng khóa nền tảng
             </p>
           </div>
         </div>
@@ -99,10 +99,10 @@ function CourseAiSettingsForm({
           />
           <div className="space-y-1">
             <span className="text-sm font-medium text-foreground block">
-              Cho phép dùng khóa dự phòng của trường
+              Cho phép khóa nền tảng cho phân tích thủ công
             </span>
             <span className="text-xs text-muted-foreground block leading-relaxed">
-              Nếu chưa cấu hình API Key riêng hoặc hết hạn mức, hệ thống sẽ tự động dùng khóa mặc định của trường.
+              Cho phép một số yêu cầu AI thủ công được hỗ trợ sử dụng khóa nền tảng khi phù hợp. Phân tích tự động Commit/Task/Risk vẫn yêu cầu khóa PRIMARY của khóa học.
             </span>
           </div>
         </label>
