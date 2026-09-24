@@ -415,12 +415,18 @@ export function CourseAiProgressTab({ courseId, onNavigateToCredentials }: Cours
 
                 {currentAnalysis.providerDecision && (
                   <div className="flex items-center gap-4 text-muted-foreground font-mono">
-                    <span className="flex items-center gap-1">
-                      <CpuIcon className="w-3.5 h-3.5 text-primary" />
-                      Mô hình: {currentAnalysis.providerDecision.modelId}
-                    </span>
-                    <span>Độ trễ: {currentAnalysis.providerDecision.latencyMs != null ? `${currentAnalysis.providerDecision.latencyMs} ms` : "--"}</span>
-                    <span>Tokens: {(currentAnalysis.providerDecision.inputUnits ?? 0) + (currentAnalysis.providerDecision.outputUnits ?? 0)}</span>
+                    {currentAnalysis.providerDecision.modelId && (
+                      <span className="flex items-center gap-1">
+                        <CpuIcon className="w-3.5 h-3.5 text-primary" />
+                        Mô hình: {currentAnalysis.providerDecision.modelId}
+                      </span>
+                    )}
+                    {currentAnalysis.status !== "FAILED" && currentAnalysis.providerDecision.latencyMs != null && (
+                      <span>Độ trễ: {currentAnalysis.providerDecision.latencyMs} ms</span>
+                    )}
+                    {currentAnalysis.status !== "FAILED" && (currentAnalysis.providerDecision.inputUnits != null || currentAnalysis.providerDecision.outputUnits != null) && (
+                      <span>Tokens: {(currentAnalysis.providerDecision.inputUnits ?? 0) + (currentAnalysis.providerDecision.outputUnits ?? 0)}</span>
+                    )}
                   </div>
                 )}
               </div>
