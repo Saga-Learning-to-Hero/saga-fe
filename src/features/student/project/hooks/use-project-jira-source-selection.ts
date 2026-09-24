@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { useProjectTasksData } from "@/features/student/sprint-progress/hooks/use-project-tasks";
 import type { ProjectTaskResponse } from "@/features/student/sprint-progress/types/jira-task-types";
 import { useProjectIntegrations } from "./useProjectIntegrations";
+import { useJiraSources } from "./use-jira-sources";
 import type { JiraSourceSummary } from "../types/jira-sources";
 
 interface ProjectJiraSourceSelectionOptions {
@@ -36,8 +37,11 @@ export function useProjectJiraSourceSelection(
   projectId?: string | null,
   options?: ProjectJiraSourceSelectionOptions
 ) {
+  const jiraSourcesQuery = useJiraSources(projectId, {
+    enabled: Boolean(projectId),
+  });
   const integrationsQuery = useProjectIntegrations(projectId, {
-    enabled: Boolean(projectId) && !options?.readerMode,
+    enabled: Boolean(projectId && !options?.readerMode),
   });
   const tasksQuery = useProjectTasksData(projectId);
   const [selection, setSelection] = useState<{
@@ -47,17 +51,20 @@ export function useProjectJiraSourceSelection(
 
   const activeSources = useMemo(
     () => {
-      const integrationSources = options?.readerMode
-        ? []
-        : integrationsQuery.data?.jiraSources || [];
+      const canonicalSources =
+        jiraSourcesQuery.data && jiraSourcesQuery.data.length > 0
+          ? jiraSourcesQuery.data
+          : options?.readerMode
+            ? []
+            : integrationsQuery.data?.jiraSources || [];
       const taskSources = deriveJiraSourcesFromTasks(tasksQuery.data || []);
-      const sources = integrationSources.length > 0 ? integrationSources : taskSources;
+      const sources = canonicalSources.length > 0 ? canonicalSources : taskSources;
 
       return sources.filter(
         (source) => source.connectionStatus === "ACTIVE"
       );
     },
-    [integrationsQuery.data?.jiraSources, options?.readerMode, tasksQuery.data]
+    [jiraSourcesQuery.data, integrationsQuery.data?.jiraSources, options?.readerMode, tasksQuery.data]
   );
 
   const explicitlySelectedId =
@@ -70,8 +77,9 @@ export function useProjectJiraSourceSelection(
     activeSources,
     effectiveSourceId,
     hasMultipleSources: activeSources.length > 1,
-    isLoading: integrationsQuery.isLoading || tasksQuery.isLoading,
+    isLoading: jiraSourcesQuery.isLoading || integrationsQuery.isLoading || tasksQuery.isLoading,
     integrationsQuery,
+    jiraSourcesQuery,
     tasksQuery,
     selectSource: (integrationId: string) => {
       if (!projectId) return;

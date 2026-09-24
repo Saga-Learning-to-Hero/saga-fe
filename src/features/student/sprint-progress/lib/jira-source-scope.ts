@@ -28,8 +28,21 @@ export function scopeIssuesToJiraSource<T extends JiraSourceScopedIssue>(
 export function scopeSprintsToJiraSource(
   sprints: ProjectSprintResponse[],
   sourceSprintOptions: ProjectTaskOptionsResponse["sprints"] | undefined,
-  sourceTasks: JiraSourceScopedTask[] = []
+  sourceTasks: JiraSourceScopedTask[] = [],
+  selectedJiraIntegrationId?: string
 ): ProjectSprintResponse[] {
+  if (selectedJiraIntegrationId) {
+    const hasProvenance = sprints.some(
+      (sprint) => Boolean(sprint.source?.jiraIntegrationId || sprint.jiraIntegrationId)
+    );
+    if (hasProvenance) {
+      return sprints.filter((sprint) => {
+        const id = sprint.source?.jiraIntegrationId || sprint.jiraIntegrationId;
+        return id === selectedJiraIntegrationId;
+      });
+    }
+  }
+
   const providerSprintIds = new Set(
     (sourceSprintOptions || []).map((sprint) => String(sprint.id))
   );

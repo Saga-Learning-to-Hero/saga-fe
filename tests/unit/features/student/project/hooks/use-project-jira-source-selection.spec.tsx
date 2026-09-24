@@ -4,9 +4,14 @@ import { fptTest } from "@/testing/fpt-test-helper";
 
 const integrationsMock = vi.fn();
 const tasksMock = vi.fn();
+const jiraSourcesMock = vi.fn();
 
 vi.mock("@/features/student/project/hooks/useProjectIntegrations", () => ({
   useProjectIntegrations: (...args: unknown[]) => integrationsMock(...args),
+}));
+
+vi.mock("@/features/student/project/hooks/use-jira-sources", () => ({
+  useJiraSources: (...args: unknown[]) => jiraSourcesMock(...args),
 }));
 
 vi.mock("@/features/student/sprint-progress/hooks/use-project-tasks", () => ({
@@ -18,6 +23,31 @@ import { useProjectJiraSourceSelection } from "@/features/student/project/hooks/
 describe("useProjectJiraSourceSelection", () => {
   beforeEach(() => {
     integrationsMock.mockReset();
+    jiraSourcesMock.mockReset();
+    jiraSourcesMock.mockReturnValue({
+      data: [
+        {
+          integrationId: "source-a",
+          siteName: "site-a.atlassian.net",
+          projectKey: "A",
+          connectionStatus: "ACTIVE",
+        },
+        {
+          integrationId: "source-b",
+          siteName: "site-b.atlassian.net",
+          projectKey: "B",
+          connectionStatus: "ACTIVE",
+        },
+        {
+          integrationId: "source-old",
+          siteName: "old.atlassian.net",
+          projectKey: "OLD",
+          connectionStatus: "REVOKED",
+        },
+      ],
+      isLoading: false,
+      isError: false,
+    });
     integrationsMock.mockReturnValue({
       data: {
         jiraSources: [
@@ -92,9 +122,10 @@ describe("useProjectJiraSourceSelection", () => {
       id: "UTCID03",
       type: "N",
       executedDate: "21/09/2026",
-      description: "Lecturer doc danh sach Jira source tu provenance cua task",
+      description: "Lecturer doc danh sach Jira source tu provenance cua task khi canonical rong",
     },
     () => {
+      jiraSourcesMock.mockReturnValue({ data: [], isLoading: false, isError: false });
       integrationsMock.mockReturnValue({ data: undefined, isLoading: false, isError: false });
       tasksMock.mockReturnValue({
         data: [
@@ -135,6 +166,37 @@ describe("useProjectJiraSourceSelection", () => {
         "source-b",
       ]);
       expect(result.current.hasMultipleSources).toBe(true);
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID04",
+      type: "N",
+      executedDate: "24/09/2026",
+      description: "Lecturer doc danh sach Jira source canonical ke ca khi chua co task",
+    },
+    () => {
+      tasksMock.mockReturnValue({ data: [], isLoading: false, isError: false });
+      jiraSourcesMock.mockReturnValue({
+        data: [
+          {
+            integrationId: "source-empty-1",
+            siteName: "empty.atlassian.net",
+            projectKey: "EMPTY",
+            connectionStatus: "ACTIVE",
+          },
+        ],
+        isLoading: false,
+        isError: false,
+      });
+
+      const { result } = renderHook(() =>
+        useProjectJiraSourceSelection("project-1", { readerMode: true })
+      );
+
+      expect(result.current.activeSources).toHaveLength(1);
+      expect(result.current.effectiveSourceId).toBe("source-empty-1");
     }
   );
 });

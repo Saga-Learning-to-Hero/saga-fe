@@ -184,7 +184,7 @@ export function SprintProgressView() {
 
   const sourceScopedApiSprints = useMemo(() => {
     if (!effectiveSourceId) return apiSprints;
-    return scopeSprintsToJiraSource(apiSprints, taskOptions?.sprints, scopedIssues);
+    return scopeSprintsToJiraSource(apiSprints, taskOptions?.sprints, scopedIssues, effectiveSourceId);
   }, [apiSprints, effectiveSourceId, scopedIssues, taskOptions?.sprints]);
 
   const sprints: Sprint[] = useMemo(() => {

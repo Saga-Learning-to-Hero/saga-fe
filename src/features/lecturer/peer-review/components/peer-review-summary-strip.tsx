@@ -22,8 +22,8 @@ export function PeerReviewSummaryStrip({ kpis, filters }: PeerReviewSummaryStrip
     kpis.completionRate === null
       ? "—"
       : `${kpis.completionRate.toLocaleString("vi-VN", {
-          maximumFractionDigits: 0,
-        })}%`;
+        maximumFractionDigits: 0,
+      })}%`;
   const completionWidth =
     kpis.completionRate === null
       ? 0
@@ -127,7 +127,7 @@ export function PeerReviewSummaryStrip({ kpis, filters }: PeerReviewSummaryStrip
               </p>
             </div>
           </div>
-          <div className="w-full lg:max-w-2xl">{filters}</div>
+          <div className="w-full lg:max-w-3xl xl:max-w-4xl">{filters}</div>
         </div>
       ) : null}
     </Card>

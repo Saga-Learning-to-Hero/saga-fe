@@ -7,6 +7,7 @@ import { onMessage } from "firebase/messaging";
 import { toast } from "@/components/ui/sonner";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
 import { performLogout } from "@/features/auth/lib/logout-orchestrator";
+import { API_BASE_URL } from "@/lib/axios";
 import { useDebouncedNotificationInvalidate } from "../hooks/use-notifications";
 import { getClientMessaging, isFirebaseMessagingSupported } from "@/lib/firebase/firebase-client";
 
@@ -38,8 +39,7 @@ export function UserRealtimeProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    const apiBase = process.env.NEXT_PUBLIC_API_URL || "";
-    const sseUrl = `${apiBase}/api/users/me/events`;
+    const sseUrl = `${API_BASE_URL}/api/users/me/events`;
     const es = new EventSource(sseUrl, { withCredentials: true });
     eventSourceRef.current = es;
 

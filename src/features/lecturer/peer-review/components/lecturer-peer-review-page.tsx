@@ -80,7 +80,12 @@ export function LecturerPeerReviewPage({ courseId }: LecturerPeerReviewPageProps
   const sprints = useMemo(
     () =>
       jiraSource.effectiveSourceId
-        ? scopeSprintsToJiraSource(sprintsQuery.data || [], taskOptionsQuery.data?.sprints)
+        ? scopeSprintsToJiraSource(
+          sprintsQuery.data || [],
+          taskOptionsQuery.data?.sprints,
+          undefined,
+          jiraSource.effectiveSourceId
+        )
         : sprintsQuery.data || [],
     [jiraSource.effectiveSourceId, sprintsQuery.data, taskOptionsQuery.data?.sprints]
   );
@@ -284,8 +289,15 @@ export function LecturerPeerReviewPage({ courseId }: LecturerPeerReviewPageProps
   }
 
   const filters = (
-    <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-      <div className="min-w-0 flex-1 space-y-1.5">
+    <div
+      className={cn(
+        "grid gap-3",
+        jiraSource.hasMultipleSources
+          ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
+          : "grid-cols-1 sm:grid-cols-2"
+      )}
+    >
+      <div className="min-w-0 space-y-1.5">
         <Label htmlFor="peer-review-team" className="text-[11px] font-semibold text-muted-foreground">
           Nhóm
         </Label>
@@ -301,7 +313,7 @@ export function LecturerPeerReviewPage({ courseId }: LecturerPeerReviewPageProps
         />
       </div>
       {jiraSource.hasMultipleSources && (
-        <div className="min-w-0 flex-1 space-y-1.5">
+        <div className="min-w-0 space-y-1.5">
           <Label className="text-[11px] font-semibold text-muted-foreground">
             Nguồn Jira
           </Label>
@@ -318,7 +330,7 @@ export function LecturerPeerReviewPage({ courseId }: LecturerPeerReviewPageProps
           />
         </div>
       )}
-      <div className="min-w-0 flex-1 space-y-1.5">
+      <div className="min-w-0 space-y-1.5">
         <Label htmlFor="peer-review-sprint" className="text-[11px] font-semibold text-muted-foreground">
           Sprint
         </Label>

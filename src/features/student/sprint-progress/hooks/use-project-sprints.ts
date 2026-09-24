@@ -10,6 +10,7 @@ import type {
 import { getApiErrorCode } from "@/lib/api-error";
 import { JIRA_SPRINT_QUERY_KEYS } from "./use-sprint-data";
 import { useProjectIntegrations } from "@/features/student/project/hooks/useProjectIntegrations";
+import { useJiraSources } from "@/features/student/project/hooks/use-jira-sources";
 
 export function useProjectSprints(
   projectId?: string | null,
@@ -24,18 +25,26 @@ export function useProjectSprints(
     ? jiraIntegrationIdOrOptions
     : options;
 
-  const { data: integrations } = useProjectIntegrations(projectId, {
+  const { data: canonicalJiraSources } = useJiraSources(projectId, {
     enabled: Boolean(projectId && !explicitIntegrationId),
   });
 
+  const { data: integrations } = useProjectIntegrations(projectId, {
+    enabled: Boolean(projectId && !explicitIntegrationId && (!canonicalJiraSources || canonicalJiraSources.length === 0)),
+  });
+
   const activeSources = useMemo(() => {
-    return (integrations?.jiraSources || []).filter(
+    const sources =
+      canonicalJiraSources && canonicalJiraSources.length > 0
+        ? canonicalJiraSources
+        : integrations?.jiraSources || [];
+    return sources.filter(
       (s) => s.connectionStatus === "ACTIVE"
     );
-  }, [integrations?.jiraSources]);
+  }, [canonicalJiraSources, integrations?.jiraSources]);
 
   const resolvedIntegrationId = explicitIntegrationId
-    || (activeSources.length > 1 ? activeSources[0].integrationId : undefined);
+    || (activeSources.length > 1 ? activeSources[0].integrationId : (activeSources.length === 1 ? activeSources[0].integrationId : undefined));
 
   return useQuery({
     queryKey: [...JIRA_SPRINT_QUERY_KEYS.sprints(projectId), resolvedIntegrationId || "default"],

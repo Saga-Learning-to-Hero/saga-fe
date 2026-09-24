@@ -52,7 +52,12 @@ export function TraceabilityGraphView() {
   const sourceSprints = useMemo(
     () =>
       jiraSource.effectiveSourceId
-        ? scopeSprintsToJiraSource(sprintsQuery.data || [], taskOptionsQuery.data?.sprints)
+        ? scopeSprintsToJiraSource(
+          sprintsQuery.data || [],
+          taskOptionsQuery.data?.sprints,
+          undefined,
+          jiraSource.effectiveSourceId
+        )
         : sprintsQuery.data || [],
     [jiraSource.effectiveSourceId, sprintsQuery.data, taskOptionsQuery.data?.sprints]
   );

@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useRef, useCallback } from "react";
 import { useQueryClient } from "@tanstack/react-query";
+import { API_BASE_URL } from "@/lib/axios";
 import { JIRA_SPRINT_QUERY_KEYS } from "@/features/student/sprint-progress/hooks/use-sprint-data";
 import { TASK_EVIDENCE_QUERY_KEYS } from "@/features/student/sprint-progress/hooks/use-task-evidence";
 import { PROJECT_PROJECTION_QUERY_KEYS } from "@/features/student/project/hooks/useProjectSync";
@@ -196,11 +197,7 @@ export function useProjectRealtime(
       eventSourceRef.current = null;
     }
 
-    const apiBase =
-      process.env.NEXT_PUBLIC_API_URL ||
-      process.env.NEXT_PUBLIC_API_BASE_URL ||
-      "https://saga-be-production.up.railway.app";
-    const streamUrl = `${apiBase}/api/projects/${encodeURIComponent(cleanProjectId)}/events`;
+    const streamUrl = `${API_BASE_URL}/api/projects/${encodeURIComponent(cleanProjectId)}/events`;
 
     try {
       const es = new EventSource(streamUrl, { withCredentials: true });

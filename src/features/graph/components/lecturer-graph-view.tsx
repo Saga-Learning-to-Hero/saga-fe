@@ -189,7 +189,12 @@ export function LecturerGraphView({
   const sourceSprints = useMemo(
     () =>
       jiraSource.effectiveSourceId
-        ? scopeSprintsToJiraSource(sprintsQuery.data || [], taskOptionsQuery.data?.sprints)
+        ? scopeSprintsToJiraSource(
+          sprintsQuery.data || [],
+          taskOptionsQuery.data?.sprints,
+          undefined,
+          jiraSource.effectiveSourceId
+        )
         : sprintsQuery.data || [],
     [jiraSource.effectiveSourceId, sprintsQuery.data, taskOptionsQuery.data?.sprints]
   );
@@ -882,6 +887,7 @@ export function LecturerGraphView({
             compact
             sources={jiraSource.activeSources}
             value={jiraSource.effectiveSourceId}
+            className="w-56 sm:w-64"
             onChange={(integrationId) => {
               jiraSource.selectSource(integrationId);
               setSelectedSprintState(null);

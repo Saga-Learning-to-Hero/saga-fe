@@ -3,6 +3,14 @@ import type {
   TaskMigrationSummary,
 } from "@/features/student/project/types/jira-sources";
 
+export interface ProjectSprintSource {
+  jiraIntegrationId?: string | null;
+  siteName?: string | null;
+  projectKey?: string | null;
+  boardId?: string | null;
+  connectionStatus?: string | null;
+}
+
 export interface ProjectSprintResponse {
   id: string;
   externalSprintId?: string | number | null;
@@ -12,6 +20,8 @@ export interface ProjectSprintResponse {
   startDate?: string | null;
   endDate?: string | null;
   completeDate?: string | null;
+  source?: ProjectSprintSource | null;
+  jiraIntegrationId?: string | null;
 }
 
 export interface CreateProjectSprintRequest {

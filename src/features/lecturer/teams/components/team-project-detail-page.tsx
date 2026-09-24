@@ -100,7 +100,7 @@ export function TeamProjectDetailPage({ courseId, teamId }: TeamProjectDetailPag
   const sprints = useMemo(
     () =>
       jiraSource.effectiveSourceId
-        ? scopeSprintsToJiraSource(allSprints, taskOptions?.sprints)
+        ? scopeSprintsToJiraSource(allSprints, taskOptions?.sprints, [], jiraSource.effectiveSourceId)
         : allSprints,
     [allSprints, jiraSource.effectiveSourceId, taskOptions?.sprints]
   );

@@ -26,19 +26,19 @@ export function JiraSourceSwitcher({
     <div
       className={cn(
         compact
-          ? "min-w-60"
+          ? "w-full min-w-0"
           : "flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-blue-500/30 bg-blue-500/[0.04] px-4 py-3",
         className
       )}
     >
-      <div className={cn("flex items-center gap-2.5", !compact && "flex-wrap")}>
+      <div className={cn("flex items-center gap-2.5", compact ? "w-full min-w-0" : "flex-wrap")}>
         {!compact && (
           <div className="flex items-center gap-1.5 text-xs font-bold text-foreground">
             <LayersIcon className="size-4 text-blue-500" />
             <span>Nguồn Jira đang xem</span>
           </div>
         )}
-        <div className={compact ? "w-full" : "w-72"}>
+        <div className={compact ? "w-full min-w-0" : "w-72"}>
           <CustomSelect
             id={compact ? "jira-source-switcher-compact" : "jira-source-switcher"}
             value={value || ""}
