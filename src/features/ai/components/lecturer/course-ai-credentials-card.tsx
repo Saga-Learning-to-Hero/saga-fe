@@ -122,22 +122,21 @@ export function CourseAiCredentialsCard({
   const statusDisplay = isConfigured
     ? getCredentialStatusDisplay(credential?.status)
     : {
-        label: "Chưa cấu hình khóa riêng",
-        badgeClass: "bg-muted text-muted-foreground border-border",
-        textClass: "text-muted-foreground",
-        Icon: AlertCircleIcon,
-      };
+      label: "Chưa cấu hình khóa riêng",
+      badgeClass: "bg-muted text-muted-foreground border-border",
+      textClass: "text-muted-foreground",
+      Icon: AlertCircleIcon,
+    };
 
   return (
     <div className="p-6 rounded-2xl border border-border bg-card shadow-xs space-y-5">
       <div className="flex items-start justify-between">
         <div className="flex items-center gap-3">
           <div
-            className={`w-10 h-10 rounded-xl flex items-center justify-center ${
-              role === "PRIMARY"
+            className={`w-10 h-10 rounded-xl flex items-center justify-center ${role === "PRIMARY"
                 ? "bg-primary/10 text-primary"
                 : "bg-purple-500/10 text-purple-600 dark:text-purple-400"
-            }`}
+              }`}
           >
             <KeyRoundIcon className="w-5 h-5" />
           </div>
@@ -231,8 +230,8 @@ export function CourseAiCredentialsCard({
               ? "Thay thế khóa API chính bằng khóa mới"
               : "Thay thế khóa API đối chứng bằng khóa mới"
             : role === "PRIMARY"
-            ? "Nhập OpenAI API Key chính của khóa học (PRIMARY)"
-            : "Nhập OpenAI API Key đối chứng (SECONDARY - Tùy chọn)"}
+              ? "Nhập OpenAI API Key chính của khóa học (PRIMARY)"
+              : "Nhập OpenAI API Key đối chứng (SECONDARY - Tùy chọn)"}
         </label>
         <div className="flex gap-2">
           <div className="relative flex-1">
