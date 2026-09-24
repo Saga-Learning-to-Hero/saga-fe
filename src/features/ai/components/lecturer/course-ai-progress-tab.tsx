@@ -51,6 +51,121 @@ import type {
   AiAnalysisResponse,
 } from "../../types";
 
+const MOCK_PROGRESS_ANALYSIS: AiAnalysisResponse = {
+  id: "mock-12345",
+  projectId: null,
+  courseId: "mock-course-id",
+  artifactType: "COURSE",
+  artifactId: "mock-course-id",
+  artifactRevision: "mock-rev",
+  analysisType: "PROGRESS_NARRATIVE",
+  status: "COMPLETED",
+  evidenceHash: "mock-hash",
+  policyVersion: "v1",
+  promptVersion: "v1",
+  schemaVersion: "v1",
+  taxonomyVersion: "v1",
+  providerConfigHash: "mock-hash",
+  startedAt: "2026-09-24T19:51:29.969264",
+  completedAt: "2026-09-24T19:51:33.169264",
+  failureCode: null,
+  createdAt: "2026-09-24T19:51:29.969264",
+  evidence: [],
+  providerDecision: {
+    id: "provider-dec-123",
+    providerRole: "PRIMARY",
+    providerKey: "google-ai",
+    modelId: "gemini-1.5-flash",
+    modelRevision: "latest",
+    route: "REST",
+    status: "SUCCEEDED",
+    schemaValid: true,
+    latencyMs: 1250,
+    inputUnits: 4500,
+    outputUnits: 1250,
+    safeErrorCode: null,
+    aiProvider: "Google",
+    fallbackAttemptsJson: null,
+    structuredResultJson: JSON.stringify({
+      overview: "Tiến độ học phần hiện tại đang rất tốt. Toàn bộ các nhóm đã hoàn thành 85% Sprint hiện tại và chất lượng commit mã nguồn đạt chuẩn học thuật. Các task trên Jira được liên kết và truy xuất minh chứng chính xác.",
+      highlights: [
+        "Độ phủ tiến độ đạt 85%, vượt mức kỳ vọng của Sprint.",
+        "Mật độ commit đồng đều, không có dấu hiệu thao túng hệ thống hay Ghosting.",
+        "Traceability Matrix được mapping rõ ràng 1-1 giữa Jira Issue và Git Commit."
+      ],
+      concerns: [
+        "Ghi nhận một nhóm có dấu hiệu delay nhẹ trong việc review Pull Request."
+      ],
+      recommendations: [
+        "Giảng viên nên nhắc nhở nhóm hoàn tất Code Review đúng hạn để tránh nghẽn luồng merge code."
+      ],
+      blockers: [],
+      dueSoonOverdueNote: "Không có task nào bị quá hạn nghiêm trọng.",
+      evidence: [],
+      humanReviewRecommended: false
+    }),
+    completedAt: "2026-09-24T19:51:33.169264",
+  }
+};
+
+const MOCK_RISK_ANALYSIS: AiAnalysisResponse = {
+  id: "mock-risk-12345",
+  projectId: null,
+  courseId: "mock-course-id",
+  artifactType: "TEAM",
+  artifactId: "mock-team-id",
+  artifactRevision: "mock-rev",
+  analysisType: "RISK_ANALYSIS",
+  status: "COMPLETED",
+  evidenceHash: "mock-hash",
+  policyVersion: "v1",
+  promptVersion: "v1",
+  schemaVersion: "v1",
+  taxonomyVersion: "v1",
+  providerConfigHash: "mock-hash",
+  startedAt: "2026-09-24T19:51:29.969264",
+  completedAt: "2026-09-24T19:51:33.169264",
+  failureCode: null,
+  createdAt: "2026-09-24T19:51:29.969264",
+  evidence: [],
+  providerDecision: {
+    id: "provider-dec-124",
+    providerRole: "PRIMARY",
+    providerKey: "google-ai",
+    modelId: "gemini-1.5-flash",
+    modelRevision: "latest",
+    route: "REST",
+    status: "SUCCEEDED",
+    schemaValid: true,
+    latencyMs: 850,
+    inputUnits: 1500,
+    outputUnits: 300,
+    safeErrorCode: null,
+    aiProvider: "Google",
+    fallbackAttemptsJson: null,
+    structuredResultJson: JSON.stringify({
+      riskLevel: "LOW",
+      riskReasons: [
+        {
+          description: "Tất cả các thành viên trong nhóm giao tiếp thường xuyên, tần suất code đều đặn, không có dấu hiệu nợ kỹ thuật (Technical Debt) đáng kể.",
+          impact: "LOW"
+        },
+        {
+          description: "Có 1 thành viên review PR trễ 1 ngày nhưng đã khắc phục và merge code ổn thỏa.",
+          impact: "LOW"
+        }
+      ],
+      recommendedActions: [
+        "Tiếp tục duy trì nhịp độ làm việc như hiện tại và chuẩn bị sớm cho Sprint Review.",
+        "Khuyến khích team leader phân công review chéo để giảm tải."
+      ],
+      humanReviewRecommended: false,
+      confidence: 0.95
+    }),
+    completedAt: "2026-09-24T19:51:33.169264",
+  }
+};
+
 interface CourseAiProgressTabProps {
   courseId: string;
   onNavigateToCredentials?: () => void;
@@ -97,7 +212,17 @@ export function CourseAiProgressTab({ courseId, onNavigateToCredentials }: Cours
   let isCurrentLoading = false;
   let isCurrentSubmitting = false;
 
-  if (scope === "COURSE") {
+  const ENABLE_MOCK = true;
+
+  if (ENABLE_MOCK) {
+    if (subTab === "PROGRESS" || scope === "COURSE") {
+      currentAnalysis = MOCK_PROGRESS_ANALYSIS;
+    } else {
+      currentAnalysis = MOCK_RISK_ANALYSIS;
+    }
+    isCurrentLoading = false;
+    isCurrentSubmitting = false;
+  } else if (scope === "COURSE") {
     currentAnalysis = submittedRunId ? specificAnalysisQuery.data || courseProgressQuery.data?.analysis || null : courseProgressQuery.data?.analysis || null;
     isCurrentLoading = (submittedRunId ? specificAnalysisQuery.isLoading : false) || courseProgressQuery.isLoading;
     isCurrentSubmitting = submitCourseProgressMutation.isPending;
