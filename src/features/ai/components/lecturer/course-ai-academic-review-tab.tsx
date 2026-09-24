@@ -22,6 +22,7 @@ import { Input } from "@/components/ui/input";
 import { CustomSelect } from "@/components/common/custom-select";
 import { useCourseAcademicClassifications, AI_LECTURER_QUERY_KEYS } from "../../hooks/use-lecturer-ai";
 import { AcademicAiService } from "../../api/academic-ai-api";
+import { useLecturerTeams } from "@/features/lecturer/teams/hooks/use-lecturer-teams";
 import type {
   LecturerCourseAcademicClassificationResponse,
   AiAcademicTargetType,
@@ -36,6 +37,9 @@ interface CourseAiAcademicReviewTabProps {
 export function CourseAiAcademicReviewTab({ courseId }: CourseAiAcademicReviewTabProps) {
   const queryClient = useQueryClient();
 
+  const { data: teamsData } = useLecturerTeams(courseId);
+  const teams = teamsData?.teams || [];
+  const [teamFilter, setTeamFilter] = useState<string>("ALL");
   const [artifactTypeFilter, setArtifactTypeFilter] = useState<string>("ALL");
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
   const [page, setPage] = useState(0);
@@ -44,6 +48,7 @@ export function CourseAiAcademicReviewTab({ courseId }: CourseAiAcademicReviewTa
   const queryParams = {
     artifactType: artifactTypeFilter !== "ALL" ? (artifactTypeFilter as Extract<AiArtifactType, "TASK" | "COMMIT">) : undefined,
     status: statusFilter !== "ALL" ? (statusFilter as AiAcademicClassificationStatus) : undefined,
+    teamId: teamFilter !== "ALL" ? teamFilter : undefined,
     page,
     size: pageSize,
   };
@@ -120,6 +125,21 @@ export function CourseAiAcademicReviewTab({ courseId }: CourseAiAcademicReviewTa
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
+          <div className="w-48">
+            <CustomSelect
+              id="filter-team"
+              value={teamFilter}
+              onChange={(val) => {
+                setTeamFilter(val);
+                setPage(0);
+              }}
+              options={[
+                { value: "ALL", label: "Tất cả nhóm" },
+                ...teams.map((t) => ({ value: t.teamId, label: t.teamName })),
+              ]}
+            />
+          </div>
+
           <div className="w-40">
             <CustomSelect
               id="filter-artifact-type"
