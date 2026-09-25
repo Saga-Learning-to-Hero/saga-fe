@@ -124,8 +124,7 @@ Bảng này là checklist chức năng cấp cao dành cho tài liệu báo cáo
 | SCOPE-14 | Contribution | Bốn nhóm CODE/TEST/DOCUMENT/RESEARCH; mode COURSE/PROJECT_GROUP; evidence eligibility; peer coefficient; normalization; warning; kết quả cuối do Backend tính canonical và Lecturer xem ở chế độ chỉ đọc |
 | SCOPE-15 | Quản trị và kiểm toán | User status; audit log; integration/sync observability; lỗi có mã; dữ liệu mock không xuất hiện trong bản production/report |
 | SCOPE-16 | Chất lượng hệ thống | Authorization server-side; isolation theo account/course/project; timezone nhất quán; accessibility/responsive; test; không N+1/refetch storm |
-| SCOPE-17 | Trung tâm thông báo & Web Push | Hộp thư thông báo canonical (REST); User-scoped SSE; Firebase Web Push FCM; bell badge/preview/sheet; broadcast Admin; targeted notification Giảng viên theo 4 scope; Idempotency-Key và điều phối đăng xuất tập trung |
-| SCOPE-18 | AI-assisted Commit Intelligence và Academic Classification | Phân tích Commit theo project với durable run, exact-SHA evidence snapshot, bounded changed-file/patch evidence, provider-decision metadata, structured-result validation và idempotency; hỗ trợ proposal phân loại Task/Commit theo Syllabus cùng Lecturer confirm/reject/correct; OpenAI provider chỉ hoạt động khi được bật/cấu hình và FE presentation hiện chưa có |
+| SCOPE-18 | AI-assisted Intelligence, Academic Review và Multi-Provider BYOK | Phân tích Commit, Task và Risk theo project/course với durable run, exact-SHA evidence snapshot, provider-decision metadata (aiProvider, fallbackAttemptsJson), structured-result validation; hỗ trợ proposal phân loại theo Syllabus cùng Lecturer review; Multi-Provider Catalog động (OPENAI, GEMINI, OPENROUTER) với metadata và freeTierNotice; tách bạch giữa model binding và credential; chuỗi dự phòng Course Fallback Chain (tối đa 3 cấp, áp dụng cho PRIMARY, dùng credential của khóa học); SECONDARY Brain đối chứng độc lập (tùy chọn, không fallback tự động); allowPlatformFallback chỉ áp dụng cho phân tích thủ công; phân tích tự động Commit/Task/Risk bắt buộc dùng khóa PRIMARY của khóa học; trạng thái khóa chuẩn UNVERIFIED, ACTIVE, DEGRADED, INVALID, REVOKED |
 
 ---
 
@@ -615,9 +614,13 @@ Project Type dùng để phân loại hướng dự án, không điều khiển 
 
 | Endpoint | FE hiện tại |
 | --- | --- |
-| `GET/PATCH /api/lecturer/courses/{courseId}/ai-settings` | Đã dùng (Bật/tắt tự động hóa AI, platform fallback) |
-| `GET/PUT/DELETE /api/lecturer/courses/{courseId}/ai-credentials/{role}` | Đã dùng (BYOK lưu an toàn API key OpenAI Primary & Secondary) |
-| `POST /api/lecturer/courses/{courseId}/ai/progress-analyses` & `/latest` | Đã dùng (Báo cáo tiến độ lớp học) |
+| `GET /api/lecturer/courses/{courseId}/ai-provider-catalog` | Đã dùng (Danh mục nhà cung cấp OpenAI, Gemini, OpenRouter cùng danh sách model, metadata và freeTierNotice) |
+| `GET/PATCH /api/lecturer/courses/{courseId}/ai-settings` | Đã dùng (Bật/tắt tự động hóa AI, cho phép khóa nền tảng cho phân tích thủ công) |
+| `PUT /api/lecturer/courses/{courseId}/ai-settings/bindings` | Đã dùng (Cấu hình liên kết model PRIMARY, chuỗi dự phòng Fallback Chain tối đa 3 cấp, và SECONDARY Brain) |
+| `GET /api/lecturer/courses/{courseId}/ai-credentials` | Đã dùng (Danh sách tất cả API key đã lưu trữ an toàn) |
+| `GET/PUT/DELETE /api/lecturer/courses/{courseId}/ai-credentials/{role}/{provider}` | Đã dùng (Quản lý API key theo vai trò PRIMARY/SECONDARY và từng provider OPENAI/GEMINI/OPENROUTER) |
+| `GET/PUT/DELETE /api/lecturer/courses/{courseId}/ai-credentials/{role}` | Đã dùng (Legacy backward-compatible API key endpoint cho OpenAI) |
+| `POST /api/lecturer/courses/{courseId}/ai/progress-analyses` & `/latest` | Đã dùng (Báo cáo tiến độ lớp học kèm aiProvider provenance và fallbackAttemptsJson) |
 | `GET /api/lecturer/courses/{courseId}/ai/analyses/{id}/export.docx` | Đã dùng (Xuất file Word .docx khóa học) |
 | `POST /api/projects/{projectId}/ai/team/progress-analyses` & `/latest` | Đã dùng (Báo cáo tiến độ nhóm dự án) |
 | `POST /api/projects/{projectId}/ai/students/{studentId}/progress-analyses` & `/latest` | Đã dùng (Tiến độ cá nhân sinh viên) |

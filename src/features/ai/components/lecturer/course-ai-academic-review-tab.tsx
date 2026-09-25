@@ -22,6 +22,7 @@ import { Input } from "@/components/ui/input";
 import { CustomSelect } from "@/components/common/custom-select";
 import { useCourseAcademicClassifications, AI_LECTURER_QUERY_KEYS } from "../../hooks/use-lecturer-ai";
 import { AcademicAiService } from "../../api/academic-ai-api";
+import { useLecturerTeams } from "@/features/lecturer/teams/hooks/use-lecturer-teams";
 import type {
   LecturerCourseAcademicClassificationResponse,
   AiAcademicTargetType,
@@ -36,6 +37,9 @@ interface CourseAiAcademicReviewTabProps {
 export function CourseAiAcademicReviewTab({ courseId }: CourseAiAcademicReviewTabProps) {
   const queryClient = useQueryClient();
 
+  const { data: teamsData } = useLecturerTeams(courseId);
+  const teams = teamsData?.teams || [];
+  const [teamFilter, setTeamFilter] = useState<string>("ALL");
   const [artifactTypeFilter, setArtifactTypeFilter] = useState<string>("ALL");
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
   const [page, setPage] = useState(0);
@@ -44,6 +48,7 @@ export function CourseAiAcademicReviewTab({ courseId }: CourseAiAcademicReviewTa
   const queryParams = {
     artifactType: artifactTypeFilter !== "ALL" ? (artifactTypeFilter as Extract<AiArtifactType, "TASK" | "COMMIT">) : undefined,
     status: statusFilter !== "ALL" ? (statusFilter as AiAcademicClassificationStatus) : undefined,
+    teamId: teamFilter !== "ALL" ? teamFilter : undefined,
     page,
     size: pageSize,
   };
@@ -112,14 +117,29 @@ export function CourseAiAcademicReviewTab({ courseId }: CourseAiAcademicReviewTa
       <div className="p-6 rounded-2xl border border-border bg-card shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h3 className="text-base font-bold text-foreground">
-            Đối soát và Phê duyệt Phân loại Học thuật Toàn Khóa học
+            Đối soát và Phê duyệt Phân loại Đề cương
           </h3>
           <p className="text-xs text-muted-foreground mt-0.5">
-            Tổng hợp toàn bộ các đề xuất AI gán Task và Commit vào từng Giai đoạn (Phase) hoặc Sản phẩm bàn giao (Deliverable) của Đề cương cho mọi nhóm trong lớp.
+            Tổng hợp đề xuất AI gán Jira Task và Git Commit vào Giai đoạn hoặc Sản phẩm bàn giao của Đề cương chi tiết.
           </p>
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
+          <div className="w-48">
+            <CustomSelect
+              id="filter-team"
+              value={teamFilter}
+              onChange={(val) => {
+                setTeamFilter(val);
+                setPage(0);
+              }}
+              options={[
+                { value: "ALL", label: "Tất cả nhóm" },
+                ...teams.map((t) => ({ value: t.teamId, label: t.teamName })),
+              ]}
+            />
+          </div>
+
           <div className="w-40">
             <CustomSelect
               id="filter-artifact-type"
@@ -130,8 +150,8 @@ export function CourseAiAcademicReviewTab({ courseId }: CourseAiAcademicReviewTa
               }}
               options={[
                 { value: "ALL", label: "Tất cả đối tượng" },
-                { value: "TASK", label: "Task Jira" },
-                { value: "COMMIT", label: "Commit Git" },
+                { value: "TASK", label: "Jira Task" },
+                { value: "COMMIT", label: "Git Commit" },
               ]}
             />
           </div>
@@ -146,10 +166,10 @@ export function CourseAiAcademicReviewTab({ courseId }: CourseAiAcademicReviewTa
               }}
               options={[
                 { value: "ALL", label: "Tất cả trạng thái" },
-                { value: "PROPOSED", label: "Chờ duyệt (Proposed)" },
-                { value: "CONFIRMED", label: "Đã duyệt (Confirmed)" },
-                { value: "REJECTED", label: "Đã từ chối (Rejected)" },
-                { value: "CORRECTED", label: "Đã điều chỉnh (Corrected)" },
+                { value: "PROPOSED", label: "Chờ duyệt" },
+                { value: "CONFIRMED", label: "Đã duyệt" },
+                { value: "REJECTED", label: "Từ chối" },
+                { value: "CORRECTED", label: "Đã điều chỉnh" },
               ]}
             />
           </div>
@@ -159,16 +179,16 @@ export function CourseAiAcademicReviewTab({ courseId }: CourseAiAcademicReviewTa
       {isLoading ? (
         <div className="p-12 rounded-2xl border border-border bg-card flex flex-col items-center justify-center gap-3">
           <Loader2Icon className="w-6 h-6 animate-spin text-primary" />
-          <span className="text-xs text-muted-foreground">Đang tải dữ liệu phân loại học thuật toàn khóa học...</span>
+          <span className="text-xs text-muted-foreground">Đang tải dữ liệu phân loại đề cương từ server...</span>
         </div>
       ) : items.length === 0 ? (
         <div className="p-12 rounded-2xl border border-dashed border-border bg-muted/10 text-center space-y-3">
           <div className="w-12 h-12 rounded-2xl bg-primary/10 text-primary mx-auto flex items-center justify-center">
             <GraduationCapIcon className="w-6 h-6" />
           </div>
-          <h4 className="text-sm font-semibold text-foreground">Không có bản ghi phân loại học thuật nào</h4>
+          <h4 className="text-sm font-semibold text-foreground">Không có bản ghi phân loại đề cương nào</h4>
           <p className="text-xs text-muted-foreground max-w-md mx-auto">
-            Chưa có đề xuất phân loại nào phù hợp với bộ lọc hiện tại. Khi sinh viên đẩy commit hoặc cập nhật task có kích hoạt phân loại AI, các bản ghi sẽ xuất hiện tại đây.
+            Chưa có đề xuất phân loại nào phù hợp với bộ lọc hiện tại. Khi sinh viên đẩy commit hoặc cập nhật task, hệ thống sẽ đề xuất phân loại tại đây.
           </p>
         </div>
       ) : (
@@ -178,11 +198,11 @@ export function CourseAiAcademicReviewTab({ courseId }: CourseAiAcademicReviewTa
               <table className="w-full text-left text-xs">
                 <thead className="bg-muted/40 border-b border-border text-muted-foreground uppercase font-semibold">
                   <tr>
-                    <th className="p-4">Dự án & Nhóm</th>
-                    <th className="p-4">Đối tượng (Task / Commit)</th>
-                    <th className="p-4">Mục tiêu đề cương (AI đề xuất)</th>
+                    <th className="p-4">Dự án và Nhóm</th>
+                    <th className="p-4">Đối tượng kiểm định</th>
+                    <th className="p-4">Mục tiêu Đề cương</th>
                     <th className="p-4">Độ tin cậy</th>
-                    <th className="p-4">Tính pháp lý</th>
+                    <th className="p-4">Thẩm quyền</th>
                     <th className="p-4">Trạng thái</th>
                     <th className="p-4 text-right">Thao tác</th>
                   </tr>
@@ -393,13 +413,13 @@ export function CourseAiAcademicReviewTab({ courseId }: CourseAiAcademicReviewTa
                       value={correctedTargetType}
                       onChange={(val) => setCorrectedTargetType(val as AiAcademicTargetType)}
                       options={[
-                        { value: "PHASE", label: "Giai đoạn đề cương (Phase)" },
-                        { value: "EXPECTED_DELIVERABLE", label: "Sản phẩm bàn giao (Deliverable)" },
+                        { value: "PHASE", label: "Giai đoạn đề cương" },
+                        { value: "EXPECTED_DELIVERABLE", label: "Sản phẩm bàn giao" },
                       ]}
                     />
 
                     <label className="text-xs font-semibold text-foreground block">
-                      ID Mục tiêu chính xác trong Syllabus
+                      Mã định danh mục tiêu trong Đề cương
                     </label>
                     <Input
                       required
