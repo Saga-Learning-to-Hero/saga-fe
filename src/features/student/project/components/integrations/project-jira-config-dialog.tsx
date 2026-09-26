@@ -1,9 +1,9 @@
 "use client";
+import { showSuccessToast, showErrorToast } from "@/lib/api-error";
 
 import { useState, useMemo } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { toast } from "@/components/ui/sonner";
 import { CustomSelect } from "@/components/common/custom-select";
 import {
   CheckSquareIcon, Loader2Icon, ExternalLinkIcon, RefreshCwIcon,
@@ -72,16 +72,16 @@ export function ProjectJiraConfigDialog({
   ], [boards]);
 
   const handleSave = async () => {
-    if (!selectedSiteId) return toast.error("Vui lòng chọn Jira Site");
-    if (!selectedProjectId) return toast.error("Vui lòng chọn Jira Project");
+    if (!selectedSiteId) return showErrorToast("Vui lòng chọn Jira Site");
+    if (!selectedProjectId) return showErrorToast("Vui lòng chọn Jira Project");
     try {
       const payload: UpdateProjectJiraPayload = { cloudId: selectedSiteId, jiraProjectId: selectedProjectId };
       if (selectedBoardId && selectedBoardId !== "NONE") payload.boardId = selectedBoardId;
       await updateJiraMutation.mutateAsync({ projectId, payload });
-      toast.success("Lưu cấu hình Jira cho dự án thành công!");
+      showSuccessToast("Lưu cấu hình Jira cho dự án thành công!");
       handleOpenChange(false);
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Không thể lưu cấu hình Jira");
+      showErrorToast(error instanceof Error ? error.message : "Không thể lưu cấu hình Jira");
     }
   };
 

@@ -1,10 +1,10 @@
 "use client";
 
+import { showErrorToast } from "@/lib/api-error";
 import { useState, useRef, useEffect } from "react";
 import { PlusIcon, Loader2Icon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { toast } from "sonner";
 import { useCreateProjectTask } from "../hooks/use-project-tasks";
 
 interface QuickCreateTaskProps {
@@ -90,7 +90,7 @@ export function QuickCreateTask({
     if (!trimmed) return;
 
     if (!projectId) {
-      toast.error("Không tìm thấy thông tin dự án.");
+      showErrorToast("Không tìm thấy thông tin dự án.");
       return;
     }
 
@@ -101,7 +101,7 @@ export function QuickCreateTask({
       if (!sprintExternalId || isNaN(Number(sprintExternalId))) {
         const msg = `Sprint "${sprintName || sprintId}" chưa có ID đồng bộ hợp lệ trên Jira. Không thể tạo task vào sprint này.`;
         setErrorMessage(msg);
-        toast.error(msg);
+        showErrorToast(msg);
         return;
       }
       targetExternalSprintId = String(sprintExternalId);

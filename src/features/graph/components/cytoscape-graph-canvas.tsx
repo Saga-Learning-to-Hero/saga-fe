@@ -1379,7 +1379,7 @@ export function CytoscapeGraphCanvas({
           <LayersIcon className="w-3.5 h-3.5 text-primary" />
           Bố cục:
         </span>
-        {(["breadthfirst", "cose"] as const).map((l) => (
+        {(["breadthfirst", "cose", "concentric", "circle"] as const).map((l) => (
           <button
             key={l}
             onClick={() => handleLayoutChange(l)}
@@ -1388,7 +1388,9 @@ export function CytoscapeGraphCanvas({
               : "text-muted-foreground hover:text-foreground hover:bg-muted"
               }`}
           >
-            {l === "breadthfirst" ? "Hierarchical (DAG)" : "Force-directed"}
+            {l === "breadthfirst" ? "Hierarchical (DAG)" :
+              l === "cose" ? "Force-directed" :
+                l === "concentric" ? "Concentric" : "Circle"}
           </button>
         ))}
       </div>

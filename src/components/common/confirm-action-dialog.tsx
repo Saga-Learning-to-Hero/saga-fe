@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 
-interface ConfirmDeleteDialogProps {
+interface ConfirmActionDialogProps {
   isOpen: boolean;
   onClose: () => void;
   onConfirm: () => void;
@@ -20,9 +20,14 @@ interface ConfirmDeleteDialogProps {
   itemName?: string;
   itemType?: string; // VD: "môn học", "học kỳ", "lớp học"
   isLoading?: boolean;
+  confirmText?: string;
+  loadingText?: string;
+  confirmVariant?: "default" | "destructive" | "outline" | "secondary" | "ghost" | "link";
+  icon?: React.ReactNode;
+  iconClassName?: string;
 }
 
-export function ConfirmDeleteDialog({
+export function ConfirmActionDialog({
   isOpen,
   onClose,
   onConfirm,
@@ -31,13 +36,18 @@ export function ConfirmDeleteDialog({
   itemName,
   itemType = "mục này",
   isLoading = false,
-}: ConfirmDeleteDialogProps) {
+  confirmText = "Xác nhận xóa",
+  loadingText = "Đang xử lý...",
+  confirmVariant = "destructive",
+  icon = <AlertTriangleIcon className="w-5 h-5" />,
+  iconClassName = "bg-danger-muted text-danger",
+}: ConfirmActionDialogProps) {
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="max-w-md p-6 rounded-2xl">
         <DialogHeader className="flex flex-row items-start gap-3 space-y-0 text-left">
-          <div className="w-10 h-10 rounded-xl bg-danger-muted flex items-center justify-center text-danger shrink-0">
-            <AlertTriangleIcon className="w-5 h-5" />
+          <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${iconClassName}`}>
+            {icon}
           </div>
           <div className="space-y-1">
             <DialogTitle className="text-base font-bold text-foreground">
@@ -70,13 +80,13 @@ export function ConfirmDeleteDialog({
           </Button>
           <Button
             type="button"
-            variant="destructive"
+            variant={confirmVariant}
             size="sm"
             onClick={onConfirm}
             disabled={isLoading}
             className="text-xs font-semibold"
           >
-            {isLoading ? "Đang xóa..." : "Xác nhận xóa"}
+            {isLoading ? loadingText : confirmText}
           </Button>
         </DialogFooter>
       </DialogContent>

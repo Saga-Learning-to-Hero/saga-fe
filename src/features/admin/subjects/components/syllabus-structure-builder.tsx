@@ -1,5 +1,6 @@
 "use client";
 
+import { showSuccessToast, showErrorToast } from "@/lib/api-error";
 import { useState } from "react";
 import {
   AwardIcon,
@@ -12,7 +13,6 @@ import {
   CheckCircle2Icon,
   SparklesIcon,
 } from "lucide-react";
-import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -329,17 +329,17 @@ export function SyllabusStructureBuilder({
         ],
       },
     ]);
-    toast.success("Đã nạp thành công cấu trúc đề cương mẫu chuẩn (Tổng 100% trọng số).");
+    showSuccessToast("Đã nạp thành công cấu trúc đề cương mẫu chuẩn (Tổng 100% trọng số).");
   };
 
   const handleSave = async () => {
     if (!outcomes || outcomes.length === 0) {
-      toast.error("Vui lòng thêm ít nhất 1 Chuẩn đầu ra (CLO) trước khi lưu.");
+      showErrorToast("Vui lòng thêm ít nhất 1 Chuẩn đầu ra (CLO) trước khi lưu.");
       setActiveTab("clos");
       return;
     }
     if (!phases || phases.length === 0) {
-      toast.error("Vui lòng thêm ít nhất 1 Giai đoạn & Tiêu chí đánh giá (Phase) trước khi lưu.");
+      showErrorToast("Vui lòng thêm ít nhất 1 Giai đoạn & Tiêu chí đánh giá (Phase) trước khi lưu.");
       setActiveTab("phases");
       return;
     }

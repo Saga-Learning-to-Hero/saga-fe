@@ -1,5 +1,6 @@
 "use client";
 
+import { showSuccessToast, showErrorToast, getApiErrorMessage } from "@/lib/api-error";
 import { useState, useMemo } from "react";
 import type { SprintIssue, Sprint, IssueStatus, Epic } from "../types/sprint-progress";
 import { SprintHeader } from "./sprint-header";
@@ -31,8 +32,6 @@ import { useProjectTasksData, useTransitionTask, useTaskOptions } from "../hooks
 import { useProjectJiraSourceSelection } from "@/features/student/project/hooks/use-project-jira-source-selection";
 import { useProjectRealtime } from "@/features/student/project/hooks/use-project-realtime";
 import { useProjectSyncStatus, useSyncProject } from "@/features/student/project/hooks/useProjectSync";
-import { toast } from "sonner";
-import { getApiErrorMessage } from "@/lib/api-error";
 import {
   moveLocalIssueToSprint,
   restoreLocalSprintOverride,
@@ -335,7 +334,7 @@ export function SprintProgressView() {
     } catch {
       setLocalTaskOverrides((prev) => ({ ...prev, [issueId]: previousOverride || {} }));
       setLocalCustomIssues(previousCustomIssues);
-      toast.error("Không thể cập nhật trạng thái Task trên Jira.");
+      showErrorToast("Không thể cập nhật trạng thái Task trên Jira.");
     }
   };
 
@@ -363,7 +362,7 @@ export function SprintProgressView() {
     } catch {
       setLocalTaskOverrides((prev) => restoreLocalSprintOverride(prev, issueId, previousOverride));
       setLocalCustomIssues(previousCustomIssues);
-      toast.error("Không thể gán Task vào Sprint trên Jira.");
+      showErrorToast("Không thể gán Task vào Sprint trên Jira.");
     }
   };
 
@@ -371,9 +370,9 @@ export function SprintProgressView() {
     if (!projectId) return;
     try {
       await syncProjectMutation.mutateAsync(projectId);
-      toast.success("Đã gửi yêu cầu đồng bộ Jira & GitHub. Dữ liệu sẽ tự động cập nhật.");
+      showSuccessToast("Đã gửi yêu cầu đồng bộ Jira & GitHub. Dữ liệu sẽ tự động cập nhật.");
     } catch {
-      toast.error("Không thể kích hoạt đồng bộ từ Jira.");
+      showErrorToast("Không thể kích hoạt đồng bộ từ Jira.");
     }
   };
 
@@ -666,4 +665,4 @@ export function SprintProgressView() {
       )}
     </div>
   );
-}
+}

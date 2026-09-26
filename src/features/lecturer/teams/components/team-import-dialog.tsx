@@ -1,5 +1,6 @@
 "use client";
 
+import { showSuccessToast, showErrorToast } from "@/lib/api-error";
 import { useState } from "react";
 import {
   CheckCircle2Icon,
@@ -17,7 +18,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
 import { TeamPreviewTable } from "./team-preview-table";
 import {
   getTeamImportErrorMessage,
@@ -71,7 +71,7 @@ export function TeamImportDialog({
     try {
       await downloadMutation.mutateAsync(courseId);
     } catch (error) {
-      toast.error(getTeamImportErrorMessage(error));
+      showErrorToast(getTeamImportErrorMessage(error));
     }
   };
 
@@ -86,10 +86,10 @@ export function TeamImportDialog({
     try {
       const preview = await previewMutation.mutateAsync({ courseId, file });
       setPreviewData(preview);
-      toast.success(`Đã phân tích ${preview.summary.totalRows} dòng từ file Excel.`);
+      showSuccessToast(`Đã phân tích ${preview.summary.totalRows} dòng từ file Excel.`);
     } catch (error) {
       setPreviewData(null);
-      toast.error(getTeamImportErrorMessage(error));
+      showErrorToast(getTeamImportErrorMessage(error));
     }
   };
 
@@ -105,7 +105,7 @@ export function TeamImportDialog({
       onOpenChange(false);
     } catch (error) {
       const code = getApiErrorCode(error);
-      toast.error(getTeamImportErrorMessage(error));
+      showErrorToast(getTeamImportErrorMessage(error));
 
       if (shouldClearTeamPreview(error)) {
         resetPreviewState();

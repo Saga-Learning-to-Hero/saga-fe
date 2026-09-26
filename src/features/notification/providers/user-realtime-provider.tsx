@@ -1,10 +1,10 @@
 "use client";
+import { showErrorToast, showInfoToast } from "@/lib/api-error";
 
 import { createContext, useContext, useEffect, useRef, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import { onMessage } from "firebase/messaging";
-import { toast } from "@/components/ui/sonner";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
 import { performLogout } from "@/features/auth/lib/logout-orchestrator";
 import { API_BASE_URL } from "@/lib/axios";
@@ -56,7 +56,7 @@ export function UserRealtimeProvider({ children }: { children: ReactNode }) {
         eventSourceRef.current.close();
         eventSourceRef.current = null;
       }
-      toast.error("Tài khoản của bạn đã bị khóa hoặc vô hiệu hóa.");
+      showErrorToast("Tài khoản của bạn đã bị khóa hoặc vô hiệu hóa.");
       void performLogout({
         queryClient,
         onRedirect: () => router.replace("/login"),
@@ -93,7 +93,7 @@ export function UserRealtimeProvider({ children }: { children: ReactNode }) {
         const title = payload.notification?.title || payload.data?.title;
         const body = payload.notification?.body || payload.data?.message;
         if (title) {
-          toast.info(title, {
+          showInfoToast(title, {
             id: `fcm-${payload.messageId || Date.now()}`,
             description: body || undefined,
           });

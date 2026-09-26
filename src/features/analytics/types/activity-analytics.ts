@@ -46,6 +46,7 @@ export interface GetHeatmapParams {
 
 export interface BurndownPoint {
   date: string;
+  idealRemaining?: number;
   actualRemaining: number;
   doneCount: number;
 }

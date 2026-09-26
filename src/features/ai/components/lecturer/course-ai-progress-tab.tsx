@@ -1,6 +1,6 @@
+import { showSuccessToast, showErrorToast, showInfoToast } from "@/lib/api-error";
 import { useState } from "react";
 import { getAiProviderDisplayName } from "../../lib/ai-provider-format";
-import { toast } from "sonner";
 import {
   SparklesIcon,
   DownloadIcon,
@@ -160,14 +160,14 @@ export function CourseAiProgressTab({ courseId, onNavigateToCredentials }: Cours
       submitCourseProgressMutation.mutate(undefined, {
         onSuccess: (data) => {
           setSubmittedRunId(data.analysis.id);
-          if (data.httpStatus === 202) {
-            toast.success("Tiến trình phân tích mới đã được xếp hàng", { description: "AI đang chạy phân tích ngầm..." });
+          if (!data.isReused) {
+            showSuccessToast("Tiến trình phân tích mới đã được xếp hàng");
           } else {
-            toast.info("Đã tái sử dụng phân tích", { description: "Tiến độ hiện tại chưa có biến động mới cần phân tích." });
+            showInfoToast("Đã tái sử dụng phân tích");
           }
         },
         onError: () => {
-          toast.error("Lỗi khi gọi phân tích AI");
+          showErrorToast("Lỗi khi gọi phân tích AI");
         }
       });
     } else if (scope === "TEAM") {

@@ -11,6 +11,7 @@ import type {
   AiProviderRole,
   LecturerCourseAcademicClassificationPageResponse,
   CourseAcademicClassificationFilterParams,
+  CourseAiProgressSubmitResult,
 } from "../types";
 
 export const CourseAiService = {
@@ -101,11 +102,14 @@ export const CourseAiService = {
     await apiClient.delete(path);
   },
 
-  async submitCourseProgress(courseId: string): Promise<{ analysis: AiAnalysisResponse; httpStatus: number }> {
+  async submitCourseProgress(courseId: string): Promise<CourseAiProgressSubmitResult> {
     const response = await apiClient.post<AiAnalysisResponse>(
       `/api/lecturer/courses/${courseId}/ai/progress-analyses`
     );
-    return { analysis: response.data, httpStatus: response.status };
+    return {
+      analysis: response.data,
+      isReused: response.status === 200,
+    };
   },
 
   async getLatestCourseProgress(courseId: string): Promise<AiLatestAnalysisResponse> {

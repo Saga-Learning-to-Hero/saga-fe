@@ -1,4 +1,5 @@
 "use client";
+import { showErrorToast } from "@/lib/api-error";
 
 import { useState } from "react";
 import Link from "next/link";
@@ -10,7 +11,6 @@ import {
   CheckCircle2Icon,
   UserPlusIcon,
 } from "lucide-react";
-import { toast } from "@/components/ui/sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -44,7 +44,7 @@ export function RegisterForm() {
     if (!validation.isValid) {
       setFieldErrors(validation.errors);
       const firstMsg = Object.values(validation.errors)[0] || "Vui lòng kiểm tra lại thông tin đăng ký.";
-      toast.error(firstMsg, { id: "register-validation-error" });
+      showErrorToast(firstMsg, { id: "register-validation-error" });
       return;
     }
     setFieldErrors({});

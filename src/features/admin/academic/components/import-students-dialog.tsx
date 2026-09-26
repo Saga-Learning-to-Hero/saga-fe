@@ -1,5 +1,6 @@
 "use client";
 
+import { showSuccessToast } from "@/lib/api-error";
 import { useState } from "react";
 import {
   UploadCloudIcon,
@@ -22,7 +23,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from "@/components/ui/table";
-import { toast } from "sonner";
 import {
   usePreviewRosterImport,
   useConfirmRosterImport,
@@ -75,7 +75,7 @@ export function ImportStudentsDialog({
     try {
       const res = await previewMutation.mutateAsync({ courseId: effectiveCourseId, file });
       setPreviewData(res);
-      toast.success(`Đã đọc ${res.summary.totalRows} dòng từ file Excel.`);
+      showSuccessToast(`Đã đọc ${res.summary.totalRows} dòng từ file Excel.`);
     } catch {
       setPreviewData(null);
     }

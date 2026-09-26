@@ -1,4 +1,5 @@
 "use client";
+import { showSuccessToast, showErrorToast } from "@/lib/api-error";
 
 import { useState } from "react";
 import { XIcon, PencilIcon, Loader2Icon } from "lucide-react";
@@ -6,7 +7,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { toast } from "@/components/ui/sonner";
 import { useUpdateProject } from "../hooks/use-update-project";
 
 interface EditProjectDialogProps {
@@ -47,13 +47,13 @@ function EditProjectDialogContent({
         name: name.trim(),
         description: description.trim(),
       });
-      toast.success("Cập nhật thông tin dự án thành công!");
+      showSuccessToast("Cập nhật thông tin dự án thành công!");
       if (onSuccess) {
         onSuccess({ name: res.name, description: res.description });
       }
       onClose();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Không thể cập nhật dự án.");
+      showErrorToast(err instanceof Error ? err.message : "Không thể cập nhật dự án.");
     }
   };
 

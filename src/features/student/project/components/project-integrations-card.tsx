@@ -1,10 +1,11 @@
 "use client";
+import { toast } from "sonner";
+import { showSuccessToast, showErrorToast, showInfoToast } from "@/lib/api-error";
 
 import { useState, useEffect } from "react";
 import { Link2Icon, Loader2Icon } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { MemberRoleBadge } from "@/components/common/leader-badge";
-import { toast } from "@/components/ui/sonner";
 import {
   useProjectIntegrations, useDisconnectProjectJira, useDisconnectProjectGitHub,
   useConnectProjectGitHub, useConnectProjectJira, useProjectGitHubSetupCallback,
@@ -59,7 +60,7 @@ export function ProjectIntegrationsCard({ projectId, isLeader }: ProjectIntegrat
     const jiraSetup = urlParams.get("jira_setup");
     if (jiraSetup === "true") {
       window.history.replaceState({}, "", window.location.pathname);
-      toast.success("Đã ủy quyền Atlassian thành công! Vui lòng chọn Site, Project và Board.");
+      showSuccessToast("Đã ủy quyền Atlassian thành công! Vui lòng chọn Site, Project và Board.");
       void refetch();
       setTimeout(() => {
         setIsJiraModalOpen(true);
@@ -71,17 +72,17 @@ export function ProjectIntegrationsCard({ projectId, isLeader }: ProjectIntegrat
     }
 
     if (state && installationId) {
-      toast.loading("Đang hoàn tất kết nối GitHub cho dự án...", { id: "github-setup-callback" });
+      showInfoToast("Đang hoàn tất kết nối GitHub cho dự án...", { id: "github-setup-callback" });
       mutateSetupCallback(
         { projectId, state, installation_id: installationId, code },
         {
           onSuccess: () => {
             window.history.replaceState({}, "", window.location.pathname);
-            toast.success("Kết nối GitHub với dự án nhóm thành công!", { id: "github-setup-callback" });
+            showSuccessToast("Kết nối GitHub với dự án nhóm thành công!", { id: "github-setup-callback" });
             void refetch();
             setIsReposModalOpen(true);
           },
-          onError: () => toast.error("Lỗi khi kết nối GitHub với dự án. Vui lòng thử lại.", { id: "github-setup-callback" }),
+          onError: () => showErrorToast("Lỗi khi kết nối GitHub với dự án. Vui lòng thử lại.", { id: "github-setup-callback" }),
         }
       );
     }
@@ -89,7 +90,7 @@ export function ProjectIntegrationsCard({ projectId, isLeader }: ProjectIntegrat
 
   const handleRedirectJiraConnect = async () => {
     try {
-      toast.loading("Đang chuyển hướng sang Jira Atlassian...", { id: "jira-connect" });
+      showInfoToast("Đang chuyển hướng sang Jira Atlassian...", { id: "jira-connect" });
       const returnPath = typeof window !== "undefined"
         ? (() => {
           const url = new URL(window.location.href);
@@ -102,7 +103,7 @@ export function ProjectIntegrationsCard({ projectId, isLeader }: ProjectIntegrat
         window.location.href = result.authorizationUrl;
       }
     } catch {
-      toast.error("Lỗi khi kết nối Jira với dự án. Vui lòng thử lại sau.", { id: "jira-connect" });
+      showErrorToast("Lỗi khi kết nối Jira với dự án. Vui lòng thử lại sau.", { id: "jira-connect" });
     }
   };
 
@@ -112,7 +113,7 @@ export function ProjectIntegrationsCard({ projectId, isLeader }: ProjectIntegrat
 
   const handleRedirectGitHubConnect = async () => {
     try {
-      toast.loading("Đang chuyển hướng sang GitHub App...", { id: "github-connect" });
+      showInfoToast("Đang chuyển hướng sang GitHub App...", { id: "github-connect" });
       const returnPath = typeof window !== "undefined"
         ? `${window.location.pathname}${window.location.search}`
         : "/student/project-info";
@@ -131,7 +132,7 @@ export function ProjectIntegrationsCard({ projectId, isLeader }: ProjectIntegrat
         setIsGitHubInstallationsModalOpen(true);
         return;
       }
-      toast.error("Lỗi khi kết nối GitHub với dự án. Vui lòng thử lại sau.", { id: "github-connect" });
+      showErrorToast("Lỗi khi kết nối GitHub với dự án. Vui lòng thử lại sau.", { id: "github-connect" });
     }
   };
 
@@ -152,15 +153,15 @@ export function ProjectIntegrationsCard({ projectId, isLeader }: ProjectIntegrat
     try {
       if (disconnectModalType === "jira") {
         await disconnectJiraMutation.mutateAsync(projectId);
-        toast.success("Đã ngắt kết nối Jira của dự án thành công!");
+        showSuccessToast("Đã ngắt kết nối Jira của dự án thành công!");
       } else {
         await disconnectGitHubMutation.mutateAsync(projectId);
-        toast.success("Đã ngắt kết nối GitHub của dự án thành công!");
+        showSuccessToast("Đã ngắt kết nối GitHub của dự án thành công!");
       }
       setDisconnectModalType(null);
       await refetch();
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Không thể ngắt kết nối dịch vụ");
+      showErrorToast(error instanceof Error ? error.message : "Không thể ngắt kết nối dịch vụ");
     }
   };
 

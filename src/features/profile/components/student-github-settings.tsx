@@ -1,4 +1,5 @@
 "use client";
+import { showSuccessToast, showErrorToast, showInfoToast } from "@/lib/api-error";
 
 import { useState } from "react";
 import {
@@ -18,7 +19,6 @@ import {
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { toast } from "@/components/ui/sonner";
 import { GitHubConnectedCard } from "./github/github-connected-card";
 import { IdentityDisconnectDialog } from "./identity-disconnect-dialog";
 
@@ -45,7 +45,7 @@ export function StudentGitHubSettings({
 
   const handleConnectGitHubOAuth = async () => {
     try {
-      toast.loading("Đang chuyển hướng sang GitHub OAuth...", { id: "github-oauth" });
+      showInfoToast("Đang chuyển hướng sang GitHub OAuth...", { id: "github-oauth" });
       const defaultPath = "/profile/integrations";
       const currentPath = typeof window !== "undefined"
         ? (window.location.pathname.startsWith("/profile") ? window.location.pathname : defaultPath)
@@ -56,7 +56,7 @@ export function StudentGitHubSettings({
         window.open(result.authorizationUrl, "_self");
       }
     } catch {
-      toast.error("Lỗi khi kết nối với máy chủ GitHub. Vui lòng thử lại sau.", { id: "github-oauth" });
+      showErrorToast("Lỗi khi kết nối với máy chủ GitHub. Vui lòng thử lại sau.", { id: "github-oauth" });
     }
   };
 
@@ -64,11 +64,11 @@ export function StudentGitHubSettings({
     if (!identityId) return;
     const toastId = "github-primary";
     try {
-      toast.loading("Đang đặt tài khoản GitHub làm định danh chính...", { id: toastId });
+      showInfoToast("Đang đặt tài khoản GitHub làm định danh chính...", { id: toastId });
       await setPrimaryMutation.mutateAsync(identityId);
-      toast.success("Đã đặt tài khoản GitHub làm định danh chính!", { id: toastId });
+      showSuccessToast("Đã đặt tài khoản GitHub làm định danh chính!", { id: toastId });
     } catch {
-      toast.error("Không thể đặt làm định danh chính. Vui lòng thử lại.", { id: toastId });
+      showErrorToast("Không thể đặt làm định danh chính. Vui lòng thử lại.", { id: toastId });
     }
   };
 
@@ -76,12 +76,12 @@ export function StudentGitHubSettings({
     if (!disconnectItem) return;
     const toastId = "github-disconnect";
     try {
-      toast.loading("Đang hủy liên kết tài khoản GitHub...", { id: toastId });
+      showInfoToast("Đang hủy liên kết tài khoản GitHub...", { id: toastId });
       await deleteMutation.mutateAsync(disconnectItem.id);
-      toast.success("Đã hủy liên kết tài khoản GitHub cá nhân thành công!", { id: toastId });
+      showSuccessToast("Đã hủy liên kết tài khoản GitHub cá nhân thành công!", { id: toastId });
       setDisconnectItem(null);
     } catch {
-      toast.error("Lỗi khi hủy liên kết tài khoản GitHub. Vui lòng thử lại.", { id: toastId });
+      showErrorToast("Lỗi khi hủy liên kết tài khoản GitHub. Vui lòng thử lại.", { id: toastId });
     }
   };
 

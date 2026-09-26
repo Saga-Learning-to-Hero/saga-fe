@@ -1,4 +1,6 @@
 "use client";
+import { toast } from "sonner";
+import { showSuccessToast, showErrorToast, showInfoToast } from "@/lib/api-error";
 
 import { useState } from "react";
 import {
@@ -10,7 +12,6 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { toast } from "@/components/ui/sonner";
 import {
   GitBranchIcon,
   CheckCircle2Icon,
@@ -60,7 +61,7 @@ export function ProjectGitHubInstallationsDialog({
       return;
     }
     try {
-      toast.loading("Đang khởi tạo liên kết GitHub với tài khoản đã chọn...", { id: "github-select-connect" });
+      showInfoToast("Đang khởi tạo liên kết GitHub với tài khoản đã chọn...", { id: "github-select-connect" });
       const returnPath = typeof window !== "undefined"
         ? `${window.location.pathname}${window.location.search}`
         : "/student/project-info";
@@ -69,18 +70,18 @@ export function ProjectGitHubInstallationsDialog({
       if (res?.authorizationUrl && typeof window !== "undefined") {
         window.location.href = res.authorizationUrl;
       } else {
-        toast.success("Kết nối GitHub thành công!", { id: "github-select-connect" });
+        showSuccessToast("Kết nối GitHub thành công!", { id: "github-select-connect" });
         onOpenChange(false);
         onSuccessConnect?.();
       }
     } catch {
-      toast.error("Lỗi khi kết nối tài khoản GitHub đã chọn. Vui lòng thử lại sau.", { id: "github-select-connect" });
+      showErrorToast("Lỗi khi kết nối tài khoản GitHub đã chọn. Vui lòng thử lại sau.", { id: "github-select-connect" });
     }
   };
 
   const handleInstallNew = async () => {
     try {
-      toast.loading("Đang chuyển hướng sang GitHub App để cài đặt mới...", { id: "github-install-new" });
+      showInfoToast("Đang chuyển hướng sang GitHub App để cài đặt mới...", { id: "github-install-new" });
       const returnPath = typeof window !== "undefined"
         ? `${window.location.pathname}${window.location.search}`
         : "/student/project-info";
@@ -89,12 +90,12 @@ export function ProjectGitHubInstallationsDialog({
       if (res?.authorizationUrl && typeof window !== "undefined") {
         window.location.href = res.authorizationUrl;
       } else {
-        toast.success("Đã hoàn tất cài đặt!", { id: "github-install-new" });
+        showSuccessToast("Đã hoàn tất cài đặt!", { id: "github-install-new" });
         onOpenChange(false);
         onSuccessConnect?.();
       }
     } catch {
-      toast.error("Lỗi khi mở trang cài đặt GitHub mới. Vui lòng thử lại sau.", { id: "github-install-new" });
+      showErrorToast("Lỗi khi mở trang cài đặt GitHub mới. Vui lòng thử lại sau.", { id: "github-install-new" });
     }
   };
 

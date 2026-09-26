@@ -1,4 +1,5 @@
 "use client";
+import { showSuccessToast, showErrorToast, showInfoToast } from "@/lib/api-error";
 
 import { useState, useEffect, useCallback, useSyncExternalStore } from "react";
 import Link from "next/link";
@@ -13,7 +14,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { toast } from "@/components/ui/sonner";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
 import { getSafeRedirectUrl } from "@/features/auth/lib/role-routes";
 import { useLogin, useSession, useGoogleLogin, useEnsureCsrf } from "@/features/auth/hooks/useAuth";
@@ -44,7 +44,7 @@ export function LoginForm() {
   useEffect(() => {
     if (googleError) {
       if (typeof window !== "undefined") sessionStorage.removeItem("saga_auth_provider");
-      toast.error(getGoogleErrorMessage(googleError), { id: "google-auth-error", duration: 6000 });
+      showErrorToast(getGoogleErrorMessage(googleError), { id: "google-auth-error", duration: 6000 });
     }
   }, [googleError]);
 
@@ -66,7 +66,7 @@ export function LoginForm() {
 
       if (isFromGoogle) {
         sessionStorage.removeItem("saga_auth_provider");
-        toast.success("Đăng nhập Google thành công!", {
+        showSuccessToast("Đăng nhập Google thành công!", {
           id: "google-auth-success",
           description: `Chào mừng ${user.fullName || user.email} quay trở lại hệ thống SAGA.`,
         });
@@ -74,7 +74,7 @@ export function LoginForm() {
 
       if (passwordSetupRequired) {
         if (isFromGoogle) {
-          toast.info("Yêu cầu đặt mật khẩu", {
+          showInfoToast("Yêu cầu đặt mật khẩu", {
             id: "google-auth-setup-info",
             description: "Vui lòng đặt mật khẩu đăng nhập cho tài khoản trường của bạn.",
           });
@@ -93,7 +93,7 @@ export function LoginForm() {
     if (!validation.isValid) {
       setFieldErrors(validation.errors);
       const firstMsg = Object.values(validation.errors)[0] || "Vui lòng nhập đầy đủ thông tin đăng nhập.";
-      toast.error(firstMsg, { id: "login-validation-error" });
+      showErrorToast(firstMsg, { id: "login-validation-error" });
       return;
     }
     setFieldErrors({});

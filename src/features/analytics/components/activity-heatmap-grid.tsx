@@ -65,15 +65,15 @@ function getIntensityClass(activities: number): string {
     return "bg-muted/15 border-border/50 text-muted-foreground/60 hover:border-border";
   }
   if (activities <= 2) {
-    return "bg-emerald-500/10 border-emerald-500/30 text-emerald-800 dark:text-emerald-200 hover:border-emerald-500/60";
+    return "bg-chart-2/20 border-chart-2/20 text-chart-2 hover:bg-chart-2/30";
   }
   if (activities <= 5) {
-    return "bg-emerald-500/20 border-emerald-500/45 text-emerald-900 dark:text-emerald-100 hover:border-emerald-500/80";
+    return "bg-chart-2/40 border-chart-2/30 text-chart-2 hover:bg-chart-2/50";
   }
   if (activities <= 9) {
-    return "bg-emerald-500/35 border-emerald-500/65 text-emerald-950 dark:text-emerald-50 hover:border-emerald-400 font-semibold";
+    return "bg-chart-2/65 border-chart-2/45 text-primary-foreground hover:bg-chart-2/80 font-semibold";
   }
-  return "bg-emerald-500/55 border-emerald-400 text-emerald-950 dark:text-white font-extrabold shadow-xs hover:brightness-105 ring-1 ring-emerald-400/50";
+  return "bg-chart-2 border-chart-2/60 text-primary-foreground font-extrabold shadow-xs hover:brightness-105 ring-1 ring-chart-2/50";
 }
 
 const WEEKDAYS = [

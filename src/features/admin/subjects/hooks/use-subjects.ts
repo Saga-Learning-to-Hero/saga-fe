@@ -1,5 +1,5 @@
+import { showSuccessToast, showErrorToast } from "@/lib/api-error";
 import { useQuery, useMutation, useQueryClient, type QueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
 import { SubjectService } from "../api/subject-service";
 import type {
   SubjectResponse,
@@ -90,15 +90,15 @@ export function useCreateSubject() {
         return [newSubject, ...old.filter((s) => s.id !== newSubject.id)];
       });
       queryClient.invalidateQueries({ queryKey: SUBJECT_QUERY_KEYS.all });
-      toast.success(`Đã thêm môn học ${newSubject.code} thành công.`);
+      showSuccessToast(`Đã thêm môn học ${newSubject.code} thành công.`);
     },
     onError: (error: unknown) => {
       const err = error as { response?: { data?: { code?: string; message?: string } }; message?: string };
       const code = err.response?.data?.code;
       if (code === "SUBJECT_CODE_ALREADY_EXISTS") {
-        toast.error("Mã môn học này đã tồn tại trong hệ thống đào tạo.");
+        showErrorToast("Mã môn học này đã tồn tại trong hệ thống đào tạo.");
       } else {
-        toast.error(err.response?.data?.message || err.message || "Không thể tạo môn học.");
+        showErrorToast(err.response?.data?.message || err.message || "Không thể tạo môn học.");
       }
     },
   });
@@ -117,11 +117,11 @@ export function useUpdateSubject() {
       });
       queryClient.setQueryData(SUBJECT_QUERY_KEYS.detail(updatedSubject.id), updatedSubject);
       queryClient.invalidateQueries({ queryKey: SUBJECT_QUERY_KEYS.all });
-      toast.success(`Đã cập nhật môn học ${updatedSubject.code} thành công.`);
+      showSuccessToast(`Đã cập nhật môn học ${updatedSubject.code} thành công.`);
     },
     onError: (error: unknown) => {
       const err = error as { response?: { data?: { code?: string; message?: string } }; message?: string };
-      toast.error(err.response?.data?.message || err.message || "Không thể cập nhật môn học.");
+      showErrorToast(err.response?.data?.message || err.message || "Không thể cập nhật môn học.");
     },
   });
 }

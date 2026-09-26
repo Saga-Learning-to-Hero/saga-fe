@@ -1,4 +1,5 @@
 "use client";
+import { showSuccessToast, showErrorToast } from "@/lib/api-error";
 
 import { useState } from "react";
 import {
@@ -15,7 +16,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { toast } from "@/components/ui/sonner";
 import { useUserProfile, useUpdateUserProfile } from "../hooks/use-user-profile";
 
 interface ProfileInfoFormProps {
@@ -43,23 +43,23 @@ export function ProfileInfoForm({ user, compact = false }: ProfileInfoFormProps)
 
     const trimmedName = currentFullName.trim();
     if (!trimmedName) {
-      toast.error("Họ và tên không được để trống.");
+      showErrorToast("Họ và tên không được để trống.");
       return;
     }
 
     if (trimmedName.length > 255) {
-      toast.error("Họ và tên không được vượt quá 255 ký tự.");
+      showErrorToast("Họ và tên không được vượt quá 255 ký tự.");
       return;
     }
 
     if (currentAvatarUrl && currentAvatarUrl.trim() !== "") {
       const trimmedAvatar = currentAvatarUrl.trim();
       if (!trimmedAvatar.startsWith("http://") && !trimmedAvatar.startsWith("https://")) {
-        toast.error("URL ảnh đại diện phải bắt đầu bằng http:// hoặc https://.");
+        showErrorToast("URL ảnh đại diện phải bắt đầu bằng http:// hoặc https://.");
         return;
       }
       if (trimmedAvatar.length > 500) {
-        toast.error("URL ảnh đại diện không được vượt quá 500 ký tự.");
+        showErrorToast("URL ảnh đại diện không được vượt quá 500 ký tự.");
         return;
       }
     }
@@ -72,11 +72,11 @@ export function ProfileInfoForm({ user, compact = false }: ProfileInfoFormProps)
       setUserEditedName(null);
       setUserEditedAvatar(null);
       setSuccessMessage("Cập nhật thông tin cá nhân thành công!");
-      toast.success("Hồ sơ cá nhân đã được lưu thành công!");
+      showSuccessToast("Hồ sơ cá nhân đã được lưu thành công!");
       setTimeout(() => setSuccessMessage(""), 4000);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Không thể cập nhật hồ sơ.";
-      toast.error(message);
+      showErrorToast(message);
     }
   };
 

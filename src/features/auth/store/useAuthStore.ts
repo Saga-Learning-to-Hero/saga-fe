@@ -1,3 +1,4 @@
+import { showErrorToast, showInfoToast } from "@/lib/api-error";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import type { Role, User } from "@/types/auth";
@@ -7,7 +8,6 @@ import { performLogout } from "../lib/logout-orchestrator";
 import { isUnauthorizedError } from "@/lib/api-error";
 import { closeUserEvents, resetAccountDisabledState } from "../lib/user-events";
 import { getQueryClient } from "@/providers/query-provider";
-import { toast } from "sonner";
 
 interface AuthState {
   isAuthenticated: boolean;
@@ -169,7 +169,7 @@ if (typeof window !== "undefined") {
       const noticeMsg =
         customEvt.detail?.message ||
         "Tài khoản của bạn đã bị vô hiệu hóa. Vui lòng liên hệ quản trị viên nếu bạn cần hỗ trợ.";
-      toast.error(noticeMsg);
+      showErrorToast(noticeMsg);
 
       if (window.location.pathname !== "/account-disabled") {
         // eslint-disable-next-line @next/next/no-location-assign-relative-destination
@@ -199,7 +199,7 @@ if (typeof window !== "undefined") {
         currentPath.startsWith("/auth/") ||
         currentPath.startsWith("/account-disabled");
 
-      toast.info(customEvt.detail?.message || "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.");
+      showInfoToast(customEvt.detail?.message || "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.");
 
       if (!isAuthRoute) {
         // eslint-disable-next-line @next/next/no-location-assign-relative-destination

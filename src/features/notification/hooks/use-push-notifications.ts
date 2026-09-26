@@ -1,7 +1,8 @@
 "use client";
+import { toast } from "sonner";
+import { showSuccessToast, showErrorToast } from "@/lib/api-error";
 
 import { useEffect, useState, useCallback, useRef } from "react";
-import { toast } from "@/components/ui/sonner";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
 import { getPushInstallationStorageKey } from "@/features/auth/lib/logout-orchestrator";
 import { NotificationService } from "../api/notification-service";
@@ -90,7 +91,7 @@ export function usePushNotifications() {
 
   const requestPermissionAndRegister = useCallback(async (): Promise<boolean> => {
     if (typeof window === "undefined" || !("Notification" in window)) {
-      toast.error("Trình duyệt không hỗ trợ thông báo đẩy.");
+      showErrorToast("Trình duyệt không hỗ trợ thông báo đẩy.");
       return false;
     }
 
@@ -101,10 +102,10 @@ export function usePushNotifications() {
       if (result === "granted") {
         const success = await registerPush();
         if (success) {
-          toast.success("Đã bật thông báo trình duyệt thành công!");
+          showSuccessToast("Đã bật thông báo trình duyệt thành công!");
           return true;
         } else {
-          toast.error("Không thể đăng ký thiết bị thông báo với máy chủ.");
+          showErrorToast("Không thể đăng ký thiết bị thông báo với máy chủ.");
           return false;
         }
       } else if (result === "denied") {
@@ -115,7 +116,7 @@ export function usePushNotifications() {
       }
       return false;
     } catch {
-      toast.error("Đã xảy ra lỗi khi yêu cầu quyền thông báo.");
+      showErrorToast("Đã xảy ra lỗi khi yêu cầu quyền thông báo.");
       return false;
     }
   }, [registerPush]);

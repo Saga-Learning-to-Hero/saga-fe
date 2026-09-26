@@ -97,7 +97,7 @@ export function WeeklyActivityChart({
               yAxisId="count"
               dataKey="commits"
               name="Lượt commit"
-              fill="#4F6FEA"
+              fill="var(--color-primary)"
               radius={[5, 5, 0, 0]}
               maxBarSize={28}
             />
@@ -105,7 +105,7 @@ export function WeeklyActivityChart({
               yAxisId="count"
               dataKey="tasksCompleted"
               name="Task hoàn thành"
-              fill="#14B8A6"
+              fill="var(--color-chart-2)"
               radius={[5, 5, 0, 0]}
               maxBarSize={28}
             />
@@ -114,7 +114,7 @@ export function WeeklyActivityChart({
               type="monotone"
               dataKey="traceabilityRate"
               name="Tỷ lệ đối soát"
-              stroke="#F59E0B"
+              stroke="var(--color-chart-3)"
               strokeWidth={2}
               connectNulls={false}
               dot={{ r: 3 }}

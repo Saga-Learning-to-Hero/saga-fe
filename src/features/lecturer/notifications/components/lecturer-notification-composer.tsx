@@ -1,4 +1,5 @@
 "use client";
+import { showSuccessToast, showErrorToast } from "@/lib/api-error";
 
 import { useState, useRef, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -29,7 +30,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { toast } from "@/components/ui/sonner";
 import { CustomSelect, type CustomSelectOption } from "@/components/common/custom-select";
 import { NotificationService } from "@/features/notification/api/notification-service";
 import { LecturerCourseService } from "@/features/lecturer/courses/api/lecturer-course-service";
@@ -198,7 +198,7 @@ export function LecturerNotificationComposer() {
         response = await NotificationService.sendLecturerStudent(courseId, studentId, payload, key);
       }
 
-      toast.success("Gửi thông báo thành công!", {
+      showSuccessToast("Gửi thông báo thành công!", {
         id: "lecturer-send-success",
         description: `Đã gửi thông báo tới ${response.recipientCount} người nhận (${response.createdCount} bản ghi đã lưu).`,
       });
@@ -212,11 +212,11 @@ export function LecturerNotificationComposer() {
       if (status === 409 || code === "NOTIFICATION_SEND_CONFLICT") {
         const msg = "Xung đột khóa gửi thông báo (409 NOTIFICATION_SEND_CONFLICT). Yêu cầu này đã được xử lý trên hệ thống, vui lòng không gửi lại.";
         setErrorMessage(msg);
-        toast.error("Gửi thông báo thất bại", { description: msg });
+        showErrorToast("Gửi thông báo thất bại", { description: msg });
       } else {
         const msg = error.response?.data?.message || error.message || "Không thể kết nối đến máy chủ để gửi thông báo. Bạn có thể nhấn Thử lại.";
         setErrorMessage(msg);
-        toast.error("Gửi thông báo thất bại", { description: msg });
+        showErrorToast("Gửi thông báo thất bại", { description: msg });
       }
     } finally {
       setIsSending(false);

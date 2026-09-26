@@ -1,4 +1,5 @@
 "use client";
+import { showSuccessToast, showErrorToast, showInfoToast } from "@/lib/api-error";
 
 import { useMemo, useEffect, useRef, useState } from "react";
 import {
@@ -15,7 +16,6 @@ import type { StudentCourse } from "@/features/student/courses/types/student-cou
 import { Badge } from "@/components/ui/badge";
 import { MemberRoleBadge } from "@/components/common/leader-badge";
 import { Button } from "@/components/ui/button";
-import { toast } from "@/components/ui/sonner";
 import { useSyncProject, useProjectSyncStatus } from "../hooks/useProjectSync";
 import { formatVietnamDateTime } from "@/lib/utils";
 import { EditProjectDialog } from "./edit-project-dialog";
@@ -62,9 +62,9 @@ export function ProjectBannerHeader({
   useEffect(() => {
     if (prevActiveRef.current && !hasActiveJob) {
       if (hasFailure) {
-        toast.error("Quá trình đồng bộ dữ liệu gặp lỗi từ phía Jira hoặc GitHub.");
+        showErrorToast("Quá trình đồng bộ dữ liệu gặp lỗi từ phía Jira hoặc GitHub.");
       } else {
-        toast.success("Đồng bộ Jira & GitHub hoàn tất! Dữ liệu đã được cập nhật mới nhất.");
+        showSuccessToast("Đồng bộ Jira & GitHub hoàn tất! Dữ liệu đã được cập nhật mới nhất.");
       }
     }
     prevActiveRef.current = hasActiveJob;
@@ -89,16 +89,16 @@ export function ProjectBannerHeader({
 
   const handleSync = async () => {
     if (!projectId) {
-      toast.error("Không tìm thấy mã dự án để kích hoạt đồng bộ.");
+      showErrorToast("Không tìm thấy mã dự án để kích hoạt đồng bộ.");
       return;
     }
     try {
       const res = await syncMutation.mutateAsync(projectId);
-      toast.info("Đã gửi yêu cầu đồng bộ. Máy chủ đang tải dữ liệu trong nền...", {
+      showInfoToast("Đã gửi yêu cầu đồng bộ. Máy chủ đang tải dữ liệu trong nền...", {
         description: `Trạng thái hàng đợi: Jira [${res.jira}], GitHub [${res.github}]. Nút sẽ tự dừng xoay khi xong.`,
       });
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Không thể kích hoạt đồng bộ dự án.");
+      showErrorToast(err instanceof Error ? err.message : "Không thể kích hoạt đồng bộ dự án.");
     }
   };
 

@@ -1,5 +1,6 @@
 "use client";
 
+import { showWarningToast, showSuccessToast } from "@/lib/api-error";
 import { useState, useRef } from "react";
 import {
   Link2Icon,
@@ -19,9 +20,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { ConfirmDeleteDialog } from "@/components/common/confirm-delete-dialog";
+import { ConfirmActionDialog } from "@/components/common/confirm-action-dialog";
 import { cn } from "@/lib/utils";
-import { toast } from "sonner";
 import {
   useTaskWebLinks,
   useTaskFiles,
@@ -202,7 +202,7 @@ export function TaskEvidencePanel({
       setConfirmPrs("");
       onConfirmationSuccess?.();
       setPendingContributionPayload(null);
-      toast.success("Xác thực nâng cao và xác nhận đóng góp thành công!");
+      showSuccessToast("Xác thực nâng cao và xác nhận đóng góp thành công!");
     } catch (err: unknown) {
       const msg = isStepUpRequiredError(err)
         ? "Máy chủ vẫn yêu cầu xác thực lại. Yêu cầu đã được dừng để tránh gửi lặp."
@@ -234,12 +234,12 @@ export function TaskEvidencePanel({
       setManualCommitShas("");
       setConfirmPrs("");
       onConfirmationSuccess?.();
-      toast.success("Xác nhận đóng góp thành công!");
+      showSuccessToast("Xác nhận đóng góp thành công!");
     } catch (err: unknown) {
       if (isStepUpRequiredError(err)) {
         setPendingContributionPayload(payload);
         setConfirmError("Phiên xác thực bảo mật đã hết hạn. Vui lòng nhập lại mật khẩu để tiếp tục.");
-        toast.warning("Cần xác thực lại mật khẩu trước khi xác nhận đóng góp.");
+        showWarningToast("Cần xác thực lại mật khẩu trước khi xác nhận đóng góp.");
         setIsStepUpModalOpen(true);
         return;
       }
@@ -665,7 +665,7 @@ export function TaskEvidencePanel({
                   type="button"
                   onClick={() => {
                     void navigator.clipboard.writeText(confirmResult.evidenceHash);
-                    toast.success("Đã sao chép mã đối soát!");
+                    showSuccessToast("Đã sao chép mã đối soát!");
                   }}
                   className="text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 font-mono text-[10px] underline cursor-pointer"
                 >
@@ -721,7 +721,7 @@ export function TaskEvidencePanel({
         )}
       </div>
 
-      <ConfirmDeleteDialog
+      <ConfirmActionDialog
         isOpen={Boolean(deletingLink)}
         onClose={() => setDeletingLink(null)}
         onConfirm={handleConfirmDeleteLink}
@@ -731,7 +731,7 @@ export function TaskEvidencePanel({
         isLoading={deleteLinkMutation.isPending}
       />
 
-      <ConfirmDeleteDialog
+      <ConfirmActionDialog
         isOpen={Boolean(deletingFile)}
         onClose={() => setDeletingFile(null)}
         onConfirm={handleConfirmDeleteFile}

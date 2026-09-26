@@ -3,12 +3,11 @@
 import { useEffect } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
-import { toast } from "@/components/ui/sonner";
 import { AuthService } from "../api/auth-service";
 import { useAuthStore } from "../store/useAuthStore";
 import { performLogout } from "../lib/logout-orchestrator";
 import { ensureCsrfToken } from "@/lib/axios";
-import { isUnauthorizedError } from "@/lib/api-error";
+import { isUnauthorizedError, showSuccessToast, showErrorToast, showInfoToast } from "@/lib/api-error";;
 import type {
   LoginRequest,
   RegisterRequest,
@@ -90,7 +89,7 @@ export function useLogin() {
         queryClient.setQueryData(AUTH_QUERY_KEY, res);
         void ensureCsrfToken(true);
 
-        toast.success("Đăng nhập thành công!", {
+        showSuccessToast("Đăng nhập thành công!", {
           id: "auth-login-success",
           description: `Chào mừng ${res.user.fullName || res.user.email} quay trở lại hệ thống SAGA.`,
         });
@@ -107,7 +106,7 @@ export function useLogin() {
       } else if (e.message) {
         desc = e.message;
       }
-      toast.error("Đăng nhập không thành công", {
+      showErrorToast("Đăng nhập không thành công", {
         id: "auth-login-error",
         description: desc,
       });
@@ -119,7 +118,7 @@ export function useRegister() {
   return useMutation({
     mutationFn: (data: RegisterRequest) => AuthService.register(data),
     onSuccess: (res) => {
-      toast.success("Đăng ký tài khoản thành công!", {
+      showSuccessToast("Đăng ký tài khoản thành công!", {
         id: "auth-register-success",
         description: "Bạn có thể sử dụng email và mật khẩu vừa tạo để đăng nhập vào SAGA.",
       });
@@ -135,7 +134,7 @@ export function useRegister() {
       } else if (e.message) {
         desc = e.message;
       }
-      toast.error("Đăng ký thất bại", {
+      showErrorToast("Đăng ký thất bại", {
         id: "auth-register-error",
         description: desc,
       });
@@ -163,7 +162,7 @@ export function useSetupPassword() {
         setUser(mappedUser, false);
         queryClient.invalidateQueries({ queryKey: AUTH_QUERY_KEY });
 
-        toast.success("Thiết lập mật khẩu thành công!", {
+        showSuccessToast("Thiết lập mật khẩu thành công!", {
           id: "auth-setup-password-success",
           description: "Mật khẩu của bạn đã được kích hoạt thành công.",
         });
@@ -176,12 +175,12 @@ export function useSetupPassword() {
         e.message?.includes("already set") ||
         e.message?.includes("not required")
       ) {
-        toast.info("Tài khoản đã có mật khẩu. Đang chuyển hướng...", {
+        showInfoToast("Tài khoản đã có mật khẩu. Đang chuyển hướng...", {
           id: "auth-setup-password-info",
         });
         return;
       }
-      toast.error("Thiết lập mật khẩu thất bại", {
+      showErrorToast("Thiết lập mật khẩu thất bại", {
         id: "auth-setup-password-error",
         description: e.message || "Vui lòng kiểm tra lại mật khẩu.",
       });
@@ -198,7 +197,7 @@ export function useLogout() {
       performLogout({
         queryClient,
         onRedirect: () => {
-          toast.info("Đã đăng xuất tài khoản", {
+          showInfoToast("Đã đăng xuất tài khoản", {
             id: "auth-logout-info",
             description: "Hẹn gặp lại bạn trong phiên làm việc tiếp theo.",
           });
@@ -207,7 +206,7 @@ export function useLogout() {
       }),
     onError: (err: unknown) => {
       const e = err as Error;
-      toast.error("Đăng xuất thất bại", {
+      showErrorToast("Đăng xuất thất bại", {
         id: "auth-logout-error",
         description: e.message || "Không thể kết nối đến máy chủ để hủy phiên.",
       });

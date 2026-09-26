@@ -1,4 +1,5 @@
 "use client";
+import { showSuccessToast, showErrorToast } from "@/lib/api-error";
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
@@ -14,7 +15,6 @@ import {
 import type { User } from "@/types/auth";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { toast } from "@/components/ui/sonner";
 import { useUserIdentities } from "@/features/integrations/hooks/useUserIntegrations";
 import { useJiraOAuthCallback } from "@/features/integrations/hooks/useJiraIntegrations";
 import { useGitHubOAuthCallback } from "@/features/integrations/hooks/useGithubIntegrations";
@@ -75,14 +75,14 @@ export function IntegrationsView({ user }: IntegrationsViewProps) {
           onSuccess: () => {
             window.history.replaceState({}, "", window.location.pathname);
             refetch();
-            toast.success(
+            showSuccessToast(
               isGithub
                 ? "Liên kết tài khoản GitHub cá nhân thành công!"
                 : "Liên kết tài khoản Atlassian Jira cá nhân thành công!"
             );
           },
           onError: () => {
-            toast.error("Xác thực OAuth thất bại. Vui lòng thử lại.");
+            showErrorToast("Xác thực OAuth thất bại. Vui lòng thử lại.");
           },
         }
       );

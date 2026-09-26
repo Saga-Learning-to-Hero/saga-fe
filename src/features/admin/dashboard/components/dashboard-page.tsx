@@ -1,8 +1,8 @@
 "use client";
 
+import { showErrorToast, getApiErrorMessage } from "@/lib/api-error";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
 import {
   AlertTriangleIcon,
   CalendarClockIcon,
@@ -13,7 +13,6 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CustomSelect } from "@/components/common/custom-select";
-import { getApiErrorMessage } from "@/lib/api-error";
 import { DashboardKPIsSection } from "./dashboard-kpis";
 import { DashboardChartsSection } from "./dashboard-charts";
 import { WebhookIntegrationSection } from "./webhook-integration-card";
@@ -43,7 +42,7 @@ export function DashboardPage() {
     }
 
     handledErrorRef.current = summaryQuery.error;
-    toast.error("Không thể tải học kỳ đã chọn", {
+    showErrorToast("Không thể tải học kỳ đã chọn", {
       description: getApiErrorMessage(
         summaryQuery.error,
         "Dashboard chưa thể tải dữ liệu học kỳ này."
@@ -288,4 +287,4 @@ function DashboardErrorState({
       </Button>
     </div>
   );
-}
+}

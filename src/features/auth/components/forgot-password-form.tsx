@@ -1,4 +1,5 @@
 "use client";
+import { showSuccessToast, showErrorToast } from "@/lib/api-error";
 
 import { useState } from "react";
 import Link from "next/link";
@@ -6,7 +7,6 @@ import { ArrowLeftIcon, MailIcon, CheckCircle2Icon, LoaderCircleIcon } from "luc
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { toast } from "@/components/ui/sonner";
 import { useForgotPassword } from "../hooks/useAuth";
 
 export function ForgotPasswordForm() {
@@ -20,7 +20,7 @@ export function ForgotPasswordForm() {
     e.preventDefault();
     const cleanEmail = email.trim();
     if (!cleanEmail) {
-      toast.error("Vui lòng nhập địa chỉ email.");
+      showErrorToast("Vui lòng nhập địa chỉ email.");
       return;
     }
 
@@ -28,10 +28,10 @@ export function ForgotPasswordForm() {
       const res = await forgotPasswordMutation.mutateAsync(cleanEmail);
       setIsSuccess(true);
       setSuccessMsg(res.message || "Nếu email tồn tại, hướng dẫn đặt lại mật khẩu đã được gửi.");
-      toast.success("Yêu cầu đặt lại mật khẩu đã được gửi đi.");
+      showSuccessToast("Yêu cầu đặt lại mật khẩu đã được gửi đi.");
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Đã có lỗi xảy ra. Vui lòng thử lại sau.";
-      toast.error(message);
+      showErrorToast(message);
     }
   };
 

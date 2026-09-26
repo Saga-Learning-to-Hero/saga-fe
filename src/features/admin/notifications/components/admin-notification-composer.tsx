@@ -1,4 +1,5 @@
 "use client";
+import { showSuccessToast, showErrorToast } from "@/lib/api-error";
 
 import { useState, useRef } from "react";
 import {
@@ -29,7 +30,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { toast } from "@/components/ui/sonner";
 import { NotificationService } from "@/features/notification/api/notification-service";
 import { isValidInternalActionUrl } from "@/features/notification/lib/notification-utils";
 import { cn } from "@/lib/utils";
@@ -73,7 +73,7 @@ export function AdminNotificationComposer() {
         idempotencyKeyRef.current
       );
 
-      toast.success("Phát thông báo hệ thống thành công!", {
+      showSuccessToast("Phát thông báo hệ thống thành công!", {
         id: "admin-send-success",
         description: `Đã gửi thông báo tới ${response.recipientCount} tài khoản hoạt động (${response.createdCount} bản ghi đã lưu).`,
       });
@@ -92,14 +92,14 @@ export function AdminNotificationComposer() {
         const msg =
           "Xung đột khóa gửi thông báo (409 NOTIFICATION_SEND_CONFLICT). Yêu cầu này đã được xử lý trên hệ thống, vui lòng không gửi lại.";
         setErrorMessage(msg);
-        toast.error("Gửi thông báo thất bại", { description: msg });
+        showErrorToast("Gửi thông báo thất bại", { description: msg });
       } else {
         const msg =
           error.response?.data?.message ||
           error.message ||
           "Không thể kết nối đến máy chủ để gửi thông báo. Bạn có thể nhấn Thử lại.";
         setErrorMessage(msg);
-        toast.error("Gửi thông báo thất bại", { description: msg });
+        showErrorToast("Gửi thông báo thất bại", { description: msg });
       }
     } finally {
       setIsSending(false);

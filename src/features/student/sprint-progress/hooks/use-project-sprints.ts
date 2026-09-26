@@ -1,6 +1,6 @@
+import { showSuccessToast, showErrorToast } from "@/lib/api-error";
 import { useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
 import { ProjectSprintService } from "../api/project-sprint-service";
 import type {
   CreateProjectSprintRequest,
@@ -79,11 +79,11 @@ export function useCreateSprint() {
       queryClient.invalidateQueries({
         queryKey: JIRA_SPRINT_QUERY_KEYS.tasks(variables.projectId),
       });
-      toast.success(`Đã tạo ${res.name} đồng bộ với Jira thành công.`);
+      showSuccessToast(`Đã tạo ${res.name} đồng bộ với Jira thành công.`);
     },
     onError: (error: unknown) => {
       const err = error as { response?: { data?: { message?: string } }; message?: string };
-      toast.error(err.response?.data?.message || err.message || "Không thể tạo Sprint trên Jira.");
+      showErrorToast(err.response?.data?.message || err.message || "Không thể tạo Sprint trên Jira.");
     },
   });
 }
@@ -113,7 +113,7 @@ export function usePatchSprint() {
         { queryKey: JIRA_SPRINT_QUERY_KEYS.sprints(variables.projectId), refetchType: "none" },
         { cancelRefetch: false }
       );
-      toast.success(`Đã cập nhật ${res.name} thành công.`);
+      showSuccessToast(`Đã cập nhật ${res.name} thành công.`);
     },
     onError: (error: unknown) => {
       const err = error as { response?: { data?: { code?: string; message?: string } }; message?: string };
@@ -121,7 +121,7 @@ export function usePatchSprint() {
         err.response?.data?.code === "JIRA_FIELD_INVALID"
           ? "Jira từ chối cập nhật Sprint (do ràng buộc trạng thái hoặc quyền hạn trên Jira)."
           : err.response?.data?.message || err.message || "Không thể cập nhật Sprint.";
-      toast.error(msg);
+      showErrorToast(msg);
     },
   });
 }
@@ -144,11 +144,11 @@ export function useDeleteSprint() {
       queryClient.invalidateQueries({
         queryKey: JIRA_SPRINT_QUERY_KEYS.tasks(variables.projectId),
       });
-      toast.success("Đã xóa Sprint trên Jira thành công.");
+      showSuccessToast("Đã xóa Sprint trên Jira thành công.");
     },
     onError: (error: unknown) => {
       const err = error as { response?: { data?: { message?: string } }; message?: string };
-      toast.error(err.response?.data?.message || err.message || "Không thể xóa Sprint.");
+      showErrorToast(err.response?.data?.message || err.message || "Không thể xóa Sprint.");
     },
   });
 }
@@ -173,7 +173,7 @@ export function useAssignTaskToSprint() {
       queryClient.invalidateQueries({
         queryKey: JIRA_SPRINT_QUERY_KEYS.sprints(variables.projectId),
       });
-      toast.success(
+      showSuccessToast(
         variables.sprintId === null
           ? "Đã chuyển task về Backlog."
           : "Đã gán task vào Sprint thành công."
@@ -181,7 +181,7 @@ export function useAssignTaskToSprint() {
     },
     onError: (error: unknown) => {
       const err = error as { response?: { data?: { message?: string } }; message?: string };
-      toast.error(err.response?.data?.message || err.message || "Không thể cập nhật Sprint của task.");
+      showErrorToast(err.response?.data?.message || err.message || "Không thể cập nhật Sprint của task.");
     },
   });
 }

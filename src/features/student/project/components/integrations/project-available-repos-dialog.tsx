@@ -1,10 +1,10 @@
 "use client";
+import { showSuccessToast, showErrorToast } from "@/lib/api-error";
 
 import { useState, useMemo } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { toast } from "@/components/ui/sonner";
 import { CustomSelect } from "@/components/common/custom-select";
 import {
   GitBranchIcon,
@@ -112,11 +112,11 @@ export function ProjectAvailableReposDialog({
 
     try {
       await updateReposMutation.mutateAsync({ projectId, repositories: payload });
-      toast.success("Cập nhật danh sách GitHub Repository cho dự án thành công!");
+      showSuccessToast("Cập nhật danh sách GitHub Repository cho dự án thành công!");
       handleOpenChange(false);
     } catch (error) {
       const msg = error instanceof Error ? error.message : "Không thể lưu cấu hình Repository";
-      toast.error(msg);
+      showErrorToast(msg);
     }
   };
 

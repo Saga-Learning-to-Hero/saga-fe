@@ -83,7 +83,7 @@ export function ContributionCharts({ members }: ContributionChartsProps) {
                 </div>
                 <div>
                   <CardTitle className="text-sm sm:text-base font-bold text-foreground">
-                    Phân chia đóng góp hiện tại
+                    Biểu đồ Slicing Pie
                   </CardTitle>
                   <CardDescription className="text-xs text-muted-foreground">
                     Tỷ lệ cổ phần công sức cuối cùng của các thành viên trong nhóm

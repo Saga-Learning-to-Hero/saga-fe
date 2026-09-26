@@ -1,5 +1,6 @@
 "use client";
 
+import { showErrorToast, showInfoToast, getApiErrorMessage } from "@/lib/api-error";
 import { useState, useMemo } from "react";
 import {
   GitCommitIcon,
@@ -26,9 +27,7 @@ import {
 } from "@/features/student/project/hooks/useProjectSync";
 import { useProjectIntegrations } from "@/features/student/project/hooks/useProjectIntegrations";
 import { useProjectRealtime } from "@/features/student/project/hooks/use-project-realtime";
-import { getApiErrorMessage } from "@/lib/api-error";
 import { formatVietnamDateTime } from "@/lib/utils";
-import { toast } from "sonner";
 import {
   mapProjectCommitToCommitItem,
   extractReposAndBranches,
@@ -264,11 +263,11 @@ export function CommitsView() {
 
     try {
       const result = await syncProjectMutation.mutateAsync(projectId);
-      toast.info("Đã gửi yêu cầu đồng bộ Jira & GitHub.", {
+      showInfoToast("Đã gửi yêu cầu đồng bộ Jira & GitHub.", {
         description: `Hàng đợi: Jira [${result.jira}], GitHub [${result.github}]. Dữ liệu sẽ tự cập nhật khi hoàn tất.`,
       });
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Không thể kích hoạt đồng bộ dự án.");
+      showErrorToast(error instanceof Error ? error.message : "Không thể kích hoạt đồng bộ dự án.");
     }
   };
 
@@ -545,4 +544,4 @@ export function CommitsView() {
       )}
     </div>
   );
-}
+}

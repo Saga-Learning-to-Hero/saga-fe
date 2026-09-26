@@ -1,8 +1,8 @@
 "use client";
+import { showSuccessToast, showErrorToast } from "@/lib/api-error";
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { isAxiosError } from "axios";
-import { toast } from "@/components/ui/sonner";
 import { StudentProjectService } from "../api/student-project-service";
 import { STUDENT_COURSE_QUERY_KEYS } from "@/features/student/courses/hooks/use-student-courses";
 import type {
@@ -63,7 +63,7 @@ export function useCreateStudentProject() {
       return await StudentProjectService.createStudentProject(courseId, payload);
     },
     onSuccess: (data, variables) => {
-      toast.success("Tạo dự án nhóm thành công!", {
+      showSuccessToast("Tạo dự án nhóm thành công!", {
         description: `Dự án "${data.name}" đã được ghi nhận trên hệ thống SAGA.`,
       });
       queryClient.invalidateQueries({
@@ -83,7 +83,7 @@ export function useCreateStudentProject() {
       } else if (error instanceof Error) {
         message = error.message;
       }
-      toast.error("Tạo dự án thất bại", { description: message });
+      showErrorToast("Tạo dự án thất bại", { description: message });
     },
   });
 }

@@ -1,4 +1,5 @@
 "use client";
+import { showSuccessToast, showErrorToast } from "@/lib/api-error";
 
 import { useState, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
@@ -15,7 +16,6 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { toast } from "@/components/ui/sonner";
 import { useResetPassword } from "../hooks/useAuth";
 
 export function ResetPasswordForm() {
@@ -46,17 +46,17 @@ export function ResetPasswordForm() {
 
     if (!token) {
       setErrorMessage("Liên kết đặt lại mật khẩu không hợp lệ hoặc thiếu mã token xác thực.");
-      toast.error("Thiếu mã token xác thực đặt lại mật khẩu.");
+      showErrorToast("Thiếu mã token xác thực đặt lại mật khẩu.");
       return;
     }
 
     if (newPassword.length < 10) {
-      toast.error("Mật khẩu mới phải có tối thiểu 10 ký tự.");
+      showErrorToast("Mật khẩu mới phải có tối thiểu 10 ký tự.");
       return;
     }
 
     if (newPassword !== confirmPassword) {
-      toast.error("Mật khẩu xác nhận không khớp.");
+      showErrorToast("Mật khẩu xác nhận không khớp.");
       return;
     }
 
@@ -67,7 +67,7 @@ export function ResetPasswordForm() {
       });
 
       setIsSuccess(true);
-      toast.success("Đặt lại mật khẩu thành công!");
+      showSuccessToast("Đặt lại mật khẩu thành công!");
 
       setTimeout(() => {
         router.push("/login");
@@ -78,17 +78,17 @@ export function ResetPasswordForm() {
 
       if (code === "PASSWORD_RESET_TOKEN_EXPIRED") {
         setErrorMessage("Liên kết đặt lại mật khẩu đã hết hạn (quá 30 phút). Vui lòng yêu cầu liên kết mới.");
-        toast.error("Liên kết đặt lại mật khẩu đã hết hạn.");
+        showErrorToast("Liên kết đặt lại mật khẩu đã hết hạn.");
       } else if (code === "PASSWORD_RESET_TOKEN_INVALID") {
         setErrorMessage("Mã xác thực không hợp lệ hoặc đã từng được sử dụng trước đó.");
-        toast.error("Mã xác thực không hợp lệ.");
+        showErrorToast("Mã xác thực không hợp lệ.");
       } else if (code === "PASSWORD_POLICY_VIOLATION") {
         setErrorMessage("Mật khẩu mới không đáp ứng chính sách bảo mật (tối thiểu 10 ký tự).");
-        toast.error("Mật khẩu phải có tối thiểu 10 ký tự.");
+        showErrorToast("Mật khẩu phải có tối thiểu 10 ký tự.");
       } else {
         const msg = errorObj?.message || "Không thể đặt lại mật khẩu. Vui lòng thử lại sau.";
         setErrorMessage(msg);
-        toast.error(msg);
+        showErrorToast(msg);
       }
     }
   };

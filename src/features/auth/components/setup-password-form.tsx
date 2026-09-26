@@ -1,4 +1,5 @@
 "use client";
+import { showErrorToast } from "@/lib/api-error";
 
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
@@ -15,7 +16,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { toast } from "@/components/ui/sonner";
 import { useSetupPassword, useSession, useGoogleLogin, useEnsureCsrf } from "@/features/auth/hooks/useAuth";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
 import { validatePasswordSetup } from "@/features/auth/lib/auth-validation";
@@ -57,7 +57,7 @@ export function SetupPasswordForm() {
     if (!validation.isValid) {
       setFieldErrors(validation.errors);
       const firstMsg = Object.values(validation.errors)[0] || "Mật khẩu chưa đạt tiêu chuẩn bảo mật.";
-      toast.error(firstMsg, { id: "setup-password-validation-error" });
+      showErrorToast(firstMsg, { id: "setup-password-validation-error" });
       return;
     }
     setFieldErrors({});
