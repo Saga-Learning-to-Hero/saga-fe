@@ -273,6 +273,10 @@ export function StudentWeeklyCommitsChart({
                         <stop offset="0%" stopColor="#38bdf8" />
                         <stop offset="100%" stopColor="#6366f1" />
                       </linearGradient>
+                      <linearGradient id="barHoverGradient" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#0ea5e9" />
+                        <stop offset="100%" stopColor="#4f46e5" />
+                      </linearGradient>
                     </defs>
                     <CartesianGrid
                       strokeDasharray="4 4"
@@ -304,6 +308,7 @@ export function StudentWeeklyCommitsChart({
                       axisLine={false}
                     />
                     <Tooltip
+                      cursor={false}
                       content={({ active, payload }) => {
                         if (!active || !payload?.length) return null;
                         const data = payload[0].payload as (typeof chartData)[number];
@@ -326,6 +331,11 @@ export function StudentWeeklyCommitsChart({
                       fill="url(#barModernGradient)"
                       radius={[8, 8, 0, 0]}
                       maxBarSize={40}
+                      activeBar={{
+                        fill: "url(#barHoverGradient)",
+                        stroke: "#38bdf8",
+                        strokeWidth: 1.5,
+                      }}
                     />
                   </BarChart>
                 )}

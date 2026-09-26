@@ -43,6 +43,13 @@ export function CustomSelect({
   const containerRef = useRef<HTMLDivElement>(null);
 
   const selectedOption = options.find((opt) => opt.value === value);
+  const selectedOptionRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (isOpen && selectedOptionRef.current) {
+      selectedOptionRef.current.scrollIntoView?.({ block: "nearest" });
+    }
+  }, [isOpen]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -118,7 +125,7 @@ export function CustomSelect({
         <div
           role="listbox"
           className={cn(
-            "z-50 left-0 right-0 max-h-60 overflow-y-auto rounded-xl bg-popover p-1 border border-border shadow-lg animate-in fade-in-0 zoom-in-95 duration-150 scrollbar-thin",
+            "z-50 left-0 right-0 max-h-60 overflow-y-auto rounded-xl bg-popover p-1 border border-border shadow-lg animate-in fade-in-0 zoom-in-95 duration-150 custom-scrollbar overscroll-contain",
             inlineDropdown
               ? "relative"
               : cn(
@@ -138,6 +145,7 @@ export function CustomSelect({
               return (
                 <div
                   key={option.value}
+                  ref={isSelected ? selectedOptionRef : undefined}
                   role="option"
                   aria-selected={isSelected}
                   tabIndex={0}
@@ -153,7 +161,7 @@ export function CustomSelect({
                   className={cn(
                     "relative flex items-center justify-between gap-2 px-2.5 py-2 rounded-lg text-xs cursor-pointer transition-colors select-none",
                     isSelected
-                      ? "bg-primary/10 text-primary font-semibold"
+                      ? "bg-primary/15 text-primary font-semibold hover:bg-primary/20"
                       : "text-foreground hover:bg-muted/70"
                   )}
                 >

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import Link from "next/link";
 import {
   CheckCircle2Icon,
@@ -28,6 +28,8 @@ import { useProjectRealtime } from "@/features/student/project/hooks/use-project
 import { useProjectProgress } from "@/features/student/project/hooks/useProjectSync";
 import { getApiErrorMessage } from "@/lib/api-error";
 import { cn } from "@/lib/utils";
+import { CustomSelect } from "@/components/common/custom-select";
+import { useProjectSprints } from "@/features/student/sprint-progress/hooks/use-project-sprints";
 import { normalizeProjectProgress } from "@/features/progress/lib/progress-format";
 import { useStudentDashboard } from "../hooks/use-student-dashboard";
 import { StudentActiveTasksCard } from "./student-active-tasks-card";
@@ -39,7 +41,8 @@ import { StudentDashboardSkeleton } from "./student-dashboard-skeleton";
 
 export function StudentDashboardAnalytics() {
   const { course, courseId, isLoading: isCoursesLoading, isInvalidCourse } = useStudentCourseContext();
-  const dashboardQuery = useStudentDashboard(courseId, { enabled: Boolean(courseId) });
+  const [selectedSprintId, setSelectedSprintId] = useState<string | null>(null);
+  const dashboardQuery = useStudentDashboard(courseId, selectedSprintId, { enabled: Boolean(courseId) });
   const data = dashboardQuery.data;
 
   // Trưởng nhóm có thể chọn xem tab Cá nhân (Cockpit) hoặc xem Toàn nhóm
@@ -53,6 +56,9 @@ export function StudentDashboardAnalytics() {
   const projectId = data?.team?.projectId || null;
   const canLoadProgress = Boolean(isLeader && projectId && activeTab === "team");
 
+  // Danh sách sprint của dự án để sinh viên chọn xem thống kê từng sprint
+  const { data: projectSprints } = useProjectSprints(projectId, { enabled: Boolean(projectId) });
+
   // Dữ liệu mở rộng cho Trưởng nhóm khi chuyển sang tab Toàn nhóm
   const progressQuery = useProjectProgress(projectId, { enabled: canLoadProgress });
   useProjectRealtime(projectId, { enabled: Boolean(projectId) });
@@ -63,6 +69,71 @@ export function StudentDashboardAnalytics() {
   const openMemberDetail = (studentId: string) => {
     setDetailStudentId(studentId);
   };
+
+  const currentSprint = data?.currentSprint;
+  const sprintSelectOptions = useMemo(() => {
+    const seen = new Set<string>();
+    const options: Array<{ value: string; label: string; subLabel?: string }> = [];
+
+    // 1. Thêm các sprint từ danh sách projectSprints
+    if (projectSprints && projectSprints.length > 0) {
+      for (const sp of projectSprints) {
+        if (!sp.id || seen.has(sp.id)) continue;
+        seen.add(sp.id);
+
+        const isCurrent =
+          (currentSprint?.id && sp.id === currentSprint.id) ||
+          (currentSprint?.name && sp.name && currentSprint.name.toLowerCase().trim() === sp.name.toLowerCase().trim());
+
+        const stateLabel =
+          sp.state === "active"
+            ? "Đang diễn ra"
+            : sp.state === "closed"
+              ? "Đã đóng"
+              : "Dự kiến";
+
+        options.push({
+          value: sp.id,
+          label: sp.name,
+          subLabel: isCurrent ? `Sprint hiện tại (${stateLabel})` : `Trạng thái: ${stateLabel}`,
+        });
+      }
+    }
+
+    // 2. Nếu currentSprint từ dashboard chưa có trong options thì bổ sung vào đầu
+    if (currentSprint?.id && !seen.has(currentSprint.id)) {
+      seen.add(currentSprint.id);
+      options.unshift({
+        value: currentSprint.id,
+        label: currentSprint.name || "Sprint hiện tại",
+        subLabel: currentSprint.state
+          ? `Sprint hiện tại (${currentSprint.state.toUpperCase() === "ACTIVE" ? "Đang diễn ra" : currentSprint.state})`
+          : "Sprint hiện tại",
+      });
+    }
+
+    // 3. Fallback an toàn: nếu selectedSprintId đang chọn mà chưa có trong options
+    if (selectedSprintId && !seen.has(selectedSprintId)) {
+      options.push({
+        value: selectedSprintId,
+        label: currentSprint?.name || "Sprint đã chọn",
+        subLabel: "Đang xem",
+      });
+    }
+
+    return options;
+  }, [projectSprints, currentSprint, selectedSprintId]);
+
+  const selectedSprintValue = useMemo(() => {
+    if (selectedSprintId) return selectedSprintId;
+    if (currentSprint?.id) return currentSprint.id;
+    if (sprintSelectOptions.length > 0) return sprintSelectOptions[0].value;
+    return "";
+  }, [selectedSprintId, currentSprint, sprintSelectOptions]);
+
+  const isViewingDifferentSprint = Boolean(
+    selectedSprintId && currentSprint?.id && selectedSprintId !== currentSprint.id
+  );
 
   if (isInvalidCourse) {
     return (
@@ -127,7 +198,7 @@ export function StudentDashboardAnalytics() {
     );
   }
 
-  const { student, team, currentSprint, myMetrics, myActiveTasks, recentCommits, weeklyCommits, actionableAlerts, integrations } = data;
+  const { student, team, myMetrics, myActiveTasks, recentCommits, weeklyCommits, actionableAlerts, integrations } = data;
 
   const formattedLastCommit = myMetrics.commits.lastCommittedAt
     ? new Date(myMetrics.commits.lastCommittedAt).toLocaleString("vi-VN", {
@@ -180,7 +251,43 @@ export function StudentDashboardAnalytics() {
           </div>
         </div>
 
-        <div className="flex items-center gap-2 self-end sm:self-center">
+        <div className="flex flex-wrap items-center gap-2.5 self-end sm:self-center">
+          {/* Dropdown chọn Sprint theo sprintId */}
+          <div
+            className={cn(
+              "flex items-center gap-1.5 rounded-xl px-2.5 py-1 transition-all border",
+              isViewingDifferentSprint
+                ? "bg-primary/10 border-primary/40 text-primary shadow-xs ring-1 ring-primary/20"
+                : "bg-muted/40 border-border/70"
+            )}
+          >
+            <KanbanIcon
+              className={cn("size-3.5 shrink-0", isViewingDifferentSprint ? "text-primary" : "text-amber-500")}
+            />
+            <span
+              className={cn(
+                "text-xs font-semibold whitespace-nowrap",
+                isViewingDifferentSprint ? "text-primary" : "text-muted-foreground"
+              )}
+            >
+              Sprint:
+            </span>
+            <div className="w-48 sm:w-56">
+              <CustomSelect
+                id="student-dashboard-header-sprint-select"
+                value={selectedSprintValue}
+                onChange={(val) => setSelectedSprintId(val)}
+                options={sprintSelectOptions}
+                placeholder={currentSprint?.name || "Chọn Sprint..."}
+                triggerClassName={cn(
+                  "h-7 text-xs font-semibold py-0 px-2 rounded-lg border-transparent bg-transparent hover:bg-background/80",
+                  isViewingDifferentSprint && "text-primary font-bold hover:bg-primary/15"
+                )}
+                dropdownClassName="min-w-[240px] sm:min-w-[280px] max-h-56 sm:max-h-60 overflow-y-auto custom-scrollbar sm:right-0 sm:left-auto"
+              />
+            </div>
+          </div>
+
           {isLeader && (
             <div className="flex items-center rounded-xl border border-border/70 bg-muted/30 p-1">
               <button
@@ -295,11 +402,14 @@ export function StudentDashboardAnalytics() {
             <Card className="rounded-2xl border border-border/80 bg-card/90 p-4 shadow-xs">
               <CardContent className="p-0 space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs text-muted-foreground font-medium">Sprint hiện tại</span>
+                  <span className="text-xs text-muted-foreground font-medium">
+                    {isViewingDifferentSprint ? "Sprint đang xem" : "Sprint hiện tại"}
+                  </span>
                   <div className="p-1.5 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400">
                     <KanbanIcon className="size-4" />
                   </div>
                 </div>
+
                 <div className="flex items-baseline justify-between">
                   <div className="text-base font-bold text-foreground truncate max-w-[180px]" title={currentSprint?.name || "Chưa có Sprint"}>
                     {currentSprint?.name || "Chưa bắt đầu"}
@@ -310,6 +420,7 @@ export function StudentDashboardAnalytics() {
                     </Badge>
                   )}
                 </div>
+
                 <div className="flex items-center justify-between text-[11px] text-muted-foreground pt-1 border-t border-border/50">
                   <span>Tiến độ nhóm:</span>
                   <span className="font-mono font-bold text-foreground">
