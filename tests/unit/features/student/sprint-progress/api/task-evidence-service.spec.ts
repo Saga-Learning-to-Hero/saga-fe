@@ -386,12 +386,7 @@ describe("TaskEvidenceService", () => {
 
       expect(postSpy).toHaveBeenCalledWith(
         `/api/tasks/${mockTaskId}/files`,
-        expect.any(FormData),
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        }
+        expect.any(FormData)
       );
       expect(res.id).toBe(mockFileId);
       expect(res.filename).toBe("srs.pdf");

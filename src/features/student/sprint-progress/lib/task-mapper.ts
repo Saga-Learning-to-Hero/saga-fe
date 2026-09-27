@@ -134,6 +134,8 @@ export function mapProjectTaskToSprintIssue(
     dueDate: taskResponse.dueDate || (task as ProjectTaskItem).dueDate || undefined,
     startDate: taskResponse.startDate || (task as ProjectTaskItem).startDate || undefined,
     githubCommitCount: task.linkedCommitCount || 0,
+    evidenceCount: task.evidenceCount,
+    hasEvidence: task.hasEvidence,
     createdAt: task.createdAt,
     superseded: Boolean(
       taskResponse.migration?.superseded ?? taskResponse.superseded ?? false

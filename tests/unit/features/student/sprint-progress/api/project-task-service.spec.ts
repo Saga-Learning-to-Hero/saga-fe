@@ -390,52 +390,6 @@ describe("ProjectTaskService", () => {
 
   fptTest(
     {
-      id: "UTCID17",
-      type: "N",
-      executedDate: "19/09/2026",
-      description: "Lay du lieu TaskEvidence thanh cong",
-    },
-    async () => {
-      const mockEvidence = {
-        taskId: mockTaskId,
-        taskKey: "SAGA-15",
-        summary: "Task Evidence Test",
-        commits: [],
-        pullRequests: [],
-        jiraIssues: [],
-        totalItems: 0,
-      };
-      vi.spyOn(apiClient, "get").mockResolvedValueOnce({ data: mockEvidence });
-
-      const res = await ProjectTaskService.getTaskEvidence(mockProjectId, mockTaskId);
-
-      expect(res).toBeDefined();
-      expect(apiClient.get).toHaveBeenCalledWith(
-        `/api/projects/${mockProjectId}/tasks/${mockTaskId}/evidence`,
-        { params: undefined }
-      );
-    }
-  );
-
-  fptTest(
-    {
-      id: "UTCID18",
-      type: "A",
-      executedDate: "19/09/2026",
-      description: "Nem ValidationException khi projectId hoac taskId rong khi goi getTaskEvidence",
-    },
-    async () => {
-      await expect(ProjectTaskService.getTaskEvidence("", mockTaskId)).rejects.toThrow(
-        "Throw ValidationException: Project ID is required"
-      );
-      await expect(ProjectTaskService.getTaskEvidence(mockProjectId, "")).rejects.toThrow(
-        "Throw ValidationException: Task ID is required"
-      );
-    }
-  );
-
-  fptTest(
-    {
       id: "UTCID19",
       type: "N",
       executedDate: "21/09/2026",

@@ -126,7 +126,7 @@ export function HeatmapCellTooltip({
     <div className="w-72 max-w-[calc(100vw-2rem)]">
       <div className="flex items-start justify-between gap-3 border-b border-border/60 bg-muted/20 px-3.5 py-3">
         <div className="min-w-0">
-          <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+          <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
             Ngày hoạt động
           </p>
           <p className="mt-0.5 text-sm font-extrabold text-foreground">
@@ -156,7 +156,7 @@ export function HeatmapCellTooltip({
                 <Icon className="size-3.5" aria-hidden />
               </span>
               <span className="min-w-0 flex-1">
-                <span className="block truncate text-[10px] font-medium text-muted-foreground">
+                <span className="block truncate text-xs font-medium text-muted-foreground">
                   {metric.label}
                 </span>
                 <span className="block font-mono text-sm font-black text-foreground">
@@ -170,14 +170,14 @@ export function HeatmapCellTooltip({
 
       {cell.actors && cell.actors.length > 0 && (
         <div className="border-t border-border/60 bg-muted/10 px-3.5 py-2 space-y-1.5">
-          <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+          <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
             Thành viên hoạt động ({cell.actors.length})
           </p>
           <div className="flex flex-wrap gap-1.5 max-h-24 overflow-y-auto">
             {cell.actors.map((actor) => (
               <div
                 key={actor.studentId}
-                className="inline-flex items-center gap-1.5 rounded-md border border-border/60 bg-card px-1.5 py-0.5 text-[11px]"
+                className="inline-flex items-center gap-1.5 rounded-md border border-border/60 bg-card px-1.5 py-0.5 text-xs"
               >
                 <Avatar className="size-4 rounded-full border border-border shrink-0">
                   {actor.avatar && (
@@ -473,7 +473,7 @@ export function ActivityHeatmapGrid({
   }, [activeDays, dateRange]);
 
   return (
-    <div className="bg-card border border-border/80 rounded-3xl p-6 shadow-sm space-y-6">
+    <div className="bg-card border border-border/80 rounded-xl p-6 shadow-sm space-y-6">
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
@@ -490,7 +490,7 @@ export function ActivityHeatmapGrid({
         </div>
 
         <div className="flex flex-wrap items-center gap-2.5">
-          <div className="bg-muted/40 p-1 rounded-2xl border border-border/60 flex items-center gap-1">
+          <div className="bg-muted/40 p-1 rounded-xl border border-border/60 flex items-center gap-1">
             <button
               type="button"
               disabled={sprints.length === 0}
@@ -566,7 +566,7 @@ export function ActivityHeatmapGrid({
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-        <div className="p-3.5 rounded-2xl bg-muted/20 border border-border/60">
+        <div className="p-3.5 rounded-xl bg-muted/20 border border-border/60">
           <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1">
             <Flame className="w-3.5 h-3.5 text-emerald-500" />
             <span>Tổng hoạt động</span>
@@ -574,12 +574,12 @@ export function ActivityHeatmapGrid({
           <div className="text-xl font-extrabold text-foreground font-mono">
             {totals.activities}
           </div>
-          <div className="text-[10px] text-muted-foreground mt-0.5">
+          <div className="text-xs text-muted-foreground mt-0.5">
             Tổng số lượt ghi nhận
           </div>
         </div>
 
-        <div className="p-3.5 rounded-2xl bg-muted/20 border border-border/60">
+        <div className="p-3.5 rounded-xl bg-muted/20 border border-border/60">
           <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1">
             <GitCommit className="w-3.5 h-3.5 text-blue-500" />
             <span>Git Commits</span>
@@ -587,12 +587,12 @@ export function ActivityHeatmapGrid({
           <div className="text-xl font-extrabold text-foreground font-mono">
             {totals.commits}
           </div>
-          <div className="text-[10px] text-muted-foreground mt-0.5">
+          <div className="text-xs text-muted-foreground mt-0.5">
             Lượt đẩy mã nguồn
           </div>
         </div>
 
-        <div className="p-3.5 rounded-2xl bg-muted/20 border border-border/60">
+        <div className="p-3.5 rounded-xl bg-muted/20 border border-border/60">
           <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1">
             <CheckSquare className="w-3.5 h-3.5 text-indigo-500" />
             <span>Jira Tasks</span>
@@ -600,12 +600,12 @@ export function ActivityHeatmapGrid({
           <div className="text-xl font-extrabold text-foreground font-mono">
             {totals.tasks}
           </div>
-          <div className="text-[10px] text-muted-foreground mt-0.5">
+          <div className="text-xs text-muted-foreground mt-0.5">
             Task được giao
           </div>
         </div>
 
-        <div className="p-3.5 rounded-2xl bg-muted/20 border border-border/60">
+        <div className="p-3.5 rounded-xl bg-muted/20 border border-border/60">
           <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1">
             <Users className="w-3.5 h-3.5 text-purple-500" />
             <span>Peer Reviews</span>
@@ -613,12 +613,12 @@ export function ActivityHeatmapGrid({
           <div className="text-xl font-extrabold text-foreground font-mono">
             {totals.peerReviews}
           </div>
-          <div className="text-[10px] text-muted-foreground mt-0.5">
+          <div className="text-xs text-muted-foreground mt-0.5">
             Đánh giá chéo đồng đẳng
           </div>
         </div>
 
-        <div className="p-3.5 rounded-2xl bg-muted/20 border border-border/60 col-span-2 sm:col-span-1">
+        <div className="p-3.5 rounded-xl bg-muted/20 border border-border/60 col-span-2 sm:col-span-1">
           <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1">
             <FileText className="w-3.5 h-3.5 text-amber-500" />
             <span>Tài liệu & Files</span>
@@ -626,18 +626,18 @@ export function ActivityHeatmapGrid({
           <div className="text-xl font-extrabold text-foreground font-mono">
             {totals.documents}
           </div>
-          <div className="text-[10px] text-muted-foreground mt-0.5">
+          <div className="text-xs text-muted-foreground mt-0.5">
             Tài liệu đính kèm
           </div>
         </div>
       </div>
 
       {isLoading ? (
-        <div className="h-48 rounded-2xl bg-muted/30 border border-border/60 animate-pulse flex items-center justify-center text-xs text-muted-foreground">
+        <div className="h-48 rounded-xl bg-muted/30 border border-border/60 animate-pulse flex items-center justify-center text-xs text-muted-foreground">
           Đang tổng hợp dữ liệu làm việc của nhóm...
         </div>
       ) : isError ? (
-        <div className="p-6 rounded-2xl bg-destructive/10 border border-destructive/20 text-center space-y-3">
+        <div className="p-6 rounded-xl bg-destructive/10 border border-destructive/20 text-center space-y-3">
           <p className="text-sm font-semibold text-destructive">
             Không thể tải dữ liệu hoạt động của nhóm
           </p>
@@ -653,11 +653,11 @@ export function ActivityHeatmapGrid({
         <TooltipProvider>
           <div className="space-y-4">
             <div className="overflow-x-auto pb-2">
-              <div className="w-full p-3 sm:p-4 rounded-2xl bg-muted/10 border border-border/40 space-y-1.5">
+              <div className="w-full p-3 sm:p-4 rounded-xl bg-muted/10 border border-border/40 space-y-1.5">
                 <div className="grid grid-cols-7 gap-1 sm:gap-1.5 text-center pb-1.5 border-b border-border/50">
                   {WEEKDAYS.map((day) => (
                     <div key={day.key}>
-                      <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
+                      <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                         <span className="hidden sm:inline">{day.short}</span>
                         <span className="sm:hidden">{day.short}</span>
                       </span>
@@ -718,7 +718,7 @@ export function ActivityHeatmapGrid({
                                       {item.cell.totalActivities}
                                     </span>
                                   ) : (
-                                    <span className="text-[10px] font-mono text-muted-foreground/30">
+                                    <span className="text-xs font-mono text-muted-foreground/30">
                                       –
                                     </span>
                                   )}
@@ -748,7 +748,7 @@ export function ActivityHeatmapGrid({
                               <TooltipContent
                                 side="top"
                                 sideOffset={10}
-                                className="block overflow-hidden rounded-2xl border border-border/80 bg-popover p-0 text-popover-foreground shadow-xl"
+                                className="block overflow-hidden rounded-xl border border-border/80 bg-popover p-0 text-popover-foreground shadow-md"
                               >
                                 <HeatmapCellTooltip
                                   cell={item.cell}
@@ -811,7 +811,7 @@ export function ActivityHeatmapGrid({
                 <button
                   type="button"
                   onClick={() => setSelectedStudentId("ALL")}
-                  className="text-[11px] text-primary hover:underline font-medium cursor-pointer"
+                  className="text-xs text-primary hover:underline font-medium cursor-pointer"
                 >
                   (Xem toàn bộ nhóm)
                 </button>
@@ -822,7 +822,7 @@ export function ActivityHeatmapGrid({
             </span>
           </div>
 
-          <div className="overflow-x-auto rounded-2xl border border-border/60">
+          <div className="overflow-x-auto rounded-xl border border-border/60">
             <table className="w-full text-left text-xs border-collapse">
               <thead>
                 <tr className="bg-muted/30 border-b border-border/60 text-muted-foreground font-semibold">
@@ -858,7 +858,7 @@ export function ActivityHeatmapGrid({
                             />
                             <AvatarFallback
                               className={cn(
-                                "text-[11px] font-bold text-white rounded-xl",
+                                "text-xs font-bold text-white rounded-xl",
                                 avatarColorClass
                               )}
                             >
@@ -870,7 +870,7 @@ export function ActivityHeatmapGrid({
                               {student.fullName}
                             </div>
                             {student.studentCode && (
-                              <div className="text-[11px] font-mono text-muted-foreground">
+                              <div className="text-xs font-mono text-muted-foreground">
                                 {student.studentCode}
                               </div>
                             )}

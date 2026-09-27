@@ -12,7 +12,7 @@ export interface HeatmapCell {
   documents: number;
   tasks: number;
   totalActivities: number;
-  actors?: HeatmapActor[];
+  actors: HeatmapActor[];
 }
 
 export interface StudentHeatmap {
@@ -46,7 +46,7 @@ export interface GetHeatmapParams {
 
 export interface BurndownPoint {
   date: string;
-  idealRemaining?: number;
+  idealRemaining: number;
   actualRemaining: number;
   doneCount: number;
 }
