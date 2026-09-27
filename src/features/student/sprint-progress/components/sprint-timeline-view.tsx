@@ -61,9 +61,9 @@ export function SprintTimelineView({
 
   const getSprintSpan = (sprint: Sprint) => {
     const gradientByStatus: Record<Sprint["status"], string> = {
-      COMPLETED: "bg-gradient-to-r from-emerald-600 to-teal-600 text-white",
-      ACTIVE: "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-xs",
-      PLANNED: "bg-gradient-to-r from-slate-500 to-slate-600 text-white opacity-90",
+      COMPLETED: "bg-popover from-emerald-600 to-teal-600 text-white",
+      ACTIVE: "bg-popover from-blue-600 to-indigo-600 text-white shadow-xs",
+      PLANNED: "bg-popover from-slate-500 to-slate-600 text-white opacity-90",
     };
 
     let startCol = 1;
@@ -85,10 +85,10 @@ export function SprintTimelineView({
   };
 
   return (
-    <div className="rounded-3xl border border-border/70 bg-card/60 backdrop-blur-xs p-4 sm:p-6 shadow-2xs space-y-6">
+    <div className="rounded-xl border border-border/70 bg-card/60 backdrop-blur-xs p-4 sm:p-6 shadow-2xs space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-border/60">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-2xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+          <div className="w-9 h-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
             <GanttChartSquareIcon className="w-5 h-5" />
           </div>
           <div>
@@ -118,7 +118,7 @@ export function SprintTimelineView({
         <div className="min-w-[820px] space-y-5">
           <div className="grid grid-cols-12 gap-2 pb-2.5 border-b border-border/60 text-xs font-bold text-muted-foreground items-center">
             <div className="col-span-4 pl-1">Sprint / Mốc thời gian</div>
-            <div className="col-span-8 grid grid-cols-8 gap-1.5 text-center font-mono text-[11px]">
+            <div className="col-span-8 grid grid-cols-8 gap-1.5 text-center font-mono text-xs">
               {dynamicWeeks.map((w) => (
                 <div key={w.id} className="p-1.5 bg-muted/40 rounded-xl border border-border/40">
                   <div className="font-bold text-foreground">{w.label}</div>
@@ -129,12 +129,12 @@ export function SprintTimelineView({
           </div>
 
           <div className="space-y-3">
-            <h4 className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground pl-1">
+            <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground pl-1">
               Lộ trình Sprints:
             </h4>
 
             {sprints.length === 0 ? (
-              <div className="p-6 rounded-2xl border border-dashed border-border/80 text-center text-xs text-muted-foreground bg-muted/10">
+              <div className="p-6 rounded-xl border border-dashed border-border/80 text-center text-xs text-muted-foreground bg-muted/10">
                 Chưa có Sprint nào trên lộ trình.
               </div>
             ) : (
@@ -159,16 +159,16 @@ export function SprintTimelineView({
                       )}
                     </div>
 
-                    <div className="col-span-8 grid grid-cols-8 gap-1.5 relative h-9 bg-muted/20 rounded-2xl items-center p-1 border border-border/40">
+                    <div className="col-span-8 grid grid-cols-8 gap-1.5 relative h-9 bg-muted/20 rounded-xl items-center p-1 border border-border/40">
                       <div
                         style={{
                           gridColumnStart: span.startCol,
                           gridColumnEnd: span.endCol + 1,
                         }}
-                        className={`${span.gradient} font-bold text-[11px] h-7 rounded-xl flex items-center justify-between px-3 truncate transition-transform hover:scale-[1.005]`}
+                        className={`${span.gradient} font-bold text-xs h-7 rounded-xl flex items-center justify-between px-3 truncate transition-transform hover:scale-[1.005]`}
                       >
                         <span className="truncate">{sprint.name}</span>
-                        <span className="font-mono text-[10px] shrink-0 font-semibold opacity-95">
+                        <span className="font-mono text-xs shrink-0 font-semibold opacity-95">
                           {sprint.completedStoryPoints}/{sprint.totalStoryPoints} SP
                         </span>
                       </div>
@@ -180,12 +180,12 @@ export function SprintTimelineView({
           </div>
 
           <div className="space-y-3 pt-4 border-t border-border/60">
-            <h4 className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground pl-1">
+            <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground pl-1">
               Tiến độ Phân hệ (Epics):
             </h4>
 
             {epics.length === 0 ? (
-              <div className="p-4 rounded-2xl border border-dashed border-border/60 text-center text-xs text-muted-foreground bg-muted/10 flex items-center justify-center gap-2">
+              <div className="p-4 rounded-xl border border-dashed border-border/60 text-center text-xs text-muted-foreground bg-muted/10 flex items-center justify-center gap-2">
                 <LayersIcon className="w-4 h-4 text-muted-foreground/60" />
                 <span>Chưa có phân hệ Epic nào được liên kết trong dự án.</span>
               </div>
@@ -199,7 +199,7 @@ export function SprintTimelineView({
                     />
                     <div className="flex flex-col min-w-0">
                       <span className="font-bold text-foreground truncate">{epic.name}</span>
-                      <span className="text-[10px] text-muted-foreground font-mono">{epic.key}</span>
+                      <span className="text-xs text-muted-foreground font-mono">{epic.key}</span>
                     </div>
                   </div>
 

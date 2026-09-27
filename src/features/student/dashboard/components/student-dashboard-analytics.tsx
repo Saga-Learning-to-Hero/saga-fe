@@ -35,7 +35,20 @@ import { useStudentDashboard } from "../hooks/use-student-dashboard";
 import { StudentActiveTasksCard } from "./student-active-tasks-card";
 import { StudentAlertsBanner } from "./student-alerts-banner";
 import { StudentRecentCommitsCard } from "./student-recent-commits-card";
-import { StudentWeeklyCommitsChart } from "./student-weekly-commits-chart";
+import dynamic from "next/dynamic";
+import { Loader2Icon } from "lucide-react";
+
+const StudentWeeklyCommitsChart = dynamic(
+  () => import("./student-weekly-commits-chart").then((mod) => mod.StudentWeeklyCommitsChart),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="w-full h-[300px] flex items-center justify-center text-muted-foreground bg-muted/10 rounded-xl">
+        <Loader2Icon className="w-6 h-6 animate-spin" />
+      </div>
+    ),
+  }
+);
 import { TeamWorkloadComparisonChart } from "./team-workload-comparison-chart";
 import { StudentDashboardSkeleton } from "./student-dashboard-skeleton";
 
@@ -202,27 +215,27 @@ export function StudentDashboardAnalytics() {
 
   const formattedLastCommit = myMetrics.commits.lastCommittedAt
     ? new Date(myMetrics.commits.lastCommittedAt).toLocaleString("vi-VN", {
-        timeZone: "Asia/Ho_Chi_Minh",
-        day: "2-digit",
-        month: "2-digit",
-        hour: "2-digit",
-        minute: "2-digit",
-      })
+      timeZone: "Asia/Ho_Chi_Minh",
+      day: "2-digit",
+      month: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+    })
     : "Chưa ghi nhận";
 
   return (
     <div className="space-y-6">
       {/* 1. Header Card: Định danh sinh viên, môn học, nhóm & Chuyển đổi tab nếu là Leader */}
-      <div className="flex flex-col justify-between gap-4 rounded-3xl border border-border/80 bg-card/90 p-5 shadow-xs sm:flex-row sm:items-center">
+      <div className="flex flex-col justify-between gap-4 rounded-xl border border-border/80 bg-card/90 p-5 shadow-xs sm:flex-row sm:items-center">
         <div className="flex items-center gap-3.5">
-          <Avatar className="size-11 rounded-2xl border border-primary/25 shadow-xs" size="lg">
+          <Avatar className="size-11 rounded-xl border border-primary/25 shadow-xs" size="lg">
             <AvatarImage
               src={student.avatarUrl || undefined}
               alt={student.fullName}
               referrerPolicy="no-referrer"
-              className="object-cover rounded-2xl"
+              className="object-cover rounded-xl"
             />
-            <AvatarFallback className="rounded-2xl bg-primary/10 text-primary font-bold text-sm font-mono">
+            <AvatarFallback className="rounded-xl bg-primary/10 text-primary font-bold text-sm font-mono">
               {student.studentCode?.slice(0, 2) || "SV"}
             </AvatarFallback>
           </Avatar>
@@ -237,11 +250,11 @@ export function StudentDashboardAnalytics() {
               {isLeader ? (
                 <LeaderBadge size="sm" />
               ) : (
-                <Badge variant="secondary" className="text-[10px] font-bold">
+                <Badge variant="secondary" className="text-xs font-bold">
                   Thành viên nhóm
                 </Badge>
               )}
-              <Badge variant="outline" className="font-mono text-[10px]">
+              <Badge variant="outline" className="font-mono text-xs">
                 Nhóm {team.teamNo} · {team.teamName}
               </Badge>
             </div>
@@ -340,7 +353,7 @@ export function StudentDashboardAnalytics() {
           {/* 3 Thẻ Chỉ Số KPI Cá Nhân Nổi Bật */}
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
             {/* Thẻ 1: Nhiệm vụ phân công */}
-            <Card className="rounded-2xl border border-border/80 bg-card/90 p-4 shadow-xs">
+            <Card className="rounded-xl border border-border/80 bg-card/90 p-4 shadow-xs">
               <CardContent className="p-0 space-y-2">
                 <div className="flex items-center justify-between">
                   <span className="text-xs text-muted-foreground font-medium">Nhiệm vụ của tôi</span>
@@ -355,11 +368,11 @@ export function StudentDashboardAnalytics() {
                       / {myMetrics.tasks.totalAssigned} tasks
                     </span>
                   </div>
-                  <Badge variant="outline" className="font-mono text-[10px] bg-primary/10 text-primary border-primary/20">
+                  <Badge variant="outline" className="font-mono text-xs bg-primary/10 text-primary border-primary/20">
                     {Math.round(myMetrics.tasks.completionPercent || 0)}%
                   </Badge>
                 </div>
-                <div className="flex items-center justify-between text-[11px] text-muted-foreground pt-1 border-t border-border/50">
+                <div className="flex items-center justify-between text-xs text-muted-foreground pt-1 border-t border-border/50">
                   <span>Story Points:</span>
                   <span className="font-mono font-bold text-foreground">
                     {myMetrics.tasks.completedStoryPoints || 0} / {myMetrics.tasks.totalStoryPoints || 0} SP
@@ -369,7 +382,7 @@ export function StudentDashboardAnalytics() {
             </Card>
 
             {/* Thẻ 2: Minh chứng Git Commits */}
-            <Card className="rounded-2xl border border-border/80 bg-card/90 p-4 shadow-xs">
+            <Card className="rounded-xl border border-border/80 bg-card/90 p-4 shadow-xs">
               <CardContent className="p-0 space-y-2">
                 <div className="flex items-center justify-between">
                   <span className="text-xs text-muted-foreground font-medium">Minh chứng Git</span>
@@ -384,12 +397,12 @@ export function StudentDashboardAnalytics() {
                   </div>
                   <Badge
                     variant="outline"
-                    className="font-mono text-[10px] bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20"
+                    className="font-mono text-xs bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20"
                   >
                     {Math.round(myMetrics.commits.traceabilityPercent || 0)}% Traceability
                   </Badge>
                 </div>
-                <div className="flex items-center justify-between text-[11px] text-muted-foreground pt-1 border-t border-border/50">
+                <div className="flex items-center justify-between text-xs text-muted-foreground pt-1 border-t border-border/50">
                   <span>Lần commit gần nhất:</span>
                   <span className="font-mono font-medium text-foreground truncate max-w-[140px]">
                     {formattedLastCommit}
@@ -399,7 +412,7 @@ export function StudentDashboardAnalytics() {
             </Card>
 
             {/* Thẻ 3: Sprint hiện tại & Đồng bộ */}
-            <Card className="rounded-2xl border border-border/80 bg-card/90 p-4 shadow-xs">
+            <Card className="rounded-xl border border-border/80 bg-card/90 p-4 shadow-xs">
               <CardContent className="p-0 space-y-2">
                 <div className="flex items-center justify-between">
                   <span className="text-xs text-muted-foreground font-medium">
@@ -415,13 +428,13 @@ export function StudentDashboardAnalytics() {
                     {currentSprint?.name || "Chưa bắt đầu"}
                   </div>
                   {currentSprint?.state && (
-                    <Badge variant="outline" className="text-[10px] uppercase font-bold">
+                    <Badge variant="outline" className="text-xs uppercase font-bold">
                       {currentSprint.state}
                     </Badge>
                   )}
                 </div>
 
-                <div className="flex items-center justify-between text-[11px] text-muted-foreground pt-1 border-t border-border/50">
+                <div className="flex items-center justify-between text-xs text-muted-foreground pt-1 border-t border-border/50">
                   <span>Tiến độ nhóm:</span>
                   <span className="font-mono font-bold text-foreground">
                     {currentSprint ? `${currentSprint.completedTasks}/${currentSprint.totalTasks} (${Math.round(currentSprint.completionPercent || 0)}%)` : "N/A"}
@@ -504,7 +517,7 @@ function EmptyPanel({
   onRetry?: () => void;
 }) {
   return (
-    <Card className="rounded-2xl border border-dashed border-border/80 p-8 text-center shadow-xs">
+    <Card className="rounded-xl border border-dashed border-border/80 p-8 text-center shadow-xs">
       <CardContent className="space-y-3 p-0">
         <FolderKanbanIcon className="mx-auto size-8 text-muted-foreground/50" />
         <h2 className="text-base font-bold">{title}</h2>

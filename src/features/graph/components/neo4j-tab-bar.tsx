@@ -74,7 +74,7 @@ export function Neo4jTabBar({
 
   return (
     <div className="space-y-2.5">
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border/80 bg-card p-2.5 shadow-2xs">
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border/80 bg-card p-2.5 shadow-2xs">
         {drillDownStudent ? (
           <div className="flex flex-wrap items-center justify-between gap-3 w-full">
             <div className="flex items-center gap-3">

@@ -106,10 +106,10 @@ export function StudentWeeklyCommitsChart({
   return (
     <div className="grid grid-cols-1 gap-5 lg:grid-cols-12">
       {/* 1. Biểu đồ Commit Hiện Đại (Area Gradient hoặc Capsule Bar) */}
-      <Card className="flex flex-col overflow-hidden rounded-3xl border border-border/80 bg-card/90 shadow-xs lg:col-span-7">
+      <Card className="flex flex-col overflow-hidden rounded-xl border border-border/80 bg-card/90 shadow-xs lg:col-span-7">
         <CardHeader className="border-b border-border/60 p-4 pb-3 sm:p-5 flex flex-row items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="flex size-10 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary border border-primary/20 shadow-xs">
+            <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary border border-primary/20 shadow-xs">
               <ActivityIcon className="size-5" />
             </div>
             <div>
@@ -117,7 +117,7 @@ export function StudentWeeklyCommitsChart({
                 <CardTitle className="text-base font-bold text-foreground tracking-tight">
                   Nhịp độ đóng góp mã nguồn
                 </CardTitle>
-                <Badge variant="outline" className="font-mono text-[10px] bg-primary/10 text-primary border-primary/25">
+                <Badge variant="outline" className="font-mono text-xs bg-primary/10 text-primary border-primary/25">
                   {totalCommits} commit
                 </Badge>
               </div>
@@ -178,7 +178,7 @@ export function StudentWeeklyCommitsChart({
 
         <CardContent className="p-5 flex-1 flex flex-col justify-center">
           {chartData.length === 0 ? (
-            <p className="rounded-2xl border border-dashed border-border/80 p-8 text-center text-xs text-muted-foreground">
+            <p className="rounded-xl border border-dashed border-border/80 p-8 text-center text-xs text-muted-foreground">
               Chưa có dữ liệu commit để hiển thị biểu đồ.
             </p>
           ) : (
@@ -231,9 +231,9 @@ export function StudentWeeklyCommitsChart({
                         if (!active || !payload?.length) return null;
                         const data = payload[0].payload as (typeof chartData)[number];
                         return (
-                          <div className="rounded-2xl border border-primary/30 bg-card/95 p-3 text-xs shadow-2xl backdrop-blur-md space-y-1.5 min-w-[150px]">
+                          <div className="rounded-xl border border-primary/30 bg-card/95 p-3 text-xs shadow-lg backdrop-blur-sm space-y-1.5 min-w-[150px]">
                             <div className="flex items-center justify-between gap-2 border-b border-border/60 pb-1">
-                              <span className="text-muted-foreground text-[11px]">{data.dayOfWeek}</span>
+                              <span className="text-muted-foreground text-xs">{data.dayOfWeek}</span>
                               <span className="font-mono font-bold text-foreground">{data.fullDate}</span>
                             </div>
                             <p className="flex items-center gap-1.5 font-mono text-xs text-primary font-bold pt-0.5">
@@ -313,9 +313,9 @@ export function StudentWeeklyCommitsChart({
                         if (!active || !payload?.length) return null;
                         const data = payload[0].payload as (typeof chartData)[number];
                         return (
-                          <div className="rounded-2xl border border-primary/30 bg-card/95 p-3 text-xs shadow-2xl backdrop-blur-md space-y-1.5 min-w-[150px]">
+                          <div className="rounded-xl border border-primary/30 bg-card/95 p-3 text-xs shadow-lg backdrop-blur-sm space-y-1.5 min-w-[150px]">
                             <div className="flex items-center justify-between gap-2 border-b border-border/60 pb-1">
-                              <span className="text-muted-foreground text-[11px]">{data.dayOfWeek}</span>
+                              <span className="text-muted-foreground text-xs">{data.dayOfWeek}</span>
                               <span className="font-mono font-bold text-foreground">{data.fullDate}</span>
                             </div>
                             <p className="flex items-center gap-1.5 font-mono text-xs text-primary font-bold pt-0.5">
@@ -346,10 +346,10 @@ export function StudentWeeklyCommitsChart({
       </Card>
 
       {/* 2. Biểu đồ Phân Bố Nhiệm Vụ (Donut Gauge Style) */}
-      <Card className="flex flex-col overflow-hidden rounded-3xl border border-border/80 bg-card/90 shadow-xs lg:col-span-5">
+      <Card className="flex flex-col overflow-hidden rounded-xl border border-border/80 bg-card/90 shadow-xs lg:col-span-5">
         <CardHeader className="border-b border-border/60 p-4 pb-3 sm:p-5">
           <div className="flex items-center gap-3">
-            <div className="flex size-10 shrink-0 items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 shadow-xs">
+            <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 shadow-xs">
               <PieChartIcon className="size-5" />
             </div>
             <div>
@@ -365,7 +365,7 @@ export function StudentWeeklyCommitsChart({
 
         <CardContent className="flex flex-1 flex-col justify-between space-y-4 p-5">
           {tasks.totalAssigned === 0 || activeSegments.length === 0 ? (
-            <p className="flex flex-1 items-center justify-center rounded-2xl border border-dashed border-border/80 p-8 text-center text-xs text-muted-foreground">
+            <p className="flex flex-1 items-center justify-center rounded-xl border border-dashed border-border/80 p-8 text-center text-xs text-muted-foreground">
               Bạn chưa có nhiệm vụ nào được phân công.
             </p>
           ) : (
@@ -391,7 +391,7 @@ export function StudentWeeklyCommitsChart({
                         if (!active || !payload?.length) return null;
                         const data = payload[0].payload as (typeof activeSegments)[number];
                         return (
-                          <div className="rounded-xl border border-border bg-popover/95 p-2 text-xs shadow-xl backdrop-blur-xs">
+                          <div className="rounded-xl border border-border bg-popover/95 p-2 text-xs shadow-md backdrop-blur-xs">
                             <span className="font-semibold">{data.name}: </span>
                             <span className="font-mono font-bold">{data.value} task</span>
                           </div>
@@ -409,7 +409,7 @@ export function StudentWeeklyCommitsChart({
                       ? `${Math.round(tasks.completionPercent)}%`
                       : "0%"}
                   </span>
-                  <span className="text-[10px] text-muted-foreground font-medium">Hoàn thành</span>
+                  <span className="text-xs text-muted-foreground font-medium">Hoàn thành</span>
                 </div>
               </div>
 
@@ -418,11 +418,11 @@ export function StudentWeeklyCommitsChart({
                 {statusSegments.map((seg) => (
                   <div
                     key={seg.key}
-                    className="flex flex-col items-center rounded-2xl border border-border/60 bg-muted/20 p-2.5 text-center transition-all hover:bg-muted/40"
+                    className="flex flex-col items-center rounded-xl border border-border/60 bg-muted/20 p-2.5 text-center transition-all hover:bg-muted/40"
                   >
                     <div className="flex items-center gap-1.5 mb-0.5">
                       <span className="size-2 rounded-full" style={{ backgroundColor: seg.color }} />
-                      <span className="text-[10px] text-muted-foreground font-medium">{seg.name}</span>
+                      <span className="text-xs text-muted-foreground font-medium">{seg.name}</span>
                     </div>
                     <span className="font-mono text-sm font-bold text-foreground">{seg.value}</span>
                   </div>

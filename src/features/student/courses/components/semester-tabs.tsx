@@ -36,7 +36,7 @@ export function SemesterTabs({
   const isOlderActive = Boolean(activeOlderSemester);
 
   return (
-    <div className="w-full bg-card/60 backdrop-blur-md p-1.5 rounded-2xl border border-border/80 shadow-xs">
+    <div className="w-full bg-card/60 backdrop-blur-sm p-1.5 rounded-xl border border-border/80 shadow-xs">
       <nav className="flex items-center gap-1.5 overflow-x-auto no-scrollbar scroll-smooth">
         {topSemesters.map((sem) => {
           const isActive = sem.code === activeSemesterCode;
@@ -55,7 +55,7 @@ export function SemesterTabs({
               <span>{sem.name}</span>
               <span
                 className={cn(
-                  "font-mono text-[10px] px-1.5 py-0.5 rounded-md font-bold tracking-wider",
+                  "font-mono text-xs px-1.5 py-0.5 rounded-md font-bold tracking-wider",
                   isActive
                     ? "bg-primary-foreground/20 text-primary-foreground"
                     : "bg-muted text-muted-foreground group-hover:bg-muted-foreground/15"
@@ -89,7 +89,7 @@ export function SemesterTabs({
                 {isOlderActive ? `Kỳ khác: ${activeOlderSemester?.name}` : "Học kỳ cũ"}
               </span>
               {isOlderActive && (
-                <Badge className="bg-primary/20 text-primary border-0 text-[10px] px-1.5 py-0 font-mono">
+                <Badge className="bg-primary/20 text-primary border-0 text-xs px-1.5 py-0 font-mono">
                   {activeOlderSemester?.code}
                 </Badge>
               )}
@@ -97,7 +97,7 @@ export function SemesterTabs({
             </DropdownMenuTrigger>
 
             <DropdownMenuContent align="end" className="w-56 p-1.5 rounded-xl">
-              <DropdownMenuLabel className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider px-2 py-1.5 flex items-center gap-1.5">
+              <DropdownMenuLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-2 py-1.5 flex items-center gap-1.5">
                 <HistoryIcon className="w-3 h-3" />
                 Các học kỳ cũ
               </DropdownMenuLabel>
@@ -115,7 +115,7 @@ export function SemesterTabs({
                     )}
                   >
                     <div className="flex items-center gap-2">
-                      <span className="font-mono text-[11px] font-bold px-1.5 py-0.5 rounded bg-muted text-muted-foreground">
+                      <span className="font-mono text-xs font-bold px-1.5 py-0.5 rounded bg-muted text-muted-foreground">
                         {sem.code}
                       </span>
                       <span>{sem.name}</span>

@@ -85,7 +85,7 @@ export function NotificationBell({ className }: NotificationBellProps) {
         {unreadCount > 0 && (
           <span
             className={cn(
-              "absolute -top-1 -right-1 flex items-center justify-center min-w-4.5 h-4.5 px-1 rounded-full text-[10px] font-extrabold bg-primary text-primary-foreground shadow-xs animate-in zoom-in-50",
+              "absolute -top-1 -right-1 flex items-center justify-center min-w-4.5 h-4.5 px-1 rounded-full text-xs font-extrabold bg-primary text-primary-foreground shadow-xs animate-in zoom-in-50",
               unreadCount > 99 && "text-[9px] px-1"
             )}
           >
@@ -97,13 +97,13 @@ export function NotificationBell({ className }: NotificationBellProps) {
       <PopoverContent
         align="end"
         sideOffset={8}
-        className="w-[340px] sm:w-[380px] p-0 rounded-2xl shadow-xl border-border bg-card overflow-hidden"
+        className="w-[340px] sm:w-[380px] p-0 rounded-xl shadow-md border-border bg-card overflow-hidden"
       >
         <div className="px-4 py-3 border-b border-border/80 bg-muted/20 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <span className="text-sm font-bold text-foreground">Thông báo</span>
             {unreadCount > 0 && (
-              <Badge className="bg-primary/15 text-primary border-primary/30 text-[10px] px-1.5 py-0 font-bold">
+              <Badge className="bg-primary/15 text-primary border-primary/30 text-xs px-1.5 py-0 font-bold">
                 {unreadCount} mới
               </Badge>
             )}
@@ -158,7 +158,7 @@ export function NotificationBell({ className }: NotificationBellProps) {
                 <BellOffIcon className="size-5" />
               </div>
               <p className="text-xs font-bold text-foreground">Không có thông báo nào</p>
-              <p className="text-[11px] text-muted-foreground">Bạn đã cập nhật mọi thông tin mới nhất.</p>
+              <p className="text-xs text-muted-foreground">Bạn đã cập nhật mọi thông tin mới nhất.</p>
             </div>
           )}
 
@@ -206,7 +206,7 @@ export function NotificationBell({ className }: NotificationBellProps) {
 
                     <div className="flex items-center justify-between pt-0.5">
                       <Tooltip>
-                        <TooltipTrigger className="text-[10px] text-muted-foreground/80 font-medium flex items-center gap-1.5 cursor-pointer">
+                        <TooltipTrigger className="text-xs text-muted-foreground/80 font-medium flex items-center gap-1.5 cursor-pointer">
                           <span className="font-mono text-foreground/80">{formatVietnamShortDateTime(item.createdAt)}</span>
                           <span className="text-muted-foreground/40">&bull;</span>
                           <span>{formatRelativeTime(item.createdAt)}</span>

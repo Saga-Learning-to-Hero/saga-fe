@@ -50,7 +50,7 @@ export function PipelineWorkspace({
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border/80 bg-card p-2 shadow-2xs">
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border/80 bg-card p-2 shadow-2xs">
         <div className="flex items-center gap-1 rounded-xl border border-border/60 bg-muted/60 p-1 text-xs font-bold">
           <button
             type="button"

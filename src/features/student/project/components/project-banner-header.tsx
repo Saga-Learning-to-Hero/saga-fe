@@ -104,7 +104,7 @@ export function ProjectBannerHeader({
 
   return (
     <div
-      className="relative overflow-hidden rounded-2xl p-4 sm:p-5 border border-border/80 shadow-md"
+      className="relative overflow-hidden rounded-xl p-4 sm:p-5 border border-border/80 shadow-md"
       style={{
         background:
           "linear-gradient(135deg, oklch(from var(--saga-primary) calc(l + 0.05) c h), oklch(from var(--saga-accent) calc(l - 0.05) c h))",
@@ -123,41 +123,41 @@ export function ProjectBannerHeader({
         <div className="space-y-2 max-w-3xl">
           <div className="flex flex-wrap items-center gap-2">
             {categoryLabel && (
-              <Badge className="bg-white/20 hover:bg-white/25 text-white border-0 text-[11px] px-2.5 py-0.5 font-semibold backdrop-blur-md">
+              <Badge className="bg-white/20 hover:bg-white/25 text-white border-0 text-xs px-2.5 py-0.5 font-semibold backdrop-blur-sm">
                 <FolderKanbanIcon className="w-3 h-3 mr-1" />
                 {categoryLabel}
               </Badge>
             )}
 
             {course?.semesterCode && (
-              <Badge className="bg-emerald-500/20 text-white border-0 text-[11px] font-mono">
+              <Badge className="bg-emerald-500/20 text-white border-0 text-xs font-mono">
                 Học kỳ: {course.semesterCode}
               </Badge>
             )}
 
             {course?.adminClassCode && (
-              <Badge className="bg-blue-500/20 text-white border-0 text-[11px] font-mono">
+              <Badge className="bg-blue-500/20 text-white border-0 text-xs font-mono">
                 Lớp: {course.adminClassCode}
               </Badge>
             )}
 
             {project.name ? (
-              <Badge className="bg-emerald-400 text-emerald-950 font-bold border-0 text-[11px] gap-1">
+              <Badge className="bg-emerald-400 text-emerald-950 font-bold border-0 text-xs gap-1">
                 <CheckCircle2Icon className="w-3 h-3" /> Đang phát triển
               </Badge>
             ) : (
-              <Badge className="bg-amber-400 text-amber-950 font-bold border-0 text-[11px] gap-1">
+              <Badge className="bg-amber-400 text-amber-950 font-bold border-0 text-xs gap-1">
                 Chưa có dự án
               </Badge>
             )}
 
             {isRoleLoading ? (
-              <Badge className="bg-white/20 text-white font-medium border-0 text-[11px] px-2 py-0.5 animate-pulse backdrop-blur-md">
+              <Badge className="bg-white/20 text-white font-medium border-0 text-xs px-2 py-0.5 animate-pulse backdrop-blur-sm">
                 <UserCheck2Icon className="w-3 h-3 mr-1" />
                 Đang xác thực vai trò...
               </Badge>
             ) : hasTeam === false ? (
-              <Badge className="bg-amber-400/30 text-amber-100 font-bold border border-amber-300/40 text-[11px] px-2 py-0.5 backdrop-blur-md">
+              <Badge className="bg-amber-400/30 text-amber-100 font-bold border border-amber-300/40 text-xs px-2 py-0.5 backdrop-blur-sm">
                 Chưa có nhóm
               </Badge>
             ) : isLeader !== undefined ? (
@@ -169,7 +169,7 @@ export function ProjectBannerHeader({
             {project.name || "Chưa khởi tạo dự án nhóm"}
           </h1>
 
-          <div className="flex flex-wrap items-center gap-3 text-[11px] text-white/90">
+          <div className="flex flex-wrap items-center gap-3 text-xs text-white/90">
             {project.groupName && (
               <span className="flex items-center gap-1 font-bold">
                 <SparklesIcon className="w-3 h-3 text-amber-300" />
@@ -199,7 +199,7 @@ export function ProjectBannerHeader({
                   type="button"
                   size="sm"
                   onClick={() => setIsEditOpen(true)}
-                  className="h-9 px-3 rounded-xl bg-white/20 hover:bg-white/30 text-white border border-white/20 text-xs font-semibold backdrop-blur-md gap-1.5 shadow-xs transition-all cursor-pointer active:scale-95"
+                  className="h-9 px-3 rounded-xl bg-white/20 hover:bg-white/30 text-white border border-white/20 text-xs font-semibold backdrop-blur-sm gap-1.5 shadow-xs transition-all cursor-pointer active:scale-95"
                 >
                   <PencilIcon className="w-3.5 h-3.5" />
                   <span>Chỉnh sửa thông tin</span>
@@ -210,7 +210,7 @@ export function ProjectBannerHeader({
                   size="sm"
                   onClick={() => void handleSync()}
                   disabled={syncMutation.isPending || hasActiveJob}
-                  className="h-9 px-3.5 rounded-xl bg-white/20 hover:bg-white/30 text-white border border-white/20 text-xs font-semibold backdrop-blur-md gap-2 shadow-xs transition-all cursor-pointer active:scale-95"
+                  className="h-9 px-3.5 rounded-xl bg-white/20 hover:bg-white/30 text-white border border-white/20 text-xs font-semibold backdrop-blur-sm gap-2 shadow-xs transition-all cursor-pointer active:scale-95"
                 >
                   <RefreshCwIcon
                     className={`w-3.5 h-3.5 ${syncMutation.isPending || hasActiveJob ? "animate-spin text-amber-300" : ""
@@ -227,7 +227,7 @@ export function ProjectBannerHeader({
               </div>
             )}
 
-            <div className="text-[11px] text-white/95 bg-black/25 px-2.5 py-1 rounded-lg border border-white/10 flex items-center gap-2 font-mono backdrop-blur-sm shadow-2xs">
+            <div className="text-xs text-white/95 bg-black/25 px-2.5 py-1 rounded-lg border border-white/10 flex items-center gap-2 font-mono backdrop-blur-sm shadow-2xs">
               {hasActiveJob ? (
                 <>
                   <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
@@ -253,7 +253,7 @@ export function ProjectBannerHeader({
             </div>
 
             {(jiraStatus?.completedAt || githubStatus?.completedAt) && !hasActiveJob && (
-              <div className="text-[10px] text-white/75 flex items-center gap-2 font-mono">
+              <div className="text-xs text-white/75 flex items-center gap-2 font-mono">
                 {jiraStatus?.completedAt && (
                   <span>
                     Jira:{" "}

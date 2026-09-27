@@ -21,8 +21,8 @@ import {
   Loader2Icon,
   Building2Icon,
   UserIcon,
+  AlertCircleIcon,
 } from "lucide-react";
-import Image from "next/image";
 import {
   useProjectGitHubReconnectCandidates,
   useConnectProjectGitHub,
@@ -46,14 +46,26 @@ export function ProjectGitHubInstallationsDialog({
     data: candidates = [],
     isLoading,
     isRefetching,
+    isError,
     refetch,
   } = useProjectGitHubReconnectCandidates(projectId, { enabled: open });
 
   const connectMutation = useConnectProjectGitHub();
   const [selectedIdState, setSelectedIdState] = useState<string | number | null>(null);
+  const [imgErrorIds, setImgErrorIds] = useState<Set<string | number>>(new Set());
+
+  const handleOpenChange = (val: boolean) => {
+    if (!val) {
+      setSelectedIdState(null);
+      setImgErrorIds(new Set());
+    }
+    onOpenChange(val);
+  };
 
   const fallbackId = candidates.length > 0 ? (candidates[0].installationId ?? candidates[0].id ?? null) : null;
-  const selectedId = selectedIdState ?? fallbackId;
+  // Ensure selected ID still exists in candidates
+  const isValidSelection = selectedIdState !== null && candidates.some(c => (c.installationId ?? c.id) === selectedIdState);
+  const selectedId = isValidSelection ? selectedIdState : fallbackId;
 
   const handleConnectSelected = async () => {
     if (selectedId === null) {
@@ -102,8 +114,8 @@ export function ProjectGitHubInstallationsDialog({
   const isPending = connectMutation.isPending;
 
   return (
-    <Dialog open={open} onOpenChange={(val) => !isPending && onOpenChange(val)}>
-      <DialogContent className="max-w-xl bg-card border border-border/80 rounded-2xl shadow-2xl p-0 overflow-hidden flex flex-col max-h-[85vh]">
+    <Dialog open={open} onOpenChange={(val) => !isPending && handleOpenChange(val)}>
+      <DialogContent className="max-w-xl bg-card border border-border/80 rounded-xl shadow-lg p-0 overflow-hidden flex flex-col max-h-[85vh]">
         <DialogHeader className="p-5 border-b border-border/60 bg-muted/20 shrink-0">
           <div className="flex items-center justify-between gap-3 pr-9">
             <div className="flex items-center gap-3">
@@ -133,10 +145,30 @@ export function ProjectGitHubInstallationsDialog({
         </DialogHeader>
 
         <div className="p-5 overflow-y-auto flex-1 space-y-3">
-          {isLoading ? (
+          {isLoading && !isError ? (
             <div className="flex flex-col items-center justify-center py-10 text-muted-foreground gap-2">
               <Loader2Icon className="w-6 h-6 animate-spin text-primary" />
               <span className="text-xs">Đang nạp danh sách cài đặt GitHub khả dụng...</span>
+            </div>
+          ) : isError ? (
+            <div className="text-center py-8 px-4 border border-destructive/20 rounded-xl bg-destructive/5 space-y-3">
+              <AlertCircleIcon className="w-8 h-8 text-destructive/70 mx-auto" />
+              <div className="space-y-1">
+                <p className="text-sm font-semibold text-foreground">Không thể tải danh sách tài khoản</p>
+                <p className="text-xs text-muted-foreground max-w-sm mx-auto">
+                  Đã xảy ra lỗi khi kết nối tới máy chủ. Vui lòng thử lại.
+                </p>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => void refetch()}
+                disabled={isRefetching}
+                className="mt-2 text-xs h-8 cursor-pointer rounded-lg"
+              >
+                {isRefetching ? <Loader2Icon className="w-3.5 h-3.5 animate-spin mr-1.5" /> : <RefreshCwIcon className="w-3.5 h-3.5 mr-1.5" />}
+                Thử lại
+              </Button>
             </div>
           ) : candidates.length === 0 ? (
             <div className="text-center py-8 px-4 border border-dashed border-border rounded-xl bg-muted/10 space-y-3">
@@ -149,7 +181,7 @@ export function ProjectGitHubInstallationsDialog({
               </div>
             </div>
           ) : (
-            <div className="space-y-2">
+            <div className="space-y-2" role="radiogroup" aria-label="Danh sách tài khoản GitHub">
               <p className="text-xs font-medium text-muted-foreground mb-1">
                 Các tài khoản / tổ chức có sẵn ({candidates.length}):
               </p>
@@ -158,12 +190,16 @@ export function ProjectGitHubInstallationsDialog({
                 const isSelected = selectedId === candidateId;
                 const loginName = candidate.accountLogin || candidate.login || candidate.accountName || "GitHub Account";
                 const isOrg = (candidate.accountType || candidate.targetType || "User").toLowerCase() === "organization";
+                const hasImgError = imgErrorIds.has(candidateId);
 
                 return (
-                  <div
+                  <button
                     key={String(candidateId)}
+                    type="button"
+                    role="radio"
+                    aria-checked={isSelected}
                     onClick={() => setSelectedIdState(candidateId)}
-                    className={`flex items-center justify-between p-3.5 rounded-xl border transition-all cursor-pointer ${isSelected
+                    className={`w-full text-left flex items-center justify-between p-3.5 rounded-xl border transition-all cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${isSelected
                       ? "border-primary bg-primary/5 shadow-xs"
                       : "border-border/70 hover:border-border hover:bg-muted/30"
                       }`}
@@ -178,8 +214,14 @@ export function ProjectGitHubInstallationsDialog({
                       </div>
 
                       <div className="relative w-8 h-8 rounded-lg overflow-hidden border border-border/60 shrink-0 bg-muted flex items-center justify-center">
-                        {candidate.avatarUrl ? (
-                          <Image src={candidate.avatarUrl} alt={loginName} width={32} height={32} className="object-cover" />
+                        {candidate.avatarUrl && !hasImgError ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img 
+                            src={candidate.avatarUrl} 
+                            alt={loginName} 
+                            className="w-full h-full object-cover"
+                            onError={() => setImgErrorIds(prev => new Set(prev).add(candidateId))}
+                          />
                         ) : isOrg ? (
                           <Building2Icon className="w-4 h-4 text-muted-foreground" />
                         ) : (
@@ -189,14 +231,14 @@ export function ProjectGitHubInstallationsDialog({
 
                       <div className="min-w-0">
                         <div className="flex items-center gap-2">
-                          <span className="text-sm font-semibold text-foreground truncate font-mono">{loginName}</span>
-                          <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4 font-normal">
+                          <span className="text-sm font-semibold text-foreground truncate">{loginName}</span>
+                          <Badge variant="outline" className="text-xs px-1.5 py-0 h-4 font-normal">
                             {isOrg ? "Tổ chức" : "Cá nhân"}
                           </Badge>
                         </div>
                       </div>
                     </div>
-                  </div>
+                  </button>
                 );
               })}
             </div>
@@ -221,7 +263,7 @@ export function ProjectGitHubInstallationsDialog({
               type="button"
               variant="ghost"
               size="sm"
-              onClick={() => onOpenChange(false)}
+              onClick={() => handleOpenChange(false)}
               disabled={isPending}
               className="text-xs font-medium rounded-xl cursor-pointer"
             >

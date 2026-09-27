@@ -124,7 +124,7 @@ export function ProjectAvailableReposDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="max-w-2xl bg-card border border-border/80 rounded-2xl shadow-2xl p-0 overflow-hidden flex flex-col max-h-[85vh]">
+      <DialogContent className="max-w-2xl bg-card border border-border/80 rounded-xl shadow-lg p-0 overflow-hidden flex flex-col max-h-[85vh]">
         <DialogHeader className="p-5 border-b border-border/60 bg-muted/20 shrink-0 text-left">
           <div className="flex items-center justify-between gap-3 pr-8">
             <div className="flex items-center gap-2.5">
@@ -152,7 +152,7 @@ export function ProjectAvailableReposDialog({
           ) : repositories.length === 0 ? (
             <div className="py-8 text-center space-y-2 rounded-xl border border-dashed border-border/80 bg-muted/15 p-4">
               <p className="text-xs font-semibold text-foreground">Không tìm thấy repository nào</p>
-              <p className="text-[11px] text-muted-foreground">Hãy cấp quyền cho GitHub App truy cập các repo của nhóm bạn.</p>
+              <p className="text-xs text-muted-foreground">Hãy cấp quyền cho GitHub App truy cập các repo của nhóm bạn.</p>
             </div>
           ) : (
             repositories.map((repo) => {
@@ -184,7 +184,7 @@ export function ProjectAvailableReposDialog({
                           <ExternalLinkIcon className="w-3 h-3 shrink-0" />
                         </a>
                       </div>
-                      <div className="flex items-center gap-2 text-[10px] text-muted-foreground font-mono">
+                      <div className="flex items-center gap-2 text-xs text-muted-foreground font-mono">
                         <span>Nhánh: {repo.defaultBranch || "main"}</span>
                         <span>•</span>
                         {repo.privateRepo ? (

@@ -81,7 +81,7 @@ export function GraphFilterBar({
 
   return (
     <div className="space-y-2.5">
-      <div className="flex flex-wrap items-center justify-between gap-2.5 rounded-2xl border border-border/80 bg-card p-2 shadow-xs sm:p-2.5">
+      <div className="flex flex-wrap items-center justify-between gap-2.5 rounded-xl border border-border/80 bg-card p-2 shadow-xs sm:p-2.5">
         {groupSelector && (
           <div className="flex min-w-[240px] max-w-md flex-1 items-center gap-2">
             {groupSelector}
@@ -151,7 +151,7 @@ export function GraphFilterBar({
               <FilterIcon className="size-3.5" />
               <span>Bộ lọc</span>
               {activeFiltersCount > 0 && (
-                <span className="flex size-4 items-center justify-center rounded-full bg-primary font-mono text-[10px] text-primary-foreground">
+                <span className="flex size-4 items-center justify-center rounded-full bg-primary font-mono text-xs text-primary-foreground">
                   {activeFiltersCount}
                 </span>
               )}
@@ -189,7 +189,7 @@ export function GraphFilterBar({
       </div>
 
       {!hideCollapsibleFilter && isFilterOpen && (
-        <div className="animate-in fade-in-0 slide-in-from-top-2 rounded-2xl border border-primary/20 bg-card p-3 shadow-xs duration-200 sm:p-4">
+        <div className="animate-in fade-in-0 slide-in-from-top-2 rounded-xl border border-primary/20 bg-card p-3 shadow-xs duration-200 sm:p-4">
           <div
             className={`grid grid-cols-1 items-end gap-3 sm:grid-cols-2 ${extraCollapsibleContent ? "xl:grid-cols-4" : ""
               }`}
@@ -198,7 +198,7 @@ export function GraphFilterBar({
               <div className="space-y-1.5">
                 <label
                   htmlFor="graph-member-filter"
-                  className="flex items-center gap-1.5 text-[11px] font-bold text-muted-foreground"
+                  className="flex items-center gap-1.5 text-xs font-bold text-muted-foreground"
                 >
                   <UserIcon className="size-3.5 text-primary" />
                   Thành viên
@@ -215,7 +215,7 @@ export function GraphFilterBar({
             <div className="space-y-1.5">
               <label
                 htmlFor="graph-sprint-filter"
-                className="flex items-center gap-1.5 text-[11px] font-bold text-muted-foreground"
+                className="flex items-center gap-1.5 text-xs font-bold text-muted-foreground"
               >
                 <LayersIcon className="size-3.5 text-primary" />
                 Sprint
@@ -235,7 +235,7 @@ export function GraphFilterBar({
 
       {!hideCollapsibleFilter && !isFilterOpen && activeFiltersCount > 0 && (
         <div className="flex flex-wrap items-center gap-2 px-1 text-xs">
-          <span className="text-[11px] font-bold text-muted-foreground">Đang lọc theo:</span>
+          <span className="text-xs font-bold text-muted-foreground">Đang lọc theo:</span>
           {hasMemberOptions && selectedStudentId !== "ALL" && (
             <span className="inline-flex items-center gap-1 rounded-lg border border-primary/20 bg-primary/10 px-2.5 py-1 font-medium text-primary">
               <span>
@@ -280,7 +280,7 @@ export function GraphFilterBar({
           ))}
           <button
             onClick={onReset}
-            className="ml-1 cursor-pointer text-[11px] text-muted-foreground underline hover:text-foreground"
+            className="ml-1 cursor-pointer text-xs text-muted-foreground underline hover:text-foreground"
           >
             Xóa tất cả
           </button>

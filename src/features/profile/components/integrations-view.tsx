@@ -109,8 +109,8 @@ export function IntegrationsView({ user }: IntegrationsViewProps) {
           </Button>
         </div>
 
-        <div className="rounded-3xl border border-border/80 bg-card p-6 sm:p-8 text-center space-y-4 shadow-xs">
-          <div className="w-12 h-12 rounded-2xl bg-amber-500/10 text-amber-600 flex items-center justify-center mx-auto">
+        <div className="rounded-xl border border-border/80 bg-card p-6 sm:p-8 text-center space-y-4 shadow-xs">
+          <div className="w-12 h-12 rounded-xl bg-amber-500/10 text-amber-600 flex items-center justify-center mx-auto">
             <ShieldCheckIcon className="w-6 h-6" />
           </div>
           <h2 className="text-lg font-bold text-foreground">
@@ -145,21 +145,21 @@ export function IntegrationsView({ user }: IntegrationsViewProps) {
       </div>
 
       {isCallbackPending && (
-        <div className="flex items-center gap-2.5 px-4 py-2.5 rounded-2xl bg-primary/15 border border-primary/30 text-xs text-primary font-semibold animate-pulse">
+        <div className="flex items-center gap-2.5 px-4 py-2.5 rounded-xl bg-primary/15 border border-primary/30 text-xs text-primary font-semibold animate-pulse">
           <Loader2Icon className="w-4 h-4 animate-spin shrink-0" />
           <span>Đang xử lý hoàn tất xác thực OAuth tài khoản cá nhân...</span>
         </div>
       )}
 
       {isLoading && !isCallbackPending && (
-        <div className="flex items-center gap-2.5 px-4 py-2.5 rounded-2xl bg-primary/10 border border-primary/20 text-xs text-primary font-medium animate-pulse">
+        <div className="flex items-center gap-2.5 px-4 py-2.5 rounded-xl bg-primary/10 border border-primary/20 text-xs text-primary font-medium animate-pulse">
           <Loader2Icon className="w-4 h-4 animate-spin shrink-0" />
           <span>Đang đồng bộ trạng thái liên kết Jira & GitHub cá nhân...</span>
         </div>
       )}
 
       <div
-        className="relative overflow-hidden rounded-3xl p-6 sm:p-8 border border-border/80 shadow-md"
+        className="relative overflow-hidden rounded-xl p-6 sm:p-8 border border-border/80 shadow-md"
         style={{
           background:
             "linear-gradient(135deg, oklch(from var(--saga-primary) calc(l + 0.05) c h), oklch(from var(--saga-accent) calc(l - 0.05) c h))",
@@ -185,41 +185,41 @@ export function IntegrationsView({ user }: IntegrationsViewProps) {
           </div>
 
           <div className="flex flex-col sm:flex-row lg:flex-col gap-2.5 shrink-0">
-            <div className="bg-white/15 backdrop-blur-md border border-white/20 rounded-2xl p-3 px-4 text-white flex items-center justify-between gap-4 min-w-[220px]">
+            <div className="bg-white/15 backdrop-blur-sm border border-white/20 rounded-xl p-3 px-4 text-white flex items-center justify-between gap-4 min-w-[220px]">
               <div className="flex items-center gap-2">
                 <CheckSquareIcon className="w-4 h-4 text-blue-300" />
                 <span className="text-xs font-semibold">Jira cá nhân</span>
               </div>
               {isLoading && !jiraIdentity ? (
-                <Badge className="bg-white/20 text-white border-0 text-[10px] gap-1 px-2 animate-pulse">
+                <Badge className="bg-white/20 text-white border-0 text-xs gap-1 px-2 animate-pulse">
                   <Loader2Icon className="w-3 h-3 animate-spin" /> Đang kiểm tra...
                 </Badge>
               ) : jiraConnected ? (
-                <Badge className="bg-emerald-500/80 text-white border-0 text-[10px] gap-1 px-2">
+                <Badge className="bg-emerald-500/80 text-white border-0 text-xs gap-1 px-2">
                   <CheckCircle2Icon className="w-3 h-3" /> Đã kết nối ({jiraIdentities.length})
                 </Badge>
               ) : (
-                <Badge className="bg-rose-500/80 text-white border-0 text-[10px] gap-1 px-2">
+                <Badge className="bg-rose-500/80 text-white border-0 text-xs gap-1 px-2">
                   <XCircleIcon className="w-3 h-3" /> Chưa kết nối
                 </Badge>
               )}
             </div>
 
-            <div className="bg-white/15 backdrop-blur-md border border-white/20 rounded-2xl p-3 px-4 text-white flex items-center justify-between gap-4 min-w-[220px]">
+            <div className="bg-white/15 backdrop-blur-sm border border-white/20 rounded-xl p-3 px-4 text-white flex items-center justify-between gap-4 min-w-[220px]">
               <div className="flex items-center gap-2">
                 <GitBranchIcon className="w-4 h-4 text-purple-300" />
                 <span className="text-xs font-semibold">GitHub cá nhân</span>
               </div>
               {isLoading && !githubIdentity ? (
-                <Badge className="bg-white/20 text-white border-0 text-[10px] gap-1 px-2 animate-pulse">
+                <Badge className="bg-white/20 text-white border-0 text-xs gap-1 px-2 animate-pulse">
                   <Loader2Icon className="w-3 h-3 animate-spin" /> Đang kiểm tra...
                 </Badge>
               ) : githubConnected ? (
-                <Badge className="bg-emerald-500/80 text-white border-0 text-[10px] gap-1 px-2">
+                <Badge className="bg-emerald-500/80 text-white border-0 text-xs gap-1 px-2">
                   <CheckCircle2Icon className="w-3 h-3" /> Đã kết nối ({githubIdentities.length})
                 </Badge>
               ) : (
-                <Badge className="bg-rose-500/80 text-white border-0 text-[10px] gap-1 px-2">
+                <Badge className="bg-rose-500/80 text-white border-0 text-xs gap-1 px-2">
                   <XCircleIcon className="w-3 h-3" /> Chưa kết nối
                 </Badge>
               )}
@@ -228,7 +228,7 @@ export function IntegrationsView({ user }: IntegrationsViewProps) {
         </div>
       </div>
 
-      <div className="flex items-start gap-3 p-4 rounded-2xl bg-card border border-border/80 text-xs text-muted-foreground shadow-2xs">
+      <div className="flex items-start gap-3 p-4 rounded-xl bg-card border border-border/80 text-xs text-muted-foreground shadow-2xs">
         <ShieldCheckIcon className="size-4 text-primary shrink-0 mt-0.5" />
         <div className="space-y-1">
           <p className="font-bold text-foreground">Bảo mật & Quyền truy cập</p>

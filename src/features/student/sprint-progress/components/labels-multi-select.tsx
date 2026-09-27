@@ -167,7 +167,7 @@ export function LabelsMultiSelect({
           <Badge
             key={label}
             variant="outline"
-            className={`h-6 px-2 py-0 text-[11px] font-medium rounded-lg flex items-center gap-1 shrink-0 ${getLabelBadgeStyle(
+            className={`h-6 px-2 py-0 text-xs font-medium rounded-lg flex items-center gap-1 shrink-0 ${getLabelBadgeStyle(
               label
             )}`}
           >
@@ -209,7 +209,7 @@ export function LabelsMultiSelect({
       </div>
 
       {isOpen && !disabled && (filteredSuggestions.length > 0 || canAddNew) && (
-        <div className="absolute left-0 right-0 top-full mt-1.5 z-50 max-h-52 overflow-y-auto rounded-xl border border-border/80 bg-popover/95 backdrop-blur-xs p-1 shadow-xl text-xs space-y-0.5">
+        <div className="absolute left-0 right-0 top-full mt-1.5 z-50 max-h-52 overflow-y-auto rounded-xl border border-border/80 bg-popover/95 backdrop-blur-xs p-1 shadow-md text-xs space-y-0.5">
           {canAddNew && (
             <button
               type="button"

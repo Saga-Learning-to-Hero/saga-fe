@@ -170,7 +170,7 @@ export function TeamMemberProgressPage({
   if (!teamsQuery.isLoading && !team) {
     return (
       <LecturerPageShell backLink={backLink} title="Hồ sơ thành viên">
-        <Card className="mx-auto max-w-2xl rounded-2xl border border-dashed border-border/80 p-8 text-center shadow-xs">
+        <Card className="mx-auto max-w-2xl rounded-xl border border-dashed border-border/80 p-8 text-center shadow-xs">
           <h2 className="text-lg font-bold">Không tìm thấy nhóm</h2>
           <p className="mt-2 text-sm text-muted-foreground">
             Nhóm này không tồn tại trong lớp học phần hoặc đã bị xóa.
@@ -198,19 +198,19 @@ export function TeamMemberProgressPage({
       }
       isLoading={courseQuery.isLoading || teamsQuery.isLoading}
     >
-      <Card className="relative overflow-hidden rounded-3xl border border-border/80 bg-card p-6 shadow-xs">
+      <Card className="relative overflow-hidden rounded-xl border border-border/80 bg-card p-6 shadow-xs">
         <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex items-center gap-4">
-            <Avatar className="size-16 rounded-3xl border-2 border-border/80 shadow-sm">
+            <Avatar className="size-16 rounded-xl border-2 border-border/80 shadow-sm">
               {avatarUrl ? (
                 <AvatarImage
                   src={avatarUrl}
                   alt={displayName}
-                  className="rounded-3xl object-cover"
+                  className="rounded-xl object-cover"
                 />
               ) : null}
               <AvatarFallback
-                className={cn("rounded-3xl font-mono text-base font-bold", avatarColorClass)}
+                className={cn("rounded-xl font-mono text-base font-bold", avatarColorClass)}
               >
                 {initials}
               </AvatarFallback>
@@ -314,7 +314,7 @@ export function TeamMemberProgressPage({
                       </AvatarFallback>
                     </Avatar>
                     <span>{tm.fullName}</span>
-                    <span className="font-mono text-[10px] opacity-70">({tm.studentCode})</span>
+                    <span className="font-mono text-xs opacity-70">({tm.studentCode})</span>
                   </Link>
                 );
               })}
@@ -324,7 +324,7 @@ export function TeamMemberProgressPage({
       </Card>
 
       {!projectId ? (
-        <Card className="rounded-2xl border border-dashed border-amber-500/40 bg-amber-500/5 p-8 text-center shadow-xs">
+        <Card className="rounded-xl border border-dashed border-amber-500/40 bg-amber-500/5 p-8 text-center shadow-xs">
           <ClockIcon className="mx-auto mb-2 size-8 text-amber-600 dark:text-amber-400" />
           <p className="text-sm font-bold text-foreground">Nhóm chưa kết nối dự án</p>
           <p className="mx-auto mt-1 max-w-md text-xs text-muted-foreground">
@@ -337,14 +337,14 @@ export function TeamMemberProgressPage({
           <span className="font-medium">Đang tải toàn bộ số liệu đối soát từ máy chủ...</span>
         </div>
       ) : notInTeam ? (
-        <Card className="rounded-2xl border border-dashed border-amber-500/40 bg-amber-500/5 p-8 text-center shadow-xs">
+        <Card className="rounded-xl border border-dashed border-amber-500/40 bg-amber-500/5 p-8 text-center shadow-xs">
           <p className="text-sm font-bold text-foreground">Thành viên không còn thuộc nhóm</p>
           <p className="mt-1.5 text-xs text-muted-foreground">
             Hệ thống ghi nhận tài khoản này không còn là thành viên hoạt động của dự án nhóm.
           </p>
         </Card>
       ) : progressQuery.isError ? (
-        <Card className="rounded-2xl border border-dashed border-destructive/40 bg-destructive/5 p-8 text-center shadow-xs">
+        <Card className="rounded-xl border border-dashed border-destructive/40 bg-destructive/5 p-8 text-center shadow-xs">
           <p className="text-sm font-bold text-destructive">Không thể tải thông tin đối soát của thành viên</p>
           <p className="mt-1.5 text-xs text-muted-foreground">
             {getApiErrorMessage(progressQuery.error, "Vui lòng kiểm tra lại đường truyền mạng.")}
@@ -362,7 +362,7 @@ export function TeamMemberProgressPage({
       ) : progressData ? (
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
           <div className="space-y-6 lg:col-span-5">
-            <Card className="rounded-2xl border border-border/80 bg-card p-5 shadow-xs space-y-4">
+            <Card className="rounded-xl border border-border/80 bg-card p-5 shadow-xs space-y-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <div className="flex size-8 items-center justify-center rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400">
@@ -386,19 +386,19 @@ export function TeamMemberProgressPage({
 
               <div className="grid grid-cols-3 gap-2.5 pt-1 text-center font-mono">
                 <div className="rounded-xl border border-border/60 bg-muted/20 p-2.5">
-                  <span className="block font-sans text-[11px] text-muted-foreground">Đã xong</span>
+                  <span className="block font-sans text-xs text-muted-foreground">Đã xong</span>
                   <span className="text-lg font-extrabold text-emerald-600 dark:text-emerald-400">
                     {progressData.taskSummary.completed ?? 0}
                   </span>
                 </div>
                 <div className="rounded-xl border border-border/60 bg-muted/20 p-2.5">
-                  <span className="block font-sans text-[11px] text-muted-foreground">Chưa xong</span>
+                  <span className="block font-sans text-xs text-muted-foreground">Chưa xong</span>
                   <span className="text-lg font-extrabold text-amber-600 dark:text-amber-400">
                     {progressData.taskSummary.incomplete ?? 0}
                   </span>
                 </div>
                 <div className="rounded-xl border border-border/60 bg-muted/20 p-2.5">
-                  <span className="block font-sans text-[11px] text-muted-foreground">Đang làm</span>
+                  <span className="block font-sans text-xs text-muted-foreground">Đang làm</span>
                   <span className="text-lg font-extrabold text-primary">
                     {inProgressTasks}
                   </span>
@@ -406,7 +406,7 @@ export function TeamMemberProgressPage({
               </div>
             </Card>
 
-            <Card className="rounded-2xl border border-border/80 bg-card p-5 shadow-xs space-y-4">
+            <Card className="rounded-xl border border-border/80 bg-card p-5 shadow-xs space-y-4">
               <div className="flex items-center gap-2">
                 <div className="flex size-8 items-center justify-center rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400">
                   <GitCommitIcon className="size-4" />
@@ -418,17 +418,17 @@ export function TeamMemberProgressPage({
 
               <div className="grid grid-cols-3 gap-2.5">
                 <div className="rounded-xl border border-border/60 bg-muted/20 p-3">
-                  <span className="block text-[11px] text-muted-foreground">Tổng Commits</span>
+                  <span className="block text-xs text-muted-foreground">Tổng Commits</span>
                   <span className="font-mono text-xl font-extrabold text-foreground">
                     {progressData.commitSummary.total}
                   </span>
                 </div>
                 <div className="rounded-xl border border-border/60 bg-muted/20 p-3">
-                  <span className="block text-[11px] text-muted-foreground">Gắn mã Jira</span>
+                  <span className="block text-xs text-muted-foreground">Gắn mã Jira</span>
                   <span className="font-mono text-xl font-extrabold text-foreground">
                     {progressData.commitSummary.linkedToTasks}
                   </span>
-                  <span className="block font-mono text-[10px] text-muted-foreground">
+                  <span className="block font-mono text-xs text-muted-foreground">
                     ({formatLinkedCommitRatio(
                       progressData.commitSummary.linkedToTasks,
                       progressData.commitSummary.total
@@ -436,7 +436,7 @@ export function TeamMemberProgressPage({
                   </span>
                 </div>
                 <div className="rounded-xl border border-border/60 bg-muted/20 p-3">
-                  <span className="block text-[11px] text-muted-foreground">Task có commit</span>
+                  <span className="block text-xs text-muted-foreground">Task có commit</span>
                   <span className="font-mono text-xl font-extrabold text-foreground">
                     {progressData.commitSummary.tasksWithLinkedCommits}
                   </span>
@@ -453,7 +453,7 @@ export function TeamMemberProgressPage({
               </div>
             </Card>
 
-            <Card className="rounded-2xl border border-border/80 bg-card p-5 shadow-xs space-y-4">
+            <Card className="rounded-xl border border-border/80 bg-card p-5 shadow-xs space-y-4">
               <div className="flex items-center gap-2">
                 <div className="flex size-8 items-center justify-center rounded-xl bg-teal-500/10 text-teal-600 dark:text-teal-400">
                   <ShieldCheckIcon className="size-4" />
@@ -465,39 +465,39 @@ export function TeamMemberProgressPage({
 
               <div className="grid grid-cols-4 gap-2 text-center font-mono">
                 <div className="rounded-xl border border-border/60 bg-muted/20 p-2.5">
-                  <span className="block font-sans text-[10px] text-muted-foreground">Phiên</span>
+                  <span className="block font-sans text-xs text-muted-foreground">Phiên</span>
                   <span className="text-base font-extrabold text-foreground">
                     {progressData.evidenceSummary.workSessions}
                   </span>
                 </div>
                 <div className="rounded-xl border border-border/60 bg-muted/20 p-2.5">
-                  <span className="block font-sans text-[10px] text-muted-foreground">Tệp</span>
+                  <span className="block font-sans text-xs text-muted-foreground">Tệp</span>
                   <span className="text-base font-extrabold text-foreground">
                     {progressData.evidenceSummary.files}
                   </span>
                 </div>
                 <div className="rounded-xl border border-border/60 bg-muted/20 p-2.5">
-                  <span className="block font-sans text-[10px] text-muted-foreground">Web</span>
+                  <span className="block font-sans text-xs text-muted-foreground">Web</span>
                   <span className="text-base font-extrabold text-foreground">
                     {progressData.evidenceSummary.webLinks}
                   </span>
                 </div>
                 <div className="rounded-xl border border-border/60 bg-muted/20 p-2.5">
-                  <span className="block font-sans text-[10px] text-muted-foreground">Xác nhận</span>
+                  <span className="block font-sans text-xs text-muted-foreground">Xác nhận</span>
                   <span className="text-base font-extrabold text-foreground">
                     {progressData.evidenceSummary.confirmations}
                   </span>
                 </div>
               </div>
 
-              <p className="text-[11px] leading-relaxed text-muted-foreground">
+              <p className="text-xs leading-relaxed text-muted-foreground">
                 Số liệu đối soát tự động từ các phiên làm việc và tài liệu bàn giao. Hệ thống không suy ra điểm số đóng góp thuần túy từ số lượng commit.
               </p>
             </Card>
           </div>
 
           <div className="space-y-4 lg:col-span-7">
-            <Card className="rounded-2xl border border-border/80 bg-card p-5 shadow-xs">
+            <Card className="rounded-xl border border-border/80 bg-card p-5 shadow-xs">
               <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div className="flex items-center gap-2">
                   <LayersIcon className="size-5 text-primary" />
@@ -571,7 +571,7 @@ export function TeamMemberProgressPage({
 
               <div className="mt-4 space-y-2.5">
                 {paginatedTasks.length === 0 ? (
-                  <div className="rounded-2xl border border-dashed border-border/80 p-8 text-center text-xs text-muted-foreground">
+                  <div className="rounded-xl border border-dashed border-border/80 p-8 text-center text-xs text-muted-foreground">
                     Không tìm thấy task nào phù hợp với bộ lọc hiện tại.
                   </div>
                 ) : (
@@ -582,7 +582,7 @@ export function TeamMemberProgressPage({
                     return (
                       <div
                         key={task.id}
-                        className="group rounded-2xl border border-border/70 bg-muted/10 p-4 transition-all hover:border-primary/50 hover:bg-card shadow-2xs"
+                        className="group rounded-xl border border-border/70 bg-muted/10 p-4 transition-all hover:border-primary/50 hover:bg-card shadow-2xs"
                       >
                         <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between">
                           <div className="min-w-0 flex-1 space-y-1 pr-2">
@@ -602,7 +602,7 @@ export function TeamMemberProgressPage({
                             <Badge
                               variant="outline"
                               className={cn(
-                                "font-mono text-[10px]",
+                                "font-mono text-xs",
                                 isDone
                                   ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
                                   : "border-border bg-muted text-muted-foreground"
@@ -615,7 +615,7 @@ export function TeamMemberProgressPage({
                               type="button"
                               variant="outline"
                               size="sm"
-                              className="h-7 gap-1 rounded-lg px-2.5 text-[11px] font-semibold cursor-pointer"
+                              className="h-7 gap-1 rounded-lg px-2.5 text-xs font-semibold cursor-pointer"
                               onClick={() =>
                                 setSelectedTimelineTask({
                                   id: task.id,

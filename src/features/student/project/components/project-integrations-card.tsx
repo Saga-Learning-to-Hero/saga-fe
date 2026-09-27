@@ -175,7 +175,7 @@ export function ProjectIntegrationsCard({ projectId, isLeader }: ProjectIntegrat
   const isConnectingRepo = connectGitHubMutation.isPending || setupCallbackMutation.isPending;
 
   return (
-    <Card className="rounded-2xl border border-border/80 shadow-xs bg-card overflow-hidden">
+    <Card className="rounded-xl border border-border/80 shadow-xs bg-card overflow-hidden">
       <CardHeader className="p-4 sm:p-5 border-b border-border/60">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center gap-2.5">

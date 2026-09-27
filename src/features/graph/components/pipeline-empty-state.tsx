@@ -22,7 +22,7 @@ export function PipelineEmptyState({
   onRetry,
 }: PipelineEmptyStateProps) {
   return (
-    <Card className="rounded-2xl border border-dashed border-border/80 p-8 text-center shadow-xs">
+    <Card className="rounded-xl border border-dashed border-border/80 p-8 text-center shadow-xs">
       <CardContent className="space-y-3 p-0">
         <FolderKanbanIcon className="mx-auto size-8 text-muted-foreground/50" />
         <h2 className="text-base font-bold">{title}</h2>

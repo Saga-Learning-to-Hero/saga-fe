@@ -155,7 +155,7 @@ export function QuickCreateTask({
           <button
             type="button"
             onClick={onOpenFullModal}
-            className="text-[11px] text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+            className="text-xs text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
             title="Mở modal tạo task với đầy đủ thuộc tính"
           >
             Tạo với đầy đủ thông tin...
@@ -213,10 +213,10 @@ export function QuickCreateTask({
         </div>
 
         {errorMessage && (
-          <p className="text-[11px] font-medium text-destructive">{errorMessage}</p>
+          <p className="text-xs font-medium text-destructive">{errorMessage}</p>
         )}
 
-        <div className="flex items-center justify-between text-[10px] text-muted-foreground">
+        <div className="flex items-center justify-between text-xs text-muted-foreground">
           <span>
             Nhấn <kbd className="font-mono bg-muted px-1 py-0.5 rounded border border-border/50">Enter</kbd> để tạo,{" "}
             <kbd className="font-mono bg-muted px-1 py-0.5 rounded border border-border/50">Esc</kbd> để hủy

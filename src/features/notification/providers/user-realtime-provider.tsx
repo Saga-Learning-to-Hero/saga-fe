@@ -4,7 +4,6 @@ import { showErrorToast, showInfoToast } from "@/lib/api-error";
 import { createContext, useContext, useEffect, useRef, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
-import { onMessage } from "firebase/messaging";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
 import { performLogout } from "@/features/auth/lib/logout-orchestrator";
 import { API_BASE_URL } from "@/lib/axios";
@@ -85,19 +84,21 @@ export function UserRealtimeProvider({ children }: { children: ReactNode }) {
 
     void isFirebaseMessagingSupported().then((supported) => {
       if (!supported) return;
-      const messaging = getClientMessaging();
-      if (!messaging) return;
-
-      unsubscribe = onMessage(messaging, (payload) => {
-        debouncedInvalidate();
-        const title = payload.notification?.title || payload.data?.title;
-        const body = payload.notification?.body || payload.data?.message;
-        if (title) {
-          showInfoToast(title, {
-            id: `fcm-${payload.messageId || Date.now()}`,
-            description: body || undefined,
+      void getClientMessaging().then((messaging) => {
+        if (!messaging) return;
+        import("firebase/messaging").then(({ onMessage }) => {
+          unsubscribe = onMessage(messaging, (payload) => {
+            debouncedInvalidate();
+            const title = payload.notification?.title || payload.data?.title;
+            const body = payload.notification?.body || payload.data?.message;
+            if (title) {
+              showInfoToast(title, {
+                id: `fcm-${payload.messageId || Date.now()}`,
+                description: body || undefined,
+              });
+            }
           });
-        }
+        });
       });
     });
 

@@ -81,7 +81,7 @@ export function PeerReviewWorkspace({
   return (
     <div className="space-y-4">
       {rubricError ? (
-        <Card className="flex flex-col gap-2 rounded-2xl border border-dashed border-border/80 p-4 sm:flex-row sm:items-center sm:justify-between">
+        <Card className="flex flex-col gap-2 rounded-xl border border-dashed border-border/80 p-4 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-xs text-muted-foreground">
             Chưa tải được chi tiết tiêu chí. Vẫn xem được các chỉ số tổng quan.
           </p>
@@ -95,8 +95,8 @@ export function PeerReviewWorkspace({
 
       <PeerReviewSummaryStrip kpis={kpis} filters={filters} />
 
-      <div className="space-y-1.5 rounded-2xl border border-border/80 bg-card p-3 shadow-xs lg:hidden">
-        <Label htmlFor="peer-review-reviewee" className="text-[11px] font-semibold text-muted-foreground">
+      <div className="space-y-1.5 rounded-xl border border-border/80 bg-card p-3 shadow-xs lg:hidden">
+        <Label htmlFor="peer-review-reviewee" className="text-xs font-semibold text-muted-foreground">
           Người được đánh giá
         </Label>
         <CustomSelect

@@ -51,7 +51,7 @@ function renderDiffPatch(patch: string | null) {
 
   const lines = patch.split("\n");
   return (
-    <div className="overflow-x-auto text-[11px] font-mono leading-5 p-2 bg-muted/20">
+    <div className="overflow-x-auto text-xs font-mono leading-5 p-2 bg-muted/20">
       {lines.map((line, idx) => {
         const isHeader = line.startsWith("@@");
         const isAddition = line.startsWith("+") && !isHeader;
@@ -81,25 +81,25 @@ function getFileStatusBadge(status: string) {
   switch (s) {
     case "added":
       return (
-        <Badge className="bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 text-[10px] font-mono px-1.5 py-0">
+        <Badge className="bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 text-xs font-mono px-1.5 py-0">
           ADDED
         </Badge>
       );
     case "removed":
       return (
-        <Badge className="bg-rose-500/15 text-rose-600 dark:text-rose-400 border-rose-500/30 text-[10px] font-mono px-1.5 py-0">
+        <Badge className="bg-rose-500/15 text-rose-600 dark:text-rose-400 border-rose-500/30 text-xs font-mono px-1.5 py-0">
           DELETED
         </Badge>
       );
     case "renamed":
       return (
-        <Badge className="bg-purple-500/15 text-purple-600 dark:text-purple-400 border-purple-500/30 text-[10px] font-mono px-1.5 py-0">
+        <Badge className="bg-purple-500/15 text-purple-600 dark:text-purple-400 border-purple-500/30 text-xs font-mono px-1.5 py-0">
           RENAMED
         </Badge>
       );
     default:
       return (
-        <Badge className="bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/30 text-[10px] font-mono px-1.5 py-0">
+        <Badge className="bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/30 text-xs font-mono px-1.5 py-0">
           MODIFIED
         </Badge>
       );
@@ -176,22 +176,22 @@ export function CommitDetailModal({
       }}
     >
       <div
-        className="bg-card border border-border/80 rounded-3xl w-full max-w-4xl max-h-[92vh] flex flex-col shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200"
+        className="bg-card border border-border/80 rounded-xl w-full max-w-4xl max-h-[92vh] flex flex-col shadow-lg overflow-hidden animate-in zoom-in-95 duration-200"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="p-4 sm:p-5 border-b border-border/60 flex items-center justify-between bg-muted/20 shrink-0 gap-3">
           <div className="flex items-center gap-3 min-w-0">
-            <div className="size-10 rounded-2xl bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20 flex items-center justify-center shrink-0">
+            <div className="size-10 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20 flex items-center justify-center shrink-0">
               <GitCommitIcon className="size-5" />
             </div>
 
             <div className="min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
                   Chi tiết Git Commit
                 </span>
                 {commit?.repositoryFullName && (
-                  <Badge variant="outline" className="text-[10px] font-mono gap-1 px-1.5 py-0">
+                  <Badge variant="outline" className="text-xs font-mono gap-1 px-1.5 py-0">
                     <FolderGit2Icon className="size-3 text-muted-foreground" />
                     <span>{commit.repositoryFullName}</span>
                   </Badge>
@@ -207,7 +207,7 @@ export function CommitDetailModal({
                   <button
                     type="button"
                     onClick={() => handleCopySha(sha)}
-                    className="inline-flex items-center gap-1 text-[11px] font-mono text-muted-foreground hover:text-foreground cursor-pointer px-1.5 py-0.5 rounded-md hover:bg-muted transition-colors"
+                    className="inline-flex items-center gap-1 text-xs font-mono text-muted-foreground hover:text-foreground cursor-pointer px-1.5 py-0.5 rounded-md hover:bg-muted transition-colors"
                     title="Sao chép toàn bộ SHA"
                   >
                     {copiedSha ? (
@@ -215,7 +215,7 @@ export function CommitDetailModal({
                     ) : (
                       <CopyIcon className="size-3" />
                     )}
-                    <span className="text-[10px]">{copiedSha ? "Đã chép" : "Copy"}</span>
+                    <span className="text-xs">{copiedSha ? "Đã chép" : "Copy"}</span>
                   </button>
                 )}
               </div>
@@ -267,13 +267,13 @@ export function CommitDetailModal({
                   <div className="h-3 bg-muted rounded-md w-1/3" />
                 </div>
               </div>
-              <div className="h-28 rounded-2xl bg-muted/40 animate-pulse" />
-              <div className="h-44 rounded-2xl bg-muted/40 animate-pulse" />
+              <div className="h-28 rounded-xl bg-muted/40 animate-pulse" />
+              <div className="h-44 rounded-xl bg-muted/40 animate-pulse" />
             </div>
           )}
 
           {isError && !isLoading && (
-            <div className="p-6 rounded-2xl border border-destructive/30 bg-destructive/5 text-center space-y-3 my-4">
+            <div className="p-6 rounded-xl border border-destructive/30 bg-destructive/5 text-center space-y-3 my-4">
               <AlertCircleIcon className="size-8 text-destructive mx-auto" />
               <div>
                 <p className="text-sm font-bold text-destructive">
@@ -298,7 +298,7 @@ export function CommitDetailModal({
 
           {!isLoading && !isError && commit && (
             <>
-              <div className="p-4 rounded-2xl bg-muted/30 border border-border/60 space-y-3">
+              <div className="p-4 rounded-xl bg-muted/30 border border-border/60 space-y-3">
                 <div className="space-y-1">
                   <h4 className="text-sm font-bold text-foreground leading-snug break-words">
                     {messageTitle}
@@ -327,7 +327,7 @@ export function CommitDetailModal({
                     </span>
 
                     {commit.authorLogin && (
-                      <span className="text-muted-foreground font-mono text-[11px]">
+                      <span className="text-muted-foreground font-mono text-xs">
                         @{commit.authorLogin}
                       </span>
                     )}
@@ -335,7 +335,7 @@ export function CommitDetailModal({
                     <span className="text-muted-foreground/40">•</span>
 
                     <Tooltip>
-                      <TooltipTrigger className="text-muted-foreground font-mono text-[11px]">
+                      <TooltipTrigger className="text-muted-foreground font-mono text-xs">
                         {formatRelativeTime(commit.committedAt)}
                       </TooltipTrigger>
                       <TooltipContent side="top">
@@ -351,7 +351,7 @@ export function CommitDetailModal({
                     <span className="px-2 py-0.5 rounded-md bg-rose-500/15 text-rose-600 dark:text-rose-400 border border-rose-500/30">
                       -{commit.stats?.deletions ?? 0}
                     </span>
-                    <span className="text-muted-foreground font-sans font-medium text-[11px]">
+                    <span className="text-muted-foreground font-sans font-medium text-xs">
                       ({commit.files?.length ?? 0} tệp thay đổi)
                     </span>
                   </div>
@@ -379,7 +379,7 @@ export function CommitDetailModal({
                   {commit.files?.map((file, fIdx) => (
                     <div
                       key={fIdx}
-                      className="rounded-2xl border border-border/70 overflow-hidden bg-card shadow-xs"
+                      className="rounded-xl border border-border/70 overflow-hidden bg-card shadow-xs"
                     >
                       <div className="px-3.5 py-2.5 bg-muted/40 border-b border-border/60 flex flex-wrap items-center justify-between gap-2">
                         <div className="flex items-center gap-2 min-w-0">
@@ -388,13 +388,13 @@ export function CommitDetailModal({
                             {file.filename}
                           </span>
                           {file.previousFilename && (
-                            <span className="text-[10px] font-mono text-muted-foreground truncate">
+                            <span className="text-xs font-mono text-muted-foreground truncate">
                               (từ {file.previousFilename})
                             </span>
                           )}
                         </div>
 
-                        <div className="flex items-center gap-2 font-mono text-[11px] font-semibold shrink-0">
+                        <div className="flex items-center gap-2 font-mono text-xs font-semibold shrink-0">
                           <span className="text-emerald-600 dark:text-emerald-400">
                             +{file.additions}
                           </span>
@@ -415,7 +415,7 @@ export function CommitDetailModal({
         </div>
 
         <div className="p-3.5 sm:p-4 border-t border-border/60 flex items-center justify-between bg-muted/20 shrink-0">
-          <div className="text-[11px] font-mono text-muted-foreground truncate max-w-sm hidden sm:block">
+          <div className="text-xs font-mono text-muted-foreground truncate max-w-sm hidden sm:block">
             {commit?.sha && `Mã SHA: ${commit.sha}`}
           </div>
           <Button

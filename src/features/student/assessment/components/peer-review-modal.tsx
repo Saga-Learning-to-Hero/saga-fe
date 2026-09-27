@@ -120,7 +120,7 @@ export function PeerReviewModal({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="flex max-h-[92vh] max-w-xl flex-col overflow-hidden p-0 border border-border/80 shadow-2xl rounded-3xl">
+      <DialogContent className="flex max-h-[92vh] max-w-xl flex-col overflow-hidden p-0 border border-border/80 shadow-lg rounded-xl">
         <div className="flex max-h-[92vh] flex-col">
           <DialogHeader className="shrink-0 border-b border-border/60 bg-muted/20 p-5">
             <div className="flex items-center gap-3.5">
@@ -138,7 +138,7 @@ export function PeerReviewModal({
                 </DialogTitle>
                 <div className="mt-1 flex flex-wrap items-center gap-2">
                   {candidate?.studentCode ? (
-                    <Badge variant="outline" className="font-mono text-[10px] font-semibold">
+                    <Badge variant="outline" className="font-mono text-xs font-semibold">
                       {candidate.studentCode}
                     </Badge>
                   ) : null}
@@ -149,7 +149,7 @@ export function PeerReviewModal({
               </div>
             </div>
 
-            <div className="mt-3 flex items-center justify-between rounded-2xl border border-border/60 bg-card/80 px-3.5 py-2 text-xs backdrop-blur-xs">
+            <div className="mt-3 flex items-center justify-between rounded-xl border border-border/60 bg-card/80 px-3.5 py-2 text-xs backdrop-blur-xs">
               <div className="flex items-center gap-2">
                 <span className="text-muted-foreground">Tiến độ tiêu chí:</span>
                 <span className="font-mono font-bold text-foreground">
@@ -168,13 +168,13 @@ export function PeerReviewModal({
 
           <div className="min-h-0 flex-1 space-y-4 overflow-y-auto p-5">
             {!sprintWindowOpen ? (
-              <p className="rounded-2xl border border-amber-500/30 bg-amber-500/10 p-3.5 text-xs text-amber-800 dark:text-amber-200 leading-relaxed">
+              <p className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-3.5 text-xs text-amber-800 dark:text-amber-200 leading-relaxed">
                 Sprint chưa đến hạn đánh giá. Form bị khóa đến khi Sprint đóng hoặc vào cửa sổ 48 giờ trước ngày kết thúc.
               </p>
             ) : null}
 
             {candidate?.alreadyReviewed ? (
-              <p className="rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-3.5 text-xs text-emerald-800 dark:text-emerald-200 leading-relaxed">
+              <p className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-3.5 text-xs text-emerald-800 dark:text-emerald-200 leading-relaxed">
                 Bạn đã đánh giá thành viên này trong Sprint. Mỗi thành viên chỉ được đánh giá một lần.
               </p>
             ) : null}
@@ -187,7 +187,7 @@ export function PeerReviewModal({
                 <div
                   key={criterion.rubricId}
                   className={cn(
-                    "space-y-2.5 rounded-2xl border p-4 transition-all shadow-2xs",
+                    "space-y-2.5 rounded-xl border p-4 transition-all shadow-2xs",
                     hasScore
                       ? "border-primary/30 bg-primary/3"
                       : "border-border/70 bg-card/60 hover:border-border",
@@ -233,14 +233,14 @@ export function PeerReviewModal({
               );
             })}
 
-            <div className="space-y-2 rounded-2xl border border-border/70 bg-card/60 p-4 shadow-2xs">
+            <div className="space-y-2 rounded-xl border border-border/70 bg-card/60 p-4 shadow-2xs">
               <div className="flex items-center gap-2 text-xs font-bold text-foreground">
                 <MessageSquareIcon className="size-3.5 text-primary" />
                 <Label htmlFor="peer-review-comment" className="cursor-pointer">
                   Bình luận (không bắt buộc)
                 </Label>
               </div>
-              <p className="text-[11px] text-muted-foreground">
+              <p className="text-xs text-muted-foreground">
                 Ghi nhận xét cụ thể để giúp thành viên phát huy điểm mạnh và khắc phục thiếu sót trong Sprint tiếp theo.
               </p>
               <Textarea
@@ -254,13 +254,13 @@ export function PeerReviewModal({
                 className="min-h-24 resize-none rounded-xl text-xs leading-relaxed"
                 placeholder="Nhận xét thêm về đóng góp trong Sprint..."
               />
-              <p className="text-right font-mono text-[11px] text-muted-foreground">
+              <p className="text-right font-mono text-xs text-muted-foreground">
                 {comment.length}/{PEER_REVIEW_COMMENT_MAX}
               </p>
             </div>
 
             {submitError ? (
-              <div className="rounded-2xl border border-destructive/30 bg-destructive/10 p-3.5 text-xs text-destructive">
+              <div className="rounded-xl border border-destructive/30 bg-destructive/10 p-3.5 text-xs text-destructive">
                 <p className="font-semibold">{submitError.message}</p>
                 {submitError.code === "PEER_REVIEW_FORBIDDEN" ? (
                   <p className="mt-1 text-muted-foreground">Bạn chỉ có thể gửi đánh giá cho các thành viên trong nhóm của mình.</p>

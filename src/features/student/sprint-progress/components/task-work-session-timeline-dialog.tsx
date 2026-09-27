@@ -50,7 +50,7 @@ export function TaskWorkSessionTimelineDialog({
       }}
     >
       <div
-        className="bg-card border border-border/80 rounded-3xl w-full max-w-2xl max-h-[92vh] flex flex-col shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200"
+        className="bg-card border border-border/80 rounded-xl w-full max-w-2xl max-h-[92vh] flex flex-col shadow-lg overflow-hidden animate-in zoom-in-95 duration-200"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="p-5 border-b border-border/60 flex items-center justify-between shrink-0 bg-muted/20">

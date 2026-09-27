@@ -24,7 +24,7 @@ interface StudentActiveTasksCardProps {
 
 export function StudentActiveTasksCard({ tasks, courseId }: StudentActiveTasksCardProps) {
   return (
-    <Card className="rounded-2xl border border-border/80 bg-card/90 shadow-xs flex flex-col">
+    <Card className="rounded-xl border border-border/80 bg-card/90 shadow-xs flex flex-col">
       <CardHeader className="p-4 pb-2 border-b border-border/60 flex flex-row items-center justify-between">
         <div className="flex items-center gap-2.5">
           <div className="p-2 rounded-xl bg-primary/10 text-primary">
@@ -34,12 +34,12 @@ export function StudentActiveTasksCard({ tasks, courseId }: StudentActiveTasksCa
             <div className="flex items-center gap-2">
               <CardTitle className="text-sm font-bold">Việc cần làm của tôi</CardTitle>
               {tasks.length > 0 && (
-                <Badge variant="secondary" className="font-mono text-[10px] px-1.5 py-0 h-4">
+                <Badge variant="secondary" className="font-mono text-xs px-1.5 py-0 h-4">
                   {tasks.length}
                 </Badge>
               )}
             </div>
-            <p className="text-[11px] text-muted-foreground">
+            <p className="text-xs text-muted-foreground">
               Các nhiệm vụ Jira đang được phân công cho bạn
             </p>
           </div>
@@ -85,7 +85,7 @@ export function StudentActiveTasksCard({ tasks, courseId }: StudentActiveTasksCa
                     <Badge
                       variant="outline"
                       className={cn(
-                        "text-[10px] uppercase font-bold",
+                        "text-xs uppercase font-bold",
                         isDone
                           ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30"
                           : isInProgress
@@ -98,19 +98,19 @@ export function StudentActiveTasksCard({ tasks, courseId }: StudentActiveTasksCa
                       {task.status}
                     </Badge>
                     {task.priority && (
-                      <Badge variant="secondary" className="text-[10px]">
+                      <Badge variant="secondary" className="text-xs">
                         {task.priority}
                       </Badge>
                     )}
                     {typeof task.storyPoints === "number" && task.storyPoints > 0 && (
-                      <Badge variant="outline" className="font-mono text-[10px]">
+                      <Badge variant="outline" className="font-mono text-xs">
                         {task.storyPoints} SP
                       </Badge>
                     )}
                     {task.hasAnomaly && (
                       <Badge
                         variant="outline"
-                        className="bg-red-500/20 text-red-700 dark:text-red-300 border-red-500/40 text-[10px] gap-1 animate-pulse"
+                        className="bg-red-500/20 text-red-700 dark:text-red-300 border-red-500/40 text-xs gap-1 animate-pulse"
                       >
                         <AlertTriangleIcon className="size-3" />
                         0 Commit linked
@@ -124,14 +124,14 @@ export function StudentActiveTasksCard({ tasks, courseId }: StudentActiveTasksCa
 
                 <div className="flex items-center gap-3 shrink-0 text-xs text-muted-foreground self-end sm:self-center font-mono">
                   {task.dueDate && (
-                    <div className="flex items-center gap-1 text-[11px]">
+                    <div className="flex items-center gap-1 text-xs">
                       <CalendarIcon className="size-3" />
                       <span>{new Date(task.dueDate).toLocaleDateString("vi-VN")}</span>
                     </div>
                   )}
                   <div
                     className={cn(
-                      "flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-md",
+                      "flex items-center gap-1 text-xs px-2 py-0.5 rounded-md",
                       task.linkedCommitCount > 0
                         ? "bg-primary/10 text-primary font-bold"
                         : "bg-muted text-muted-foreground"

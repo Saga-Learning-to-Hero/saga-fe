@@ -89,7 +89,7 @@ export function ProjectJiraConfigDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="max-w-xl bg-card border border-border/80 rounded-2xl shadow-xl p-5 space-y-4">
+      <DialogContent className="max-w-xl bg-card border border-border/80 rounded-xl shadow-md p-5 space-y-4">
         <DialogHeader className="space-y-1.5 text-left border-b border-border/60 pb-3">
           <div className="flex items-center justify-between gap-3 pr-8">
             <div className="flex items-center gap-2.5">
@@ -123,7 +123,7 @@ export function ProjectJiraConfigDialog({
               <GlobeIcon className="w-7 h-7 text-muted-foreground mx-auto" />
               <div className="space-y-1">
                 <p className="text-xs font-semibold text-foreground">Chưa có Jira Site nào khả dụng</p>
-                <p className="text-[11px] text-muted-foreground">Bạn cần đăng nhập ủy quyền tài khoản Atlassian để cấp quyền truy cập Jira Site.</p>
+                <p className="text-xs text-muted-foreground">Bạn cần đăng nhập ủy quyền tài khoản Atlassian để cấp quyền truy cập Jira Site.</p>
               </div>
               {onAuthorizeNew && (
                 <Button type="button" size="sm" onClick={onAuthorizeNew} disabled={isAuthorizing} className="h-8 px-3 text-xs font-semibold rounded-xl bg-blue-600 hover:bg-blue-700 text-white gap-1.5 cursor-pointer shadow-xs">

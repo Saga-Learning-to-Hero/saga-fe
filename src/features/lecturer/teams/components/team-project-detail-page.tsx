@@ -46,7 +46,21 @@ import {
 } from "@/features/lecturer/courses/lib/course-routes";
 import { ReplaceTeamLeaderDialog } from "./replace-team-leader-dialog";
 import { MoveTeamMemberDialog } from "./move-team-member-dialog";
-import { ActivityHeatmapGrid, SprintBurndownChart } from "@/features/analytics";
+import { ActivityHeatmapGrid } from "@/features/analytics";
+import dynamic from "next/dynamic";
+import { Loader2Icon } from "lucide-react";
+
+const SprintBurndownChart = dynamic(
+  () => import("@/features/analytics").then((mod) => mod.SprintBurndownChart),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="w-full h-[400px] flex items-center justify-center text-muted-foreground bg-muted/10 rounded-xl">
+        <Loader2Icon className="w-6 h-6 animate-spin" />
+      </div>
+    ),
+  }
+);
 import { useProjectSprints } from "@/features/student/sprint-progress/hooks/use-project-sprints";
 import { useTaskOptions } from "@/features/student/sprint-progress/hooks/use-project-tasks";
 import { scopeSprintsToJiraSource } from "@/features/student/sprint-progress/lib/jira-source-scope";
@@ -125,7 +139,7 @@ export function TeamProjectDetailPage({ courseId, teamId }: TeamProjectDetailPag
   if (!teamsQuery.isLoading && !team) {
     return (
       <LecturerPageShell backLink={backLink} title="Dự án nhóm">
-        <Card className="mx-auto max-w-2xl rounded-2xl border border-dashed border-border/80 p-8 text-center shadow-xs">
+        <Card className="mx-auto max-w-2xl rounded-xl border border-dashed border-border/80 p-8 text-center shadow-xs">
           <h2 className="text-lg font-bold">Không tìm thấy nhóm</h2>
           <p className="mt-2 text-sm text-muted-foreground">
             Nhóm này không thuộc lớp học phần đang mở. Hãy quay lại danh sách nhóm.
@@ -150,7 +164,7 @@ export function TeamProjectDetailPage({ courseId, teamId }: TeamProjectDetailPag
       isLoading={courseQuery.isLoading || teamsQuery.isLoading}
     >
       {team && (
-        <Card className="relative overflow-hidden rounded-3xl border border-border/80 bg-card p-6 shadow-xs">
+        <Card className="relative overflow-hidden rounded-xl border border-border/80 bg-card p-6 shadow-xs">
           <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
             <div className="space-y-3">
               <div className="flex flex-wrap items-center gap-2">
@@ -238,7 +252,7 @@ export function TeamProjectDetailPage({ courseId, teamId }: TeamProjectDetailPag
           <ProjectProgressSummary progress={progress} />
         )}
 
-        <Card className="rounded-2xl border border-border/80 bg-card p-5 shadow-xs">
+        <Card className="rounded-xl border border-border/80 bg-card p-5 shadow-xs">
           <div className="mb-4 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <UsersIcon className="size-5 text-primary" />
@@ -274,7 +288,7 @@ export function TeamProjectDetailPage({ courseId, teamId }: TeamProjectDetailPag
                     <Avatar size="sm" className="border border-border/60">
                       <AvatarFallback
                         className={cn(
-                          "font-mono text-[11px] font-bold",
+                          "font-mono text-xs font-bold",
                           isLeader
                             ? "bg-amber-500/20 text-amber-700 dark:text-amber-300"
                             : "bg-muted text-muted-foreground"
@@ -291,26 +305,26 @@ export function TeamProjectDetailPage({ courseId, teamId }: TeamProjectDetailPag
                         {isLeader && <LeaderBadge variant="icon-only" />}
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className="font-mono text-[11px] text-muted-foreground">
+                        <span className="font-mono text-xs text-muted-foreground">
                           {member.studentCode}
                         </span>
-                        <span className="text-[11px] text-muted-foreground/60 hidden sm:inline">•</span>
-                        <span className="text-[11px] text-muted-foreground/80 truncate hidden sm:inline">
+                        <span className="text-xs text-muted-foreground/60 hidden sm:inline">•</span>
+                        <span className="text-xs text-muted-foreground/80 truncate hidden sm:inline">
                           {member.email}
                         </span>
                       </div>
                       {memberStats && (
                         <div className="mt-1 flex flex-wrap items-center gap-2">
-                          <span className="inline-flex items-center gap-1 rounded-md bg-primary/10 px-2 py-0.5 font-mono text-[11px] font-semibold text-primary">
+                          <span className="inline-flex items-center gap-1 rounded-md bg-primary/10 px-2 py-0.5 font-mono text-xs font-semibold text-primary">
                             <ListTodoIcon className="size-3" />
                             {memberStats.tasks.completed}/{memberStats.tasks.assigned || memberStats.tasks.assignedTotal} tasks
                           </span>
-                          <span className="inline-flex items-center gap-1 rounded-md bg-muted px-2 py-0.5 font-mono text-[11px] font-semibold text-muted-foreground">
+                          <span className="inline-flex items-center gap-1 rounded-md bg-muted px-2 py-0.5 font-mono text-xs font-semibold text-muted-foreground">
                             <GitCommitIcon className="size-3" />
                             {memberStats.commits.total} commits
                           </span>
                           {memberStats.commits.lastCommitAt && (
-                            <span className="hidden sm:inline-flex items-center gap-1 font-mono text-[11px] text-muted-foreground">
+                            <span className="hidden sm:inline-flex items-center gap-1 font-mono text-xs text-muted-foreground">
                               <ClockIcon className="size-3" />
                               {formatDateTime(memberStats.commits.lastCommitAt)}
                             </span>
@@ -343,7 +357,7 @@ export function TeamProjectDetailPage({ courseId, teamId }: TeamProjectDetailPag
 
                     {isLeader && hasOtherTeams ? (
                       <Tooltip>
-                        <TooltipTrigger className="cursor-help text-[11px] text-muted-foreground">
+                        <TooltipTrigger className="cursor-help text-xs text-muted-foreground">
                           Đổi trưởng nhóm trước khi chuyển
                         </TooltipTrigger>
                         <TooltipContent>
@@ -431,7 +445,7 @@ export function TeamProjectDetailPage({ courseId, teamId }: TeamProjectDetailPag
             />
           </div>
         ) : (
-          <Card className="rounded-2xl border border-dashed border-amber-500/40 bg-amber-500/5 p-8 text-center">
+          <Card className="rounded-xl border border-dashed border-amber-500/40 bg-amber-500/5 p-8 text-center">
             <ClockIcon className="mx-auto mb-2 size-8 text-amber-600 dark:text-amber-400" />
             <p className="text-sm font-bold text-foreground">Nhóm chưa thiết lập dự án</p>
             <p className="mx-auto mt-1 max-w-md text-xs text-muted-foreground">
@@ -441,7 +455,7 @@ export function TeamProjectDetailPage({ courseId, teamId }: TeamProjectDetailPag
         )}
 
         <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
-          <Card className="flex flex-col justify-between rounded-2xl border border-border/80 bg-card p-5 shadow-xs">
+          <Card className="flex flex-col justify-between rounded-xl border border-border/80 bg-card p-5 shadow-xs">
             <CardContent className="space-y-2 p-0">
               <div className="flex items-center gap-2 text-primary">
                 <GitGraphIcon className="size-5" />
@@ -469,7 +483,7 @@ export function TeamProjectDetailPage({ courseId, teamId }: TeamProjectDetailPag
             </div>
           </Card>
 
-          <Card className="flex flex-col justify-between rounded-2xl border border-border/80 bg-card p-5 shadow-xs">
+          <Card className="flex flex-col justify-between rounded-xl border border-border/80 bg-card p-5 shadow-xs">
             <CardContent className="space-y-2 p-0">
               <div className="flex items-center gap-2 text-primary">
                 <PieChartIcon className="size-5" />

@@ -76,7 +76,7 @@ export function ProjectProgressSummary({ progress, className }: ProjectProgressS
           <div className="flex flex-wrap items-center gap-2">
             <span
               className={cn(
-                "inline-flex items-center gap-1.5 rounded-md border px-2 py-0.5 font-mono text-[11px] font-semibold",
+                "inline-flex items-center gap-1.5 rounded-md border px-2 py-0.5 font-mono text-xs font-semibold",
                 syncInfo.isJiraActive
                   ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
                   : "border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-300"
@@ -93,7 +93,7 @@ export function ProjectProgressSummary({ progress, className }: ProjectProgressS
 
             <span
               className={cn(
-                "inline-flex items-center gap-1.5 rounded-md border px-2 py-0.5 font-mono text-[11px] font-semibold",
+                "inline-flex items-center gap-1.5 rounded-md border px-2 py-0.5 font-mono text-xs font-semibold",
                 syncInfo.isGitHubActive
                   ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
                   : "border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-300"
@@ -110,7 +110,7 @@ export function ProjectProgressSummary({ progress, className }: ProjectProgressS
 
             <span
               className={cn(
-                "font-mono text-[11px]",
+                "font-mono text-xs",
                 syncInfo.isStaleOrMissing
                   ? "font-medium text-amber-700 dark:text-amber-300"
                   : "text-muted-foreground"
@@ -122,18 +122,18 @@ export function ProjectProgressSummary({ progress, className }: ProjectProgressS
         </div>
 
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
-          <Card className="rounded-2xl border border-border/80 shadow-xs">
+          <Card className="rounded-xl border border-border/80 shadow-xs">
             <CardContent className="space-y-2 p-4">
               <div className="flex items-center gap-2">
                 <div className="flex size-8 items-center justify-center rounded-xl bg-primary/10 text-primary">
                   <ListChecksIcon className="size-4" />
                 </div>
-                <p className="text-[11px] font-semibold text-muted-foreground">Tiến độ công việc</p>
+                <p className="text-xs font-semibold text-muted-foreground">Tiến độ công việc</p>
               </div>
               <p className="font-mono text-xl font-black leading-tight text-foreground">
                 {hasTasks ? completionLabel : NO_TASK_DATA_LABEL}
               </p>
-              <p className="text-[11px] text-muted-foreground">
+              <p className="text-xs text-muted-foreground">
                 {hasTasks ? `${tasks.done} / ${tasks.total} task hoàn thành` : "Chưa có task trong dự án"}
               </p>
               <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
@@ -147,20 +147,20 @@ export function ProjectProgressSummary({ progress, className }: ProjectProgressS
             </CardContent>
           </Card>
 
-          <Card className="rounded-2xl border border-border/80 shadow-xs">
+          <Card className="rounded-xl border border-border/80 shadow-xs">
             <CardContent className="space-y-2 p-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <div className="flex size-8 items-center justify-center rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400">
                     <CalendarRangeIcon className="size-4" />
                   </div>
-                  <p className="text-[11px] font-semibold text-muted-foreground">Sprint hiện tại</p>
+                  <p className="text-xs font-semibold text-muted-foreground">Sprint hiện tại</p>
                 </div>
                 {sprint && (
                   <Badge
                     variant="outline"
                     className={cn(
-                      "font-mono text-[10px] font-semibold",
+                      "font-mono text-xs font-semibold",
                       sprintDue.urgency === "overdue" &&
                       "border-red-500/30 bg-red-500/10 text-red-600 dark:text-red-400",
                       sprintDue.urgency === "warning" &&
@@ -178,7 +178,7 @@ export function ProjectProgressSummary({ progress, className }: ProjectProgressS
               <p className="truncate font-mono text-lg font-black leading-tight text-foreground">
                 {sprint ? `${sprint.name} · ${sprintStateLabel}` : NO_ACTIVE_SPRINT_LABEL}
               </p>
-              <p className="text-[11px] text-muted-foreground">
+              <p className="text-xs text-muted-foreground">
                 {!sprint
                   ? "Không có Sprint đang chạy"
                   : sprint.totalTasks === 0
@@ -188,20 +188,20 @@ export function ProjectProgressSummary({ progress, className }: ProjectProgressS
             </CardContent>
           </Card>
 
-          <Card className="rounded-2xl border border-border/80 shadow-xs">
+          <Card className="rounded-xl border border-border/80 shadow-xs">
             <CardContent className="space-y-2 p-4">
               <div className="flex items-center gap-2">
                 <div className="flex size-8 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
                   <GitCommitIcon className="size-4" />
                 </div>
-                <p className="text-[11px] font-semibold text-muted-foreground">Đối soát commit</p>
+                <p className="text-xs font-semibold text-muted-foreground">Đối soát commit</p>
               </div>
               <p className="font-mono text-xl font-black leading-tight text-foreground">
                 {progress.commitSummary.linked} / {progress.commitSummary.total}
               </p>
               <p
                 className={cn(
-                  "text-[11px]",
+                  "text-xs",
                   unlinkedCommits > 0
                     ? "font-medium text-amber-700 dark:text-amber-300"
                     : "text-muted-foreground"
@@ -216,18 +216,18 @@ export function ProjectProgressSummary({ progress, className }: ProjectProgressS
             </CardContent>
           </Card>
 
-          <Card className="rounded-2xl border border-border/80 shadow-xs">
+          <Card className="rounded-xl border border-border/80 shadow-xs">
             <CardContent className="space-y-2 p-4">
               <div className="flex items-center gap-2">
                 <div className="flex size-8 items-center justify-center rounded-xl bg-amber-500/10 text-amber-700 dark:text-amber-300">
                   <FileTextIcon className="size-4" />
                 </div>
-                <p className="text-[11px] font-semibold text-muted-foreground">Minh chứng công việc</p>
+                <p className="text-xs font-semibold text-muted-foreground">Minh chứng công việc</p>
               </div>
               <p className="font-mono text-xl font-black leading-tight text-foreground">
                 {totalEvidence}
               </p>
-              <p className="truncate text-[11px] text-muted-foreground">
+              <p className="truncate text-xs text-muted-foreground">
                 {progress.evidenceSummary.workSessions} phiên làm việc · {progress.evidenceSummary.files} tệp · {progress.evidenceSummary.webLinks} liên kết · {progress.evidenceSummary.confirmations} xác nhận
               </p>
             </CardContent>
@@ -240,7 +240,7 @@ export function ProjectProgressSummary({ progress, className }: ProjectProgressS
 
 export function ProgressFactNote({ className }: { className?: string }) {
   return (
-    <p className={cn("flex items-start gap-1.5 text-[11px] text-muted-foreground", className)}>
+    <p className={cn("flex items-start gap-1.5 text-xs text-muted-foreground", className)}>
       <ActivityIcon className="mt-0.5 size-3.5 shrink-0" />
       Số liệu tiến độ và minh chứng kỹ thuật được ghi nhận trực tiếp từ máy chủ. Hệ thống không tính điểm môn học; mục Đánh giá dùng để đối soát và đánh giá tỷ lệ (%) đóng góp công sức thực tế.
     </p>

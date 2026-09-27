@@ -39,7 +39,7 @@ export function StudentMyTeamPanel({ courseId, onClose }: StudentMyTeamPanelProp
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs">
-      <div className="flex max-h-[92vh] w-full max-w-lg flex-col overflow-hidden rounded-3xl border border-border/80 bg-card shadow-2xl">
+      <div className="flex max-h-[92vh] w-full max-w-lg flex-col overflow-hidden rounded-xl border border-border/80 bg-card shadow-lg">
         <div className="flex shrink-0 items-center justify-between border-b border-border/60 bg-muted/20 p-5">
           <h3 className="text-base font-extrabold">Nhóm của tôi</h3>
           <button
@@ -55,10 +55,10 @@ export function StudentMyTeamPanel({ courseId, onClose }: StudentMyTeamPanelProp
           {isLoading ? (
             <div className="space-y-3 animate-pulse">
               <div className="h-6 w-40 rounded bg-muted" />
-              <div className="h-24 rounded-2xl bg-muted/60" />
+              <div className="h-24 rounded-xl bg-muted/60" />
             </div>
           ) : waitingForTeam ? (
-            <Card className="rounded-2xl border border-dashed border-border p-6 text-center">
+            <Card className="rounded-xl border border-dashed border-border p-6 text-center">
               <UsersIcon className="mx-auto mb-3 size-8 text-muted-foreground/40" />
               <p className="text-sm font-semibold">Đang chờ giảng viên phân nhóm</p>
               <p className="mt-1 text-xs text-muted-foreground">
@@ -66,7 +66,7 @@ export function StudentMyTeamPanel({ courseId, onClose }: StudentMyTeamPanelProp
               </p>
             </Card>
           ) : forbidden ? (
-            <Card className="rounded-2xl border border-dashed border-destructive/30 p-6 text-center">
+            <Card className="rounded-xl border border-dashed border-destructive/30 p-6 text-center">
               <p className="text-sm font-semibold">Bạn không thuộc lớp học phần này</p>
               <p className="mt-1 text-xs text-muted-foreground">
                 Tài khoản của bạn không nằm trong danh sách sinh viên của lớp học phần này.
@@ -81,7 +81,7 @@ export function StudentMyTeamPanel({ courseId, onClose }: StudentMyTeamPanelProp
               </Button>
             </Card>
           ) : isError ? (
-            <Card className="rounded-2xl border border-dashed border-destructive/30 p-6 text-center">
+            <Card className="rounded-xl border border-dashed border-destructive/30 p-6 text-center">
               <p className="text-sm font-semibold">Không tải được nhóm</p>
               <p className="mt-1 text-xs text-muted-foreground">
                 {getApiErrorMessage(error, "Vui lòng thử lại.")}
@@ -98,7 +98,7 @@ export function StudentMyTeamPanel({ courseId, onClose }: StudentMyTeamPanelProp
           ) : team ? (
             <div className="space-y-4">
               <div>
-                <p className="font-mono text-[11px] text-muted-foreground">TeamNo {team.teamNo}</p>
+                <p className="font-mono text-xs text-muted-foreground">TeamNo {team.teamNo}</p>
                 <h4 className="text-lg font-bold">{team.teamName}</h4>
                 <div className="mt-2 flex flex-wrap gap-2">
                   <MemberRoleBadge role={team.myRole} showEnglish />
@@ -123,7 +123,7 @@ export function StudentMyTeamPanel({ courseId, onClose }: StudentMyTeamPanelProp
                   >
                     <div>
                       <p className="text-xs font-semibold">{member.fullName}</p>
-                      <p className="font-mono text-[11px] text-muted-foreground">
+                      <p className="font-mono text-xs text-muted-foreground">
                         {member.studentCode}
                       </p>
                     </div>

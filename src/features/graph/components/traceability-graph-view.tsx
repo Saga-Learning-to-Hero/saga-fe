@@ -13,7 +13,21 @@ import { JiraSourceSwitcher } from "@/features/student/project/components/jira-s
 import { useProjectJiraSourceSelection } from "@/features/student/project/hooks/use-project-jira-source-selection";
 import { getApiErrorMessage } from "@/lib/api-error";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
-import { CytoscapeGraphCanvas } from "./cytoscape-graph-canvas";
+import dynamic from "next/dynamic";
+import { Loader2Icon } from "lucide-react";
+
+const CytoscapeGraphCanvas = dynamic(
+  () => import("./cytoscape-graph-canvas").then((mod) => mod.CytoscapeGraphCanvas),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="w-full h-[580px] sm:h-[640px] lg:h-[calc(100vh-230px)] min-h-[540px] max-h-[780px] rounded-xl border border-border/90 bg-muted/20 flex flex-col items-center justify-center text-muted-foreground gap-3">
+        <Loader2Icon className="w-8 h-8 animate-spin text-primary" />
+        <span className="text-xs font-medium">Đang khởi tạo Engine Đồ thị...</span>
+      </div>
+    )
+  }
+);
 import { GraphFilterBar, type GraphFilterType } from "./graph-filter-bar";
 import { GraphStatsSummary } from "./graph-stats-summary";
 import { GraphNodeDetailsModal } from "./graph-node-details-modal";
@@ -371,7 +385,7 @@ export function TraceabilityGraphView() {
 
   const renderNeo4jBody = () => {
     if (isCoursesLoading || (Boolean(courseId) && teamQuery.isLoading && !teamQuery.data)) {
-      return <div className="h-[640px] w-full animate-pulse rounded-3xl bg-muted" />;
+      return <div className="h-[640px] w-full animate-pulse rounded-xl bg-muted" />;
     }
     if (isInvalidCourse || !courseId || !course) {
       return (
@@ -411,8 +425,8 @@ export function TraceabilityGraphView() {
 
     if (isSprintRequired && !hasRequiredSprint) {
       return (
-        <div className="flex flex-col items-center justify-center p-12 text-center rounded-3xl border border-dashed border-border bg-card/50 space-y-3">
-          <div className="w-12 h-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center">
+        <div className="flex flex-col items-center justify-center p-12 text-center rounded-xl border border-dashed border-border bg-card/50 space-y-3">
+          <div className="w-12 h-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
             <CalendarIcon className="w-6 h-6" />
           </div>
           <h3 className="text-base font-bold text-foreground">Dự án chưa có Sprint</h3>
@@ -425,7 +439,7 @@ export function TraceabilityGraphView() {
 
     if ((graphQuery.isLoading && !graphQuery.data) || isWaitingDefaultSprint) {
       return (
-        <div className="flex flex-col items-center justify-center h-[640px] w-full rounded-3xl border border-border bg-card/60 space-y-3">
+        <div className="flex flex-col items-center justify-center h-[640px] w-full rounded-xl border border-border bg-card/60 space-y-3">
           <div className="w-10 h-10 rounded-full border-3 border-primary border-t-transparent animate-spin" />
           <p className="text-xs font-bold text-muted-foreground">Đang tải dữ liệu đồ thị...</p>
         </div>
@@ -434,7 +448,7 @@ export function TraceabilityGraphView() {
 
     if (graphQuery.isError) {
       return (
-        <div className="flex flex-col items-center justify-center p-12 text-center rounded-3xl border border-destructive/20 bg-destructive/5 space-y-3">
+        <div className="flex flex-col items-center justify-center p-12 text-center rounded-xl border border-destructive/20 bg-destructive/5 space-y-3">
           <h3 className="text-base font-bold text-destructive">Không tải được đồ thị Neo4j</h3>
           <p className="text-xs text-muted-foreground max-w-sm">
             {getApiErrorMessage(graphQuery.error, "Vui lòng kiểm tra lại kết nối.")}
@@ -452,8 +466,8 @@ export function TraceabilityGraphView() {
 
     if (!graphQuery.data || displayGraphData.nodes.length === 0) {
       return (
-        <div className="flex flex-col items-center justify-center p-12 text-center rounded-3xl border border-dashed border-border bg-card/50 space-y-3">
-          <div className="w-12 h-12 rounded-2xl bg-muted text-muted-foreground flex items-center justify-center">
+        <div className="flex flex-col items-center justify-center p-12 text-center rounded-xl border border-dashed border-border bg-card/50 space-y-3">
+          <div className="w-12 h-12 rounded-xl bg-muted text-muted-foreground flex items-center justify-center">
             <NetworkIcon className="w-6 h-6" />
           </div>
           <h3 className="text-base font-bold text-foreground">Chưa có dữ liệu liên kết</h3>
@@ -467,7 +481,7 @@ export function TraceabilityGraphView() {
     return (
       <div className="space-y-4">
         {activeFocusedNodeId && (
-          <div className="flex flex-wrap items-center justify-between gap-3 p-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/25 text-xs font-bold text-emerald-700 dark:text-emerald-400 shadow-xs">
+          <div className="flex flex-wrap items-center justify-between gap-3 p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/25 text-xs font-bold text-emerald-700 dark:text-emerald-400 shadow-xs">
             <div className="flex items-center gap-2 min-w-0">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping shrink-0" />
               <span className="truncate">
@@ -510,7 +524,7 @@ export function TraceabilityGraphView() {
 
   const renderPipelineBody = () => {
     if (isCoursesLoading || (Boolean(courseId) && teamQuery.isLoading && !teamQuery.data)) {
-      return <div className="min-h-64 animate-pulse rounded-2xl bg-muted" />;
+      return <div className="min-h-64 animate-pulse rounded-xl bg-muted" />;
     }
     if (isInvalidCourse) {
       return (
@@ -562,7 +576,7 @@ export function TraceabilityGraphView() {
       : "/student/project-info";
 
     if (pipeline.isLoadingMain) {
-      return <div className="min-h-64 animate-pulse rounded-2xl bg-muted" />;
+      return <div className="min-h-64 animate-pulse rounded-xl bg-muted" />;
     }
     if (pipeline.isBothMissing) {
       return (
@@ -686,12 +700,12 @@ export function TraceabilityGraphView() {
     <div className="space-y-4">
       <div className="flex flex-col justify-between gap-3 border-b border-border/40 pb-1 sm:flex-row sm:items-center">
         <div className="flex items-center gap-3">
-          <div className="flex size-9 shrink-0 items-center justify-center rounded-2xl border border-primary/20 bg-primary/10 text-primary">
+          <div className="flex size-9 shrink-0 items-center justify-center rounded-xl border border-primary/20 bg-primary/10 text-primary">
             <NetworkIcon className="size-4.5" />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-[10px] font-extrabold uppercase tracking-wider text-primary">
+              <span className="text-xs font-extrabold uppercase tracking-wider text-primary">
                 Traceability Graph & Evidence Engine
               </span>
             </div>

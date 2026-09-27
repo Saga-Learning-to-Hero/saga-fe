@@ -376,9 +376,9 @@ export function CommitsView() {
 
   return (
     <div className="space-y-6 max-w-[1600px] mx-auto pb-12">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3.5 bg-card/60 p-4 rounded-3xl border border-border/70 backdrop-blur-xs shadow-2xs">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3.5 bg-card/60 p-4 rounded-xl border border-border/70 backdrop-blur-xs shadow-2xs">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-slate-900 to-slate-800 text-white dark:from-slate-100 dark:to-slate-200 dark:text-slate-900 flex items-center justify-center shrink-0 shadow-xs font-bold">
+          <div className="w-10 h-10 rounded-xl bg-popover from-slate-900 to-slate-800 text-white dark:from-slate-100 dark:to-slate-200 dark:text-slate-900 flex items-center justify-center shrink-0 shadow-xs font-bold">
             <GitCommitIcon className="w-5 h-5" />
           </div>
           <div>
@@ -387,7 +387,7 @@ export function CommitsView() {
                 Nhật Ký Git Commits
               </h1>
               {courseCode && (
-                <Badge variant="outline" className="font-mono text-[11px] font-bold border-primary/30 bg-primary/10 text-primary">
+                <Badge variant="outline" className="font-mono text-xs font-bold border-primary/30 bg-primary/10 text-primary">
                   {courseCode}
                 </Badge>
               )}
@@ -441,18 +441,18 @@ export function CommitsView() {
       </div>
 
       {isLoadingCommits && (
-        <div className="flex items-center justify-center gap-2 p-6 rounded-2xl border border-primary/20 bg-primary/5 text-xs text-primary font-medium">
+        <div className="flex items-center justify-center gap-2 p-6 rounded-xl border border-primary/20 bg-primary/5 text-xs text-primary font-medium">
           <RotateCwIcon className="w-4 h-4 animate-spin" />
           <span>Đang tải danh sách GitHub commits từ máy chủ...</span>
         </div>
       )}
 
       {isCoursesLoading && (
-        <div className="h-36 animate-pulse rounded-2xl bg-muted/60" />
+        <div className="h-36 animate-pulse rounded-xl bg-muted/60" />
       )}
 
       {isInvalidCourse && (
-        <div className="p-6 rounded-2xl border border-dashed border-amber-500/40 bg-amber-500/5 text-center space-y-2">
+        <div className="p-6 rounded-xl border border-dashed border-amber-500/40 bg-amber-500/5 text-center space-y-2">
           <AlertCircleIcon className="w-6 h-6 text-amber-500 mx-auto" />
           <p className="text-sm font-bold text-foreground">Lớp học phần không còn khả dụng</p>
           <p className="text-xs text-muted-foreground">Hãy chọn lại lớp học phần trước khi xem lịch sử commit.</p>
@@ -460,7 +460,7 @@ export function CommitsView() {
       )}
 
       {!isCoursesLoading && !isInvalidCourse && !isLoadingCommits && !projectId && (
-        <div className="p-6 rounded-2xl border border-dashed border-amber-500/40 bg-amber-500/5 text-center space-y-2">
+        <div className="p-6 rounded-xl border border-dashed border-amber-500/40 bg-amber-500/5 text-center space-y-2">
           <AlertCircleIcon className="w-6 h-6 text-amber-500 mx-auto" />
           <p className="text-sm font-bold text-foreground">Chưa xác định dự án nhóm</p>
           <p className="text-xs text-muted-foreground">Vui lòng vào menu Dự án để khởi tạo hoặc kiểm tra quyền phân nhóm.</p>
@@ -468,7 +468,7 @@ export function CommitsView() {
       )}
 
       {!isLoadingCommits && Boolean(projectId) && isCommitsError && (
-        <div className="p-6 rounded-2xl border border-dashed border-destructive/40 bg-destructive/5 text-center space-y-3">
+        <div className="p-6 rounded-xl border border-dashed border-destructive/40 bg-destructive/5 text-center space-y-3">
           <AlertCircleIcon className="w-6 h-6 text-destructive mx-auto" />
           <div>
             <p className="text-sm font-bold text-foreground">Không tải được lịch sử commit</p>

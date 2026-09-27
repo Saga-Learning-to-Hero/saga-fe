@@ -5,7 +5,7 @@ import { Card } from "@/components/ui/card";
 export function ProjectInfoSkeleton() {
   return (
     <div className="space-y-6">
-      <Card className="rounded-3xl border border-border/80 bg-card p-6 sm:p-8 shadow-xs animate-pulse">
+      <Card className="rounded-xl border border-border/80 bg-card p-6 sm:p-8 shadow-xs animate-pulse">
         <div className="space-y-6">
           <div className="flex items-center justify-between border-b border-border/60 pb-5">
             <div className="space-y-2">
@@ -16,15 +16,15 @@ export function ProjectInfoSkeleton() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="h-16 rounded-2xl bg-muted/40" />
-            <div className="h-16 rounded-2xl bg-muted/40" />
+            <div className="h-16 rounded-xl bg-muted/40" />
+            <div className="h-16 rounded-xl bg-muted/40" />
           </div>
 
-          <div className="h-20 rounded-2xl bg-muted/30" />
+          <div className="h-20 rounded-xl bg-muted/30" />
         </div>
       </Card>
 
-      <Card className="rounded-3xl border border-border/80 bg-card p-6 sm:p-8 shadow-xs animate-pulse">
+      <Card className="rounded-xl border border-border/80 bg-card p-6 sm:p-8 shadow-xs animate-pulse">
         <div className="space-y-6">
           <div className="flex items-center justify-between border-b border-border/60 pb-5">
             <div className="space-y-2">
@@ -34,8 +34,8 @@ export function ProjectInfoSkeleton() {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <div className="h-28 rounded-2xl bg-muted/40" />
-            <div className="h-28 rounded-2xl bg-muted/40" />
+            <div className="h-28 rounded-xl bg-muted/40" />
+            <div className="h-28 rounded-xl bg-muted/40" />
           </div>
         </div>
       </Card>

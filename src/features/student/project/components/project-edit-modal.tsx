@@ -111,7 +111,7 @@ export function ProjectEditModal({
 
   return (
     <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in-0 duration-200">
-      <div className="bg-card border border-border/80 rounded-3xl w-full max-w-2xl shadow-xl max-h-[92vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
+      <div className="bg-card border border-border/80 rounded-xl w-full max-w-2xl shadow-md max-h-[92vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
         <div className="p-5 border-b border-border/60 flex items-center justify-between bg-muted/30 shrink-0">
           <div className="flex items-center gap-2.5">
             <div className="w-9 h-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">

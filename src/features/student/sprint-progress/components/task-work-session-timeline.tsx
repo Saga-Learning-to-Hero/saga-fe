@@ -149,7 +149,7 @@ export function TaskWorkSessionTimeline({
 
   if (!projectId) {
     return (
-      <div className="p-8 rounded-2xl border border-dashed border-border/80 bg-card flex flex-col items-center justify-center text-center space-y-3">
+      <div className="p-8 rounded-xl border border-dashed border-border/80 bg-card flex flex-col items-center justify-center text-center space-y-3">
         <p className="text-xs text-muted-foreground">
           Chưa xác định dự án liên kết của công việc này.
         </p>
@@ -159,7 +159,7 @@ export function TaskWorkSessionTimeline({
 
   if (isLoading) {
     return (
-      <div className="p-8 rounded-2xl border border-border/60 bg-card flex flex-col items-center justify-center text-center space-y-3">
+      <div className="p-8 rounded-xl border border-border/60 bg-card flex flex-col items-center justify-center text-center space-y-3">
         <Loader2Icon className="w-6 h-6 animate-spin text-primary" />
         <p className="text-xs text-muted-foreground font-medium">
           Đang tải dòng thời gian làm việc & commit...
@@ -170,7 +170,7 @@ export function TaskWorkSessionTimeline({
 
   if (isError || !data) {
     return (
-      <div className="p-8 rounded-2xl border border-dashed border-border/80 bg-card flex flex-col items-center justify-center text-center space-y-3">
+      <div className="p-8 rounded-xl border border-dashed border-border/80 bg-card flex flex-col items-center justify-center text-center space-y-3">
         <p className="text-xs text-muted-foreground">
           Không thể tải dữ liệu dòng thời gian của công việc này.
         </p>
@@ -190,8 +190,8 @@ export function TaskWorkSessionTimeline({
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
-        <div className="p-3 rounded-2xl border border-border/70 bg-card shadow-2xs space-y-1">
-          <div className="flex items-center gap-1.5 text-muted-foreground text-[11px] font-medium">
+        <div className="p-3 rounded-xl border border-border/70 bg-card shadow-2xs space-y-1">
+          <div className="flex items-center gap-1.5 text-muted-foreground text-xs font-medium">
             <ClockIcon className="w-3.5 h-3.5 text-blue-500" />
             <span>Tổng thời gian</span>
           </div>
@@ -200,8 +200,8 @@ export function TaskWorkSessionTimeline({
           </p>
         </div>
 
-        <div className="p-3 rounded-2xl border border-border/70 bg-card shadow-2xs space-y-1">
-          <div className="flex items-center gap-1.5 text-muted-foreground text-[11px] font-medium">
+        <div className="p-3 rounded-xl border border-border/70 bg-card shadow-2xs space-y-1">
+          <div className="flex items-center gap-1.5 text-muted-foreground text-xs font-medium">
             <UserIcon className="w-3.5 h-3.5 text-teal-500" />
             <span>Phiên làm việc</span>
           </div>
@@ -211,8 +211,8 @@ export function TaskWorkSessionTimeline({
           </p>
         </div>
 
-        <div className="p-3 rounded-2xl border border-border/70 bg-card shadow-2xs space-y-1">
-          <div className="flex items-center gap-1.5 text-muted-foreground text-[11px] font-medium">
+        <div className="p-3 rounded-xl border border-border/70 bg-card shadow-2xs space-y-1">
+          <div className="flex items-center gap-1.5 text-muted-foreground text-xs font-medium">
             <GitCommitIcon className="w-3.5 h-3.5 text-purple-500" />
             <span>Commits gắn kết</span>
           </div>
@@ -224,7 +224,7 @@ export function TaskWorkSessionTimeline({
       </div>
 
       {openSessions && openSessions.length > 0 && (
-        <div className="p-3.5 rounded-2xl border border-emerald-500/30 bg-emerald-500/5 space-y-2.5">
+        <div className="p-3.5 rounded-xl border border-emerald-500/30 bg-emerald-500/5 space-y-2.5">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <span className="relative flex h-2 w-2">
@@ -235,7 +235,7 @@ export function TaskWorkSessionTimeline({
                 Phiên làm việc đang diễn ra ({openSessions.length})
               </span>
             </div>
-            <Badge className="bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 text-[10px] font-semibold">
+            <Badge className="bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 text-xs font-semibold">
               Live Presence
             </Badge>
           </div>
@@ -253,7 +253,7 @@ export function TaskWorkSessionTimeline({
                   className="flex items-center justify-between p-2.5 rounded-xl bg-card border border-emerald-500/20 shadow-2xs gap-3"
                 >
                   <div className="flex items-center gap-2.5 min-w-0">
-                    <Avatar className={`size-7 text-[10px] font-bold border border-border/80 ${colorClass}`}>
+                    <Avatar className={`size-7 text-xs font-bold border border-border/80 ${colorClass}`}>
                       {session.avatarUrl && <AvatarImage src={session.avatarUrl} alt={session.fullName || "User"} />}
                       <AvatarFallback>{initials}</AvatarFallback>
                     </Avatar>
@@ -261,7 +261,7 @@ export function TaskWorkSessionTimeline({
                       <p className="text-xs font-semibold text-foreground truncate">
                         {session.fullName || "Thành viên"}
                       </p>
-                      <p className="text-[10px] font-mono text-muted-foreground">
+                      <p className="text-xs font-mono text-muted-foreground">
                         {session.studentCode || "SAGA"} • Bắt đầu {formatVietnamDateTime(session.startedAt)}
                       </p>
                     </div>
@@ -281,7 +281,7 @@ export function TaskWorkSessionTimeline({
       )}
 
       <div className="flex items-center justify-between pt-1">
-        <div className="flex items-center gap-1 p-0.5 rounded-xl border border-border/60 bg-muted/40 text-[11px]">
+        <div className="flex items-center gap-1 p-0.5 rounded-xl border border-border/60 bg-muted/40 text-xs">
           <button
             type="button"
             onClick={() => setFilter("all")}
@@ -314,7 +314,7 @@ export function TaskWorkSessionTimeline({
           </button>
         </div>
 
-        <span className="text-[10px] text-muted-foreground font-medium hidden sm:inline-block">
+        <span className="text-xs text-muted-foreground font-medium hidden sm:inline-block">
           Sắp xếp theo thời gian mới nhất
         </span>
       </div>
@@ -327,7 +327,7 @@ export function TaskWorkSessionTimeline({
               Chọn commit làm minh chứng đóng góp
             </span>
             {selectedShas.length > 0 && (
-              <Badge className="bg-violet-600 text-white font-mono text-[10px] shrink-0">
+              <Badge className="bg-violet-600 text-white font-mono text-xs shrink-0">
                 {selectedShas.length} đã chọn
               </Badge>
             )}
@@ -340,7 +340,7 @@ export function TaskWorkSessionTimeline({
                 variant={isAllSelected ? "secondary" : "outline"}
                 size="sm"
                 onClick={() => onSelectAllCommits(validShas)}
-                className={`h-7 px-2 text-[11px] font-semibold gap-1 cursor-pointer transition-colors ${isAllSelected
+                className={`h-7 px-2 text-xs font-semibold gap-1 cursor-pointer transition-colors ${isAllSelected
                   ? "bg-violet-600 text-white hover:bg-violet-700 border-0"
                   : "text-violet-600 dark:text-violet-400 border-violet-500/30 hover:bg-violet-500/10"
                   }`}
@@ -354,10 +354,10 @@ export function TaskWorkSessionTimeline({
       )}
 
       {unifiedItems.length === 0 ? (
-        <div className="p-8 rounded-2xl border border-dashed border-border/80 bg-muted/10 text-center space-y-1.5">
+        <div className="p-8 rounded-xl border border-dashed border-border/80 bg-muted/10 text-center space-y-1.5">
           <LayersIcon className="w-6 h-6 mx-auto text-muted-foreground opacity-60" />
           <p className="text-xs font-semibold text-foreground">Chưa ghi nhận lịch sử</p>
-          <p className="text-[11px] text-muted-foreground max-w-sm mx-auto">
+          <p className="text-xs text-muted-foreground max-w-sm mx-auto">
             Task này chưa có phiên bấm giờ làm việc nào kết thúc hoặc chưa có commit nào được liên kết.
           </p>
         </div>
@@ -388,7 +388,7 @@ export function TaskWorkSessionTimeline({
                           {session.fullName || "Thành viên"}
                         </span>
                         {session.studentCode && (
-                          <span className="font-mono text-[10px] text-muted-foreground">
+                          <span className="font-mono text-xs text-muted-foreground">
                             ({session.studentCode})
                           </span>
                         )}
@@ -396,13 +396,13 @@ export function TaskWorkSessionTimeline({
 
                       <Badge
                         variant="outline"
-                        className="font-mono text-[10px] font-bold bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/30 shrink-0"
+                        className="font-mono text-xs font-bold bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/30 shrink-0"
                       >
                         {formatDuration(session.elapsedSeconds)}
                       </Badge>
                     </div>
 
-                    <div className="flex items-center justify-between text-[11px] text-muted-foreground flex-wrap gap-1 font-mono pt-0.5 border-t border-border/40">
+                    <div className="flex items-center justify-between text-xs text-muted-foreground flex-wrap gap-1 font-mono pt-0.5 border-t border-border/40">
                       <span>Từ: {formatVietnamDateTime(session.startedAt)}</span>
                       <span>Đến: {formatVietnamDateTime(session.endedAt)}</span>
                     </div>
@@ -433,7 +433,7 @@ export function TaskWorkSessionTimeline({
                       <span className="font-mono text-xs font-bold text-purple-600 dark:text-purple-400 bg-purple-500/10 border border-purple-500/20 px-1.5 py-0.5 rounded-md shrink-0">
                         {shortSha}
                       </span>
-                      <span className="text-[10px] font-mono text-muted-foreground truncate">
+                      <span className="text-xs font-mono text-muted-foreground truncate">
                         {formatVietnamDateTime(commit.committedAt || commit.linkedAt)}
                       </span>
                     </div>
@@ -444,7 +444,7 @@ export function TaskWorkSessionTimeline({
                         variant={isSelected ? "secondary" : "outline"}
                         size="sm"
                         onClick={() => onSelectCommit(commit.sha)}
-                        className={`h-6 px-2 text-[10px] font-semibold gap-1 rounded-md cursor-pointer transition-all shrink-0 ${isSelected
+                        className={`h-6 px-2 text-xs font-semibold gap-1 rounded-md cursor-pointer transition-all shrink-0 ${isSelected
                           ? "bg-violet-600 text-white hover:bg-violet-700 border-0"
                           : "text-violet-600 dark:text-violet-400 border-violet-500/30 hover:bg-violet-500/10"
                           }`}
@@ -469,7 +469,7 @@ export function TaskWorkSessionTimeline({
                   </p>
 
                   {commit.repositoryFullName && (
-                    <p className="text-[10px] font-mono text-muted-foreground pt-0.5 border-t border-border/40 truncate">
+                    <p className="text-xs font-mono text-muted-foreground pt-0.5 border-t border-border/40 truncate">
                       Repo: <span className="text-foreground">{commit.repositoryFullName}</span>
                     </p>
                   )}
@@ -486,7 +486,7 @@ export function TaskWorkSessionTimeline({
             <p className="text-xs font-semibold text-foreground">
               {selectedShas.length} commit đang chờ xác nhận minh chứng
             </p>
-            <p className="text-[11px] text-muted-foreground">
+            <p className="text-xs text-muted-foreground">
               Lựa chọn này mới chỉ được lưu tạm trên màn hình, chưa gửi lên máy chủ.
             </p>
           </div>

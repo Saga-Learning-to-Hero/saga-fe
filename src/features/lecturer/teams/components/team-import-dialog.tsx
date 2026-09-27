@@ -129,7 +129,7 @@ export function TeamImportDialog({
       }}
     >
       <DialogContent
-        className="flex max-h-[92vh] w-[calc(100vw-2rem)] max-w-5xl flex-col overflow-hidden rounded-3xl p-0"
+        className="flex max-h-[92vh] w-[calc(100vw-2rem)] max-w-5xl flex-col overflow-hidden rounded-xl p-0"
         showCloseButton={!isBusy}
       >
         <DialogHeader className="shrink-0 space-y-0 border-b border-border bg-muted/20 p-5 text-left">
@@ -160,7 +160,7 @@ export function TeamImportDialog({
         </DialogHeader>
 
         <div className="flex-1 space-y-4 overflow-y-auto p-5">
-          <div className="rounded-2xl border border-border bg-muted/20 p-3 text-xs text-muted-foreground">
+          <div className="rounded-xl border border-border bg-muted/20 p-3 text-xs text-muted-foreground">
             <p className="font-semibold text-foreground">Quy tắc file mẫu</p>
             <ul className="mt-2 list-disc space-y-1 pl-4">
               <li>
@@ -174,7 +174,7 @@ export function TeamImportDialog({
           </div>
 
           {!previewData ? (
-            <div className="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-border bg-muted/10 p-8 text-center">
+            <div className="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-border bg-muted/10 p-8 text-center">
               <UploadCloudIcon className="mb-3 size-10 text-muted-foreground" />
               <p className="text-sm font-bold">Tải file Excel đã điền TeamNo / TeamName / TeamRole</p>
               <p className="mt-1 max-w-md text-xs text-muted-foreground">
@@ -196,7 +196,7 @@ export function TeamImportDialog({
             </div>
           ) : (
             <div className="space-y-3">
-              <div className="flex items-center justify-between gap-3 rounded-2xl border border-border bg-muted/30 p-3">
+              <div className="flex items-center justify-between gap-3 rounded-xl border border-border bg-muted/30 p-3">
                 <div className="flex min-w-0 items-center gap-2 text-xs">
                   <FileSpreadsheetIcon className="size-4 text-primary" />
                   <span className="truncate font-semibold">{selectedFile?.name}</span>

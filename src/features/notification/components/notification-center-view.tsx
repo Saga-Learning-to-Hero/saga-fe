@@ -157,7 +157,7 @@ export function NotificationCenterView() {
         </div>
       </div>
 
-      <div className="bg-card border border-border/80 rounded-2xl p-4 shadow-xs space-y-3">
+      <div className="bg-card border border-border/80 rounded-xl p-4 shadow-xs space-y-3">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center gap-1.5 bg-muted/50 p-1 rounded-xl w-fit">
             <button
@@ -198,7 +198,7 @@ export function NotificationCenterView() {
         </div>
 
         <div className="flex items-center gap-1.5 overflow-x-auto pt-1 pb-0.5 scrollbar-none text-xs">
-          <span className="text-muted-foreground text-[11px] font-medium shrink-0 mr-1">Lọc theo:</span>
+          <span className="text-muted-foreground text-xs font-medium shrink-0 mr-1">Lọc theo:</span>
           {(
             [
               { key: "ALL", label: "Tất cả nguồn" },
@@ -223,12 +223,12 @@ export function NotificationCenterView() {
         </div>
       </div>
 
-      <div className="bg-card border border-border/80 rounded-2xl shadow-xs overflow-hidden divide-y divide-border/50">
+      <div className="bg-card border border-border/80 rounded-xl shadow-xs overflow-hidden divide-y divide-border/50">
         {isLoading && (
           <div className="p-6 space-y-4">
             {[1, 2, 3, 4, 5].map((i) => (
               <div key={i} className="flex gap-4 p-4 rounded-xl bg-muted/30 animate-pulse">
-                <div className="size-11 rounded-2xl bg-muted shrink-0" />
+                <div className="size-11 rounded-xl bg-muted shrink-0" />
                 <div className="flex-1 space-y-2">
                   <div className="h-4 bg-muted rounded-md w-1/3" />
                   <div className="h-3 bg-muted rounded-md w-3/4" />
@@ -241,7 +241,7 @@ export function NotificationCenterView() {
 
         {isError && !isLoading && (
           <div className="py-16 text-center space-y-3">
-            <div className="mx-auto size-12 rounded-2xl bg-destructive/10 text-destructive flex items-center justify-center">
+            <div className="mx-auto size-12 rounded-xl bg-destructive/10 text-destructive flex items-center justify-center">
               <BellOffIcon className="size-6" />
             </div>
             <p className="text-sm font-bold text-destructive">Không thể kết nối máy chủ để tải thông báo</p>
@@ -258,7 +258,7 @@ export function NotificationCenterView() {
 
         {!isLoading && !isError && filteredItems.length === 0 && (
           <div className="py-16 text-center space-y-3">
-            <div className="mx-auto size-12 rounded-2xl bg-muted/60 text-muted-foreground flex items-center justify-center">
+            <div className="mx-auto size-12 rounded-xl bg-muted/60 text-muted-foreground flex items-center justify-center">
               <BellOffIcon className="size-6" />
             </div>
             <p className="text-sm font-bold text-foreground">
@@ -293,7 +293,7 @@ export function NotificationCenterView() {
               >
                 <div
                   className={cn(
-                    "size-10 sm:size-11 rounded-2xl flex items-center justify-center shrink-0 border border-border/40 shadow-xs",
+                    "size-10 sm:size-11 rounded-xl flex items-center justify-center shrink-0 border border-border/40 shadow-xs",
                     visual.iconBgClassName,
                     visual.iconColorClassName
                   )}
@@ -319,11 +319,11 @@ export function NotificationCenterView() {
                     </div>
 
                     <div className="flex items-center gap-2 shrink-0">
-                      <Badge className={cn("text-[10px] px-2 py-0.5 border font-medium", visual.badgeClassName)}>
+                      <Badge className={cn("text-xs px-2 py-0.5 border font-medium", visual.badgeClassName)}>
                         {visual.label}
                       </Badge>
                       <Tooltip>
-                        <TooltipTrigger className="text-[11px] text-muted-foreground/80 font-medium flex items-center gap-1.5 cursor-pointer">
+                        <TooltipTrigger className="text-xs text-muted-foreground/80 font-medium flex items-center gap-1.5 cursor-pointer">
                           <span className="font-mono text-foreground/80">{formatVietnamShortDateTime(item.createdAt)}</span>
                           <span className="text-muted-foreground/40">&bull;</span>
                           <span>{formatRelativeTime(item.createdAt)}</span>

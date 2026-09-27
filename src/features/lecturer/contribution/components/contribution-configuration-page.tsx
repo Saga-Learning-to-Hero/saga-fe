@@ -167,7 +167,7 @@ export function ContributionConfigurationPage({
             <div className="flex items-center gap-2">
               <SlidersHorizontalIcon className="size-3.5 text-primary" />
               <span className="text-muted-foreground">Chế độ hiện tại:</span>
-              <span className="rounded-md bg-primary/10 px-1.5 py-0.5 font-mono text-[11px] font-extrabold text-primary">
+              <span className="rounded-md bg-primary/10 px-1.5 py-0.5 font-mono text-xs font-extrabold text-primary">
                 {serverMode === "COURSE" ? "Chung toàn lớp" : "Riêng theo nhóm"}
               </span>
             </div>
@@ -177,7 +177,7 @@ export function ContributionConfigurationPage({
 
         <TabsContent value="COURSE" keepMounted className="space-y-4">
           {serverMode === "PROJECT_GROUP" && (
-            <Card className="rounded-2xl border border-amber-500/30 bg-amber-500/5 p-4 text-xs text-amber-800 dark:text-amber-300">
+            <Card className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-4 text-xs text-amber-800 dark:text-amber-300">
               <div className="flex items-start gap-2.5">
                 <AlertTriangleIcon className="size-4 shrink-0 text-amber-600 dark:text-amber-400" />
                 <div className="space-y-1">
@@ -203,7 +203,7 @@ export function ContributionConfigurationPage({
           />
 
           {serverMode === "PROJECT_GROUP" && (
-            <Card className="rounded-2xl border border-border/80 bg-card p-5 shadow-xs">
+            <Card className="rounded-xl border border-border/80 bg-card p-5 shadow-xs">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div className="space-y-1">
                   <h4 className="text-sm font-bold text-foreground">
@@ -246,7 +246,7 @@ export function ContributionConfigurationPage({
           )}
 
           {!teamQuery.isError && serverMode !== "PROJECT_GROUP" ? (
-            <Card className="rounded-2xl border border-border/80 bg-card p-5 shadow-xs">
+            <Card className="rounded-xl border border-border/80 bg-card p-5 shadow-xs">
               <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div className="space-y-1.5">
                   <div className="flex items-center gap-2">
@@ -256,7 +256,7 @@ export function ContributionConfigurationPage({
                     {canApplyProjectGroup ? (
                       <Badge
                         variant="outline"
-                        className="border-emerald-500/30 bg-emerald-500/10 font-mono text-[11px] text-emerald-600 dark:text-emerald-400"
+                        className="border-emerald-500/30 bg-emerald-500/10 font-mono text-xs text-emerald-600 dark:text-emerald-400"
                       >
                         <CheckCircle2Icon className="mr-1 size-3" />
                         Đủ điều kiện kích hoạt
@@ -264,7 +264,7 @@ export function ContributionConfigurationPage({
                     ) : (
                       <Badge
                         variant="outline"
-                        className="border-amber-500/30 bg-amber-500/10 font-mono text-[11px] text-amber-600 dark:text-amber-400"
+                        className="border-amber-500/30 bg-amber-500/10 font-mono text-xs text-amber-600 dark:text-amber-400"
                       >
                         Chưa hoàn tất thiết lập
                       </Badge>
@@ -278,7 +278,7 @@ export function ContributionConfigurationPage({
                       ) : (
                         <div>
                           <p>Còn các nhóm sau đây có dự án nhưng chưa lưu trọng số riêng:</p>
-                          <ul className="mt-1 list-disc pl-5 font-mono text-[11px] text-amber-700 dark:text-amber-300">
+                          <ul className="mt-1 list-disc pl-5 font-mono text-xs text-amber-700 dark:text-amber-300">
                             {incompleteProjectTeams.map((team) => (
                               <li key={team.teamId}>
                                 Team #{team.teamNo}: {team.teamName || "Chưa đặt tên"}
@@ -324,7 +324,7 @@ export function ContributionConfigurationPage({
           if (!open) setPendingMode(null);
         }}
       >
-        <AlertDialogContent className="rounded-3xl border border-border/80 p-6 shadow-2xl">
+        <AlertDialogContent className="rounded-xl border border-border/80 p-6 shadow-lg">
           <AlertDialogHeader>
             <AlertDialogTitle className="text-base font-extrabold text-foreground">
               {pendingMode === "PROJECT_GROUP"
@@ -364,7 +364,7 @@ export function ContributionConfigurationPage({
       </AlertDialog>
 
       <Dialog open={modeInfoOpen} onOpenChange={setModeInfoOpen}>
-        <DialogContent className="max-w-md rounded-3xl border border-border/80 p-6 shadow-2xl">
+        <DialogContent className="max-w-md rounded-xl border border-border/80 p-6 shadow-lg">
           <DialogHeader className="space-y-2">
             <div className="flex items-center gap-3">
               <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
@@ -382,7 +382,7 @@ export function ContributionConfigurationPage({
           </DialogHeader>
 
           <div className="space-y-4 pt-2">
-            <div className="rounded-2xl border border-border/80 bg-muted/20 p-3.5 space-y-1.5">
+            <div className="rounded-xl border border-border/80 bg-muted/20 p-3.5 space-y-1.5">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-foreground">
                   Trạng thái đang áp dụng:
@@ -402,16 +402,16 @@ export function ContributionConfigurationPage({
             </div>
 
             <div className="space-y-2.5 text-xs text-foreground">
-              <div className="rounded-2xl border border-border/60 p-3.5 space-y-1">
+              <div className="rounded-xl border border-border/60 p-3.5 space-y-1">
                 <p className="font-bold text-primary">1. Chế độ Chung toàn lớp (COURSE)</p>
-                <p className="text-muted-foreground text-[11px] leading-relaxed">
+                <p className="text-muted-foreground text-xs leading-relaxed">
                   Áp dụng bộ 4 trọng số (Code, Testing, Document, Research) cố định cho tất cả sinh viên và nhóm trong lớp. Phù hợp cho giai đoạn đầu hoặc môn học có yêu cầu chuẩn hóa cao.
                 </p>
               </div>
 
-              <div className="rounded-2xl border border-border/60 p-3.5 space-y-1">
+              <div className="rounded-xl border border-border/60 p-3.5 space-y-1">
                 <p className="font-bold text-purple-600 dark:text-purple-400">2. Chế độ Riêng theo nhóm (PROJECT_GROUP)</p>
-                <p className="text-muted-foreground text-[11px] leading-relaxed">
+                <p className="text-muted-foreground text-xs leading-relaxed">
                   Mỗi nhóm dự án có thể tùy chỉnh trọng số riêng (ví dụ: nhóm nặng về kiểm thử, nhóm tập trung R&D). Giúp đánh giá công bằng theo tính chất thực tế của từng đề tài.
                 </p>
               </div>

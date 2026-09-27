@@ -40,7 +40,7 @@ export function TaskDueDate({ dueDate, status, className }: TaskDueDateProps) {
       aria-label={info.accessibleLabel}
       data-due-state={info.state.toLowerCase()}
       className={cn(
-        "inline-flex shrink-0 items-center gap-1 font-mono text-[10px] font-medium",
+        "inline-flex shrink-0 items-center gap-1 font-mono text-xs font-medium",
         STATE_STYLES[info.state],
         className
       )}

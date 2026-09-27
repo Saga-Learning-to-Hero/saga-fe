@@ -53,24 +53,24 @@ export function ProjectGithubSection({
                   GitHub Repositories của nhóm
                 </h4>
                 {activeCount > 0 ? (
-                  <Badge className="bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-0 text-[10px] font-semibold">
+                  <Badge className="bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-0 text-xs font-semibold">
                     Đang kết nối ({activeCount} repo)
                   </Badge>
                 ) : hasRepos ? (
-                  <Badge className="bg-amber-500/15 text-amber-700 dark:text-amber-400 border border-amber-500/30 text-[10px] font-semibold">
+                  <Badge className="bg-amber-500/15 text-amber-700 dark:text-amber-400 border border-amber-500/30 text-xs font-semibold">
                     Chưa kích hoạt ({repositories.length} repo)
                   </Badge>
                 ) : isConnected ? (
-                  <Badge className="bg-blue-500/15 text-blue-600 dark:text-blue-400 border-0 text-[10px] font-semibold">
+                  <Badge className="bg-blue-500/15 text-blue-600 dark:text-blue-400 border-0 text-xs font-semibold">
                     Đã ủy quyền GitHub
                   </Badge>
                 ) : (
-                  <Badge variant="outline" className="text-[10px] text-muted-foreground border-border">
+                  <Badge variant="outline" className="text-xs text-muted-foreground border-border">
                     Chưa kết nối
                   </Badge>
                 )}
               </div>
-              <p className="text-[11px] text-muted-foreground">
+              <p className="text-xs text-muted-foreground">
                 Các repo mã nguồn chung để theo dõi commit và PR
               </p>
             </div>
@@ -82,7 +82,7 @@ export function ProjectGithubSection({
               size="sm"
               onClick={onAddRepo}
               disabled={isConnectingRepo}
-              className="h-7.5 px-2.5 text-[11px] font-bold rounded-lg gap-1.5 bg-purple-600 hover:bg-purple-700 text-white cursor-pointer shadow-2xs self-start sm:self-auto shrink-0"
+              className="h-7.5 px-2.5 text-xs font-bold rounded-lg gap-1.5 bg-purple-600 hover:bg-purple-700 text-white cursor-pointer shadow-2xs self-start sm:self-auto shrink-0"
             >
               {isConnectingRepo ? (
                 <>
@@ -106,7 +106,7 @@ export function ProjectGithubSection({
             </div>
             <div className="max-w-sm mx-auto space-y-0.5">
               <h5 className="text-xs font-bold text-foreground">Chưa có Repository nào</h5>
-              <p className="text-[11px] text-muted-foreground">
+              <p className="text-xs text-muted-foreground">
                 Trưởng nhóm thêm các repo GitHub để hệ thống ghi nhận commit và PR.
               </p>
             </div>
@@ -116,7 +116,7 @@ export function ProjectGithubSection({
                 size="sm"
                 onClick={onAddRepo}
                 disabled={isConnectingRepo}
-                className="h-7.5 px-3 text-[11px] font-bold rounded-lg gap-1.5 bg-purple-600 hover:bg-purple-700 text-white cursor-pointer shadow-2xs"
+                className="h-7.5 px-3 text-xs font-bold rounded-lg gap-1.5 bg-purple-600 hover:bg-purple-700 text-white cursor-pointer shadow-2xs"
               >
                 <PlusIcon className="w-3 h-3" />
                 <span>{isConnected ? "Thêm GitHub Repository" : "Kết nối GitHub"}</span>
@@ -141,19 +141,19 @@ export function ProjectGithubSection({
                     <ExternalLinkIcon className="w-3 h-3 shrink-0" />
                   </a>
                   {r.role && (
-                    <Badge variant="secondary" className="text-[10px] font-mono font-medium">
+                    <Badge variant="secondary" className="text-xs font-mono font-medium">
                       <Code2Icon className="w-3 h-3 mr-1" />
                       {r.role}
                     </Badge>
                   )}
                 </div>
                 {(r.status || "").toUpperCase() === "ACTIVE" ? (
-                  <Badge className="bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-0 text-[10px] font-semibold shrink-0">
+                  <Badge className="bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-0 text-xs font-semibold shrink-0">
                     <ShieldCheckIcon className="w-3 h-3 mr-1" />
                     Đã kết nối
                   </Badge>
                 ) : (
-                  <Badge className="bg-amber-500/15 text-amber-700 dark:text-amber-400 border border-amber-500/30 text-[10px] font-semibold shrink-0">
+                  <Badge className="bg-amber-500/15 text-amber-700 dark:text-amber-400 border border-amber-500/30 text-xs font-semibold shrink-0">
                     <AlertCircleIcon className="w-3 h-3 mr-1" />
                     {(r.status || "").toUpperCase() === "REVOKED"
                       ? "Đã ngắt kết nối"
@@ -167,10 +167,10 @@ export function ProjectGithubSection({
       </div>
 
       {github?.accountLogin && (
-        <div className="pt-3 border-t border-purple-500/15 flex items-center justify-between text-[11px] text-muted-foreground flex-wrap gap-2">
+        <div className="pt-3 border-t border-purple-500/15 flex items-center justify-between text-xs text-muted-foreground flex-wrap gap-2">
           <div className="flex items-center gap-2">
             <span>Tài khoản GitHub liên kết:</span>
-            <Badge variant="secondary" className="font-mono text-[10px]">
+            <Badge variant="secondary" className="font-mono text-xs">
               @{github.accountLogin}
             </Badge>
           </div>
@@ -180,7 +180,7 @@ export function ProjectGithubSection({
               variant="outline"
               size="sm"
               onClick={onChangeInstallation}
-              className="h-6 px-2 text-[10px] font-semibold text-purple-600 dark:text-purple-400 border-purple-500/30 hover:bg-purple-500/10 rounded-md gap-1 cursor-pointer"
+              className="h-6 px-2 text-xs font-semibold text-purple-600 dark:text-purple-400 border-purple-500/30 hover:bg-purple-500/10 rounded-md gap-1 cursor-pointer"
             >
               <RotateCcwIcon className="w-2.5 h-2.5" />
               <span>Đổi tài khoản / Cài đặt mới</span>

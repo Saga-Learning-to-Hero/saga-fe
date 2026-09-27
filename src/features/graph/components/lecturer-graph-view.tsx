@@ -28,7 +28,21 @@ import { JiraSourceSwitcher } from "@/features/student/project/components/jira-s
 import { useProjectJiraSourceSelection } from "@/features/student/project/hooks/use-project-jira-source-selection";
 import { getApiErrorCode, getApiErrorMessage, getApiErrorStatus } from "@/lib/api-error";
 import type { RoleInTeam } from "@/types/auth";
-import { CytoscapeGraphCanvas } from "./cytoscape-graph-canvas";
+import dynamic from "next/dynamic";
+import { Loader2Icon } from "lucide-react";
+
+const CytoscapeGraphCanvas = dynamic(
+  () => import("./cytoscape-graph-canvas").then((mod) => mod.CytoscapeGraphCanvas),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="w-full h-[580px] sm:h-[640px] lg:h-[calc(100vh-230px)] min-h-[540px] max-h-[780px] rounded-xl border border-border/90 bg-muted/20 flex flex-col items-center justify-center text-muted-foreground gap-3">
+        <Loader2Icon className="w-8 h-8 animate-spin text-primary" />
+        <span className="text-xs font-medium">Đang khởi tạo Engine Đồ thị...</span>
+      </div>
+    )
+  }
+);
 import { GraphStatsSummary } from "./graph-stats-summary";
 import { GraphNodeDetailsModal } from "./graph-node-details-modal";
 import { Neo4jTabBar } from "./neo4j-tab-bar";
@@ -578,11 +592,11 @@ export function LecturerGraphView({
   if (teamsQuery.isLoading) {
     return (
       <div className="space-y-6 animate-pulse" aria-label="Đang tải dữ liệu giám sát">
-        <div className="h-24 rounded-2xl bg-muted/60 border border-border/80" />
-        <div className="h-14 rounded-2xl bg-muted/40 border border-border/60" />
+        <div className="h-24 rounded-xl bg-muted/60 border border-border/80" />
+        <div className="h-14 rounded-xl bg-muted/40 border border-border/60" />
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          <div className="lg:col-span-8 h-96 rounded-3xl bg-muted/30 border border-border/60" />
-          <div className="lg:col-span-4 h-96 rounded-3xl bg-muted/30 border border-border/60" />
+          <div className="lg:col-span-8 h-96 rounded-xl bg-muted/30 border border-border/60" />
+          <div className="lg:col-span-4 h-96 rounded-xl bg-muted/30 border border-border/60" />
         </div>
       </div>
     );
@@ -594,8 +608,8 @@ export function LecturerGraphView({
       getApiErrorCode(teamsQuery.error) === "LECTURER_COURSE_FORBIDDEN")
   ) {
     return (
-      <div className="flex flex-col items-center justify-center p-12 text-center rounded-3xl border border-destructive/30 bg-destructive/5 space-y-3">
-        <div className="flex size-12 items-center justify-center rounded-2xl bg-destructive/10 text-destructive">
+      <div className="flex flex-col items-center justify-center p-12 text-center rounded-xl border border-destructive/30 bg-destructive/5 space-y-3">
+        <div className="flex size-12 items-center justify-center rounded-xl bg-destructive/10 text-destructive">
           <ShieldAlertIcon className="size-6" />
         </div>
         <h3 className="text-base font-extrabold text-foreground">Truy cập bị từ chối</h3>
@@ -608,7 +622,7 @@ export function LecturerGraphView({
 
   if (teamsQuery.isError) {
     return (
-      <div className="p-8 text-center rounded-3xl border border-destructive/30 bg-destructive/5 space-y-3">
+      <div className="p-8 text-center rounded-xl border border-destructive/30 bg-destructive/5 space-y-3">
         <p className="text-sm font-semibold text-destructive">
           {getApiErrorMessage(teamsQuery.error, "Không thể tải danh sách nhóm của lớp học phần.")}
         </p>
@@ -646,8 +660,8 @@ export function LecturerGraphView({
 
     if (isSprintRequired && !hasRequiredSprint) {
       return (
-        <div className="flex flex-col items-center justify-center p-12 text-center rounded-3xl border border-dashed border-border bg-card/50 space-y-3">
-          <div className="w-12 h-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center">
+        <div className="flex flex-col items-center justify-center p-12 text-center rounded-xl border border-dashed border-border bg-card/50 space-y-3">
+          <div className="w-12 h-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
             <CalendarIcon className="w-6 h-6" />
           </div>
           <h3 className="text-base font-bold text-foreground">Dự án chưa có Sprint</h3>
@@ -660,7 +674,7 @@ export function LecturerGraphView({
 
     if ((graphQuery.isLoading && !graphQuery.data) || isWaitingDefaultSprint) {
       return (
-        <div className="flex flex-col items-center justify-center h-[640px] w-full rounded-3xl border border-border bg-card/60 space-y-3">
+        <div className="flex flex-col items-center justify-center h-[640px] w-full rounded-xl border border-border bg-card/60 space-y-3">
           <div className="w-10 h-10 rounded-full border-3 border-primary border-t-transparent animate-spin" />
           <p className="text-xs font-bold text-muted-foreground">Đang tải đồ thị Neo4j của nhóm...</p>
         </div>
@@ -670,8 +684,8 @@ export function LecturerGraphView({
     if (graphQuery.isError) {
       const err = graphQuery.error as { status?: number; code?: string; message?: string };
       return (
-        <div className="flex flex-col items-center justify-center p-12 text-center rounded-3xl border border-destructive/20 bg-destructive/5 space-y-3">
-          <div className="w-12 h-12 rounded-2xl bg-destructive/10 text-destructive flex items-center justify-center">
+        <div className="flex flex-col items-center justify-center p-12 text-center rounded-xl border border-destructive/20 bg-destructive/5 space-y-3">
+          <div className="w-12 h-12 rounded-xl bg-destructive/10 text-destructive flex items-center justify-center">
             <AlertCircleIcon className="w-6 h-6" />
           </div>
           <h3 className="text-base font-bold text-foreground">Không tải được dữ liệu đồ thị</h3>
@@ -696,8 +710,8 @@ export function LecturerGraphView({
 
     if (!graphQuery.data || graphQuery.data.nodes.length === 0) {
       return (
-        <div className="flex flex-col items-center justify-center p-12 text-center rounded-3xl border border-dashed border-border bg-card/50 space-y-3">
-          <div className="w-12 h-12 rounded-2xl bg-muted text-muted-foreground flex items-center justify-center">
+        <div className="flex flex-col items-center justify-center p-12 text-center rounded-xl border border-dashed border-border bg-card/50 space-y-3">
+          <div className="w-12 h-12 rounded-xl bg-muted text-muted-foreground flex items-center justify-center">
             <NetworkIcon className="w-6 h-6" />
           </div>
           <h3 className="text-base font-bold text-foreground">Chưa có dữ liệu liên kết</h3>
@@ -711,7 +725,7 @@ export function LecturerGraphView({
     return (
       <div className="space-y-4">
         {activeFocusedNodeId && (
-          <div className="flex flex-wrap items-center justify-between gap-3 p-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/25 text-xs font-bold text-emerald-700 dark:text-emerald-400 shadow-xs">
+          <div className="flex flex-wrap items-center justify-between gap-3 p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/25 text-xs font-bold text-emerald-700 dark:text-emerald-400 shadow-xs">
             <div className="flex items-center gap-2 min-w-0">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping shrink-0" />
               <span className="truncate">
@@ -765,10 +779,10 @@ export function LecturerGraphView({
     if (pipeline.isLoadingMain) {
       return (
         <div className="space-y-4 animate-pulse">
-          <div className="h-16 rounded-2xl bg-muted/40 border border-border/60" />
+          <div className="h-16 rounded-xl bg-muted/40 border border-border/60" />
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            <div className="lg:col-span-8 h-80 rounded-3xl bg-muted/30 border border-border/60" />
-            <div className="lg:col-span-4 h-80 rounded-3xl bg-muted/30 border border-border/60" />
+            <div className="lg:col-span-8 h-80 rounded-xl bg-muted/30 border border-border/60" />
+            <div className="lg:col-span-4 h-80 rounded-xl bg-muted/30 border border-border/60" />
           </div>
         </div>
       );
@@ -843,7 +857,7 @@ export function LecturerGraphView({
 
   return (
     <div className="space-y-3.5">
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 p-3 sm:p-4 rounded-2xl border border-border/80 bg-card/90 shadow-xs backdrop-blur-md">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 p-3 sm:p-4 rounded-xl border border-border/80 bg-card/90 shadow-xs backdrop-blur-sm">
         <div className="flex flex-wrap items-center gap-3">
           <div className="size-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shrink-0">
             <GitGraphIcon className="size-5" />
@@ -855,17 +869,17 @@ export function LecturerGraphView({
               </h1>
               <Badge
                 variant="outline"
-                className="border-primary/20 bg-primary/10 font-mono text-[10px] font-bold text-primary"
+                className="border-primary/20 bg-primary/10 font-mono text-xs font-bold text-primary"
               >
                 Giảng viên
               </Badge>
               <Badge
                 className={
                   teamStatusRule.variant === "warning"
-                    ? "bg-amber-500/15 text-amber-800 dark:text-amber-300 border border-amber-500/30 text-[10px] font-bold gap-1"
+                    ? "bg-amber-500/15 text-amber-800 dark:text-amber-300 border border-amber-500/30 text-xs font-bold gap-1"
                     : teamStatusRule.variant === "success"
-                      ? "bg-emerald-500/15 text-emerald-800 dark:text-emerald-300 border border-emerald-500/30 text-[10px] font-bold gap-1"
-                      : "bg-muted text-muted-foreground border border-border text-[10px]"
+                      ? "bg-emerald-500/15 text-emerald-800 dark:text-emerald-300 border border-emerald-500/30 text-xs font-bold gap-1"
+                      : "bg-muted text-muted-foreground border border-border text-xs"
                 }
               >
                 {teamStatusRule.icon}
@@ -960,7 +974,7 @@ export function LecturerGraphView({
       </div>
 
       {mainMode === "PIPELINE" && (
-        <div className="space-y-3 rounded-2xl border border-border/80 bg-card/90 p-3.5 shadow-xs">
+        <div className="space-y-3 rounded-xl border border-border/80 bg-card/90 p-3.5 shadow-xs">
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2.5">
             <div className="relative">
               <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground pointer-events-none" />

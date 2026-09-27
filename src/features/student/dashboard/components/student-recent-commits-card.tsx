@@ -16,7 +16,7 @@ interface StudentRecentCommitsCardProps {
 
 export function StudentRecentCommitsCard({ commits, courseId }: StudentRecentCommitsCardProps) {
   return (
-    <Card className="rounded-2xl border border-border/80 bg-card/90 shadow-xs flex flex-col">
+    <Card className="rounded-xl border border-border/80 bg-card/90 shadow-xs flex flex-col">
       <CardHeader className="p-4 pb-2 border-b border-border/60 flex flex-row items-center justify-between">
         <div className="flex items-center gap-2.5">
           <div className="p-2 rounded-xl bg-primary/10 text-primary">
@@ -26,12 +26,12 @@ export function StudentRecentCommitsCard({ commits, courseId }: StudentRecentCom
             <div className="flex items-center gap-2">
               <CardTitle className="text-sm font-bold">Nhật ký commit gần đây</CardTitle>
               {commits.length > 0 && (
-                <Badge variant="secondary" className="font-mono text-[10px] px-1.5 py-0 h-4">
+                <Badge variant="secondary" className="font-mono text-xs px-1.5 py-0 h-4">
                   {commits.length}
                 </Badge>
               )}
             </div>
-            <p className="text-[11px] text-muted-foreground">
+            <p className="text-xs text-muted-foreground">
               Các commit mới nhất của bạn trên GitHub repository
             </p>
           </div>
@@ -73,11 +73,11 @@ export function StudentRecentCommitsCard({ commits, courseId }: StudentRecentCom
                     <span className="font-mono text-xs font-bold text-primary bg-primary/10 px-1.5 py-0.5 rounded">
                       {commit.shortSha || commit.sha.slice(0, 7)}
                     </span>
-                    <Badge variant="outline" className="font-mono text-[10px] text-muted-foreground">
+                    <Badge variant="outline" className="font-mono text-xs text-muted-foreground">
                       {commit.repositoryName}
                     </Badge>
                   </div>
-                  <span className="font-mono text-[11px] text-muted-foreground">{formattedDate}</span>
+                  <span className="font-mono text-xs text-muted-foreground">{formattedDate}</span>
                 </div>
 
                 <p className="text-xs text-foreground font-medium line-clamp-1" title={commit.message}>
@@ -90,7 +90,7 @@ export function StudentRecentCommitsCard({ commits, courseId }: StudentRecentCom
                       <Badge
                         key={key}
                         variant="secondary"
-                        className="font-mono text-[10px] px-1.5 py-0 bg-primary/15 text-primary border-primary/20"
+                        className="font-mono text-xs px-1.5 py-0 bg-primary/15 text-primary border-primary/20"
                       >
                         {key}
                       </Badge>

@@ -42,7 +42,7 @@ const ACTION_LABELS: Record<string, { label: string; className: string }> = {
 function ActionBadge({ action }: { action: TeamPreviewRowAction }) {
   const meta = ACTION_LABELS[action] ?? ACTION_LABELS.INVALID;
   return (
-    <Badge variant="outline" className={`text-[10px] ${meta.className}`}>
+    <Badge variant="outline" className={`text-xs ${meta.className}`}>
       {meta.label}
     </Badge>
   );
@@ -69,7 +69,7 @@ export function TeamPreviewTable({ preview }: TeamPreviewTableProps) {
           { label: "Lỗi chặn", value: summary.blockingErrorCount },
         ].map((item) => (
           <div key={item.label} className="rounded-xl border border-border bg-card p-3 text-center">
-            <p className="text-[11px] text-muted-foreground">{item.label}</p>
+            <p className="text-xs text-muted-foreground">{item.label}</p>
             <p className="font-mono text-lg font-extrabold text-foreground">{item.value}</p>
           </div>
         ))}
@@ -94,9 +94,9 @@ export function TeamPreviewTable({ preview }: TeamPreviewTableProps) {
         </div>
       )}
 
-      <div className="max-h-[320px] overflow-auto rounded-2xl border border-border bg-card">
+      <div className="max-h-[320px] overflow-auto rounded-xl border border-border bg-card">
         <Table>
-          <TableHeader className="sticky top-0 z-10 bg-muted/70 backdrop-blur-md">
+          <TableHeader className="sticky top-0 z-10 bg-muted/70 backdrop-blur-sm">
             <TableRow>
               <TableHead className="w-16 text-center text-xs font-bold">Dòng</TableHead>
               <TableHead className="text-xs font-bold">Sinh viên</TableHead>
@@ -115,7 +115,7 @@ export function TeamPreviewTable({ preview }: TeamPreviewTableProps) {
                 </TableCell>
                 <TableCell className="text-xs">
                   <p className="font-medium text-foreground">{row.fullName}</p>
-                  <p className="font-mono text-[11px] text-muted-foreground">{row.studentCode}</p>
+                  <p className="font-mono text-xs text-muted-foreground">{row.studentCode}</p>
                 </TableCell>
                 <TableCell className="font-mono text-xs">{row.teamNo ?? "—"}</TableCell>
                 <TableCell className="text-xs">{row.teamName ?? "—"}</TableCell>
@@ -123,7 +123,7 @@ export function TeamPreviewTable({ preview }: TeamPreviewTableProps) {
                 <TableCell>
                   <ActionBadge action={row.action} />
                 </TableCell>
-                <TableCell className="text-[11px]">
+                <TableCell className="text-xs">
                   {row.errors.length > 0 && (
                     <p className="flex items-start gap-1 text-red-600 dark:text-red-400">
                       <AlertCircleIcon className="mt-0.5 size-3 shrink-0" />

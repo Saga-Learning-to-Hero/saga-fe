@@ -235,7 +235,7 @@ export function SliceWeightsForm({
   return (
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
       <div className="space-y-4 lg:col-span-7">
-        <Card className="rounded-2xl border border-border/80 bg-card p-5 shadow-xs">
+        <Card className="rounded-xl border border-border/80 bg-card p-5 shadow-xs">
           <div className="mb-5 space-y-1">
             <h3 className="text-base font-extrabold text-foreground">
               Thiết lập trọng số tiêu chí Slicing Pie
@@ -256,7 +256,7 @@ export function SliceWeightsForm({
                 size="sm"
                 disabled={disabled || areSliceWeightsEqual(weights, initialWeights)}
                 onClick={() => setWeights(initialWeights)}
-                className="h-6 cursor-pointer px-2 text-[11px] font-medium text-muted-foreground hover:text-foreground"
+                className="h-6 cursor-pointer px-2 text-xs font-medium text-muted-foreground hover:text-foreground"
               >
                 <RotateCcwIcon className="mr-1 size-3" />
                 Đặt lại
@@ -331,7 +331,7 @@ export function SliceWeightsForm({
       </div>
 
       <div className="space-y-4 lg:col-span-5">
-        <Card className="flex flex-col justify-between rounded-2xl border border-border/80 bg-card p-5 shadow-xs">
+        <Card className="flex flex-col justify-between rounded-xl border border-border/80 bg-card p-5 shadow-xs">
           <CardContent className="space-y-5 p-0">
             <div className="flex items-center justify-between">
               <h3 className="text-sm font-extrabold text-foreground">
@@ -340,7 +340,7 @@ export function SliceWeightsForm({
               {sumValid ? (
                 <Badge
                   variant="outline"
-                  className="border-emerald-500/30 bg-emerald-500/10 font-mono text-[11px] font-bold text-emerald-600 dark:text-emerald-400"
+                  className="border-emerald-500/30 bg-emerald-500/10 font-mono text-xs font-bold text-emerald-600 dark:text-emerald-400"
                 >
                   <CheckCircle2Icon className="mr-1 size-3" />
                   Đủ 100%
@@ -348,7 +348,7 @@ export function SliceWeightsForm({
               ) : (
                 <Badge
                   variant="outline"
-                  className="border-destructive/30 bg-destructive/10 font-mono text-[11px] font-bold text-destructive"
+                  className="border-destructive/30 bg-destructive/10 font-mono text-xs font-bold text-destructive"
                 >
                   <AlertCircleIcon className="mr-1 size-3" />
                   {total < 100 ? `Thiếu ${100 - total}%` : `Dư ${total - 100}%`}
@@ -393,7 +393,7 @@ export function SliceWeightsForm({
                 >
                   {total}%
                 </span>
-                <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
                   Tổng Pie
                 </span>
               </div>
@@ -433,7 +433,7 @@ export function SliceWeightsForm({
                     size="sm"
                     disabled={disabled}
                     onClick={() => setWeights(autoBalanceWeights(weights))}
-                    className="h-6 cursor-pointer rounded-lg border-destructive/30 bg-destructive/10 px-2 text-[11px] font-bold text-destructive hover:bg-destructive/20"
+                    className="h-6 cursor-pointer rounded-lg border-destructive/30 bg-destructive/10 px-2 text-xs font-bold text-destructive hover:bg-destructive/20"
                   >
                     <SparklesIcon className="mr-1 size-3" />
                     Tự cân bằng 100%
@@ -536,7 +536,7 @@ function SliceWeightFieldEditor({
             <Label htmlFor={`slice-${field}`} className="text-xs font-bold text-foreground">
               {info.title}
             </Label>
-            <p className="text-[11px] text-muted-foreground">{info.description}</p>
+            <p className="text-xs text-muted-foreground">{info.description}</p>
           </div>
         </div>
 
@@ -548,7 +548,7 @@ function SliceWeightFieldEditor({
               size="sm"
               disabled={disabled}
               onClick={onAddRemainder}
-              className="h-7 cursor-pointer rounded-lg border-primary/30 bg-primary/10 px-2 font-mono text-[11px] font-bold text-primary hover:bg-primary/20"
+              className="h-7 cursor-pointer rounded-lg border-primary/30 bg-primary/10 px-2 font-mono text-xs font-bold text-primary hover:bg-primary/20"
               title={`Bù ${remainder}% còn thiếu vào ${info.title}`}
             >
               +{remainder}% bù
@@ -585,7 +585,7 @@ function SliceWeightFieldEditor({
                 onChange(Number(nextRaw));
               }}
             />
-            <span className="pointer-events-none absolute top-1/2 right-2 -translate-y-1/2 text-[11px] font-bold text-muted-foreground">
+            <span className="pointer-events-none absolute top-1/2 right-2 -translate-y-1/2 text-xs font-bold text-muted-foreground">
               %
             </span>
           </div>

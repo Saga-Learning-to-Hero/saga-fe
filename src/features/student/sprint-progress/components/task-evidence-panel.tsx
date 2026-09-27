@@ -250,7 +250,7 @@ export function TaskEvidencePanel({
 
   return (
     <div className={section === "all" ? "space-y-6 pt-4 border-t border-border/70" : "space-y-4"}>
-      <div className={`${section === "all" || section === "documents" ? "" : "hidden"} bg-card border border-border/80 rounded-2xl p-4 shadow-xs space-y-4`}>
+      <div className={`${section === "all" || section === "documents" ? "" : "hidden"} bg-card border border-border/80 rounded-xl p-4 shadow-xs space-y-4`}>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Link2Icon className="w-4 h-4 text-sky-500" />
@@ -284,7 +284,7 @@ export function TaskEvidencePanel({
                     href={link.url}
                     target="_blank"
                     rel="noreferrer"
-                    className="font-mono text-[11px] text-sky-600 dark:text-sky-400 hover:underline flex items-center gap-1 truncate mt-0.5"
+                    className="font-mono text-xs text-sky-600 dark:text-sky-400 hover:underline flex items-center gap-1 truncate mt-0.5"
                   >
                     <span className="truncate">{link.url}</span>
                     <ExternalLinkIcon className="w-3 h-3 shrink-0" />
@@ -302,7 +302,7 @@ export function TaskEvidencePanel({
                   >
                     {link.source || "SAGA"}
                   </Badge>
-                  <span className="text-[10px] text-muted-foreground font-mono">
+                  <span className="text-xs text-muted-foreground font-mono">
                     {new Date(link.createdAt).toLocaleDateString("vi-VN")}
                   </span>
                   {isOwnerOrLeader && (
@@ -328,7 +328,7 @@ export function TaskEvidencePanel({
           <form onSubmit={handleAddLink} className="space-y-2 pt-2 border-t border-border/40">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               <div>
-                <Label htmlFor="web-link-url" className="text-[11px] font-medium text-muted-foreground">
+                <Label htmlFor="web-link-url" className="text-xs font-medium text-muted-foreground">
                   Đường dẫn liên kết (URL) *
                 </Label>
                 <Input
@@ -342,7 +342,7 @@ export function TaskEvidencePanel({
                 />
               </div>
               <div>
-                <Label htmlFor="web-link-title" className="text-[11px] font-medium text-muted-foreground">
+                <Label htmlFor="web-link-title" className="text-xs font-medium text-muted-foreground">
                   Tên tài liệu / Thiết kế (tùy chọn)
                 </Label>
                 <Input
@@ -357,7 +357,7 @@ export function TaskEvidencePanel({
             </div>
 
             {linkError && (
-              <p className="text-[11px] text-destructive flex items-center gap-1 mt-1">
+              <p className="text-xs text-destructive flex items-center gap-1 mt-1">
                 <AlertCircleIcon className="w-3 h-3" />
                 {linkError}
               </p>
@@ -382,7 +382,7 @@ export function TaskEvidencePanel({
         )}
       </div>
 
-      <div className={`${section === "all" || section === "documents" ? "" : "hidden"} bg-card border border-border/80 rounded-2xl p-4 shadow-xs space-y-4`}>
+      <div className={`${section === "all" || section === "documents" ? "" : "hidden"} bg-card border border-border/80 rounded-xl p-4 shadow-xs space-y-4`}>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <FileIcon className="w-4 h-4 text-emerald-500" />
@@ -414,7 +414,7 @@ export function TaskEvidencePanel({
                     <p className="font-semibold text-foreground truncate">
                       {file.filename}
                     </p>
-                    <p className="text-[11px] text-muted-foreground font-mono">
+                    <p className="text-xs text-muted-foreground font-mono">
                       {formatFileSize(file.sizeBytes)} • {file.mimeType}
                     </p>
                   </div>
@@ -431,7 +431,7 @@ export function TaskEvidencePanel({
                   >
                     {file.source || "SAGA"}
                   </Badge>
-                  <span className="text-[10px] text-muted-foreground font-mono mr-1">
+                  <span className="text-xs text-muted-foreground font-mono mr-1">
                     {new Date(file.createdAt).toLocaleDateString("vi-VN")}
                   </span>
                   <Button
@@ -466,7 +466,7 @@ export function TaskEvidencePanel({
         {isOwnerOrLeader && (
           <form onSubmit={handleUploadFile} className="space-y-2 pt-2 border-t border-border/40">
             <div>
-              <Label htmlFor="upload-evidence-file" className="text-[11px] font-medium text-muted-foreground">
+              <Label htmlFor="upload-evidence-file" className="text-xs font-medium text-muted-foreground">
                 Tải lên tệp tài liệu, sơ đồ thiết kế hoặc báo cáo kiểm thử
               </Label>
               <div className="flex items-center gap-2 mt-1">
@@ -494,7 +494,7 @@ export function TaskEvidencePanel({
             </div>
 
             {fileError && (
-              <p className="text-[11px] text-destructive flex items-center gap-1 mt-1">
+              <p className="text-xs text-destructive flex items-center gap-1 mt-1">
                 <AlertCircleIcon className="w-3 h-3" />
                 {fileError}
               </p>
@@ -504,7 +504,7 @@ export function TaskEvidencePanel({
       </div>
 
       <div
-        className={`${section === "all" || section === "contribution" ? "" : "hidden"} bg-card border border-border/80 rounded-2xl p-4 shadow-xs space-y-4`}
+        className={`${section === "all" || section === "contribution" ? "" : "hidden"} bg-card border border-border/80 rounded-xl p-4 shadow-xs space-y-4`}
       >
         <div className="flex items-center gap-2">
           <ShieldCheckIcon className="w-4 h-4 text-violet-500" />
@@ -526,13 +526,13 @@ export function TaskEvidencePanel({
                     <GitCommitIcon className="size-3.5 text-violet-500" />
                     Commit đã chọn từ tab Commits
                   </p>
-                  <p className="text-[11px] text-muted-foreground">
+                  <p className="text-xs text-muted-foreground">
                     Đây mới là lựa chọn tạm. Dữ liệu chỉ được gửi khi bạn bấm Xác nhận đóng góp.
                   </p>
                 </div>
                 <Badge
                   variant="outline"
-                  className="shrink-0 border-violet-500/25 bg-background font-mono text-[10px] text-violet-700 dark:text-violet-300"
+                  className="shrink-0 border-violet-500/25 bg-background font-mono text-xs text-violet-700 dark:text-violet-300"
                 >
                   {selectedCommitShas.length} commit
                 </Badge>
@@ -540,7 +540,7 @@ export function TaskEvidencePanel({
 
               {selectedCommitShas.length === 0 ? (
                 <div className="flex flex-col gap-2 rounded-lg border border-dashed border-border/70 bg-background/70 p-2.5 sm:flex-row sm:items-center sm:justify-between">
-                  <p className="text-[11px] text-muted-foreground">
+                  <p className="text-xs text-muted-foreground">
                     Chưa chọn commit nào. Bạn có thể chọn ở tab Commits hoặc nhập SHA thủ công bên dưới.
                   </p>
                   {onRequestCommitSelection && (
@@ -549,7 +549,7 @@ export function TaskEvidencePanel({
                       variant="outline"
                       size="sm"
                       onClick={onRequestCommitSelection}
-                      className="h-7 shrink-0 rounded-lg px-2.5 text-[11px]"
+                      className="h-7 shrink-0 rounded-lg px-2.5 text-xs"
                     >
                       Chọn commit
                     </Button>
@@ -563,7 +563,7 @@ export function TaskEvidencePanel({
                         key={sha}
                         variant="outline"
                         title={sha}
-                        className="border-violet-500/25 bg-background font-mono text-[10px] text-violet-700 dark:text-violet-300"
+                        className="border-violet-500/25 bg-background font-mono text-xs text-violet-700 dark:text-violet-300"
                       >
                         {sha.slice(0, 7)}
                       </Badge>
@@ -575,7 +575,7 @@ export function TaskEvidencePanel({
                       variant="ghost"
                       size="sm"
                       onClick={onRequestCommitSelection}
-                      className="h-7 shrink-0 px-2 text-[11px] text-violet-700 dark:text-violet-300"
+                      className="h-7 shrink-0 px-2 text-xs text-violet-700 dark:text-violet-300"
                     >
                       Thay đổi lựa chọn
                     </Button>
@@ -586,12 +586,12 @@ export function TaskEvidencePanel({
 
             <div className="space-y-1">
               <div className="flex items-center justify-between">
-                <Label htmlFor="confirm-commit-shas" className="text-[11px] font-medium text-muted-foreground flex items-center gap-1">
+                <Label htmlFor="confirm-commit-shas" className="text-xs font-medium text-muted-foreground flex items-center gap-1">
                   <GitCommitIcon className="w-3 h-3 text-violet-500" />
                   Bổ sung Commit SHA thủ công (phân cách bằng dấu phẩy)
                 </Label>
                 {enteredCommitShas.length > 0 && (
-                  <span className="text-[10px] text-violet-600 dark:text-violet-400 font-mono font-semibold">
+                  <span className="text-xs text-violet-600 dark:text-violet-400 font-mono font-semibold">
                     {enteredCommitShas.length} commit SHA
                   </span>
                 )}
@@ -607,7 +607,7 @@ export function TaskEvidencePanel({
             </div>
 
             <div className="space-y-1">
-              <Label htmlFor="confirm-pr-links" className="text-[11px] font-medium text-muted-foreground flex items-center gap-1">
+              <Label htmlFor="confirm-pr-links" className="text-xs font-medium text-muted-foreground flex items-center gap-1">
                 <Link2Icon className="w-3 h-3 text-sky-500" />
                 Liên kết Pull Requests (phân cách bằng dấu phẩy)
               </Label>
@@ -622,7 +622,7 @@ export function TaskEvidencePanel({
             </div>
 
             {confirmError && (
-              <p className="text-[11px] text-destructive flex items-center gap-1">
+              <p className="text-xs text-destructive flex items-center gap-1">
                 <AlertCircleIcon className="w-3 h-3" />
                 {confirmError}
               </p>
@@ -647,27 +647,27 @@ export function TaskEvidencePanel({
         )}
 
         {confirmResult && (
-          <div className="p-3.5 bg-emerald-500/10 border border-emerald-500/30 rounded-2xl space-y-2 text-xs">
+          <div className="p-3.5 bg-emerald-500/10 border border-emerald-500/30 rounded-xl space-y-2 text-xs">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 font-bold">
                 <CheckCircle2Icon className="w-4 h-4" />
                 <span>Đã xác nhận đóng góp thành công</span>
               </div>
-              <Badge className="bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 font-mono text-[10px] border-emerald-500/30">
+              <Badge className="bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 font-mono text-xs border-emerald-500/30">
                 {confirmResult.state || "CONFIRMED"}
               </Badge>
             </div>
 
-            <div className="p-2.5 rounded-xl bg-background/80 border border-emerald-500/20 space-y-1.5 font-mono text-[11px]">
+            <div className="p-2.5 rounded-xl bg-background/80 border border-emerald-500/20 space-y-1.5 font-mono text-xs">
               <div className="flex items-center justify-between gap-2">
-                <span className="text-muted-foreground text-[10px] uppercase font-bold">Mã đối soát (Evidence Hash):</span>
+                <span className="text-muted-foreground text-xs uppercase font-bold">Mã đối soát (Evidence Hash):</span>
                 <button
                   type="button"
                   onClick={() => {
                     void navigator.clipboard.writeText(confirmResult.evidenceHash);
                     showSuccessToast("Đã sao chép mã đối soát!");
                   }}
-                  className="text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 font-mono text-[10px] underline cursor-pointer"
+                  className="text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 font-mono text-xs underline cursor-pointer"
                 >
                   Sao chép
                 </button>
@@ -679,7 +679,7 @@ export function TaskEvidencePanel({
 
             {confirmResult.commitShas && confirmResult.commitShas.length > 0 && (
               <div className="space-y-1">
-                <span className="text-[10px] text-muted-foreground uppercase font-bold block">
+                <span className="text-xs text-muted-foreground uppercase font-bold block">
                   Commit đã xác nhận ({confirmResult.commitShas.length}):
                 </span>
                 <div className="flex flex-wrap gap-1">
@@ -687,7 +687,7 @@ export function TaskEvidencePanel({
                     <Badge
                       key={sha}
                       variant="outline"
-                      className="font-mono text-[10px] bg-background border-emerald-500/30 text-emerald-700 dark:text-emerald-300"
+                      className="font-mono text-xs bg-background border-emerald-500/30 text-emerald-700 dark:text-emerald-300"
                     >
                       {sha.slice(0, 7)}
                     </Badge>
@@ -698,7 +698,7 @@ export function TaskEvidencePanel({
 
             {confirmResult.pullRequests && confirmResult.pullRequests.length > 0 && (
               <div className="space-y-1">
-                <span className="text-[10px] text-muted-foreground uppercase font-bold block">
+                <span className="text-xs text-muted-foreground uppercase font-bold block">
                   Pull Requests ({confirmResult.pullRequests.length}):
                 </span>
                 <div className="flex flex-wrap gap-1">
@@ -708,7 +708,7 @@ export function TaskEvidencePanel({
                       href={pr}
                       target="_blank"
                       rel="noreferrer"
-                      className="inline-flex items-center gap-1 font-mono text-[10px] text-sky-600 dark:text-sky-400 hover:underline bg-background px-2 py-0.5 rounded border border-border"
+                      className="inline-flex items-center gap-1 font-mono text-xs text-sky-600 dark:text-sky-400 hover:underline bg-background px-2 py-0.5 rounded border border-border"
                     >
                       <span>{pr}</span>
                       <ExternalLinkIcon className="w-2.5 h-2.5" />
