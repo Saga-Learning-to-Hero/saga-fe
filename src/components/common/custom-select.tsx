@@ -174,7 +174,7 @@ export function CustomSelect({
                     <div className="flex flex-col truncate min-w-0 flex-1">
                       <span className="truncate">{option.label}</span>
                       {option.subLabel && (
-                        <span className="text-[11px] text-muted-foreground/80 truncate font-normal leading-tight">
+                        <span className="text-xs text-muted-foreground/80 truncate font-normal leading-tight">
                           {option.subLabel}
                         </span>
                       )}

@@ -106,7 +106,7 @@ export function SetupPasswordForm() {
           </p>
         </div>
 
-        <div className="p-5 rounded-2xl bg-amber-500/10 border border-amber-500/25 space-y-4">
+        <div className="p-5 rounded-xl bg-amber-500/10 border border-amber-500/25 space-y-4">
           <div className="flex items-start gap-3">
             <AlertCircleIcon className="size-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
             <div className="space-y-1">
@@ -149,7 +149,7 @@ export function SetupPasswordForm() {
       </div>
 
       {success ? (
-        <div className="p-6 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-center space-y-3 animate-in fade-in-0 zoom-in-95">
+        <div className="p-6 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-center space-y-3 animate-in fade-in-0 zoom-in-95">
           <CheckCircle2Icon className="size-12 text-emerald-500 mx-auto" />
           <h3 className="text-base font-bold text-emerald-600 dark:text-emerald-400">
             Đặt mật khẩu thành công!
@@ -189,7 +189,7 @@ export function SetupPasswordForm() {
               </button>
             </div>
             {fieldErrors.newPassword && (
-              <p className="text-[11px] text-destructive font-medium">{fieldErrors.newPassword}</p>
+              <p className="text-xs text-destructive font-medium">{fieldErrors.newPassword}</p>
             )}
           </div>
 
@@ -222,7 +222,7 @@ export function SetupPasswordForm() {
               </button>
             </div>
             {fieldErrors.confirmPassword && (
-              <p className="text-[11px] text-destructive font-medium">{fieldErrors.confirmPassword}</p>
+              <p className="text-xs text-destructive font-medium">{fieldErrors.confirmPassword}</p>
             )}
           </div>
 
@@ -251,7 +251,7 @@ export function SetupPasswordForm() {
           <ShieldCheckIcon className="size-4 text-emerald-500" />
           <span>Quy định đặt mật khẩu</span>
         </div>
-        <ul className="list-disc list-inside space-y-1 text-[11px]">
+        <ul className="list-disc list-inside space-y-1 text-xs">
           <li>Mật khẩu có độ dài từ 10 ký tự trở lên.</li>
           <li>Nên kết hợp cả chữ hoa, chữ thường, số hoặc ký tự đặc biệt.</li>
         </ul>

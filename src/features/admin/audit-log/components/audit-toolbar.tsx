@@ -42,13 +42,13 @@ export function AuditToolbar({
   );
 
   return (
-    <Card className="rounded-2xl border border-border shadow-xs bg-card">
+    <Card className="rounded-xl border border-border shadow-xs bg-card">
       <CardContent className="p-4 space-y-3">
         {/* Hàng bộ lọc chính: Hành động action, Loại đối tượng entityType, Thời gian và giờ from - to */}
         <div className="grid grid-cols-1 md:grid-cols-12 gap-3 items-end">
           {/* 1. Hành động (action) */}
           <div className="md:col-span-3 space-y-1">
-            <label className="text-[11px] font-semibold text-muted-foreground flex items-center gap-1.5">
+            <label className="text-xs font-semibold text-muted-foreground flex items-center gap-1.5">
               <SearchIcon className="size-3 text-primary" />
               Hành động
             </label>
@@ -75,7 +75,7 @@ export function AuditToolbar({
 
           {/* 2. Loại đối tượng (entityType) - Nhập tay linh hoạt */}
           <div className="md:col-span-3 space-y-1">
-            <label className="text-[11px] font-semibold text-muted-foreground flex items-center gap-1.5">
+            <label className="text-xs font-semibold text-muted-foreground flex items-center gap-1.5">
               <DatabaseIcon className="size-3 text-primary" />
               Loại đối tượng
             </label>
@@ -103,7 +103,7 @@ export function AuditToolbar({
           {/* 3. Khoảng thời gian và giờ (from - to) khớp với cột Thời gian (Timestamp) */}
           <div className="md:col-span-6 space-y-1">
             <div className="flex items-center justify-between">
-              <label className="text-[11px] font-semibold text-muted-foreground flex items-center gap-1.5">
+              <label className="text-xs font-semibold text-muted-foreground flex items-center gap-1.5">
                 <CalendarIcon className="size-3 text-primary" />
                 Khoảng thời gian
               </label>
@@ -118,7 +118,7 @@ export function AuditToolbar({
                       toTime: "",
                     })
                   }
-                  className="text-[10px] text-destructive hover:underline cursor-pointer"
+                  className="text-xs text-destructive hover:underline cursor-pointer"
                   title="Xóa khoảng thời gian và giờ"
                 >
                   Xóa thời gian

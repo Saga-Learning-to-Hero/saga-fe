@@ -166,7 +166,7 @@ export function SidebarNav({ collapsed }: SidebarNavProps) {
       {navGroups.map((group, gi) => (
         <div key={group.id} className="space-y-1">
           {!collapsed && group.label && (
-            <p className="px-3 pt-2 pb-1 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/60 select-none">
+            <p className="px-3 pt-2 pb-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground/60 select-none">
               {group.label}
             </p>
           )}

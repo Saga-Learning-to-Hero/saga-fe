@@ -183,7 +183,7 @@ function TopNavTabLink({
       {item.badge && (
         <span
           className={cn(
-            "px-1.5 py-0.2 rounded-full text-[10px] font-mono leading-none font-bold",
+            "px-1.5 py-0.2 rounded-full text-xs font-mono leading-none font-bold",
             isActive ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
           )}
         >

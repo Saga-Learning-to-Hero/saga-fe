@@ -73,7 +73,7 @@ export function SemesterDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-md p-6 rounded-2xl">
+      <DialogContent className="max-w-md p-6 rounded-xl">
         <form onSubmit={handleSubmit} className="space-y-4">
           <DialogHeader className="flex flex-row items-center gap-3 space-y-0 text-left">
             <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0">

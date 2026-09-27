@@ -24,7 +24,7 @@ export function RecentAuditSection() {
   }, [data]);
 
   return (
-    <Card className="rounded-2xl border border-border bg-card shadow-xs">
+    <Card className="rounded-xl border border-border bg-card shadow-xs">
       <CardHeader className="flex flex-row items-center justify-between border-b border-border/60 p-4 pb-3">
         <div className="flex items-center gap-2">
           <div className="flex size-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
@@ -34,7 +34,7 @@ export function RecentAuditSection() {
             <CardTitle className="text-sm font-bold text-foreground">
               Nhật ký gần đây
             </CardTitle>
-            <CardDescription className="text-[11px] text-muted-foreground">
+            <CardDescription className="text-xs text-muted-foreground">
               Thao tác quản trị và sự kiện bảo mật mới nhất.
             </CardDescription>
           </div>
@@ -89,11 +89,11 @@ export function RecentAuditSection() {
                   </span>
                   <Badge
                     variant="outline"
-                    className="border-border px-1.5 py-0 text-[10px]"
+                    className="border-border px-1.5 py-0 text-xs"
                   >
                     {log.actor.role}
                   </Badge>
-                  <span className="font-mono text-[10px] text-muted-foreground">
+                  <span className="font-mono text-xs text-muted-foreground">
                     {log.actor.ipAddress}
                   </span>
                 </div>
@@ -104,7 +104,7 @@ export function RecentAuditSection() {
 
               <div className="shrink-0 space-y-1 text-right">
                 <SeverityBadge severity={log.severity} />
-                <p className="font-mono text-[10px] text-muted-foreground">
+                <p className="font-mono text-xs text-muted-foreground">
                   {new Date(log.timestamp).toLocaleTimeString("vi-VN", {
                     hour: "2-digit",
                     minute: "2-digit",
@@ -122,7 +122,7 @@ export function RecentAuditSection() {
 function SeverityBadge({ severity }: { severity: string }) {
   if (severity === "CRITICAL") {
     return (
-      <Badge className="border-0 bg-destructive/15 text-[10px] font-semibold text-destructive">
+      <Badge className="border-0 bg-destructive/15 text-xs font-semibold text-destructive">
         Nghiêm trọng
       </Badge>
     );
@@ -130,14 +130,14 @@ function SeverityBadge({ severity }: { severity: string }) {
 
   if (severity === "WARNING") {
     return (
-      <Badge className="border-0 bg-amber-500/15 text-[10px] font-semibold text-amber-600 dark:text-amber-400">
+      <Badge className="border-0 bg-amber-500/15 text-xs font-semibold text-amber-600 dark:text-amber-400">
         Cảnh báo
       </Badge>
     );
   }
 
   return (
-    <Badge className="border-0 bg-primary/10 text-[10px] font-semibold text-primary">
+    <Badge className="border-0 bg-primary/10 text-xs font-semibold text-primary">
       Thông tin
     </Badge>
   );

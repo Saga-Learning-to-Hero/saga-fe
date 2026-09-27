@@ -116,7 +116,7 @@ export function ImportStudentsDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
-      <DialogContent className="max-w-3xl p-6 rounded-3xl max-h-[92vh] flex flex-col overflow-hidden">
+      <DialogContent className="max-w-3xl p-6 rounded-xl max-h-[92vh] flex flex-col overflow-hidden">
         <DialogHeader className="flex flex-row items-center justify-between pb-3 border-b border-border space-y-0 text-left shrink-0">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0">
@@ -146,7 +146,7 @@ export function ImportStudentsDialog({
 
         <div className="overflow-y-auto flex-1 py-4 space-y-4">
           {!previewData ? (
-            <div className="flex flex-col items-center justify-center p-8 border-2 border-dashed border-border rounded-2xl bg-muted/10 hover:bg-muted/20 transition-colors text-center">
+            <div className="flex flex-col items-center justify-center p-8 border-2 border-dashed border-border rounded-xl bg-muted/10 hover:bg-muted/20 transition-colors text-center">
               <UploadCloudIcon className="w-10 h-10 text-muted-foreground mb-3" />
               <p className="text-sm font-bold text-foreground">Chọn file Excel danh sách sinh viên</p>
               <p className="text-xs text-muted-foreground mt-1 max-w-sm">
@@ -169,7 +169,7 @@ export function ImportStudentsDialog({
             </div>
           ) : (
             <div className="space-y-4">
-              <div className="p-3.5 bg-muted/30 border border-border rounded-2xl flex items-center justify-between gap-3">
+              <div className="p-3.5 bg-muted/30 border border-border rounded-xl flex items-center justify-between gap-3">
                 <div className="flex items-center gap-2 text-xs">
                   <FileSpreadsheetIcon className="w-4 h-4 text-primary" />
                   <span className="font-semibold text-foreground">{selectedFile?.name}</span>
@@ -191,27 +191,27 @@ export function ImportStudentsDialog({
               {summary && (
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
                   <div className="p-3 bg-card border border-border rounded-xl text-center space-y-0.5">
-                    <p className="text-[11px] text-muted-foreground">Tổng số dòng</p>
+                    <p className="text-xs text-muted-foreground">Tổng số dòng</p>
                     <p className="font-mono text-lg font-extrabold text-foreground">{summary.totalRows}</p>
                   </div>
                   <div className="p-3 bg-card border border-border rounded-xl text-center space-y-0.5">
-                    <p className="text-[11px] text-emerald-600 dark:text-emerald-400">Hợp lệ</p>
+                    <p className="text-xs text-emerald-600 dark:text-emerald-400">Hợp lệ</p>
                     <p className="font-mono text-lg font-extrabold text-emerald-600 dark:text-emerald-400">{validCount}</p>
                   </div>
                   <div className="p-3 bg-card border border-border rounded-xl text-center space-y-0.5">
-                    <p className="text-[11px] text-primary">Đã có tài khoản</p>
+                    <p className="text-xs text-primary">Đã có tài khoản</p>
                     <p className="font-mono text-lg font-extrabold text-primary">{existingCount}</p>
                   </div>
                   <div className="p-3 bg-card border border-border rounded-xl text-center space-y-0.5">
-                    <p className="text-[11px] text-amber-600 dark:text-amber-400">Gửi lời mời mới</p>
+                    <p className="text-xs text-amber-600 dark:text-amber-400">Gửi lời mời mới</p>
                     <p className="font-mono text-lg font-extrabold text-amber-600 dark:text-amber-400">{invitesCount}</p>
                   </div>
                 </div>
               )}
 
-              <div className="rounded-2xl border border-border bg-card shadow-xs overflow-hidden max-h-[300px] overflow-y-auto">
+              <div className="rounded-xl border border-border bg-card shadow-xs overflow-hidden max-h-[300px] overflow-y-auto">
                 <Table>
-                  <TableHeader className="bg-muted/40 border-b border-border sticky top-0 z-10 backdrop-blur-md">
+                  <TableHeader className="bg-muted/40 border-b border-border sticky top-0 z-10 backdrop-blur-sm">
                     <TableRow>
                       <TableHead className="w-[60px] text-xs font-bold py-2.5 px-3 text-center">Dòng</TableHead>
                       <TableHead className="w-[110px] text-xs font-bold py-2.5 px-3">MSSV</TableHead>
@@ -235,32 +235,32 @@ export function ImportStudentsDialog({
                         <TableCell className="text-xs font-mono text-muted-foreground py-2 px-3">
                           <div>{r.email}</div>
                           {(r.errorMessage || (r.errors && r.errors.length > 0)) && (
-                            <p className="text-[11px] text-destructive font-sans font-medium mt-0.5">
+                            <p className="text-xs text-destructive font-sans font-medium mt-0.5">
                               {r.errorMessage || r.errors?.join(", ")}
                             </p>
                           )}
                         </TableCell>
                         <TableCell className="text-center py-2 px-3">
                           {r.action === "READY_ENROLL" || (r.valid && r.accountExists) ? (
-                            <Badge className="bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 text-[10px] px-1.5 py-0 inline-flex items-center gap-1">
+                            <Badge className="bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 text-xs px-1.5 py-0 inline-flex items-center gap-1">
                               <UserCheckIcon className="w-3 h-3" /> Ghi danh
                             </Badge>
                           ) : r.action === "READY_INVITE" || (r.valid && !r.accountExists) ? (
-                            <Badge className="bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30 text-[10px] px-1.5 py-0 inline-flex items-center gap-1">
+                            <Badge className="bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30 text-xs px-1.5 py-0 inline-flex items-center gap-1">
                               <MailIcon className="w-3 h-3" /> Gửi thư mời
                             </Badge>
                           ) : r.action === "ALREADY_ENROLLED" ? (
-                            <Badge variant="outline" className="bg-muted text-muted-foreground border-border text-[10px] px-1.5 py-0 inline-flex items-center gap-1">
+                            <Badge variant="outline" className="bg-muted text-muted-foreground border-border text-xs px-1.5 py-0 inline-flex items-center gap-1">
                               <CheckCircle2Icon className="w-3 h-3" /> Đã trong lớp
                             </Badge>
                           ) : r.action === "ALREADY_INVITED" ? (
-                            <Badge className="bg-purple-500/15 text-purple-600 dark:text-purple-400 border-purple-500/30 text-[10px] px-1.5 py-0 inline-flex items-center gap-1">
+                            <Badge className="bg-purple-500/15 text-purple-600 dark:text-purple-400 border-purple-500/30 text-xs px-1.5 py-0 inline-flex items-center gap-1">
                               <MailIcon className="w-3 h-3" /> Đã gửi lời mời
                             </Badge>
                           ) : (
                             <Badge
                               variant="destructive"
-                              className="text-[10px] px-1.5 py-0 inline-flex items-center gap-1"
+                              className="text-xs px-1.5 py-0 inline-flex items-center gap-1"
                               title={r.errorMessage || r.errors?.join(", ") || "Dữ liệu không hợp lệ"}
                             >
                               <AlertCircleIcon className="w-3 h-3" /> Lỗi

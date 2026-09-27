@@ -39,7 +39,7 @@ export function ForgotPasswordForm() {
     return (
       <div className="space-y-6">
         <div className="space-y-2">
-          <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+          <div className="w-12 h-12 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
             <CheckCircle2Icon className="w-6 h-6" />
           </div>
           <h1 className="text-2xl font-bold text-foreground">Kiểm tra hộp thư của bạn</h1>
@@ -48,7 +48,7 @@ export function ForgotPasswordForm() {
           </p>
         </div>
 
-        <div className="p-4 rounded-2xl bg-muted/40 border border-border/80 space-y-2 text-xs text-muted-foreground">
+        <div className="p-4 rounded-xl bg-muted/40 border border-border/80 space-y-2 text-xs text-muted-foreground">
           <p className="font-semibold text-foreground">Không nhận được email?</p>
           <ul className="list-disc pl-4 space-y-1">
             <li>Kiểm tra kỹ hòm thư rác hoặc thư mục Quảng cáo (Spam/Junk).</li>

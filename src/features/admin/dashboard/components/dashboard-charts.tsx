@@ -52,7 +52,7 @@ export function DashboardChartsSection({
 
   return (
     <section aria-label="Hoạt động theo tuần của học kỳ">
-      <Card className="overflow-hidden rounded-2xl border-border/80 bg-card shadow-xs">
+      <Card className="overflow-hidden rounded-xl border-border/80 bg-card shadow-xs">
         <CardHeader className="border-b border-border/60 p-4 pb-3 sm:p-5">
           <div className="flex flex-col justify-between gap-3 lg:flex-row lg:items-start">
             <div className="flex items-start gap-2.5">
@@ -70,17 +70,17 @@ export function DashboardChartsSection({
             </div>
 
             <div className="flex flex-wrap items-center gap-2 lg:justify-end">
-              <Badge variant="outline" className="gap-1.5 text-[10px] font-medium">
+              <Badge variant="outline" className="gap-1.5 text-xs font-medium">
                 <CalendarDaysIcon className="size-3" />
                 {formatDashboardDate(selectedSemester.startDate)} – {formatDashboardDate(selectedSemester.endDate)}
               </Badge>
-              <Badge variant="outline" className="gap-1.5 text-[10px] font-medium">
+              <Badge variant="outline" className="gap-1.5 text-xs font-medium">
                 <CircleGaugeIcon className="size-3" />
                 {currentWeekLabel}
               </Badge>
               <Badge
                 variant="outline"
-                className="gap-1.5 border-warning/35 bg-warning-muted/30 text-[10px] font-medium text-warning"
+                className="gap-1.5 border-warning/35 bg-warning-muted/30 text-xs font-medium text-warning"
               >
                 Tỷ lệ đối soát tuần này: {formatDashboardPercent(currentWeek?.traceabilityRate ?? null)}
               </Badge>

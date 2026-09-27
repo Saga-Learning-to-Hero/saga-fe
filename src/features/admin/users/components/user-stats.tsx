@@ -57,13 +57,13 @@ export function UserStats({ users, totalCount }: UserStatsProps) {
         return (
           <Card
             key={item.label}
-            className="rounded-2xl border border-border shadow-xs hover:shadow-sm transition-all duration-150"
+            className="rounded-xl border border-border shadow-xs hover:shadow-sm transition-all duration-150"
           >
             <CardContent className="p-4.5 flex items-center justify-between">
               <div className="space-y-1">
                 <p className="text-xs font-medium text-muted-foreground">{item.label}</p>
                 <p className="text-2xl font-bold text-foreground tracking-tight">{item.value}</p>
-                <p className="text-[11px] text-muted-foreground/80">{item.sub}</p>
+                <p className="text-xs text-muted-foreground/80">{item.sub}</p>
               </div>
               <div className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 ${item.bg}`}>
                 <Icon className={`w-5 h-5 ${item.color}`} />

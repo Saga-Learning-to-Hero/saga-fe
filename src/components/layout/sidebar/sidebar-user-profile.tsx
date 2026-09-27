@@ -119,7 +119,7 @@ export function SidebarUserProfile({ collapsed }: Props) {
                 </span>
                 <span
                   className={cn(
-                    "text-[11px] font-semibold px-2 py-0.5 rounded-md leading-tight mt-1",
+                    "text-xs font-semibold px-2 py-0.5 rounded-md leading-tight mt-1",
                     ROLE_COLORS[user.role]
                   )}
                 >
@@ -147,7 +147,7 @@ export function SidebarUserProfile({ collapsed }: Props) {
             <div className="flex flex-col min-w-0">
               <p className="text-sm font-semibold truncate">{displayName}</p>
               <p className="text-xs text-muted-foreground truncate mt-0.5">{user.email}</p>
-              <Badge className={cn("w-fit text-[10px] px-2 py-0.5 mt-1.5 border-0", ROLE_COLORS[user.role])}>
+              <Badge className={cn("w-fit text-xs px-2 py-0.5 mt-1.5 border-0", ROLE_COLORS[user.role])}>
                 {ROLE_LABELS[user.role]}
               </Badge>
             </div>

@@ -97,7 +97,7 @@ export function ResetPasswordForm() {
     return (
       <div className="space-y-6">
         <div className="space-y-2">
-          <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+          <div className="w-12 h-12 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
             <CheckCircle2Icon className="w-6 h-6" />
           </div>
           <h1 className="text-2xl font-bold text-foreground">Cập nhật mật khẩu thành công!</h1>
@@ -124,7 +124,7 @@ export function ResetPasswordForm() {
     return (
       <div className="space-y-6">
         <div className="space-y-2">
-          <div className="w-12 h-12 rounded-2xl bg-rose-500/10 text-rose-600 dark:text-rose-400 flex items-center justify-center">
+          <div className="w-12 h-12 rounded-xl bg-rose-500/10 text-rose-600 dark:text-rose-400 flex items-center justify-center">
             <AlertCircleIcon className="w-6 h-6" />
           </div>
           <h1 className="text-2xl font-bold text-foreground">Liên kết không hợp lệ</h1>

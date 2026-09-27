@@ -25,6 +25,7 @@ interface ConfirmActionDialogProps {
   confirmVariant?: "default" | "destructive" | "outline" | "secondary" | "ghost" | "link";
   icon?: React.ReactNode;
   iconClassName?: string;
+  children?: React.ReactNode;
 }
 
 export function ConfirmActionDialog({
@@ -41,10 +42,11 @@ export function ConfirmActionDialog({
   confirmVariant = "destructive",
   icon = <AlertTriangleIcon className="w-5 h-5" />,
   iconClassName = "bg-danger-muted text-danger",
+  children,
 }: ConfirmActionDialogProps) {
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-md p-6 rounded-2xl">
+      <DialogContent className="max-w-md p-6 rounded-xl">
         <DialogHeader className="flex flex-row items-start gap-3 space-y-0 text-left">
           <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${iconClassName}`}>
             {icon}
@@ -64,6 +66,7 @@ export function ConfirmActionDialog({
                 </>
               )}
             </DialogDescription>
+            {children}
           </div>
         </DialogHeader>
 

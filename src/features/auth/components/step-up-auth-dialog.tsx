@@ -101,7 +101,7 @@ function StepUpAuthForm({
   };
 
   return (
-    <DialogContent className="max-w-md p-6 rounded-2xl">
+    <DialogContent className="max-w-md p-6 rounded-xl">
       <DialogHeader className="flex flex-row items-start gap-3 space-y-0 text-left">
         <div className="w-10 h-10 rounded-xl bg-violet-500/10 text-violet-600 dark:text-violet-400 flex items-center justify-center shrink-0 border border-violet-500/20">
           <ShieldAlertIcon className="w-5 h-5" />

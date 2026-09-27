@@ -105,14 +105,14 @@ export function RegisterForm() {
 
       <div className="flex items-center gap-3">
         <Separator className="flex-1" />
-        <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider whitespace-nowrap">
+        <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider whitespace-nowrap">
           hoặc đăng ký bằng email cá nhân
         </span>
         <Separator className="flex-1" />
       </div>
 
       {success ? (
-        <div className="p-5 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-center space-y-2 animate-in fade-in-0 zoom-in-95">
+        <div className="p-5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-center space-y-2 animate-in fade-in-0 zoom-in-95">
           <CheckCircle2Icon className="size-10 text-emerald-500 mx-auto" />
           <h3 className="text-sm font-bold text-emerald-600 dark:text-emerald-400">
             Tạo tài khoản thành công!
@@ -141,7 +141,7 @@ export function RegisterForm() {
                 )}
               />
               {fieldErrors.fullName && (
-                <p className="text-[10px] text-destructive font-medium">{fieldErrors.fullName}</p>
+                <p className="text-xs text-destructive font-medium">{fieldErrors.fullName}</p>
               )}
             </div>
 
@@ -162,7 +162,7 @@ export function RegisterForm() {
                 )}
               />
               {fieldErrors.studentCode && (
-                <p className="text-[10px] text-destructive font-medium">{fieldErrors.studentCode}</p>
+                <p className="text-xs text-destructive font-medium">{fieldErrors.studentCode}</p>
               )}
             </div>
           </div>
@@ -184,7 +184,7 @@ export function RegisterForm() {
               )}
             />
             {fieldErrors.email && (
-              <p className="text-[10px] text-destructive font-medium">{fieldErrors.email}</p>
+              <p className="text-xs text-destructive font-medium">{fieldErrors.email}</p>
             )}
           </div>
 
@@ -215,7 +215,7 @@ export function RegisterForm() {
               </button>
             </div>
             {fieldErrors.password && (
-              <p className="text-[10px] text-destructive font-medium">{fieldErrors.password}</p>
+              <p className="text-xs text-destructive font-medium">{fieldErrors.password}</p>
             )}
           </div>
 
@@ -246,7 +246,7 @@ export function RegisterForm() {
               </button>
             </div>
             {fieldErrors.confirmPassword && (
-              <p className="text-[10px] text-destructive font-medium">{fieldErrors.confirmPassword}</p>
+              <p className="text-xs text-destructive font-medium">{fieldErrors.confirmPassword}</p>
             )}
           </div>
 

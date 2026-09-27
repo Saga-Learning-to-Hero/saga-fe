@@ -140,7 +140,7 @@ export default function AdminUsersPage() {
 
       {/* 2. Trạng thái lỗi nếu có */}
       {isError && (
-        <div className="p-6 rounded-2xl border border-dashed border-destructive/40 bg-destructive/5 flex items-center justify-between gap-4">
+        <div className="p-6 rounded-xl border border-dashed border-destructive/40 bg-destructive/5 flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <AlertCircleIcon className="w-5 h-5 text-destructive shrink-0" />
             <div>

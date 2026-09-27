@@ -268,7 +268,7 @@ export function DateDdMmYyyyInput({
         <PopoverContent
           align="start"
           sideOffset={6}
-          className="w-[280px] p-3 rounded-2xl border border-border shadow-2xl bg-card text-card-foreground select-none"
+          className="w-[280px] p-3 rounded-xl border border-border shadow-lg bg-card text-card-foreground select-none"
         >
           {/* Header Tháng & Năm */}
           <div className="flex items-center justify-between mb-2.5 pb-2 border-b border-border/60">
@@ -300,7 +300,7 @@ export function DateDdMmYyyyInput({
             {WEEK_DAYS.map((w) => (
               <span
                 key={w}
-                className="text-[10px] font-bold text-muted-foreground/80 py-0.5"
+                className="text-xs font-bold text-muted-foreground/80 py-0.5"
               >
                 {w}
               </span>
@@ -342,7 +342,7 @@ export function DateDdMmYyyyInput({
               variant="ghost"
               size="sm"
               onClick={handleClearDate}
-              className="h-6.5 px-2 text-[11px] text-destructive hover:bg-destructive/10 cursor-pointer"
+              className="h-6.5 px-2 text-xs text-destructive hover:bg-destructive/10 cursor-pointer"
             >
               <RotateCcwIcon className="size-3 mr-1" />
               Xóa ngày
@@ -353,7 +353,7 @@ export function DateDdMmYyyyInput({
               variant="outline"
               size="sm"
               onClick={handleSelectToday}
-              className="h-6.5 px-2.5 text-[11px] font-semibold border-primary/30 text-primary hover:bg-primary/10 cursor-pointer"
+              className="h-6.5 px-2.5 text-xs font-semibold border-primary/30 text-primary hover:bg-primary/10 cursor-pointer"
             >
               Hôm nay
             </Button>

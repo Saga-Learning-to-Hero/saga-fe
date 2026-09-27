@@ -36,7 +36,7 @@ export function UserToolbar({
   };
 
   return (
-    <Card className="rounded-2xl border border-border shadow-xs">
+    <Card className="rounded-xl border border-border shadow-xs">
       <CardContent className="p-3.5 space-y-3">
         <div className="flex flex-col md:flex-row items-stretch md:items-center gap-3">
           <div className="relative flex-1">

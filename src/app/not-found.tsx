@@ -22,16 +22,16 @@ export default function NotFound() {
 
       <div className="max-w-md w-full text-center space-y-6">
         <div className="relative inline-flex items-center justify-center">
-          <div className="w-24 h-24 rounded-3xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shadow-xl shadow-primary/5 animate-pulse">
+          <div className="w-24 h-24 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shadow-md shadow-primary/5 animate-pulse">
             <CompassIcon className="w-12 h-12" />
           </div>
-          <div className="absolute -bottom-2 -right-2 w-10 h-10 rounded-2xl bg-card border border-border flex items-center justify-center text-muted-foreground shadow-md">
+          <div className="absolute -bottom-2 -right-2 w-10 h-10 rounded-xl bg-card border border-border flex items-center justify-center text-muted-foreground shadow-md">
             <FileQuestionIcon className="w-5 h-5" />
           </div>
         </div>
 
         <div className="space-y-2">
-          <p className="text-7xl sm:text-8xl font-extrabold tracking-tight bg-gradient-to-b from-primary via-primary/80 to-primary/30 bg-clip-text text-transparent select-none font-mono">
+          <p className="text-7xl sm:text-8xl font-extrabold tracking-tight bg-popover from-primary via-primary/80 to-primary/30 bg-clip-text text-transparent select-none font-mono">
             404
           </p>
           <h1 className="text-xl sm:text-2xl font-bold text-foreground tracking-tight">
@@ -72,7 +72,7 @@ export default function NotFound() {
           </Link>
         </div>
 
-        <p className="text-[11px] text-muted-foreground/60 pt-2 font-mono">
+        <p className="text-xs text-muted-foreground/60 pt-2 font-mono">
           Mã lỗi: HTTP_404_PAGE_NOT_FOUND · SAGA Platform
         </p>
       </div>

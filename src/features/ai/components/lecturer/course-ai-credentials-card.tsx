@@ -113,7 +113,7 @@ export function CourseAiCredentialsCard({
 
   if (isLoading) {
     return (
-      <div className="p-6 rounded-2xl border border-border bg-card/60 flex items-center justify-center">
+      <div className="p-6 rounded-xl border border-border bg-card/60 flex items-center justify-center">
         <Loader2Icon className="w-5 h-5 animate-spin text-muted-foreground" />
       </div>
     );
@@ -130,7 +130,7 @@ export function CourseAiCredentialsCard({
     };
 
   return (
-    <div className="p-6 rounded-2xl border border-border bg-card shadow-xs space-y-5">
+    <div className="p-6 rounded-xl border border-border bg-card shadow-xs space-y-5">
       <div className="flex items-start justify-between">
         <div className="flex items-center gap-3">
           <div
@@ -151,7 +151,7 @@ export function CourseAiCredentialsCard({
                   <statusDisplay.Icon className="w-3.5 h-3.5 shrink-0" />
                   <span>{statusDisplay.label}</span>
                   {credential?.lastFour && (
-                    <span className="font-mono text-[11px]">
+                    <span className="font-mono text-xs">
                       (•••• {credential.lastFour})
                     </span>
                   )}

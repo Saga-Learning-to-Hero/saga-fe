@@ -142,7 +142,7 @@ export function LoginForm() {
 
       <div className="flex items-center gap-3">
         <Separator className="flex-1" />
-        <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider whitespace-nowrap">
+        <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider whitespace-nowrap">
           hoặc đăng nhập nội bộ
         </span>
         <Separator className="flex-1" />

@@ -209,7 +209,7 @@ function DataFreshnessBar({
 
   return (
     <div
-      className={`relative flex min-h-11 flex-col justify-between gap-2 overflow-hidden rounded-2xl border px-3.5 py-2.5 text-xs sm:flex-row sm:items-center ${refreshPending
+      className={`relative flex min-h-11 flex-col justify-between gap-2 overflow-hidden rounded-xl border px-3.5 py-2.5 text-xs sm:flex-row sm:items-center ${refreshPending
         ? "border-warning/35 bg-warning-muted/40"
         : "border-border/80 bg-card"
         }`}
@@ -229,7 +229,7 @@ function DataFreshnessBar({
             : `Cập nhật lúc ${formatDashboardDateTime(cachedAt)}.`}
         </span>
       </div>
-      <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
+      <div className="flex items-center gap-2 text-xs text-muted-foreground">
         {updateLabel ? (
           <span className="inline-flex items-center gap-1 font-medium text-primary" role="status">
             <RefreshCwIcon className="size-3 animate-spin" />
@@ -255,11 +255,11 @@ function DashboardLoadingState() {
         {Array.from({ length: 4 }, (_, index) => (
           <div
             key={index}
-            className="h-32 animate-pulse rounded-2xl border border-border/70 bg-muted/35"
+            className="h-32 animate-pulse rounded-xl border border-border/70 bg-muted/35"
           />
         ))}
       </div>
-      <div className="h-96 animate-pulse rounded-2xl border border-border/70 bg-muted/35" />
+      <div className="h-96 animate-pulse rounded-xl border border-border/70 bg-muted/35" />
     </div>
   );
 }
@@ -272,8 +272,8 @@ function DashboardErrorState({
   onRetry: () => void;
 }) {
   return (
-    <div className="flex min-h-80 flex-col items-center justify-center rounded-2xl border border-danger/30 bg-danger-muted/30 p-8 text-center">
-      <div className="flex size-12 items-center justify-center rounded-2xl bg-danger-muted text-danger">
+    <div className="flex min-h-80 flex-col items-center justify-center rounded-xl border border-danger/30 bg-danger-muted/30 p-8 text-center">
+      <div className="flex size-12 items-center justify-center rounded-xl bg-danger-muted text-danger">
         <ServerCrashIcon className="size-6" />
       </div>
       <h2 className="mt-4 text-base font-bold text-foreground">

@@ -55,7 +55,7 @@ export function WorkflowSection() {
           {quyTrinhCacBuoc.map((item) => (
             <div
               key={item.buoc}
-              className="rounded-2xl border border-border/80 bg-card p-5 space-y-4 hover:border-primary/40 transition-all shadow-xs flex flex-col justify-between"
+              className="rounded-xl border border-border/80 bg-card p-5 space-y-4 hover:border-primary/40 transition-all shadow-xs flex flex-col justify-between"
             >
               <div className="flex items-center justify-between">
                 <span className="font-mono text-2xl font-black text-primary/30">
