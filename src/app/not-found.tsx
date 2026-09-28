@@ -31,7 +31,7 @@ export default function NotFound() {
         </div>
 
         <div className="space-y-2">
-          <p className="text-7xl sm:text-8xl font-extrabold tracking-tight bg-popover from-primary via-primary/80 to-primary/30 bg-clip-text text-transparent select-none font-mono">
+          <p className="text-7xl sm:text-8xl font-extrabold tracking-tight saga-brand-gradient select-none font-mono">
             404
           </p>
           <h1 className="text-xl sm:text-2xl font-bold text-foreground tracking-tight">

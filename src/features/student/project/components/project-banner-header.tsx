@@ -191,41 +191,39 @@ export function ProjectBannerHeader({
           </div>
         </div>
 
-        {projectId && (
+        {projectId && isLeader && (
           <div className="flex flex-col items-start md:items-end gap-2 shrink-0">
-            {isLeader && (
-              <div className="flex items-center gap-2">
-                <Button
-                  type="button"
-                  size="sm"
-                  onClick={() => setIsEditOpen(true)}
-                  className="h-9 px-3 rounded-xl bg-white/20 hover:bg-white/30 text-white border border-white/20 text-xs font-semibold backdrop-blur-sm gap-1.5 shadow-xs transition-all cursor-pointer active:scale-95"
-                >
-                  <PencilIcon className="w-3.5 h-3.5" />
-                  <span>Chỉnh sửa thông tin</span>
-                </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                type="button"
+                size="sm"
+                onClick={() => setIsEditOpen(true)}
+                className="h-9 px-3 rounded-xl bg-white/20 hover:bg-white/30 text-white border border-white/20 text-xs font-semibold backdrop-blur-sm gap-1.5 shadow-xs transition-all cursor-pointer active:scale-95"
+              >
+                <PencilIcon className="w-3.5 h-3.5" />
+                <span>Chỉnh sửa thông tin</span>
+              </Button>
 
-                <Button
-                  type="button"
-                  size="sm"
-                  onClick={() => void handleSync()}
-                  disabled={syncMutation.isPending || hasActiveJob}
-                  className="h-9 px-3.5 rounded-xl bg-white/20 hover:bg-white/30 text-white border border-white/20 text-xs font-semibold backdrop-blur-sm gap-2 shadow-xs transition-all cursor-pointer active:scale-95"
-                >
-                  <RefreshCwIcon
-                    className={`w-3.5 h-3.5 ${syncMutation.isPending || hasActiveJob ? "animate-spin text-amber-300" : ""
-                      }`}
-                  />
-                  <span>
-                    {syncMutation.isPending
-                      ? "Đang gửi yêu cầu..."
-                      : hasActiveJob
-                        ? "Đang đồng bộ..."
-                        : "Đồng bộ Jira & GitHub"}
-                  </span>
-                </Button>
-              </div>
-            )}
+              <Button
+                type="button"
+                size="sm"
+                onClick={() => void handleSync()}
+                disabled={syncMutation.isPending || hasActiveJob}
+                className="h-9 px-3.5 rounded-xl bg-white/20 hover:bg-white/30 text-white border border-white/20 text-xs font-semibold backdrop-blur-sm gap-2 shadow-xs transition-all cursor-pointer active:scale-95"
+              >
+                <RefreshCwIcon
+                  className={`w-3.5 h-3.5 ${syncMutation.isPending || hasActiveJob ? "animate-spin text-amber-300" : ""
+                    }`}
+                />
+                <span>
+                  {syncMutation.isPending
+                    ? "Đang gửi yêu cầu..."
+                    : hasActiveJob
+                      ? "Đang đồng bộ..."
+                      : "Đồng bộ Jira & GitHub"}
+                </span>
+              </Button>
+            </div>
 
             <div className="text-xs text-white/95 bg-black/25 px-2.5 py-1 rounded-lg border border-white/10 flex items-center gap-2 font-mono backdrop-blur-sm shadow-2xs">
               {hasActiveJob ? (

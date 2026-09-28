@@ -526,7 +526,7 @@ export function SprintProgressView() {
         </div>
       )}
 
-      {hasActiveSyncJob && (
+      {isTeamLeader && hasActiveSyncJob && (
         <div className="flex items-center gap-2 rounded-xl border border-primary/20 bg-primary/5 px-3.5 py-3 text-xs text-primary">
           <Loader2Icon className="size-4 animate-spin shrink-0" />
           <span>Dữ liệu Jira/GitHub đang được đồng bộ. Bảng tiến độ sẽ tự làm mới khi hoàn tất.</span>

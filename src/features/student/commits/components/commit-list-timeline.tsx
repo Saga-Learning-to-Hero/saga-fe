@@ -106,16 +106,24 @@ export function CommitListTimeline({
         const groupCommits = groups[groupTitle];
         return (
           <div key={groupTitle} className="space-y-3">
-            <div className="flex items-center gap-2 pb-1 border-b border-border/50 text-xs font-bold text-muted-foreground">
-              <CalendarIcon className="w-3.5 h-3.5 text-primary" />
-              <span>Commits {groupTitle === "Hôm nay" || groupTitle === "Hôm qua" ? "vào " : ""}{groupTitle}</span>
-              <Badge variant="secondary" className="font-mono text-xs px-1.5 py-0.2">
-                {groupCommits.length}
-              </Badge>
+            <div className="flex items-center justify-between pb-1 border-b border-border/50 text-xs font-bold text-muted-foreground">
+              <div className="flex items-center gap-2">
+                <CalendarIcon className="w-3.5 h-3.5 text-primary" />
+                <span>Commits {groupTitle === "Hôm nay" || groupTitle === "Hôm qua" ? "vào " : ""}{groupTitle}</span>
+                <Badge variant="secondary" className="font-mono text-xs px-1.5 py-0.2">
+                  {groupCommits.length}
+                </Badge>
+              </div>
+              {groupCommits.length > 5 && (
+                <span className="text-[11px] font-normal text-muted-foreground/70 hidden sm:inline-block">
+                  Cuộn để xem toàn bộ {groupCommits.length} commits
+                </span>
+              )}
             </div>
 
-            <div className="rounded-xl border border-border/70 bg-card/60 backdrop-blur-xs overflow-hidden divide-y divide-border/50 shadow-2xs">
-              {groupCommits.map((commit) => {
+            <div className="rounded-xl border border-border/70 bg-card/60 backdrop-blur-xs overflow-hidden shadow-2xs">
+              <div className="max-h-[460px] overflow-y-auto divide-y divide-border/50 custom-scrollbar overscroll-contain">
+                {groupCommits.map((commit) => {
                 const isCopied = copiedHash === commit.shortHash;
 
                 return (
@@ -268,6 +276,7 @@ export function CommitListTimeline({
                   </div>
                 );
               })}
+              </div>
             </div>
           </div>
         );

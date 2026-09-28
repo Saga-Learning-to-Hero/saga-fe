@@ -124,11 +124,13 @@ export default function DashboardLayout({
             <Sidebar collapsed={collapsed} onToggle={() => setCollapsed((v) => !v)} />
           </div>
 
-          <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
-            <SheetContent side="left" className="p-0 w-64">
-              <Sidebar collapsed={false} onToggle={() => setMobileOpen(false)} />
-            </SheetContent>
-          </Sheet>
+          {mobileOpen && (
+            <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
+              <SheetContent side="left" className="p-0 w-64">
+                <Sidebar collapsed={false} onToggle={() => setMobileOpen(false)} />
+              </SheetContent>
+            </Sheet>
+          )}
 
           <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
             <AdminTopHeader onOpenMobileMenu={() => setMobileOpen(true)} />
