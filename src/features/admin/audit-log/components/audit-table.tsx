@@ -148,14 +148,14 @@ export function AuditTable({
     switch (sev) {
       case "CRITICAL":
         return (
-          <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-danger">
+          <span className="inline-flex items-center gap-1 text-xs font-semibold text-danger">
             <ShieldAlertIcon className="w-3.5 h-3.5" />
             Nghiêm trọng
           </span>
         );
       case "WARNING":
         return (
-          <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-warning">
+          <span className="inline-flex items-center gap-1 text-xs font-semibold text-warning">
             <AlertTriangleIcon className="w-3.5 h-3.5" />
             Cảnh báo
           </span>
@@ -163,7 +163,7 @@ export function AuditTable({
       case "INFO":
       default:
         return (
-          <span className="inline-flex items-center gap-1 text-[11px] font-medium text-muted-foreground">
+          <span className="inline-flex items-center gap-1 text-xs font-medium text-muted-foreground">
             <InfoIcon className="w-3.5 h-3.5 text-primary" />
             Thông tin
           </span>
@@ -178,7 +178,7 @@ export function AuditTable({
 
   if (isLoading) {
     return (
-      <Card className="rounded-2xl border border-border overflow-hidden shadow-xs">
+      <Card className="rounded-xl border border-border overflow-hidden shadow-xs">
         <Table className="w-full text-left text-xs">
           <TableHeader className="bg-muted/40 border-b border-border">
             <TableRow>
@@ -230,7 +230,7 @@ export function AuditTable({
   }
 
   return (
-    <Card className="rounded-2xl border border-border overflow-hidden shadow-xs flex flex-col">
+    <Card className="rounded-xl border border-border overflow-hidden shadow-xs flex flex-col">
       <div className="overflow-x-auto">
         <Table className="w-full text-left text-xs border-collapse">
           <TableHeader className="bg-muted/40 border-b border-border">
@@ -301,7 +301,7 @@ export function AuditTable({
 
                 return (
                   <TableRow key={log.id} className="hover:bg-muted/30 transition-colors">
-                    <TableCell className="py-3 px-4 whitespace-nowrap font-mono text-[11px] text-muted-foreground">
+                    <TableCell className="py-3 px-4 whitespace-nowrap font-mono text-xs text-muted-foreground">
                       {formatRelativeTime(log.timestamp)}
                     </TableCell>
 
@@ -311,7 +311,7 @@ export function AuditTable({
                           {log.actor.avatar && (
                             <AvatarImage src={log.actor.avatar} alt={resolvedActorName} />
                           )}
-                          <AvatarFallback className="text-[10px] font-bold bg-primary/10 text-primary">
+                          <AvatarFallback className="text-xs font-bold bg-primary/10 text-primary">
                             {resolvedActorName.slice(0, 2).toUpperCase()}
                           </AvatarFallback>
                         </Avatar>
@@ -319,7 +319,7 @@ export function AuditTable({
                           <span className="font-semibold text-foreground text-xs truncate">
                             {resolvedActorName}
                           </span>
-                          <span className="text-[10px] text-muted-foreground font-mono truncate">
+                          <span className="text-xs text-muted-foreground font-mono truncate">
                             {log.actor.ipAddress} &bull; {log.actor.role}
                             {actorStudentCode ? ` (${actorStudentCode})` : ""}
                           </span>
@@ -336,7 +336,7 @@ export function AuditTable({
                         <span className="font-medium text-foreground text-xs truncate">
                           {displayTargetName}
                         </span>
-                        <span className="text-[10px] text-muted-foreground truncate font-mono">
+                        <span className="text-xs text-muted-foreground truncate font-mono">
                           {displaySubtext}
                         </span>
                       </div>
@@ -348,12 +348,12 @@ export function AuditTable({
 
                     <TableCell className="py-3 px-4 whitespace-nowrap">
                       {log.status === "SUCCESS" ? (
-                        <span className="inline-flex items-center gap-1 text-[11px] text-success font-medium">
+                        <span className="inline-flex items-center gap-1 text-xs text-success font-medium">
                           <CheckCircle2Icon className="w-3.5 h-3.5" />
                           Thành công
                         </span>
                       ) : (
-                        <span className="inline-flex items-center gap-1 text-[11px] text-danger font-medium">
+                        <span className="inline-flex items-center gap-1 text-xs text-danger font-medium">
                           <XCircleIcon className="w-3.5 h-3.5" />
                           Thất bại
                         </span>

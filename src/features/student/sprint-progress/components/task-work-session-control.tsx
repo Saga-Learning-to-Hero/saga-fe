@@ -1,9 +1,9 @@
 "use client";
 
+import { showSuccessToast, showErrorToast } from "@/lib/api-error";
 import { useEffect, useState } from "react";
 import { Loader2Icon, PlayIcon, SquareIcon, TimerIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
 import {
   useStartWorkSession,
   useStopWorkSession,
@@ -62,13 +62,13 @@ export function TaskWorkSessionControl({
   const handleStartSession = async () => {
     try {
       const session = await startSessionMutation.mutateAsync();
-      toast.success(
+      showSuccessToast(
         session.elapsedSeconds > 0
           ? "Đã tiếp tục phiên làm việc đang mở."
           : "Đã bắt đầu phiên làm việc."
       );
     } catch (error: unknown) {
-      toast.error(error instanceof Error ? error.message : "Không thể bắt đầu phiên làm việc.");
+      showErrorToast(error instanceof Error ? error.message : "Không thể bắt đầu phiên làm việc.");
     }
   };
 
@@ -77,9 +77,9 @@ export function TaskWorkSessionControl({
 
     try {
       await stopSessionMutation.mutateAsync(activeSession.id);
-      toast.success("Đã dừng và lưu thời lượng phiên làm việc.");
+      showSuccessToast("Đã dừng và lưu thời lượng phiên làm việc.");
     } catch (error: unknown) {
-      toast.error(error instanceof Error ? error.message : "Không thể dừng phiên làm việc.");
+      showErrorToast(error instanceof Error ? error.message : "Không thể dừng phiên làm việc.");
     }
   };
 

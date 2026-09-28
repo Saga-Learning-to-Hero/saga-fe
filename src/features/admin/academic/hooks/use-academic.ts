@@ -1,5 +1,5 @@
+import { showSuccessToast, showErrorToast } from "@/lib/api-error";
 import { useQuery, useMutation, useQueryClient, type QueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
 import { AcademicService } from "../api/academic-service";
 import { CourseService } from "../api/course-service";
 import { RosterService } from "../api/roster-service";
@@ -115,15 +115,15 @@ export function useCreateSemester() {
       });
       queryClient.invalidateQueries({ queryKey: ACADEMIC_QUERY_KEYS.semesters });
       queryClient.invalidateQueries({ queryKey: ACADEMIC_QUERY_KEYS.activeSemester });
-      toast.success(`Đã thêm học kỳ ${newSem.code} thành công.`);
+      showSuccessToast(`Đã thêm học kỳ ${newSem.code} thành công.`);
     },
     onError: (error: unknown) => {
       const err = error as { response?: { data?: { code?: string; message?: string } }; message?: string };
       const code = err.response?.data?.code;
       if (code === "SEMESTER_CODE_ALREADY_EXISTS" || code === "SEMESTER_CODE_DUPLICATE") {
-        toast.error("Mã học kỳ này đã tồn tại trong hệ thống.");
+        showErrorToast("Mã học kỳ này đã tồn tại trong hệ thống.");
       } else {
-        toast.error(err.response?.data?.message || err.message || "Không thể tạo học kỳ.");
+        showErrorToast(err.response?.data?.message || err.message || "Không thể tạo học kỳ.");
       }
     },
   });
@@ -143,17 +143,17 @@ export function usePatchSemester() {
       queryClient.setQueryData(ACADEMIC_QUERY_KEYS.semesterDetail(updated.id), updated);
       queryClient.invalidateQueries({ queryKey: ACADEMIC_QUERY_KEYS.semesters });
       queryClient.invalidateQueries({ queryKey: ACADEMIC_QUERY_KEYS.activeSemester });
-      toast.success(`Đã cập nhật học kỳ ${updated.code} thành công.`);
+      showSuccessToast(`Đã cập nhật học kỳ ${updated.code} thành công.`);
     },
     onError: (error: unknown) => {
       const err = error as { response?: { data?: { code?: string; message?: string } }; message?: string };
       const code = err.response?.data?.code;
       if (code === "SEMESTER_CODE_DUPLICATE" || code === "SEMESTER_CODE_ALREADY_EXISTS") {
-        toast.error("Mã học kỳ này đã tồn tại trong hệ thống.");
+        showErrorToast("Mã học kỳ này đã tồn tại trong hệ thống.");
       } else if (code === "SEMESTER_DATE_RANGE_INVALID") {
-        toast.error("Ngày bắt đầu phải trước ngày kết thúc học kỳ.");
+        showErrorToast("Ngày bắt đầu phải trước ngày kết thúc học kỳ.");
       } else {
-        toast.error(err.response?.data?.message || err.message || "Không thể cập nhật học kỳ.");
+        showErrorToast(err.response?.data?.message || err.message || "Không thể cập nhật học kỳ.");
       }
     },
   });
@@ -172,11 +172,11 @@ export function useSetActiveSemester() {
       queryClient.setQueryData(ACADEMIC_QUERY_KEYS.activeSemester, activeSem);
       queryClient.invalidateQueries({ queryKey: ACADEMIC_QUERY_KEYS.semesters });
       queryClient.invalidateQueries({ queryKey: ACADEMIC_QUERY_KEYS.activeSemester });
-      toast.success(`Đã kích hoạt học kỳ ${activeSem.code} làm học kỳ hiện tại.`);
+      showSuccessToast(`Đã kích hoạt học kỳ ${activeSem.code} làm học kỳ hiện tại.`);
     },
     onError: (error: unknown) => {
       const err = error as { response?: { data?: { code?: string; message?: string } }; message?: string };
-      toast.error(err.response?.data?.message || err.message || "Không thể kích hoạt học kỳ.");
+      showErrorToast(err.response?.data?.message || err.message || "Không thể kích hoạt học kỳ.");
     },
   });
 }
@@ -210,15 +210,15 @@ export function useCreateAdminClass() {
       );
       queryClient.invalidateQueries({ queryKey: ["academic", "classes"] });
       const displayCode = newClass.classCode || newClass.code || newClass.name || "";
-      toast.success(`Đã tạo lớp hành chính ${displayCode} thành công.`);
+      showSuccessToast(`Đã tạo lớp hành chính ${displayCode} thành công.`);
     },
     onError: (error: unknown) => {
       const err = error as { response?: { data?: { code?: string; message?: string } }; message?: string };
       const code = err.response?.data?.code;
       if (code === "ACADEMIC_CLASS_CODE_DUPLICATE") {
-        toast.error("Mã lớp hành chính đã tồn tại trong học kỳ này.");
+        showErrorToast("Mã lớp hành chính đã tồn tại trong học kỳ này.");
       } else {
-        toast.error(err.response?.data?.message || err.message || "Không thể tạo lớp hành chính.");
+        showErrorToast(err.response?.data?.message || err.message || "Không thể tạo lớp hành chính.");
       }
     },
   });
@@ -244,15 +244,15 @@ export function usePatchAdminClass() {
       );
       queryClient.invalidateQueries({ queryKey: ["academic", "classes"] });
       const displayCode = updatedClass.classCode || updatedClass.code || updatedClass.name || "";
-      toast.success(`Đã cập nhật thông tin lớp hành chính ${displayCode}.`);
+      showSuccessToast(`Đã cập nhật thông tin lớp hành chính ${displayCode}.`);
     },
     onError: (error: unknown) => {
       const err = error as { response?: { data?: { code?: string; message?: string } }; message?: string };
       const code = err.response?.data?.code;
       if (code === "ACADEMIC_CLASS_CODE_DUPLICATE") {
-        toast.error("Mã lớp hành chính đã tồn tại trong học kỳ này.");
+        showErrorToast("Mã lớp hành chính đã tồn tại trong học kỳ này.");
       } else {
-        toast.error(err.response?.data?.message || err.message || "Không thể cập nhật lớp hành chính.");
+        showErrorToast(err.response?.data?.message || err.message || "Không thể cập nhật lớp hành chính.");
       }
     },
   });
@@ -307,11 +307,11 @@ export function useCreateCourse() {
       );
       queryClient.invalidateQueries({ queryKey: ["academic", "courses"] });
       const displayCode = newCourse.courseCode || newCourse.classCode || newCourse.name || "";
-      toast.success(`Đã tạo lớp học phần ${displayCode} thành công.`);
+      showSuccessToast(`Đã tạo lớp học phần ${displayCode} thành công.`);
     },
     onError: (error: unknown) => {
       const err = error as { response?: { data?: { code?: string; message?: string } }; message?: string };
-      toast.error(err.response?.data?.message || err.message || "Không thể tạo lớp học phần.");
+      showErrorToast(err.response?.data?.message || err.message || "Không thể tạo lớp học phần.");
     },
   });
 }
@@ -335,15 +335,15 @@ export function usePatchCourse() {
         }
       );
       queryClient.invalidateQueries({ queryKey: ["academic", "courses"] });
-      toast.success("Đã cập nhật thông tin lớp học phần.");
+      showSuccessToast("Đã cập nhật thông tin lớp học phần.");
     },
     onError: (error: unknown) => {
       const err = error as { response?: { data?: { code?: string; message?: string } }; message?: string };
       const code = err.response?.data?.code;
       if (code === "COURSE_SYLLABUS_IMMUTABLE") {
-        toast.error("Không thể thay đổi đề cương của lớp học phần đã có sinh viên đăng ký hoặc có dự án.");
+        showErrorToast("Không thể thay đổi đề cương của lớp học phần đã có sinh viên đăng ký hoặc có dự án.");
       } else {
-        toast.error(err.response?.data?.message || err.message || "Không thể cập nhật lớp học phần.");
+        showErrorToast(err.response?.data?.message || err.message || "Không thể cập nhật lớp học phần.");
       }
     },
   });
@@ -364,7 +364,7 @@ export function usePreviewRosterImport() {
       RosterService.previewImport(courseId, file),
     onError: (error: unknown) => {
       const err = error as { response?: { data?: { code?: string; message?: string } }; message?: string };
-      toast.error(err.response?.data?.message || err.message || "Không thể đọc file Excel danh sách sinh viên.");
+      showErrorToast(err.response?.data?.message || err.message || "Không thể đọc file Excel danh sách sinh viên.");
     },
   });
 }
@@ -385,13 +385,13 @@ export function useConfirmRosterImport() {
         queryKey: ACADEMIC_QUERY_KEYS.roster(variables.courseId),
       });
       queryClient.invalidateQueries({ queryKey: ["academic", "courses"] });
-      toast.success(
+      showSuccessToast(
         `Đã ghi danh ${res.enrolled} sinh viên và gửi thư mời tới ${res.invited} tài khoản mới.`
       );
     },
     onError: (error: unknown) => {
       const err = error as { response?: { data?: { code?: string; message?: string } }; message?: string };
-      toast.error(err.response?.data?.message || err.message || "Không thể xác nhận import danh sách sinh viên.");
+      showErrorToast(err.response?.data?.message || err.message || "Không thể xác nhận import danh sách sinh viên.");
     },
   });
 }
@@ -412,7 +412,7 @@ export function useAddStudentToRoster() {
         queryKey: ACADEMIC_QUERY_KEYS.roster(variables.courseId),
       });
       queryClient.invalidateQueries({ queryKey: ["academic", "courses"] });
-      toast.success(
+      showSuccessToast(
         `Đã thêm sinh viên ${newStudent.fullName || variables.data.fullName} (${variables.data.studentCode}) vào lớp học phần.`
       );
     },
@@ -420,11 +420,11 @@ export function useAddStudentToRoster() {
       const err = error as { response?: { data?: { code?: string; message?: string } }; message?: string };
       const code = err.response?.data?.code;
       if (code === "STUDENT_ALREADY_ENROLLED") {
-        toast.error("Sinh viên này đã được ghi danh trong lớp học phần.");
+        showErrorToast("Sinh viên này đã được ghi danh trong lớp học phần.");
       } else if (code === "STUDENT_ALREADY_INVITED") {
-        toast.error("Sinh viên này đã có thư mời đang chờ kích hoạt.");
+        showErrorToast("Sinh viên này đã có thư mời đang chờ kích hoạt.");
       } else {
-        toast.error(err.response?.data?.message || err.message || "Không thể thêm sinh viên vào lớp học phần.");
+        showErrorToast(err.response?.data?.message || err.message || "Không thể thêm sinh viên vào lớp học phần.");
       }
     },
   });
@@ -445,10 +445,10 @@ export function useDownloadRosterTemplate() {
       return blob;
     },
     onSuccess: () => {
-      toast.success("Đã tải xuống file Excel mẫu.");
+      showSuccessToast("Đã tải xuống file Excel mẫu.");
     },
     onError: () => {
-      toast.error("Không thể tải file mẫu Excel.");
+      showErrorToast("Không thể tải file mẫu Excel.");
     },
   });
 }
@@ -493,19 +493,19 @@ export function useRemoveEnrollment() {
         queryKey: ACADEMIC_QUERY_KEYS.roster(variables.courseId),
       });
       queryClient.invalidateQueries({ queryKey: ["academic", "courses"] });
-      toast.success("Đã rút tên sinh viên khỏi lớp học phần (bảo lưu lịch sử đóng góp).");
+      showSuccessToast("Đã rút tên sinh viên khỏi lớp học phần (bảo lưu lịch sử đóng góp).");
     },
     onError: (error: unknown) => {
       const err = error as { response?: { data?: { code?: string; message?: string } }; message?: string };
       const code = err.response?.data?.code;
       if (code === "TEAM_LEADER_REMOVAL_REQUIRES_REASSIGNMENT") {
-        toast.error("Sinh viên đang là Trưởng nhóm. Vui lòng chuyển quyền Trưởng nhóm cho thành viên khác trước khi xóa.");
+        showErrorToast("Sinh viên đang là Trưởng nhóm. Vui lòng chuyển quyền Trưởng nhóm cho thành viên khác trước khi xóa.");
       } else if (code === "ROSTER_STUDENT_ALREADY_REMOVED") {
-        toast.error("Sinh viên này đã được rút tên trước đó.");
+        showErrorToast("Sinh viên này đã được rút tên trước đó.");
       } else if (code === "ROSTER_STUDENT_NOT_FOUND") {
-        toast.error("Không tìm thấy thông tin sinh viên trong lớp học phần này.");
+        showErrorToast("Không tìm thấy thông tin sinh viên trong lớp học phần này.");
       } else {
-        toast.error(err.response?.data?.message || err.message || "Không thể rút tên sinh viên khỏi lớp học phần.");
+        showErrorToast(err.response?.data?.message || err.message || "Không thể rút tên sinh viên khỏi lớp học phần.");
       }
     },
   });
@@ -527,17 +527,17 @@ export function useCancelInvitation() {
         queryKey: ACADEMIC_QUERY_KEYS.roster(variables.courseId),
       });
       queryClient.invalidateQueries({ queryKey: ["academic", "courses"] });
-      toast.success("Đã hủy thư mời tham gia lớp học phần.");
+      showSuccessToast("Đã hủy thư mời tham gia lớp học phần.");
     },
     onError: (error: unknown) => {
       const err = error as { response?: { data?: { code?: string; message?: string } }; message?: string };
       const code = err.response?.data?.code;
       if (code === "ROSTER_STUDENT_ALREADY_REMOVED") {
-        toast.error("Thư mời này đã được xử lý hoặc hủy trước đó.");
+        showErrorToast("Thư mời này đã được xử lý hoặc hủy trước đó.");
       } else if (code === "ROSTER_STUDENT_NOT_FOUND") {
-        toast.error("Không tìm thấy thông tin thư mời trong lớp học phần này.");
+        showErrorToast("Không tìm thấy thông tin thư mời trong lớp học phần này.");
       } else {
-        toast.error(err.response?.data?.message || err.message || "Không thể hủy thư mời tham gia lớp học phần.");
+        showErrorToast(err.response?.data?.message || err.message || "Không thể hủy thư mời tham gia lớp học phần.");
       }
     },
   });

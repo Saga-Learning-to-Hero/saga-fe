@@ -52,7 +52,7 @@ export function LandingNavbar() {
   const homePath = user ? getRoleHomePath(user.role) : "/login";
 
   return (
-    <header className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur-md shadow-xs font-sans">
+    <header className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur-sm shadow-xs font-sans">
       <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between gap-6">
         <Link href="/" className="flex items-center shrink-0 hover:opacity-90 transition-opacity">
           <SagaLogo size="sm" showText={true} showSubtitle={false} />
@@ -101,7 +101,7 @@ export function LandingNavbar() {
                   <ChevronDownIcon className="w-3.5 h-3.5 text-muted-foreground mr-1" />
                 </DropdownMenuTrigger>
 
-                <DropdownMenuContent align="end" className="w-56 p-1.5 rounded-2xl border-border shadow-md">
+                <DropdownMenuContent align="end" className="w-56 p-1.5 rounded-xl border-border shadow-md">
                   <div className="px-2.5 py-2 space-y-1">
                     <div className="flex items-center justify-between gap-1.5">
                       <p className="text-xs font-bold text-foreground truncate">

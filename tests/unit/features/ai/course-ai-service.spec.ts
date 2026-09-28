@@ -137,17 +137,50 @@ describe("CourseAiService", () => {
       id: "UTCID06",
       type: "N",
       executedDate: "24/09/2026",
-      description: "submitCourseProgress kich hoat phan tich tien do khoa hoc",
+      description: "submitCourseProgress tra ve isReused false (tao moi) khi HTTP 201",
     },
     async () => {
       const mockRun = { id: mockAnalysisId, status: "RUNNING" };
-      vi.mocked(apiClient.post).mockResolvedValueOnce({ data: mockRun });
+      vi.mocked(apiClient.post).mockResolvedValueOnce({ data: mockRun, status: 201 });
 
       const result = await CourseAiService.submitCourseProgress(mockCourseId);
       expect(apiClient.post).toHaveBeenCalledWith(
         `/api/lecturer/courses/${mockCourseId}/ai/progress-analyses`
       );
-      expect(result).toEqual(mockRun);
+      expect(result).toEqual({ analysis: mockRun, isReused: false });
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID06b",
+      type: "N",
+      executedDate: "24/09/2026",
+      description: "submitCourseProgress tra ve isReused true (tai su dung) khi HTTP 200",
+    },
+    async () => {
+      const mockRun = { id: mockAnalysisId, status: "RUNNING" };
+      vi.mocked(apiClient.post).mockResolvedValueOnce({ data: mockRun, status: 200 });
+
+      const result = await CourseAiService.submitCourseProgress(mockCourseId);
+      expect(apiClient.post).toHaveBeenCalledWith(
+        `/api/lecturer/courses/${mockCourseId}/ai/progress-analyses`
+      );
+      expect(result).toEqual({ analysis: mockRun, isReused: true });
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID06c",
+      type: "A",
+      executedDate: "24/09/2026",
+      description: "submitCourseProgress nem loi khi thieu metadata HTTP (loi API)",
+    },
+    async () => {
+      vi.mocked(apiClient.post).mockRejectedValueOnce(new Error("Request failed"));
+
+      await expect(CourseAiService.submitCourseProgress(mockCourseId)).rejects.toThrow();
     }
   );
 

@@ -25,7 +25,7 @@ export function LecturerCourseBoundary({ courseId, children }: LecturerCourseBou
 
   if (isAccessDenied) {
     return (
-      <div className="rounded-2xl border border-dashed border-border p-8 text-center text-sm text-muted-foreground">
+      <div className="rounded-xl border border-dashed border-border p-8 text-center text-sm text-muted-foreground">
         Đang chuyển về danh sách lớp...
       </div>
     );

@@ -44,8 +44,8 @@ export function CommitListTimeline({
 
   if (commits.length === 0) {
     return (
-      <div className="p-8 sm:p-12 text-center rounded-3xl border border-dashed border-border/80 bg-card/40 space-y-4 max-w-2xl mx-auto shadow-2xs">
-        <div className="w-12 h-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center mx-auto shadow-xs">
+      <div className="p-8 sm:p-12 text-center rounded-xl border border-dashed border-border/80 bg-card/40 space-y-4 max-w-2xl mx-auto shadow-2xs">
+        <div className="w-12 h-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center mx-auto shadow-xs">
           <GitCommitIcon className="w-6 h-6" />
         </div>
         <div className="space-y-1.5">
@@ -109,12 +109,12 @@ export function CommitListTimeline({
             <div className="flex items-center gap-2 pb-1 border-b border-border/50 text-xs font-bold text-muted-foreground">
               <CalendarIcon className="w-3.5 h-3.5 text-primary" />
               <span>Commits {groupTitle === "Hôm nay" || groupTitle === "Hôm qua" ? "vào " : ""}{groupTitle}</span>
-              <Badge variant="secondary" className="font-mono text-[10px] px-1.5 py-0.2">
+              <Badge variant="secondary" className="font-mono text-xs px-1.5 py-0.2">
                 {groupCommits.length}
               </Badge>
             </div>
 
-            <div className="rounded-2xl border border-border/70 bg-card/60 backdrop-blur-xs overflow-hidden divide-y divide-border/50 shadow-2xs">
+            <div className="rounded-xl border border-border/70 bg-card/60 backdrop-blur-xs overflow-hidden divide-y divide-border/50 shadow-2xs">
               {groupCommits.map((commit) => {
                 const isCopied = copiedHash === commit.shortHash;
 
@@ -132,13 +132,13 @@ export function CommitListTimeline({
                         <div className="space-y-1 min-w-0 flex-1">
                           <div className="flex flex-wrap items-center gap-2">
                             {commit.jiraKey && (
-                              <Badge className="bg-blue-600/15 text-blue-600 dark:text-blue-400 border-blue-600/30 text-[10px] font-mono font-bold shrink-0">
+                              <Badge className="bg-blue-600/15 text-blue-600 dark:text-blue-400 border-blue-600/30 text-xs font-mono font-bold shrink-0">
                                 {commit.jiraKey}
                               </Badge>
                             )}
 
                             {commit.isMerge && (
-                              <Badge className="bg-purple-500/15 text-purple-600 dark:text-purple-400 border-purple-500/30 text-[10px] font-mono font-bold shrink-0">
+                              <Badge className="bg-purple-500/15 text-purple-600 dark:text-purple-400 border-purple-500/30 text-xs font-mono font-bold shrink-0">
                                 Merge
                               </Badge>
                             )}
@@ -163,17 +163,17 @@ export function CommitListTimeline({
                               <span className="font-medium text-foreground">
                                 {commit.author.name}
                               </span>
-                              <span className="text-[11px] font-mono text-muted-foreground">
+                              <span className="text-xs font-mono text-muted-foreground">
                                 ({commit.author.studentCode})
                               </span>
-                              <span className="text-[11px] font-mono text-muted-foreground/80">
+                              <span className="text-xs font-mono text-muted-foreground/80">
                                 @{commit.author.username}
                               </span>
                             </div>
 
                             <span className="text-border">•</span>
 
-                            <span className="text-[11px] font-mono text-muted-foreground">
+                            <span className="text-xs font-mono text-muted-foreground">
                               {new Date(commit.createdAt).toLocaleTimeString("vi-VN", {
                                 hour: "2-digit",
                                 minute: "2-digit",
@@ -184,7 +184,7 @@ export function CommitListTimeline({
                             {commit.repoName && (
                               <>
                                 <span className="text-border">•</span>
-                                <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground">
+                                <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
                                   <FolderGit2Icon className="w-3 h-3 text-muted-foreground/70" />
                                   {commit.repoName}
                                 </span>
@@ -195,7 +195,7 @@ export function CommitListTimeline({
                               <>
                                 <span className="text-border">•</span>
                                 <span
-                                  className="inline-flex items-center gap-1 text-[11px] font-mono text-muted-foreground bg-muted/60 px-1.5 py-0.5 rounded-md border border-border/50 max-w-[240px] truncate"
+                                  className="inline-flex items-center gap-1 text-xs font-mono text-muted-foreground bg-muted/60 px-1.5 py-0.5 rounded-md border border-border/50 max-w-[240px] truncate"
                                   title={`Nhánh Git: ${commit.branchName}`}
                                 >
                                   <GitBranchIcon className="w-3 h-3 text-primary/70 shrink-0" />
@@ -210,7 +210,7 @@ export function CommitListTimeline({
 
                     <div className="flex items-center gap-2.5 shrink-0 self-end sm:self-center pt-2 sm:pt-0 border-t sm:border-t-0 border-border/40">
                       {commit.additions !== null && commit.deletions !== null && (
-                        <div className="font-mono text-[11px] font-bold text-right shrink-0">
+                        <div className="font-mono text-xs font-bold text-right shrink-0">
                           <span className="text-emerald-600">+{commit.additions}</span>
                           <span className="text-muted-foreground mx-1">/</span>
                           <span className="text-rose-600">-{commit.deletions}</span>
@@ -220,7 +220,7 @@ export function CommitListTimeline({
                       <button
                         type="button"
                         onClick={() => handleCopyHash(commit.shortHash)}
-                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl bg-muted/60 hover:bg-muted border border-border/60 text-[11px] font-mono font-bold text-foreground transition-all cursor-pointer shadow-2xs"
+                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl bg-muted/60 hover:bg-muted border border-border/60 text-xs font-mono font-bold text-foreground transition-all cursor-pointer shadow-2xs"
                         title="Sao chép mã hash commit"
                       >
                         {isCopied ? (

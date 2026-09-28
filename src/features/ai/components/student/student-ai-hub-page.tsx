@@ -259,16 +259,16 @@ export function StudentAiHubPage({ projectId }: StudentAiHubPageProps) {
 
   return (
     <div className="space-y-6 max-w-[1600px] mx-auto pb-12">
-      <div className="flex flex-col justify-between gap-4 rounded-3xl border border-border/80 bg-card/90 p-5 shadow-xs sm:flex-row sm:items-center">
+      <div className="flex flex-col justify-between gap-4 rounded-xl border border-border/80 bg-card/90 p-5 shadow-xs sm:flex-row sm:items-center">
         <div className="flex items-center gap-3.5">
-          <Avatar className="size-11 rounded-2xl border border-primary/25 shadow-xs" size="lg">
+          <Avatar className="size-11 rounded-xl border border-primary/25 shadow-xs" size="lg">
             <AvatarImage
               src={user?.avatar || undefined}
               alt={user?.name || "Sinh viên"}
               referrerPolicy="no-referrer"
-              className="object-cover rounded-2xl"
+              className="object-cover rounded-xl"
             />
-            <AvatarFallback className="rounded-2xl bg-primary/10 text-primary font-bold text-sm font-mono">
+            <AvatarFallback className="rounded-xl bg-primary/10 text-primary font-bold text-sm font-mono">
               {user?.name?.slice(0, 2)?.toUpperCase() || "SV"}
             </AvatarFallback>
           </Avatar>
@@ -280,17 +280,17 @@ export function StudentAiHubPage({ projectId }: StudentAiHubPageProps) {
               {isLeader ? (
                 <LeaderBadge size="sm" />
               ) : (
-                <Badge variant="secondary" className="text-[10px] font-bold">
+                <Badge variant="secondary" className="text-xs font-bold">
                   Thành viên
                 </Badge>
               )}
               {myTeam ? (
-                <Badge variant="outline" className="font-mono text-[10px]">
+                <Badge variant="outline" className="font-mono text-xs">
                   Nhóm {myTeam.teamNo} · {myTeam.teamName}
                 </Badge>
               ) : null}
               {course ? (
-                <Badge variant="secondary" className="font-mono text-[10px]">
+                <Badge variant="secondary" className="font-mono text-xs">
                   {course.code}
                 </Badge>
               ) : null}
@@ -314,7 +314,7 @@ export function StudentAiHubPage({ projectId }: StudentAiHubPageProps) {
             Làm mới
           </Button>
 
-          <div className="flex items-center gap-1 p-1 rounded-2xl bg-muted/60 border border-border shrink-0">
+          <div className="flex items-center gap-1 p-1 rounded-xl bg-muted/60 border border-border shrink-0">
             <button
               type="button"
               onClick={() => setScope("team")}
@@ -346,7 +346,7 @@ export function StudentAiHubPage({ projectId }: StudentAiHubPageProps) {
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <Card className="rounded-2xl border border-border/80 bg-card p-4 shadow-xs">
+        <Card className="rounded-xl border border-border/80 bg-card p-4 shadow-xs">
           <CardContent className="p-0 space-y-3">
             <div className="flex items-center justify-between">
               <span className="text-xs font-medium text-muted-foreground">Tiến độ dự án</span>
@@ -374,7 +374,7 @@ export function StudentAiHubPage({ projectId }: StudentAiHubPageProps) {
           </CardContent>
         </Card>
 
-        <Card className="rounded-2xl border border-border/80 bg-card p-4 shadow-xs">
+        <Card className="rounded-xl border border-border/80 bg-card p-4 shadow-xs">
           <CardContent className="p-0 space-y-3">
             <div className="flex items-center justify-between">
               <span className="text-xs font-medium text-muted-foreground">Mức độ rủi ro</span>
@@ -394,7 +394,7 @@ export function StudentAiHubPage({ projectId }: StudentAiHubPageProps) {
               {parsedRisk ? (
                 <AiRiskBadge level={parsedRisk.riskLevel} />
               ) : (
-                <Badge variant="outline" className="text-[11px] text-muted-foreground">
+                <Badge variant="outline" className="text-xs text-muted-foreground">
                   Chưa có dữ liệu rủi ro
                 </Badge>
               )}
@@ -402,7 +402,7 @@ export function StudentAiHubPage({ projectId }: StudentAiHubPageProps) {
           </CardContent>
         </Card>
 
-        <Card className="rounded-2xl border border-border/80 bg-card p-4 shadow-xs">
+        <Card className="rounded-xl border border-border/80 bg-card p-4 shadow-xs">
           <CardContent className="p-0 space-y-3">
             <div className="flex items-center justify-between">
               <span className="text-xs font-medium text-muted-foreground">Dữ liệu đối soát</span>
@@ -419,14 +419,14 @@ export function StudentAiHubPage({ projectId }: StudentAiHubPageProps) {
               </p>
             </div>
             <div className="pt-1">
-              <Badge variant="outline" className="text-[11px] text-blue-600 dark:text-blue-400 border-blue-500/30 bg-blue-500/10">
+              <Badge variant="outline" className="text-xs text-blue-600 dark:text-blue-400 border-blue-500/30 bg-blue-500/10">
                 Tiến độ và Rủi ro
               </Badge>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="rounded-2xl border border-border/80 bg-card p-4 shadow-xs">
+        <Card className="rounded-xl border border-border/80 bg-card p-4 shadow-xs">
           <CardContent className="p-0 space-y-3">
             <div className="flex items-center justify-between">
               <span className="text-xs font-medium text-muted-foreground">Đề xuất hành động</span>
@@ -444,7 +444,7 @@ export function StudentAiHubPage({ projectId }: StudentAiHubPageProps) {
               </p>
             </div>
             <div className="pt-1">
-              <Badge variant="outline" className="text-[11px] text-purple-600 dark:text-purple-400 border-purple-500/30 bg-purple-500/10">
+              <Badge variant="outline" className="text-xs text-purple-600 dark:text-purple-400 border-purple-500/30 bg-purple-500/10">
                 Tối ưu hóa quy trình làm việc
               </Badge>
             </div>
@@ -454,7 +454,7 @@ export function StudentAiHubPage({ projectId }: StudentAiHubPageProps) {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
-          <div className="p-6 rounded-2xl border border-border/80 bg-card shadow-xs space-y-4">
+          <div className="p-6 rounded-xl border border-border/80 bg-card shadow-xs space-y-4">
             <div className="flex items-center justify-between border-b border-border/60 pb-3">
               <div className="flex items-center gap-2">
                 <SparklesIcon className="w-4 h-4 text-primary" />
@@ -516,7 +516,7 @@ export function StudentAiHubPage({ projectId }: StudentAiHubPageProps) {
                 <span>Đang nạp phân tích tiến độ từ máy chủ...</span>
               </div>
             ) : !progressAnalysis ? (
-              <div className="p-12 text-center text-xs text-muted-foreground space-y-3 rounded-2xl border border-dashed border-border bg-muted/10">
+              <div className="p-12 text-center text-xs text-muted-foreground space-y-3 rounded-xl border border-dashed border-border bg-muted/10">
                 <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary mx-auto flex items-center justify-center">
                   <SparklesIcon className="w-5 h-5" />
                 </div>
@@ -538,7 +538,7 @@ export function StudentAiHubPage({ projectId }: StudentAiHubPageProps) {
                 </Button>
               </div>
             ) : progressAnalysis.status === "FAILED" ? (
-              <div className="p-6 rounded-2xl border border-red-500/30 bg-red-500/10 space-y-3.5 shadow-xs">
+              <div className="p-6 rounded-xl border border-red-500/30 bg-red-500/10 space-y-3.5 shadow-xs">
                 <div className="flex items-center gap-2.5 text-red-600 dark:text-red-400 font-bold text-sm">
                   <AlertOctagonIcon className="w-5 h-5 shrink-0" />
                   <span>Phân tích tiến độ thất bại</span>
@@ -546,7 +546,7 @@ export function StudentAiHubPage({ projectId }: StudentAiHubPageProps) {
                 <p className="text-xs text-foreground/90 leading-relaxed">
                   {getAiErrorMessage(progressAnalysis.failureCode || progressAnalysis.providerDecision?.safeErrorCode)}
                 </p>
-                <div className="flex flex-wrap items-center gap-3 text-[11px] font-mono text-muted-foreground pt-1">
+                <div className="flex flex-wrap items-center gap-3 text-xs font-mono text-muted-foreground pt-1">
                   <span className="px-2 py-0.5 rounded-md bg-red-500/20 text-red-700 dark:text-red-300 font-bold">
                     Mã lỗi: {progressAnalysis.failureCode || progressAnalysis.providerDecision?.safeErrorCode || "AI_ANALYSIS_FAILED"}
                   </span>
@@ -579,7 +579,7 @@ export function StudentAiHubPage({ projectId }: StudentAiHubPageProps) {
                   )}
                 </div>
 
-                <div className="p-5 rounded-2xl bg-primary/5 border border-primary/20 space-y-2">
+                <div className="p-5 rounded-xl bg-primary/5 border border-primary/20 space-y-2">
                   <div className="flex items-center gap-2 text-primary font-semibold text-xs uppercase tracking-wider">
                     <SparklesIcon className="w-3.5 h-3.5" />
                     Nhận định tổng quan
@@ -590,7 +590,7 @@ export function StudentAiHubPage({ projectId }: StudentAiHubPageProps) {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="p-4 rounded-2xl bg-emerald-500/5 border border-emerald-500/20 space-y-2.5">
+                  <div className="p-4 rounded-xl bg-emerald-500/5 border border-emerald-500/20 space-y-2.5">
                     <div className="flex items-center gap-1.5 text-xs font-semibold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">
                       <CheckCircle2Icon className="w-4 h-4" />
                       Điểm nổi bật
@@ -609,7 +609,7 @@ export function StudentAiHubPage({ projectId }: StudentAiHubPageProps) {
                     )}
                   </div>
 
-                  <div className="p-4 rounded-2xl bg-amber-500/5 border border-amber-500/20 space-y-2.5">
+                  <div className="p-4 rounded-xl bg-amber-500/5 border border-amber-500/20 space-y-2.5">
                     <div className="flex items-center gap-1.5 text-xs font-semibold text-amber-600 dark:text-amber-400 uppercase tracking-wider">
                       <AlertTriangleIcon className="w-4 h-4" />
                       Vấn đề cần lưu ý
@@ -630,7 +630,7 @@ export function StudentAiHubPage({ projectId }: StudentAiHubPageProps) {
                 </div>
 
                 {parsedNarrative.recommendations?.length > 0 && (
-                  <div className="p-5 rounded-2xl bg-indigo-500/5 border border-indigo-500/20 space-y-2.5">
+                  <div className="p-5 rounded-xl bg-indigo-500/5 border border-indigo-500/20 space-y-2.5">
                     <div className="flex items-center gap-1.5 text-xs font-semibold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider">
                       <LightbulbIcon className="w-4 h-4" />
                       Khuyến nghị của AI
@@ -655,7 +655,7 @@ export function StudentAiHubPage({ projectId }: StudentAiHubPageProps) {
         </div>
 
         <div className="space-y-6">
-          <div className="p-6 rounded-2xl border border-border/80 bg-card shadow-xs space-y-4">
+          <div className="p-6 rounded-xl border border-border/80 bg-card shadow-xs space-y-4">
             <div className="flex items-center justify-between border-b border-border/60 pb-3">
               <div className="flex items-center gap-2">
                 <ShieldAlertIcon className="w-4 h-4 text-red-500" />
@@ -691,7 +691,7 @@ export function StudentAiHubPage({ projectId }: StudentAiHubPageProps) {
                 <span>Đang quét các yếu tố rủi ro...</span>
               </div>
             ) : !riskAnalysis ? (
-              <div className="p-8 text-center text-xs text-muted-foreground space-y-3 rounded-2xl border border-dashed border-border bg-muted/10">
+              <div className="p-8 text-center text-xs text-muted-foreground space-y-3 rounded-xl border border-dashed border-border bg-muted/10">
                 <p>Chưa có dữ liệu đánh giá rủi ro.</p>
                 <Button
                   size="sm"
@@ -706,7 +706,7 @@ export function StudentAiHubPage({ projectId }: StudentAiHubPageProps) {
                 </Button>
               </div>
             ) : riskAnalysis.status === "FAILED" ? (
-              <div className="p-5 rounded-2xl border border-red-500/30 bg-red-500/10 space-y-2.5">
+              <div className="p-5 rounded-xl border border-red-500/30 bg-red-500/10 space-y-2.5">
                 <div className="flex items-center gap-2 text-red-600 dark:text-red-400 font-bold text-xs">
                   <AlertOctagonIcon className="w-4 h-4 shrink-0" />
                   <span>Quét rủi ro thất bại</span>
@@ -714,7 +714,7 @@ export function StudentAiHubPage({ projectId }: StudentAiHubPageProps) {
                 <p className="text-xs text-foreground/80 leading-relaxed">
                   {getAiErrorMessage(riskAnalysis.failureCode || riskAnalysis.providerDecision?.safeErrorCode)}
                 </p>
-                <div className="text-[11px] font-mono text-muted-foreground">
+                <div className="text-xs font-mono text-muted-foreground">
                   Mã lỗi: {riskAnalysis.failureCode || riskAnalysis.providerDecision?.safeErrorCode || "AI_RISK_FAILED"}
                 </div>
               </div>
@@ -740,7 +740,7 @@ export function StudentAiHubPage({ projectId }: StudentAiHubPageProps) {
                             {r.description}
                           </div>
                           {r.impact && (
-                            <div className="text-[11px] text-muted-foreground">
+                            <div className="text-xs text-muted-foreground">
                               Hệ quả: {r.impact}
                             </div>
                           )}

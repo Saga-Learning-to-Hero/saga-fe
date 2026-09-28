@@ -81,7 +81,7 @@ function SubjectForm({
 
   return (
     <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-      <div className="bg-card border border-border/80 rounded-3xl w-full max-w-xl max-h-[92vh] flex flex-col shadow-2xl overflow-hidden animate-in fade-in-0 zoom-in-95 duration-200">
+      <div className="bg-card border border-border/80 rounded-xl w-full max-w-xl max-h-[92vh] flex flex-col shadow-lg overflow-hidden animate-in fade-in-0 zoom-in-95 duration-200">
         <div className="p-5 border-b border-border/60 flex items-center justify-between shrink-0 bg-muted/20">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
@@ -125,7 +125,7 @@ function SubjectForm({
                 disabled={isEdit || isSubmitting}
                 className="font-mono text-sm uppercase bg-background"
               />
-              <p className="text-[11px] text-muted-foreground">
+              <p className="text-xs text-muted-foreground">
                 Mã định danh duy nhất theo khung chương trình (không thể sửa sau khi tạo).
               </p>
             </div>

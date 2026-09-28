@@ -74,7 +74,7 @@ export function ContributionCharts({ members }: ContributionChartsProps) {
   return (
     <div className="space-y-5">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 items-stretch">
-        <Card className="rounded-2xl border border-border/80 shadow-2xs bg-card flex flex-col overflow-hidden">
+        <Card className="rounded-xl border border-border/80 shadow-2xs bg-card flex flex-col overflow-hidden">
           <CardHeader className="p-4 sm:p-5 pb-3.5 border-b border-border/60 bg-muted/20">
             <div className="flex items-center justify-between gap-3">
               <div className="flex items-center gap-2.5">
@@ -83,14 +83,14 @@ export function ContributionCharts({ members }: ContributionChartsProps) {
                 </div>
                 <div>
                   <CardTitle className="text-sm sm:text-base font-bold text-foreground">
-                    Phân chia đóng góp hiện tại
+                    Biểu đồ Slicing Pie
                   </CardTitle>
                   <CardDescription className="text-xs text-muted-foreground">
                     Tỷ lệ cổ phần công sức cuối cùng của các thành viên trong nhóm
                   </CardDescription>
                 </div>
               </div>
-              <Badge variant="outline" className="font-mono text-[10px] font-bold">
+              <Badge variant="outline" className="font-mono text-xs font-bold">
                 {members.length} thành viên
               </Badge>
             </div>
@@ -99,7 +99,7 @@ export function ContributionCharts({ members }: ContributionChartsProps) {
           <CardContent className="p-4 sm:p-5 flex-1 flex flex-col justify-between gap-4">
             <div className="grid grid-cols-2 gap-3">
               <div className="rounded-xl border border-border/60 bg-muted/20 p-3 space-y-1">
-                <span className="text-[11px] text-muted-foreground font-medium block">
+                <span className="text-xs text-muted-foreground font-medium block">
                   Đóng góp dẫn đầu
                 </span>
                 <div className="flex items-center justify-between gap-1.5 min-w-0">
@@ -113,19 +113,19 @@ export function ContributionCharts({ members }: ContributionChartsProps) {
                     {formatContributionPercent(topMemberPct)}
                   </span>
                 </div>
-                <p className="text-[10px] text-muted-foreground">
+                <p className="text-xs text-muted-foreground">
                   Thành viên có tỷ lệ đóng góp cao nhất
                 </p>
               </div>
 
               <div className="rounded-xl border border-border/60 bg-muted/20 p-3 space-y-1">
-                <span className="text-[11px] text-muted-foreground font-medium block">
+                <span className="text-xs text-muted-foreground font-medium block">
                   Ghi nhận đóng góp
                 </span>
                 <span className="font-mono text-xl font-black text-foreground">
                   {activeMembersCount} / {members.length} thành viên
                 </span>
-                <p className="text-[10px] text-muted-foreground">
+                <p className="text-xs text-muted-foreground">
                   {zeroMembersCount > 0
                     ? `${zeroMembersCount} thành viên chưa có slice score`
                     : "Toàn bộ thành viên đều đã có đóng góp"}
@@ -136,7 +136,7 @@ export function ContributionCharts({ members }: ContributionChartsProps) {
             <div className="flex flex-col sm:flex-row items-center gap-4 flex-1">
               <div className="size-44 shrink-0 flex items-center justify-center">
                 {pieData.length === 0 ? (
-                  <div className="size-36 rounded-full border border-dashed border-border flex items-center justify-center text-center p-3 text-[11px] text-muted-foreground">
+                  <div className="size-36 rounded-full border border-dashed border-border flex items-center justify-center text-center p-3 text-xs text-muted-foreground">
                     Chưa có dữ liệu phân bổ
                   </div>
                 ) : (
@@ -193,7 +193,7 @@ export function ContributionCharts({ members }: ContributionChartsProps) {
                         <div className="flex items-center gap-2 min-w-0">
                           <span
                             className={cn(
-                              "flex size-5 shrink-0 items-center justify-center rounded-full text-[10px] font-black",
+                              "flex size-5 shrink-0 items-center justify-center rounded-full text-xs font-black",
                               idx === 0
                                 ? "bg-amber-500/20 text-amber-700 dark:text-amber-300"
                                 : idx === 1
@@ -210,7 +210,7 @@ export function ContributionCharts({ members }: ContributionChartsProps) {
                           <span className="font-bold text-foreground truncate">
                             {cleanedName}
                           </span>
-                          <span className="font-mono text-[10px] text-muted-foreground shrink-0">
+                          <span className="font-mono text-xs text-muted-foreground shrink-0">
                             {member.studentCode}
                           </span>
                         </div>
@@ -230,7 +230,7 @@ export function ContributionCharts({ members }: ContributionChartsProps) {
                       </div>
 
                       {isZero && (
-                        <p className="text-[10px] text-amber-700 dark:text-amber-300 font-medium">
+                        <p className="text-xs text-amber-700 dark:text-amber-300 font-medium">
                           Chưa có slice score được ghi nhận
                         </p>
                       )}
@@ -242,14 +242,14 @@ export function ContributionCharts({ members }: ContributionChartsProps) {
 
             <div className="flex items-start gap-2 rounded-xl border border-border/60 bg-muted/20 p-3 text-xs text-muted-foreground">
               <SparklesIcon className="size-4 text-primary shrink-0 mt-0.5" />
-              <p className="text-[11px] leading-relaxed">
+              <p className="text-xs leading-relaxed">
                 Cổ phần Slicing Pie phản ánh tỷ trọng đóng góp động. Tỷ lệ này sẽ tiếp tục biến động theo các đầu việc Jira, commits Git và minh chứng nộp trong các Sprint tiếp theo.
               </p>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="rounded-2xl border border-border/80 shadow-2xs bg-card flex flex-col overflow-hidden">
+        <Card className="rounded-xl border border-border/80 shadow-2xs bg-card flex flex-col overflow-hidden">
           <CardHeader className="p-4 sm:p-5 pb-3.5 border-b border-border/60 bg-muted/20">
             <div className="flex items-center justify-between gap-3">
               <div className="flex items-center gap-2.5">
@@ -268,7 +268,7 @@ export function ContributionCharts({ members }: ContributionChartsProps) {
               <Badge
                 variant="outline"
                 className={cn(
-                  "font-mono text-[10px] font-bold",
+                  "font-mono text-xs font-bold",
                   hasAdjustment
                     ? "border-purple-500/30 bg-purple-500/10 text-purple-700 dark:text-purple-300"
                     : "border-border/70 text-muted-foreground"
@@ -282,25 +282,25 @@ export function ContributionCharts({ members }: ContributionChartsProps) {
           <CardContent className="p-4 sm:p-5 flex-1 flex flex-col justify-between gap-4">
             <div className="grid grid-cols-2 gap-3">
               <div className="rounded-xl border border-border/60 bg-muted/20 p-3 space-y-1">
-                <span className="text-[11px] text-muted-foreground font-medium block">
+                <span className="text-xs text-muted-foreground font-medium block">
                   Tổng Slice Score nhóm
                 </span>
                 <span className="font-mono text-xl font-black text-foreground">
                   {formatContributionNumber(totalSliceScore)}
                 </span>
-                <p className="text-[10px] text-muted-foreground">
+                <p className="text-xs text-muted-foreground">
                   Đơn vị công sức quy đổi từ tất cả đầu việc
                 </p>
               </div>
 
               <div className="rounded-xl border border-border/60 bg-muted/20 p-3 space-y-1">
-                <span className="text-[11px] text-muted-foreground font-medium block">
+                <span className="text-xs text-muted-foreground font-medium block">
                   Hệ số Đánh giá chéo
                 </span>
                 <span className="font-mono text-xl font-black text-foreground">
                   {hasAdjustment ? "Đã áp dụng" : "1.00 ×"}
                 </span>
-                <p className="text-[10px] text-muted-foreground">
+                <p className="text-xs text-muted-foreground">
                   Điều chỉnh theo kết quả Peer Review
                 </p>
               </div>
@@ -308,7 +308,7 @@ export function ContributionCharts({ members }: ContributionChartsProps) {
 
             <div className="overflow-x-auto rounded-xl border border-border/60">
               <table className="w-full text-left text-xs">
-                <thead className="bg-muted/50 text-[10px] font-bold uppercase tracking-wider text-muted-foreground border-b border-border/60">
+                <thead className="bg-muted/50 text-xs font-bold uppercase tracking-wider text-muted-foreground border-b border-border/60">
                   <tr>
                     <th className="p-2.5 pl-3">Thành viên</th>
                     <th className="p-2.5 text-right font-mono">Slice Score</th>
@@ -326,7 +326,7 @@ export function ContributionCharts({ members }: ContributionChartsProps) {
                           <div className="font-bold text-foreground truncate max-w-[130px]">
                             {cleanedName}
                           </div>
-                          <div className="font-mono text-[10px] text-muted-foreground">
+                          <div className="font-mono text-xs text-muted-foreground">
                             {member.studentCode}
                           </div>
                         </td>
@@ -351,7 +351,7 @@ export function ContributionCharts({ members }: ContributionChartsProps) {
 
             <div className="flex items-start gap-2 rounded-xl border border-border/60 bg-muted/20 p-3 text-xs text-muted-foreground">
               <InfoIcon className="size-4 text-primary shrink-0 mt-0.5" />
-              <p className="text-[11px] leading-relaxed">
+              <p className="text-xs leading-relaxed">
                 {hasAdjustment
                   ? "Tỷ lệ cuối cùng đã được nhân với hệ số đánh giá chéo (Peer Review Multiplier) của từng thành viên và chuẩn hóa lại theo tổng công sức."
                   : "Chưa có điều chỉnh peer review được áp dụng. Tỷ lệ hiện tại đang được tính trực tiếp từ tỷ trọng Slice score của từng cá nhân."}
@@ -361,7 +361,7 @@ export function ContributionCharts({ members }: ContributionChartsProps) {
         </Card>
       </div>
 
-      <Card className="rounded-2xl border border-border/80 shadow-2xs bg-card overflow-hidden">
+      <Card className="rounded-xl border border-border/80 shadow-2xs bg-card overflow-hidden">
         <CardHeader className="p-4 sm:p-5 pb-3.5 border-b border-border/60 bg-muted/20">
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-2.5">
@@ -420,7 +420,7 @@ export function ContributionCharts({ members }: ContributionChartsProps) {
                       <h4 className="text-xs font-bold text-foreground truncate">
                         {cleanedName}
                       </h4>
-                      <span className="font-mono text-[10px] text-muted-foreground">
+                      <span className="font-mono text-xs text-muted-foreground">
                         {member.studentCode}
                       </span>
                     </div>
@@ -429,7 +429,7 @@ export function ContributionCharts({ members }: ContributionChartsProps) {
 
                   <div className="space-y-2 text-xs">
                     <div className="space-y-1">
-                      <div className="flex justify-between text-[11px]">
+                      <div className="flex justify-between text-xs">
                         <span className="text-muted-foreground">Lập trình (Code):</span>
                         <span className="font-mono font-bold text-foreground">
                           {formatContributionPercent(codePct)}
@@ -444,7 +444,7 @@ export function ContributionCharts({ members }: ContributionChartsProps) {
                     </div>
 
                     <div className="space-y-1">
-                      <div className="flex justify-between text-[11px]">
+                      <div className="flex justify-between text-xs">
                         <span className="text-muted-foreground">Kiểm thử (Testing):</span>
                         <span className="font-mono font-bold text-foreground">
                           {formatContributionPercent(testPct)}
@@ -459,7 +459,7 @@ export function ContributionCharts({ members }: ContributionChartsProps) {
                     </div>
 
                     <div className="space-y-1">
-                      <div className="flex justify-between text-[11px]">
+                      <div className="flex justify-between text-xs">
                         <span className="text-muted-foreground">Tài liệu (Documentation):</span>
                         <span className="font-mono font-bold text-foreground">
                           {formatContributionPercent(docPct)}
@@ -475,7 +475,7 @@ export function ContributionCharts({ members }: ContributionChartsProps) {
 
                     {hasAnyResearch && (
                       <div className="space-y-1">
-                        <div className="flex justify-between text-[11px]">
+                        <div className="flex justify-between text-xs">
                           <span className="text-muted-foreground">Nghiên cứu (Research):</span>
                           <span className="font-mono font-bold text-foreground">
                             {formatContributionPercent(researchPct)}

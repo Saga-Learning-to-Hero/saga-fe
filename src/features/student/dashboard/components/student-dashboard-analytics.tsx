@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import Link from "next/link";
 import {
   CheckCircle2Icon,
@@ -28,18 +28,34 @@ import { useProjectRealtime } from "@/features/student/project/hooks/use-project
 import { useProjectProgress } from "@/features/student/project/hooks/useProjectSync";
 import { getApiErrorMessage } from "@/lib/api-error";
 import { cn } from "@/lib/utils";
+import { CustomSelect } from "@/components/common/custom-select";
+import { useProjectSprints } from "@/features/student/sprint-progress/hooks/use-project-sprints";
 import { normalizeProjectProgress } from "@/features/progress/lib/progress-format";
 import { useStudentDashboard } from "../hooks/use-student-dashboard";
 import { StudentActiveTasksCard } from "./student-active-tasks-card";
 import { StudentAlertsBanner } from "./student-alerts-banner";
 import { StudentRecentCommitsCard } from "./student-recent-commits-card";
-import { StudentWeeklyCommitsChart } from "./student-weekly-commits-chart";
+import dynamic from "next/dynamic";
+import { Loader2Icon } from "lucide-react";
+
+const StudentWeeklyCommitsChart = dynamic(
+  () => import("./student-weekly-commits-chart").then((mod) => mod.StudentWeeklyCommitsChart),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="w-full h-[300px] flex items-center justify-center text-muted-foreground bg-muted/10 rounded-xl">
+        <Loader2Icon className="w-6 h-6 animate-spin" />
+      </div>
+    ),
+  }
+);
 import { TeamWorkloadComparisonChart } from "./team-workload-comparison-chart";
 import { StudentDashboardSkeleton } from "./student-dashboard-skeleton";
 
 export function StudentDashboardAnalytics() {
   const { course, courseId, isLoading: isCoursesLoading, isInvalidCourse } = useStudentCourseContext();
-  const dashboardQuery = useStudentDashboard(courseId, { enabled: Boolean(courseId) });
+  const [selectedSprintId, setSelectedSprintId] = useState<string | null>(null);
+  const dashboardQuery = useStudentDashboard(courseId, selectedSprintId, { enabled: Boolean(courseId) });
   const data = dashboardQuery.data;
 
   // Trưởng nhóm có thể chọn xem tab Cá nhân (Cockpit) hoặc xem Toàn nhóm
@@ -53,6 +69,9 @@ export function StudentDashboardAnalytics() {
   const projectId = data?.team?.projectId || null;
   const canLoadProgress = Boolean(isLeader && projectId && activeTab === "team");
 
+  // Danh sách sprint của dự án để sinh viên chọn xem thống kê từng sprint
+  const { data: projectSprints } = useProjectSprints(projectId, { enabled: Boolean(projectId) });
+
   // Dữ liệu mở rộng cho Trưởng nhóm khi chuyển sang tab Toàn nhóm
   const progressQuery = useProjectProgress(projectId, { enabled: canLoadProgress });
   useProjectRealtime(projectId, { enabled: Boolean(projectId) });
@@ -63,6 +82,71 @@ export function StudentDashboardAnalytics() {
   const openMemberDetail = (studentId: string) => {
     setDetailStudentId(studentId);
   };
+
+  const currentSprint = data?.currentSprint;
+  const sprintSelectOptions = useMemo(() => {
+    const seen = new Set<string>();
+    const options: Array<{ value: string; label: string; subLabel?: string }> = [];
+
+    // 1. Thêm các sprint từ danh sách projectSprints
+    if (projectSprints && projectSprints.length > 0) {
+      for (const sp of projectSprints) {
+        if (!sp.id || seen.has(sp.id)) continue;
+        seen.add(sp.id);
+
+        const isCurrent =
+          (currentSprint?.id && sp.id === currentSprint.id) ||
+          (currentSprint?.name && sp.name && currentSprint.name.toLowerCase().trim() === sp.name.toLowerCase().trim());
+
+        const stateLabel =
+          sp.state === "active"
+            ? "Đang diễn ra"
+            : sp.state === "closed"
+              ? "Đã đóng"
+              : "Dự kiến";
+
+        options.push({
+          value: sp.id,
+          label: sp.name,
+          subLabel: isCurrent ? `Sprint hiện tại (${stateLabel})` : `Trạng thái: ${stateLabel}`,
+        });
+      }
+    }
+
+    // 2. Nếu currentSprint từ dashboard chưa có trong options thì bổ sung vào đầu
+    if (currentSprint?.id && !seen.has(currentSprint.id)) {
+      seen.add(currentSprint.id);
+      options.unshift({
+        value: currentSprint.id,
+        label: currentSprint.name || "Sprint hiện tại",
+        subLabel: currentSprint.state
+          ? `Sprint hiện tại (${currentSprint.state.toUpperCase() === "ACTIVE" ? "Đang diễn ra" : currentSprint.state})`
+          : "Sprint hiện tại",
+      });
+    }
+
+    // 3. Fallback an toàn: nếu selectedSprintId đang chọn mà chưa có trong options
+    if (selectedSprintId && !seen.has(selectedSprintId)) {
+      options.push({
+        value: selectedSprintId,
+        label: currentSprint?.name || "Sprint đã chọn",
+        subLabel: "Đang xem",
+      });
+    }
+
+    return options;
+  }, [projectSprints, currentSprint, selectedSprintId]);
+
+  const selectedSprintValue = useMemo(() => {
+    if (selectedSprintId) return selectedSprintId;
+    if (currentSprint?.id) return currentSprint.id;
+    if (sprintSelectOptions.length > 0) return sprintSelectOptions[0].value;
+    return "";
+  }, [selectedSprintId, currentSprint, sprintSelectOptions]);
+
+  const isViewingDifferentSprint = Boolean(
+    selectedSprintId && currentSprint?.id && selectedSprintId !== currentSprint.id
+  );
 
   if (isInvalidCourse) {
     return (
@@ -127,31 +211,31 @@ export function StudentDashboardAnalytics() {
     );
   }
 
-  const { student, team, currentSprint, myMetrics, myActiveTasks, recentCommits, weeklyCommits, actionableAlerts, integrations } = data;
+  const { student, team, myMetrics, myActiveTasks, recentCommits, weeklyCommits, actionableAlerts, integrations } = data;
 
   const formattedLastCommit = myMetrics.commits.lastCommittedAt
     ? new Date(myMetrics.commits.lastCommittedAt).toLocaleString("vi-VN", {
-        timeZone: "Asia/Ho_Chi_Minh",
-        day: "2-digit",
-        month: "2-digit",
-        hour: "2-digit",
-        minute: "2-digit",
-      })
+      timeZone: "Asia/Ho_Chi_Minh",
+      day: "2-digit",
+      month: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+    })
     : "Chưa ghi nhận";
 
   return (
     <div className="space-y-6">
       {/* 1. Header Card: Định danh sinh viên, môn học, nhóm & Chuyển đổi tab nếu là Leader */}
-      <div className="flex flex-col justify-between gap-4 rounded-3xl border border-border/80 bg-card/90 p-5 shadow-xs sm:flex-row sm:items-center">
+      <div className="flex flex-col justify-between gap-4 rounded-xl border border-border/80 bg-card/90 p-5 shadow-xs sm:flex-row sm:items-center">
         <div className="flex items-center gap-3.5">
-          <Avatar className="size-11 rounded-2xl border border-primary/25 shadow-xs" size="lg">
+          <Avatar className="size-11 rounded-xl border border-primary/25 shadow-xs" size="lg">
             <AvatarImage
               src={student.avatarUrl || undefined}
               alt={student.fullName}
               referrerPolicy="no-referrer"
-              className="object-cover rounded-2xl"
+              className="object-cover rounded-xl"
             />
-            <AvatarFallback className="rounded-2xl bg-primary/10 text-primary font-bold text-sm font-mono">
+            <AvatarFallback className="rounded-xl bg-primary/10 text-primary font-bold text-sm font-mono">
               {student.studentCode?.slice(0, 2) || "SV"}
             </AvatarFallback>
           </Avatar>
@@ -166,11 +250,11 @@ export function StudentDashboardAnalytics() {
               {isLeader ? (
                 <LeaderBadge size="sm" />
               ) : (
-                <Badge variant="secondary" className="text-[10px] font-bold">
+                <Badge variant="secondary" className="text-xs font-bold">
                   Thành viên nhóm
                 </Badge>
               )}
-              <Badge variant="outline" className="font-mono text-[10px]">
+              <Badge variant="outline" className="font-mono text-xs">
                 Nhóm {team.teamNo} · {team.teamName}
               </Badge>
             </div>
@@ -180,7 +264,43 @@ export function StudentDashboardAnalytics() {
           </div>
         </div>
 
-        <div className="flex items-center gap-2 self-end sm:self-center">
+        <div className="flex flex-wrap items-center gap-2.5 self-end sm:self-center">
+          {/* Dropdown chọn Sprint theo sprintId */}
+          <div
+            className={cn(
+              "flex items-center gap-1.5 rounded-xl px-2.5 py-1 transition-all border",
+              isViewingDifferentSprint
+                ? "bg-primary/10 border-primary/40 text-primary shadow-xs ring-1 ring-primary/20"
+                : "bg-muted/40 border-border/70"
+            )}
+          >
+            <KanbanIcon
+              className={cn("size-3.5 shrink-0", isViewingDifferentSprint ? "text-primary" : "text-amber-500")}
+            />
+            <span
+              className={cn(
+                "text-xs font-semibold whitespace-nowrap",
+                isViewingDifferentSprint ? "text-primary" : "text-muted-foreground"
+              )}
+            >
+              Sprint:
+            </span>
+            <div className="w-48 sm:w-56">
+              <CustomSelect
+                id="student-dashboard-header-sprint-select"
+                value={selectedSprintValue}
+                onChange={(val) => setSelectedSprintId(val)}
+                options={sprintSelectOptions}
+                placeholder={currentSprint?.name || "Chọn Sprint..."}
+                triggerClassName={cn(
+                  "h-7 text-xs font-semibold py-0 px-2 rounded-lg border-transparent bg-transparent hover:bg-background/80",
+                  isViewingDifferentSprint && "text-primary font-bold hover:bg-primary/15"
+                )}
+                dropdownClassName="min-w-[240px] sm:min-w-[280px] max-h-56 sm:max-h-60 overflow-y-auto custom-scrollbar sm:right-0 sm:left-auto"
+              />
+            </div>
+          </div>
+
           {isLeader && (
             <div className="flex items-center rounded-xl border border-border/70 bg-muted/30 p-1">
               <button
@@ -233,7 +353,7 @@ export function StudentDashboardAnalytics() {
           {/* 3 Thẻ Chỉ Số KPI Cá Nhân Nổi Bật */}
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
             {/* Thẻ 1: Nhiệm vụ phân công */}
-            <Card className="rounded-2xl border border-border/80 bg-card/90 p-4 shadow-xs">
+            <Card className="rounded-xl border border-border/80 bg-card/90 p-4 shadow-xs">
               <CardContent className="p-0 space-y-2">
                 <div className="flex items-center justify-between">
                   <span className="text-xs text-muted-foreground font-medium">Nhiệm vụ của tôi</span>
@@ -248,11 +368,11 @@ export function StudentDashboardAnalytics() {
                       / {myMetrics.tasks.totalAssigned} tasks
                     </span>
                   </div>
-                  <Badge variant="outline" className="font-mono text-[10px] bg-primary/10 text-primary border-primary/20">
+                  <Badge variant="outline" className="font-mono text-xs bg-primary/10 text-primary border-primary/20">
                     {Math.round(myMetrics.tasks.completionPercent || 0)}%
                   </Badge>
                 </div>
-                <div className="flex items-center justify-between text-[11px] text-muted-foreground pt-1 border-t border-border/50">
+                <div className="flex items-center justify-between text-xs text-muted-foreground pt-1 border-t border-border/50">
                   <span>Story Points:</span>
                   <span className="font-mono font-bold text-foreground">
                     {myMetrics.tasks.completedStoryPoints || 0} / {myMetrics.tasks.totalStoryPoints || 0} SP
@@ -262,7 +382,7 @@ export function StudentDashboardAnalytics() {
             </Card>
 
             {/* Thẻ 2: Minh chứng Git Commits */}
-            <Card className="rounded-2xl border border-border/80 bg-card/90 p-4 shadow-xs">
+            <Card className="rounded-xl border border-border/80 bg-card/90 p-4 shadow-xs">
               <CardContent className="p-0 space-y-2">
                 <div className="flex items-center justify-between">
                   <span className="text-xs text-muted-foreground font-medium">Minh chứng Git</span>
@@ -277,12 +397,12 @@ export function StudentDashboardAnalytics() {
                   </div>
                   <Badge
                     variant="outline"
-                    className="font-mono text-[10px] bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20"
+                    className="font-mono text-xs bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20"
                   >
                     {Math.round(myMetrics.commits.traceabilityPercent || 0)}% Traceability
                   </Badge>
                 </div>
-                <div className="flex items-center justify-between text-[11px] text-muted-foreground pt-1 border-t border-border/50">
+                <div className="flex items-center justify-between text-xs text-muted-foreground pt-1 border-t border-border/50">
                   <span>Lần commit gần nhất:</span>
                   <span className="font-mono font-medium text-foreground truncate max-w-[140px]">
                     {formattedLastCommit}
@@ -292,25 +412,29 @@ export function StudentDashboardAnalytics() {
             </Card>
 
             {/* Thẻ 3: Sprint hiện tại & Đồng bộ */}
-            <Card className="rounded-2xl border border-border/80 bg-card/90 p-4 shadow-xs">
+            <Card className="rounded-xl border border-border/80 bg-card/90 p-4 shadow-xs">
               <CardContent className="p-0 space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs text-muted-foreground font-medium">Sprint hiện tại</span>
+                  <span className="text-xs text-muted-foreground font-medium">
+                    {isViewingDifferentSprint ? "Sprint đang xem" : "Sprint hiện tại"}
+                  </span>
                   <div className="p-1.5 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400">
                     <KanbanIcon className="size-4" />
                   </div>
                 </div>
+
                 <div className="flex items-baseline justify-between">
                   <div className="text-base font-bold text-foreground truncate max-w-[180px]" title={currentSprint?.name || "Chưa có Sprint"}>
                     {currentSprint?.name || "Chưa bắt đầu"}
                   </div>
                   {currentSprint?.state && (
-                    <Badge variant="outline" className="text-[10px] uppercase font-bold">
+                    <Badge variant="outline" className="text-xs uppercase font-bold">
                       {currentSprint.state}
                     </Badge>
                   )}
                 </div>
-                <div className="flex items-center justify-between text-[11px] text-muted-foreground pt-1 border-t border-border/50">
+
+                <div className="flex items-center justify-between text-xs text-muted-foreground pt-1 border-t border-border/50">
                   <span>Tiến độ nhóm:</span>
                   <span className="font-mono font-bold text-foreground">
                     {currentSprint ? `${currentSprint.completedTasks}/${currentSprint.totalTasks} (${Math.round(currentSprint.completionPercent || 0)}%)` : "N/A"}
@@ -393,7 +517,7 @@ function EmptyPanel({
   onRetry?: () => void;
 }) {
   return (
-    <Card className="rounded-2xl border border-dashed border-border/80 p-8 text-center shadow-xs">
+    <Card className="rounded-xl border border-dashed border-border/80 p-8 text-center shadow-xs">
       <CardContent className="space-y-3 p-0">
         <FolderKanbanIcon className="mx-auto size-8 text-muted-foreground/50" />
         <h2 className="text-base font-bold">{title}</h2>

@@ -1,4 +1,5 @@
 "use client";
+import { showSuccessToast, showErrorToast } from "@/lib/api-error";
 
 import { useState, useRef, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -29,7 +30,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { toast } from "@/components/ui/sonner";
 import { CustomSelect, type CustomSelectOption } from "@/components/common/custom-select";
 import { NotificationService } from "@/features/notification/api/notification-service";
 import { LecturerCourseService } from "@/features/lecturer/courses/api/lecturer-course-service";
@@ -198,7 +198,7 @@ export function LecturerNotificationComposer() {
         response = await NotificationService.sendLecturerStudent(courseId, studentId, payload, key);
       }
 
-      toast.success("Gửi thông báo thành công!", {
+      showSuccessToast("Gửi thông báo thành công!", {
         id: "lecturer-send-success",
         description: `Đã gửi thông báo tới ${response.recipientCount} người nhận (${response.createdCount} bản ghi đã lưu).`,
       });
@@ -212,11 +212,11 @@ export function LecturerNotificationComposer() {
       if (status === 409 || code === "NOTIFICATION_SEND_CONFLICT") {
         const msg = "Xung đột khóa gửi thông báo (409 NOTIFICATION_SEND_CONFLICT). Yêu cầu này đã được xử lý trên hệ thống, vui lòng không gửi lại.";
         setErrorMessage(msg);
-        toast.error("Gửi thông báo thất bại", { description: msg });
+        showErrorToast("Gửi thông báo thất bại", { description: msg });
       } else {
         const msg = error.response?.data?.message || error.message || "Không thể kết nối đến máy chủ để gửi thông báo. Bạn có thể nhấn Thử lại.";
         setErrorMessage(msg);
-        toast.error("Gửi thông báo thất bại", { description: msg });
+        showErrorToast("Gửi thông báo thất bại", { description: msg });
       }
     } finally {
       setIsSending(false);
@@ -230,7 +230,7 @@ export function LecturerNotificationComposer() {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
       <div className="lg:col-span-7 space-y-6">
-        <Card className="rounded-3xl border-border bg-card shadow-sm">
+        <Card className="rounded-xl border-border bg-card shadow-sm">
           <CardHeader className="p-6 border-b border-border/80">
             <div className="flex items-center gap-2.5">
               <div className="size-9 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center border border-emerald-500/20">
@@ -249,7 +249,7 @@ export function LecturerNotificationComposer() {
 
           <CardContent className="p-6 space-y-5">
             {errorMessage && (
-              <div className="p-3.5 rounded-2xl bg-destructive/10 border border-destructive/20 flex items-start gap-3 text-destructive">
+              <div className="p-3.5 rounded-xl bg-destructive/10 border border-destructive/20 flex items-start gap-3 text-destructive">
                 <AlertCircleIcon className="size-4.5 shrink-0 mt-0.5" />
                 <div className="text-xs leading-relaxed flex-1 font-medium">{errorMessage}</div>
               </div>
@@ -335,7 +335,7 @@ export function LecturerNotificationComposer() {
                 </label>
                 <span
                   className={cn(
-                    "text-[11px] font-mono",
+                    "text-xs font-mono",
                     title.length > 160 ? "text-destructive font-bold" : "text-muted-foreground"
                   )}
                 >
@@ -360,7 +360,7 @@ export function LecturerNotificationComposer() {
                 </label>
                 <span
                   className={cn(
-                    "text-[11px] font-mono",
+                    "text-xs font-mono",
                     message.length > 1000 ? "text-destructive font-bold" : "text-muted-foreground"
                   )}
                 >
@@ -392,7 +392,7 @@ export function LecturerNotificationComposer() {
                 disabled={isSending}
               />
               {actionUrl.trim() && !isActionUrlValid && (
-                <p className="text-[11px] text-destructive flex items-center gap-1 font-medium">
+                <p className="text-xs text-destructive flex items-center gap-1 font-medium">
                   <ShieldAlertIcon className="size-3.5" />
                   Đường dẫn không hợp lệ. Phải bắt đầu bằng &quot;/&quot; và không bắt đầu bằng &quot;//&quot;.
                 </p>
@@ -432,14 +432,14 @@ export function LecturerNotificationComposer() {
       </div>
 
       <div className="lg:col-span-5 space-y-4">
-        <Card className="rounded-3xl border-border bg-card shadow-sm overflow-hidden">
+        <Card className="rounded-xl border-border bg-card shadow-sm overflow-hidden">
           <CardHeader className="p-4 sm:p-5 border-b border-border/80 bg-muted/20">
             <CardTitle className="text-xs uppercase tracking-wider font-bold text-muted-foreground">
               Xem trước trực tiếp (Live Preview)
             </CardTitle>
           </CardHeader>
           <CardContent className="p-5 space-y-4">
-            <div className="p-4 rounded-2xl bg-card border border-primary/20 shadow-xs flex gap-3.5">
+            <div className="p-4 rounded-xl bg-card border border-primary/20 shadow-xs flex gap-3.5">
               <div
                 className={cn(
                   "size-10 rounded-xl flex items-center justify-center shrink-0 border",
@@ -470,9 +470,9 @@ export function LecturerNotificationComposer() {
                   {message.trim() || "Nội dung thông báo sẽ xuất hiện tại đây sau khi sinh viên nhận được..."}
                 </p>
                 <div className="flex items-center justify-between pt-1">
-                  <span className="text-[10px] text-muted-foreground font-medium">Vừa xong</span>
+                  <span className="text-xs text-muted-foreground font-medium">Vừa xong</span>
                   {actionUrl.trim() && isActionUrlValid && (
-                    <span className="text-[10px] font-mono text-primary truncate max-w-[160px]">
+                    <span className="text-xs font-mono text-primary truncate max-w-[160px]">
                       {actionUrl.trim()}
                     </span>
                   )}
@@ -492,7 +492,7 @@ export function LecturerNotificationComposer() {
           </CardContent>
         </Card>
 
-        <Card className="rounded-3xl border-border bg-muted/30 p-5 space-y-3">
+        <Card className="rounded-xl border-border bg-muted/30 p-5 space-y-3">
           <div className="flex items-center gap-2 text-xs font-bold text-foreground">
             <CheckCircle2Icon className="size-4 text-emerald-500" />
             Quy định gửi thông báo giảng viên
@@ -506,7 +506,7 @@ export function LecturerNotificationComposer() {
       </div>
 
       <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
-        <AlertDialogContent className="rounded-3xl max-w-md">
+        <AlertDialogContent className="rounded-xl max-w-md">
           <AlertDialogHeader>
             <AlertDialogTitle className="text-base font-bold">
               Xác nhận gửi thông báo?

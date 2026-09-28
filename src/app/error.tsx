@@ -20,7 +20,7 @@ export default function GlobalError({
     <div className="min-h-screen w-full flex flex-col items-center justify-center p-6 bg-background text-foreground relative overflow-hidden">
       <div className="max-w-md w-full text-center space-y-6">
         <div className="relative inline-flex items-center justify-center">
-          <div className="w-20 h-20 rounded-3xl bg-destructive/10 border border-destructive/20 flex items-center justify-center text-destructive shadow-xl shadow-destructive/5">
+          <div className="w-20 h-20 rounded-xl bg-destructive/10 border border-destructive/20 flex items-center justify-center text-destructive shadow-md shadow-destructive/5">
             <AlertCircleIcon className="w-10 h-10" />
           </div>
         </div>
@@ -54,7 +54,7 @@ export default function GlobalError({
         </div>
 
         {error?.digest && (
-          <p className="text-[11px] text-muted-foreground/60 pt-2 font-mono">
+          <p className="text-xs text-muted-foreground/60 pt-2 font-mono">
             Mã định danh lỗi: {error.digest}
           </p>
         )}

@@ -98,11 +98,11 @@ export function ContributionKPICards({ sliceWeights }: ContributionKPICardsProps
           <h3 className="text-sm font-extrabold text-foreground">
             Trọng số quy đổi công sức
           </h3>
-          <span className="text-[11px] text-muted-foreground font-medium">
+          <span className="text-xs text-muted-foreground font-medium">
             (Cấu hình dự án Slicing Pie)
           </span>
         </div>
-        <p className="text-[11px] text-muted-foreground">
+        <p className="text-xs text-muted-foreground">
           Trọng số quy đổi chung của dự án, không phải tỷ lệ đóng góp của từng cá nhân.
         </p>
       </div>
@@ -122,7 +122,7 @@ export function ContributionKPICards({ sliceWeights }: ContributionKPICardsProps
             <Card
               key={field}
               className={cn(
-                "rounded-2xl border bg-card p-4 shadow-xs transition-all hover:shadow-md hover:-translate-y-0.5",
+                "rounded-xl border bg-card p-4 shadow-xs transition-all hover:shadow-md hover:-translate-y-0.5",
                 style.borderClass
               )}
             >
@@ -132,7 +132,7 @@ export function ContributionKPICards({ sliceWeights }: ContributionKPICardsProps
                     <span className="text-xs font-bold text-foreground block">
                       {config.title}
                     </span>
-                    <span className="text-[10px] text-muted-foreground font-medium">
+                    <span className="text-xs text-muted-foreground font-medium">
                       {config.subtitle}
                     </span>
                   </div>
@@ -149,7 +149,7 @@ export function ContributionKPICards({ sliceWeights }: ContributionKPICardsProps
                   <span className="font-mono text-2xl font-black text-foreground">
                     {formatContributionPercent(sliceWeights?.[field])}
                   </span>
-                  <p className="mt-1 text-[11px] leading-relaxed text-muted-foreground">
+                  <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
                     {config.description}
                   </p>
                 </div>

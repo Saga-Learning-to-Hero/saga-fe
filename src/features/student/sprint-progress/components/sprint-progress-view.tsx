@@ -1,5 +1,6 @@
 "use client";
 
+import { showSuccessToast, showErrorToast, getApiErrorMessage } from "@/lib/api-error";
 import { useState, useMemo } from "react";
 import type { SprintIssue, Sprint, IssueStatus, Epic } from "../types/sprint-progress";
 import { SprintHeader } from "./sprint-header";
@@ -31,14 +32,25 @@ import { useProjectTasksData, useTransitionTask, useTaskOptions } from "../hooks
 import { useProjectJiraSourceSelection } from "@/features/student/project/hooks/use-project-jira-source-selection";
 import { useProjectRealtime } from "@/features/student/project/hooks/use-project-realtime";
 import { useProjectSyncStatus, useSyncProject } from "@/features/student/project/hooks/useProjectSync";
-import { toast } from "sonner";
-import { getApiErrorMessage } from "@/lib/api-error";
 import {
   moveLocalIssueToSprint,
   restoreLocalSprintOverride,
   setLocalSprintOverride,
 } from "../lib/optimistic-sprint-state";
-import { ActivityHeatmapGrid, SprintBurndownChart } from "@/features/analytics";
+import { ActivityHeatmapGrid } from "@/features/analytics";
+import dynamic from "next/dynamic";
+
+const SprintBurndownChart = dynamic(
+  () => import("@/features/analytics").then((mod) => mod.SprintBurndownChart),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="w-full h-[400px] flex items-center justify-center text-muted-foreground bg-muted/10 rounded-xl">
+        <Loader2Icon className="w-6 h-6 animate-spin" />
+      </div>
+    ),
+  }
+);
 import {
   scopeIssuesToJiraSource,
   scopeSprintsToJiraSource,
@@ -335,7 +347,7 @@ export function SprintProgressView() {
     } catch {
       setLocalTaskOverrides((prev) => ({ ...prev, [issueId]: previousOverride || {} }));
       setLocalCustomIssues(previousCustomIssues);
-      toast.error("Không thể cập nhật trạng thái Task trên Jira.");
+      showErrorToast("Không thể cập nhật trạng thái Task trên Jira.");
     }
   };
 
@@ -363,7 +375,7 @@ export function SprintProgressView() {
     } catch {
       setLocalTaskOverrides((prev) => restoreLocalSprintOverride(prev, issueId, previousOverride));
       setLocalCustomIssues(previousCustomIssues);
-      toast.error("Không thể gán Task vào Sprint trên Jira.");
+      showErrorToast("Không thể gán Task vào Sprint trên Jira.");
     }
   };
 
@@ -371,9 +383,9 @@ export function SprintProgressView() {
     if (!projectId) return;
     try {
       await syncProjectMutation.mutateAsync(projectId);
-      toast.success("Đã gửi yêu cầu đồng bộ Jira & GitHub. Dữ liệu sẽ tự động cập nhật.");
+      showSuccessToast("Đã gửi yêu cầu đồng bộ Jira & GitHub. Dữ liệu sẽ tự động cập nhật.");
     } catch {
-      toast.error("Không thể kích hoạt đồng bộ từ Jira.");
+      showErrorToast("Không thể kích hoạt đồng bộ từ Jira.");
     }
   };
 
@@ -442,14 +454,14 @@ export function SprintProgressView() {
       )}
 
       {isLoadingTasks && (
-        <div className="flex items-center justify-center gap-2 p-6 rounded-2xl border border-primary/20 bg-primary/5 text-xs text-primary font-medium">
+        <div className="flex items-center justify-center gap-2 p-6 rounded-xl border border-primary/20 bg-primary/5 text-xs text-primary font-medium">
           <Loader2Icon className="w-4 h-4 animate-spin" />
           <span>Đang tải danh sách Jira tasks đã chiếu từ máy chủ...</span>
         </div>
       )}
 
       {isInvalidCourse && (
-        <div className="p-6 rounded-2xl border border-dashed border-amber-500/40 bg-amber-500/5 text-center space-y-2">
+        <div className="p-6 rounded-xl border border-dashed border-amber-500/40 bg-amber-500/5 text-center space-y-2">
           <AlertCircleIcon className="w-6 h-6 text-amber-500 mx-auto" />
           <p className="text-sm font-bold text-foreground">Lớp học phần không còn khả dụng</p>
           <p className="text-xs text-muted-foreground">Hãy chọn lại lớp học phần trước khi quản lý Sprint.</p>
@@ -457,7 +469,7 @@ export function SprintProgressView() {
       )}
 
       {!isInvalidCourse && !isLoadingTasks && !projectId && (
-        <div className="p-6 rounded-2xl border border-dashed border-amber-500/40 bg-amber-500/5 text-center space-y-2">
+        <div className="p-6 rounded-xl border border-dashed border-amber-500/40 bg-amber-500/5 text-center space-y-2">
           <AlertCircleIcon className="w-6 h-6 text-amber-500 mx-auto" />
           <p className="text-sm font-bold text-foreground">Chưa xác định dự án nhóm</p>
           <p className="text-xs text-muted-foreground">Vui lòng vào menu Dự án để khởi tạo hoặc kiểm tra quyền phân nhóm.</p>
@@ -465,7 +477,7 @@ export function SprintProgressView() {
       )}
 
       {!isLoadingTasks && Boolean(projectId) && isTasksError && (
-        <div className="p-6 rounded-2xl border border-dashed border-destructive/40 bg-destructive/5 text-center space-y-3">
+        <div className="p-6 rounded-xl border border-dashed border-destructive/40 bg-destructive/5 text-center space-y-3">
           <AlertCircleIcon className="w-6 h-6 text-destructive mx-auto" />
           <div>
             <p className="text-sm font-bold text-foreground">Không tải được dữ liệu Sprint</p>
@@ -480,7 +492,7 @@ export function SprintProgressView() {
       )}
 
       {!isLoadingSprints && Boolean(projectId) && isSprintsError && (
-        <div className="p-6 rounded-2xl border border-dashed border-destructive/40 bg-destructive/5 text-center space-y-3">
+        <div className="p-6 rounded-xl border border-dashed border-destructive/40 bg-destructive/5 text-center space-y-3">
           <AlertCircleIcon className="w-6 h-6 text-destructive mx-auto" />
           <div>
             <p className="text-sm font-bold text-foreground">Không tải được danh sách Sprint</p>
@@ -495,7 +507,7 @@ export function SprintProgressView() {
       )}
 
       {Boolean(projectId) && !isJiraConnected && (
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-3.5 rounded-2xl border border-amber-500/30 bg-amber-500/10 text-xs text-amber-800 dark:text-amber-200 shadow-2xs">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-3.5 rounded-xl border border-amber-500/30 bg-amber-500/10 text-xs text-amber-800 dark:text-amber-200 shadow-2xs">
           <div className="flex items-center gap-2.5">
             <AlertCircleIcon className="w-4 h-4 shrink-0 text-amber-500" />
             <span>
@@ -515,7 +527,7 @@ export function SprintProgressView() {
       )}
 
       {hasActiveSyncJob && (
-        <div className="flex items-center gap-2 rounded-2xl border border-primary/20 bg-primary/5 px-3.5 py-3 text-xs text-primary">
+        <div className="flex items-center gap-2 rounded-xl border border-primary/20 bg-primary/5 px-3.5 py-3 text-xs text-primary">
           <Loader2Icon className="size-4 animate-spin shrink-0" />
           <span>Dữ liệu Jira/GitHub đang được đồng bộ. Bảng tiến độ sẽ tự làm mới khi hoàn tất.</span>
         </div>

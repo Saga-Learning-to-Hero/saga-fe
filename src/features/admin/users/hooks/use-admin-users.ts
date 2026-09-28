@@ -1,8 +1,7 @@
 "use client";
 
+import { showSuccessToast, showErrorToast } from "@/lib/api-error";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
-import { getApiErrorMessage } from "@/lib/api-error";
 import { AdminUserService } from "../api/admin-user-service";
 import type {
   GetAdminUsersParams,
@@ -61,17 +60,12 @@ export function useUpdateAdminUserStatus() {
           : "Không hoạt động (INACTIVE)";
       const displayName =
         updatedUser?.fullName || updatedUser?.email || "tài khoản";
-      toast.success(
+      showSuccessToast(
         `Đã cập nhật trạng thái của ${displayName} thành ${statusText}.`
       );
     },
     onError: (error) => {
-      toast.error(
-        getApiErrorMessage(
-          error,
-          "Đã có lỗi xảy ra khi cập nhật trạng thái người dùng."
-        )
-      );
+      showErrorToast("Đã có lỗi xảy ra khi cập nhật trạng thái người dùng.", error);
     },
   });
-}
+}

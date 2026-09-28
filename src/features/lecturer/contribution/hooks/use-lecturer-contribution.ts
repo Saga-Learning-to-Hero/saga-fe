@@ -1,10 +1,10 @@
+import { showSuccessToast, showErrorToast, getApiErrorMessage } from "@/lib/api-error";
 import { useCallback } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
 import { LecturerWeightsService } from "../api/lecturer-weights-service";
 import { ProjectWeightsService } from "../api/project-weights-service";
 import { TeamContributionService } from "../api/team-contribution-service";
-import { getApiErrorCode, getApiErrorMessage } from "@/lib/api-error";
+import { getApiErrorCode, } from "@/lib/api-error";
 import type {
   ContributionConfigModeRequest,
   ContributionSliceWeightsRequest,
@@ -90,10 +90,10 @@ export function useUpdateContributionSliceWeights(courseId: string) {
           queryKey: ["lecturerDashboard", courseId] as const,
         }),
       ]);
-      toast.success("Đã lưu trọng số dùng chung cho lớp học phần.");
+      showSuccessToast("Đã lưu trọng số dùng chung cho lớp học phần.");
     },
     onError: (error: unknown) => {
-      toast.error(getApiErrorMessage(error, "Không thể lưu trọng số lớp học phần."));
+      showErrorToast("Không thể lưu trọng số lớp học phần.", error);
     },
   });
 }
@@ -114,14 +114,14 @@ export function useUpdateContributionConfigMode(courseId: string) {
           queryKey: ["lecturerDashboard", courseId] as const,
         }),
       ]);
-      toast.success(
+      showSuccessToast(
         data.mode === "PROJECT_GROUP"
           ? "Lớp đang dùng trọng số riêng theo từng dự án nhóm."
           : "Lớp đang dùng một bộ trọng số chung."
       );
     },
     onError: (error: unknown) => {
-      toast.error(getContributionErrorMessage(error, "Không thể đổi kiểu cấu hình trọng số."));
+      showErrorToast(getContributionErrorMessage(error, "Không thể đổi kiểu cấu hình trọng số."));
     },
   });
 }
@@ -150,10 +150,10 @@ export function useUpdateProjectGroupWeights(context: {
           queryKey: ["lecturerDashboard", courseId] as const,
         }),
       ]);
-      toast.success("Đã lưu trọng số của dự án nhóm.");
+      showSuccessToast("Đã lưu trọng số của dự án nhóm.");
     },
     onError: (error: unknown) => {
-      toast.error(getApiErrorMessage(error, "Không thể lưu trọng số dự án nhóm."));
+      showErrorToast("Không thể lưu trọng số dự án nhóm.", error);
     },
   });
-}
+}

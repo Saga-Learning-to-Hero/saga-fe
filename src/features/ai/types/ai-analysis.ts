@@ -62,6 +62,11 @@ export interface AiLatestAnalysisResponse {
   analysis: AiAnalysisResponse | null;
 }
 
+export interface CourseAiProgressSubmitResult {
+  analysis: AiAnalysisResponse;
+  isReused: boolean;
+}
+
 export interface AiAdjudicationResponse {
   outcome: string;
   disagreementDetailsJson: string | null;

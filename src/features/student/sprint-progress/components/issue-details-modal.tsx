@@ -635,9 +635,9 @@ export function IssueDetailsModal({
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className={`bg-card border-border/80 shadow-2xl flex flex-col overflow-hidden animate-in duration-300 ${isEditing
+        className={`bg-card border-border/80 shadow-lg flex flex-col overflow-hidden animate-in duration-300 ${isEditing
           ? "border-l w-full sm:max-w-2xl md:max-w-3xl lg:max-w-4xl xl:max-w-5xl h-screen slide-in-from-right"
-          : "w-full max-w-3xl max-h-[calc(100vh-2rem)] rounded-3xl border slide-in-from-bottom-4"
+          : "w-full max-w-3xl max-h-[calc(100vh-2rem)] rounded-xl border slide-in-from-bottom-4"
           }`}
       >
         <div className="p-4 sm:p-5 border-b border-border/60 flex items-center justify-between bg-muted/30 shrink-0">
@@ -723,7 +723,7 @@ export function IssueDetailsModal({
               <span>
                 Tên task / Tóm tắt Jira <span className="text-destructive">*</span>
               </span>
-              <span className="text-[10px] font-normal text-muted-foreground">Bắt buộc</span>
+              <span className="text-xs font-normal text-muted-foreground">Bắt buộc</span>
             </Label>
             <Input
               id="issue-title"
@@ -751,7 +751,7 @@ export function IssueDetailsModal({
                     <FileTextIcon className="w-3.5 h-3.5 text-primary" />
                     Mô tả chi tiết task
                   </span>
-                  <span className="text-[10px] font-normal text-muted-foreground">(Tùy chọn)</span>
+                  <span className="text-xs font-normal text-muted-foreground">(Tùy chọn)</span>
                 </Label>
                 <Textarea
                   id="issue-desc"
@@ -765,7 +765,7 @@ export function IssueDetailsModal({
               </div>
             </div>
 
-            <div className="p-4 sm:p-5 rounded-2xl bg-muted/20 border border-border/60 space-y-4">
+            <div className="p-4 sm:p-5 rounded-xl bg-muted/20 border border-border/60 space-y-4">
               <div className="pb-2 border-b border-border/40">
                 <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
                   Thuộc tính Task
@@ -777,7 +777,7 @@ export function IssueDetailsModal({
                   <div className="space-y-1.5 sm:col-span-2">
                     <Label htmlFor="jira-source" className="text-xs font-semibold flex items-center gap-1.5 text-foreground">
                       <span>Nguồn Jira (Workspace)</span>
-                      <span className="text-[11px] font-normal text-muted-foreground">(Chọn Jira đích)</span>
+                      <span className="text-xs font-normal text-muted-foreground">(Chọn Jira đích)</span>
                     </Label>
                     <CustomSelect
                       id="jira-source"
@@ -797,7 +797,7 @@ export function IssueDetailsModal({
                 <div className="space-y-1.5">
                   <Label htmlFor="issue-type" className="text-xs font-semibold flex items-center gap-1.5 text-foreground">
                     <span>Loại thẻ</span>
-                    <span className="text-[11px] font-normal text-muted-foreground">(Tùy chọn)</span>
+                    <span className="text-xs font-normal text-muted-foreground">(Tùy chọn)</span>
                   </Label>
                   <CustomSelect
                     id="issue-type"
@@ -841,7 +841,7 @@ export function IssueDetailsModal({
                 <div className="space-y-1.5">
                   <Label htmlFor="issue-assignee" className="text-xs font-semibold flex items-center gap-1.5 text-foreground">
                     <span>Người thực hiện</span>
-                    <span className="text-[11px] font-normal text-muted-foreground">(Tùy chọn)</span>
+                    <span className="text-xs font-normal text-muted-foreground">(Tùy chọn)</span>
                   </Label>
                   <CustomSelect
                     id="issue-assignee"
@@ -872,7 +872,7 @@ export function IssueDetailsModal({
                 <div className="space-y-1.5">
                   <Label htmlFor="issue-sprint" className="text-xs font-semibold flex items-center gap-1.5 text-foreground">
                     <span>Sprint</span>
-                    <span className="text-[11px] font-normal text-muted-foreground">(Tùy chọn)</span>
+                    <span className="text-xs font-normal text-muted-foreground">(Tùy chọn)</span>
                   </Label>
                   <CustomSelect
                     id="issue-sprint"
@@ -897,7 +897,7 @@ export function IssueDetailsModal({
                 <div className="space-y-1.5">
                   <Label htmlFor="issue-sp" className="text-xs font-semibold flex items-center gap-1.5 text-foreground">
                     <span>Story Points</span>
-                    <span className="text-[11px] font-normal text-muted-foreground">(Tùy chọn)</span>
+                    <span className="text-xs font-normal text-muted-foreground">(Tùy chọn)</span>
                   </Label>
                   <Input
                     id="issue-sp"
@@ -914,7 +914,7 @@ export function IssueDetailsModal({
                 <div className="space-y-1.5">
                   <Label htmlFor="issue-priority" className="text-xs font-semibold flex items-center gap-1.5 text-foreground">
                     <span>Mức ưu tiên</span>
-                    <span className="text-[11px] font-normal text-muted-foreground">(Tùy chọn)</span>
+                    <span className="text-xs font-normal text-muted-foreground">(Tùy chọn)</span>
                   </Label>
                   <CustomSelect
                     id="issue-priority"
@@ -934,7 +934,7 @@ export function IssueDetailsModal({
                   <Label htmlFor="issue-start-date" className="text-xs font-semibold flex items-center gap-1.5 text-foreground">
                     <CalendarIcon className="w-3.5 h-3.5 text-muted-foreground" />
                     <span>Ngày bắt đầu</span>
-                    <span className="text-[11px] font-normal text-muted-foreground">(Tùy chọn)</span>
+                    <span className="text-xs font-normal text-muted-foreground">(Tùy chọn)</span>
                   </Label>
                   <Input
                     id="issue-start-date"
@@ -950,7 +950,7 @@ export function IssueDetailsModal({
                   <Label htmlFor="issue-due-date" className="text-xs font-semibold flex items-center gap-1.5 text-foreground">
                     <CalendarIcon className="w-3.5 h-3.5 text-muted-foreground" />
                     <span>Hạn hoàn thành</span>
-                    <span className="text-[11px] font-normal text-muted-foreground">(Tùy chọn)</span>
+                    <span className="text-xs font-normal text-muted-foreground">(Tùy chọn)</span>
                   </Label>
                   <Input
                     id="issue-due-date"
@@ -965,7 +965,7 @@ export function IssueDetailsModal({
                 <div className="space-y-1.5">
                   <Label htmlFor="issue-parent-task" className="text-xs font-semibold flex items-center gap-1.5 text-foreground">
                     <span>Task cha (Parent Task)</span>
-                    <span className="text-[11px] font-normal text-muted-foreground">(Tùy chọn)</span>
+                    <span className="text-xs font-normal text-muted-foreground">(Tùy chọn)</span>
                   </Label>
                   <CustomSelect
                     id="issue-parent-task"
@@ -981,7 +981,7 @@ export function IssueDetailsModal({
                   <Label htmlFor="issue-labels" className="text-xs font-semibold flex items-center gap-1.5 text-foreground">
                     <TagIcon className="w-3.5 h-3.5 text-blue-500" />
                     <span>Labels (Nhãn phân loại)</span>
-                    <span className="text-[11px] font-normal text-muted-foreground">(Tùy chọn)</span>
+                    <span className="text-xs font-normal text-muted-foreground">(Tùy chọn)</span>
                   </Label>
                   <LabelsMultiSelect
                     id="issue-labels"
@@ -996,11 +996,11 @@ export function IssueDetailsModal({
             </div>
 
             {taskDetail?.subtasks && taskDetail.subtasks.length > 0 && (
-              <div className="p-4 sm:p-5 rounded-2xl bg-muted/20 border border-border/60 space-y-3">
+              <div className="p-4 sm:p-5 rounded-xl bg-muted/20 border border-border/60 space-y-3">
                 <div className="flex items-center justify-between pb-2 border-b border-border/40">
                   <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
                     <span>Danh sách Task con (Subtasks)</span>
-                    <span className="font-mono text-[10px] bg-muted px-2 py-0.5 rounded-md border border-border font-semibold text-foreground">
+                    <span className="font-mono text-xs bg-muted px-2 py-0.5 rounded-md border border-border font-semibold text-foreground">
                       {taskDetail.subtasks.length}
                     </span>
                   </h4>
@@ -1014,7 +1014,7 @@ export function IssueDetailsModal({
                       <span className="font-medium text-foreground truncate mr-2">
                         {sub.title}
                       </span>
-                      <span className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-muted/50 border border-border text-muted-foreground shrink-0 font-semibold">
+                      <span className="text-xs font-mono px-2 py-0.5 rounded-md bg-muted/50 border border-border text-muted-foreground shrink-0 font-semibold">
                         {sub.status}
                       </span>
                     </div>

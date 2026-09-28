@@ -153,7 +153,7 @@ export function CourseAiProviderCredentialSection({
               <statusDisplay.Icon className="w-3.5 h-3.5 shrink-0" />
               <span>{statusDisplay.label}</span>
               {credential?.lastFour && (
-                <span className="font-mono text-[11px]">
+                <span className="font-mono text-xs">
                   (•••• {credential.lastFour})
                 </span>
               )}
@@ -168,7 +168,7 @@ export function CourseAiProviderCredentialSection({
       </div>
 
       {isConfigured && (
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 p-3 rounded-lg bg-muted/30 border border-border/50 text-[11px]">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 p-3 rounded-lg bg-muted/30 border border-border/50 text-xs">
           <div>
             <span className="text-muted-foreground block">Nhà cung cấp:</span>
             <span className="font-semibold text-foreground uppercase">
@@ -202,7 +202,7 @@ export function CourseAiProviderCredentialSection({
       )}
 
       <div className="space-y-2">
-        <label className="text-[11px] font-medium text-muted-foreground block">
+        <label className="text-xs font-medium text-muted-foreground block">
           {isConfigured
             ? `Thay thế khóa API ${providerDisplayName} bằng khóa mới`
             : `Nhập API Key cho ${providerDisplayName}`}
@@ -211,7 +211,7 @@ export function CourseAiProviderCredentialSection({
           <div className="relative flex-1">
             <Input
               type={showKey ? "text" : "password"}
-              placeholder={provider === "OPENROUTER" ? "sk-or-v1-..." : provider === "GEMINI" ? "AIzaSy..." : "sk-proj-..."}
+              placeholder={provider === "OPENROUTER" ? "sk-or-v1-..." : provider === "GEMINI" ? "AIzaSy..." : provider === "COHERE" ? "Vd: xyz..." : "sk-proj-..."}
               value={apiKey}
               onChange={(e) => setApiKey(e.target.value)}
               onKeyDown={(e) => {

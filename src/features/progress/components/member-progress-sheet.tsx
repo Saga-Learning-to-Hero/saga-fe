@@ -116,7 +116,7 @@ export function MemberProgressSheet({
     >
       <SheetContent
         side="right"
-        className="w-full sm:max-w-2xl md:max-w-3xl data-[side=right]:sm:max-w-2xl data-[side=right]:md:max-w-3xl overflow-hidden p-0 flex flex-col bg-card border-l border-border/70 shadow-2xl"
+        className="w-full sm:max-w-2xl md:max-w-3xl data-[side=right]:sm:max-w-2xl data-[side=right]:md:max-w-3xl overflow-hidden p-0 flex flex-col bg-card border-l border-border/70 shadow-lg"
       >
         {timelineTask ? (
           <>
@@ -186,16 +186,16 @@ export function MemberProgressSheet({
             <SheetHeader className="p-5 border-b border-border/60 bg-muted/20 shrink-0">
               <div className="flex items-start justify-between gap-3 pr-8">
                 <div className="flex items-center gap-3">
-                  <Avatar className="size-12 rounded-2xl border border-border/80 shadow-2xs">
+                  <Avatar className="size-12 rounded-xl border border-border/80 shadow-2xs">
                     {avatarUrl ? (
                       <AvatarImage
                         src={avatarUrl}
                         alt={data?.fullName || "Avatar"}
-                        className="rounded-2xl object-cover"
+                        className="rounded-xl object-cover"
                       />
                     ) : null}
                     <AvatarFallback
-                      className={cn("rounded-2xl font-mono text-xs font-bold", avatarColorClass)}
+                      className={cn("rounded-xl font-mono text-xs font-bold", avatarColorClass)}
                     >
                       {initials}
                     </AvatarFallback>
@@ -205,7 +205,7 @@ export function MemberProgressSheet({
                       <span>{data?.fullName || "Chi tiết tiến độ thành viên"}</span>
                     </SheetTitle>
                     <div className="flex flex-wrap items-center gap-1.5">
-                      <Badge variant="outline" className="font-mono text-[10px] px-1.5 py-0">
+                      <Badge variant="outline" className="font-mono text-xs px-1.5 py-0">
                         {data?.studentCode || "..."}
                       </Badge>
                       <MemberRoleBadge role={data?.teamRole} />
@@ -225,14 +225,14 @@ export function MemberProgressSheet({
                   <span>Đang tải số liệu thành viên từ máy chủ...</span>
                 </div>
               ) : notInTeam ? (
-                <div className="rounded-2xl border border-dashed border-amber-500/40 bg-amber-500/5 p-6 text-center">
+                <div className="rounded-xl border border-dashed border-amber-500/40 bg-amber-500/5 p-6 text-center">
                   <p className="text-sm font-bold text-foreground">Thành viên không còn thuộc nhóm</p>
                   <p className="mt-1.5 text-xs text-muted-foreground">
                     Máy chủ ghi nhận người này không còn là thành viên hoạt động của dự án.
                   </p>
                 </div>
               ) : query.isError ? (
-                <div className="rounded-2xl border border-dashed border-destructive/40 bg-destructive/5 p-6 text-center">
+                <div className="rounded-xl border border-dashed border-destructive/40 bg-destructive/5 p-6 text-center">
                   <p className="text-sm font-bold text-destructive">Không thể tải thông tin thành viên</p>
                   <p className="mt-1.5 text-xs text-muted-foreground">
                     {getApiErrorMessage(query.error, "Vui lòng kiểm tra lại kết nối.")}
@@ -249,7 +249,7 @@ export function MemberProgressSheet({
                 </div>
               ) : data ? (
                 <>
-                  <div className="rounded-2xl border border-border/70 bg-muted/10 p-4 space-y-3 shadow-2xs">
+                  <div className="rounded-xl border border-border/70 bg-muted/10 p-4 space-y-3 shadow-2xs">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <div className="w-7 h-7 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center">
@@ -271,19 +271,19 @@ export function MemberProgressSheet({
 
                     <div className="grid grid-cols-3 gap-2 pt-1 text-center font-mono">
                       <div className="rounded-xl border border-border/60 bg-card p-2">
-                        <span className="text-[10px] text-muted-foreground block font-sans">Đã xong</span>
+                        <span className="text-xs text-muted-foreground block font-sans">Đã xong</span>
                         <span className="text-sm font-extrabold text-emerald-600 dark:text-emerald-400">
                           {data.taskSummary.completed ?? 0}
                         </span>
                       </div>
                       <div className="rounded-xl border border-border/60 bg-card p-2">
-                        <span className="text-[10px] text-muted-foreground block font-sans">Chưa xong</span>
+                        <span className="text-xs text-muted-foreground block font-sans">Chưa xong</span>
                         <span className="text-sm font-extrabold text-amber-600 dark:text-amber-400">
                           {data.taskSummary.incomplete ?? 0}
                         </span>
                       </div>
                       <div className="rounded-xl border border-border/60 bg-card p-2">
-                        <span className="text-[10px] text-muted-foreground block font-sans">Đang làm</span>
+                        <span className="text-xs text-muted-foreground block font-sans">Đang làm</span>
                         <span className="text-sm font-extrabold text-primary">
                           {inProgressTasks}
                         </span>
@@ -291,7 +291,7 @@ export function MemberProgressSheet({
                     </div>
                   </div>
 
-                  <div className="rounded-2xl border border-border/70 bg-muted/10 p-4 space-y-3 shadow-2xs">
+                  <div className="rounded-xl border border-border/70 bg-muted/10 p-4 space-y-3 shadow-2xs">
                     <div className="flex items-center gap-2">
                       <div className="w-7 h-7 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400 flex items-center justify-center">
                         <GitCommitIcon className="w-3.5 h-3.5" />
@@ -301,17 +301,17 @@ export function MemberProgressSheet({
 
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
                       <div className="rounded-xl border border-border/60 bg-card p-2.5">
-                        <span className="text-[10px] text-muted-foreground block">Tổng Commits</span>
+                        <span className="text-xs text-muted-foreground block">Tổng Commits</span>
                         <span className="font-mono text-base font-extrabold text-foreground">
                           {data.commitSummary.total}
                         </span>
                       </div>
                       <div className="rounded-xl border border-border/60 bg-card p-2.5">
-                        <span className="text-[10px] text-muted-foreground block">Đã gắn mã Jira</span>
+                        <span className="text-xs text-muted-foreground block">Đã gắn mã Jira</span>
                         <span className="font-mono text-base font-extrabold text-foreground">
                           {data.commitSummary.linkedToTasks}
                         </span>
-                        <span className="text-[10px] text-muted-foreground font-mono ml-1">
+                        <span className="text-xs text-muted-foreground font-mono ml-1">
                           (
                           {formatLinkedCommitRatio(
                             data.commitSummary.linkedToTasks,
@@ -321,14 +321,14 @@ export function MemberProgressSheet({
                         </span>
                       </div>
                       <div className="rounded-xl border border-border/60 bg-card p-2.5 col-span-2 sm:col-span-1">
-                        <span className="text-[10px] text-muted-foreground block">Task có commit</span>
+                        <span className="text-xs text-muted-foreground block">Task có commit</span>
                         <span className="font-mono text-base font-extrabold text-foreground">
                           {data.commitSummary.tasksWithLinkedCommits}
                         </span>
                       </div>
                     </div>
 
-                    <div className="text-[11px] text-muted-foreground flex items-center justify-between pt-1 border-t border-border/40">
+                    <div className="text-xs text-muted-foreground flex items-center justify-between pt-1 border-t border-border/40">
                       <span>Lần commit gần nhất:</span>
                       <span className="font-mono text-foreground font-medium">
                         {formatDateTime(
@@ -338,7 +338,7 @@ export function MemberProgressSheet({
                     </div>
                   </div>
 
-                  <div className="rounded-2xl border border-border/70 bg-muted/10 p-4 space-y-3 shadow-2xs">
+                  <div className="rounded-xl border border-border/70 bg-muted/10 p-4 space-y-3 shadow-2xs">
                     <div className="flex items-center gap-2">
                       <div className="w-7 h-7 rounded-xl bg-teal-500/10 text-teal-600 dark:text-teal-400 flex items-center justify-center">
                         <ShieldCheckIcon className="w-3.5 h-3.5" />
@@ -348,25 +348,25 @@ export function MemberProgressSheet({
 
                     <div className="grid grid-cols-4 gap-2 text-center font-mono">
                       <div className="rounded-xl border border-border/60 bg-card p-2">
-                        <span className="text-[10px] text-muted-foreground block font-sans">Phiên</span>
+                        <span className="text-xs text-muted-foreground block font-sans">Phiên</span>
                         <span className="text-sm font-extrabold text-foreground">
                           {data.evidenceSummary.workSessions}
                         </span>
                       </div>
                       <div className="rounded-xl border border-border/60 bg-card p-2">
-                        <span className="text-[10px] text-muted-foreground block font-sans">Tệp</span>
+                        <span className="text-xs text-muted-foreground block font-sans">Tệp</span>
                         <span className="text-sm font-extrabold text-foreground">
                           {data.evidenceSummary.files}
                         </span>
                       </div>
                       <div className="rounded-xl border border-border/60 bg-card p-2">
-                        <span className="text-[10px] text-muted-foreground block font-sans">Web</span>
+                        <span className="text-xs text-muted-foreground block font-sans">Web</span>
                         <span className="text-sm font-extrabold text-foreground">
                           {data.evidenceSummary.webLinks}
                         </span>
                       </div>
                       <div className="rounded-xl border border-border/60 bg-card p-2">
-                        <span className="text-[10px] text-muted-foreground block font-sans">Xác nhận</span>
+                        <span className="text-xs text-muted-foreground block font-sans">Xác nhận</span>
                         <span className="text-sm font-extrabold text-foreground">
                           {data.evidenceSummary.confirmations}
                         </span>
@@ -387,7 +387,7 @@ export function MemberProgressSheet({
                         <button
                           type="button"
                           onClick={() => setTaskFilter("ALL")}
-                          className={`px-2 py-0.5 text-[10px] font-semibold rounded-md transition-all cursor-pointer ${taskFilter === "ALL"
+                          className={`px-2 py-0.5 text-xs font-semibold rounded-md transition-all cursor-pointer ${taskFilter === "ALL"
                             ? "bg-card text-foreground shadow-2xs font-bold"
                             : "text-muted-foreground hover:text-foreground"
                             }`}
@@ -397,7 +397,7 @@ export function MemberProgressSheet({
                         <button
                           type="button"
                           onClick={() => setTaskFilter("IN_PROGRESS")}
-                          className={`px-2 py-0.5 text-[10px] font-semibold rounded-md transition-all cursor-pointer ${taskFilter === "IN_PROGRESS"
+                          className={`px-2 py-0.5 text-xs font-semibold rounded-md transition-all cursor-pointer ${taskFilter === "IN_PROGRESS"
                             ? "bg-card text-foreground shadow-2xs font-bold"
                             : "text-muted-foreground hover:text-foreground"
                             }`}
@@ -407,7 +407,7 @@ export function MemberProgressSheet({
                         <button
                           type="button"
                           onClick={() => setTaskFilter("DONE")}
-                          className={`px-2 py-0.5 text-[10px] font-semibold rounded-md transition-all cursor-pointer ${taskFilter === "DONE"
+                          className={`px-2 py-0.5 text-xs font-semibold rounded-md transition-all cursor-pointer ${taskFilter === "DONE"
                             ? "bg-card text-foreground shadow-2xs font-bold"
                             : "text-muted-foreground hover:text-foreground"
                             }`}
@@ -418,7 +418,7 @@ export function MemberProgressSheet({
                     </div>
 
                     {filteredTasks.length === 0 ? (
-                      <div className="rounded-2xl border border-dashed border-border/80 p-6 text-center text-xs text-muted-foreground">
+                      <div className="rounded-xl border border-dashed border-border/80 p-6 text-center text-xs text-muted-foreground">
                         Không có task nào trong trạng thái này.
                       </div>
                     ) : (
@@ -449,7 +449,7 @@ export function MemberProgressSheet({
                                 {task.status}
                               </Badge>
                             </div>
-                            <div className="flex items-center justify-between text-[10px] font-mono text-muted-foreground">
+                            <div className="flex items-center justify-between text-xs font-mono text-muted-foreground">
                               <span className="text-primary font-bold">{task.externalKey}</span>
                               <span className="inline-flex items-center gap-1 text-primary group-hover:underline font-sans">
                                 <ClockIcon className="size-3" />

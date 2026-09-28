@@ -71,11 +71,13 @@ describe("ActivityAnalyticsService", () => {
     points: [
       {
         date: "2026-03-01",
+        idealRemaining: 10,
         actualRemaining: 10,
         doneCount: 0,
       },
       {
         date: "2026-03-02",
+        idealRemaining: 9,
         actualRemaining: 8,
         doneCount: 2,
       },

@@ -46,7 +46,7 @@ export function WebhookIntegrationSection({
       aria-label="Tích hợp Jira GitHub và cảnh báo nhóm"
       className="grid grid-cols-1 gap-4 xl:grid-cols-12"
     >
-      <Card className="rounded-2xl border-border/80 bg-card shadow-xs xl:order-2 xl:col-span-4">
+      <Card className="rounded-xl border-border/80 bg-card shadow-xs xl:order-2 xl:col-span-4">
         <CardHeader className="border-b border-border/60 p-4 pb-3">
           <div className="flex items-start gap-2.5">
             <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
@@ -56,7 +56,7 @@ export function WebhookIntegrationSection({
               <CardTitle className="text-sm font-bold text-foreground">
                 Webhook activity
               </CardTitle>
-              <CardDescription className="text-[11px] text-muted-foreground">
+              <CardDescription className="text-xs text-muted-foreground">
                 Unique deliveries trong 24 giờ và 7 ngày.
               </CardDescription>
             </div>
@@ -68,7 +68,7 @@ export function WebhookIntegrationSection({
             <IntegrationPulseCard key={pulse.service} pulse={pulse} />
           ))}
 
-          <div className="flex items-start gap-2 rounded-xl border border-primary/15 bg-primary/5 p-2.5 text-[10px] leading-4 text-muted-foreground">
+          <div className="flex items-start gap-2 rounded-xl border border-primary/15 bg-primary/5 p-2.5 text-xs leading-4 text-muted-foreground">
             <InfoIcon className="mt-0.5 size-3 shrink-0 text-primary" />
             <span>
               Đây là số webhook đã nhận, không phải health check của Jira hoặc GitHub.
@@ -77,7 +77,7 @@ export function WebhookIntegrationSection({
         </CardContent>
       </Card>
 
-      <Card className="overflow-hidden rounded-2xl border-border/80 bg-card shadow-xs xl:order-1 xl:col-span-8">
+      <Card className="overflow-hidden rounded-xl border-border/80 bg-card shadow-xs xl:order-1 xl:col-span-8">
         <CardHeader className="border-b border-border/60 p-4 pb-3">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div className="flex items-start gap-2.5">
@@ -88,14 +88,14 @@ export function WebhookIntegrationSection({
                 <CardTitle className="text-sm font-bold text-foreground">
                   Nhóm chưa hoàn tất tích hợp
                 </CardTitle>
-                <CardDescription className="text-[11px] text-muted-foreground">
+                <CardDescription className="text-xs text-muted-foreground">
                   Nhóm chưa có project hoặc chưa kết nối đủ Jira và GitHub trong học kỳ đang chọn.
                 </CardDescription>
               </div>
             </div>
             <Badge
               variant="outline"
-              className="border-warning/40 text-[11px] text-warning"
+              className="border-warning/40 text-xs text-warning"
             >
               {unconnectedTeams.length} nhóm
             </Badge>
@@ -131,11 +131,11 @@ export function WebhookIntegrationSection({
                         <p className="font-semibold text-foreground">
                           Nhóm {team.teamNo} · {team.teamName}
                         </p>
-                        <p className="mt-0.5 font-mono text-[10px] text-muted-foreground">
+                        <p className="mt-0.5 font-mono text-xs text-muted-foreground">
                           {team.teamId.slice(0, 8)}
                         </p>
                       </TableCell>
-                      <TableCell className="px-3.5 py-3 font-mono text-[11px] text-muted-foreground">
+                      <TableCell className="px-3.5 py-3 font-mono text-xs text-muted-foreground">
                         {team.courseCode ?? "Chưa có mã lớp"}
                       </TableCell>
                       <TableCell className="px-3.5 py-3">
@@ -143,7 +143,7 @@ export function WebhookIntegrationSection({
                           {team.lecturerName ?? "Chưa phân công"}
                         </p>
                         {team.lecturerEmail ? (
-                          <p className="mt-0.5 text-[10px] text-muted-foreground">
+                          <p className="mt-0.5 text-xs text-muted-foreground">
                             {team.lecturerEmail}
                           </p>
                         ) : null}
@@ -196,19 +196,19 @@ function IntegrationPulseCard({
       </div>
       <div className="mt-3 grid grid-cols-2 gap-2">
         <div>
-          <p className="text-[10px] text-muted-foreground">24 giờ qua</p>
+          <p className="text-xs text-muted-foreground">24 giờ qua</p>
           <p className="font-mono text-base font-bold text-foreground">
             {pulse.uniqueEventsReceived24h.toLocaleString("vi-VN")}
           </p>
         </div>
         <div>
-          <p className="text-[10px] text-muted-foreground">7 ngày qua</p>
+          <p className="text-xs text-muted-foreground">7 ngày qua</p>
           <p className="font-mono text-base font-bold text-foreground">
             {pulse.uniqueEventsReceived7d.toLocaleString("vi-VN")}
           </p>
         </div>
       </div>
-      <p className="mt-2 flex items-center gap-1.5 text-[10px] text-muted-foreground">
+      <p className="mt-2 flex items-center gap-1.5 text-xs text-muted-foreground">
         <Clock3Icon className="size-3" />
         Gần nhất: {formatDashboardDateTime(pulse.lastUniqueEventAt)}
       </p>
@@ -229,7 +229,7 @@ function MissingServiceBadge({
         : "bg-info-muted text-info";
 
   return (
-    <Badge className={`border-0 text-[10px] font-semibold ${className}`}>
+    <Badge className={`border-0 text-xs font-semibold ${className}`}>
       {getMissingServiceLabel(service)}
     </Badge>
   );

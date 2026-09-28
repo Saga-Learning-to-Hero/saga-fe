@@ -1,16 +1,22 @@
 export const AI_ERROR_MESSAGES: Record<string, string> = {
-  AI_ANALYSIS_RESULT_INVALID:
-    "Phản hồi từ LLM không khớp định dạng schema yêu cầu hoặc server Backend chưa đăng ký cấu trúc schema phân tích.",
-  AI_ANALYSIS_PROVIDER_FAILED:
-    "Lỗi từ nhà cung cấp mô hình LLM trong quá trình xử lý yêu cầu.",
+  AI_PROVIDER_AUTH_FAILED:
+    "Xác thực khóa API thất bại. Khóa bị từ chối, vui lòng kiểm tra lại cấu hình khóa API.",
+  AI_PROVIDER_RATE_LIMITED:
+    "Nhà cung cấp AI hiện đang bị giới hạn tần suất gọi tạm thời (Rate Limited).",
+  AI_PROVIDER_QUOTA_EXHAUSTED:
+    "Hạn mức sử dụng hoặc tín dụng của tài khoản trên nhà cung cấp AI đã cạn kiệt (Quota Exhausted).",
+  AI_PROVIDER_TIMEOUT:
+    "Nhà cung cấp AI không hoàn thành yêu cầu trong thời gian cho phép (Timeout).",
+  AI_PROVIDER_UNAVAILABLE:
+    "Nhà cung cấp hoặc mô hình AI tạm thời không khả dụng.",
+  AI_PROVIDER_FAILED:
+    "Lỗi hệ thống trong quá trình yêu cầu nhà cung cấp AI (Provider Failed).",
+  AI_PROVIDER_MODEL_NOT_FOUND:
+    "Mô hình AI đã cấu hình không tồn tại hoặc không khả dụng.",
+  AI_PROVIDER_RESULT_INVALID:
+    "Phản hồi từ nhà cung cấp AI không đáp ứng cấu trúc phân tích được yêu cầu.",
   AI_PROVIDER_NOT_CONFIGURED:
     "Chưa cấu hình API Key cho mô hình LLM. Vui lòng thiết lập tại tab BYOK hoặc liên hệ quản trị viên.",
-  AI_PROVIDER_AUTH_FAILED:
-    "Xác thực API Key thất bại (Authentication Failed). Khóa API không hợp lệ hoặc đã hết hạn.",
-  AI_PROVIDER_RATE_LIMITED:
-    "Tài khoản nhà cung cấp LLM (OpenAI/Gemini) bị giới hạn tần suất gọi hoặc đã hết số dư Credit (Insufficient Quota / Rate Limit). Vui lòng kiểm tra số dư tài khoản API hoặc thử lại sau.",
-  AI_PROVIDER_TIMEOUT:
-    "Hết thời gian chờ phản hồi từ LLM (Request Timeout). Vui lòng thử lại.",
   AI_RUNTIME_NOT_CONFIGURED:
     "Hạ tầng thực thi AI trên Backend chưa được kích hoạt.",
   AI_CREDENTIAL_UNAVAILABLE:
@@ -33,5 +39,5 @@ export function getAiErrorMessage(errorCode?: string | null): string {
     return AI_ERROR_MESSAGES[normalized];
   }
 
-  return `Lỗi hệ thống: ${errorCode}. Vui lòng thử lại hoặc kiểm tra lại cấu hình API Key.`;
+  return `Lỗi chưa xác định từ hệ thống AI: ${errorCode}.`;
 }

@@ -45,7 +45,7 @@ export function ProjectGroupWeightsPanel({
 
   if (!hasProject) {
     return (
-      <Card className="rounded-2xl border border-dashed border-border/80 p-8 text-center shadow-xs">
+      <Card className="rounded-xl border border-dashed border-border/80 p-8 text-center shadow-xs">
         <h3 className="text-base font-bold text-foreground">{teamName || "Nhóm đã chọn"}</h3>
         <p className="mt-2 text-sm font-semibold text-amber-600 dark:text-amber-400">
           Nhóm chưa khởi tạo dự án
@@ -69,7 +69,7 @@ export function ProjectGroupWeightsPanel({
   }
 
   if (queryEnabled && groupQuery.isLoading) {
-    return <div className="h-72 animate-pulse rounded-2xl bg-muted/60" />;
+    return <div className="h-72 animate-pulse rounded-xl bg-muted/60" />;
   }
 
   const source = groupQuery.data ?? fallbackWeights;
@@ -88,14 +88,14 @@ export function ProjectGroupWeightsPanel({
           {missingConfig ? (
             <Badge
               variant="outline"
-              className="border-amber-500/30 bg-amber-500/15 font-mono text-[10px] font-bold text-amber-700 dark:text-amber-300"
+              className="border-amber-500/30 bg-amber-500/15 font-mono text-xs font-bold text-amber-700 dark:text-amber-300"
             >
               Chưa lưu cấu hình riêng
             </Badge>
           ) : (
             <Badge
               variant="outline"
-              className="border-emerald-500/30 bg-emerald-500/15 font-mono text-[10px] font-bold text-emerald-600 dark:text-emerald-400"
+              className="border-emerald-500/30 bg-emerald-500/15 font-mono text-xs font-bold text-emerald-600 dark:text-emerald-400"
             >
               Đã tùy biến riêng
             </Badge>
@@ -103,7 +103,7 @@ export function ProjectGroupWeightsPanel({
         </div>
 
         {serverMode === "COURSE" && (
-          <Badge variant="secondary" className="text-[11px]">
+          <Badge variant="secondary" className="text-xs">
             Đang soạn trước — có hiệu lực khi chuyển sang chế độ riêng
           </Badge>
         )}

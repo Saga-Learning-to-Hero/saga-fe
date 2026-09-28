@@ -93,7 +93,7 @@ export function PeerReviewReviewCard({
     <article
       data-testid="peer-review-card"
       data-reviewee-id={review.revieweeId}
-      className="overflow-hidden rounded-2xl border border-border/80 bg-card shadow-xs transition-shadow hover:shadow-sm"
+      className="overflow-hidden rounded-xl border border-border/80 bg-card shadow-xs transition-shadow hover:shadow-sm"
     >
       <header className="grid gap-3 border-b border-border/60 bg-muted/20 px-4 py-3 sm:grid-cols-[minmax(240px,1fr)_auto] sm:items-center">
         <div className="flex min-w-0 items-center gap-3">
@@ -103,14 +103,14 @@ export function PeerReviewReviewCard({
             </AvatarFallback>
           </Avatar>
           <div className="min-w-0">
-            <p className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
+            <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground">
               Người đánh giá
             </p>
             <p className="break-words text-sm leading-5 font-extrabold text-foreground">
               {review.reviewerName}
             </p>
             {emphasizeReviewee ? (
-              <p className="break-words text-[11px] text-muted-foreground">
+              <p className="break-words text-xs text-muted-foreground">
                 Đánh giá cho{" "}
                 <span className="font-bold text-primary">
                   {review.revieweeName}
@@ -121,13 +121,13 @@ export function PeerReviewReviewCard({
         </div>
 
         <div className="flex flex-wrap items-center gap-2 sm:justify-end">
-          <span className="inline-flex items-center gap-1.5 rounded-lg border border-border/70 bg-background px-2.5 py-1 text-[11px] font-semibold text-foreground">
+          <span className="inline-flex items-center gap-1.5 rounded-lg border border-border/70 bg-background px-2.5 py-1 text-xs font-semibold text-foreground">
             <CalendarRangeIcon className="size-3.5 text-primary" aria-hidden />
             <span data-testid="peer-review-card-sprint" title={sprintName}>
               {sprintName}
             </span>
           </span>
-          <span className="text-[11px] text-muted-foreground">
+          <span className="text-xs text-muted-foreground">
             {formatPeerReviewDateTime(review.updatedAt || review.createdAt)}
           </span>
           <span className="rounded-lg bg-primary/10 px-2.5 py-1 font-mono text-sm font-black text-primary">
@@ -138,7 +138,7 @@ export function PeerReviewReviewCard({
 
       <div className="grid gap-3 p-4 xl:grid-cols-[minmax(0,1.15fr)_minmax(300px,0.85fr)]">
         <section aria-label="Điểm theo tiêu chí">
-          <p className="mb-2 text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
+          <p className="mb-2 text-xs font-bold uppercase tracking-wide text-muted-foreground">
             Điểm theo tiêu chí
           </p>
           {criteria.length > 0 ? (
@@ -190,10 +190,10 @@ export function PeerReviewReviewCard({
               <MessageSquareQuoteIcon className="size-4" aria-hidden />
             </span>
             <div className="min-w-0">
-              <p className="text-[10px] font-bold uppercase tracking-wide text-primary">
+              <p className="text-xs font-bold uppercase tracking-wide text-primary">
                 Nhận xét từ {review.reviewerName}
               </p>
-              <p className="truncate text-[11px] text-muted-foreground">
+              <p className="truncate text-xs text-muted-foreground">
                 Dành cho {review.revieweeName}
               </p>
             </div>

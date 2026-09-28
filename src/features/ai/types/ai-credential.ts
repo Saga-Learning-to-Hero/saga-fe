@@ -1,4 +1,4 @@
-export type AiProviderType = "OPENAI" | "GEMINI" | "OPENROUTER";
+export type AiProviderType = "OPENAI" | "GEMINI" | "OPENROUTER" | "COHERE";
 
 export interface AiProviderCatalogModel {
   provider: string;

@@ -1,9 +1,9 @@
+import { showSuccessToast, showErrorToast, getApiErrorMessage } from "@/lib/api-error";
 import { useMutation, useQuery, useQueryClient, type QueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
 import { LecturerTeamService } from "../api/lecturer-team-service";
 import { LECTURER_COURSE_QUERY_KEYS } from "@/features/lecturer/courses/hooks/use-lecturer-courses";
 import { CONTRIBUTION_QUERY_KEYS } from "@/features/lecturer/contribution/hooks/use-lecturer-contribution";
-import { getApiErrorCode, getApiErrorMessage } from "@/lib/api-error";
+import { getApiErrorCode, } from "@/lib/api-error";
 import { TEAM_TEMPLATE_FILENAME, type ConfirmTeamImportRequest } from "../types/lecturer-team";
 
 export const LECTURER_TEAM_QUERY_KEYS = {
@@ -38,7 +38,7 @@ export function useDownloadTeamTemplate() {
       return blob;
     },
     onSuccess: () => {
-      toast.success("Đã tải file mẫu Team_Assignment.xlsx.");
+      showSuccessToast("Đã tải file mẫu Team_Assignment.xlsx.");
     },
   });
 }
@@ -78,10 +78,10 @@ export function useReplaceTeamLeader(courseId: string) {
       LecturerTeamService.replaceLeader(courseId, teamId, teamMemberId),
     onSuccess: async () => {
       await invalidateTeamCoordination(queryClient, courseId);
-      toast.success("Đã đổi trưởng nhóm. Danh sách nhóm được tải lại từ máy chủ.");
+      showSuccessToast("Đã đổi trưởng nhóm. Danh sách nhóm được tải lại từ máy chủ.");
     },
     onError: (error: unknown) => {
-      toast.error(getApiErrorMessage(error, "Không thể đổi trưởng nhóm."));
+      showErrorToast("Không thể đổi trưởng nhóm.", error);
     },
   });
 }
@@ -99,10 +99,10 @@ export function useMoveTeamMember(courseId: string) {
     }) => LecturerTeamService.moveMember(courseId, teamMemberId, targetTeamId),
     onSuccess: async () => {
       await invalidateTeamCoordination(queryClient, courseId);
-      toast.success("Đã chuyển thành viên sang nhóm khác. Dữ liệu nhóm được tải lại từ máy chủ.");
+      showSuccessToast("Đã chuyển thành viên sang nhóm khác. Dữ liệu nhóm được tải lại từ máy chủ.");
     },
     onError: (error: unknown) => {
-      toast.error(getApiErrorMessage(error, "Không thể chuyển thành viên sang nhóm khác."));
+      showErrorToast("Không thể chuyển thành viên sang nhóm khác.", error);
     },
   });
 }
@@ -125,7 +125,7 @@ export function useConfirmTeamImport() {
           queryKey: CONTRIBUTION_QUERY_KEYS.sliceWeights(variables.courseId),
         }),
       ]);
-      toast.success(
+      showSuccessToast(
         `Đã xác nhận phân nhóm: tạo ${result.createdTeams}, cập nhật ${result.updatedTeams}, gán ${result.assignedMembers}, chuyển ${result.reassignedMembers}, đổi vai trò ${result.updatedRoles}, không đổi ${result.unchanged}, email ${result.emailsEnqueued}.`
       );
     },
@@ -163,4 +163,4 @@ export function shouldClearTeamPreview(error: unknown): boolean {
     code === "TEAM_PREVIEW_EXPIRED" ||
     code === "TEAM_PREVIEW_MISMATCH"
   );
-}
+}

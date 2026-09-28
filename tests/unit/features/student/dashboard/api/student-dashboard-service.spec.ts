@@ -262,4 +262,41 @@ describe("StudentDashboardService", () => {
       expect(res.actionableAlerts).toEqual([]);
     }
   );
+
+  fptTest(
+    {
+      id: "UTCID07",
+      type: "N",
+      executedDate: "24/09/2026",
+      description: "Truyen sprintId hop le thi gui kem query params sprintId",
+    },
+    async () => {
+      const getSpy = vi.spyOn(apiClient, "get").mockResolvedValueOnce({ data: mockDashboardResponse });
+      const mockSprintId = "sprint_uuid_101";
+
+      const res = await StudentDashboardService.getDashboard(mockCourseId, mockSprintId);
+
+      expect(getSpy).toHaveBeenCalledWith(
+        `/api/student/courses/${mockCourseId}/dashboard`,
+        { params: { sprintId: mockSprintId } }
+      );
+      expect(res.currentSprint?.id).toBe("sprint_01");
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID08",
+      type: "B",
+      executedDate: "24/09/2026",
+      description: "Truyen sprintId rong hoac chi chua khoang trang thi khong gui kem query params",
+    },
+    async () => {
+      const getSpy = vi.spyOn(apiClient, "get").mockResolvedValueOnce({ data: mockDashboardResponse });
+
+      await StudentDashboardService.getDashboard(mockCourseId, "   ");
+
+      expect(getSpy).toHaveBeenCalledWith(`/api/student/courses/${mockCourseId}/dashboard`);
+    }
+  );
 });

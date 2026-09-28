@@ -439,7 +439,7 @@ html {
   .custom-scrollbar,
   .scrollbar-thin {
     scrollbar-width: thin;
-    scrollbar-color: var(--border) transparent;
+    scrollbar-color: color-mix(in srgb, var(--foreground) 25%, transparent) transparent;
   }
   .custom-scrollbar::-webkit-scrollbar,
   .scrollbar-thin::-webkit-scrollbar {
@@ -452,7 +452,7 @@ html {
   }
   .custom-scrollbar::-webkit-scrollbar-thumb,
   .scrollbar-thin::-webkit-scrollbar-thumb {
-    background: var(--border);
+    background: color-mix(in srgb, var(--foreground) 22%, transparent);
     border-radius: 9999px;
   }
   .custom-scrollbar::-webkit-scrollbar-thumb:hover,

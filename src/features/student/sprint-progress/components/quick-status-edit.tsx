@@ -21,25 +21,25 @@ const STATUS_OPTIONS: StatusOption[] = [
   {
     value: "TODO",
     label: "TO DO (Cần làm)",
-    badgeClass: "bg-muted text-muted-foreground border-border text-[10px] font-medium",
+    badgeClass: "bg-muted text-muted-foreground border-border text-xs font-medium",
     dotClass: "bg-muted-foreground",
   },
   {
     value: "IN_PROGRESS",
     label: "IN PROGRESS (Đang làm)",
-    badgeClass: "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/30 font-bold text-[10px]",
+    badgeClass: "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/30 font-bold text-xs",
     dotClass: "bg-blue-500",
   },
   {
     value: "IN_REVIEW",
     label: "IN REVIEW (Chờ kiểm thử)",
-    badgeClass: "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30 font-bold text-[10px]",
+    badgeClass: "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30 font-bold text-xs",
     dotClass: "bg-amber-500",
   },
   {
     value: "DONE",
     label: "DONE (Hoàn thành)",
-    badgeClass: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 font-bold text-[10px]",
+    badgeClass: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 font-bold text-xs",
     dotClass: "bg-emerald-500",
   },
 ];
@@ -72,7 +72,7 @@ export function QuickStatusEdit({
     STATUS_OPTIONS.find((opt) => opt.value === status) || {
       value: status,
       label: status,
-      badgeClass: "bg-muted text-muted-foreground border-border text-[10px] font-medium",
+      badgeClass: "bg-muted text-muted-foreground border-border text-xs font-medium",
       dotClass: "bg-muted-foreground",
     };
 
@@ -135,12 +135,12 @@ export function QuickStatusEdit({
         align="end"
         side="bottom"
         sideOffset={6}
-        className="w-56 p-2 space-y-2 z-50 bg-card border-border/80 shadow-xl rounded-2xl"
+        className="w-56 p-2 space-y-2 z-50 bg-card border-border/80 shadow-md rounded-xl"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between border-b border-border/60 px-2 py-1">
           <span className="text-xs font-bold text-foreground">Đổi trạng thái</span>
-          <span className="font-mono text-[10px] font-bold text-primary px-1.5 py-0.2 rounded bg-primary/10 border border-primary/20">
+          <span className="font-mono text-xs font-bold text-primary px-1.5 py-0.2 rounded bg-primary/10 border border-primary/20">
             {issueKey}
           </span>
         </div>

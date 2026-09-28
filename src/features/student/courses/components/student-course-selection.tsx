@@ -79,7 +79,7 @@ export function StudentCourseSelection({ onSelectCourse }: StudentCourseSelectio
 
   return (
     <div className="mx-auto max-w-[1600px] space-y-6 pb-10">
-      <div className="relative overflow-hidden rounded-3xl border border-border/80 bg-card p-6 shadow-sm sm:p-8">
+      <div className="relative overflow-hidden rounded-xl border border-border/80 bg-card p-6 shadow-sm sm:p-8">
         <div className="pointer-events-none absolute -right-20 -top-20 size-72 rounded-full bg-primary/10 blur-3xl" />
         <div className="pointer-events-none absolute -bottom-20 -left-20 size-72 rounded-full bg-accent/10 blur-3xl" />
 
@@ -91,7 +91,7 @@ export function StudentCourseSelection({ onSelectCourse }: StudentCourseSelectio
             </div>
             <h1 className="text-2xl font-extrabold tracking-tight text-foreground sm:text-3xl lg:text-4xl">
               Xin chào,{" "}
-              <span className="bg-gradient-to-r from-primary via-indigo-600 to-cyan-500 bg-clip-text text-transparent dark:from-indigo-400 dark:via-primary dark:to-cyan-300">
+              <span className="bg-popover from-primary via-indigo-600 to-cyan-500 bg-clip-text text-transparent dark:from-indigo-400 dark:via-primary dark:to-cyan-300">
                 {user?.name || "Sinh viên"}
               </span>
             </h1>
@@ -100,13 +100,13 @@ export function StudentCourseSelection({ onSelectCourse }: StudentCourseSelectio
             </p>
           </div>
           <div className="flex shrink-0 items-center gap-3">
-            <div className="min-w-[120px] rounded-2xl border border-border/80 bg-muted/30 p-4 text-center">
+            <div className="min-w-[120px] rounded-xl border border-border/80 bg-muted/30 p-4 text-center">
               <span className="block font-mono text-2xl font-black text-foreground">
                 {isLoading ? "…" : semesters.length}
               </span>
               <span className="mt-1 block text-xs font-semibold text-muted-foreground">Học kỳ</span>
             </div>
-            <div className="min-w-[120px] rounded-2xl border border-border/80 bg-muted/30 p-4 text-center">
+            <div className="min-w-[120px] rounded-xl border border-border/80 bg-muted/30 p-4 text-center">
               <span className="block font-mono text-2xl font-black text-foreground">
                 {isLoading ? "…" : apiCourses.length}
               </span>
@@ -119,11 +119,11 @@ export function StudentCourseSelection({ onSelectCourse }: StudentCourseSelectio
       {isLoading ? (
         <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
           {Array.from({ length: 3 }).map((_, index) => (
-            <div key={index} className="h-64 animate-pulse rounded-2xl bg-muted/60" />
+            <div key={index} className="h-64 animate-pulse rounded-xl bg-muted/60" />
           ))}
         </div>
       ) : isError ? (
-        <Card className="rounded-2xl border border-dashed border-destructive/30 p-8 text-center">
+        <Card className="rounded-xl border border-dashed border-destructive/30 p-8 text-center">
           <p className="text-sm font-semibold">Không tải được danh sách khóa học</p>
           <p className="mt-1 text-xs text-muted-foreground">
             {getApiErrorMessage(error, "Vui lòng thử lại.")}
@@ -138,7 +138,7 @@ export function StudentCourseSelection({ onSelectCourse }: StudentCourseSelectio
           </Button>
         </Card>
       ) : apiCourses.length === 0 ? (
-        <Card className="flex flex-col items-center justify-center space-y-3 rounded-3xl border border-dashed border-border bg-card/40 px-4 py-16 text-center">
+        <Card className="flex flex-col items-center justify-center space-y-3 rounded-xl border border-dashed border-border bg-card/40 px-4 py-16 text-center">
           <BookOpenIcon className="size-8 text-muted-foreground/50" />
           <h3 className="text-base font-bold">Bạn chưa có lớp học phần nào</h3>
           <p className="max-w-sm text-xs text-muted-foreground">
@@ -200,7 +200,7 @@ export function StudentCourseSelection({ onSelectCourse }: StudentCourseSelectio
               ))}
             </div>
           ) : (
-            <div className="flex flex-col items-center justify-center space-y-4 rounded-3xl border border-dashed border-border bg-card/40 px-4 py-16 text-center">
+            <div className="flex flex-col items-center justify-center space-y-4 rounded-xl border border-dashed border-border bg-card/40 px-4 py-16 text-center">
               <UsersIcon className="size-8 text-muted-foreground/40" />
               <div className="max-w-sm space-y-1">
                 <h3 className="text-base font-bold">Không tìm thấy khóa học phù hợp</h3>

@@ -91,19 +91,19 @@ function MetricCard({
   detail,
 }: MetricCardProps) {
   return (
-    <Card className="rounded-2xl border-border/80 bg-card shadow-xs">
+    <Card className="rounded-xl border-border/80 bg-card shadow-xs">
       <CardContent className="flex min-h-32 items-start justify-between gap-4 p-4">
         <div className="min-w-0 space-y-2">
           <p className="text-xs font-medium text-muted-foreground">{title}</p>
           <p className="font-mono text-2xl font-extrabold tracking-tight text-foreground">
             {value}
           </p>
-          <div className="text-[11px] leading-4 text-muted-foreground">
+          <div className="text-xs leading-4 text-muted-foreground">
             {detail}
           </div>
         </div>
         <div
-          className={`flex size-11 shrink-0 items-center justify-center rounded-2xl ${iconClassName}`}
+          className={`flex size-11 shrink-0 items-center justify-center rounded-xl ${iconClassName}`}
         >
           {icon}
         </div>

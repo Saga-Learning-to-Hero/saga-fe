@@ -79,7 +79,7 @@ export function PipelineRepositoryFilters({
       <div className={compact ? "w-64 space-y-1.5" : "space-y-1.5"}>
         <label
           htmlFor={`${idPrefix}-repository-filter`}
-          className="flex items-center gap-1.5 text-[11px] font-bold text-muted-foreground"
+          className="flex items-center gap-1.5 text-xs font-bold text-muted-foreground"
         >
           <FolderGit2Icon className="size-3.5 text-primary" />
           Repository
@@ -99,7 +99,7 @@ export function PipelineRepositoryFilters({
       <div className={compact ? "w-64 space-y-1.5" : "space-y-1.5"}>
         <label
           htmlFor={`${idPrefix}-branch-filter`}
-          className="flex items-center gap-1.5 text-[11px] font-bold text-muted-foreground"
+          className="flex items-center gap-1.5 text-xs font-bold text-muted-foreground"
         >
           <GitBranchIcon className="size-3.5 text-primary" />
           Branch
@@ -114,7 +114,7 @@ export function PipelineRepositoryFilters({
       </div>
 
       {!compact && selectedBranchName !== "ALL" ? (
-        <p className="col-span-full text-[11px] text-muted-foreground">
+        <p className="col-span-full text-xs text-muted-foreground">
           Liên kết được lọc theo branch membership canonical
           {canonicalFilter?.branchResolution === "REACHABLE_AT_SYNC" ? " tại lần đồng bộ gần nhất" : ""}.
         </p>

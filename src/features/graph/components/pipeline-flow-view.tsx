@@ -56,7 +56,7 @@ function TaskCard({
     <button
       type="button"
       onClick={onSelect}
-      className={`w-full cursor-pointer rounded-2xl border p-3.5 text-left transition-all ${selected
+      className={`w-full cursor-pointer rounded-xl border p-3.5 text-left transition-all ${selected
         ? "border-primary bg-primary/10 shadow-xs ring-1 ring-primary/40"
         : warning
           ? "border-destructive/30 bg-destructive/5 hover:border-destructive/50"
@@ -69,14 +69,14 @@ function TaskCard({
         <div className="flex items-center gap-2">
           <CheckSquareIcon className="size-3.5 text-emerald-500" />
           <span className="font-mono text-xs font-black text-primary">{task.key}</span>
-          <Badge variant="outline" className="px-1.5 py-0 text-[10px] uppercase">
+          <Badge variant="outline" className="px-1.5 py-0 text-xs uppercase">
             {task.issueTypeName}
           </Badge>
         </div>
-        <Badge className={`text-[10px] font-bold ${statusClass(task.status)}`}>{task.status}</Badge>
+        <Badge className={`text-xs font-bold ${statusClass(task.status)}`}>{task.status}</Badge>
       </div>
       <p className="mt-1.5 line-clamp-2 text-sm font-semibold text-foreground">{task.title}</p>
-      <div className="mt-2 flex flex-wrap items-center gap-2 text-[11px] text-muted-foreground">
+      <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
         <span>{task.sprintName}</span>
         <span>·</span>
         <span>{task.assigneeDisplayName || "Chưa phân công"}</span>
@@ -119,7 +119,7 @@ export function PipelineFlowView({
 
   if (lanes.every((lane) => lane.tasks.length === 0)) {
     return (
-      <div className="rounded-3xl border border-dashed border-border/80 bg-card/40 p-8 text-center text-sm text-muted-foreground">
+      <div className="rounded-xl border border-dashed border-border/80 bg-card/40 p-8 text-center text-sm text-muted-foreground">
         Không có Task nào khớp bộ lọc hiện tại.
       </div>
     );
@@ -134,7 +134,7 @@ export function PipelineFlowView({
         return (
           <section
             key={lane.id}
-            className="overflow-hidden rounded-3xl border border-border/80 bg-card/90 shadow-xs"
+            className="overflow-hidden rounded-xl border border-border/80 bg-card/90 shadow-xs"
           >
             <button
               type="button"
@@ -149,21 +149,21 @@ export function PipelineFlowView({
                   <div className="flex flex-wrap items-center gap-2">
                     <span className="text-sm font-extrabold text-foreground">{name}</span>
                     {code ? (
-                      <Badge variant="outline" className="font-mono text-[10px]">
+                      <Badge variant="outline" className="font-mono text-xs">
                         {code}
                       </Badge>
                     ) : null}
                     {lane.member ? (
-                      <Badge className="bg-muted text-[10px] text-muted-foreground">
+                      <Badge className="bg-muted text-xs text-muted-foreground">
                         {teamRoleLabel(lane.member.teamRole)}
                       </Badge>
                     ) : (
-                      <Badge className="bg-muted text-[10px] text-muted-foreground">
+                      <Badge className="bg-muted text-xs text-muted-foreground">
                         {UNASSIGNED_LANE_ID === lane.id ? "Lane chờ phân công" : "Lane"}
                       </Badge>
                     )}
                   </div>
-                  <p className="mt-0.5 text-[11px] text-muted-foreground">
+                  <p className="mt-0.5 text-xs text-muted-foreground">
                     {lane.tasks.length} Task
                   </p>
                 </div>
@@ -173,7 +173,7 @@ export function PipelineFlowView({
             {!isCollapsed ? (
               <div className="max-h-[400px] overflow-y-auto space-y-3 p-4 pr-2.5">
                 {lane.tasks.length === 0 ? (
-                  <p className="rounded-2xl border border-dashed border-border/80 p-4 text-center text-xs text-muted-foreground">
+                  <p className="rounded-xl border border-dashed border-border/80 p-4 text-center text-xs text-muted-foreground">
                     Thành viên này chưa được phân công Task trong bộ lọc.
                   </p>
                 ) : (

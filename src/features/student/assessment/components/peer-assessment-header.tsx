@@ -31,9 +31,9 @@ export function PeerAssessmentHeader({
     typeof candidateCount === "number";
 
   return (
-    <div className="flex flex-col justify-between gap-3.5 rounded-3xl border border-border/70 bg-card/60 p-4 shadow-2xs backdrop-blur-xs sm:flex-row sm:items-center">
+    <div className="flex flex-col justify-between gap-3.5 rounded-xl border border-border/70 bg-card/60 p-4 shadow-2xs backdrop-blur-xs sm:flex-row sm:items-center">
       <div className="flex items-center gap-3">
-        <div className="flex size-10 shrink-0 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-xs">
+        <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-xs">
           <UserCheckIcon className="size-5" />
         </div>
         <div>
@@ -44,7 +44,7 @@ export function PeerAssessmentHeader({
             {courseCode ? (
               <Badge
                 variant="outline"
-                className="border-primary/30 bg-primary/10 font-mono text-[11px] font-bold text-primary"
+                className="border-primary/30 bg-primary/10 font-mono text-xs font-bold text-primary"
               >
                 {courseCode}
               </Badge>
@@ -52,7 +52,7 @@ export function PeerAssessmentHeader({
             {teamName ? (
               <Badge
                 variant="secondary"
-                className="gap-1 border-border/60 text-[11px] font-medium text-muted-foreground"
+                className="gap-1 border-border/60 text-xs font-medium text-muted-foreground"
               >
                 <UsersIcon className="size-3 text-primary" />
                 {teamName}
@@ -61,7 +61,7 @@ export function PeerAssessmentHeader({
           </div>
 
           {showSummary ? (
-            <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-muted-foreground">
+            <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted-foreground">
               {sprintName ? (
                 <span>
                   Sprint:{" "}
@@ -97,7 +97,7 @@ export function PeerAssessmentHeader({
 
       <div className="flex shrink-0 items-center gap-2 self-start sm:self-auto">
         {myRole ? (
-          <Badge variant="outline" className="text-[11px] font-semibold">
+          <Badge variant="outline" className="text-xs font-semibold">
             {myRole.toUpperCase() === "LEADER" ? "Trưởng nhóm" : "Thành viên"}
           </Badge>
         ) : (

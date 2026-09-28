@@ -43,7 +43,7 @@ function PeerReviewSummarySkeleton() {
   return (
     <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4" data-testid="peer-review-skeleton" aria-hidden>
       {Array.from({ length: 4 }, (_, index) => (
-        <div key={index} className="h-20 animate-pulse rounded-2xl bg-muted/60" />
+        <div key={index} className="h-20 animate-pulse rounded-xl bg-muted/60" />
       ))}
     </div>
   );
@@ -273,7 +273,7 @@ export function LecturerPeerReviewPage({ courseId }: LecturerPeerReviewPageProps
   if (teamsQuery.isSuccess && teams.length === 0) {
     return (
       <LecturerPageShell breadcrumbItems={breadcrumbItems} title="Đánh giá chéo theo Sprint">
-        <Card className="rounded-2xl border border-dashed border-border/80 p-8 text-center shadow-xs">
+        <Card className="rounded-xl border border-dashed border-border/80 p-8 text-center shadow-xs">
           <p className="text-sm font-semibold text-foreground">Lớp học phần chưa có nhóm nào</p>
           <p className="mt-1 text-xs text-muted-foreground">Phân nhóm trước khi xem đánh giá chéo.</p>
           <Link
@@ -298,7 +298,7 @@ export function LecturerPeerReviewPage({ courseId }: LecturerPeerReviewPageProps
       )}
     >
       <div className="min-w-0 space-y-1.5">
-        <Label htmlFor="peer-review-team" className="text-[11px] font-semibold text-muted-foreground">
+        <Label htmlFor="peer-review-team" className="text-xs font-semibold text-muted-foreground">
           Nhóm
         </Label>
         <CustomSelect
@@ -314,7 +314,7 @@ export function LecturerPeerReviewPage({ courseId }: LecturerPeerReviewPageProps
       </div>
       {jiraSource.hasMultipleSources && (
         <div className="min-w-0 space-y-1.5">
-          <Label className="text-[11px] font-semibold text-muted-foreground">
+          <Label className="text-xs font-semibold text-muted-foreground">
             Nguồn Jira
           </Label>
           <JiraSourceSwitcher
@@ -331,7 +331,7 @@ export function LecturerPeerReviewPage({ courseId }: LecturerPeerReviewPageProps
         </div>
       )}
       <div className="min-w-0 space-y-1.5">
-        <Label htmlFor="peer-review-sprint" className="text-[11px] font-semibold text-muted-foreground">
+        <Label htmlFor="peer-review-sprint" className="text-xs font-semibold text-muted-foreground">
           Sprint
         </Label>
         {sprintsQuery.isLoading && !sprintsQuery.data ? (
@@ -357,7 +357,7 @@ export function LecturerPeerReviewPage({ courseId }: LecturerPeerReviewPageProps
   let mainContent: ReactNode = null;
   if (!hasProject) {
     mainContent = (
-      <Card className="rounded-2xl border border-dashed border-border/80 p-8 text-center shadow-xs">
+      <Card className="rounded-xl border border-dashed border-border/80 p-8 text-center shadow-xs">
         <p className="text-sm font-semibold text-foreground">Nhóm chưa có dự án</p>
         <p className="mt-1 text-xs text-muted-foreground">
           Đánh giá chéo theo Sprint chỉ mở khi nhóm đã có dự án.
@@ -376,7 +376,7 @@ export function LecturerPeerReviewPage({ courseId }: LecturerPeerReviewPageProps
     mainContent = <PeerReviewSummarySkeleton />;
   } else if (sprintsQuery.isSuccess && sprints.length === 0) {
     mainContent = (
-      <Card className="rounded-2xl border border-dashed border-border/80 p-8 text-center shadow-xs">
+      <Card className="rounded-xl border border-dashed border-border/80 p-8 text-center shadow-xs">
         <p className="text-sm font-semibold text-foreground">Dự án chưa có Sprint</p>
         <p className="mt-1 text-xs text-muted-foreground">Đồng bộ Jira hoặc tạo Sprint trước khi xem đánh giá chéo.</p>
       </Card>
@@ -396,7 +396,7 @@ export function LecturerPeerReviewPage({ courseId }: LecturerPeerReviewPageProps
       <div className={cn("space-y-3", isStale && "pointer-events-none opacity-60")}>
         {isUpdating ? <p className="text-xs font-medium text-muted-foreground">Đang cập nhật…</p> : null}
         {hasReviewsData && reviewsQuery.isError ? (
-          <Card className="flex flex-col gap-2 rounded-2xl border border-dashed border-border/80 p-4 sm:flex-row sm:items-center sm:justify-between">
+          <Card className="flex flex-col gap-2 rounded-xl border border-dashed border-border/80 p-4 sm:flex-row sm:items-center sm:justify-between">
             <p className="text-xs text-muted-foreground">Không cập nhật được dữ liệu mới. Nội dung cũ vẫn được giữ.</p>
             <Button
               size="sm"

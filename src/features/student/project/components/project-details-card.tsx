@@ -24,7 +24,7 @@ export function ProjectDetailsCard({
   );
 
   return (
-    <Card className="rounded-2xl border border-border/80 shadow-xs bg-card overflow-hidden">
+    <Card className="rounded-xl border border-border/80 shadow-xs bg-card overflow-hidden">
       <CardHeader className="p-4 sm:p-5 border-b border-border/60">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center gap-2.5">
@@ -35,18 +35,18 @@ export function ProjectDetailsCard({
               <CardTitle className="text-sm sm:text-base font-bold text-foreground">
                 Thông tin Đề tài & Giải pháp
               </CardTitle>
-              <CardDescription className="text-[11px] text-muted-foreground">
+              <CardDescription className="text-xs text-muted-foreground">
                 Thông tin phân loại đề tài và mục tiêu giải pháp kỹ thuật
               </CardDescription>
             </div>
           </div>
 
           <div className="flex items-center gap-2 self-start sm:self-auto">
-            <Badge className="bg-primary/15 text-primary border-primary/20 font-bold text-[11px]">
+            <Badge className="bg-primary/15 text-primary border-primary/20 font-bold text-xs">
               {project.projectType?.name || project.category || "Chưa phân loại"}
             </Badge>
             {hasProject && (
-              <Badge className="bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-0 text-[10px] font-semibold gap-1">
+              <Badge className="bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-0 text-xs font-semibold gap-1">
                 <CheckCircle2Icon className="w-3 h-3" />
                 Đề tài chính thức
               </Badge>
@@ -58,14 +58,14 @@ export function ProjectDetailsCard({
       <CardContent className="p-4 sm:p-5 space-y-4">
         <div className="p-3.5 rounded-xl bg-muted/30 border border-border/60 space-y-1.5">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
-            <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
+            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
               Tên đề tài dự án
             </span>
             {project.createdBy?.fullName && (
-              <span className="text-[11px] text-muted-foreground">
+              <span className="text-xs text-muted-foreground">
                 Khởi tạo bởi: <strong className="text-foreground">{project.createdBy.fullName}</strong>
                 {project.createdAt && (
-                  <span className="ml-1.5 font-mono text-[10px]">
+                  <span className="ml-1.5 font-mono text-xs">
                     ({formatVietnamDate(project.createdAt)})
                   </span>
                 )}
@@ -78,7 +78,7 @@ export function ProjectDetailsCard({
         </div>
 
         <div className="space-y-1.5">
-          <h4 className="text-[11px] font-bold text-foreground uppercase tracking-wider flex items-center gap-1.5">
+          <h4 className="text-xs font-bold text-foreground uppercase tracking-wider flex items-center gap-1.5">
             <FileTextIcon className="w-3.5 h-3.5 text-primary" />
             Mô tả bài toán & Giải pháp
           </h4>

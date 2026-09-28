@@ -20,20 +20,20 @@ export function GraphStatsSummary({
   const isTruncated = meta?.truncated || (meta && meta.returnedNodes < meta.totalNodes);
 
   return (
-    <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3 rounded-2xl border border-border/80 bg-card/95 p-3 px-4 text-xs shadow-2xs backdrop-blur-md sm:px-5">
+    <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3 rounded-xl border border-border/80 bg-card/95 p-3 px-4 text-xs shadow-2xs backdrop-blur-sm sm:px-5">
       <div className="flex items-center gap-3">
         <div className="w-8 h-8 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
           <LayersIcon className="w-4 h-4" />
         </div>
         <div>
-          <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block">
+          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider block">
             Thống kê cấu trúc Graph
           </span>
           <div className="flex items-center gap-1.5">
             <span className="text-sm font-black text-foreground font-mono">
               {meta ? meta.returnedNodes : totalNodes}
             </span>
-            <span className="text-[11px] font-semibold text-muted-foreground">
+            <span className="text-xs font-semibold text-muted-foreground">
               {meta && meta.totalNodes > meta.returnedNodes ? `/ ${meta.totalNodes} Nodes` : "Nodes"}
             </span>
           </div>
@@ -47,14 +47,14 @@ export function GraphStatsSummary({
           <GitGraphIcon className="w-4 h-4" />
         </div>
         <div>
-          <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block">
+          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider block">
             Mạng lưới quan hệ
           </span>
           <div className="flex items-center gap-1.5">
             <span className="text-sm font-black text-foreground font-mono">
               {meta ? meta.returnedEdges : totalEdges}
             </span>
-            <span className="text-[11px] font-semibold text-muted-foreground">
+            <span className="text-xs font-semibold text-muted-foreground">
               {meta && meta.totalEdges > meta.returnedEdges ? `/ ${meta.totalEdges} Edges` : "Edges"}
             </span>
           </div>
@@ -77,16 +77,16 @@ export function GraphStatsSummary({
           )}
         </div>
         <div>
-          <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block">
+          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider block">
             Phát hiện bất thường
           </span>
           <div className="flex items-center gap-2 mt-0.5">
             {anomalyCount > 0 ? (
-              <Badge className="bg-red-500/15 text-red-600 dark:text-red-400 border border-red-500/30 text-[10px] font-mono font-bold animate-pulse">
+              <Badge className="bg-red-500/15 text-red-600 dark:text-red-400 border border-red-500/30 text-xs font-mono font-bold animate-pulse">
                 {anomalyCount} node bất thường
               </Badge>
             ) : (
-              <Badge className="bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 text-[10px] font-mono font-bold">
+              <Badge className="bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 text-xs font-mono font-bold">
                 0 bất thường
               </Badge>
             )}
@@ -102,10 +102,10 @@ export function GraphStatsSummary({
               <FilterIcon className="w-4 h-4" />
             </div>
             <div>
-              <span className="text-[10px] font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider block">
+              <span className="text-xs font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider block">
                 Cắt tỉa Subgraph
               </span>
-              <span className="text-[11px] font-medium text-muted-foreground">
+              <span className="text-xs font-medium text-muted-foreground">
                 Tối ưu tải mạng lưới lớn
               </span>
             </div>

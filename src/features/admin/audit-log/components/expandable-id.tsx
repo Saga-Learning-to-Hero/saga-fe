@@ -48,13 +48,13 @@ export function ExpandableId({ id, prefix, className, badge }: ExpandableIdProps
       className={cn(
         "inline-flex items-center gap-1 font-mono transition-colors",
         badge
-          ? "border border-border/80 bg-muted/40 hover:bg-muted/70 px-2 py-0.5 rounded-lg text-[10px]"
-          : "hover:bg-muted/50 px-1.5 py-0.5 rounded-md text-[11px]",
+          ? "border border-border/80 bg-muted/40 hover:bg-muted/70 px-2 py-0.5 rounded-lg text-xs"
+          : "hover:bg-muted/50 px-1.5 py-0.5 rounded-md text-xs",
         className
       )}
     >
       {prefix && (
-        <span className="text-muted-foreground font-sans select-none text-[10px]">
+        <span className="text-muted-foreground font-sans select-none text-xs">
           {prefix}
         </span>
       )}
@@ -66,7 +66,7 @@ export function ExpandableId({ id, prefix, className, badge }: ExpandableIdProps
       >
         <span>{isExpanded ? id : shortPart}</span>
         {!isExpanded && (
-          <span className="text-primary font-bold px-1 py-0.2 rounded bg-primary/15 group-hover/btn:bg-primary/25 text-[10px] tracking-widest leading-none">
+          <span className="text-primary font-bold px-1 py-0.2 rounded bg-primary/15 group-hover/btn:bg-primary/25 text-xs tracking-widest leading-none">
             ...
           </span>
         )}

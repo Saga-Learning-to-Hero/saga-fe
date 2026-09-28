@@ -83,10 +83,10 @@ export function TeamList({ courseId, courseCode }: TeamListProps) {
   if (isLoading) {
     return (
       <div className="space-y-4">
-        <div className="h-20 animate-pulse rounded-2xl bg-muted/60" />
+        <div className="h-20 animate-pulse rounded-xl bg-muted/60" />
         <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
           {Array.from({ length: 2 }).map((_, index) => (
-            <div key={index} className="h-64 animate-pulse rounded-2xl bg-muted/60" />
+            <div key={index} className="h-64 animate-pulse rounded-xl bg-muted/60" />
           ))}
         </div>
       </div>
@@ -105,7 +105,7 @@ export function TeamList({ courseId, courseCode }: TeamListProps) {
 
   return (
     <div className="space-y-5">
-      <Card className="rounded-2xl border border-border/80 bg-card p-4 shadow-xs">
+      <Card className="rounded-xl border border-border/80 bg-card p-4 shadow-xs">
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-4 sm:divide-x sm:divide-border/60">
           <div className="flex items-center gap-3.5 sm:px-3">
             <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
@@ -174,7 +174,7 @@ export function TeamList({ courseId, courseCode }: TeamListProps) {
         </div>
         <div className="flex flex-wrap items-center gap-2">
           {updatedAt ? (
-            <p className="hidden text-[11px] text-muted-foreground sm:block">
+            <p className="hidden text-xs text-muted-foreground sm:block">
               Cập nhật lúc {updatedAt}
             </p>
           ) : null}
@@ -212,7 +212,7 @@ export function TeamList({ courseId, courseCode }: TeamListProps) {
       </div>
 
       {sortedTeams.length === 0 ? (
-        <Card className="rounded-2xl border border-dashed border-border/80 p-10 text-center shadow-xs">
+        <Card className="rounded-xl border border-dashed border-border/80 p-10 text-center shadow-xs">
           <UsersIcon className="mx-auto mb-3 size-10 text-muted-foreground/40" />
           <p className="text-sm font-bold text-foreground">Chưa có nhóm nào trong lớp</p>
           <p className="mx-auto mt-1 max-w-md text-xs text-muted-foreground">
@@ -243,7 +243,7 @@ export function TeamList({ courseId, courseCode }: TeamListProps) {
           {sortedTeams.map((team) => (
             <Card
               key={team.teamId}
-              className="flex flex-col justify-between rounded-2xl border border-border/80 bg-card p-5 shadow-xs transition-all hover:border-primary/40 hover:shadow-md"
+              className="flex flex-col justify-between rounded-xl border border-border/80 bg-card p-5 shadow-xs transition-all hover:border-primary/40 hover:shadow-md"
             >
               <div>
                 <div className="mb-4 flex items-start justify-between gap-3">
@@ -252,7 +252,7 @@ export function TeamList({ courseId, courseCode }: TeamListProps) {
                       <span className="rounded-md border border-primary/25 bg-primary/10 px-2.5 py-0.5 font-mono text-xs font-black text-primary">
                         Team #{team.teamNo}
                       </span>
-                      <Badge variant="secondary" className="font-mono text-[11px] font-semibold">
+                      <Badge variant="secondary" className="font-mono text-xs font-semibold">
                         {team.members.length} thành viên
                       </Badge>
                     </div>
@@ -286,7 +286,7 @@ export function TeamList({ courseId, courseCode }: TeamListProps) {
                       <ClockIcon className="size-3.5 text-amber-600 dark:text-amber-400" />
                       Chưa thiết lập dự án nhóm
                     </p>
-                    <p className="mt-0.5 text-[11px] text-amber-800/90 dark:text-amber-300/80">
+                    <p className="mt-0.5 text-xs text-amber-800/90 dark:text-amber-300/80">
                       Trưởng nhóm cần tạo dự án trên SAGA, sau đó kết nối Jira và GitHub trong phân hệ Sinh viên.
                     </p>
                   </div>
@@ -295,7 +295,7 @@ export function TeamList({ courseId, courseCode }: TeamListProps) {
                     <CheckCircle2Icon className="mt-0.5 size-3.5 shrink-0 text-emerald-600 dark:text-emerald-400" />
                     <div>
                       <p className="font-bold text-foreground">Dự án đã kết nối</p>
-                      <p className="mt-0.5 text-[11px] text-muted-foreground">
+                      <p className="mt-0.5 text-xs text-muted-foreground">
                         Sẵn sàng theo dõi Sprint, task và commit của nhóm.
                       </p>
                     </div>
@@ -320,7 +320,7 @@ export function TeamList({ courseId, courseCode }: TeamListProps) {
                           <Avatar size="sm" className="border border-border/60 shrink-0">
                             <AvatarFallback
                               className={cn(
-                                "font-mono text-[11px] font-bold",
+                                "font-mono text-xs font-bold",
                                 isLeader
                                   ? "bg-amber-500/20 text-amber-800 dark:text-amber-300"
                                   : "bg-primary/10 text-primary"
@@ -337,13 +337,13 @@ export function TeamList({ courseId, courseCode }: TeamListProps) {
                               {isLeader && <LeaderBadge variant="icon-only" />}
                             </div>
                             <div className="flex items-center gap-2">
-                              <span className="font-mono text-[11px] font-medium text-muted-foreground">
+                              <span className="font-mono text-xs font-medium text-muted-foreground">
                                 {member.studentCode}
                               </span>
-                              <span className="text-[11px] text-muted-foreground/60 hidden sm:inline">
+                              <span className="text-xs text-muted-foreground/60 hidden sm:inline">
                                 •
                               </span>
-                              <span className="text-[11px] text-muted-foreground/80 truncate hidden sm:inline">
+                              <span className="text-xs text-muted-foreground/80 truncate hidden sm:inline">
                                 {member.email}
                               </span>
                             </div>
@@ -362,7 +362,7 @@ export function TeamList({ courseId, courseCode }: TeamListProps) {
                                 <MoreVerticalIcon className="size-3.5" />
                               </DropdownMenuTrigger>
                               <DropdownMenuContent align="end" className="w-48">
-                                <DropdownMenuLabel className="text-[11px] font-semibold">
+                                <DropdownMenuLabel className="text-xs font-semibold">
                                   Thao tác thành viên
                                 </DropdownMenuLabel>
                                 <DropdownMenuSeparator />

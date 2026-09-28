@@ -272,7 +272,7 @@ function CourseAiMultiProviderForm({
 
   return (
     <div className="space-y-6">
-      <div className="p-6 rounded-2xl border border-border bg-card shadow-xs space-y-6">
+      <div className="p-6 rounded-xl border border-border bg-card shadow-xs space-y-6">
         <div className="flex flex-wrap items-center justify-between gap-4 border-b border-border/60 pb-4">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
@@ -281,7 +281,7 @@ function CourseAiMultiProviderForm({
             <div>
               <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
                 <span>Cấu hình Mô hình & Đa nhà cung cấp AI</span>
-                <Badge variant="outline" className="font-mono text-[11px] text-primary border-primary/30 bg-primary/10">
+                <Badge variant="outline" className="font-mono text-xs text-primary border-primary/30 bg-primary/10">
                   Multi-Provider BYOK
                 </Badge>
               </h3>
@@ -322,7 +322,7 @@ function CourseAiMultiProviderForm({
                 1. Mô hình phân tích chính (PRIMARY - Bắt buộc cho Tự động hóa)
               </h4>
             </div>
-            <Badge variant="outline" className="text-[10px] text-primary border-primary/30">
+            <Badge variant="outline" className="text-xs text-primary border-primary/30">
               Phân tích Commit, Task & Rủi ro
             </Badge>
           </div>
@@ -435,7 +435,7 @@ function CourseAiMultiProviderForm({
                         className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 p-3 rounded-xl bg-card border border-border/70 text-xs"
                       >
                         <div className="flex items-center gap-2 shrink-0 font-mono font-bold text-muted-foreground">
-                          <span className="w-5 h-5 rounded-full bg-muted flex items-center justify-center text-[10px]">
+                          <span className="w-5 h-5 rounded-full bg-muted flex items-center justify-center text-xs">
                             {idx + 1}
                           </span>
                           <span>Dự phòng {idx + 1}</span>
@@ -459,11 +459,11 @@ function CourseAiMultiProviderForm({
 
                         <div className="flex items-center justify-between sm:justify-end gap-2 shrink-0">
                           {hasPrimaryCredential ? (
-                            <Badge variant="outline" className="text-[10px] text-emerald-600 dark:text-emerald-400 border-emerald-500/30 bg-emerald-500/10">
+                            <Badge variant="outline" className="text-xs text-emerald-600 dark:text-emerald-400 border-emerald-500/30 bg-emerald-500/10">
                               Đã có khóa PRIMARY
                             </Badge>
                           ) : (
-                            <Badge variant="outline" className="text-[10px] text-amber-600 dark:text-amber-400 border-amber-500/30 bg-amber-500/10">
+                            <Badge variant="outline" className="text-xs text-amber-600 dark:text-amber-400 border-amber-500/30 bg-amber-500/10">
                               Chưa có khóa PRIMARY
                             </Badge>
                           )}
@@ -628,7 +628,7 @@ export function CourseAiSettingsCard({ courseId }: CourseAiSettingsCardProps) {
 
   if (isLoadingSettings || isLoadingCatalog || !settings || !catalog) {
     return (
-      <div className="p-8 rounded-2xl border border-border bg-card/60 flex flex-col items-center justify-center gap-3">
+      <div className="p-8 rounded-xl border border-border bg-card/60 flex flex-col items-center justify-center gap-3">
         <Loader2Icon className="w-6 h-6 animate-spin text-primary" />
         <span className="text-xs text-muted-foreground">
           Đang nạp danh mục nhà cung cấp và thiết lập AI...

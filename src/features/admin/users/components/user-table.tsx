@@ -95,21 +95,21 @@ export function UserTable({
     switch (user.status) {
       case "ACTIVE":
         return (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-success-muted text-success">
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-success-muted text-success">
             <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
             Hoạt động
           </span>
         );
       case "PENDING":
         return (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-warning-muted text-warning">
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-warning-muted text-warning">
             <ClockIcon className="w-3 h-3" />
             Chờ kích hoạt
           </span>
         );
       case "INACTIVE":
         return (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-muted text-muted-foreground border border-border">
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-muted text-muted-foreground border border-border">
             <UserXIcon className="w-3 h-3" />
             Không hoạt động
           </span>
@@ -117,13 +117,13 @@ export function UserTable({
       case "BANNED":
         return (
           <div className="flex flex-col items-start gap-0.5">
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-danger-muted text-danger">
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-danger-muted text-danger">
               <span className="w-1.5 h-1.5 rounded-full bg-danger" />
               Đã khóa
             </span>
             {user.banReason && (
               <span
-                className="text-[10px] text-muted-foreground truncate max-w-[150px]"
+                className="text-xs text-muted-foreground truncate max-w-[150px]"
                 title={user.banReason}
               >
                 {user.banReason}
@@ -138,7 +138,7 @@ export function UserTable({
 
   if (isLoading) {
     return (
-      <Card className="rounded-2xl border border-border overflow-hidden shadow-xs">
+      <Card className="rounded-xl border border-border overflow-hidden shadow-xs">
         <Table>
           <TableHeader className="bg-muted/40">
             <TableRow className="border-b border-border">
@@ -177,9 +177,9 @@ export function UserTable({
 
   if (displayUsers.length === 0) {
     return (
-      <Card className="rounded-2xl border border-border shadow-xs">
+      <Card className="rounded-xl border border-border shadow-xs">
         <CardContent className="p-12 text-center space-y-3">
-          <div className="w-12 h-12 rounded-2xl bg-muted flex items-center justify-center mx-auto text-muted-foreground">
+          <div className="w-12 h-12 rounded-xl bg-muted flex items-center justify-center mx-auto text-muted-foreground">
             <InboxIcon className="w-6 h-6" />
           </div>
           <div className="space-y-1">
@@ -194,7 +194,7 @@ export function UserTable({
   }
 
   return (
-    <Card className="rounded-2xl border border-border overflow-hidden shadow-xs">
+    <Card className="rounded-xl border border-border overflow-hidden shadow-xs">
       <Table>
         <TableHeader className="bg-muted/40">
           <TableRow className="border-b border-border">
@@ -237,7 +237,7 @@ export function UserTable({
 
                 <TableCell className="py-3 px-4 font-mono text-xs">
                   {user.studentCode || user.lecturerCode ? (
-                    <Badge variant="outline" className="font-mono text-[11px] font-medium border-border">
+                    <Badge variant="outline" className="font-mono text-xs font-medium border-border">
                       {user.studentCode || user.lecturerCode}
                     </Badge>
                   ) : (
@@ -247,7 +247,7 @@ export function UserTable({
 
                 <TableCell className="py-3 px-4">
                   <Badge
-                    className={`text-[11px] font-semibold ${
+                    className={`text-xs font-semibold ${
                       user.role === "LECTURER"
                         ? "bg-primary/10 text-primary border-primary/20"
                         : "bg-muted text-muted-foreground border-border"

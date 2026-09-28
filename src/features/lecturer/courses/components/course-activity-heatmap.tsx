@@ -46,7 +46,7 @@ export function CourseActivityHeatmap({
   );
 
   return (
-    <Card className="rounded-2xl border border-border/80 bg-card p-5 shadow-xs">
+    <Card className="rounded-xl border border-border/80 bg-card p-5 shadow-xs">
       <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
         <div className="flex gap-3">
           <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-chart-2/15 text-chart-2">
@@ -68,7 +68,7 @@ export function CourseActivityHeatmap({
           onTeamChange={filter.setSelectedTeamId}
         />
       </div>
-      <div className="mt-3 flex items-center justify-end gap-1.5 text-[11px] text-muted-foreground">
+      <div className="mt-3 flex items-center justify-end gap-1.5 text-xs text-muted-foreground">
           <span>Ít</span>
           {INTENSITY_CLASSES.map((className, index) => (
             <span
@@ -93,7 +93,7 @@ export function CourseActivityHeatmap({
               {heatmap.dates.map((date) => (
                 <div
                   key={date}
-                  className="flex min-h-8 items-end justify-center px-1 pb-1 font-mono text-[10px] font-semibold text-muted-foreground"
+                  className="flex min-h-8 items-end justify-center px-1 pb-1 font-mono text-xs font-semibold text-muted-foreground"
                 >
                   {formatSeriesDate(date)}
                 </div>
@@ -103,7 +103,7 @@ export function CourseActivityHeatmap({
                 <div key={row.teamId} className="contents">
                   <div className="sticky left-0 z-10 flex min-h-11 min-w-0 flex-col justify-center border-r border-border/70 bg-card pr-3">
                     <strong className="truncate text-xs text-foreground">{row.teamName}</strong>
-                    <span className="truncate text-[10px] text-muted-foreground">
+                    <span className="truncate text-xs text-muted-foreground">
                       {row.projectName || row.sprintName || "Chưa có tên dự án"}
                     </span>
                   </div>
@@ -124,7 +124,7 @@ export function CourseActivityHeatmap({
                       <div
                         key={`${row.teamId}-${date}`}
                         aria-label={`${row.teamName}, ${formatSeriesDate(date)}: chưa có dữ liệu`}
-                        className="flex min-h-11 items-center justify-center rounded-lg border border-dashed border-border/70 bg-muted/20 text-[10px] text-muted-foreground/60"
+                        className="flex min-h-11 items-center justify-center rounded-lg border border-dashed border-border/70 bg-muted/20 text-xs text-muted-foreground/60"
                       >
                         —
                       </div>
@@ -186,13 +186,13 @@ function ActivityCell({
       </TooltipTrigger>
       <TooltipContent className="block w-64 max-w-64 rounded-xl bg-popover p-3 text-popover-foreground ring-1 ring-border">
         <p className="font-bold text-foreground">{teamName}</p>
-        <p className="mt-0.5 text-[11px] text-muted-foreground">
+        <p className="mt-0.5 text-xs text-muted-foreground">
           {projectName || "Chưa có tên dự án"} · {sprintName || "Sprint hiện tại"}
         </p>
         <p className="mt-2 border-t border-border pt-2 font-mono font-bold text-foreground">
           {formatSeriesDate(point.date)} · {point.totalActivities} hoạt động
         </p>
-        <dl className="mt-2 grid grid-cols-2 gap-x-3 gap-y-1 text-[11px]">
+        <dl className="mt-2 grid grid-cols-2 gap-x-3 gap-y-1 text-xs">
           <Metric label="Git commits" value={point.commits} />
           <Metric label="Jira tasks" value={point.tasks} />
           <Metric label="Đánh giá chéo" value={point.peerReviews} />

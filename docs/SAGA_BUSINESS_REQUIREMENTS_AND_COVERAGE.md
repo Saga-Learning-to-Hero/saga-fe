@@ -542,7 +542,7 @@ Project Type dùng để phân loại hướng dự án, không điều khiển 
 | --- | --- |
 | `/api/student/courses` | Đã dùng |
 | `/api/student/courses/{courseId}/team` | Đã dùng |
-| `/api/student/courses/{courseId}/dashboard` | Đã dùng (Student Personal Cockpit cho Member & Leader) |
+| `/api/student/courses/{courseId}/dashboard` | Đã dùng (Student Personal Cockpit cho Member & Leader; hỗ trợ query param `sprintId` để chọn lọc số liệu sprint tương ứng) |
 | `/api/student/courses/{courseId}/project` GET/POST | Đã dùng |
 | `/api/student/project-types` | Đã dùng nhưng cần sửa optional contract |
 | `/api/projects/{projectId}/integrations` | Đã dùng |

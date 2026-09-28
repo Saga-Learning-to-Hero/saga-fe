@@ -37,7 +37,7 @@ export function LeaderBadge({
         theme === "solid"
           ? "border-0 bg-amber-300 text-amber-950 font-bold shadow-xs shrink-0 select-none"
           : "border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-300 shrink-0 font-semibold select-none",
-        size === "sm" && "gap-1 text-[10px] px-2 py-0.5",
+        size === "sm" && "gap-1 text-xs px-2 py-0.5",
         size === "md" && "gap-1.5 text-xs px-2.5 py-1 font-bold",
         className
       )}
@@ -91,9 +91,9 @@ export function MemberRoleBadge({
       variant="outline"
       className={cn(
         theme === "solid"
-          ? "border-0 bg-white/20 text-white backdrop-blur-md font-medium shrink-0 select-none"
+          ? "border-0 bg-white/20 text-white backdrop-blur-sm font-medium shrink-0 select-none"
           : "border-border/60 bg-muted/50 text-muted-foreground font-medium shrink-0 select-none",
-        size === "sm" && "text-[10px] px-2 py-0.5",
+        size === "sm" && "text-xs px-2 py-0.5",
         size === "md" && "text-xs px-2.5 py-1",
         className
       )}

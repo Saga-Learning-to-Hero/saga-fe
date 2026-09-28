@@ -15,7 +15,7 @@ interface CourseQueryErrorProps {
 
 export function CourseQueryError({ title, error, onRetry }: CourseQueryErrorProps) {
   return (
-    <Card className="rounded-2xl border border-dashed border-destructive/30 p-8 text-center">
+    <Card className="rounded-xl border border-dashed border-destructive/30 p-8 text-center">
       <p className="text-sm font-semibold">{title}</p>
       <p className="mt-1 text-xs text-muted-foreground">
         {getApiErrorMessage(error, "Vui lòng thử lại hoặc quay lại danh sách lớp.")}

@@ -1,5 +1,5 @@
+import { showSuccessToast, showErrorToast } from "@/lib/api-error";
 import { useQuery, useMutation, useQueryClient, type QueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
 import { SyllabusService } from "../api/syllabus-service";
 import type {
   SyllabusSummaryResponse,
@@ -121,11 +121,11 @@ export function useCreateSyllabusDraft() {
       queryClient.invalidateQueries({
         queryKey: SUBJECT_QUERY_KEYS.detail(variables.subjectId),
       });
-      toast.success("Đã tạo phiên bản đề cương DRAFT mới.");
+      showSuccessToast("Đã tạo phiên bản đề cương DRAFT mới.");
     },
     onError: (error: unknown) => {
       const err = error as { response?: { data?: { code?: string; message?: string } }; message?: string };
-      toast.error(err.response?.data?.message || err.message || "Không thể tạo bản nháp đề cương.");
+      showErrorToast(err.response?.data?.message || err.message || "Không thể tạo bản nháp đề cương.");
     },
   });
 }
@@ -154,15 +154,15 @@ export function useUpdateSyllabusMetadata() {
       queryClient.invalidateQueries({
         queryKey: SYLLABUS_QUERY_KEYS.detail(variables.subjectId, variables.versionId),
       });
-      toast.success("Đã cập nhật thông tin đề cương.");
+      showSuccessToast("Đã cập nhật thông tin đề cương.");
     },
     onError: (error: unknown) => {
       const err = error as { response?: { data?: { code?: string; message?: string } }; message?: string };
       const code = err.response?.data?.code;
       if (code === "SYLLABUS_PUBLISHED_IMMUTABLE") {
-        toast.error("Đề cương đã xuất bản không được phép thay đổi thông tin.");
+        showErrorToast("Đề cương đã xuất bản không được phép thay đổi thông tin.");
       } else {
-        toast.error(err.response?.data?.message || err.message || "Không thể cập nhật đề cương.");
+        showErrorToast(err.response?.data?.message || err.message || "Không thể cập nhật đề cương.");
       }
     },
   });
@@ -189,17 +189,17 @@ export function useReplaceSyllabusStructure() {
       queryClient.invalidateQueries({
         queryKey: SYLLABUS_QUERY_KEYS.detail(variables.subjectId, variables.versionId),
       });
-      toast.success("Đã lưu cấu trúc tiêu chí đề cương thành công.");
+      showSuccessToast("Đã lưu cấu trúc tiêu chí đề cương thành công.");
     },
     onError: (error: unknown) => {
       const err = error as { response?: { data?: { code?: string; message?: string } }; message?: string };
       const code = err.response?.data?.code;
       if (code === "SYLLABUS_NOT_DRAFT") {
-        toast.error("Chỉ có thể sửa cấu trúc khi đề cương đang ở trạng thái DRAFT.");
+        showErrorToast("Chỉ có thể sửa cấu trúc khi đề cương đang ở trạng thái DRAFT.");
       } else if (code === "SYLLABUS_PUBLISHED_IMMUTABLE") {
-        toast.error("Đề cương đã xuất bản là bất biến, không thể chỉnh sửa cấu trúc.");
+        showErrorToast("Đề cương đã xuất bản là bất biến, không thể chỉnh sửa cấu trúc.");
       } else {
-        toast.error(err.response?.data?.message || err.message || "Không thể lưu cấu trúc đề cương.");
+        showErrorToast(err.response?.data?.message || err.message || "Không thể lưu cấu trúc đề cương.");
       }
     },
   });
@@ -230,15 +230,15 @@ export function usePublishSyllabus() {
       queryClient.invalidateQueries({
         queryKey: SUBJECT_QUERY_KEYS.detail(variables.subjectId),
       });
-      toast.success("Đã xuất bản đề cương (PUBLISHED). Đề cương hiện có thể gán vào lớp học phần.");
+      showSuccessToast("Đã xuất bản đề cương (PUBLISHED). Đề cương hiện có thể gán vào lớp học phần.");
     },
     onError: (error: unknown) => {
       const err = error as { response?: { data?: { code?: string; message?: string } }; message?: string };
       const code = err.response?.data?.code;
       if (code === "SYLLABUS_NOT_DRAFT") {
-        toast.error("Đề cương không ở trạng thái DRAFT nên không thể xuất bản.");
+        showErrorToast("Đề cương không ở trạng thái DRAFT nên không thể xuất bản.");
       } else {
-        toast.error(err.response?.data?.message || err.message || "Không thể xuất bản đề cương.");
+        showErrorToast(err.response?.data?.message || err.message || "Không thể xuất bản đề cương.");
       }
     },
   });
@@ -262,11 +262,11 @@ export function useArchiveSyllabus() {
       queryClient.invalidateQueries({
         queryKey: SYLLABUS_QUERY_KEYS.detail(variables.subjectId, variables.versionId),
       });
-      toast.success("Đã chuyển đề cương sang trạng thái lưu trữ (ARCHIVED).");
+      showSuccessToast("Đã chuyển đề cương sang trạng thái lưu trữ (ARCHIVED).");
     },
     onError: (error: unknown) => {
       const err = error as { response?: { data?: { code?: string; message?: string } }; message?: string };
-      toast.error(err.response?.data?.message || err.message || "Không thể lưu trữ đề cương.");
+      showErrorToast(err.response?.data?.message || err.message || "Không thể lưu trữ đề cương.");
     },
   });
 }

@@ -1,3 +1,11 @@
+import { toast } from "sonner";
+
+export const SAGA_TOAST_IDS = {
+  SAVE_SETTINGS: "save_settings_toast",
+  SYNC: "sync_toast",
+  ACTION: "action_toast",
+} as const;
+
 export type ApiErrorLike = Error & {
   code?: string;
   status?: number;
@@ -59,6 +67,44 @@ export function getApiErrorStatus(error: unknown): number | undefined {
 export function getApiErrorMessage(error: unknown, fallback: string): string {
   const message = getApiError(error).message;
   return message?.trim() ? message : fallback;
+}
+
+interface ToastOptions {
+  id?: string;
+  description?: string;
+}
+
+export function showErrorToast(fallbackMessage: string, error?: unknown, options?: ToastOptions | string): void {
+  const message = error ? getApiErrorMessage(error, fallbackMessage) : fallbackMessage;
+  const opts = typeof options === 'string' ? { id: options } : (options || {});
+
+  if (message.includes("Network Error") || message.includes("timeout")) {
+    toast.error("Không thể kết nối đến máy chủ", {
+      id: opts.id,
+      description: "Vui lòng kiểm tra lại kết nối mạng của bạn.",
+    });
+    return;
+  }
+
+  toast.error(fallbackMessage, {
+    id: opts.id,
+    description: opts.description || (message !== fallbackMessage ? message : undefined),
+  });
+}
+
+export function showSuccessToast(message: string, options?: ToastOptions | string): void {
+  const opts = typeof options === 'string' ? { id: options } : (options || {});
+  toast.success(message, { id: opts.id, description: opts.description });
+}
+
+export function showInfoToast(message: string, options?: ToastOptions | string): void {
+  const opts = typeof options === 'string' ? { id: options } : (options || {});
+  toast.info(message, { id: opts.id, description: opts.description });
+}
+
+export function showWarningToast(message: string, options?: ToastOptions | string): void {
+  const opts = typeof options === 'string' ? { id: options } : (options || {});
+  toast.warning(message, { id: opts.id, description: opts.description });
 }
 
 export function isUnauthorizedError(error: unknown): boolean {

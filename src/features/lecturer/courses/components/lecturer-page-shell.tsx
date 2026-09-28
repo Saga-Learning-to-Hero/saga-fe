@@ -71,7 +71,7 @@ export function LecturerPageShell({
       )}
 
       {title || actions ? (
-        <div className="flex flex-col justify-between gap-4 rounded-2xl border border-border/80 bg-card/90 p-4 shadow-xs backdrop-blur-md sm:flex-row sm:items-center">
+        <div className="flex flex-col justify-between gap-4 rounded-xl border border-border/80 bg-card/90 p-4 shadow-xs backdrop-blur-sm sm:flex-row sm:items-center">
           {isLoading && !title ? (
             <div className="animate-pulse space-y-2">
               <div className="h-5 w-40 rounded bg-muted" />
@@ -100,8 +100,8 @@ export function LecturerPageShell({
 
       {isLoading ? (
         <div className="space-y-4">
-          <div className="h-24 animate-pulse rounded-2xl bg-muted/60" />
-          <div className="h-48 animate-pulse rounded-2xl bg-muted/60" />
+          <div className="h-24 animate-pulse rounded-xl bg-muted/60" />
+          <div className="h-48 animate-pulse rounded-xl bg-muted/60" />
         </div>
       ) : (
         children

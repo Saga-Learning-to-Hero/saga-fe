@@ -142,7 +142,7 @@ export function AddStudentDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
-      <DialogContent className="max-w-lg p-6 rounded-2xl shadow-xl">
+      <DialogContent className="max-w-lg p-6 rounded-xl shadow-md">
         <form onSubmit={handleSubmit} className="space-y-4">
           <DialogHeader className="flex flex-row items-center gap-3 space-y-0 text-left pb-2 border-b border-border/60">
             <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0">
@@ -217,7 +217,7 @@ export function AddStudentDialog({
                   <button
                     type="button"
                     onClick={handleAutoSuggest}
-                    className="text-[11px] text-primary hover:underline cursor-pointer font-medium"
+                    className="text-xs text-primary hover:underline cursor-pointer font-medium"
                   >
                     Gợi ý lại theo tên
                   </button>
@@ -233,7 +233,7 @@ export function AddStudentDialog({
                 required
                 className="h-9 text-xs font-mono bg-muted/30 border-border/80 focus:border-primary rounded-xl"
               />
-              <p className="text-[11px] text-muted-foreground">
+              <p className="text-xs text-muted-foreground">
                 Mã định danh thành viên dùng đối soát với Git và Jira.
               </p>
             </div>

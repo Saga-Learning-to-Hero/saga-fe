@@ -43,7 +43,7 @@ export function CommitFilterBar({
   onSearchChange,
 }: CommitFilterBarProps) {
   return (
-    <div className="relative z-30 p-3 rounded-2xl bg-card/60 border border-border/70 backdrop-blur-xs shadow-2xs space-y-3">
+    <div className="relative z-30 p-3 rounded-xl bg-card/60 border border-border/70 backdrop-blur-xs shadow-2xs space-y-3">
       <div className="flex flex-col md:flex-row md:items-center gap-3">
         <div className="relative z-40 w-full md:w-60">
           <CustomSelect

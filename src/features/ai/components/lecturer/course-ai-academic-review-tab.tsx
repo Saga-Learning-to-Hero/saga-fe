@@ -114,7 +114,7 @@ export function CourseAiAcademicReviewTab({ courseId }: CourseAiAcademicReviewTa
 
   return (
     <div className="space-y-6">
-      <div className="p-6 rounded-2xl border border-border bg-card shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="p-6 rounded-xl border border-border bg-card shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h3 className="text-base font-bold text-foreground">
             Đối soát và Phê duyệt Phân loại Đề cương
@@ -177,13 +177,13 @@ export function CourseAiAcademicReviewTab({ courseId }: CourseAiAcademicReviewTa
       </div>
 
       {isLoading ? (
-        <div className="p-12 rounded-2xl border border-border bg-card flex flex-col items-center justify-center gap-3">
+        <div className="p-12 rounded-xl border border-border bg-card flex flex-col items-center justify-center gap-3">
           <Loader2Icon className="w-6 h-6 animate-spin text-primary" />
           <span className="text-xs text-muted-foreground">Đang tải dữ liệu phân loại đề cương từ server...</span>
         </div>
       ) : items.length === 0 ? (
-        <div className="p-12 rounded-2xl border border-dashed border-border bg-muted/10 text-center space-y-3">
-          <div className="w-12 h-12 rounded-2xl bg-primary/10 text-primary mx-auto flex items-center justify-center">
+        <div className="p-12 rounded-xl border border-dashed border-border bg-muted/10 text-center space-y-3">
+          <div className="w-12 h-12 rounded-xl bg-primary/10 text-primary mx-auto flex items-center justify-center">
             <GraduationCapIcon className="w-6 h-6" />
           </div>
           <h4 className="text-sm font-semibold text-foreground">Không có bản ghi phân loại đề cương nào</h4>
@@ -193,7 +193,7 @@ export function CourseAiAcademicReviewTab({ courseId }: CourseAiAcademicReviewTa
         </div>
       ) : (
         <div className="space-y-4">
-          <div className="border border-border rounded-2xl overflow-hidden bg-card shadow-xs">
+          <div className="border border-border rounded-xl overflow-hidden bg-card shadow-xs">
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
                 <thead className="bg-muted/40 border-b border-border text-muted-foreground uppercase font-semibold">
@@ -219,7 +219,7 @@ export function CourseAiAcademicReviewTab({ courseId }: CourseAiAcademicReviewTa
                             <UsersIcon className="w-3.5 h-3.5 text-primary shrink-0" />
                             <span>{row.teamName || "Chưa chia nhóm"}</span>
                           </div>
-                          <div className="text-[11px] text-muted-foreground flex items-center gap-1 mt-0.5">
+                          <div className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
                             <FolderGit2Icon className="w-3 h-3 shrink-0" />
                             <span>{row.projectName}</span>
                           </div>
@@ -228,7 +228,7 @@ export function CourseAiAcademicReviewTab({ courseId }: CourseAiAcademicReviewTa
                         <td className="p-4 max-w-xs">
                           {isTask ? (
                             <div>
-                              <div className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-blue-500/10 text-blue-600 dark:text-blue-400 font-mono font-bold text-[11px]">
+                              <div className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-blue-500/10 text-blue-600 dark:text-blue-400 font-mono font-bold text-xs">
                                 <CheckSquareIcon className="w-3 h-3" />
                                 {row.taskExternalKey || "JIRA-TASK"}
                               </div>
@@ -238,11 +238,11 @@ export function CourseAiAcademicReviewTab({ courseId }: CourseAiAcademicReviewTa
                             </div>
                           ) : (
                             <div>
-                              <div className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-purple-500/10 text-purple-600 dark:text-purple-400 font-mono font-bold text-[11px]">
+                              <div className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-purple-500/10 text-purple-600 dark:text-purple-400 font-mono font-bold text-xs">
                                 <GitCommitIcon className="w-3 h-3" />
                                 {row.commitSha ? row.commitSha.slice(0, 7) : classification.artifactRevision.slice(0, 7)}
                               </div>
-                              <div className="text-foreground font-medium mt-1 truncate font-mono text-[11px]" title={row.commitMessage || ""}>
+                              <div className="text-foreground font-medium mt-1 truncate font-mono text-xs" title={row.commitMessage || ""}>
                                 {row.commitMessage || "Không có thông điệp commit"}
                               </div>
                             </div>
@@ -251,14 +251,14 @@ export function CourseAiAcademicReviewTab({ courseId }: CourseAiAcademicReviewTa
 
                         <td className="p-4">
                           <div className="font-semibold text-foreground">{classification.targetName}</div>
-                          <div className="text-[11px] text-muted-foreground font-mono flex items-center gap-1 mt-0.5">
+                          <div className="text-xs text-muted-foreground font-mono flex items-center gap-1 mt-0.5">
                             <TagIcon className="w-3 h-3 text-muted-foreground" />
                             <span>{classification.targetType} • {classification.targetCode}</span>
                           </div>
                         </td>
 
                         <td className="p-4 font-mono">
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-primary/10 text-primary font-semibold text-[11px]">
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-primary/10 text-primary font-semibold text-xs">
                             <SparklesIcon className="w-3 h-3" />
                             {(classification.confidence * 100).toFixed(0)}%
                           </span>
@@ -266,12 +266,12 @@ export function CourseAiAcademicReviewTab({ courseId }: CourseAiAcademicReviewTa
 
                         <td className="p-4">
                           {authoritative ? (
-                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30">
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30">
                               <ShieldCheckIcon className="w-3 h-3" />
                               Chính thức
                             </span>
                           ) : (
-                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-muted text-muted-foreground border border-border">
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-muted text-muted-foreground border border-border">
                               Đề xuất AI
                             </span>
                           )}
@@ -279,19 +279,19 @@ export function CourseAiAcademicReviewTab({ courseId }: CourseAiAcademicReviewTa
 
                         <td className="p-4">
                           {classification.status === "PROPOSED" ? (
-                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
                               Chờ duyệt
                             </span>
                           ) : classification.status === "CONFIRMED" ? (
-                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
                               Đã chấp thuận
                             </span>
                           ) : classification.status === "REJECTED" ? (
-                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/20">
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/20">
                               Đã từ chối
                             </span>
                           ) : (
-                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20">
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20">
                               Đã điều chỉnh
                             </span>
                           )}
@@ -376,7 +376,7 @@ export function CourseAiAcademicReviewTab({ courseId }: CourseAiAcademicReviewTa
 
       {selectedRow && reviewAction && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-card border border-border/80 rounded-3xl w-full max-w-lg max-h-[92vh] flex flex-col shadow-2xl overflow-hidden">
+          <div className="bg-card border border-border/80 rounded-xl w-full max-w-lg max-h-[92vh] flex flex-col shadow-lg overflow-hidden">
             <div className="p-5 border-b border-border/60 flex items-center justify-between shrink-0 bg-muted/20">
               <h3 className="text-base font-extrabold text-foreground">
                 {reviewAction === "CONFIRM"
@@ -398,7 +398,7 @@ export function CourseAiAcademicReviewTab({ courseId }: CourseAiAcademicReviewTa
                     <span>Dự án: {selectedRow.projectName}</span>
                   </div>
                   <div className="font-semibold text-foreground text-sm">{selectedRow.classification.targetName}</div>
-                  <div className="font-mono text-muted-foreground text-[11px]">
+                  <div className="font-mono text-muted-foreground text-xs">
                     Loại: {selectedRow.classification.targetType} • Mã: {selectedRow.classification.targetCode} • Độ tin cậy: {(selectedRow.classification.confidence * 100).toFixed(0)}%
                   </div>
                 </div>

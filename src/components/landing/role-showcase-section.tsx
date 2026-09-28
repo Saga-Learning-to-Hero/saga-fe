@@ -81,7 +81,7 @@ export function RoleShowcaseSection() {
         </div>
 
         <div className="flex justify-center">
-          <div className="inline-flex p-1.5 rounded-2xl bg-muted/60 border border-border/80 gap-1.5">
+          <div className="inline-flex p-1.5 rounded-xl bg-muted/60 border border-border/80 gap-1.5">
             {roles.map((role, idx) => (
               <button
                 key={role.id}
@@ -98,7 +98,7 @@ export function RoleShowcaseSection() {
           </div>
         </div>
 
-        <div className="rounded-3xl border border-border/80 bg-card p-6 sm:p-10 shadow-lg grid lg:grid-cols-12 gap-10 items-center">
+        <div className="rounded-xl border border-border/80 bg-card p-6 sm:p-10 shadow-lg grid lg:grid-cols-12 gap-10 items-center">
           <div className="lg:col-span-7 space-y-6">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-primary/20 bg-primary/5 text-primary text-xs font-semibold">
               <SparklesIcon className="w-3.5 h-3.5" />
@@ -125,7 +125,7 @@ export function RoleShowcaseSection() {
           </div>
 
           <div className="lg:col-span-5">
-            <div className="rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/10 via-primary/5 to-cyan-500/10 p-6 space-y-5 shadow-xs">
+            <div className="rounded-xl border border-primary/20 bg-popover from-primary/10 via-primary/5 to-cyan-500/10 p-6 space-y-5 shadow-xs">
               <div className="flex items-center justify-between pb-3 border-b border-border/60">
                 <span className="text-xs font-mono font-bold text-foreground">
                   {currentRole.previewTitle}
@@ -143,12 +143,12 @@ export function RoleShowcaseSection() {
               </div>
 
               <div className="p-3.5 rounded-xl bg-background/80 border border-border/60 text-xs font-mono space-y-1.5">
-                <div className="flex justify-between text-[11px]">
+                <div className="flex justify-between text-xs">
                   <span className="text-muted-foreground">Đánh giá Liên tục SE:</span>
                   <span className="text-emerald-600 dark:text-emerald-400 font-bold">Hoạt động</span>
                 </div>
                 <div className="w-full h-1.5 bg-muted rounded-full overflow-hidden">
-                  <div className="h-full bg-gradient-to-r from-primary to-cyan-500 rounded-full w-[90%]" />
+                  <div className="h-full bg-popover from-primary to-cyan-500 rounded-full w-[90%]" />
                 </div>
               </div>
             </div>

@@ -32,7 +32,7 @@ export function BentoGridSection() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
-          <div className="md:col-span-8 rounded-3xl border border-border bg-card p-6 sm:p-8 space-y-6 flex flex-col justify-between hover:border-primary/40 transition-all shadow-xs group">
+          <div className="md:col-span-8 rounded-xl border border-border bg-card p-6 sm:p-8 space-y-6 flex flex-col justify-between hover:border-primary/40 transition-all shadow-xs group">
             <div className="space-y-3">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div className="flex items-center gap-2">
@@ -78,7 +78,7 @@ export function BentoGridSection() {
               </p>
             </div>
 
-            <div className="relative h-60 w-full rounded-2xl bg-muted/20 border border-border/60 overflow-hidden select-none p-4 flex items-center justify-center">
+            <div className="relative h-60 w-full rounded-xl bg-muted/20 border border-border/60 overflow-hidden select-none p-4 flex items-center justify-center">
               {graphMode === "traceability" ? (
                 <svg className="w-full h-full" viewBox="0 0 500 200" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <line x1="80" y1="100" x2="210" y2="60" stroke="#94A3B8" strokeWidth="2" strokeDasharray="4 4" />
@@ -172,13 +172,13 @@ export function BentoGridSection() {
             </div>
           </div>
 
-          <div className="md:col-span-4 rounded-3xl border border-border bg-card p-6 sm:p-7 space-y-5 flex flex-col justify-between hover:border-primary/40 transition-all shadow-xs">
+          <div className="md:col-span-4 rounded-xl border border-border bg-card p-6 sm:p-7 space-y-5 flex flex-col justify-between hover:border-primary/40 transition-all shadow-xs">
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <div className="w-10 h-10 rounded-xl bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 flex items-center justify-center">
                   <PieChartIcon className="w-5 h-5" />
                 </div>
-                <Badge variant="outline" className="font-mono text-[10px]">
+                <Badge variant="outline" className="font-mono text-xs">
                   Sprint Active
                 </Badge>
               </div>
@@ -192,7 +192,7 @@ export function BentoGridSection() {
 
             <div className="space-y-2.5 font-mono text-xs">
               <div className="space-y-1">
-                <div className="flex justify-between text-[11px]">
+                <div className="flex justify-between text-xs">
                   <span className="text-foreground">Lập trình (Code)</span>
                   <span className="text-primary font-bold">40%</span>
                 </div>
@@ -201,7 +201,7 @@ export function BentoGridSection() {
                 </div>
               </div>
               <div className="space-y-1">
-                <div className="flex justify-between text-[11px]">
+                <div className="flex justify-between text-xs">
                   <span className="text-foreground">Kiểm thử (Test)</span>
                   <span className="text-cyan-500 font-bold">25%</span>
                 </div>
@@ -210,7 +210,7 @@ export function BentoGridSection() {
                 </div>
               </div>
               <div className="space-y-1">
-                <div className="flex justify-between text-[11px]">
+                <div className="flex justify-between text-xs">
                   <span className="text-foreground">Tài liệu kỹ thuật (Doc)</span>
                   <span className="text-indigo-400 font-bold">20%</span>
                 </div>
@@ -219,7 +219,7 @@ export function BentoGridSection() {
                 </div>
               </div>
               <div className="space-y-1">
-                <div className="flex justify-between text-[11px]">
+                <div className="flex justify-between text-xs">
                   <span className="text-foreground">Nghiên cứu (Research)</span>
                   <span className="text-purple-400 font-bold">15%</span>
                 </div>
@@ -230,13 +230,13 @@ export function BentoGridSection() {
             </div>
           </div>
 
-          <div className="md:col-span-4 rounded-3xl border border-border bg-card p-6 sm:p-7 space-y-5 flex flex-col justify-between hover:border-destructive/40 transition-all shadow-xs">
+          <div className="md:col-span-4 rounded-xl border border-border bg-card p-6 sm:p-7 space-y-5 flex flex-col justify-between hover:border-destructive/40 transition-all shadow-xs">
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <div className="w-10 h-10 rounded-xl bg-destructive/10 text-destructive flex items-center justify-center">
                   <ShieldAlertIcon className="w-5 h-5" />
                 </div>
-                <Badge variant="outline" className="font-mono text-[10px] text-destructive border-destructive/30 bg-destructive/5">
+                <Badge variant="outline" className="font-mono text-xs text-destructive border-destructive/30 bg-destructive/5">
                   XAI Detection
                 </Badge>
               </div>
@@ -254,9 +254,9 @@ export function BentoGridSection() {
                   <span className="font-bold text-destructive flex items-center gap-1.5">
                     <AlertTriangleIcon className="w-3.5 h-3.5" /> MSR Anomaly
                   </span>
-                  <span className="text-[10px] text-muted-foreground">Nghi vấn khống</span>
+                  <span className="text-xs text-muted-foreground">Nghi vấn khống</span>
                 </div>
-                <p className="text-[11px] text-muted-foreground leading-tight">
+                <p className="text-xs text-muted-foreground leading-tight">
                   Task Jira chuyển trạng thái DONE nhưng ghi nhận 0 commit mã nguồn liên kết.
                 </p>
               </div>
@@ -266,22 +266,22 @@ export function BentoGridSection() {
                   <span className="font-bold text-amber-600 dark:text-amber-400 flex items-center gap-1.5">
                     <AlertTriangleIcon className="w-3.5 h-3.5" /> Ghosting Alert
                   </span>
-                  <span className="text-[10px] text-muted-foreground">Degree ≈ 0</span>
+                  <span className="text-xs text-muted-foreground">Degree ≈ 0</span>
                 </div>
-                <p className="text-[11px] text-muted-foreground leading-tight">
+                <p className="text-xs text-muted-foreground leading-tight">
                   Thành viên không có hoạt động commit, review PR hoặc trao đổi trong Sprint.
                 </p>
               </div>
             </div>
           </div>
 
-          <div className="md:col-span-4 rounded-3xl border border-border bg-card p-6 sm:p-7 space-y-5 flex flex-col justify-between hover:border-primary/40 transition-all shadow-xs">
+          <div className="md:col-span-4 rounded-xl border border-border bg-card p-6 sm:p-7 space-y-5 flex flex-col justify-between hover:border-primary/40 transition-all shadow-xs">
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
                   <BotIcon className="w-5 h-5" />
                 </div>
-                <Badge variant="outline" className="font-mono text-[10px] text-primary border-primary/25 bg-primary/5">
+                <Badge variant="outline" className="font-mono text-xs text-primary border-primary/25 bg-primary/5">
                   BYOK Secured
                 </Badge>
               </div>
@@ -298,21 +298,21 @@ export function BentoGridSection() {
                 <span className="font-bold text-primary flex items-center gap-1.5">
                   <LayersIcon className="w-3.5 h-3.5" /> Đề cương FLM & CLOs
                 </span>
-                <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold">Đối soát 100%</span>
+                <span className="text-xs text-emerald-600 dark:text-emerald-400 font-bold">Đối soát 100%</span>
               </div>
-              <p className="text-[11px] text-muted-foreground leading-tight">
+              <p className="text-xs text-muted-foreground leading-tight">
                 Phân tích code diff, commit log, phát hiện rủi ro chậm Sprint và gợi ý phân loại sản phẩm bàn giao theo Syllabus.
               </p>
             </div>
           </div>
 
-          <div className="md:col-span-4 rounded-3xl border border-border bg-card p-6 sm:p-7 space-y-5 flex flex-col justify-between hover:border-primary/40 transition-all shadow-xs">
+          <div className="md:col-span-4 rounded-xl border border-border bg-card p-6 sm:p-7 space-y-5 flex flex-col justify-between hover:border-primary/40 transition-all shadow-xs">
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <div className="w-10 h-10 rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
                   <DatabaseIcon className="w-5 h-5" />
                 </div>
-                <Badge variant="outline" className="font-mono text-[10px]">
+                <Badge variant="outline" className="font-mono text-xs">
                   Polyglot Architecture
                 </Badge>
               </div>
@@ -326,20 +326,20 @@ export function BentoGridSection() {
 
             <div className="grid grid-cols-2 gap-2 font-mono text-xs">
               <div className="p-2.5 rounded-xl bg-muted/40 border border-border text-center space-y-0.5">
-                <p className="font-bold text-foreground text-[11px]">PostgreSQL</p>
-                <p className="text-[10px] text-muted-foreground font-sans">Học phần & Điểm</p>
+                <p className="font-bold text-foreground text-xs">PostgreSQL</p>
+                <p className="text-xs text-muted-foreground font-sans">Học phần & Điểm</p>
               </div>
               <div className="p-2.5 rounded-xl bg-muted/40 border border-border text-center space-y-0.5">
-                <p className="font-bold text-foreground text-[11px]">Neo4j AuraDB</p>
-                <p className="text-[10px] text-muted-foreground font-sans">Đồ thị Tri thức</p>
+                <p className="font-bold text-foreground text-xs">Neo4j AuraDB</p>
+                <p className="text-xs text-muted-foreground font-sans">Đồ thị Tri thức</p>
               </div>
               <div className="p-2.5 rounded-xl bg-muted/40 border border-border text-center space-y-0.5">
-                <p className="font-bold text-foreground text-[11px]">MongoDB</p>
-                <p className="text-[10px] text-muted-foreground font-sans">Audit Trail Bất biến</p>
+                <p className="font-bold text-foreground text-xs">MongoDB</p>
+                <p className="text-xs text-muted-foreground font-sans">Audit Trail Bất biến</p>
               </div>
               <div className="p-2.5 rounded-xl bg-muted/40 border border-border text-center space-y-0.5">
-                <p className="font-bold text-foreground text-[11px]">Redis Cache</p>
-                <p className="text-[10px] text-muted-foreground font-sans">Session & Realtime</p>
+                <p className="font-bold text-foreground text-xs">Redis Cache</p>
+                <p className="text-xs text-muted-foreground font-sans">Session & Realtime</p>
               </div>
             </div>
           </div>

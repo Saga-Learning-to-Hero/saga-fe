@@ -187,13 +187,13 @@ export function SprintBacklogView({
           )}
 
           {issue.migratedTo && (
-            <span className="text-[10px] font-mono text-muted-foreground shrink-0 bg-muted/60 px-1.5 py-0.5 rounded border border-border/50">
+            <span className="text-xs font-mono text-muted-foreground shrink-0 bg-muted/60 px-1.5 py-0.5 rounded border border-border/50">
               ➔ {issue.migratedTo.externalKey}
             </span>
           )}
 
           {issue.migratedFrom && (
-            <span className="text-[10px] font-mono text-muted-foreground shrink-0 bg-muted/60 px-1.5 py-0.5 rounded border border-border/50">
+            <span className="text-xs font-mono text-muted-foreground shrink-0 bg-muted/60 px-1.5 py-0.5 rounded border border-border/50">
               từ {issue.migratedFrom.externalKey}
             </span>
           )}
@@ -203,7 +203,7 @@ export function SprintBacklogView({
           </span>
 
           {!isNestedSubtask && subtaskCount > 0 && (
-            <span className="inline-flex shrink-0 items-center rounded-full border border-cyan-500/25 bg-cyan-500/10 px-1.5 py-0.2 text-[10px] font-mono font-medium text-cyan-700 dark:text-cyan-300">
+            <span className="inline-flex shrink-0 items-center rounded-full border border-cyan-500/25 bg-cyan-500/10 px-1.5 py-0.2 text-xs font-mono font-medium text-cyan-700 dark:text-cyan-300">
               {subtaskCount} subtask{subtaskCount > 1 ? "s" : ""}
             </span>
           )}
@@ -231,7 +231,7 @@ export function SprintBacklogView({
           {issue.epic && (
             <Badge
               style={{ backgroundColor: `${issue.epic.color}15`, color: issue.epic.color }}
-              className="border-0 text-[10px] font-bold px-2 py-0.2 shrink-0 hidden md:inline-flex"
+              className="border-0 text-xs font-bold px-2 py-0.2 shrink-0 hidden md:inline-flex"
             >
               {issue.epic.name}
             </Badge>
@@ -246,7 +246,7 @@ export function SprintBacklogView({
           {issue.githubCommitCount && issue.githubCommitCount > 0 ? (
             <span
               title={`Có ${issue.githubCommitCount} commit liên kết`}
-              className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-mono text-[10px] font-semibold"
+              className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-mono text-xs font-semibold"
             >
               <GitCommitIcon className="w-3 h-3" />
               {issue.githubCommitCount}
@@ -254,7 +254,7 @@ export function SprintBacklogView({
           ) : isMsrAnomaly ? (
             <span
               title="Cảnh báo MSR Anomaly: Task Done nhưng chưa có commit liên kết"
-              className="flex items-center gap-1 text-amber-600 dark:text-amber-400 font-mono text-[10px] font-semibold"
+              className="flex items-center gap-1 text-amber-600 dark:text-amber-400 font-mono text-xs font-semibold"
             >
               <AlertTriangleIcon className="w-3 h-3" />
               0 commit
@@ -308,7 +308,7 @@ export function SprintBacklogView({
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 rounded-2xl bg-card/60 border border-border/70 backdrop-blur-xs shadow-2xs">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 rounded-xl bg-card/60 border border-border/70 backdrop-blur-xs shadow-2xs">
         <div className="flex flex-wrap items-center gap-2.5">
           <div className="w-8 h-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
             <LayersIcon className="w-4 h-4" />
@@ -322,10 +322,10 @@ export function SprintBacklogView({
             </p>
           </div>
           <div className="flex items-center gap-1.5 ml-2">
-            <Badge variant="secondary" className="text-[10px] font-mono font-semibold px-2 py-0.2">
+            <Badge variant="secondary" className="text-xs font-mono font-semibold px-2 py-0.2">
               {backlogSprints.length} sprints
             </Badge>
-            <Badge variant="outline" className="text-[10px] font-mono font-semibold px-2 py-0.2">
+            <Badge variant="outline" className="text-xs font-mono font-semibold px-2 py-0.2">
               {productBacklogHierarchy.workItems.length} backlog tasks
             </Badge>
           </div>
@@ -342,7 +342,7 @@ export function SprintBacklogView({
             <span>Tạo Sprint mới</span>
           </Button>
         ) : (
-          <Badge variant="outline" className="text-muted-foreground border-border text-[11px] font-medium gap-1 py-1 px-2.5 shrink-0">
+          <Badge variant="outline" className="text-muted-foreground border-border text-xs font-medium gap-1 py-1 px-2.5 shrink-0">
             <LockIcon className="w-3 h-3 text-amber-500" />
             Chỉ Trưởng nhóm mới có quyền quản lý Sprint
           </Badge>
@@ -350,7 +350,7 @@ export function SprintBacklogView({
       </div>
 
       {backlogSprints.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-border/80 p-8 text-center bg-muted/20 space-y-2">
+        <div className="rounded-xl border border-dashed border-border/80 p-8 text-center bg-muted/20 space-y-2">
           <p className="text-sm font-bold text-foreground">Không có Sprint nào đang mở hoặc trong kế hoạch</p>
           <p className="text-xs text-muted-foreground">
             Các Sprint đã hoàn thành được lưu trữ tại mục Timeline Roadmap và Báo cáo Đóng góp.
@@ -371,7 +371,7 @@ export function SprintBacklogView({
               key={sprint.id}
               onDragOver={handleDragOver}
               onDrop={(e) => handleDrop(e, sprint.id)}
-              className="rounded-2xl border border-border/70 bg-card shadow-2xs overflow-hidden transition-all"
+              className="rounded-xl border border-border/70 bg-card shadow-2xs overflow-hidden transition-all"
             >
               <div className="p-3.5 sm:px-4 bg-muted/30 border-b border-border/60">
                 <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
@@ -396,28 +396,28 @@ export function SprintBacklogView({
                         </h3>
 
                         {sprint.status === "ACTIVE" && (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.2 rounded-full text-[10px] font-bold bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30">
+                          <span className="inline-flex items-center gap-1 px-2 py-0.2 rounded-full text-xs font-bold bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30">
                             <FlameIcon className="w-3 h-3 text-emerald-500" />
                             Đang diễn ra
                           </span>
                         )}
                         {sprint.status === "PLANNED" && (
-                          <Badge variant="outline" className="text-[10px] font-bold text-muted-foreground">
+                          <Badge variant="outline" className="text-xs font-bold text-muted-foreground">
                             KẾ HOẠCH
                           </Badge>
                         )}
 
-                        <Badge variant="secondary" className="text-[10px] font-mono font-semibold px-2">
+                        <Badge variant="secondary" className="text-xs font-mono font-semibold px-2">
                           {sprintHierarchy.workItems.length} tasks
                         </Badge>
                         {sprintIssues.length > sprintHierarchy.workItems.length && (
-                          <Badge variant="outline" className="border-cyan-500/30 bg-cyan-500/10 text-cyan-700 dark:text-cyan-300 text-[10px] font-mono font-semibold px-2">
+                          <Badge variant="outline" className="border-cyan-500/30 bg-cyan-500/10 text-cyan-700 dark:text-cyan-300 text-xs font-mono font-semibold px-2">
                             {sprintIssues.length - sprintHierarchy.workItems.length} subtasks
                           </Badge>
                         )}
                       </div>
 
-                      <div className="text-[11px] text-muted-foreground mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5">
+                      <div className="text-xs text-muted-foreground mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5">
                         <span className="inline-flex items-center gap-1 font-mono">
                           <CalendarIcon className="w-3 h-3 text-muted-foreground/70" />
                           {sprint.startDate && sprint.endDate ? `${sprint.startDate} ~ ${sprint.endDate}` : "Chưa thiết lập lịch"}
@@ -437,9 +437,9 @@ export function SprintBacklogView({
                   <div className="flex flex-wrap items-center justify-between sm:justify-end gap-3 shrink-0 pt-1 lg:pt-0 border-t lg:border-t-0 border-border/40">
                     <div className="flex items-center gap-2">
                       <div className="text-right text-xs font-mono">
-                        <span className="text-muted-foreground text-[11px]">Tiến độ SP: </span>
+                        <span className="text-muted-foreground text-xs">Tiến độ SP: </span>
                         <strong className="text-emerald-600 font-bold">{completedSP}</strong>
-                        <span className="text-muted-foreground text-[11px]">/{totalSP} SP</span>
+                        <span className="text-muted-foreground text-xs">/{totalSP} SP</span>
                       </div>
                       {totalSP > 0 && (
                         <div className="w-16 h-1.5 rounded-full bg-muted overflow-hidden border border-border/40 hidden sm:block">
@@ -569,11 +569,11 @@ export function SprintBacklogView({
                           <GitBranchIcon className="w-3.5 h-3.5 text-cyan-500 shrink-0" />
                           <span className="text-xs font-bold text-foreground">Subtasks chưa tìm thấy task cha</span>
                         </div>
-                        <Badge variant="outline" className="border-cyan-500/30 text-cyan-700 dark:text-cyan-300 font-mono text-[10px]">
+                        <Badge variant="outline" className="border-cyan-500/30 text-cyan-700 dark:text-cyan-300 font-mono text-xs">
                           {sprintHierarchy.orphanSubtasks.length}
                         </Badge>
                       </div>
-                      <p className="px-3.5 pt-2 text-[10px] text-muted-foreground">
+                      <p className="px-3.5 pt-2 text-xs text-muted-foreground">
                         Jira có trả parent nhưng task cha chưa nằm trong Sprint hoặc chưa được đồng bộ về SAGA.
                       </p>
                       {sprintHierarchy.orphanSubtasks.map((subtask) => renderTaskItem(subtask, true))}
@@ -599,7 +599,7 @@ export function SprintBacklogView({
       <div
         onDragOver={handleDragOver}
         onDrop={(e) => handleDrop(e, "backlog")}
-        className="rounded-2xl border border-border/70 bg-card shadow-2xs overflow-hidden transition-all"
+        className="rounded-xl border border-border/70 bg-card shadow-2xs overflow-hidden transition-all"
       >
         <div className="p-3.5 sm:px-4 bg-muted/30 border-b border-border/60">
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
@@ -624,21 +624,21 @@ export function SprintBacklogView({
                     <span>Backlog</span>
                   </h3>
 
-                  <Badge variant="outline" className="text-[10px] font-bold font-mono bg-background">
+                  <Badge variant="outline" className="text-xs font-bold font-mono bg-background">
                     {productBacklogHierarchy.workItems.length} tasks
                   </Badge>
 
                   {productBacklogIssues.length > productBacklogHierarchy.workItems.length && (
-                    <Badge variant="outline" className="border-cyan-500/30 bg-cyan-500/10 text-cyan-700 dark:text-cyan-300 text-[10px] font-mono">
+                    <Badge variant="outline" className="border-cyan-500/30 bg-cyan-500/10 text-cyan-700 dark:text-cyan-300 text-xs font-mono">
                       {productBacklogIssues.length - productBacklogHierarchy.workItems.length} subtasks
                     </Badge>
                   )}
 
-                  <Badge variant="secondary" className="text-[10px] font-mono px-1.5 py-0">
+                  <Badge variant="secondary" className="text-xs font-mono px-1.5 py-0">
                     {backlogTotalSP} SP
                   </Badge>
                 </div>
-                <p className="text-[11px] text-muted-foreground mt-0.5">
+                <p className="text-xs text-muted-foreground mt-0.5">
                   Các đầu việc chưa gắn vào Sprint. Kéo thả lên Sprint phía trên để đưa vào kế hoạch.
                 </p>
               </div>
@@ -689,11 +689,11 @@ export function SprintBacklogView({
                     <GitBranchIcon className="w-3.5 h-3.5 text-cyan-500 shrink-0" />
                     <span className="text-xs font-bold text-foreground">Subtasks chưa tìm thấy task cha</span>
                   </div>
-                  <Badge variant="outline" className="border-cyan-500/30 text-cyan-700 dark:text-cyan-300 font-mono text-[10px]">
+                  <Badge variant="outline" className="border-cyan-500/30 text-cyan-700 dark:text-cyan-300 font-mono text-xs">
                     {productBacklogHierarchy.orphanSubtasks.length}
                   </Badge>
                 </div>
-                <p className="px-3.5 pt-2 text-[10px] text-muted-foreground">
+                <p className="px-3.5 pt-2 text-xs text-muted-foreground">
                   Jira có trả parent nhưng task cha chưa nằm trong Backlog hoặc chưa được đồng bộ về SAGA.
                 </p>
                 {productBacklogHierarchy.orphanSubtasks.map((subtask) => renderTaskItem(subtask, true))}

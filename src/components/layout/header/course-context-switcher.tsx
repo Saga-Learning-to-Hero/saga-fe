@@ -91,17 +91,17 @@ export function CourseContextSwitcher({
                 {courseCode}
               </span>
               {currentCourse?.classCode && (
-                <span className="hidden rounded bg-primary/15 px-1.5 font-mono text-[10px] font-semibold text-primary sm:inline">
+                <span className="hidden rounded bg-primary/15 px-1.5 font-mono text-xs font-semibold text-primary sm:inline">
                   {currentCourse.classCode}
                 </span>
               )}
             </div>
-            <span className="hidden w-full truncate text-[11px] text-muted-foreground sm:block">{courseName}</span>
+            <span className="hidden w-full truncate text-xs text-muted-foreground sm:block">{courseName}</span>
           </div>
           <ChevronDownIcon className="size-3.5 shrink-0 text-muted-foreground transition-transform duration-200 group-hover:text-foreground group-data-[state=open]:rotate-180" />
         </DropdownMenuTrigger>
 
-        <DropdownMenuContent align="start" sideOffset={8} className="w-80 rounded-2xl border-border p-1.5 shadow-xl">
+        <DropdownMenuContent align="start" sideOffset={8} className="w-80 rounded-xl border-border p-1.5 shadow-md">
           <DropdownMenuLabel className="flex items-center justify-between px-3 py-2 text-xs font-bold text-muted-foreground">
             <span>Danh sách lớp được phân công</span>
           </DropdownMenuLabel>
@@ -122,12 +122,12 @@ export function CourseContextSwitcher({
                     <div className="flex items-center gap-1.5">
                       <span className="font-mono font-bold">{course.courseCode}</span>
                       {course.classCode && (
-                        <span className="rounded bg-muted px-1.5 text-[10px] text-muted-foreground">
+                        <span className="rounded bg-muted px-1.5 text-xs text-muted-foreground">
                           {course.classCode}
                         </span>
                       )}
                     </div>
-                    <span className="truncate text-[11px] text-muted-foreground">
+                    <span className="truncate text-xs text-muted-foreground">
                       {course.subjectName || course.name}
                     </span>
                   </div>
@@ -187,18 +187,18 @@ export function CourseContextSwitcher({
             <span className="truncate font-mono text-xs font-bold text-foreground transition-colors group-hover:text-primary">
               {activeStudentCourse.subjectCode}
             </span>
-            <span className="hidden rounded bg-primary/15 px-1.5 font-semibold text-[10px] text-primary sm:inline">
+            <span className="hidden rounded bg-primary/15 px-1.5 font-semibold text-xs text-primary sm:inline">
               {activeStudentCourse.adminClassCode}
             </span>
           </div>
-          <span className="hidden w-full truncate text-[11px] text-muted-foreground sm:block">
+          <span className="hidden w-full truncate text-xs text-muted-foreground sm:block">
             {activeStudentCourse.teamName || "Chưa có nhóm"} · {activeStudentCourse.subjectName}
           </span>
         </div>
         <ChevronDownIcon className="size-3.5 shrink-0 text-muted-foreground transition-transform duration-200 group-hover:text-foreground group-data-[state=open]:rotate-180" />
       </DropdownMenuTrigger>
 
-      <DropdownMenuContent align="start" sideOffset={8} className="w-80 rounded-2xl border-border p-1.5 shadow-xl">
+      <DropdownMenuContent align="start" sideOffset={8} className="w-80 rounded-xl border-border p-1.5 shadow-md">
         <DropdownMenuLabel className="flex items-center justify-between px-3 py-2 text-xs font-bold text-muted-foreground">
           <span>Khóa học đang tham gia</span>
         </DropdownMenuLabel>
@@ -221,11 +221,11 @@ export function CourseContextSwitcher({
                 <div className="flex min-w-0 flex-col pr-2">
                   <div className="flex items-center gap-1.5">
                     <span className="font-mono font-bold">{course.subjectCode}</span>
-                    <span className="rounded bg-muted px-1.5 text-[10px] text-muted-foreground">
+                    <span className="rounded bg-muted px-1.5 text-xs text-muted-foreground">
                       {course.adminClassCode}
                     </span>
                   </div>
-                  <span className="truncate text-[11px] text-muted-foreground">{course.subjectName}</span>
+                  <span className="truncate text-xs text-muted-foreground">{course.subjectName}</span>
                 </div>
                 {isSelected && <CheckIcon className="size-4 shrink-0 text-primary" />}
               </DropdownMenuItem>

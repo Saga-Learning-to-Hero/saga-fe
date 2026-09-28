@@ -34,6 +34,8 @@ export interface SprintIssue {
   dueDate?: string;
   startDate?: string;
   githubCommitCount?: number;
+  evidenceCount?: number;
+  hasEvidence?: boolean;
   createdAt: string;
   superseded?: boolean;
   migratedFrom?: { taskId: string; externalKey: string } | null;

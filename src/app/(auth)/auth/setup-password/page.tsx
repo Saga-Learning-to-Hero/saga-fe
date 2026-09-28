@@ -8,7 +8,7 @@ export default function SetupPasswordPage() {
     <Suspense>
       <AuthSplitLayout
         bannerBadge={
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 backdrop-blur-md text-white text-xs font-semibold">
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 backdrop-blur-sm text-white text-xs font-semibold">
             <KeyRoundIcon className="size-4 text-emerald-300" />
             <span>Tài khoản Google FPT/FE</span>
           </div>

@@ -111,25 +111,25 @@ export function GraphNodeDetailsModal({
       }}
     >
       <div
-        className="bg-card border border-border/80 rounded-3xl w-full max-w-lg max-h-[92vh] flex flex-col shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200"
+        className="bg-card border border-border/80 rounded-xl w-full max-w-lg max-h-[92vh] flex flex-col shadow-lg overflow-hidden animate-in zoom-in-95 duration-200"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="p-5 border-b border-border/60 flex items-center justify-between bg-muted/30 shrink-0">
           <div className="flex items-center gap-3">
             {isStudent && avatarUrl ? (
-              <Avatar className="size-10 rounded-2xl border border-border/60">
+              <Avatar className="size-10 rounded-xl border border-border/60">
                 <AvatarImage src={avatarUrl} alt={nodeData.label} />
                 <AvatarFallback>{nodeData.label.slice(0, 2).toUpperCase()}</AvatarFallback>
               </Avatar>
             ) : (
               <div
-                className={`w-10 h-10 rounded-2xl flex items-center justify-center text-white shadow-xs ${config.bgClass}`}
+                className={`w-10 h-10 rounded-xl flex items-center justify-center text-white shadow-xs ${config.bgClass}`}
               >
                 <IconComponent className="w-5 h-5" />
               </div>
             )}
             <div>
-              <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+              <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
                 {config.label}
               </span>
               <h3 className="text-base font-extrabold text-foreground truncate max-w-xs">
@@ -148,7 +148,7 @@ export function GraphNodeDetailsModal({
 
         <div className="p-6 overflow-y-auto flex-1 space-y-4">
           {isStudent && (
-            <div className="flex items-center gap-4 p-3.5 rounded-2xl bg-muted/40 border border-border/60">
+            <div className="flex items-center gap-4 p-3.5 rounded-xl bg-muted/40 border border-border/60">
               <Avatar className="h-12 w-12 border border-border">
                 {avatarUrl && <AvatarImage src={avatarUrl} alt={nodeData.label} />}
                 <AvatarFallback>{nodeData.label.slice(0, 2).toUpperCase()}</AvatarFallback>
@@ -159,7 +159,7 @@ export function GraphNodeDetailsModal({
                   <p className="text-xs text-muted-foreground font-mono truncate">{nodeData.subLabel}</p>
                 )}
                 {nodeData.role && (
-                  <Badge variant="outline" className="text-[10px] mt-1">
+                  <Badge variant="outline" className="text-xs mt-1">
                     {nodeData.role}
                   </Badge>
                 )}
@@ -176,7 +176,7 @@ export function GraphNodeDetailsModal({
 
           <div className="grid grid-cols-2 gap-2.5 text-xs">
             <div className="p-3 rounded-xl bg-muted/30 border border-border/50">
-              <span className="text-[10px] text-muted-foreground uppercase font-bold block mb-1">
+              <span className="text-xs text-muted-foreground uppercase font-bold block mb-1">
                 Phân loại
               </span>
               <span className="font-mono font-bold text-primary">{nodeData.type}</span>
@@ -184,10 +184,10 @@ export function GraphNodeDetailsModal({
 
             {nodeData.status && (
               <div className="p-3 rounded-xl bg-muted/30 border border-border/50">
-                <span className="text-[10px] text-muted-foreground uppercase font-bold block mb-1">
+                <span className="text-xs text-muted-foreground uppercase font-bold block mb-1">
                   Trạng thái
                 </span>
-                <Badge variant="secondary" className="font-mono text-[11px]">
+                <Badge variant="secondary" className="font-mono text-xs">
                   {nodeData.status}
                 </Badge>
               </div>
@@ -195,7 +195,7 @@ export function GraphNodeDetailsModal({
 
             {nodeData.weightType && (
               <div className="p-3 rounded-xl bg-muted/30 border border-border/50">
-                <span className="text-[10px] text-muted-foreground uppercase font-bold block mb-1">
+                <span className="text-xs text-muted-foreground uppercase font-bold block mb-1">
                   Loại trọng số
                 </span>
                 <span className="font-mono font-bold text-foreground">{nodeData.weightType}</span>
@@ -204,7 +204,7 @@ export function GraphNodeDetailsModal({
 
             {typeof nodeData.storyPoint === "number" && (
               <div className="p-3 rounded-xl bg-muted/30 border border-border/50">
-                <span className="text-[10px] text-muted-foreground uppercase font-bold block mb-1">
+                <span className="text-xs text-muted-foreground uppercase font-bold block mb-1">
                   Story Points
                 </span>
                 <span className="font-mono font-extrabold text-foreground text-sm">
@@ -215,7 +215,7 @@ export function GraphNodeDetailsModal({
           </div>
 
           {nodeData.isAnomaly === true && (
-            <div className="p-4 rounded-2xl bg-red-500/10 border border-red-500/30 text-red-700 dark:text-red-400 text-xs space-y-1 animate-pulse">
+            <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/30 text-red-700 dark:text-red-400 text-xs space-y-1 animate-pulse">
               <div className="flex items-center gap-2 font-bold text-sm text-red-600 dark:text-red-300">
                 <AlertTriangleIcon className="w-4 h-4 shrink-0" />
                 <span>Cảnh báo bất thường (Graph Anomaly)</span>

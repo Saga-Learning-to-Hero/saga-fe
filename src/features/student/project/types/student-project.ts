@@ -230,6 +230,8 @@ export interface ProjectTaskItem {
   dueDate?: string | null;
   startDate?: string | null;
   linkedCommitCount: number;
+  evidenceCount?: number;
+  hasEvidence?: boolean;
   externalUpdatedAt: string | null;
   createdAt: string;
   updatedAt: string;

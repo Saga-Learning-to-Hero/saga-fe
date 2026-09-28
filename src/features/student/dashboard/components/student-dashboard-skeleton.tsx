@@ -3,7 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 export function StudentDashboardSkeleton() {
   return (
     <div className="space-y-6 animate-pulse">
-      <div className="flex flex-col justify-between gap-4 rounded-2xl border border-border/80 bg-card/90 p-4 shadow-xs sm:flex-row sm:items-center">
+      <div className="flex flex-col justify-between gap-4 rounded-xl border border-border/80 bg-card/90 p-4 shadow-xs sm:flex-row sm:items-center">
         <div className="flex items-center gap-3">
           <div className="size-10 shrink-0 rounded-xl bg-muted" />
           <div className="space-y-2">
@@ -29,7 +29,7 @@ export function StudentDashboardSkeleton() {
 
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
           {Array.from({ length: 4 }).map((_, i) => (
-            <Card key={i} className="rounded-2xl border border-border/80 shadow-xs">
+            <Card key={i} className="rounded-xl border border-border/80 shadow-xs">
               <CardContent className="space-y-2 p-4">
                 <div className="flex items-center gap-2">
                   <div className="size-8 rounded-xl bg-muted" />
@@ -47,7 +47,7 @@ export function StudentDashboardSkeleton() {
       <div className="h-9 w-full rounded-xl bg-muted/50" />
 
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-12">
-        <Card className="rounded-2xl border border-border/80 bg-card p-5 space-y-4 shadow-xs lg:col-span-7">
+        <Card className="rounded-xl border border-border/80 bg-card p-5 space-y-4 shadow-xs lg:col-span-7">
           <div className="flex items-center gap-2.5">
             <div className="size-9 rounded-xl bg-muted" />
             <div className="space-y-1.5">
@@ -58,7 +58,7 @@ export function StudentDashboardSkeleton() {
           <div className="h-60 w-full rounded-xl bg-muted/40" />
         </Card>
 
-        <Card className="rounded-2xl border border-border/80 bg-card p-5 space-y-4 shadow-xs lg:col-span-5">
+        <Card className="rounded-xl border border-border/80 bg-card p-5 space-y-4 shadow-xs lg:col-span-5">
           <div className="flex items-center gap-2.5">
             <div className="size-9 rounded-xl bg-muted" />
             <div className="space-y-1.5">
@@ -70,7 +70,7 @@ export function StudentDashboardSkeleton() {
         </Card>
       </div>
 
-      <Card className="rounded-2xl border border-border/80 bg-card p-5 space-y-4 shadow-xs">
+      <Card className="rounded-xl border border-border/80 bg-card p-5 space-y-4 shadow-xs">
         <div className="flex items-center gap-2.5">
           <div className="size-9 rounded-xl bg-muted" />
           <div className="space-y-1.5">

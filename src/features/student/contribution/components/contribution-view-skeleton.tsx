@@ -32,7 +32,7 @@ export function ContributionViewSkeleton() {
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {Array.from({ length: 3 }).map((_, i) => (
-            <Card key={i} className="rounded-2xl border border-border/80 p-5 shadow-xs">
+            <Card key={i} className="rounded-xl border border-border/80 p-5 shadow-xs">
               <CardContent className="p-0 space-y-3">
                 <div className="flex items-center justify-between">
                   <div className="space-y-1">
@@ -50,7 +50,7 @@ export function ContributionViewSkeleton() {
         <Skeleton className="h-3 w-72 rounded-md" />
       </div>
 
-      <Card className="rounded-2xl border border-amber-500/20 bg-amber-500/5 p-4 shadow-xs">
+      <Card className="rounded-xl border border-amber-500/20 bg-amber-500/5 p-4 shadow-xs">
         <div className="flex items-start gap-3">
           <div className="size-9 rounded-xl bg-amber-500/15 shrink-0" />
           <div className="flex-1 space-y-3">
@@ -81,7 +81,7 @@ export function ContributionViewSkeleton() {
       </Card>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card className="rounded-2xl border border-border/80 p-5 shadow-xs space-y-4">
+        <Card className="rounded-xl border border-border/80 p-5 shadow-xs space-y-4">
           <div className="flex items-center justify-between">
             <div className="space-y-1">
               <Skeleton className="h-4 w-44 rounded-md" />
@@ -104,7 +104,7 @@ export function ContributionViewSkeleton() {
           </div>
         </Card>
 
-        <Card className="rounded-2xl border border-border/80 p-5 shadow-xs space-y-4">
+        <Card className="rounded-xl border border-border/80 p-5 shadow-xs space-y-4">
           <div className="flex items-center justify-between">
             <div className="space-y-1">
               <Skeleton className="h-4 w-52 rounded-md" />
@@ -130,7 +130,7 @@ export function ContributionViewSkeleton() {
         </Card>
       </div>
 
-      <Card className="rounded-2xl border border-border/80 p-5 shadow-xs space-y-4">
+      <Card className="rounded-xl border border-border/80 p-5 shadow-xs space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <div className="space-y-1">
             <Skeleton className="h-5 w-48 rounded-md" />

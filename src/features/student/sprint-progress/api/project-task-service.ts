@@ -9,11 +9,7 @@ import type {
   TaskParentOptionsResponse,
   GetTaskParentOptionsParams,
 } from "../types/jira-task-types";
-import type {
-  TaskEvidenceGroupedResponse,
-  TaskEvidencePageResponse,
-  GetTaskEvidenceParams,
-} from "../types/task-evidence";
+
 import type {
   TaskWorkSessionTimelineResponse,
   GetTaskWorkSessionTimelineParams,
@@ -188,25 +184,7 @@ export class ProjectTaskService {
     return res.data;
   }
 
-  static async getTaskEvidence(
-    projectId: string,
-    taskId: string,
-    params?: GetTaskEvidenceParams
-  ): Promise<TaskEvidenceGroupedResponse | TaskEvidencePageResponse> {
-    if (!projectId || !projectId.trim()) {
-      throw new Error("Throw ValidationException: Project ID is required");
-    }
-    if (!taskId || !taskId.trim()) {
-      throw new Error("Throw ValidationException: Task ID is required");
-    }
-    const cleanProjectId = projectId.trim();
-    const cleanTaskId = taskId.trim();
-    const res = await apiClient.get<TaskEvidenceGroupedResponse | TaskEvidencePageResponse>(
-      `/api/projects/${encodeURIComponent(cleanProjectId)}/tasks/${encodeURIComponent(cleanTaskId)}/evidence`,
-      { params }
-    );
-    return res.data;
-  }
+
 
   static async getTaskWorkSessionTimeline(
     projectId: string,

@@ -1,13 +1,12 @@
 "use client";
 
+import { showSuccessToast, showErrorToast, getApiErrorMessage, showWarningToast } from "@/lib/api-error";
 import {
   useMutation,
   useQuery,
   useQueryClient,
   type QueryClient,
 } from "@tanstack/react-query";
-import { toast } from "sonner";
-import { getApiErrorMessage } from "@/lib/api-error";
 import { AdminDashboardService } from "../api/admin-dashboard-service";
 
 export const ADMIN_DASHBOARD_QUERY_KEYS = {
@@ -58,17 +57,17 @@ export function useAdminDashboardForceRefresh() {
       );
 
       if (summary.cacheMetadata.refreshPending) {
-        toast.warning("Dữ liệu đang được máy chủ làm mới", {
+        showWarningToast("Dữ liệu đang được máy chủ làm mới", {
           description:
             "Hệ thống đang trả snapshot gần nhất. Vui lòng thử lại sau ít phút.",
         });
         return;
       }
 
-      toast.success("Đã cập nhật số liệu dashboard từ máy chủ.");
+      showSuccessToast("Đã cập nhật số liệu dashboard từ máy chủ.");
     },
     onError: (error) => {
-      toast.error("Không thể làm mới dashboard", {
+      showErrorToast("Không thể làm mới dashboard", {
         description: getApiErrorMessage(
           error,
           "Máy chủ chưa thể tổng hợp lại số liệu. Vui lòng thử lại sau."

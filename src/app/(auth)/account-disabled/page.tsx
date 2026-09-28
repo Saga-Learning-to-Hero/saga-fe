@@ -12,23 +12,23 @@ export const metadata = {
 
 export default function AccountDisabledPage() {
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 sm:p-6 bg-gradient-to-b from-background via-muted/20 to-background">
+    <div className="min-h-screen flex items-center justify-center p-4 sm:p-6 bg-popover from-background via-muted/20 to-background">
       <div className="w-full max-w-md space-y-6">
         {/* Header Logo */}
         <div className="flex flex-col items-center text-center space-y-2">
           <SagaLogo size="md" showText={true} showSubtitle={false} />
           <Badge
             variant="outline"
-            className="border-destructive/30 bg-destructive/10 text-destructive text-[11px] font-mono font-bold mt-2"
+            className="border-destructive/30 bg-destructive/10 text-destructive text-xs font-mono font-bold mt-2"
           >
             Hệ thống Quản trị
           </Badge>
         </div>
 
         {/* Main Card */}
-        <div className="bg-card border border-border/80 rounded-3xl p-6 sm:p-8 shadow-xl space-y-6 text-center animate-in fade-in-0 zoom-in-95 duration-200">
+        <div className="bg-card border border-border/80 rounded-xl p-6 sm:p-8 shadow-md space-y-6 text-center animate-in fade-in-0 zoom-in-95 duration-200">
           {/* Icon Badge */}
-          <div className="mx-auto w-16 h-16 rounded-2xl bg-destructive/10 text-destructive flex items-center justify-center border border-destructive/20 shadow-xs">
+          <div className="mx-auto w-16 h-16 rounded-xl bg-destructive/10 text-destructive flex items-center justify-center border border-destructive/20 shadow-xs">
             <ShieldAlertIcon className="w-8 h-8 animate-pulse" />
           </div>
 
@@ -45,7 +45,7 @@ export default function AccountDisabledPage() {
           </div>
 
           {/* Detailed Box */}
-          <div className="bg-muted/40 border border-border/70 rounded-2xl p-4 text-left space-y-2.5 text-xs">
+          <div className="bg-muted/40 border border-border/70 rounded-xl p-4 text-left space-y-2.5 text-xs">
             <div className="flex items-center gap-2 font-semibold text-foreground">
               <AlertCircleIcon className="w-4 h-4 text-warning shrink-0" />
               <span>Chi tiết trạng thái hệ thống:</span>
@@ -64,7 +64,7 @@ export default function AccountDisabledPage() {
                 <span className="font-semibold text-foreground">Tạm ngưng</span>
               </div>
             </div>
-            <p className="text-[11px] text-muted-foreground pt-1 border-t border-border/50">
+            <p className="text-xs text-muted-foreground pt-1 border-t border-border/50">
               Nếu bạn cho rằng đây là sự nhầm lẫn hoặc cần phục hồi quyền truy cập phục vụ đánh giá dự án, hãy liên hệ với Giảng viên hướng dẫn hoặc Quản trị viên phòng đào tạo (SE).
             </p>
           </div>
