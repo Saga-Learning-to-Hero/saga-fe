@@ -1,6 +1,7 @@
 import axios, { type AxiosInstance, type AxiosResponse, type InternalAxiosRequestConfig } from "axios";
 
 import { API_BASE_URL, getApiBaseUrl, normalizeApiBaseUrl, buildApiUrl } from "./api-config";
+import { shouldRetryCsrfRequest } from "./csrf-retry";
 export { API_BASE_URL, getApiBaseUrl, normalizeApiBaseUrl, buildApiUrl };
 
 export function getCookie(name: string): string | null {
@@ -182,17 +183,15 @@ apiClient.interceptors.response.use(
       }
     }
 
-    const method = originalRequest?.method?.toUpperCase();
-    const isMutatingMethod = method === "POST" || method === "PUT" || method === "PATCH" || method === "DELETE";
-
     if (
-      status === 403 &&
-      isMutatingMethod &&
-      code !== "PASSWORD_SETUP_REQUIRED" &&
-      code !== "STEP_UP_REQUIRED" &&
       originalRequest &&
-      !originalRequest._retry &&
-      !originalRequest.url?.includes("/api/auth/csrf")
+      shouldRetryCsrfRequest({
+        status,
+        code,
+        method: originalRequest.method,
+        url: originalRequest.url,
+        retryAttempted: originalRequest._retry,
+      })
     ) {
       originalRequest._retry = true;
       const freshToken = await ensureCsrfToken(true);

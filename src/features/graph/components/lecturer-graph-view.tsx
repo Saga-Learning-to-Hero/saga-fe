@@ -1120,6 +1120,7 @@ export function LecturerGraphView({
           setFocusedNodeId(nodeId);
           setFocusedNodeLabel(nodeLabel || null);
         }}
+        focusedNodeId={activeFocusedNodeId}
         projectId={projectId}
         onViewContribution={(studentId) => {
           handleSelectDrillDownStudent(studentId, selectedGraphNode?.label);

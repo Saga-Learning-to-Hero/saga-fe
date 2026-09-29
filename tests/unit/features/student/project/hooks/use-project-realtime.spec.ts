@@ -6,6 +6,7 @@ import { fptTest } from "@/testing/fpt-test-helper";
 import { useProjectRealtime } from "@/features/student/project/hooks/use-project-realtime";
 import { JIRA_SPRINT_QUERY_KEYS } from "@/features/student/sprint-progress/hooks/use-sprint-data";
 import { PROJECT_PROJECTION_QUERY_KEYS } from "@/features/student/project/hooks/useProjectSync";
+import { PROJECT_INTEGRATIONS_QUERY_KEYS } from "@/features/student/project/hooks/useProjectIntegrations";
 import { TASK_EVIDENCE_QUERY_KEYS } from "@/features/student/sprint-progress/hooks/use-task-evidence";
 
 class MockEventSource {
@@ -121,10 +122,11 @@ describe("useProjectRealtime Hook", () => {
     {
       id: "UTCID02",
       type: "N",
-      executedDate: "12/09/2026",
-      description: "Nhan su kien READY, invalidate toan bo queries va cap nhat lastEvent",
+      executedDate: "29/09/2026",
+      description: "READY debounce 1s, khong invalidate prefix projects/{id}, khong keo /progress",
     },
     () => {
+      vi.useFakeTimers();
       const invalidateSpy = vi.spyOn(queryClient, "invalidateQueries");
       const onEventMock = vi.fn();
       const wrapper = createWrapper();
@@ -149,12 +151,18 @@ describe("useProjectRealtime Hook", () => {
       });
 
       expect(result.current.lastEvent?.type).toBe("READY");
-      expect(result.current.lastEvent?.projectId).toBe("project-456");
-      expect(result.current.lastEventTime).toBeInstanceOf(Date);
       expect(onEventMock).toHaveBeenCalledWith(
         expect.objectContaining({ type: "READY", projectId: "project-456" })
       );
-      expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ["projects", "project-456"] });
+      expect(invalidateSpy).not.toHaveBeenCalledWith({ queryKey: ["projects", "project-456"] });
+      expect(invalidateSpy).not.toHaveBeenCalledWith({
+        queryKey: JIRA_SPRINT_QUERY_KEYS.tasks("project-456"),
+      });
+
+      act(() => {
+        vi.advanceTimersByTime(1000);
+      });
+
       expect(invalidateSpy).toHaveBeenCalledWith({
         queryKey: JIRA_SPRINT_QUERY_KEYS.tasks("project-456"),
       });
@@ -162,11 +170,16 @@ describe("useProjectRealtime Hook", () => {
         queryKey: PROJECT_PROJECTION_QUERY_KEYS.commits("project-456"),
       });
       expect(invalidateSpy).toHaveBeenCalledWith({
+        queryKey: PROJECT_PROJECTION_QUERY_KEYS.syncStatus("project-456"),
+      });
+      expect(invalidateSpy).not.toHaveBeenCalledWith({
         queryKey: PROJECT_PROJECTION_QUERY_KEYS.progress("project-456"),
       });
-      expect(invalidateSpy).toHaveBeenCalledWith({
-        queryKey: [...PROJECT_PROJECTION_QUERY_KEYS.all, "member-progress", "project-456"],
+      expect(invalidateSpy).not.toHaveBeenCalledWith({
+        queryKey: PROJECT_INTEGRATIONS_QUERY_KEYS.projectIntegrations("project-456"),
+        exact: true,
       });
+      vi.useRealTimers();
     }
   );
 
@@ -196,11 +209,8 @@ describe("useProjectRealtime Hook", () => {
       expect(invalidateSpy).toHaveBeenCalledWith({
         queryKey: JIRA_SPRINT_QUERY_KEYS.tasks("project-789"),
       });
-      expect(invalidateSpy).toHaveBeenCalledWith({
+      expect(invalidateSpy).not.toHaveBeenCalledWith({
         queryKey: PROJECT_PROJECTION_QUERY_KEYS.progress("project-789"),
-      });
-      expect(invalidateSpy).toHaveBeenCalledWith({
-        queryKey: [...PROJECT_PROJECTION_QUERY_KEYS.all, "member-progress", "project-789"],
       });
       act(() => {
         es.emitEvent("SPRINTS_CHANGED", {
@@ -210,7 +220,7 @@ describe("useProjectRealtime Hook", () => {
       });
 
       expect(result.current.lastEvent?.type).toBe("SPRINTS_CHANGED");
-      expect(invalidateSpy).toHaveBeenCalledWith({
+      expect(invalidateSpy).not.toHaveBeenCalledWith({
         queryKey: PROJECT_PROJECTION_QUERY_KEYS.progress("project-789"),
       });
     }
@@ -238,13 +248,10 @@ describe("useProjectRealtime Hook", () => {
       });
 
       expect(invalidateSpy).toHaveBeenCalledWith({
-        queryKey: ["projects", "project-999", "commits"],
+        queryKey: PROJECT_PROJECTION_QUERY_KEYS.commits("project-999"),
       });
-      expect(invalidateSpy).toHaveBeenCalledWith({
+      expect(invalidateSpy).not.toHaveBeenCalledWith({
         queryKey: PROJECT_PROJECTION_QUERY_KEYS.progress("project-999"),
-      });
-      expect(invalidateSpy).toHaveBeenCalledWith({
-        queryKey: [...PROJECT_PROJECTION_QUERY_KEYS.all, "member-progress", "project-999"],
       });
 
       act(() => {
@@ -255,9 +262,9 @@ describe("useProjectRealtime Hook", () => {
       });
 
       expect(invalidateSpy).toHaveBeenCalledWith({
-        queryKey: ["projects", "project-999", "sync-status"],
+        queryKey: PROJECT_PROJECTION_QUERY_KEYS.syncStatus("project-999"),
       });
-      expect(invalidateSpy).toHaveBeenCalledWith({
+      expect(invalidateSpy).not.toHaveBeenCalledWith({
         queryKey: PROJECT_PROJECTION_QUERY_KEYS.progress("project-999"),
       });
     }
@@ -288,7 +295,7 @@ describe("useProjectRealtime Hook", () => {
         queryKey: JIRA_SPRINT_QUERY_KEYS.tasks("project-111"),
       });
       expect(invalidateSpy).toHaveBeenCalledWith({
-        queryKey: ["projects", "project-111", "commits"],
+        queryKey: PROJECT_PROJECTION_QUERY_KEYS.commits("project-111"),
       });
       expect(invalidateSpy).toHaveBeenCalledWith({
         queryKey: [
@@ -312,11 +319,8 @@ describe("useProjectRealtime Hook", () => {
       expect(invalidateSpy).toHaveBeenCalledWith({
         queryKey: TASK_EVIDENCE_QUERY_KEYS.webLinks("task-111"),
       });
-      expect(invalidateSpy).toHaveBeenCalledWith({
+      expect(invalidateSpy).not.toHaveBeenCalledWith({
         queryKey: PROJECT_PROJECTION_QUERY_KEYS.progress("project-111"),
-      });
-      expect(invalidateSpy).toHaveBeenCalledWith({
-        queryKey: [...PROJECT_PROJECTION_QUERY_KEYS.all, "member-progress", "project-111"],
       });
     }
   );
@@ -326,7 +330,7 @@ describe("useProjectRealtime Hook", () => {
       id: "UTCID11",
       type: "B",
       executedDate: "14/09/2026",
-      description: "Moi loai su kien SSE invalidate progress / member-progress dung bang api.md",
+      description: "Mac dinh khong invalidate progress; includeProgress moi keo /progress",
     },
     () => {
       const invalidateSpy = vi.spyOn(queryClient, "invalidateQueries");
@@ -339,12 +343,64 @@ describe("useProjectRealtime Hook", () => {
         es.emitEvent("TASK_LINKS_CHANGED", { type: "TASK_LINKS_CHANGED", projectId: "project-map" });
       });
 
-      expect(invalidateSpy).toHaveBeenCalledWith({
+      expect(invalidateSpy).not.toHaveBeenCalledWith({
         queryKey: PROJECT_PROJECTION_QUERY_KEYS.progress("project-map"),
       });
-      expect(invalidateSpy).toHaveBeenCalledWith({
-        queryKey: [...PROJECT_PROJECTION_QUERY_KEYS.all, "member-progress", "project-map"],
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID15",
+      type: "N",
+      executedDate: "29/09/2026",
+      description: "includeProgress true thi SYNC_STATUS_CHANGED keo /progress",
+    },
+    () => {
+      const invalidateSpy = vi.spyOn(queryClient, "invalidateQueries");
+      const wrapper = createWrapper();
+      renderHook(() => useProjectRealtime("project-progress", { includeProgress: true }), { wrapper });
+      const es = MockEventSource.instances[0];
+
+      act(() => {
+        es.emitOpen();
+        es.emitEvent("SYNC_STATUS_CHANGED", { type: "SYNC_STATUS_CHANGED", projectId: "project-progress" });
       });
+
+      expect(invalidateSpy).toHaveBeenCalledWith({
+        queryKey: PROJECT_PROJECTION_QUERY_KEYS.progress("project-progress"),
+      });
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID16",
+      type: "N",
+      executedDate: "29/09/2026",
+      description: "includeIntegrations true thi READY invalidate integrations",
+    },
+    () => {
+      vi.useFakeTimers();
+      const invalidateSpy = vi.spyOn(queryClient, "invalidateQueries");
+      const wrapper = createWrapper();
+      renderHook(
+        () => useProjectRealtime("project-int", { includeIntegrations: true }),
+        { wrapper }
+      );
+      const es = MockEventSource.instances[0];
+
+      act(() => {
+        es.emitOpen();
+        es.emitEvent("READY", { type: "READY", projectId: "project-int" });
+        vi.advanceTimersByTime(1000);
+      });
+
+      expect(invalidateSpy).toHaveBeenCalledWith({
+        queryKey: PROJECT_INTEGRATIONS_QUERY_KEYS.projectIntegrations("project-int"),
+        exact: true,
+      });
+      vi.useRealTimers();
     }
   );
 
@@ -433,6 +489,7 @@ describe("useProjectRealtime Hook", () => {
       description: "Goi reconnect thu cong tao EventSource moi va READY refetch lai du lieu",
     },
     () => {
+      vi.useFakeTimers();
       const invalidateSpy = vi.spyOn(queryClient, "invalidateQueries");
       const wrapper = createWrapper();
       const { result } = renderHook(() => useProjectRealtime("project-recon"), { wrapper });
@@ -450,9 +507,14 @@ describe("useProjectRealtime Hook", () => {
 
       act(() => {
         MockEventSource.instances[1].emitEvent("READY", { type: "READY", projectId: "other-project" });
+        vi.advanceTimersByTime(1000);
       });
 
-      expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ["projects", "project-recon"] });
+      expect(invalidateSpy).not.toHaveBeenCalledWith({ queryKey: ["projects", "project-recon"] });
+      expect(invalidateSpy).toHaveBeenCalledWith({
+        queryKey: JIRA_SPRINT_QUERY_KEYS.tasks("project-recon"),
+      });
+      vi.useRealTimers();
     }
   );
 
@@ -488,7 +550,7 @@ describe("useProjectRealtime Hook", () => {
       vi.useFakeTimers();
       const invalidateSpy = vi.spyOn(queryClient, "invalidateQueries");
       const wrapper = createWrapper();
-      renderHook(() => useProjectRealtime("project-graph-test"), { wrapper });
+      renderHook(() => useProjectRealtime("project-graph-test", { includeGraph: true }), { wrapper });
 
       const es = MockEventSource.instances[0];
       act(() => {
@@ -528,7 +590,7 @@ describe("useProjectRealtime Hook", () => {
       vi.useFakeTimers();
       const invalidateSpy = vi.spyOn(queryClient, "invalidateQueries");
       const wrapper = createWrapper();
-      renderHook(() => useProjectRealtime("project-graph-ready"), { wrapper });
+      renderHook(() => useProjectRealtime("project-graph-ready", { includeGraph: true }), { wrapper });
 
       const es = MockEventSource.instances[0];
       act(() => {
@@ -537,7 +599,7 @@ describe("useProjectRealtime Hook", () => {
       });
 
       act(() => {
-        vi.advanceTimersByTime(400);
+        vi.advanceTimersByTime(1400);
       });
 
       expect(invalidateSpy).toHaveBeenCalledWith({
@@ -558,7 +620,7 @@ describe("useProjectRealtime Hook", () => {
       vi.useFakeTimers();
       const invalidateSpy = vi.spyOn(queryClient, "invalidateQueries");
       const wrapper = createWrapper();
-      renderHook(() => useProjectRealtime("project-graph-changed"), { wrapper });
+      renderHook(() => useProjectRealtime("project-graph-changed", { includeGraph: true }), { wrapper });
 
       const es = MockEventSource.instances[0];
       act(() => {

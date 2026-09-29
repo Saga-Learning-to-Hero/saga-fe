@@ -44,7 +44,10 @@ export function LoginForm() {
   useEffect(() => {
     if (googleError) {
       if (typeof window !== "undefined") sessionStorage.removeItem("saga_auth_provider");
-      showErrorToast(getGoogleErrorMessage(googleError), { id: "google-auth-error", duration: 6000 });
+      showErrorToast(getGoogleErrorMessage(googleError), undefined, {
+        id: "google-auth-error",
+        duration: 6000,
+      });
     }
   }, [googleError]);
 

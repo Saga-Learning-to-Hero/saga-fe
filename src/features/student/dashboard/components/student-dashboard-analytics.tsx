@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import Link from "next/link";
 import {
   CheckCircle2Icon,
@@ -26,12 +26,14 @@ import {
 } from "@/features/student/courses/hooks/use-student-course-context";
 import { useProjectRealtime } from "@/features/student/project/hooks/use-project-realtime";
 import { useProjectProgress } from "@/features/student/project/hooks/useProjectSync";
-import { getApiErrorMessage } from "@/lib/api-error";
+import { getApiErrorCode, getApiErrorMessage, getApiErrorStatus } from "@/lib/api-error";
 import { cn } from "@/lib/utils";
 import { CustomSelect } from "@/components/common/custom-select";
 import { useProjectSprints } from "@/features/student/sprint-progress/hooks/use-project-sprints";
 import { normalizeProjectProgress } from "@/features/progress/lib/progress-format";
 import { useStudentDashboard } from "../hooks/use-student-dashboard";
+import { formatStudentNullablePercent } from "../lib/student-dashboard-format";
+import { getSprintSourceUserMessage } from "@/features/student/sprint-progress/lib/sprint-query-source";
 import { StudentActiveTasksCard } from "./student-active-tasks-card";
 import { StudentAlertsBanner } from "./student-alerts-banner";
 import { StudentRecentCommitsCard } from "./student-recent-commits-card";
@@ -68,13 +70,26 @@ export function StudentDashboardAnalytics() {
 
   const projectId = data?.team?.projectId || null;
   const canLoadProgress = Boolean(isLeader && projectId && activeTab === "team");
+  const [isManualRefresh, setIsManualRefresh] = useState(false);
 
-  // Danh sách sprint của dự án để sinh viên chọn xem thống kê từng sprint
+  // Danh sách sprint: hook tự chờ nguồn Jira settle; không auto-chọn source đầu khi có nhiều nguồn
   const { data: projectSprints } = useProjectSprints(projectId, { enabled: Boolean(projectId) });
 
-  // Dữ liệu mở rộng cho Trưởng nhóm khi chuyển sang tab Toàn nhóm
+  // Tiến độ nhóm và SSE project chỉ khi Leader đang xem tab Toàn nhóm
   const progressQuery = useProjectProgress(projectId, { enabled: canLoadProgress });
-  useProjectRealtime(projectId, { enabled: Boolean(projectId) });
+  useProjectRealtime(projectId, { enabled: canLoadProgress, includeProgress: true });
+
+  const handleManualRefresh = useCallback(async () => {
+    setIsManualRefresh(true);
+    try {
+      await dashboardQuery.refetch();
+      if (canLoadProgress) {
+        await progressQuery.refetch();
+      }
+    } finally {
+      setIsManualRefresh(false);
+    }
+  }, [canLoadProgress, dashboardQuery, progressQuery]);
 
   const progress = normalizeProjectProgress(progressQuery.data);
   const members = progress?.memberProgress ?? [];
@@ -334,12 +349,12 @@ export function StudentDashboardAnalytics() {
           <Button
             variant="outline"
             size="sm"
-            onClick={() => void dashboardQuery.refetch()}
-            disabled={dashboardQuery.isFetching}
+            onClick={() => void handleManualRefresh()}
+            disabled={isManualRefresh}
             className="h-8 gap-1.5 text-xs cursor-pointer"
           >
-            <RefreshCwIcon className={cn("size-3.5", dashboardQuery.isFetching && "animate-spin")} />
-            <span className="hidden sm:inline">Làm mới</span>
+            <RefreshCwIcon className={cn("size-3.5", isManualRefresh && "animate-spin")} />
+            <span className="hidden sm:inline">{isManualRefresh ? "Đang làm mới" : "Làm mới"}</span>
           </Button>
         </div>
       </div>
@@ -369,7 +384,7 @@ export function StudentDashboardAnalytics() {
                     </span>
                   </div>
                   <Badge variant="outline" className="font-mono text-xs bg-primary/10 text-primary border-primary/20">
-                    {Math.round(myMetrics.tasks.completionPercent || 0)}%
+                    {formatStudentNullablePercent(myMetrics.tasks.completionPercent)}
                   </Badge>
                 </div>
                 <div className="flex items-center justify-between text-xs text-muted-foreground pt-1 border-t border-border/50">
@@ -437,7 +452,9 @@ export function StudentDashboardAnalytics() {
                 <div className="flex items-center justify-between text-xs text-muted-foreground pt-1 border-t border-border/50">
                   <span>Tiến độ nhóm:</span>
                   <span className="font-mono font-bold text-foreground">
-                    {currentSprint ? `${currentSprint.completedTasks}/${currentSprint.totalTasks} (${Math.round(currentSprint.completionPercent || 0)}%)` : "N/A"}
+                    {currentSprint
+                      ? `${currentSprint.completedTasks}/${currentSprint.totalTasks} (${formatStudentNullablePercent(currentSprint.completionPercent)})`
+                      : "N/A"}
                   </span>
                 </div>
                 {(integrations?.jira?.connected || integrations?.github?.connected) && (
@@ -470,8 +487,19 @@ export function StudentDashboardAnalytics() {
       ) : (
         /* Tab Toàn Nhóm (Dành cho Trưởng nhóm) */
         <div className="space-y-6">
-          {progressQuery.isLoading ? (
+          {progressQuery.isLoading && !progress ? (
             <StudentDashboardSkeleton />
+          ) : progressQuery.isError ? (
+            <EmptyPanel
+              title={getSprintSourceUserMessage({ error: progressQuery.error }).title}
+              description={
+                getApiErrorStatus(progressQuery.error) === 403 ||
+                getApiErrorCode(progressQuery.error) === "ACCESS_DENIED"
+                  ? "Thành viên nhóm xem tiến độ cá nhân trên bảng điều khiển. Tiến độ toàn nhóm dành cho trưởng nhóm."
+                  : getSprintSourceUserMessage({ error: progressQuery.error }).description
+              }
+              onRetry={() => void progressQuery.refetch()}
+            />
           ) : progress ? (
             <>
               <ProjectProgressSummary progress={progress} />
