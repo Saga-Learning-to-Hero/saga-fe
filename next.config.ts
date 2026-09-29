@@ -3,6 +3,21 @@ import type { NextConfig } from "next";
 const targetApiUrl = (process.env.NEXT_PUBLIC_API_URL || "https://api.saga.autos").trim().replace(/\/+$/, "");
 
 const nextConfig: NextConfig = {
+  async redirects() {
+    return [
+      {
+        source: "/:path*",
+        has: [
+          {
+            type: "host",
+            value: "www.saga.autos",
+          },
+        ],
+        destination: "https://saga.autos/:path*",
+        permanent: false,
+      },
+    ];
+  },
   async rewrites() {
     return [
       {

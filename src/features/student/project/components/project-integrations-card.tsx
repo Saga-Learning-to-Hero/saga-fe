@@ -170,7 +170,7 @@ export function ProjectIntegrationsCard({ projectId, isLeader }: ProjectIntegrat
     lastEventTime,
     lastEvent,
     reconnect: reconnectRealtime,
-  } = useProjectRealtime(projectId, { enabled: Boolean(projectId) });
+  } = useProjectRealtime(projectId, { enabled: Boolean(projectId), includeIntegrations: true });
 
   const isConnectingRepo = connectGitHubMutation.isPending || setupCallbackMutation.isPending;
 

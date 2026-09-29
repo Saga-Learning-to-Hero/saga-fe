@@ -105,7 +105,7 @@ export function useLogin() {
       } else if (e.message) {
         desc = e.message;
       }
-      showErrorToast("Đăng nhập không thành công", {
+      showErrorToast("Đăng nhập không thành công", e, {
         id: "auth-login-error",
         description: desc,
       });
@@ -133,7 +133,7 @@ export function useRegister() {
       } else if (e.message) {
         desc = e.message;
       }
-      showErrorToast("Đăng ký thất bại", {
+      showErrorToast("Đăng ký thất bại", e, {
         id: "auth-register-error",
         description: desc,
       });
@@ -179,10 +179,14 @@ export function useSetupPassword() {
         });
         return;
       }
-      showErrorToast("Thiết lập mật khẩu thất bại", {
-        id: "auth-setup-password-error",
-        description: e.message || "Vui lòng kiểm tra lại mật khẩu.",
-      });
+      showErrorToast(
+        "Thiết lập mật khẩu thất bại",
+        e,
+        {
+          id: "auth-setup-password-error",
+          description: e.message || "Vui lòng kiểm tra lại mật khẩu.",
+        }
+      );
     },
   });
 }
@@ -205,7 +209,7 @@ export function useLogout() {
       }),
     onError: (err: unknown) => {
       const e = err as Error;
-      showErrorToast("Đăng xuất thất bại", {
+      showErrorToast("Đăng xuất thất bại", e, {
         id: "auth-logout-error",
         description: e.message || "Không thể kết nối đến máy chủ để hủy phiên.",
       });

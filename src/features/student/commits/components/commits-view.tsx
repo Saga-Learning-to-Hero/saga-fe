@@ -15,9 +15,10 @@ import { CommitFilterBar, type CommitMergeFilter } from "./commit-filter-bar";
 import { CommitListTimeline } from "./commit-list-timeline";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import Link from "next/link";
 import { TablePagination } from "@/components/common/table-pagination";
 import { useStudentMyTeam } from "@/features/student/courses/hooks/use-student-courses";
-import { useStudentCourseContext } from "@/features/student/courses/hooks/use-student-course-context";
+import { useStudentCourseContext, studentCoursePath } from "@/features/student/courses/hooks/use-student-course-context";
 import {
   useProjectCommits,
   useProjectRepositoryBranches,
@@ -27,12 +28,20 @@ import {
 } from "@/features/student/project/hooks/useProjectSync";
 import { useProjectIntegrations } from "@/features/student/project/hooks/useProjectIntegrations";
 import { useProjectRealtime } from "@/features/student/project/hooks/use-project-realtime";
+import { canRequestProjectSync, isActivelySyncing } from "@/features/student/project/lib/sync-job-status";
+import { useTimedSyncWindow } from "@/features/student/project/hooks/use-timed-sync-window";
 import { formatVietnamDateTime } from "@/lib/utils";
 import {
   mapProjectCommitToCommitItem,
   extractReposAndBranches,
   type CommitTeamMember,
 } from "../lib/commit-mapper";
+import {
+  formatProjectSyncEnqueueDescription,
+  isGitHubRepoActive,
+  resolveGitHubConnectionStatus,
+  resolveGitHubSyncBadgeKind,
+} from "../lib/github-commit-connection";
 
 export function CommitsView() {
   const {
@@ -44,18 +53,18 @@ export function CommitsView() {
   const courseCode = effectiveCourse?.code || "";
 
   const { data: team } = useStudentMyTeam(courseId, { enabled: Boolean(courseId) });
-  const isLeader = team?.myRole === "LEADER";
   const projectId = team?.projectId || effectiveCourse?.projectId || "";
+  const isTeamLeader = team?.myRole === "LEADER";
 
   const { data: projectProgress } = useProjectProgress(projectId, {
-    enabled: Boolean(projectId),
+    enabled: Boolean(projectId && isTeamLeader),
   });
 
   const { data: integrations, refetch: refetchIntegrations } = useProjectIntegrations(projectId, {
     enabled: Boolean(projectId),
   });
 
-  useProjectRealtime(projectId, {
+  const { status: realtimeStatus } = useProjectRealtime(projectId, {
     enabled: Boolean(projectId && integrations?.github?.status === "ACTIVE"),
   });
 
@@ -81,8 +90,14 @@ export function CommitsView() {
   const {
     data: syncStatuses = [],
     refetch: refetchSyncStatuses,
-  } = useProjectSyncStatus(projectId, { enabled: Boolean(projectId) });
+  } = useProjectSyncStatus(projectId, {
+    enabled: Boolean(projectId),
+    sseStatus: realtimeStatus,
+  });
   const syncProjectMutation = useSyncProject();
+  const hasActiveSync = isActivelySyncing(syncStatuses);
+  const syncWindowTimedOut = useTimedSyncWindow(hasActiveSync);
+  const isSyncingVisible = syncProjectMutation.isPending || (hasActiveSync && !syncWindowTimedOut);
 
   const githubSyncStatus = useMemo(() => {
     return syncStatuses
@@ -94,17 +109,13 @@ export function CommitsView() {
       )[0];
   }, [syncStatuses]);
 
-  const hasActiveSync = useMemo(
-    () =>
-      syncStatuses.some((status) =>
-        ["ENQUEUED", "IN_PROGRESS", "RUNNING", "SYNCING"].includes(
-          (status.status || "").toUpperCase()
-        )
-      ),
-    [syncStatuses]
-  );
-  const isGitHubSyncFailed = (githubSyncStatus?.status || "").toUpperCase() === "FAILED";
   const lastGitHubSyncedAt = githubSyncStatus?.completedAt || null;
+  const githubConnectionStatus = resolveGitHubConnectionStatus(githubSyncStatus, integrations);
+  const githubSyncBadge = resolveGitHubSyncBadgeKind({
+    connectionStatus: githubConnectionStatus,
+    jobStatus: githubSyncStatus?.status,
+    isSyncing: isSyncingVisible,
+  });
 
   const teamMembers = useMemo(() => {
     const progressMembers = projectProgress?.memberProgress || [];
@@ -163,10 +174,12 @@ export function CommitsView() {
       const existing = repoList.find(
         (r) => r.id === ar.id || r.fullPath.toLowerCase() === ar.fullName.toLowerCase()
       );
+      const connectionStatus = (ar.status || "").toUpperCase() || "ACTIVE";
       if (existing) {
         existing.id = ar.id;
         existing.fullPath = ar.fullName;
         existing.name = ar.fullName.split("/").pop() || ar.fullName;
+        existing.connectionStatus = connectionStatus;
       } else {
         repoList.push({
           id: ar.id,
@@ -176,8 +189,18 @@ export function CommitsView() {
           totalCommits: 0,
           activeBranchesCount: 1,
           defaultBranch: "main",
+          connectionStatus,
         });
       }
+    });
+
+    repoList.forEach((repo) => {
+      if (repo.connectionStatus) return;
+      repo.connectionStatus = isGitHubRepoActive(repo, integrations)
+        ? "ACTIVE"
+        : githubConnectionStatus === "NOT_CONNECTED"
+          ? "NOT_CONNECTED"
+          : "REVOKED";
     });
 
     if (repoList.length === 0) {
@@ -199,15 +222,16 @@ export function CommitsView() {
       };
     }
     return { repositories: repoList, branches: res.branches };
-  }, [rawCommits, integrations?.github?.repositories]);
+  }, [rawCommits, integrations, githubConnectionStatus]);
 
   const [selectedRepoId, setSelectedRepoId] = useState<string>("");
   const selectedRepo =
     repositories.find((r) => r.id === selectedRepoId) || repositories[0];
   const selectedRepoFullPath = selectedRepo?.fullPath || "";
 
+  const selectedRepoIsActive = isGitHubRepoActive(selectedRepo, integrations);
   const activeRepoId =
-    selectedRepo && selectedRepo.id !== "all" ? selectedRepo.id : null;
+    selectedRepo && selectedRepo.id !== "all" && selectedRepoIsActive ? selectedRepo.id : null;
 
   const {
     data: liveBranchesData,
@@ -215,7 +239,7 @@ export function CommitsView() {
     isRefetching: isRefetchingBranches,
     refetch: refetchBranches,
   } = useProjectRepositoryBranches(projectId, activeRepoId, {
-    enabled: Boolean(projectId && activeRepoId),
+    enabled: Boolean(projectId && activeRepoId && selectedRepoIsActive),
   });
 
   const liveBranches = liveBranchesData?.branches;
@@ -251,21 +275,26 @@ export function CommitsView() {
   };
 
   const handleRefresh = async () => {
-    await Promise.all([
+    const tasks: Array<Promise<unknown>> = [
       refetchCommits(),
-      refetchBranches(),
       refetchSyncStatuses(),
       refetchIntegrations(),
-    ]);
+    ];
+    if (selectedRepoIsActive) {
+      tasks.push(refetchBranches());
+    }
+    await Promise.all(tasks);
   };
 
   const handleSync = async () => {
-    if (!projectId) return;
+    if (!projectId || !canRequestProjectSync(isTeamLeader) || githubConnectionStatus === "REVOKED") {
+      return;
+    }
 
     try {
       const result = await syncProjectMutation.mutateAsync(projectId);
       showInfoToast("Đã gửi yêu cầu đồng bộ Jira & GitHub.", {
-        description: `Hàng đợi: Jira [${result.jira}], GitHub [${result.github}]. Dữ liệu sẽ tự cập nhật khi hoàn tất.`,
+        description: formatProjectSyncEnqueueDescription(result.jira, result.github),
       });
     } catch (error) {
       showErrorToast(error instanceof Error ? error.message : "Không thể kích hoạt đồng bộ dự án.");
@@ -379,7 +408,7 @@ export function CommitsView() {
     <div className="space-y-6 max-w-[1600px] mx-auto pb-12">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-3.5 bg-card/60 p-4 rounded-xl border border-border/70 backdrop-blur-xs shadow-2xs">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-linear-to-br from-slate-900 to-slate-800 text-white dark:from-slate-100 dark:to-slate-200 dark:text-slate-900 flex items-center justify-center shrink-0 shadow-xs font-bold">
+          <div className="w-10 h-10 rounded-xl bg-popover from-slate-900 to-slate-800 text-white dark:from-slate-100 dark:to-slate-200 dark:text-slate-900 flex items-center justify-center shrink-0 shadow-xs font-bold">
             <GitCommitIcon className="w-5 h-5" />
           </div>
           <div>
@@ -400,24 +429,24 @@ export function CommitsView() {
         </div>
 
         <div className="flex items-center gap-2 shrink-0">
-          {isLeader && (
-            <Button
+          {canRequestProjectSync(isTeamLeader) ? (
+          <Button
             type="button"
             size="sm"
             onClick={() => void handleSync()}
-            disabled={!projectId || syncProjectMutation.isPending || hasActiveSync}
+            disabled={!projectId || isSyncingVisible || githubConnectionStatus === "REVOKED"}
             className="h-8.5 text-xs font-bold rounded-xl gap-1.5 cursor-pointer shadow-2xs bg-blue-600 text-white hover:bg-blue-700"
           >
-            <RotateCwIcon className={`w-3.5 h-3.5 ${syncProjectMutation.isPending || hasActiveSync ? "animate-spin" : ""}`} />
+            <RotateCwIcon className={`w-3.5 h-3.5 ${isSyncingVisible ? "animate-spin" : ""}`} />
             <span>
               {syncProjectMutation.isPending
                 ? "Đang gửi..."
-                : hasActiveSync
+                : isSyncingVisible
                   ? "Đang đồng bộ..."
                   : "Đồng bộ Jira & GitHub"}
             </span>
           </Button>
-          )}
+          ) : null}
 
           <Button
             type="button"
@@ -442,6 +471,28 @@ export function CommitsView() {
           )}
         </div>
       </div>
+
+      {githubConnectionStatus === "REVOKED" && (
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-3.5 rounded-xl border border-destructive/30 bg-destructive/5 text-xs text-destructive shadow-2xs">
+          <div className="flex items-start gap-2.5">
+            <AlertCircleIcon className="w-4 h-4 shrink-0 mt-0.5" />
+            <span>
+              Repository đã bị ngắt kết nối khỏi dự án (có thể đang được gắn với dự án khác). Dữ liệu bên dưới là lịch sử cũ. Leader vào Dự án → Tích hợp để kết nối lại.
+            </span>
+          </div>
+          {canRequestProjectSync(isTeamLeader) && courseId ? (
+            <Link href={studentCoursePath("/student/project-info", courseId)} prefetch={true} className="shrink-0">
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-7 text-xs rounded-xl font-bold bg-card border-destructive/40 hover:bg-destructive/10 cursor-pointer shadow-xs"
+              >
+                Mở trang Tích hợp
+              </Button>
+            </Link>
+          ) : null}
+        </div>
+      )}
 
       {isLoadingCommits && (
         <div className="flex items-center justify-center gap-2 p-6 rounded-xl border border-primary/20 bg-primary/5 text-xs text-primary font-medium">
@@ -491,9 +542,7 @@ export function CommitsView() {
             stats={stats}
             selectedRepoName={selectedRepo.fullPath}
             selectedBranchName={effectiveSelectedBranchName}
-            githubSyncStatus={githubSyncStatus?.status}
-            isGitHubSyncing={syncProjectMutation.isPending || hasActiveSync}
-            isGitHubSyncFailed={isGitHubSyncFailed}
+            syncBadge={githubSyncBadge}
           />
 
           <CommitFilterBar
@@ -547,4 +596,4 @@ export function CommitsView() {
       )}
     </div>
   );
-}
+}

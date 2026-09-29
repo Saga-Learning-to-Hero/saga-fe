@@ -1,13 +1,23 @@
 "use client";
 
-import { useCallback } from "react";
+import { useCallback, useRef } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ProjectProjectionService } from "../api/project-projection-service";
-import { PROJECT_INTEGRATIONS_QUERY_KEYS } from "./useProjectIntegrations";
 import { JIRA_SPRINT_QUERY_KEYS } from "@/features/student/sprint-progress/hooks/use-sprint-data";
 import { ProjectTaskService } from "@/features/student/sprint-progress/api/project-task-service";
+import { StudentDashboardService } from "@/features/student/dashboard/api/student-dashboard-service";
+import { STUDENT_DASHBOARD_QUERY_KEYS } from "@/features/student/dashboard/hooks/use-student-dashboard";
+import {
+  shouldPrefetchTeamProgress,
+  shouldRetryLeaderOnlyProjection,
+  type PrefetchProjectProjectionOptions,
+} from "../lib/student-team-role-cache";
+import {
+  isActivelySyncing,
+  resolveSyncStatusPollInterval,
+} from "../lib/sync-job-status";
+import type { SSEConnectionStatus } from "../types/project-realtime-types";
 import type {
-  ProjectSyncResponse,
   ProjectSyncStatusItem,
   ProjectTaskCommitLinkQuery,
   GetProjectCommitsParams,
@@ -44,34 +54,10 @@ export function useSyncProject() {
 
   return useMutation({
     mutationFn: (projectId: string) => ProjectProjectionService.syncProject(projectId),
-    onSuccess: async (_data: ProjectSyncResponse, projectId: string) => {
-      await queryClient.invalidateQueries({
-        queryKey: PROJECT_INTEGRATIONS_QUERY_KEYS.projectIntegrations(projectId),
-        exact: true,
-      });
-      await queryClient.invalidateQueries({
-        queryKey: PROJECT_PROJECTION_QUERY_KEYS.tasks(projectId),
-      });
+    onSuccess: async (_data, projectId: string) => {
+      // POST /sync chỉ enqueue; tasks/sprints/commits chờ SSE hoặc job terminal.
       await queryClient.invalidateQueries({
         queryKey: PROJECT_PROJECTION_QUERY_KEYS.syncStatus(projectId),
-      });
-      await queryClient.invalidateQueries({
-        queryKey: PROJECT_PROJECTION_QUERY_KEYS.commits(projectId),
-      });
-      await queryClient.invalidateQueries({
-        queryKey: PROJECT_PROJECTION_QUERY_KEYS.progress(projectId),
-      });
-      await queryClient.invalidateQueries({
-        queryKey: [...PROJECT_PROJECTION_QUERY_KEYS.all, "member-progress", projectId],
-      });
-      await queryClient.invalidateQueries({
-        queryKey: [...PROJECT_PROJECTION_QUERY_KEYS.all, "repository-branches", projectId],
-      });
-      await queryClient.invalidateQueries({
-        queryKey: [...PROJECT_PROJECTION_QUERY_KEYS.all, "task-commit-links", projectId],
-      });
-      await queryClient.invalidateQueries({
-        queryKey: ["jira-sprint"],
       });
     },
   });
@@ -90,9 +76,13 @@ export function useProjectSyncStatus(
   projectId?: string | null,
   options?: {
     enabled?: boolean;
+    sseStatus?: SSEConnectionStatus;
     refetchInterval?: number | false | ((query: unknown) => number | false | undefined);
   }
 ) {
+  const activeSinceRef = useRef<number | null>(null);
+  const errorSinceRef = useRef<number | null>(null);
+
   return useQuery({
     queryKey: PROJECT_PROJECTION_QUERY_KEYS.syncStatus(projectId),
     queryFn: () => ProjectProjectionService.getProjectSyncStatus(projectId!),
@@ -105,12 +95,28 @@ export function useProjectSyncStatus(
           : options.refetchInterval;
       }
       const jobs = query.state.data as ProjectSyncStatusItem[] | undefined;
-      const isActivelySyncing = jobs?.some((job) =>
-        ["ENQUEUED", "IN_PROGRESS", "RUNNING", "SYNCING"].includes(
-          (job.status || "").toUpperCase()
-        )
-      );
-      return isActivelySyncing ? 3000 : 30000;
+      const activelySyncing = isActivelySyncing(jobs);
+      const now = Date.now();
+
+      if (activelySyncing) {
+        if (activeSinceRef.current == null) activeSinceRef.current = now;
+      } else {
+        activeSinceRef.current = null;
+      }
+
+      if (options?.sseStatus === "ERROR") {
+        if (errorSinceRef.current == null) errorSinceRef.current = now;
+      } else {
+        errorSinceRef.current = null;
+      }
+
+      return resolveSyncStatusPollInterval({
+        isActivelySyncing: activelySyncing,
+        sseStatus: options?.sseStatus,
+        activeSinceMs: activeSinceRef.current,
+        errorSinceMs: errorSinceRef.current,
+        now,
+      });
     },
   });
 }
@@ -160,6 +166,7 @@ export function useProjectProgress(projectId?: string | null, options?: { enable
     queryFn: () => ProjectProjectionService.getProjectProgress(projectId!),
     enabled: (options?.enabled ?? true) && Boolean(projectId && projectId.trim()),
     staleTime: 1000 * 30,
+    retry: shouldRetryLeaderOnlyProjection,
   });
 }
 
@@ -175,6 +182,7 @@ export function useMemberProgress(
       (options?.enabled ?? true) &&
       Boolean(projectId && projectId.trim() && studentId && studentId.trim()),
     staleTime: 1000 * 30,
+    retry: shouldRetryLeaderOnlyProjection,
   });
 }
 
@@ -215,17 +223,34 @@ export function useProjectTaskCommitLinks(
 export function usePrefetchProjectProjection() {
   const queryClient = useQueryClient();
   return useCallback(
-    (projectId: string, options?: { includeCommits?: boolean }) => {
-      if (!projectId || !projectId.trim()) return;
-      void queryClient.prefetchQuery({
-        queryKey: PROJECT_PROJECTION_QUERY_KEYS.progress(projectId),
-        queryFn: () => ProjectProjectionService.getProjectProgress(projectId),
-        staleTime: 1000 * 30,
-      });
+    (projectId?: string | null, options?: PrefetchProjectProjectionOptions) => {
+      const cleanProjectId = projectId?.trim() || "";
+      const courseId = options?.courseId?.trim() || "";
+      if (!cleanProjectId && !courseId) return;
+
+      if (courseId) {
+        void queryClient.prefetchQuery({
+          queryKey: STUDENT_DASHBOARD_QUERY_KEYS.byCourse(courseId, null),
+          queryFn: () => StudentDashboardService.getDashboard(courseId),
+          staleTime: 1000 * 30,
+        });
+      }
+
+      if (!cleanProjectId) return;
+
+      if (shouldPrefetchTeamProgress(queryClient, { ...options, courseId })) {
+        void queryClient.prefetchQuery({
+          queryKey: PROJECT_PROJECTION_QUERY_KEYS.progress(cleanProjectId),
+          queryFn: () => ProjectProjectionService.getProjectProgress(cleanProjectId),
+          staleTime: 1000 * 30,
+          retry: false,
+        });
+      }
+
       if (options?.includeCommits) {
         void queryClient.prefetchQuery({
-          queryKey: PROJECT_PROJECTION_QUERY_KEYS.commits(projectId),
-          queryFn: () => ProjectProjectionService.getProjectCommits(projectId),
+          queryKey: PROJECT_PROJECTION_QUERY_KEYS.commits(cleanProjectId),
+          queryFn: () => ProjectProjectionService.getProjectCommits(cleanProjectId),
           staleTime: 1000 * 30,
         });
       }

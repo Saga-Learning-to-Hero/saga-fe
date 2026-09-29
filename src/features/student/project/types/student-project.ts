@@ -245,6 +245,7 @@ export interface ProjectSyncStatusItem {
   completedAt: string | null;
   itemsProcessed: number;
   itemsFailed: number;
+  connectionStatus?: "ACTIVE" | "REVOKED" | "NOT_CONNECTED" | string;
 }
 
 export interface TaskLinkedCommitItem {

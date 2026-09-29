@@ -72,6 +72,7 @@ export function getApiErrorMessage(error: unknown, fallback: string): string {
 interface ToastOptions {
   id?: string;
   description?: string;
+  duration?: number;
 }
 
 export function showErrorToast(fallbackMessage: string, error?: unknown, options?: ToastOptions | string): void {
@@ -82,6 +83,7 @@ export function showErrorToast(fallbackMessage: string, error?: unknown, options
     toast.error("Không thể kết nối đến máy chủ", {
       id: opts.id,
       description: "Vui lòng kiểm tra lại kết nối mạng của bạn.",
+      duration: opts.duration,
     });
     return;
   }
@@ -89,22 +91,23 @@ export function showErrorToast(fallbackMessage: string, error?: unknown, options
   toast.error(fallbackMessage, {
     id: opts.id,
     description: opts.description || (message !== fallbackMessage ? message : undefined),
+    duration: opts.duration,
   });
 }
 
 export function showSuccessToast(message: string, options?: ToastOptions | string): void {
   const opts = typeof options === 'string' ? { id: options } : (options || {});
-  toast.success(message, { id: opts.id, description: opts.description });
+  toast.success(message, { id: opts.id, description: opts.description, duration: opts.duration });
 }
 
 export function showInfoToast(message: string, options?: ToastOptions | string): void {
   const opts = typeof options === 'string' ? { id: options } : (options || {});
-  toast.info(message, { id: opts.id, description: opts.description });
+  toast.info(message, { id: opts.id, description: opts.description, duration: opts.duration });
 }
 
 export function showWarningToast(message: string, options?: ToastOptions | string): void {
   const opts = typeof options === 'string' ? { id: options } : (options || {});
-  toast.warning(message, { id: opts.id, description: opts.description });
+  toast.warning(message, { id: opts.id, description: opts.description, duration: opts.duration });
 }
 
 export function isUnauthorizedError(error: unknown): boolean {
