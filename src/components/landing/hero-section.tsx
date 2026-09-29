@@ -38,7 +38,7 @@ export function HeroSection() {
           <div className="space-y-3.5">
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight text-foreground leading-[1.12]">
               Minh bạch Công sức qua{" "}
-              <span className="bg-popover from-primary via-indigo-500 to-cyan-500 bg-clip-text text-transparent">
+              <span className="saga-brand-gradient">
                 Đồ thị Truy xuất
               </span>{" "}
               & AI Hub
@@ -172,7 +172,7 @@ export function HeroSection() {
                 </span>
               </div>
               <div className="w-full h-2.5 bg-muted rounded-full overflow-hidden">
-                <div className="h-full bg-popover from-primary via-indigo-500 to-cyan-500 rounded-full w-[88%]" />
+                <div className="h-full bg-linear-to-r from-primary via-indigo-500 to-cyan-500 rounded-full w-[88%]" />
               </div>
               <div className="flex items-center justify-between text-xs text-muted-foreground font-mono pt-0.5">
                 <span className="font-semibold text-foreground flex items-center gap-1.5">

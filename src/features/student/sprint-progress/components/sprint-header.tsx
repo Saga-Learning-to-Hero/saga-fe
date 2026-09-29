@@ -119,7 +119,7 @@ export function SprintHeader({
     <div className="space-y-3.5 pb-2 border-b border-border/60">
       <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-3.5 bg-card/60 p-4 rounded-xl border border-border/70 backdrop-blur-xs shadow-2xs">
         <div className="flex items-center gap-3.5 min-w-0">
-          <div className="w-10 h-10 rounded-xl bg-popover from-indigo-500 to-primary text-primary-foreground flex items-center justify-center shrink-0 shadow-xs font-bold">
+          <div className="w-10 h-10 rounded-xl bg-linear-to-br from-indigo-500 to-primary text-primary-foreground flex items-center justify-center shrink-0 shadow-xs font-bold">
             <KanbanSquareIcon className="w-5 h-5" />
           </div>
           <div className="min-w-0">
@@ -158,7 +158,7 @@ export function SprintHeader({
                 </div>
                 <div className="w-32 bg-muted/80 h-1.5 rounded-full overflow-hidden mt-1">
                   <div
-                    className="h-full bg-popover from-blue-500 to-emerald-500 transition-all duration-300"
+                    className="h-full bg-linear-to-r from-blue-500 to-emerald-500 transition-all duration-300"
                     style={{ width: `${progressPercent}%` }}
                   />
                 </div>
@@ -181,8 +181,8 @@ export function SprintHeader({
             />
           )}
 
-          {onSyncJira && (
-            <div className="flex items-center gap-2 shrink-0">
+          <div className="flex items-center gap-2 shrink-0">
+            {isTeamLeader && onSyncJira && (
               <Button
                 variant="outline"
                 size="sm"
@@ -193,16 +193,16 @@ export function SprintHeader({
                 <RefreshCwIcon className={`w-3.5 h-3.5 ${isSyncingJira ? "animate-spin text-blue-500" : ""}`} />
                 <span>{isSyncingJira ? "Đang đồng bộ..." : "Đồng bộ Jira & GitHub"}</span>
               </Button>
+            )}
+            {lastSyncedAt && (
               <div className="hidden 2xl:flex h-8.5 items-center gap-1.5 rounded-xl border border-border/60 bg-muted/40 px-2.5 text-xs text-muted-foreground whitespace-nowrap">
                 <CalendarIcon className="w-3.5 h-3.5 text-primary" />
                 <span>
-                  {lastSyncedAt
-                    ? `Lần cuối: ${formatVietnamDateTime(lastSyncedAt)}`
-                    : "Chưa có lượt đồng bộ"}
+                  Lần cuối: {formatVietnamDateTime(lastSyncedAt)}
                 </span>
               </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </div>
 

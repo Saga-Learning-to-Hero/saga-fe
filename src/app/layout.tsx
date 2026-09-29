@@ -41,9 +41,17 @@ export default function RootLayout({
   return (
     <html
       lang="vi"
+      suppressHydrationWarning
       data-scroll-behavior="smooth"
       className={`${plusJakartaSans.variable} ${jetbrainsMono.variable} ${outfit.variable} h-full antialiased`}
     >
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var t=localStorage.getItem('saga-theme');var d=window.matchMedia('(prefers-color-scheme: dark)').matches;if(t==='dark'||(!t&&d)){document.documentElement.classList.add('dark');}else{document.documentElement.classList.remove('dark');}}catch(e){}})();`,
+          }}
+        />
+      </head>
       <body className="min-h-full flex flex-col font-sans">
         <QueryProvider>
           <TooltipProvider>{children}</TooltipProvider>

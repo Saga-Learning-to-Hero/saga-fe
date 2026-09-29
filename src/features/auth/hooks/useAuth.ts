@@ -2,7 +2,6 @@
 
 import { useEffect } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useRouter } from "next/navigation";
 import { AuthService } from "../api/auth-service";
 import { useAuthStore } from "../store/useAuthStore";
 import { performLogout } from "../lib/logout-orchestrator";
@@ -194,7 +193,6 @@ export function useSetupPassword() {
 
 export function useLogout() {
   const queryClient = useQueryClient();
-  const router = useRouter();
 
   return useMutation({
     mutationFn: () =>
@@ -205,7 +203,8 @@ export function useLogout() {
             id: "auth-logout-info",
             description: "Hẹn gặp lại bạn trong phiên làm việc tiếp theo.",
           });
-          router.replace("/login");
+          // eslint-disable-next-line @next/next/no-location-assign-relative-destination
+          window.location.href = "/login";
         },
       }),
     onError: (err: unknown) => {

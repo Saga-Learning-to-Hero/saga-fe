@@ -21,13 +21,31 @@ export class ActivityAnalyticsService {
     if (!params.endDate || !params.endDate.trim()) {
       throw new Error("Throw ValidationException: End date is required");
     }
-    if (params.startDate > params.endDate) {
+
+    const sDate = params.startDate.trim();
+    const eDate = params.endDate.trim();
+    const DATE_REGEX = /^\d{4}-\d{2}-\d{2}$/;
+
+    if (!DATE_REGEX.test(sDate)) {
+      throw new Error("Throw ValidationException: Start date must be in format yyyy-MM-dd");
+    }
+    if (!DATE_REGEX.test(eDate)) {
+      throw new Error("Throw ValidationException: End date must be in format yyyy-MM-dd");
+    }
+    if (sDate > eDate) {
       throw new Error("Throw ValidationException: Start date cannot be after end date");
     }
 
+    const start = new Date(`${sDate}T00:00:00Z`).getTime();
+    const end = new Date(`${eDate}T00:00:00Z`).getTime();
+    const diffDays = Math.round((end - start) / (1000 * 60 * 60 * 24)) + 1;
+    if (diffDays > 366) {
+      throw new Error("Throw ValidationException: Date range cannot exceed 366 days");
+    }
+
     const query = new URLSearchParams({
-      startDate: params.startDate.trim(),
-      endDate: params.endDate.trim(),
+      startDate: sDate,
+      endDate: eDate,
     });
 
     if (params.studentId && params.studentId.trim()) {

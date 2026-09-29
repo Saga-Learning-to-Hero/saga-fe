@@ -61,9 +61,9 @@ export function SprintTimelineView({
 
   const getSprintSpan = (sprint: Sprint) => {
     const gradientByStatus: Record<Sprint["status"], string> = {
-      COMPLETED: "bg-popover from-emerald-600 to-teal-600 text-white",
-      ACTIVE: "bg-popover from-blue-600 to-indigo-600 text-white shadow-xs",
-      PLANNED: "bg-popover from-slate-500 to-slate-600 text-white opacity-90",
+      COMPLETED: "bg-linear-to-r from-emerald-600 to-teal-600 text-white",
+      ACTIVE: "bg-linear-to-r from-blue-600 to-indigo-600 text-white shadow-xs",
+      PLANNED: "bg-linear-to-r from-slate-500 to-slate-600 text-white opacity-90",
     };
 
     let startCol = 1;

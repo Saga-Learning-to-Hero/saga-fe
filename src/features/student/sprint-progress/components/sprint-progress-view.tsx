@@ -545,14 +545,14 @@ export function SprintProgressView() {
         </div>
       )}
 
-      {hasActiveSyncJob && !syncWindowTimedOut && (
+      {isTeamLeader && hasActiveSyncJob && !syncWindowTimedOut && (
         <div className="flex items-center gap-2 rounded-xl border border-primary/20 bg-primary/5 px-3.5 py-3 text-xs text-primary">
           <Loader2Icon className="size-4 animate-spin shrink-0" />
           <span>Dữ liệu Jira/GitHub đang được đồng bộ. Bảng tiến độ sẽ tự làm mới khi hoàn tất.</span>
         </div>
       )}
 
-      {hasActiveSyncJob && syncWindowTimedOut && (
+      {isTeamLeader && hasActiveSyncJob && syncWindowTimedOut && (
         <div className="flex items-start gap-2 rounded-xl border border-amber-500/30 bg-amber-500/10 px-3.5 py-3 text-xs text-amber-800 dark:text-amber-200">
           <AlertCircleIcon className="size-4 shrink-0 text-amber-500" />
           <span>
@@ -659,6 +659,7 @@ export function SprintProgressView() {
               name: s.name,
               startDate: s.startDate,
               endDate: s.endDate,
+              state: s.status,
             }))}
             students={teamMembers.map((m) => ({
               studentId: m.studentCode,
@@ -667,6 +668,7 @@ export function SprintProgressView() {
               avatar: m.avatar,
             }))}
             initialSprintId={selectedSprintId === "backlog" ? undefined : selectedSprintId}
+            onSelectSprint={setUserSelectedSprintId}
           />
         </div>
       )}

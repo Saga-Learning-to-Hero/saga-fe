@@ -19,6 +19,7 @@ import {
   Tooltip,
 } from "recharts";
 import { CustomSelect } from "@/components/common/custom-select";
+import { getApiErrorCode } from "@/lib/api-error";
 import { useSprintBurndown } from "../hooks/use-activity-analytics";
 import type { BurndownPoint } from "../types/activity-analytics";
 
@@ -118,7 +119,15 @@ export function SprintBurndownChart({
   initialSprintId,
   onSelectSprint,
 }: SprintBurndownChartProps) {
-  const [selectedSprintId, setSelectedSprintId] = useState<string>("");
+  const [prevInitialSprintId, setPrevInitialSprintId] = useState(initialSprintId);
+  const [selectedSprintId, setSelectedSprintId] = useState<string>(initialSprintId ?? "");
+
+  // Lựa chọn mới từ component cha luôn được ưu tiên
+  if (initialSprintId !== prevInitialSprintId) {
+    setPrevInitialSprintId(initialSprintId);
+    setSelectedSprintId(initialSprintId ?? "");
+  }
+
   const defaultSprintId = useMemo(
     () =>
       sprints.find((sprint) => sprint.id === initialSprintId)?.id ??
@@ -145,12 +154,30 @@ export function SprintBurndownChart({
     [sprints, activeSprintId]
   );
 
-  const { data, isLoading, isError, refetch } = useSprintBurndown(
+  const hasValidDates = Boolean(
+    selectedSprint?.startDate?.trim() && selectedSprint?.endDate?.trim()
+  );
+
+  const { data, isLoading, isError, error, refetch } = useSprintBurndown(
     courseId,
     teamId,
     activeSprintId,
-    { enabled: Boolean(courseId && teamId && activeSprintId) }
+    { enabled: Boolean(courseId && teamId && activeSprintId && hasValidDates) }
   );
+
+  const errorCode = getApiErrorCode(error);
+  const errorMessage = useMemo(() => {
+    if (errorCode === "PROJECT_NOT_FOUND") {
+      return "Không tìm thấy Sprint";
+    }
+    if (errorCode === "TEAM_NOT_FOUND") {
+      return "Không tìm thấy nhóm";
+    }
+    if (errorCode === "REQUEST_INVALID") {
+      return "Sprint chưa có ngày";
+    }
+    return "Không thể tải biểu đồ tiến độ của Sprint này";
+  }, [errorCode]);
 
   const chartData = useMemo(() => {
     if (!data?.points || data.points.length === 0) return [];
@@ -295,14 +322,34 @@ export function SprintBurndownChart({
         </div>
       </div>
 
-      {isLoading ? (
+      {sprints.length === 0 ? (
+        <div className="h-60 rounded-xl border border-dashed border-border/80 flex flex-col items-center justify-center text-center p-6 text-muted-foreground space-y-2">
+          <Calendar className="w-8 h-8 text-muted-foreground/50" />
+          <p className="text-sm font-semibold text-foreground">
+            Chưa có thông tin Sprint
+          </p>
+          <p className="text-xs text-muted-foreground">
+            Dự án hiện chưa có Sprint nào được đồng bộ từ Jira.
+          </p>
+        </div>
+      ) : !hasValidDates ? (
+        <div className="h-60 rounded-xl border border-dashed border-border/80 flex flex-col items-center justify-center text-center p-6 text-muted-foreground space-y-2">
+          <Calendar className="w-8 h-8 text-muted-foreground/50" />
+          <p className="text-sm font-semibold text-foreground">
+            Sprint chưa có ngày
+          </p>
+          <p className="text-xs text-muted-foreground">
+            Sprint cần có ngày bắt đầu và ngày kết thúc trên Jira để hiển thị biểu đồ tiến độ.
+          </p>
+        </div>
+      ) : isLoading ? (
         <div className="h-72 rounded-xl bg-muted/30 border border-border/60 animate-pulse flex items-center justify-center text-xs text-muted-foreground">
           Đang tải dữ liệu biểu đồ tiến độ...
         </div>
       ) : isError ? (
         <div className="p-6 rounded-xl bg-destructive/10 border border-destructive/20 text-center space-y-3">
           <p className="text-sm font-semibold text-destructive">
-            Không thể tải biểu đồ tiến độ của Sprint này
+            {errorMessage}
           </p>
           <button
             type="button"
@@ -316,7 +363,7 @@ export function SprintBurndownChart({
         <div className="h-60 rounded-xl border border-dashed border-border/80 flex flex-col items-center justify-center text-center p-6 text-muted-foreground space-y-2">
           <Calendar className="w-8 h-8 text-muted-foreground/50" />
           <p className="text-xs font-medium">
-            Sprint chưa có thời gian bắt đầu - kết thúc hoặc chưa có công việc nào.
+            Sprint chưa có công việc nào.
           </p>
         </div>
       ) : (

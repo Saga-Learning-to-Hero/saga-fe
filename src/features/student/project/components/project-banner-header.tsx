@@ -195,7 +195,7 @@ export function ProjectBannerHeader({
           </div>
         </div>
 
-        {projectId && (
+        {projectId && isLeader && (
           <div className="flex flex-col items-start md:items-end gap-2 shrink-0">
             {canRequestProjectSync(Boolean(isLeader)) && (
               <div className="flex items-center gap-2">

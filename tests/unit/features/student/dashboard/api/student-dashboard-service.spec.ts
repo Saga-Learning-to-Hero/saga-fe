@@ -299,4 +299,25 @@ describe("StudentDashboardService", () => {
       expect(getSpy).toHaveBeenCalledWith(`/api/student/courses/${mockCourseId}/dashboard`);
     }
   );
+
+  fptTest(
+    {
+      id: "UTCID09",
+      type: "A",
+      executedDate: "29/09/2026",
+      description: "Khong nuot loi 404 SPRINT_NOT_FOUND khi sprintId khong thuoc du an cua sinh vien",
+    },
+    async () => {
+      vi.spyOn(apiClient, "get").mockRejectedValueOnce(
+        apiError("Sprint không thuộc dự án", "SPRINT_NOT_FOUND", 404)
+      );
+
+      await expect(
+        StudentDashboardService.getDashboard(mockCourseId, "invalid-sprint-id")
+      ).rejects.toMatchObject({
+        code: "SPRINT_NOT_FOUND",
+        status: 404,
+      });
+    }
+  );
 });
