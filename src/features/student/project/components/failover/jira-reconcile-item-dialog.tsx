@@ -59,7 +59,7 @@ export function JiraReconcileItemDialog({
 
   return (
     <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-      <div className="bg-card border border-border/80 rounded-3xl w-full max-w-lg max-h-[92vh] flex flex-col shadow-2xl overflow-hidden animate-in fade-in zoom-in-95">
+      <div className="bg-card border border-border/80 rounded-xl w-full max-w-lg max-h-[92vh] flex flex-col shadow-lg overflow-hidden animate-in fade-in zoom-in-95">
         <div className="p-5 border-b border-border/60 flex items-center justify-between shrink-0 bg-muted/20">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-xl bg-warning/15 text-warning flex items-center justify-center shrink-0">
@@ -69,7 +69,7 @@ export function JiraReconcileItemDialog({
               <h3 className="text-sm font-bold text-foreground">
                 Đối soát thủ công công việc
               </h3>
-              <p className="text-[11px] text-muted-foreground">
+              <p className="text-xs text-muted-foreground">
                 Xác thực Issue Jira đã tạo và liên kết thủ công
               </p>
             </div>
@@ -85,7 +85,7 @@ export function JiraReconcileItemDialog({
 
         <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-hidden">
           <div className="p-6 overflow-y-auto flex-1 space-y-4">
-            <div className="rounded-2xl border border-warning/30 bg-warning/5 p-3.5 space-y-2 text-xs">
+            <div className="rounded-xl border border-warning/30 bg-warning/5 p-3.5 space-y-2 text-xs">
               <p className="font-semibold text-foreground">
                 Công việc gốc:{" "}
                 <span className="font-mono text-primary font-bold">
@@ -93,14 +93,14 @@ export function JiraReconcileItemDialog({
                 </span>{" "}
                 — {item.sourceTitle}
               </p>
-              <p className="text-muted-foreground text-[11px] leading-relaxed">
+              <p className="text-muted-foreground text-xs leading-relaxed">
                 Hệ thống SAGA chưa nhận được phản hồi xác thực từ Jira đích sau khi gửi lệnh tạo. Issue có thể đã được tạo thành công trên Jira.
               </p>
             </div>
 
-            <div className="rounded-2xl border border-border/70 bg-muted/20 p-3.5 space-y-1.5 text-xs text-muted-foreground">
-              <p className="font-bold text-foreground text-[11px]">Hướng dẫn đối soát:</p>
-              <ol className="list-decimal pl-4 space-y-1 text-[11px]">
+            <div className="rounded-xl border border-border/70 bg-muted/20 p-3.5 space-y-1.5 text-xs text-muted-foreground">
+              <p className="font-bold text-foreground text-xs">Hướng dẫn đối soát:</p>
+              <ol className="list-decimal pl-4 space-y-1 text-xs">
                 <li>Mở Jira của dự án đích và kiểm tra danh sách Backlog / Sprint.</li>
                 <li>Tìm kiếm task có tiêu đề tương tự hoặc mới tạo gần nhất.</li>
                 <li>
@@ -126,7 +126,7 @@ export function JiraReconcileItemDialog({
                 autoFocus
                 required
               />
-              <p className="text-[10px] text-muted-foreground">
+              <p className="text-xs text-muted-foreground">
                 Backend sẽ kiểm tra Issue có tồn tại, thuộc đúng dự án đích và chưa bị liên kết trước khi xác nhận.
               </p>
             </div>

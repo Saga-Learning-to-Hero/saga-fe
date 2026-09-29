@@ -80,14 +80,14 @@ export function CourseDashboardTeamCard({
     <Card
       data-team-id={team.teamId}
       className={cn(
-        "overflow-hidden rounded-2xl border border-border/80 bg-card shadow-xs transition-all duration-200",
+        "overflow-hidden rounded-xl border border-border/80 bg-card shadow-xs transition-all duration-200",
         isHighlighted && "border-primary/60 bg-primary/5 ring-2 ring-primary/20"
       )}
     >
       <div className="grid gap-4 p-4 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,1.15fr)_minmax(15rem,1fr)_auto] lg:items-center">
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="rounded-md bg-primary/10 px-2 py-0.5 font-mono text-[11px] font-bold text-primary">
+            <span className="rounded-md bg-primary/10 px-2 py-0.5 font-mono text-xs font-bold text-primary">
               Nhóm {team.teamNo}
             </span>
             <h3 className="truncate text-sm font-extrabold text-foreground">{team.teamName}</h3>
@@ -95,7 +95,7 @@ export function CourseDashboardTeamCard({
           <p className="mt-1 truncate text-xs text-muted-foreground">
             {team.projectName || "Chưa có tên dự án"}
           </p>
-          <p className="mt-1 flex items-center gap-1 text-[11px] text-muted-foreground">
+          <p className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
             <UsersIcon className="size-3" /> {team.memberCount} thành viên
           </p>
         </div>
@@ -124,7 +124,7 @@ export function CourseDashboardTeamCard({
         <div className="min-w-0">
           <div className="flex items-end justify-between gap-3">
             <div>
-              <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+              <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                 Tiến độ Sprint
               </p>
               <p className="mt-0.5 font-mono text-sm font-black text-foreground">
@@ -146,7 +146,7 @@ export function CourseDashboardTeamCard({
               />
             ) : null}
           </div>
-          <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-muted-foreground">
+          <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted-foreground">
             {team.progress ? (
               <>
                 <span>{team.progress.overdue} quá hạn</span>
@@ -177,7 +177,7 @@ export function CourseDashboardTeamCard({
               <MoreHorizontalIcon className="size-4" />
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-52">
-              <DropdownMenuLabel className="text-[11px]">Xem thông tin nhóm</DropdownMenuLabel>
+              <DropdownMenuLabel className="text-xs">Xem thông tin nhóm</DropdownMenuLabel>
               <DropdownMenuSeparator />
               {canOpenProject ? (
                 <DropdownMenuItem
@@ -245,9 +245,9 @@ function getSetupNotices(team: LecturerDashboardTeam): string[] {
 function DetailBlock({ label, value, hint }: { label: string; value: string; hint: string }) {
   return (
     <div className="rounded-xl border border-border/70 bg-card p-3">
-      <p className="text-[11px] text-muted-foreground">{label}</p>
+      <p className="text-xs text-muted-foreground">{label}</p>
       <p className="mt-1 font-mono text-sm font-bold text-foreground">{value}</p>
-      <p className="mt-1 text-[11px] text-muted-foreground">{hint}</p>
+      <p className="mt-1 text-xs text-muted-foreground">{hint}</p>
     </div>
   );
 }

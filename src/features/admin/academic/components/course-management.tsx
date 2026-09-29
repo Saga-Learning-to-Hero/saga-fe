@@ -212,7 +212,7 @@ export function CourseManagement() {
           {isLoading && courses.length === 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {Array.from({ length: 3 }).map((_, idx) => (
-                <Card key={idx} className="rounded-2xl border border-border p-5 space-y-3.5 animate-pulse bg-card shadow-xs">
+                <Card key={idx} className="rounded-xl border border-border p-5 space-y-3.5 animate-pulse bg-card shadow-xs">
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex items-center gap-2.5">
                       <div className="w-10 h-10 rounded-xl bg-muted shrink-0" />
@@ -240,7 +240,7 @@ export function CourseManagement() {
               ))}
             </div>
           ) : filteredCourses.length === 0 ? (
-            <Card className="rounded-2xl border border-dashed border-border p-8 text-center">
+            <Card className="rounded-xl border border-dashed border-border p-8 text-center">
               <p className="text-xs text-muted-foreground">Không tìm thấy lớp học phần nào phù hợp.</p>
             </Card>
           ) : viewMode === "cards" ? (
@@ -249,7 +249,7 @@ export function CourseManagement() {
                 <Card
                   key={crs.id}
                   onMouseEnter={() => handlePrefetchCourse(crs.id)}
-                  className="rounded-2xl border border-border/80 hover:border-primary/40 transition-all duration-200 shadow-xs hover:shadow-md bg-card overflow-hidden group flex flex-col justify-between"
+                  className="rounded-xl border border-border/80 hover:border-primary/40 transition-all duration-200 shadow-xs hover:shadow-md bg-card overflow-hidden group flex flex-col justify-between"
                 >
                   <CardContent className="p-5 space-y-3.5 flex-1 flex flex-col justify-between">
                     <div>
@@ -303,12 +303,12 @@ export function CourseManagement() {
                           <span className="truncate">
                             GV: <strong className="text-foreground font-medium">{crs.lecturerFullName || crs.lecturerName || crs.lecturerEmail || "Chưa phân công"}</strong>
                             {crs.lecturerEmail && crs.lecturerFullName && (
-                              <span className="text-[11px] text-muted-foreground ml-1 font-normal">({crs.lecturerEmail})</span>
+                              <span className="text-xs text-muted-foreground ml-1 font-normal">({crs.lecturerEmail})</span>
                             )}
                           </span>
                         </div>
 
-                        <div className="flex items-center justify-between gap-2 pt-1 text-[11px] text-muted-foreground">
+                        <div className="flex items-center justify-between gap-2 pt-1 text-xs text-muted-foreground">
                           <span className="inline-flex items-center gap-1 bg-muted/60 px-2 py-0.5 rounded-md border border-border/60">
                             <SchoolIcon className="w-3 h-3 text-muted-foreground" />
                             Lớp: <strong className="text-foreground">{crs.classCode || "—"}</strong>
@@ -337,7 +337,7 @@ export function CourseManagement() {
               ))}
             </div>
           ) : (
-            <Card className="rounded-2xl border border-border overflow-hidden shadow-xs">
+            <Card className="rounded-xl border border-border overflow-hidden shadow-xs">
               <div className="overflow-x-auto">
                 <Table className="w-full text-left text-xs border-collapse">
                   <TableHeader className="bg-muted/40 border-b border-border">

@@ -67,7 +67,7 @@ export function ContributionTable({
     : "";
 
   return (
-    <Card className="rounded-2xl border border-border/80 shadow-2xs bg-card overflow-hidden">
+    <Card className="rounded-xl border border-border/80 shadow-2xs bg-card overflow-hidden">
       <CardHeader className="p-4 sm:p-5 pb-4 border-b border-border/60 bg-muted/20">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
@@ -81,7 +81,7 @@ export function ContributionTable({
           </div>
           <Badge
             variant="outline"
-            className="text-[10px] font-mono font-bold self-start sm:self-auto py-1 px-2.5"
+            className="text-xs font-mono font-bold self-start sm:self-auto py-1 px-2.5"
           >
             DEC-092 Live Evaluation
           </Badge>
@@ -223,7 +223,7 @@ function TableRowGroup({
             <Avatar size="sm" className="border border-border/60">
               <AvatarFallback
                 className={cn(
-                  "font-mono text-[11px] font-bold",
+                  "font-mono text-xs font-bold",
                   isLeader
                     ? "bg-amber-500/20 text-amber-700 dark:text-amber-300"
                     : "bg-muted text-muted-foreground",
@@ -247,7 +247,7 @@ function TableRowGroup({
                 )}
               </div>
               <div className="flex flex-wrap items-center gap-1.5">
-                <span className="inline-block rounded bg-muted px-1.5 py-0.2 font-mono text-[10px] font-bold text-foreground">
+                <span className="inline-block rounded bg-muted px-1.5 py-0.2 font-mono text-xs font-bold text-foreground">
                   {member.studentCode}
                 </span>
                 {hasNoEvidence ? (
@@ -301,7 +301,7 @@ function TableRowGroup({
                 className={cn(
                   "h-full rounded-full transition-all duration-300",
                   finalPercentage > 0
-                    ? "bg-gradient-to-r from-primary to-primary/80"
+                    ? "bg-linear-to-r from-primary to-primary/80"
                     : "bg-muted",
                 )}
                 style={{
@@ -366,7 +366,7 @@ function TableRowGroup({
                             />
                             <span>{parsed.title}</span>
                           </div>
-                          <p className="text-[11px] leading-relaxed opacity-90 pl-3">
+                          <p className="text-xs leading-relaxed opacity-90 pl-3">
                             {parsed.description}
                           </p>
                         </div>
@@ -401,7 +401,7 @@ function TableRowGroup({
                             )}
                           </span>
                         </div>
-                        <div className="space-y-1 text-[11px] text-muted-foreground">
+                        <div className="space-y-1 text-xs text-muted-foreground">
                           <div className="flex justify-between">
                             <span>Slice Score:</span>
                             <span className="font-mono font-bold text-foreground">

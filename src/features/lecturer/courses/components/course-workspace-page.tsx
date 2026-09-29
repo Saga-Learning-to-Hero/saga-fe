@@ -58,7 +58,7 @@ export function CourseWorkspacePage({ courseId }: CourseWorkspacePageProps) {
       actions={
         <>
           {updatedAt ? (
-            <p className="text-[11px] text-muted-foreground">Cập nhật lúc {updatedAt}</p>
+            <p className="text-xs text-muted-foreground">Cập nhật lúc {updatedAt}</p>
           ) : null}
           <Button
             type="button"

@@ -22,7 +22,7 @@ export function CtaFooterSection() {
 
   return (
     <>
-      <section className="py-20 md:py-24 border-t border-border/80 relative overflow-hidden bg-gradient-to-b from-background via-muted/20 to-background">
+      <section className="py-20 md:py-24 border-t border-border/80 relative overflow-hidden bg-linear-to-b from-background via-muted/20 to-background">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[250px] bg-primary/10 rounded-full blur-3xl pointer-events-none -z-10" />
 
         <div className="max-w-4xl mx-auto px-6 text-center space-y-6">
@@ -33,7 +33,7 @@ export function CtaFooterSection() {
 
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-foreground tracking-tight leading-tight max-w-2xl mx-auto">
             Nâng tầm Quản trị & Đánh giá Đồ án SE cùng{" "}
-            <span className="bg-gradient-to-r from-primary to-cyan-500 bg-clip-text text-transparent">
+            <span className="saga-brand-gradient">
               SAGA
             </span>
           </h2>
@@ -70,7 +70,7 @@ export function CtaFooterSection() {
         </div>
       </section>
 
-      <footer className="border-t border-border bg-card/60 backdrop-blur-md pt-14 pb-10">
+      <footer className="border-t border-border bg-card/60 backdrop-blur-sm pt-14 pb-10">
         <div className="max-w-6xl mx-auto px-6 space-y-10">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8">
             <div className="lg:col-span-2 space-y-3.5">
@@ -81,10 +81,10 @@ export function CtaFooterSection() {
                 Nền tảng phân tích đồ thị tri thức và đánh giá liên tục đồ án học tập, đảm bảo tính công bằng và minh bạch cho sinh viên chuyên ngành Kỹ thuật Phần mềm (SE).
               </p>
               <div className="flex items-center gap-2 pt-0.5">
-                <Badge variant="outline" className="text-[10px] font-mono border-primary/20 text-primary bg-primary/5">
+                <Badge variant="outline" className="text-xs font-mono border-primary/20 text-primary bg-primary/5">
                   FPT University
                 </Badge>
-                <Badge variant="secondary" className="text-[10px] font-mono">
+                <Badge variant="secondary" className="text-xs font-mono">
                   Software Engineering (SE)
                 </Badge>
               </div>
@@ -163,7 +163,7 @@ export function CtaFooterSection() {
           <div className="pt-6 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-muted-foreground">
             <p>© 2026 Nhóm SAGA — Smart Assessment & Governance Analytics (SE Capstone Project).</p>
 
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 font-medium text-[11px]">
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 font-medium text-xs">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
               Polyglot Persistence & AI Hub đang hoạt động
             </div>

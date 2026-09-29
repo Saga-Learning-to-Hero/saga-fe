@@ -1,4 +1,5 @@
 "use client";
+import { showSuccessToast, showErrorToast } from "@/lib/api-error";
 
 import { useState } from "react";
 import { XIcon, PencilIcon, Loader2Icon } from "lucide-react";
@@ -6,7 +7,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { toast } from "@/components/ui/sonner";
 import { useUpdateProject } from "../hooks/use-update-project";
 
 interface EditProjectDialogProps {
@@ -47,19 +47,19 @@ function EditProjectDialogContent({
         name: name.trim(),
         description: description.trim(),
       });
-      toast.success("Cập nhật thông tin dự án thành công!");
+      showSuccessToast("Cập nhật thông tin dự án thành công!");
       if (onSuccess) {
         onSuccess({ name: res.name, description: res.description });
       }
       onClose();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Không thể cập nhật dự án.");
+      showErrorToast(err instanceof Error ? err.message : "Không thể cập nhật dự án.");
     }
   };
 
   return (
     <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in-0 duration-200">
-      <div className="bg-card border border-border/80 rounded-3xl w-full max-w-lg max-h-[92vh] flex flex-col shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
+      <div className="bg-card border border-border/80 rounded-xl w-full max-w-lg max-h-[92vh] flex flex-col shadow-lg overflow-hidden animate-in zoom-in-95 duration-200">
         <div className="p-5 border-b border-border/60 flex items-center justify-between shrink-0 bg-muted/20">
           <div className="flex items-center gap-2.5">
             <div className="size-9 rounded-xl bg-primary/10 text-primary border border-primary/20 flex items-center justify-center">
@@ -110,7 +110,7 @@ function EditProjectDialogContent({
                 disabled={updateMutation.isPending}
                 required
               />
-              <span className="text-[10px] text-muted-foreground font-mono">
+              <span className="text-xs text-muted-foreground font-mono">
                 {name.length}/120 ký tự
               </span>
             </div>
@@ -129,7 +129,7 @@ function EditProjectDialogContent({
                 className="text-xs rounded-xl resize-none"
                 disabled={updateMutation.isPending}
               />
-              <span className="text-[10px] text-muted-foreground font-mono">
+              <span className="text-xs text-muted-foreground font-mono">
                 {description.length}/600 ký tự
               </span>
             </div>

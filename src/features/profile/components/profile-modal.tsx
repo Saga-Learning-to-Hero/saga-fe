@@ -15,13 +15,13 @@ export function ProfileModal() {
   const { user } = useAuthStore();
   const { isOpen, setProfileModalOpen } = useProfileModalStore();
 
-  if (!user) return null;
+  if (!user || !isOpen) return null;
 
   return (
     <Dialog open={isOpen} onOpenChange={setProfileModalOpen}>
       <DialogContent
         showCloseButton={true}
-        className="w-[94vw] max-w-4xl lg:max-w-5xl max-h-[90vh] flex flex-col p-5 sm:p-6 rounded-3xl border border-border/80 bg-card shadow-2xl overflow-hidden gap-0"
+        className="w-[94vw] max-w-4xl lg:max-w-5xl max-h-[90vh] flex flex-col p-5 sm:p-6 rounded-xl border border-border/80 bg-card shadow-lg overflow-hidden gap-0"
       >
         <DialogHeader className="sr-only">
           <DialogTitle>Hồ sơ cá nhân</DialogTitle>

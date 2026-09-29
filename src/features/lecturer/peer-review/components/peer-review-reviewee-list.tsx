@@ -32,14 +32,14 @@ export function PeerReviewRevieweeList({
   onSelectReviewee,
 }: PeerReviewRevieweeListProps) {
   return (
-    <aside className="flex w-full flex-col overflow-hidden rounded-2xl border border-border/80 bg-card shadow-xs lg:max-h-[calc(100dvh-8rem)]">
+    <aside className="flex w-full flex-col overflow-hidden rounded-xl border border-border/80 bg-card shadow-xs lg:max-h-[calc(100dvh-8rem)]">
       <div className="border-b border-border/60 p-3">
         <div className="flex items-center justify-between gap-2">
           <div>
             <p className="text-sm font-extrabold text-foreground">
               Thành viên nhóm
             </p>
-            <p className="text-[11px] text-muted-foreground">
+            <p className="text-xs text-muted-foreground">
               Chọn một sinh viên để xem chi tiết
             </p>
           </div>
@@ -79,7 +79,7 @@ export function PeerReviewRevieweeList({
           </span>
           <span className="min-w-0">
             <span className="block text-sm font-bold">Tổng quan nhóm</span>
-            <span className="block text-[11px] text-muted-foreground">
+            <span className="block text-xs text-muted-foreground">
               Xem tất cả lượt đánh giá
             </span>
           </span>
@@ -111,7 +111,7 @@ export function PeerReviewRevieweeList({
                   <Avatar className="size-9 shrink-0 border border-border/70">
                     <AvatarFallback
                       className={cn(
-                        "text-[11px] font-extrabold",
+                        "text-xs font-extrabold",
                         selected
                           ? "bg-primary/15 text-primary"
                           : "bg-muted text-muted-foreground"
@@ -129,7 +129,7 @@ export function PeerReviewRevieweeList({
                     >
                       {item.name}
                     </span>
-                    <span className="mt-1 flex flex-wrap items-center gap-1.5 text-[10px] text-muted-foreground">
+                    <span className="mt-1 flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
                       {item.studentCode ? (
                         <span className="rounded bg-primary/10 px-1.5 py-0.5 font-mono font-bold text-primary">
                           {item.studentCode}
@@ -144,7 +144,7 @@ export function PeerReviewRevieweeList({
                 </span>
                 <span
                   className={cn(
-                    "mt-2 inline-flex rounded-md px-2 py-0.5 text-[10px] font-semibold",
+                    "mt-2 inline-flex rounded-md px-2 py-0.5 text-xs font-semibold",
                     item.hasEnoughReviews
                       ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"
                       : "bg-amber-500/10 text-amber-700 dark:text-amber-300"

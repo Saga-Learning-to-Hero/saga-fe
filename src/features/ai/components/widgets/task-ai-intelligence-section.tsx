@@ -63,7 +63,7 @@ export function TaskAiIntelligenceSection({
   const classifications = academicQuery.data || [];
 
   return (
-    <div className="rounded-2xl border border-primary/20 bg-primary/5 p-4 space-y-4">
+    <div className="rounded-xl border border-primary/20 bg-primary/5 p-4 space-y-4">
       <div className="flex items-center justify-between border-b border-primary/10 pb-3">
         <div className="flex items-center gap-2 text-primary font-bold text-xs uppercase tracking-wider">
           <SparklesIcon className="w-4 h-4" />
@@ -137,7 +137,7 @@ export function TaskAiIntelligenceSection({
                   <AlertTriangleIcon className="w-4 h-4 shrink-0" />
                   Phát hiện làm lệch mô tả Task (Deviation Alert)
                 </div>
-                <div className="text-[11px] leading-relaxed">
+                <div className="text-xs leading-relaxed">
                   {parsedIntelligence.deviationSummary}
                 </div>
               </div>
@@ -173,11 +173,11 @@ export function TaskAiIntelligenceSection({
                 >
                   <div>
                     <span className="font-medium text-foreground">{c.targetName}</span>
-                    <span className="text-muted-foreground ml-1.5 font-mono text-[11px]">
+                    <span className="text-muted-foreground ml-1.5 font-mono text-xs">
                       ({c.targetType})
                     </span>
                   </div>
-                  <span className="font-mono text-primary font-semibold text-[11px]">
+                  <span className="font-mono text-primary font-semibold text-xs">
                     {(c.confidence * 100).toFixed(0)}% tin cậy
                   </span>
                 </div>

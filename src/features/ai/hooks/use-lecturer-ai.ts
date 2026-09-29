@@ -12,6 +12,7 @@ import type {
   AiProviderRole,
   LecturerCourseAcademicClassificationPageResponse,
   CourseAcademicClassificationFilterParams,
+  CourseAiProgressSubmitResult,
 } from "../types";
 
 export const AI_LECTURER_QUERY_KEYS = {
@@ -143,7 +144,7 @@ export function useLatestCourseProgress(courseId: string) {
 }
 
 export function useSubmitCourseProgress(courseId: string) {
-  return useMutation<{ analysis: AiAnalysisResponse; httpStatus: number }, Error, void>({
+  return useMutation<CourseAiProgressSubmitResult, Error, void>({
     mutationFn: () => CourseAiService.submitCourseProgress(courseId),
   });
 }

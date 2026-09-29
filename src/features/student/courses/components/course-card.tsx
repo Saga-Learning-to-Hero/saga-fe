@@ -32,7 +32,7 @@ export function CourseCard({ course, onSelectCourse, onViewTeam }: CourseCardPro
   return (
     <div
       className={cn(
-        "group relative flex flex-col justify-between rounded-2xl p-5 transition-all duration-300",
+        "group relative flex flex-col justify-between rounded-xl p-5 transition-all duration-300",
         "border border-border/80 bg-card/90 shadow-xs backdrop-blur-sm hover:-translate-y-1 hover:border-primary/40 hover:bg-card hover:shadow-lg"
       )}
     >
@@ -52,7 +52,7 @@ export function CourseCard({ course, onSelectCourse, onViewTeam }: CourseCardPro
               Lớp {course.adminClassCode}
             </Badge>
           </div>
-          <Badge className="border-0 bg-emerald-500/15 px-2.5 py-0.5 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">
+          <Badge className="border-0 bg-emerald-500/15 px-2.5 py-0.5 text-xs font-semibold text-emerald-600 dark:text-emerald-400">
             <span className="flex items-center gap-1">
               <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-500" />
               Đang học
@@ -65,7 +65,7 @@ export function CourseCard({ course, onSelectCourse, onViewTeam }: CourseCardPro
             <span className="rounded bg-primary/10 px-1.5 py-0.5 font-mono text-xs font-bold text-primary">
               {course.subjectCode}
             </span>
-            <span className="truncate font-mono text-[11px] font-medium text-muted-foreground">
+            <span className="truncate font-mono text-xs font-medium text-muted-foreground">
               {course.code}
             </span>
           </div>
@@ -76,7 +76,7 @@ export function CourseCard({ course, onSelectCourse, onViewTeam }: CourseCardPro
 
         {course.lecturer?.fullName && (
           <div className="rounded-xl border border-border/50 bg-muted/40 p-2.5 text-xs">
-            <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+            <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
               Giảng viên
             </span>
             <p className="font-bold text-foreground">{course.lecturer?.fullName}</p>
@@ -89,7 +89,7 @@ export function CourseCard({ course, onSelectCourse, onViewTeam }: CourseCardPro
               <UsersIcon className="size-3.5" />
             </div>
             <div className="flex min-w-0 flex-col">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+              <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
                 Trạng thái nhóm
               </span>
               <span className="truncate text-xs font-bold text-foreground">
@@ -101,7 +101,7 @@ export function CourseCard({ course, onSelectCourse, onViewTeam }: CourseCardPro
             <CheckCircle2Icon className="size-4 shrink-0 text-emerald-500" />
           )}
         </div>
-        <p className="text-[11px] text-muted-foreground">{TEAM_STATUS_LABEL[teamStatus]}</p>
+        <p className="text-xs text-muted-foreground">{TEAM_STATUS_LABEL[teamStatus]}</p>
       </div>
 
       <div className="mt-4 space-y-2 border-t border-border/60 pt-4">

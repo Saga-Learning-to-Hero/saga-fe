@@ -65,7 +65,7 @@ export function MoveTeamMemberDialog({
           <div>
             <p className="text-xs text-muted-foreground">Thành viên nguồn</p>
             <p className="text-sm font-semibold">{member?.fullName || "—"}</p>
-            <p className="font-mono text-[11px] text-muted-foreground">{member?.studentCode}</p>
+            <p className="font-mono text-xs text-muted-foreground">{member?.studentCode}</p>
           </div>
           <div>
             <p className="text-xs text-muted-foreground">Nhóm hiện tại</p>
@@ -82,7 +82,7 @@ export function MoveTeamMemberDialog({
               disabled={targetOptions.length === 0 || isSaving}
             />
             {targetOptions.length === 0 ? (
-              <p className="text-[11px] text-muted-foreground">Chưa có nhóm đích khác trong lớp học phần này.</p>
+              <p className="text-xs text-muted-foreground">Chưa có nhóm đích khác trong lớp học phần này.</p>
             ) : null}
           </div>
         </div>

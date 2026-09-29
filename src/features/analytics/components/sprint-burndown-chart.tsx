@@ -13,13 +13,13 @@ import {
   ResponsiveContainer,
   ComposedChart,
   Line,
-  Area,
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip,
 } from "recharts";
 import { CustomSelect } from "@/components/common/custom-select";
+import { getApiErrorCode } from "@/lib/api-error";
 import { useSprintBurndown } from "../hooks/use-activity-analytics";
 import type { BurndownPoint } from "../types/activity-analytics";
 
@@ -65,6 +65,8 @@ function CustomBurndownTooltip({ active, payload, label }: CustomTooltipProps) {
   const actual = payload.find((p) => p.dataKey === "actualRemaining")?.value ?? 0;
   const done = payload.find((p) => p.dataKey === "doneCount")?.value ?? 0;
 
+  const ideal = payload.find((p) => p.dataKey === "idealRemaining")?.value;
+
   const formattedDate = label
     ? new Date(`${label}T00:00:00`).toLocaleDateString("vi-VN", {
       weekday: "long",
@@ -75,19 +77,27 @@ function CustomBurndownTooltip({ active, payload, label }: CustomTooltipProps) {
     : label;
 
   return (
-    <div className="bg-popover text-popover-foreground p-3.5 rounded-2xl border border-border/80 shadow-2xl space-y-2.5 text-xs min-w-[220px]">
+    <div className="bg-popover text-popover-foreground p-3.5 rounded-xl border border-border/80 shadow-lg space-y-2.5 text-xs min-w-[220px]">
       <div className="font-bold border-b border-border/60 pb-1.5 flex items-center justify-between">
         <span className="capitalize">{formattedDate}</span>
-        <span className="font-mono text-[11px] text-muted-foreground">{label}</span>
+        <span className="font-mono text-xs text-muted-foreground">{label}</span>
       </div>
 
       <div className="space-y-2 pt-0.5">
         <div className="flex items-center justify-between text-muted-foreground">
           <span className="flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 bg-blue-500 rounded-full" />
-            Công việc còn lại:
+            <span className="w-2.5 h-2.5 bg-gray-400 rounded-full" />
+            Kế hoạch:
           </span>
-          <strong className="text-blue-500 font-mono font-bold">{actual} task</strong>
+          <strong className="text-gray-400 font-mono font-bold">{ideal} Task</strong>
+        </div>
+
+        <div className="flex items-center justify-between text-muted-foreground">
+          <span className="flex items-center gap-1.5">
+            <span className="w-2.5 h-2.5 bg-blue-500 rounded-full" />
+            Thực tế:
+          </span>
+          <strong className="text-blue-500 font-mono font-bold">{actual} Task</strong>
         </div>
 
         <div className="flex items-center justify-between text-muted-foreground">
@@ -95,7 +105,7 @@ function CustomBurndownTooltip({ active, payload, label }: CustomTooltipProps) {
             <span className="w-2.5 h-2.5 bg-emerald-500 rounded-full" />
             Đã hoàn thành:
           </span>
-          <strong className="text-emerald-500 font-mono font-bold">{done} task</strong>
+          <strong className="text-emerald-500 font-mono font-bold">{done} Task</strong>
         </div>
       </div>
     </div>
@@ -109,7 +119,15 @@ export function SprintBurndownChart({
   initialSprintId,
   onSelectSprint,
 }: SprintBurndownChartProps) {
-  const [selectedSprintId, setSelectedSprintId] = useState<string>("");
+  const [prevInitialSprintId, setPrevInitialSprintId] = useState(initialSprintId);
+  const [selectedSprintId, setSelectedSprintId] = useState<string>(initialSprintId ?? "");
+
+  // Lựa chọn mới từ component cha luôn được ưu tiên
+  if (initialSprintId !== prevInitialSprintId) {
+    setPrevInitialSprintId(initialSprintId);
+    setSelectedSprintId(initialSprintId ?? "");
+  }
+
   const defaultSprintId = useMemo(
     () =>
       sprints.find((sprint) => sprint.id === initialSprintId)?.id ??
@@ -136,12 +154,30 @@ export function SprintBurndownChart({
     [sprints, activeSprintId]
   );
 
-  const { data, isLoading, isError, refetch } = useSprintBurndown(
+  const hasValidDates = Boolean(
+    selectedSprint?.startDate?.trim() && selectedSprint?.endDate?.trim()
+  );
+
+  const { data, isLoading, isError, error, refetch } = useSprintBurndown(
     courseId,
     teamId,
     activeSprintId,
-    { enabled: Boolean(courseId && teamId && activeSprintId) }
+    { enabled: Boolean(courseId && teamId && activeSprintId && hasValidDates) }
   );
+
+  const errorCode = getApiErrorCode(error);
+  const errorMessage = useMemo(() => {
+    if (errorCode === "PROJECT_NOT_FOUND") {
+      return "Không tìm thấy Sprint";
+    }
+    if (errorCode === "TEAM_NOT_FOUND") {
+      return "Không tìm thấy nhóm";
+    }
+    if (errorCode === "REQUEST_INVALID") {
+      return "Sprint chưa có ngày";
+    }
+    return "Không thể tải biểu đồ tiến độ của Sprint này";
+  }, [errorCode]);
 
   const chartData = useMemo(() => {
     if (!data?.points || data.points.length === 0) return [];
@@ -200,7 +236,7 @@ export function SprintBurndownChart({
   }, [data]);
 
   return (
-    <div className="bg-card border border-border/80 rounded-3xl p-6 shadow-sm space-y-6">
+    <div className="bg-card border border-border/80 rounded-xl p-6 shadow-sm space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="space-y-1">
           <div className="flex items-center gap-2.5">
@@ -212,7 +248,7 @@ export function SprintBurndownChart({
             </h3>
           </div>
           <p className="text-xs text-muted-foreground">
-            Đối chiếu số lượng task còn lại thực tế với kế hoạch dự kiến ban đầu để kịp thời nắm bắt tiến độ của nhóm
+            So sánh số Task còn lại theo kế hoạch với số Task còn lại thực tế trong Sprint.
           </p>
         </div>
 
@@ -230,23 +266,23 @@ export function SprintBurndownChart({
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <div className="p-3.5 rounded-2xl bg-muted/20 border border-border/60">
+        <div className="p-3.5 rounded-xl bg-muted/20 border border-border/60">
           <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1">
             <Layers className="w-3.5 h-3.5 text-primary" />
-            <span>Tổng khối lượng</span>
+            <span>Tổng số Task</span>
           </div>
           <div className="text-xl font-extrabold text-foreground font-mono">
-            {summary.totalScope} <span className="text-xs font-normal text-muted-foreground font-sans">task</span>
+            {summary.totalScope} <span className="text-xs font-normal text-muted-foreground font-sans">Task</span>
           </div>
-          <div className="text-[10px] text-muted-foreground mt-0.5">
-            Tổng số task trong Sprint
+          <div className="text-xs text-muted-foreground mt-0.5">
+            Tổng số Task trong Sprint
           </div>
         </div>
 
-        <div className="p-3.5 rounded-2xl bg-muted/20 border border-border/60">
+        <div className="p-3.5 rounded-xl bg-muted/20 border border-border/60">
           <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1">
             <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
-            <span>Đã hoàn thành</span>
+            <span>Task đã hoàn thành</span>
           </div>
           <div className="text-xl font-extrabold text-emerald-600 dark:text-emerald-400 font-mono">
             {summary.doneCount}{" "}
@@ -254,25 +290,25 @@ export function SprintBurndownChart({
               ({summary.progressPercent}%)
             </span>
           </div>
-          <div className="text-[10px] text-muted-foreground mt-0.5">
-            Task đã hoàn thành
+          <div className="text-xs text-muted-foreground mt-0.5">
+            Số Task đã được giải quyết
           </div>
         </div>
 
-        <div className="p-3.5 rounded-2xl bg-muted/20 border border-border/60">
+        <div className="p-3.5 rounded-xl bg-muted/20 border border-border/60">
           <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1">
             <Flame className="w-3.5 h-3.5 text-blue-500" />
-            <span>Còn lại</span>
+            <span>Task còn lại</span>
           </div>
           <div className="text-xl font-extrabold text-blue-600 dark:text-blue-400 font-mono">
-            {summary.currentActual} <span className="text-xs font-normal text-muted-foreground font-sans">task</span>
+            {summary.currentActual} <span className="text-xs font-normal text-muted-foreground font-sans">Task</span>
           </div>
-          <div className="text-[10px] text-muted-foreground mt-0.5">
-            Task cần hoàn thành
+          <div className="text-xs text-muted-foreground mt-0.5">
+            Số Task chưa hoàn thành
           </div>
         </div>
 
-        <div className="p-3.5 rounded-2xl bg-muted/20 border border-border/60">
+        <div className="p-3.5 rounded-xl bg-muted/20 border border-border/60">
           <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1">
             <TrendingDown className="w-3.5 h-3.5 text-primary" />
             <span>Tiến độ hoàn thành</span>
@@ -280,20 +316,40 @@ export function SprintBurndownChart({
           <div className="text-xl font-extrabold text-foreground font-mono">
             {summary.progressPercent}%
           </div>
-          <div className="text-[10px] text-muted-foreground mt-0.5">
-            {summary.doneCount} trên tổng số {summary.totalScope} task
+          <div className="text-xs text-muted-foreground mt-0.5">
+            {summary.doneCount} trên tổng số {summary.totalScope} Task
           </div>
         </div>
       </div>
 
-      {isLoading ? (
-        <div className="h-72 rounded-2xl bg-muted/30 border border-border/60 animate-pulse flex items-center justify-center text-xs text-muted-foreground">
+      {sprints.length === 0 ? (
+        <div className="h-60 rounded-xl border border-dashed border-border/80 flex flex-col items-center justify-center text-center p-6 text-muted-foreground space-y-2">
+          <Calendar className="w-8 h-8 text-muted-foreground/50" />
+          <p className="text-sm font-semibold text-foreground">
+            Chưa có thông tin Sprint
+          </p>
+          <p className="text-xs text-muted-foreground">
+            Dự án hiện chưa có Sprint nào được đồng bộ từ Jira.
+          </p>
+        </div>
+      ) : !hasValidDates ? (
+        <div className="h-60 rounded-xl border border-dashed border-border/80 flex flex-col items-center justify-center text-center p-6 text-muted-foreground space-y-2">
+          <Calendar className="w-8 h-8 text-muted-foreground/50" />
+          <p className="text-sm font-semibold text-foreground">
+            Sprint chưa có ngày
+          </p>
+          <p className="text-xs text-muted-foreground">
+            Sprint cần có ngày bắt đầu và ngày kết thúc trên Jira để hiển thị biểu đồ tiến độ.
+          </p>
+        </div>
+      ) : isLoading ? (
+        <div className="h-72 rounded-xl bg-muted/30 border border-border/60 animate-pulse flex items-center justify-center text-xs text-muted-foreground">
           Đang tải dữ liệu biểu đồ tiến độ...
         </div>
       ) : isError ? (
-        <div className="p-6 rounded-2xl bg-destructive/10 border border-destructive/20 text-center space-y-3">
+        <div className="p-6 rounded-xl bg-destructive/10 border border-destructive/20 text-center space-y-3">
           <p className="text-sm font-semibold text-destructive">
-            Không thể tải biểu đồ tiến độ của Sprint này
+            {errorMessage}
           </p>
           <button
             type="button"
@@ -304,10 +360,10 @@ export function SprintBurndownChart({
           </button>
         </div>
       ) : chartData.length === 0 ? (
-        <div className="h-60 rounded-2xl border border-dashed border-border/80 flex flex-col items-center justify-center text-center p-6 text-muted-foreground space-y-2">
+        <div className="h-60 rounded-xl border border-dashed border-border/80 flex flex-col items-center justify-center text-center p-6 text-muted-foreground space-y-2">
           <Calendar className="w-8 h-8 text-muted-foreground/50" />
           <p className="text-xs font-medium">
-            Sprint chưa có thời gian bắt đầu - kết thúc hoặc chưa có công việc nào.
+            Sprint chưa có công việc nào.
           </p>
         </div>
       ) : (
@@ -326,31 +382,35 @@ export function SprintBurndownChart({
                 <XAxis
                   dataKey="dateLabel"
                   stroke="currentColor"
-                  className="text-muted-foreground text-[11px] font-mono"
+                  className="text-muted-foreground text-xs font-mono"
                   tickLine={false}
                   dy={6}
                 />
                 <YAxis
                   stroke="currentColor"
-                  className="text-muted-foreground text-[11px] font-mono"
+                  className="text-muted-foreground text-xs font-mono"
                   tickLine={false}
                   allowDecimals={false}
                 />
                 <Tooltip content={<CustomBurndownTooltip />} />
 
-                <Area
-                  type="monotone"
-                  dataKey="doneCount"
-                  name="Done"
-                  fill="url(#burndownDoneGradient)"
-                  stroke="#10B981"
-                  strokeWidth={1.5}
-                />
+                {chartData.some((pt) => pt.idealRemaining !== undefined) && (
+                  <Line
+                    type="monotone"
+                    dataKey="idealRemaining"
+                    name="Còn lại theo kế hoạch"
+                    stroke="#9CA3AF"
+                    strokeWidth={2}
+                    strokeDasharray="5 5"
+                    dot={false}
+                    activeDot={false}
+                  />
+                )}
 
                 <Line
                   type="monotone"
                   dataKey="actualRemaining"
-                  name="Actual Remaining"
+                  name="Còn lại thực tế"
                   stroke="#3B82F6"
                   strokeWidth={2.5}
                   dot={{ r: 3, fill: "#3B82F6", strokeWidth: 0 }}
@@ -364,12 +424,14 @@ export function SprintBurndownChart({
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-1.5">
                 <span className="w-3 h-3 rounded-full bg-blue-500" />
-                <span className="font-semibold text-foreground">Thực tế còn lại</span>
+                <span className="font-semibold text-foreground">Còn lại thực tế</span>
               </div>
-              <div className="flex items-center gap-1.5">
-                <span className="w-3 h-3 rounded-xs bg-emerald-500/40 border border-emerald-500" />
-                <span>Đã hoàn thành</span>
-              </div>
+              {chartData.some((pt) => pt.idealRemaining !== undefined) && (
+                <div className="flex items-center gap-1.5">
+                  <span className="w-3 h-0 border-t-2 border-dashed border-gray-400" />
+                  <span>Còn lại theo kế hoạch</span>
+                </div>
+              )}
             </div>
 
             <div className="flex items-center gap-1.5 text-muted-foreground">

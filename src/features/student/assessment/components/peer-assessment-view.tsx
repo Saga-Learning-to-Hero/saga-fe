@@ -31,6 +31,7 @@ import { scopeSprintsToJiraSource } from "@/features/student/sprint-progress/lib
 import { JiraSourceSwitcher } from "@/features/student/project/components/jira-source-switcher";
 import { useProjectJiraSourceSelection } from "@/features/student/project/hooks/use-project-jira-source-selection";
 import { getApiErrorCode, getApiErrorMessage } from "@/lib/api-error";
+import { getSprintSourceUserMessage } from "@/features/student/sprint-progress/lib/sprint-query-source";
 import { cn } from "@/lib/utils";
 import { PeerAssessmentHeader } from "./peer-assessment-header";
 import { PeerReviewModal } from "./peer-review-modal";
@@ -79,7 +80,7 @@ function StatusPanel({
         : "border-dashed border-border/80 bg-card/50";
   return (
     <div
-      className={`rounded-3xl border p-8 text-center shadow-2xs ${toneClass}`}
+      className={`rounded-xl border p-8 text-center shadow-2xs ${toneClass}`}
     >
       <p
         className={`text-sm font-bold ${tone === "danger" ? "text-destructive" : "text-foreground"}`}
@@ -202,7 +203,8 @@ export function PeerAssessmentView() {
   const isRubricFallbackPending =
     teamRubricQuery.isSuccess &&
     !hasRubricCriteria(teamRubricQuery.data) &&
-    defaultRubricQuery.isFetching;
+    defaultRubricQuery.isLoading &&
+    !defaultRubricQuery.data;
   const showRubricSkeleton =
     teamRubricQuery.isLoading || isRubricFallbackPending;
   const showEmptyRubric =
@@ -214,8 +216,8 @@ export function PeerAssessmentView() {
   if (assessmentState === "LOADING_COURSE") {
     return (
       <div className="mx-auto max-w-[1600px] space-y-4 pb-12">
-        <div className="h-16 animate-pulse rounded-3xl bg-muted/60" />
-        <div className="h-48 animate-pulse rounded-3xl bg-muted/60" />
+        <div className="h-16 animate-pulse rounded-xl bg-muted/60" />
+        <div className="h-48 animate-pulse rounded-xl bg-muted/60" />
       </div>
     );
   }
@@ -273,8 +275,8 @@ export function PeerAssessmentView() {
     return (
       <div className="mx-auto max-w-[1600px] space-y-4 pb-12">
         <PeerAssessmentHeader courseCode={effectiveCourse?.code} />
-        <div className="h-20 animate-pulse rounded-3xl bg-muted/60" />
-        <div className="h-56 animate-pulse rounded-3xl bg-muted/60" />
+        <div className="h-20 animate-pulse rounded-xl bg-muted/60" />
+        <div className="h-56 animate-pulse rounded-xl bg-muted/60" />
       </div>
     );
   }
@@ -395,23 +397,23 @@ export function PeerAssessmentView() {
       />
 
       <div className="grid grid-cols-2 gap-3.5 sm:grid-cols-4">
-        <div className="rounded-2xl border border-border/70 bg-card/60 p-3.5 shadow-2xs backdrop-blur-xs">
+        <div className="rounded-xl border border-border/70 bg-card/60 p-3.5 shadow-2xs backdrop-blur-xs">
           <div className="flex items-center gap-2 text-muted-foreground">
             <CalendarIcon className="size-4 text-primary" />
-            <span className="text-[11px] font-semibold">Sprint đánh giá</span>
+            <span className="text-xs font-semibold">Sprint đánh giá</span>
           </div>
           <p className="mt-2 truncate text-base font-extrabold text-foreground">
             {selectedSprint?.name || "Chưa chọn"}
           </p>
-          <p className="mt-0.5 text-[11px] text-muted-foreground">
+          <p className="mt-0.5 text-xs text-muted-foreground">
             {selectedSprint ? formatSprintStateLabel(selectedSprint.state) : "—"}
           </p>
         </div>
 
-        <div className="rounded-2xl border border-border/70 bg-card/60 p-3.5 shadow-2xs backdrop-blur-xs">
+        <div className="rounded-xl border border-border/70 bg-card/60 p-3.5 shadow-2xs backdrop-blur-xs">
           <div className="flex items-center gap-2 text-muted-foreground">
             <ClockIcon className="size-4 text-primary" />
-            <span className="text-[11px] font-semibold">Cửa sổ đánh giá</span>
+            <span className="text-xs font-semibold">Cửa sổ đánh giá</span>
           </div>
           <div className="mt-2 flex items-center gap-2">
             <span
@@ -424,7 +426,7 @@ export function PeerAssessmentView() {
               {windowOpen ? "Đang mở" : "Đang khóa"}
             </p>
           </div>
-          <p className="mt-0.5 truncate text-[11px] text-muted-foreground">
+          <p className="mt-0.5 truncate text-xs text-muted-foreground">
             {windowOpen
               ? "Sẵn sàng ghi nhận điểm"
               : selectedSprint && formatPeerReviewOpenAt(selectedSprint)
@@ -433,10 +435,10 @@ export function PeerAssessmentView() {
           </p>
         </div>
 
-        <div className="rounded-2xl border border-border/70 bg-card/60 p-3.5 shadow-2xs backdrop-blur-xs">
+        <div className="rounded-xl border border-border/70 bg-card/60 p-3.5 shadow-2xs backdrop-blur-xs">
           <div className="flex items-center gap-2 text-muted-foreground">
             <UserCheckIcon className="size-4 text-primary" />
-            <span className="text-[11px] font-semibold">Tiến độ hoàn thành</span>
+            <span className="text-xs font-semibold">Tiến độ hoàn thành</span>
           </div>
           <p className="mt-2 text-base font-extrabold text-foreground">
             {windowOpen ? `${reviewedCount}/${candidates.length}` : "—"}
@@ -448,21 +450,21 @@ export function PeerAssessmentView() {
                 style={{ width: `${completionRate}%` }}
               />
             </div>
-            <span className="font-mono text-[10px] font-bold text-muted-foreground">
+            <span className="font-mono text-xs font-bold text-muted-foreground">
               {completionRate}%
             </span>
           </div>
         </div>
 
-        <div className="rounded-2xl border border-border/70 bg-card/60 p-3.5 shadow-2xs backdrop-blur-xs">
+        <div className="rounded-xl border border-border/70 bg-card/60 p-3.5 shadow-2xs backdrop-blur-xs">
           <div className="flex items-center gap-2 text-muted-foreground">
             <AwardIcon className="size-4 text-primary" />
-            <span className="text-[11px] font-semibold">Khung tiêu chí</span>
+            <span className="text-xs font-semibold">Khung tiêu chí</span>
           </div>
           <p className="mt-2 text-base font-extrabold text-foreground">
             {rubric?.criteria.length || 0} mục
           </p>
-          <p className="mt-0.5 truncate text-[11px] text-muted-foreground">
+          <p className="mt-0.5 truncate text-xs text-muted-foreground">
             {rubric ? "Thang điểm 5 sao" : "Chưa tải rubric"}
           </p>
         </div>
@@ -470,7 +472,7 @@ export function PeerAssessmentView() {
 
       <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-12">
         <div className="space-y-5 lg:col-span-4">
-          <div className="relative z-20 rounded-3xl border border-border/70 bg-card/60 p-5 shadow-2xs backdrop-blur-xs">
+          <div className="relative z-20 rounded-xl border border-border/70 bg-card/60 p-5 shadow-2xs backdrop-blur-xs">
             <div className="flex items-center justify-between gap-2 border-b border-border/50 pb-3">
               <div className="flex items-center gap-2">
                 <div className="flex size-7 items-center justify-center rounded-xl bg-primary/10 text-primary">
@@ -479,7 +481,7 @@ export function PeerAssessmentView() {
                 <h2 className="text-sm font-bold text-foreground">Bộ chọn Sprint</h2>
               </div>
               {selectedSprint ? (
-                <Badge variant="outline" className="text-[10px] font-medium">
+                <Badge variant="outline" className="text-xs font-medium">
                   {formatSprintStateLabel(selectedSprint.state)}
                 </Badge>
               ) : null}
@@ -499,7 +501,7 @@ export function PeerAssessmentView() {
               />
               <Label
                 htmlFor="peer-sprint"
-                className="text-[11px] font-semibold text-muted-foreground"
+                className="text-xs font-semibold text-muted-foreground"
               >
                 <span className="inline-flex items-center gap-1">
                   <CalendarIcon className="size-3 text-primary" />
@@ -508,24 +510,29 @@ export function PeerAssessmentView() {
               </Label>
               {sprintsQuery.isLoading ? (
                 <div className="h-10 animate-pulse rounded-xl bg-muted" />
-              ) : sprintsQuery.isError ? (
+              ) : sprintsQuery.isError || sprintsQuery.sprintSourceStatus === "needs_selection" ? (
                 <StatusPanel
-                  tone="danger"
-                  title="Không tải được Sprint"
-                  description={getApiErrorMessage(
-                    sprintsQuery.error,
-                    "Vui lòng thử lại.",
-                  )}
+                  tone="warning"
+                  title={getSprintSourceUserMessage({
+                    status: sprintsQuery.sprintSourceStatus,
+                    error: sprintsQuery.error,
+                  }).title}
+                  description={getSprintSourceUserMessage({
+                    status: sprintsQuery.sprintSourceStatus,
+                    error: sprintsQuery.error,
+                  }).description}
                   action={
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant="outline"
-                      className="mt-3 cursor-pointer text-xs"
-                      onClick={() => void sprintsQuery.refetch()}
-                    >
-                      Thử lại
-                    </Button>
+                    sprintsQuery.isError ? (
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        className="mt-3 cursor-pointer text-xs"
+                        onClick={() => void sprintsQuery.refetch()}
+                      >
+                        Thử lại
+                      </Button>
+                    ) : undefined
                   }
                 />
               ) : sprints.length === 0 ? (
@@ -544,7 +551,7 @@ export function PeerAssessmentView() {
             </div>
 
             {selectedSprint ? (
-              <div className="mt-4 space-y-1.5 rounded-2xl border border-border/60 bg-muted/20 p-3 text-xs">
+              <div className="mt-4 space-y-1.5 rounded-xl border border-border/60 bg-muted/20 p-3 text-xs">
                 <div className="flex items-center justify-between text-muted-foreground">
                   <span>Tên Sprint:</span>
                   <span className="font-semibold text-foreground">
@@ -567,7 +574,7 @@ export function PeerAssessmentView() {
                 {formatPeerReviewOpenAt(selectedSprint) ? (
                   <div className="flex items-center justify-between text-muted-foreground">
                     <span>Thời điểm mở:</span>
-                    <span className="font-mono text-[11px] text-foreground">
+                    <span className="font-mono text-xs text-foreground">
                       {formatPeerReviewOpenAt(selectedSprint)}
                     </span>
                   </div>
@@ -576,7 +583,7 @@ export function PeerAssessmentView() {
             ) : null}
           </div>
 
-          <div className="relative z-10 space-y-3 rounded-3xl border border-border/70 bg-card/60 p-5 shadow-2xs backdrop-blur-xs">
+          <div className="relative z-10 space-y-3 rounded-xl border border-border/70 bg-card/60 p-5 shadow-2xs backdrop-blur-xs">
             <div className="flex items-center gap-2 border-b border-border/50 pb-3">
               <div className="flex size-7 items-center justify-center rounded-xl bg-primary/10 text-primary">
                 <ShieldCheckIcon className="size-4" />
@@ -584,7 +591,7 @@ export function PeerAssessmentView() {
               <h2 className="text-sm font-bold text-foreground">Nguyên tắc bảo mật</h2>
             </div>
 
-            <div className="flex items-start gap-2.5 rounded-2xl border border-primary/20 bg-primary/5 p-3.5 text-xs leading-relaxed text-muted-foreground">
+            <div className="flex items-start gap-2.5 rounded-xl border border-primary/20 bg-primary/5 p-3.5 text-xs leading-relaxed text-muted-foreground">
               <InfoIcon className="mt-0.5 size-4 shrink-0 text-primary" />
               <p>
                 Chỉ hiển thị trạng thái đánh giá do bạn gửi. Không tải bảng kết quả
@@ -623,7 +630,7 @@ export function PeerAssessmentView() {
           ) : null}
 
           {windowOpen && showRubricSkeleton ? (
-            <div className="h-60 animate-pulse rounded-3xl bg-muted/60" />
+            <div className="h-60 animate-pulse rounded-xl bg-muted/60" />
           ) : null}
 
           {windowOpen && teamRubricQuery.isError ? (
@@ -682,13 +689,13 @@ export function PeerAssessmentView() {
 
           {windowOpen && !showRubricSkeleton && hasRubricCriteria(rubric) ? (
             <>
-              <div className="space-y-4 rounded-3xl border border-border/70 bg-card/60 p-5 shadow-2xs backdrop-blur-xs">
+              <div className="space-y-4 rounded-xl border border-border/70 bg-card/60 p-5 shadow-2xs backdrop-blur-xs">
                 <div className="flex flex-col gap-2 border-b border-border/50 pb-3 sm:flex-row sm:items-center sm:justify-between">
                   <div>
                     <h2 className="text-sm font-bold text-foreground">
                       Danh sách thành viên cần đánh giá ({candidates.length})
                     </h2>
-                    <p className="mt-0.5 text-[11px] text-muted-foreground">
+                    <p className="mt-0.5 text-xs text-muted-foreground">
                       Chấm điểm và phản hồi đóng góp công sức cho các thành viên cùng thực hiện Sprint
                     </p>
                   </div>
@@ -707,8 +714,8 @@ export function PeerAssessmentView() {
 
                 {candidatesQuery.isLoading ? (
                   <div className="space-y-3">
-                    <div className="h-20 animate-pulse rounded-2xl bg-muted/60" />
-                    <div className="h-20 animate-pulse rounded-2xl bg-muted/60" />
+                    <div className="h-20 animate-pulse rounded-xl bg-muted/60" />
+                    <div className="h-20 animate-pulse rounded-xl bg-muted/60" />
                   </div>
                 ) : candidatesQuery.isError ? (
                   <StatusPanel
@@ -731,7 +738,7 @@ export function PeerAssessmentView() {
                     }
                   />
                 ) : candidates.length === 0 ? (
-                  <p className="rounded-2xl border border-dashed border-border p-8 text-center text-xs text-muted-foreground">
+                  <p className="rounded-xl border border-dashed border-border p-8 text-center text-xs text-muted-foreground">
                     Không có thành viên nào để đánh giá trong Sprint này.
                   </p>
                 ) : (
@@ -754,7 +761,7 @@ export function PeerAssessmentView() {
                         <div
                           key={candidate.studentId}
                           className={cn(
-                            "group relative flex flex-col gap-3 rounded-2xl border p-4 shadow-2xs transition-all duration-200 sm:flex-row sm:items-center sm:justify-between",
+                            "group relative flex flex-col gap-3 rounded-xl border p-4 shadow-2xs transition-all duration-200 sm:flex-row sm:items-center sm:justify-between",
                             candidate.alreadyReviewed
                               ? "border-border/60 bg-muted/15"
                               : "border-border/80 bg-card hover:border-primary/40 hover:shadow-xs",
@@ -783,7 +790,7 @@ export function PeerAssessmentView() {
                                   {candidate.studentCode || candidate.studentId}
                                 </span>
                                 <span className="text-muted-foreground/30">·</span>
-                                <span className="text-[11px] text-muted-foreground">
+                                <span className="text-xs text-muted-foreground">
                                   {candidate.alreadyReviewed
                                     ? "Đã gửi đánh giá"
                                     : "Chờ bạn chấm điểm"}
@@ -796,7 +803,7 @@ export function PeerAssessmentView() {
                             {candidate.alreadyReviewed ? (
                               <Badge
                                 variant="outline"
-                                className="gap-1 border-primary/30 bg-primary/10 px-2.5 py-1 font-mono text-[11px] font-semibold text-primary"
+                                className="gap-1 border-primary/30 bg-primary/10 px-2.5 py-1 font-mono text-xs font-semibold text-primary"
                               >
                                 <StarIcon className="size-3 fill-primary text-primary" />
                                 Đã gửi · {candidate.existingTotalStarRating ?? "—"} /{" "}
@@ -805,7 +812,7 @@ export function PeerAssessmentView() {
                             ) : (
                               <Badge
                                 variant="outline"
-                                className="gap-1 border-amber-500/30 bg-amber-500/10 px-2.5 py-1 text-[11px] font-semibold text-amber-600 dark:text-amber-400"
+                                className="gap-1 border-amber-500/30 bg-amber-500/10 px-2.5 py-1 text-xs font-semibold text-amber-600 dark:text-amber-400"
                               >
                                 <LockIcon className="size-2.5" />
                                 Chưa đánh giá
@@ -844,7 +851,7 @@ export function PeerAssessmentView() {
                 {windowOpen &&
                   reviewedCount === candidates.length &&
                   candidates.length > 0 ? (
-                  <div className="flex items-center gap-3 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-3.5 text-xs text-emerald-700 dark:text-emerald-300">
+                  <div className="flex items-center gap-3 rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-3.5 text-xs text-emerald-700 dark:text-emerald-300">
                     <div className="flex size-7 shrink-0 items-center justify-center rounded-xl bg-emerald-500/20">
                       <SparklesIcon className="size-4 text-emerald-600 dark:text-emerald-400" />
                     </div>
@@ -856,7 +863,7 @@ export function PeerAssessmentView() {
                 ) : null}
               </div>
 
-              <div className="rounded-3xl border border-border/70 bg-card/60 p-5 shadow-2xs backdrop-blur-xs">
+              <div className="rounded-xl border border-border/70 bg-card/60 p-5 shadow-2xs backdrop-blur-xs">
                 <div className="flex items-center justify-between gap-2 border-b border-border/50 pb-3">
                   <div className="flex items-center gap-2">
                     <div className="flex size-7 items-center justify-center rounded-xl bg-primary/10 text-primary">
@@ -866,13 +873,13 @@ export function PeerAssessmentView() {
                       <h2 className="text-sm font-bold text-foreground">
                         Chi tiết tiêu chí ({rubric?.criteria.length || 0})
                       </h2>
-                      <p className="text-[11px] text-muted-foreground mt-0.5">
+                      <p className="text-xs text-muted-foreground mt-0.5">
                         Khung tiêu chuẩn đánh giá áp dụng cho toàn bộ thành viên nhóm
                       </p>
                     </div>
                   </div>
                   {rubric ? (
-                    <Badge variant="secondary" className="text-[10px] font-medium">
+                    <Badge variant="secondary" className="text-xs font-medium">
                       Rubric đánh giá
                     </Badge>
                   ) : null}
@@ -884,7 +891,7 @@ export function PeerAssessmentView() {
                       {rubric.criteria.map((item, idx) => (
                         <div
                           key={item.rubricId || idx}
-                          className="flex flex-col justify-between rounded-2xl border border-border/60 bg-muted/20 p-3.5 transition-all hover:border-primary/40 hover:bg-muted/30"
+                          className="flex flex-col justify-between rounded-xl border border-border/60 bg-muted/20 p-3.5 transition-all hover:border-primary/40 hover:bg-muted/30"
                         >
                           <div>
                             <div className="flex items-start justify-between gap-2">
@@ -896,18 +903,18 @@ export function PeerAssessmentView() {
                                   {item.criteriaName}
                                 </p>
                               </div>
-                              <span className="inline-flex shrink-0 items-center gap-0.5 font-mono text-[11px] font-bold text-amber-500">
+                              <span className="inline-flex shrink-0 items-center gap-0.5 font-mono text-xs font-bold text-amber-500">
                                 <StarIcon className="size-3 fill-amber-500 text-amber-500" />
                                 1-5★
                               </span>
                             </div>
                             {item.description ? (
-                              <p className="mt-2 text-[11px] leading-relaxed text-muted-foreground">
+                              <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
                                 {item.description}
                               </p>
                             ) : null}
                           </div>
-                          <div className="mt-3 pt-2.5 border-t border-border/40 flex items-center justify-between text-[10px] text-muted-foreground">
+                          <div className="mt-3 pt-2.5 border-t border-border/40 flex items-center justify-between text-xs text-muted-foreground">
                             <span>Thang điểm:</span>
                             <span className="font-semibold text-foreground">1 (thấp nhất) - 5 (cao nhất)</span>
                           </div>
@@ -915,14 +922,14 @@ export function PeerAssessmentView() {
                       ))}
                     </div>
                   ) : (
-                    <p className="rounded-2xl border border-dashed border-border/80 p-4 text-center text-xs text-muted-foreground">
+                    <p className="rounded-xl border border-dashed border-border/80 p-4 text-center text-xs text-muted-foreground">
                       Chưa có thông tin tiêu chí đánh giá
                     </p>
                   )}
                 </div>
               </div>
 
-              <div className="rounded-3xl border border-border/70 bg-card/60 p-5 shadow-2xs backdrop-blur-xs">
+              <div className="rounded-xl border border-border/70 bg-card/60 p-5 shadow-2xs backdrop-blur-xs">
                 <div className="flex items-center gap-2 border-b border-border/50 pb-3">
                   <div className="flex size-7 items-center justify-center rounded-xl bg-amber-500/10 text-amber-500">
                     <StarIcon className="size-4 fill-amber-500 text-amber-500" />
@@ -931,37 +938,37 @@ export function PeerAssessmentView() {
                     <h2 className="text-sm font-bold text-foreground">
                       Quy chuẩn xếp loại mức sao
                     </h2>
-                    <p className="text-[11px] text-muted-foreground mt-0.5">
+                    <p className="text-xs text-muted-foreground mt-0.5">
                       Hướng dẫn cho điểm khách quan theo mức độ hoàn thành nhiệm vụ
                     </p>
                   </div>
                 </div>
 
                 <div className="mt-4 grid grid-cols-2 sm:grid-cols-5 gap-2.5">
-                  <div className="rounded-2xl border border-border/60 bg-muted/20 p-2.5 text-center">
+                  <div className="rounded-xl border border-border/60 bg-muted/20 p-2.5 text-center">
                     <p className="font-mono text-xs font-bold text-amber-600 dark:text-amber-400">1 Sao</p>
-                    <p className="mt-1 text-[11px] font-semibold text-foreground">Cần cải thiện</p>
-                    <p className="mt-0.5 text-[10px] text-muted-foreground">Chưa đạt cam kết</p>
+                    <p className="mt-1 text-xs font-semibold text-foreground">Cần cải thiện</p>
+                    <p className="mt-0.5 text-xs text-muted-foreground">Chưa đạt cam kết</p>
                   </div>
-                  <div className="rounded-2xl border border-border/60 bg-muted/20 p-2.5 text-center">
+                  <div className="rounded-xl border border-border/60 bg-muted/20 p-2.5 text-center">
                     <p className="font-mono text-xs font-bold text-amber-600 dark:text-amber-400">2 Sao</p>
-                    <p className="mt-1 text-[11px] font-semibold text-foreground">Chưa đạt kỳ vọng</p>
-                    <p className="mt-0.5 text-[10px] text-muted-foreground">Chậm trễ tiến độ</p>
+                    <p className="mt-1 text-xs font-semibold text-foreground">Chưa đạt kỳ vọng</p>
+                    <p className="mt-0.5 text-xs text-muted-foreground">Chậm trễ tiến độ</p>
                   </div>
-                  <div className="rounded-2xl border border-border/60 bg-muted/20 p-2.5 text-center">
+                  <div className="rounded-xl border border-border/60 bg-muted/20 p-2.5 text-center">
                     <p className="font-mono text-xs font-bold text-amber-600 dark:text-amber-400">3 Sao</p>
-                    <p className="mt-1 text-[11px] font-semibold text-foreground">Đạt yêu cầu</p>
-                    <p className="mt-0.5 text-[10px] text-muted-foreground">Hoàn thành việc giao</p>
+                    <p className="mt-1 text-xs font-semibold text-foreground">Đạt yêu cầu</p>
+                    <p className="mt-0.5 text-xs text-muted-foreground">Hoàn thành việc giao</p>
                   </div>
-                  <div className="rounded-2xl border border-border/60 bg-muted/20 p-2.5 text-center">
+                  <div className="rounded-xl border border-border/60 bg-muted/20 p-2.5 text-center">
                     <p className="font-mono text-xs font-bold text-amber-600 dark:text-amber-400">4 Sao</p>
-                    <p className="mt-1 text-[11px] font-semibold text-foreground">Làm tốt</p>
-                    <p className="mt-0.5 text-[10px] text-muted-foreground">Chất lượng cao</p>
+                    <p className="mt-1 text-xs font-semibold text-foreground">Làm tốt</p>
+                    <p className="mt-0.5 text-xs text-muted-foreground">Chất lượng cao</p>
                   </div>
-                  <div className="col-span-2 sm:col-span-1 rounded-2xl border border-amber-500/30 bg-amber-500/5 p-2.5 text-center">
+                  <div className="col-span-2 sm:col-span-1 rounded-xl border border-amber-500/30 bg-amber-500/5 p-2.5 text-center">
                     <p className="font-mono text-xs font-bold text-amber-600 dark:text-amber-400">5 Sao</p>
-                    <p className="mt-1 text-[11px] font-semibold text-foreground">Xuất sắc</p>
-                    <p className="mt-0.5 text-[10px] text-muted-foreground">Đóng góp vượt trội</p>
+                    <p className="mt-1 text-xs font-semibold text-foreground">Xuất sắc</p>
+                    <p className="mt-0.5 text-xs text-muted-foreground">Đóng góp vượt trội</p>
                   </div>
                 </div>
               </div>

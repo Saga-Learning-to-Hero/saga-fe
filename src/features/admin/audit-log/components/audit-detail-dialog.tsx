@@ -117,20 +117,20 @@ export function AuditDetailDialog({
     switch (log.severity) {
       case "CRITICAL":
         return (
-          <Badge className="bg-danger-muted text-danger border-0 font-semibold text-[10px]">
+          <Badge className="bg-danger-muted text-danger border-0 font-semibold text-xs">
             Nghiêm trọng
           </Badge>
         );
       case "WARNING":
         return (
-          <Badge className="bg-warning-muted text-warning border-0 font-semibold text-[10px]">
+          <Badge className="bg-warning-muted text-warning border-0 font-semibold text-xs">
             Cảnh báo
           </Badge>
         );
       case "INFO":
       default:
         return (
-          <Badge className="bg-primary/10 text-primary border-0 font-semibold text-[10px]">
+          <Badge className="bg-primary/10 text-primary border-0 font-semibold text-xs">
             Thông tin
           </Badge>
         );
@@ -152,7 +152,7 @@ export function AuditDetailDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-2xl p-0 rounded-3xl overflow-hidden border border-border shadow-2xl flex flex-col max-h-[90vh] gap-0">
+      <DialogContent className="max-w-2xl p-0 rounded-xl overflow-hidden border border-border shadow-lg flex flex-col max-h-[90vh] gap-0">
         {/* 1. Header */}
         <DialogHeader className="p-6 pb-4 border-b border-border/60 bg-muted/20 shrink-0">
           <div className="flex items-center gap-3">
@@ -181,7 +181,7 @@ export function AuditDetailDialog({
               <XCircleIcon className="w-4 h-4 shrink-0 mt-0.5" />
               <div>
                 <p className="font-semibold text-xs">Thao tác thất bại</p>
-                <p className="text-[11px] mt-0.5 text-danger/90">
+                <p className="text-xs mt-0.5 text-danger/90">
                   {log.failureReason || "Không rõ nguyên nhân"}
                 </p>
               </div>
@@ -196,22 +196,22 @@ export function AuditDetailDialog({
           )}
 
           {/* Actor & Connection info */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-muted/30 border border-border/60 p-3.5 rounded-2xl">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-muted/30 border border-border/60 p-3.5 rounded-xl">
             <div className="space-y-1">
               <p className="font-semibold text-foreground flex items-center gap-1.5">
                 <UserIcon className="w-3.5 h-3.5 text-primary" />
                 Tài khoản thực hiện (Actor)
               </p>
               <p className="font-bold text-foreground text-xs">{actorFullName}</p>
-              <p className="text-muted-foreground text-[11px]">{actorEmail}</p>
+              <p className="text-muted-foreground text-xs">{actorEmail}</p>
               <div className="flex items-center gap-1.5 pt-1 flex-wrap">
-                <Badge variant="outline" className="text-[10px] border-border">
+                <Badge variant="outline" className="text-xs border-border">
                   Vai trò: {log.actor.role}
                 </Badge>
                 {actorStudentCode && (
                   <Badge
                     variant="outline"
-                    className="text-[10px] font-mono border-primary/30 text-primary"
+                    className="text-xs font-mono border-primary/30 text-primary"
                   >
                     MSSV: {actorStudentCode}
                   </Badge>
@@ -231,11 +231,11 @@ export function AuditDetailDialog({
                 IP: <span className="font-semibold">{log.actor.ipAddress}</span>
               </p>
               {log.actor.userAgent && (
-                <p className="text-muted-foreground text-[11px] line-clamp-2 mt-0.5">
+                <p className="text-muted-foreground text-xs line-clamp-2 mt-0.5">
                   User Agent: {log.actor.userAgent}
                 </p>
               )}
-              <p className="text-muted-foreground text-[11px] flex items-center gap-1 mt-1 font-mono">
+              <p className="text-muted-foreground text-xs flex items-center gap-1 mt-1 font-mono">
                 <CalendarIcon className="w-3 h-3" />
                 {formatVietnamDateTime(log.timestamp)} (GMT+7)
               </p>
@@ -244,12 +244,12 @@ export function AuditDetailDialog({
 
           {/* Academic Context (if available) */}
           {hasContext && (
-            <div className="bg-primary/5 border border-primary/20 p-3.5 rounded-2xl space-y-2">
+            <div className="bg-primary/5 border border-primary/20 p-3.5 rounded-xl space-y-2">
               <p className="font-semibold text-primary flex items-center gap-1.5">
                 <GraduationCapIcon className="w-3.5 h-3.5" />
                 Ngữ cảnh học thuật (Academic Context)
               </p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px]">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
                 {(resolvedClassName || log.context?.classCode || log.context?.classId) && (
                   <div className="flex justify-between items-center gap-2">
                     <span className="text-muted-foreground shrink-0">Lớp niên khóa:</span>
@@ -308,7 +308,7 @@ export function AuditDetailDialog({
                 {log.context?.source && (
                   <div className="flex justify-between col-span-1 sm:col-span-2">
                     <span className="text-muted-foreground">Nguồn phát sinh:</span>
-                    <Badge variant="outline" className="font-mono text-[10px]">
+                    <Badge variant="outline" className="font-mono text-xs">
                       {log.context.source}
                     </Badge>
                   </div>
@@ -327,16 +327,16 @@ export function AuditDetailDialog({
 
           <div className="flex items-center justify-between p-3 rounded-xl bg-muted/20 border border-border/60">
             <div className="min-w-0 flex-1 pr-2">
-              <p className="text-[11px] text-muted-foreground">Đối tượng bị tác động (Target):</p>
+              <p className="text-xs text-muted-foreground">Đối tượng bị tác động (Target):</p>
               <p className="font-semibold text-foreground text-xs mt-0.5 truncate">{displayTargetName}</p>
               {targetUserInfo && (
-                <p className="text-[10px] text-muted-foreground font-mono mt-0.5 truncate">
+                <p className="text-xs text-muted-foreground font-mono mt-0.5 truncate">
                   {targetUserInfo.email} {targetUserInfo.studentCode ? `• MSSV: ${targetUserInfo.studentCode}` : ""}
                 </p>
               )}
             </div>
             <div className="flex items-center gap-1.5 flex-wrap justify-end shrink-0">
-              <Badge variant="secondary" className="text-[11px]">
+              <Badge variant="secondary" className="text-xs">
                 Loại: {renderSafeValue(log.target.type)}
               </Badge>
               {/* Chỉ hiển thị ID nếu hoàn toàn không có tên thay thế */}
@@ -362,7 +362,7 @@ export function AuditDetailDialog({
                   <button
                     type="button"
                     onClick={() => setShowRawJson(!showRawJson)}
-                    className="text-[11px] text-primary hover:underline inline-flex items-center gap-1 cursor-pointer font-medium"
+                    className="text-xs text-primary hover:underline inline-flex items-center gap-1 cursor-pointer font-medium"
                   >
                     <CodeIcon className="size-3" />
                     <span>{showRawJson ? "Ẩn JSON thô" : "Xem JSON thô"}</span>
@@ -391,7 +391,7 @@ export function AuditDetailDialog({
                           <TableCell className="py-2 px-3 font-mono font-semibold text-foreground">
                             {renderSafeValue(change.field)}
                           </TableCell>
-                          <TableCell className="py-2 px-3 text-muted-foreground font-mono text-[11px]">
+                          <TableCell className="py-2 px-3 text-muted-foreground font-mono text-xs">
                             {displayOld ? (
                               <span className="line-through text-destructive/80">
                                 {renderSafeValue(displayOld)}
@@ -400,7 +400,7 @@ export function AuditDetailDialog({
                               <span className="italic text-muted-foreground/60">Trống</span>
                             )}
                           </TableCell>
-                          <TableCell className="py-2 px-3 text-foreground font-mono text-[11px] font-medium">
+                          <TableCell className="py-2 px-3 text-foreground font-mono text-xs font-medium">
                             <span className="text-success inline-flex items-center gap-1">
                               <ArrowRightIcon className="w-3 h-3 shrink-0" />
                               {renderSafeValue(displayNew)}
@@ -417,24 +417,24 @@ export function AuditDetailDialog({
                 <div className="space-y-2 pt-2 animate-in fade-in-0 duration-150">
                   {log.rawBefore && (
                     <div>
-                      <span className="text-[11px] font-semibold text-muted-foreground">Before JSON:</span>
-                      <pre className="p-2.5 rounded-xl bg-muted/60 font-mono text-[11px] overflow-x-auto border border-border/60 mt-1">
+                      <span className="text-xs font-semibold text-muted-foreground">Before JSON:</span>
+                      <pre className="p-2.5 rounded-xl bg-muted/60 font-mono text-xs overflow-x-auto border border-border/60 mt-1">
                         {renderSafeValue(log.rawBefore)}
                       </pre>
                     </div>
                   )}
                   {log.rawAfter && (
                     <div>
-                      <span className="text-[11px] font-semibold text-muted-foreground">After JSON:</span>
-                      <pre className="p-2.5 rounded-xl bg-muted/60 font-mono text-[11px] overflow-x-auto border border-border/60 mt-1">
+                      <span className="text-xs font-semibold text-muted-foreground">After JSON:</span>
+                      <pre className="p-2.5 rounded-xl bg-muted/60 font-mono text-xs overflow-x-auto border border-border/60 mt-1">
                         {renderSafeValue(log.rawAfter)}
                       </pre>
                     </div>
                   )}
                   {log.rawMetadata && (
                     <div>
-                      <span className="text-[11px] font-semibold text-muted-foreground">Metadata JSON:</span>
-                      <pre className="p-2.5 rounded-xl bg-muted/60 font-mono text-[11px] overflow-x-auto border border-border/60 mt-1">
+                      <span className="text-xs font-semibold text-muted-foreground">Metadata JSON:</span>
+                      <pre className="p-2.5 rounded-xl bg-muted/60 font-mono text-xs overflow-x-auto border border-border/60 mt-1">
                         {renderSafeValue(log.rawMetadata)}
                       </pre>
                     </div>

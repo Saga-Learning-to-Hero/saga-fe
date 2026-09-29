@@ -135,12 +135,7 @@ export class TaskEvidenceService {
 
     const response = await apiClient.post<TaskFileItem>(
       `/api/tasks/${encodeURIComponent(cleanTaskId)}/files`,
-      formData,
-      {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      }
+      formData
     );
     return response.data;
   }

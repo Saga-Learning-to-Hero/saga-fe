@@ -62,12 +62,12 @@ function SuccessContent() {
 
   return (
     <div className="w-full max-w-xl mx-auto space-y-6">
-      <div className="bg-card border border-border/80 rounded-3xl p-6 sm:p-8 shadow-2xl relative overflow-hidden backdrop-blur-md">
+      <div className="bg-card border border-border/80 rounded-xl p-6 sm:p-8 shadow-lg relative overflow-hidden backdrop-blur-sm">
         <div className="absolute top-0 right-0 w-48 h-48 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none -z-10" />
 
         <div className="text-center space-y-4">
           <div className="relative inline-flex items-center justify-center">
-            <div className="w-20 h-20 rounded-3xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-600 dark:text-emerald-400 shadow-lg shadow-emerald-500/15">
+            <div className="w-20 h-20 rounded-xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-600 dark:text-emerald-400 shadow-lg shadow-emerald-500/15">
               <CheckCircle2Icon className="w-10 h-10" />
             </div>
             <div className="absolute -bottom-1 -right-1 w-8 h-8 rounded-xl bg-card border border-border flex items-center justify-center text-emerald-600 dark:text-emerald-400 shadow-md">
@@ -108,7 +108,7 @@ function SuccessContent() {
           </div>
         </div>
 
-        <div className="mt-6 bg-muted/40 border border-border/80 rounded-2xl p-4 text-center space-y-2 text-xs">
+        <div className="mt-6 bg-muted/40 border border-border/80 rounded-xl p-4 text-center space-y-2 text-xs">
           <div className="flex items-center justify-center gap-2 text-primary font-medium">
             {isSyncing && <Loader2Icon className="w-3.5 h-3.5 animate-spin" />}
             <span>Đang cập nhật danh tính và chuyển hướng về trang Tích hợp...</span>
@@ -144,7 +144,7 @@ function SuccessContent() {
         </div>
       </div>
 
-      <p className="text-center text-[11px] text-muted-foreground/60 font-mono">
+      <p className="text-center text-xs text-muted-foreground/60 font-mono">
         Trạng thái: AUTH_INTEGRATION_SUCCESS · SAGA Integration Engine
       </p>
     </div>

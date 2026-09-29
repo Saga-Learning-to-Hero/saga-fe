@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 
 export default function StudentCommitsPage() {
   return (
-    <Suspense fallback={<div className="min-h-48 animate-pulse rounded-2xl bg-muted" />}>
+    <Suspense fallback={<div className="min-h-48 animate-pulse rounded-xl bg-muted" />}>
       <CommitsView />
     </Suspense>
   );

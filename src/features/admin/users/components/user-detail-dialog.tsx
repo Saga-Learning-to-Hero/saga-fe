@@ -82,20 +82,20 @@ export function UserDetailDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-lg p-0 rounded-3xl overflow-hidden border border-border shadow-2xl flex flex-col max-h-[90vh] gap-0">
+      <DialogContent className="max-w-lg p-0 rounded-xl overflow-hidden border border-border shadow-lg flex flex-col max-h-[90vh] gap-0">
         {/* 1. Dialog Header */}
         <DialogHeader className="p-6 pb-4 border-b border-border/60 bg-muted/20 shrink-0">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Badge
                 variant="outline"
-                className="border-primary/30 bg-primary/10 text-primary text-[10px] font-mono font-bold"
+                className="border-primary/30 bg-primary/10 text-primary text-xs font-mono font-bold"
               >
                 Chi tiết tài khoản
               </Badge>
               {userDetail && (
                 <Badge
-                  className={`text-[10px] font-bold ${isInactive
+                  className={`text-xs font-bold ${isInactive
                       ? "bg-muted text-muted-foreground border border-border"
                       : "bg-success-muted text-success border border-success/30"
                     }`}
@@ -118,7 +118,7 @@ export function UserDetailDialog({
           {isLoading ? (
             <div className="space-y-4 animate-pulse">
               <div className="flex items-center gap-3.5">
-                <div className="size-14 rounded-2xl bg-muted/60" />
+                <div className="size-14 rounded-xl bg-muted/60" />
                 <div className="space-y-2 flex-1">
                   <div className="h-4 w-40 rounded bg-muted/60" />
                   <div className="h-3 w-56 rounded bg-muted/40" />
@@ -131,7 +131,7 @@ export function UserDetailDialog({
               </div>
             </div>
           ) : isError ? (
-            <div className="p-6 text-center space-y-3 rounded-2xl border border-destructive/30 bg-destructive/5">
+            <div className="p-6 text-center space-y-3 rounded-xl border border-destructive/30 bg-destructive/5">
               <p className="text-sm font-semibold text-destructive">
                 {(error as Error)?.message || "Không thể tải chi tiết người dùng."}
               </p>
@@ -147,10 +147,10 @@ export function UserDetailDialog({
           ) : userDetail ? (
             <>
               {/* Profile Card Header */}
-              <div className="flex items-center gap-4 p-4 rounded-2xl border border-border/70 bg-card shadow-2xs">
-                <Avatar className="size-14 rounded-2xl border border-border shadow-xs shrink-0">
+              <div className="flex items-center gap-4 p-4 rounded-xl border border-border/70 bg-card shadow-2xs">
+                <Avatar className="size-14 rounded-xl border border-border shadow-xs shrink-0">
                   <AvatarImage src={userDetail.avatarUrl || undefined} alt={userDetail.fullName} />
-                  <AvatarFallback className="text-sm font-bold bg-primary text-primary-foreground rounded-2xl">
+                  <AvatarFallback className="text-sm font-bold bg-primary text-primary-foreground rounded-xl">
                     {getInitials(userDetail.fullName)}
                   </AvatarFallback>
                 </Avatar>
@@ -160,7 +160,7 @@ export function UserDetailDialog({
                       {userDetail.fullName || userDetail.username || "Chưa đặt tên"}
                     </h3>
                     <Badge
-                      className={`text-[10px] font-semibold shrink-0 ${userDetail.role === "LECTURER"
+                      className={`text-xs font-semibold shrink-0 ${userDetail.role === "LECTURER"
                           ? "bg-primary/10 text-primary border-primary/20"
                           : "bg-muted text-muted-foreground border-border"
                         }`}
@@ -179,7 +179,7 @@ export function UserDetailDialog({
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
                 {/* Tên đăng nhập Username */}
                 <div className="p-3 rounded-xl border border-border/60 bg-muted/20 space-y-1">
-                  <span className="text-[11px] font-semibold text-muted-foreground flex items-center gap-1.5">
+                  <span className="text-xs font-semibold text-muted-foreground flex items-center gap-1.5">
                     <UserIcon className="size-3.5" />
                     Tên đăng nhập (Username):
                   </span>
@@ -190,7 +190,7 @@ export function UserDetailDialog({
 
                 {/* Mã Sinh viên hoặc Hồ sơ Giảng viên */}
                 <div className="p-3 rounded-xl border border-border/60 bg-muted/20 space-y-1">
-                  <span className="text-[11px] font-semibold text-muted-foreground flex items-center gap-1.5">
+                  <span className="text-xs font-semibold text-muted-foreground flex items-center gap-1.5">
                     <GraduationCapIcon className="size-3.5" />
                     {userDetail.role === "LECTURER" ? "Hồ sơ Giảng viên:" : "Mã số sinh viên (MSSV):"}
                   </span>
@@ -203,7 +203,7 @@ export function UserDetailDialog({
 
                 {/* Trạng thái tài khoản */}
                 <div className="p-3 rounded-xl border border-border/60 bg-muted/20 space-y-1">
-                  <span className="text-[11px] font-semibold text-muted-foreground flex items-center gap-1.5">
+                  <span className="text-xs font-semibold text-muted-foreground flex items-center gap-1.5">
                     {isInactive ? <UserXIcon className="size-3.5" /> : <ShieldCheckIcon className="size-3.5" />}
                     Trạng thái hệ thống:
                   </span>
@@ -214,7 +214,7 @@ export function UserDetailDialog({
 
                 {/* Ngày tạo tài khoản */}
                 <div className="p-3 rounded-xl border border-border/60 bg-muted/20 space-y-1">
-                  <span className="text-[11px] font-semibold text-muted-foreground flex items-center gap-1.5">
+                  <span className="text-xs font-semibold text-muted-foreground flex items-center gap-1.5">
                     <CalendarIcon className="size-3.5" />
                     Ngày tạo tài khoản:
                   </span>

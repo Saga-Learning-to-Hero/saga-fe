@@ -44,7 +44,7 @@ export function TeamWorkloadComparisonChart({
   const maxCommits = Math.max(...sorted.map((member) => member.commits?.total ?? 0), 1);
 
   return (
-    <Card className="overflow-hidden rounded-2xl border border-border/80 bg-card shadow-xs">
+    <Card className="overflow-hidden rounded-xl border border-border/80 bg-card shadow-xs">
       <CardHeader className="border-b border-border/60 p-4 pb-3 sm:p-5">
         <div className="flex items-center gap-2.5">
           <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400">
@@ -97,7 +97,7 @@ export function TeamWorkloadComparisonChart({
                 type="button"
                 onClick={() => onSelectMember(member.studentId)}
                 className={cn(
-                  "flex w-full cursor-pointer flex-col justify-between gap-4 rounded-2xl border p-3.5 text-left transition-all md:flex-row md:items-center",
+                  "flex w-full cursor-pointer flex-col justify-between gap-4 rounded-xl border p-3.5 text-left transition-all md:flex-row md:items-center",
                   isSelected
                     ? "border-primary/40 bg-primary/5 ring-1 ring-primary/20"
                     : "border-border/70 bg-card/60 hover:bg-muted/40"
@@ -128,7 +128,7 @@ export function TeamWorkloadComparisonChart({
                       </span>
                       {isLeader ? <LeaderBadge variant="icon-only" /> : null}
                     </div>
-                    <span className="font-mono text-[10px] text-muted-foreground">
+                    <span className="font-mono text-xs text-muted-foreground">
                       MSSV: {member.studentCode}
                     </span>
                   </div>
@@ -160,11 +160,11 @@ export function TeamWorkloadComparisonChart({
 
                 <div className="flex shrink-0 items-center gap-1 text-xs font-semibold text-primary">
                   {isSelected ? (
-                    <Badge className="border-0 bg-primary text-[10px] text-primary-foreground">
+                    <Badge className="border-0 bg-primary text-xs text-primary-foreground">
                       Đang xem
                     </Badge>
                   ) : (
-                    <span className="flex items-center text-[11px] text-muted-foreground">
+                    <span className="flex items-center text-xs text-muted-foreground">
                       Xem chi tiết <ChevronRightIcon className="ml-0.5 size-3.5" />
                     </span>
                   )}
@@ -193,7 +193,7 @@ function MetricBar({
 }) {
   return (
     <div className="space-y-1">
-      <div className="flex items-center justify-between text-[11px]">
+      <div className="flex items-center justify-between text-xs">
         <span className="flex items-center gap-1 text-muted-foreground">
           {icon}
           {label}

@@ -6,6 +6,7 @@ export interface Repository {
   totalCommits: number;
   activeBranchesCount: number;
   defaultBranch: string;
+  connectionStatus?: "ACTIVE" | "REVOKED" | "NOT_CONNECTED" | string;
 }
 
 export interface Branch {

@@ -199,7 +199,7 @@ export function ContributionEvaluationPage({ courseId }: ContributionEvaluationP
         breadcrumbItems={breadcrumbItems}
         title="Bảng điểm đóng góp theo nhóm"
       >
-        <Card className="rounded-2xl border border-dashed border-border/80 p-8 text-center shadow-xs">
+        <Card className="rounded-xl border border-dashed border-border/80 p-8 text-center shadow-xs">
           <p className="text-sm font-semibold text-foreground">
             Lớp học phần chưa có nhóm dự án nào
           </p>
@@ -227,7 +227,7 @@ export function ContributionEvaluationPage({ courseId }: ContributionEvaluationP
         title="Bảng điểm đóng góp theo nhóm"
         actions={teamSwitcher}
       >
-        <Card className="rounded-2xl border border-border/80 bg-card p-6 shadow-xs">
+        <Card className="rounded-xl border border-border/80 bg-card p-6 shadow-xs">
           <p className="text-sm font-semibold text-foreground">
             Nhóm không thuộc lớp học phần này
           </p>
@@ -259,7 +259,7 @@ export function ContributionEvaluationPage({ courseId }: ContributionEvaluationP
           title="Bảng điểm đóng góp theo nhóm"
           actions={teamSwitcher}
         >
-          <Card className="rounded-2xl border border-dashed border-border/80 p-8 text-center shadow-xs">
+          <Card className="rounded-xl border border-dashed border-border/80 p-8 text-center shadow-xs">
             <p className="text-sm font-semibold text-foreground">
               Nhóm chưa được liên kết dự án
             </p>
@@ -286,7 +286,7 @@ export function ContributionEvaluationPage({ courseId }: ContributionEvaluationP
           title="Bảng điểm đóng góp theo nhóm"
           actions={teamSwitcher}
         >
-          <Card className="rounded-2xl border border-border/80 bg-card p-6 shadow-xs">
+          <Card className="rounded-xl border border-border/80 bg-card p-6 shadow-xs">
             <p className="text-sm font-semibold text-foreground">
               Không tìm thấy thông tin nhóm
             </p>
@@ -370,7 +370,7 @@ export function ContributionEvaluationPage({ courseId }: ContributionEvaluationP
             <Card
               key={field}
               className={cn(
-                "rounded-2xl border bg-card p-4 shadow-xs transition-all hover:shadow-md hover:-translate-y-0.5",
+                "rounded-xl border bg-card p-4 shadow-xs transition-all hover:shadow-md hover:-translate-y-0.5",
                 style.borderClass
               )}
             >
@@ -392,7 +392,7 @@ export function ContributionEvaluationPage({ courseId }: ContributionEvaluationP
                   <span className="font-mono text-2xl font-black text-foreground">
                     {formatContributionPercent(displaySliceWeights?.[field])}
                   </span>
-                  <p className="mt-0.5 text-[11px] text-muted-foreground">
+                  <p className="mt-0.5 text-xs text-muted-foreground">
                     {info.description}
                   </p>
                 </div>
@@ -403,7 +403,7 @@ export function ContributionEvaluationPage({ courseId }: ContributionEvaluationP
       </div>
 
       {warnings.length > 0 && (
-        <Card className="rounded-2xl border border-amber-500/30 bg-amber-500/5 p-4 shadow-xs">
+        <Card className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-4 shadow-xs">
           <div className="flex items-start gap-3">
             <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-amber-500/15 text-amber-700 dark:text-amber-400">
               <AlertTriangleIcon className="size-5" />
@@ -413,7 +413,7 @@ export function ContributionEvaluationPage({ courseId }: ContributionEvaluationP
                 <h4 className="text-sm font-extrabold text-amber-900 dark:text-amber-200">
                   Cảnh báo đối soát minh chứng công sức ({warnings.length})
                 </h4>
-                <span className="rounded-full bg-amber-500/20 px-2 py-0.5 font-mono text-[10px] font-bold text-amber-800 dark:text-amber-300">
+                <span className="rounded-full bg-amber-500/20 px-2 py-0.5 font-mono text-xs font-bold text-amber-800 dark:text-amber-300">
                   Cần giảng viên lưu ý
                 </span>
               </div>
@@ -440,7 +440,7 @@ export function ContributionEvaluationPage({ courseId }: ContributionEvaluationP
                         />
                         <span>{parsed.title}</span>
                       </div>
-                      <p className="text-[11px] leading-relaxed opacity-90 pl-3">
+                      <p className="text-xs leading-relaxed opacity-90 pl-3">
                         {parsed.description}
                       </p>
                     </div>
@@ -452,7 +452,7 @@ export function ContributionEvaluationPage({ courseId }: ContributionEvaluationP
         </Card>
       )}
 
-      <Card className="overflow-hidden rounded-2xl border border-border/80 bg-card shadow-xs">
+      <Card className="overflow-hidden rounded-xl border border-border/80 bg-card shadow-xs">
         {(evaluation?.members ?? []).length === 0 ? (
           <div className="p-10 text-center text-sm text-muted-foreground">
             Nhóm chưa có dữ liệu thành viên để lập bảng điểm đóng góp.
@@ -530,7 +530,7 @@ function MemberRows({
             <Avatar size="sm" className="border border-border/60">
               <AvatarFallback
                 className={cn(
-                  "font-mono text-[11px] font-bold",
+                  "font-mono text-xs font-bold",
                   isLeader
                     ? "bg-amber-500/20 text-amber-700 dark:text-amber-300"
                     : "bg-muted text-muted-foreground"
@@ -542,7 +542,7 @@ function MemberRows({
             <div className="space-y-0.5">
               <p className="text-xs font-bold text-foreground">{member.fullName}</p>
               <div className="flex flex-wrap items-center gap-1.5">
-                <span className="inline-block rounded bg-primary/10 px-1.5 py-0.2 font-mono text-[10px] font-bold text-primary">
+                <span className="inline-block rounded bg-primary/10 px-1.5 py-0.2 font-mono text-xs font-bold text-primary">
                   {member.studentCode}
                 </span>
                 {hasNoEvidence ? (
@@ -594,7 +594,7 @@ function MemberRows({
                 className={cn(
                   "h-full rounded-full transition-all duration-300",
                   finalPercentage > 0
-                    ? "bg-gradient-to-r from-primary to-primary/80"
+                    ? "bg-linear-to-r from-primary to-primary/80"
                     : "bg-muted"
                 )}
                 style={{ width: `${Math.min(Math.max(finalPercentage, 0), 100)}%` }}
@@ -665,7 +665,7 @@ function MemberRows({
                             />
                             <span>{parsed.title}</span>
                           </div>
-                          <p className="text-[11px] leading-relaxed opacity-90 pl-3">
+                          <p className="text-xs leading-relaxed opacity-90 pl-3">
                             {parsed.description}
                           </p>
                         </div>
@@ -698,7 +698,7 @@ function MemberRows({
                             {formatContributionPercent(sprint.contributionPercentage)}
                           </span>
                         </div>
-                        <div className="space-y-1 text-[11px] text-muted-foreground">
+                        <div className="space-y-1 text-xs text-muted-foreground">
                           <div className="flex justify-between">
                             <span>Điểm SP:</span>
                             <span className="font-mono font-bold text-foreground">

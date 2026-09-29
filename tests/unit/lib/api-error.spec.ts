@@ -1,6 +1,21 @@
-import { describe, expect } from "vitest";
+import { beforeEach, describe, expect, vi } from "vitest";
 import { fptTest } from "@/testing/fpt-test-helper";
-import { getApiErrorStatus, isUnauthorizedError, isStepUpRequiredError } from "@/lib/api-error";
+import {
+  getApiErrorStatus,
+  isUnauthorizedError,
+  isStepUpRequiredError,
+  showErrorToast,
+} from "@/lib/api-error";
+
+const { toastErrorMock } = vi.hoisted(() => ({
+  toastErrorMock: vi.fn(),
+}));
+
+vi.mock("sonner", () => ({
+  toast: {
+    error: toastErrorMock,
+  },
+}));
 
 function errorWithStatus(status?: number) {
   const error = new Error("session") as Error & { status?: number };
@@ -9,6 +24,10 @@ function errorWithStatus(status?: number) {
 }
 
 describe("api-error session handling", () => {
+  beforeEach(() => {
+    toastErrorMock.mockReset();
+  });
+
   fptTest(
     {
       id: "UTCID01",
@@ -95,6 +114,28 @@ describe("api-error session handling", () => {
         },
       };
       expect(isStepUpRequiredError(customResponseErr)).toBe(true);
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID07",
+      type: "N",
+      executedDate: "29/09/2026",
+      description: "Thong bao loi auth giu dung id, noi dung chi tiet va thoi luong hien thi",
+    },
+    () => {
+      showErrorToast("Đăng nhập không thành công", new Error("Sai thông tin đăng nhập"), {
+        id: "auth-login-error",
+        description: "Tên đăng nhập hoặc mật khẩu không chính xác.",
+        duration: 6000,
+      });
+
+      expect(toastErrorMock).toHaveBeenCalledWith("Đăng nhập không thành công", {
+        id: "auth-login-error",
+        description: "Tên đăng nhập hoặc mật khẩu không chính xác.",
+        duration: 6000,
+      });
     }
   );
 });

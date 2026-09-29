@@ -11,9 +11,8 @@ import {
   CalendarIcon,
   ShieldCheckIcon,
   FingerprintIcon,
-  FileCodeIcon,
 } from "lucide-react";
-import { useState, useEffect, useSyncExternalStore } from "react";
+import { useEffect, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
 
 const emptySubscribe = () => () => { };
@@ -29,6 +28,7 @@ interface GraphNodeDetailsModalProps {
   onClose: () => void;
   onViewContribution?: (studentId: string) => void;
   onFocusNode?: (nodeId: string, nodeLabel?: string) => void;
+  focusedNodeId?: string | null;
   projectId?: string | null;
 }
 
@@ -50,41 +50,51 @@ const TYPE_CONFIG: Record<
   IDENTITY: { label: "Danh tính Git", icon: FingerprintIcon, bgClass: "bg-slate-600" },
 };
 
+const COMMIT_NODE_PREFIX = "commit:";
+
+export function resolveGitCommitId(nodeId: string): string {
+  return nodeId.startsWith(COMMIT_NODE_PREFIX) ? nodeId.slice(COMMIT_NODE_PREFIX.length) : nodeId;
+}
+
 export function GraphNodeDetailsModal({
   nodeData,
   onClose,
   onViewContribution,
   onFocusNode,
+  focusedNodeId,
   projectId,
 }: GraphNodeDetailsModalProps) {
-  const [showCommitDetail, setShowCommitDetail] = useState(false);
   const mounted = useSyncExternalStore(
     emptySubscribe,
     () => true,
     () => false
   );
+  const isCommitNode = nodeData?.type === "COMMIT";
 
   useEffect(() => {
-    if (!nodeData) return;
+    if (!nodeData || isCommitNode) return;
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [nodeData, onClose]);
+  }, [nodeData, isCommitNode, onClose]);
 
   if (!nodeData) return null;
 
-  if (showCommitDetail) {
+  if (isCommitNode) {
+    const commitMessage = nodeData.subLabel || nodeData.label;
     return (
       <CommitDetailModal
         isOpen={true}
-        onClose={() => setShowCommitDetail(false)}
+        onClose={onClose}
         projectId={projectId}
-        gitCommitId={nodeData.id.startsWith("commit:") ? nodeData.id.slice(7) : nodeData.id}
+        gitCommitId={resolveGitCommitId(nodeData.id)}
+        fallbackShortHash={nodeData.label}
+        fallbackMessage={commitMessage}
         fallbackCommit={{
-          commitHash: nodeData.subLabel || nodeData.label,
-          commitMessage: nodeData.label,
+          commitHash: nodeData.label,
+          commitMessage,
           authorName: "",
           committedDate: "",
         }}
@@ -102,6 +112,8 @@ export function GraphNodeDetailsModal({
   const IconComponent = config.icon;
   const isStudent = nodeData.type === "STUDENT";
   const avatarUrl = nodeData.avatar?.trim() || undefined;
+  const showTaskFocusButton =
+    nodeData.type === "TASK" && Boolean(onFocusNode) && focusedNodeId !== nodeData.id;
 
   return createPortal(
     <div
@@ -111,25 +123,25 @@ export function GraphNodeDetailsModal({
       }}
     >
       <div
-        className="bg-card border border-border/80 rounded-3xl w-full max-w-lg max-h-[92vh] flex flex-col shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200"
+        className="bg-card border border-border/80 rounded-xl w-full max-w-lg max-h-[92vh] flex flex-col shadow-lg overflow-hidden animate-in zoom-in-95 duration-200"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="p-5 border-b border-border/60 flex items-center justify-between bg-muted/30 shrink-0">
           <div className="flex items-center gap-3">
             {isStudent && avatarUrl ? (
-              <Avatar className="size-10 rounded-2xl border border-border/60">
+              <Avatar className="size-10 rounded-xl border border-border/60">
                 <AvatarImage src={avatarUrl} alt={nodeData.label} />
                 <AvatarFallback>{nodeData.label.slice(0, 2).toUpperCase()}</AvatarFallback>
               </Avatar>
             ) : (
               <div
-                className={`w-10 h-10 rounded-2xl flex items-center justify-center text-white shadow-xs ${config.bgClass}`}
+                className={`w-10 h-10 rounded-xl flex items-center justify-center text-white shadow-xs ${config.bgClass}`}
               >
                 <IconComponent className="w-5 h-5" />
               </div>
             )}
             <div>
-              <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+              <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
                 {config.label}
               </span>
               <h3 className="text-base font-extrabold text-foreground truncate max-w-xs">
@@ -139,6 +151,7 @@ export function GraphNodeDetailsModal({
           </div>
 
           <button
+            type="button"
             onClick={onClose}
             className="w-8 h-8 rounded-xl flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted cursor-pointer transition-colors"
           >
@@ -148,7 +161,7 @@ export function GraphNodeDetailsModal({
 
         <div className="p-6 overflow-y-auto flex-1 space-y-4">
           {isStudent && (
-            <div className="flex items-center gap-4 p-3.5 rounded-2xl bg-muted/40 border border-border/60">
+            <div className="flex items-center gap-4 p-3.5 rounded-xl bg-muted/40 border border-border/60">
               <Avatar className="h-12 w-12 border border-border">
                 {avatarUrl && <AvatarImage src={avatarUrl} alt={nodeData.label} />}
                 <AvatarFallback>{nodeData.label.slice(0, 2).toUpperCase()}</AvatarFallback>
@@ -159,7 +172,7 @@ export function GraphNodeDetailsModal({
                   <p className="text-xs text-muted-foreground font-mono truncate">{nodeData.subLabel}</p>
                 )}
                 {nodeData.role && (
-                  <Badge variant="outline" className="text-[10px] mt-1">
+                  <Badge variant="outline" className="text-xs mt-1">
                     {nodeData.role}
                   </Badge>
                 )}
@@ -176,7 +189,7 @@ export function GraphNodeDetailsModal({
 
           <div className="grid grid-cols-2 gap-2.5 text-xs">
             <div className="p-3 rounded-xl bg-muted/30 border border-border/50">
-              <span className="text-[10px] text-muted-foreground uppercase font-bold block mb-1">
+              <span className="text-xs text-muted-foreground uppercase font-bold block mb-1">
                 Phân loại
               </span>
               <span className="font-mono font-bold text-primary">{nodeData.type}</span>
@@ -184,10 +197,10 @@ export function GraphNodeDetailsModal({
 
             {nodeData.status && (
               <div className="p-3 rounded-xl bg-muted/30 border border-border/50">
-                <span className="text-[10px] text-muted-foreground uppercase font-bold block mb-1">
+                <span className="text-xs text-muted-foreground uppercase font-bold block mb-1">
                   Trạng thái
                 </span>
-                <Badge variant="secondary" className="font-mono text-[11px]">
+                <Badge variant="secondary" className="font-mono text-xs">
                   {nodeData.status}
                 </Badge>
               </div>
@@ -195,7 +208,7 @@ export function GraphNodeDetailsModal({
 
             {nodeData.weightType && (
               <div className="p-3 rounded-xl bg-muted/30 border border-border/50">
-                <span className="text-[10px] text-muted-foreground uppercase font-bold block mb-1">
+                <span className="text-xs text-muted-foreground uppercase font-bold block mb-1">
                   Loại trọng số
                 </span>
                 <span className="font-mono font-bold text-foreground">{nodeData.weightType}</span>
@@ -204,7 +217,7 @@ export function GraphNodeDetailsModal({
 
             {typeof nodeData.storyPoint === "number" && (
               <div className="p-3 rounded-xl bg-muted/30 border border-border/50">
-                <span className="text-[10px] text-muted-foreground uppercase font-bold block mb-1">
+                <span className="text-xs text-muted-foreground uppercase font-bold block mb-1">
                   Story Points
                 </span>
                 <span className="font-mono font-extrabold text-foreground text-sm">
@@ -215,7 +228,7 @@ export function GraphNodeDetailsModal({
           </div>
 
           {nodeData.isAnomaly === true && (
-            <div className="p-4 rounded-2xl bg-red-500/10 border border-red-500/30 text-red-700 dark:text-red-400 text-xs space-y-1 animate-pulse">
+            <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/30 text-red-700 dark:text-red-400 text-xs space-y-1 animate-pulse">
               <div className="flex items-center gap-2 font-bold text-sm text-red-600 dark:text-red-300">
                 <AlertTriangleIcon className="w-4 h-4 shrink-0" />
                 <span>Cảnh báo bất thường (Graph Anomaly)</span>
@@ -243,7 +256,7 @@ export function GraphNodeDetailsModal({
                 Xem chi tiết đóng góp
               </Button>
             )}
-            {nodeData.type === "TASK" && onFocusNode && (
+            {showTaskFocusButton && (
               <Button
                 variant="outline"
                 size="sm"
@@ -252,23 +265,12 @@ export function GraphNodeDetailsModal({
                     nodeData.subLabel && nodeData.subLabel !== nodeData.label
                       ? `${nodeData.label} - ${nodeData.subLabel}`
                       : nodeData.label;
-                  onFocusNode(nodeData.id, taskLabel);
+                  onFocusNode?.(nodeData.id, taskLabel);
                   onClose();
                 }}
                 className="h-9 text-xs rounded-xl cursor-pointer text-emerald-600 dark:text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/10"
               >
                 Tập trung Task & Xem Commit đối chiếu
-              </Button>
-            )}
-            {nodeData.type === "COMMIT" && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setShowCommitDetail(true)}
-                className="h-9 text-xs rounded-xl cursor-pointer text-purple-600 dark:text-purple-400 border-purple-500/30 hover:bg-purple-500/10 gap-1.5"
-              >
-                <FileCodeIcon className="w-3.5 h-3.5" />
-                Xem Code Diff chi tiết
               </Button>
             )}
           </div>

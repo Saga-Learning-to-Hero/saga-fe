@@ -22,6 +22,7 @@ import type {
 } from "../../types/jira-sources";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { ConfirmActionDialog } from "@/components/common/confirm-action-dialog";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -61,6 +62,7 @@ export function ProjectJiraSection({
   const [failoverSource, setFailoverSource] = useState<JiraSourceSummary | null>(null);
   const [isAddingSource, setIsAddingSource] = useState(false);
   const [isReconnectingId, setIsReconnectingId] = useState<string | null>(null);
+  const [disconnectSourceId, setDisconnectSourceId] = useState<string | null>(null);
 
   const sourcesQuery = useJiraSources(projectId);
   const syncMutation = useJiraSourceSync(projectId);
@@ -156,7 +158,15 @@ export function ProjectJiraSection({
 
   const handleSoftDisconnect = (sourceId: string) => {
     if (sourceId === "legacy-source") return;
-    disconnectMutation.mutate(sourceId);
+    setDisconnectSourceId(sourceId);
+  };
+
+  const confirmDisconnect = () => {
+    if (disconnectSourceId) {
+      disconnectMutation.mutate(disconnectSourceId, {
+        onSuccess: () => setDisconnectSourceId(null)
+      });
+    }
   };
 
   const formatDateTime = (dateStr?: string | null) => {
@@ -184,7 +194,7 @@ export function ProjectJiraSection({
   };
 
   return (
-    <div className="rounded-2xl border border-blue-500/25 bg-blue-500/[0.02] p-4 sm:p-5 space-y-4">
+    <div className="rounded-xl border border-blue-500/25 bg-blue-500/[0.02] p-4 sm:p-5 space-y-4">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border/50 pb-3">
         <div className="flex items-center gap-2.5">
           <div className="w-8 h-8 rounded-xl bg-blue-600 text-white flex items-center justify-center shrink-0 shadow-xs">
@@ -195,11 +205,11 @@ export function ProjectJiraSection({
               <h4 className="text-sm font-bold text-foreground">
                 Nguồn Jira của dự án (Jira Sources)
               </h4>
-              <Badge variant="outline" className="text-[10px] font-semibold border-blue-500/30 text-blue-600 dark:text-blue-400">
+              <Badge variant="outline" className="text-xs font-semibold border-blue-500/30 text-blue-600 dark:text-blue-400">
                 {sources.length} nguồn
               </Badge>
             </div>
-            <p className="text-[11px] text-muted-foreground">
+            <p className="text-xs text-muted-foreground">
               Quản lý các không gian Jira, Sprint Backlog và chuyển giao công việc dở dang
             </p>
           </div>
@@ -276,23 +286,23 @@ export function ProjectJiraSection({
                         <ExternalLinkIcon className="w-3 h-3 shrink-0" />
                       </a>
                       {isActive && (
-                        <Badge className="bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-0 text-[10px] font-semibold">
+                        <Badge className="bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-0 text-xs font-semibold">
                           Đang hoạt động
                         </Badge>
                       )}
                       {isRevoked && (
-                        <Badge variant="outline" className="text-rose-500 border-rose-500/30 bg-rose-500/10 text-[10px] font-semibold">
+                        <Badge variant="outline" className="text-rose-500 border-rose-500/30 bg-rose-500/10 text-xs font-semibold">
                           Đã ngắt kết nối (Lịch sử)
                         </Badge>
                       )}
                       {!isActive && !isRevoked && (
-                        <Badge variant="outline" className="text-muted-foreground border-border text-[10px]">
+                        <Badge variant="outline" className="text-muted-foreground border-border text-xs">
                           {src.connectionStatus}
                         </Badge>
                       )}
                     </div>
 
-                    <div className="flex items-center gap-3 text-[11px] text-muted-foreground flex-wrap pt-0.5">
+                    <div className="flex items-center gap-3 text-xs text-muted-foreground flex-wrap pt-0.5">
                       <span>Bảng Jira: <strong className="font-mono text-foreground">{src.boardId ?? "Mặc định"}</strong></span>
                       <span>•</span>
                       <span>Đồng bộ thành công: <strong>{formatDateTime(src.lastSuccessfulSyncAt)}</strong></span>
@@ -311,7 +321,7 @@ export function ProjectJiraSection({
                   <div className="flex items-center gap-1.5 flex-wrap self-start sm:self-auto shrink-0">
                     <Link
                       href="/student/sprint-progress"
-                      className="h-7.5 px-2.5 text-[11px] font-medium rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted inline-flex items-center justify-center transition-colors"
+                      className="h-7.5 px-2.5 text-xs font-medium rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted inline-flex items-center justify-center transition-colors"
                     >
                       Xem công việc
                     </Link>
@@ -323,7 +333,7 @@ export function ProjectJiraSection({
                         size="sm"
                         onClick={() => syncMutation.mutate(src.integrationId)}
                         disabled={syncMutation.isPending}
-                        className="h-7.5 px-2.5 text-[11px] font-medium rounded-lg gap-1 border-border/80 text-foreground cursor-pointer"
+                        className="h-7.5 px-2.5 text-xs font-medium rounded-lg gap-1 border-border/80 text-foreground cursor-pointer"
                       >
                         <RefreshCwIcon className={`w-3 h-3 ${syncMutation.isPending ? "animate-spin" : ""}`} />
                         <span>Đồng bộ</span>
@@ -405,6 +415,18 @@ export function ProjectJiraSection({
           availableSources={sources}
         />
       )}
+
+      <ConfirmActionDialog
+        isOpen={!!disconnectSourceId}
+        onClose={() => setDisconnectSourceId(null)}
+        onConfirm={confirmDisconnect}
+        isLoading={disconnectMutation.isPending}
+        title="Xác nhận ngắt kết nối Jira"
+        description="Bạn có chắc chắn muốn ngắt kết nối với Jira Workspace này? Hệ thống sẽ ngừng đồng bộ dữ liệu đồ thị từ nguồn này. Tuy nhiên, các dữ liệu đã lấy về sẽ không bị mất."
+        confirmText="Ngắt kết nối"
+        icon={<UnlinkIcon className="w-5 h-5" />}
+        iconClassName="bg-danger-muted text-danger"
+      />
     </div>
   );
 }

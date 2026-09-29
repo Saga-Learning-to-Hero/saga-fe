@@ -35,7 +35,7 @@ export function QuickStoryPointsEdit({
 
   if (!isTeamLeader || !projectId) {
     return (
-      <Badge variant="secondary" className="font-mono text-[10px] px-2 py-0.5">
+      <Badge variant="secondary" className="font-mono text-xs px-2 py-0.5">
         {storyPoints} SP
       </Badge>
     );
@@ -81,7 +81,7 @@ export function QuickStoryPointsEdit({
       <PopoverTrigger
         type="button"
         onClick={(e) => e.stopPropagation()}
-        className="inline-flex items-center gap-1 font-mono text-[10px] font-bold px-2 py-0.5 rounded-md border border-border/70 bg-muted/60 hover:bg-primary/10 hover:text-primary hover:border-primary/50 cursor-pointer transition-colors"
+        className="inline-flex items-center gap-1 font-mono text-xs font-bold px-2 py-0.5 rounded-md border border-border/70 bg-muted/60 hover:bg-primary/10 hover:text-primary hover:border-primary/50 cursor-pointer transition-colors"
         title="Nhấn để đổi Story Points (Trưởng nhóm)"
       >
         {patchTaskMutation.isPending ? (
@@ -95,14 +95,14 @@ export function QuickStoryPointsEdit({
         align="end"
         side="bottom"
         sideOffset={6}
-        className="w-56 p-3 space-y-3 z-50 bg-card border-border/80 shadow-xl rounded-2xl"
+        className="w-56 p-3 space-y-3 z-50 bg-card border-border/80 shadow-md rounded-xl"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between border-b border-border/60 pb-1.5">
           <span className="text-xs font-bold text-foreground">
             Story Points
           </span>
-          <span className="font-mono text-[10px] font-bold text-primary px-1.5 py-0.2 rounded bg-primary/10 border border-primary/20">
+          <span className="font-mono text-xs font-bold text-primary px-1.5 py-0.2 rounded bg-primary/10 border border-primary/20">
             {issueKey}
           </span>
         </div>

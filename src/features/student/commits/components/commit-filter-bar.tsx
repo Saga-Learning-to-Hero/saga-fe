@@ -43,7 +43,7 @@ export function CommitFilterBar({
   onSearchChange,
 }: CommitFilterBarProps) {
   return (
-    <div className="relative z-30 p-3 rounded-2xl bg-card/60 border border-border/70 backdrop-blur-xs shadow-2xs space-y-3">
+    <div className="relative z-30 p-3 rounded-xl bg-card/60 border border-border/70 backdrop-blur-xs shadow-2xs space-y-3">
       <div className="flex flex-col md:flex-row md:items-center gap-3">
         <div className="relative z-40 w-full md:w-60">
           <CustomSelect
@@ -51,7 +51,10 @@ export function CommitFilterBar({
             onChange={onSelectRepo}
             options={repositories.map((repo) => ({
               value: repo.id,
-              label: repo.fullPath,
+              label:
+                repo.connectionStatus && repo.connectionStatus !== "ACTIVE"
+                  ? `${repo.fullPath} (đã ngắt kết nối)`
+                  : repo.fullPath,
               icon: <FolderGit2Icon className="w-3.5 h-3.5 text-blue-500" />,
             }))}
           />

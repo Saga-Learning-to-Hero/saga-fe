@@ -30,7 +30,7 @@ export function PeerReviewSummaryStrip({ kpis, filters }: PeerReviewSummaryStrip
       : Math.min(Math.max(kpis.completionRate, 0), 100);
 
   return (
-    <Card className="relative z-20 overflow-visible rounded-2xl border border-border/80 bg-card shadow-xs">
+    <Card className="relative z-20 overflow-visible rounded-xl border border-border/80 bg-card shadow-xs">
       <div
         className="grid overflow-hidden rounded-t-2xl sm:grid-cols-2 xl:grid-cols-[1.35fr_1fr_1fr_1fr]"
         data-testid="peer-review-statistics-metrics"
@@ -42,7 +42,7 @@ export function PeerReviewSummaryStrip({ kpis, filters }: PeerReviewSummaryStrip
                 <CircleCheckBigIcon className="size-4.5" aria-hidden />
               </span>
               <div>
-                <p className="text-[11px] font-semibold text-muted-foreground">
+                <p className="text-xs font-semibold text-muted-foreground">
                   Số lượt đã đánh giá
                 </p>
                 <p className="font-mono text-lg font-black text-foreground">
@@ -72,7 +72,7 @@ export function PeerReviewSummaryStrip({ kpis, filters }: PeerReviewSummaryStrip
             <StarIcon className="size-4 fill-current" aria-hidden />
           </span>
           <div>
-            <p className="text-[11px] font-semibold text-muted-foreground">
+            <p className="text-xs font-semibold text-muted-foreground">
               Điểm trung bình
             </p>
             <p className="font-mono text-base font-black text-foreground">
@@ -86,7 +86,7 @@ export function PeerReviewSummaryStrip({ kpis, filters }: PeerReviewSummaryStrip
             <UserRoundXIcon className="size-4" aria-hidden />
           </span>
           <div>
-            <p className="text-[11px] font-semibold text-muted-foreground">
+            <p className="text-xs font-semibold text-muted-foreground">
               Thành viên chưa đánh giá
             </p>
             <p className="font-mono text-base font-black text-foreground">
@@ -100,7 +100,7 @@ export function PeerReviewSummaryStrip({ kpis, filters }: PeerReviewSummaryStrip
             <MessageSquareTextIcon className="size-4" aria-hidden />
           </span>
           <div>
-            <p className="text-[11px] font-semibold text-muted-foreground">
+            <p className="text-xs font-semibold text-muted-foreground">
               Đánh giá có nhận xét
             </p>
             <p className="font-mono text-base font-black text-foreground">
@@ -122,7 +122,7 @@ export function PeerReviewSummaryStrip({ kpis, filters }: PeerReviewSummaryStrip
               <h2 className="text-sm font-extrabold text-foreground">
                 Phạm vi thống kê
               </h2>
-              <p className="text-[11px] text-muted-foreground">
+              <p className="text-xs text-muted-foreground">
                 Chọn nhóm và Sprint cần xem kết quả đánh giá chéo.
               </p>
             </div>

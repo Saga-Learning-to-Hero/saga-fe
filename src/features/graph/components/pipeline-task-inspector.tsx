@@ -114,11 +114,11 @@ function PipelineTaskInspectorInternal({
     return (
       <div
         className={cn(
-          "flex flex-col items-center justify-center rounded-3xl border border-dashed border-border/80 bg-card/60 p-8 text-center text-xs text-muted-foreground lg:min-h-[260px]",
+          "flex flex-col items-center justify-center rounded-xl border border-dashed border-border/80 bg-card/60 p-8 text-center text-xs text-muted-foreground lg:min-h-[260px]",
           className
         )}
       >
-        <div className="flex size-11 items-center justify-center rounded-2xl bg-muted/60 text-muted-foreground/80">
+        <div className="flex size-11 items-center justify-center rounded-xl bg-muted/60 text-muted-foreground/80">
           <MousePointerClickIcon className="size-5" />
         </div>
         <p className="mt-3 font-bold text-foreground">Chưa chọn Task</p>
@@ -149,7 +149,7 @@ function PipelineTaskInspectorInternal({
   return (
     <div
       className={cn(
-        "flex flex-col overflow-hidden rounded-3xl border border-border/80 bg-card shadow-xs lg:max-h-[calc(100dvh-8.5rem)]",
+        "flex flex-col overflow-hidden rounded-xl border border-border/80 bg-card shadow-xs lg:max-h-[calc(100dvh-8.5rem)]",
         className
       )}
     >
@@ -158,10 +158,10 @@ function PipelineTaskInspectorInternal({
           <div className="flex flex-wrap items-center gap-2">
             <CheckSquareIcon className="size-4 text-emerald-500" />
             <span className="font-mono text-xs font-black text-primary">{selectedTask.key}</span>
-            <Badge variant="outline" className="px-1.5 py-0 text-[10px] uppercase">
+            <Badge variant="outline" className="px-1.5 py-0 text-xs uppercase">
               {selectedTask.issueTypeName}
             </Badge>
-            <Badge className={`text-[10px] font-bold ${statusClass(selectedTask.status)}`}>
+            <Badge className={`text-xs font-bold ${statusClass(selectedTask.status)}`}>
               {selectedTask.status}
             </Badge>
           </div>
@@ -179,15 +179,15 @@ function PipelineTaskInspectorInternal({
         <h4 className="text-sm font-bold leading-snug text-foreground">{selectedTask.title}</h4>
 
         {selectedTask.parent && (selectedTask.parent.externalKey || selectedTask.parent.externalId) && (
-          <div className="flex items-center gap-2 rounded-xl bg-muted/20 px-2.5 py-1 text-[11px] text-muted-foreground">
+          <div className="flex items-center gap-2 rounded-xl bg-muted/20 px-2.5 py-1 text-xs text-muted-foreground">
             <span className="font-medium">Thuộc Task cha:</span>
-            <Badge variant="outline" className="font-mono text-[10px] font-bold text-primary">
+            <Badge variant="outline" className="font-mono text-xs font-bold text-primary">
               {selectedTask.parent.externalKey || selectedTask.parent.externalId}
             </Badge>
           </div>
         )}
 
-        <div className="grid grid-cols-1 gap-1.5 rounded-2xl bg-muted/30 p-2.5 text-xs text-muted-foreground">
+        <div className="grid grid-cols-1 gap-1.5 rounded-xl bg-muted/30 p-2.5 text-xs text-muted-foreground">
           <div className="flex items-center gap-2 truncate">
             <CalendarIcon className="size-3.5 shrink-0 text-muted-foreground/70" />
             <span className="truncate">{selectedTask.sprintName || "Chưa vào Sprint"}</span>
@@ -204,7 +204,7 @@ function PipelineTaskInspectorInternal({
               </span>
             </div>
             {files.length > 0 && (
-              <span className="font-mono text-[11px] font-semibold text-purple-600 dark:text-purple-400">
+              <span className="font-mono text-xs font-semibold text-purple-600 dark:text-purple-400">
                 {files.length} tệp tài liệu
               </span>
             )}
@@ -275,7 +275,7 @@ function PipelineTaskInspectorInternal({
                 <div className="h-16 animate-pulse rounded-xl bg-muted/60" />
               </div>
             ) : errorMessage ? (
-              <div className="rounded-2xl border border-dashed border-destructive/30 p-4 text-center text-xs text-muted-foreground shrink-0">
+              <div className="rounded-xl border border-dashed border-destructive/30 p-4 text-center text-xs text-muted-foreground shrink-0">
                 <p className="font-medium text-destructive">{errorMessage}</p>
                 {onRetry && (
                   <Button
@@ -290,7 +290,7 @@ function PipelineTaskInspectorInternal({
                 )}
               </div>
             ) : commits.length === 0 ? (
-              <div className="rounded-2xl border border-dashed border-border/80 p-5 text-center text-xs text-muted-foreground shrink-0">
+              <div className="rounded-xl border border-dashed border-border/80 p-5 text-center text-xs text-muted-foreground shrink-0">
                 <p>Chưa có commit được liên kết với task này.</p>
               </div>
             ) : (
@@ -298,17 +298,17 @@ function PipelineTaskInspectorInternal({
                 {displayedCommits.map((commit) => (
                   <div
                     key={commit.id}
-                    className="group rounded-2xl border border-border/70 bg-card/90 p-3 shadow-2xs transition-colors hover:border-border hover:bg-muted/30"
+                    className="group rounded-xl border border-border/70 bg-card/90 p-3 shadow-2xs transition-colors hover:border-border hover:bg-muted/30"
                   >
                     <div className="flex items-center justify-between gap-2">
                       <div className="flex items-center gap-1.5 min-w-0 flex-1">
-                        <span className="font-mono text-[11px] font-bold text-primary shrink-0">
+                        <span className="font-mono text-xs font-bold text-primary shrink-0">
                           {commit.shortHash}
                         </span>
                         {commit.headRef && (
                           <Badge
                             variant="outline"
-                            className="flex items-center gap-1 px-1.5 py-0 text-[10px] font-mono text-muted-foreground truncate max-w-[130px] shrink-0"
+                            className="flex items-center gap-1 px-1.5 py-0 text-xs font-mono text-muted-foreground truncate max-w-[130px] shrink-0"
                             title={commit.headRef}
                           >
                             <GitBranchIcon className="size-2.5 shrink-0 text-muted-foreground/70" />
@@ -321,7 +321,7 @@ function PipelineTaskInspectorInternal({
                         variant="outline"
                         size="sm"
                         onClick={() => setSelectedCommit(commit)}
-                        className="h-6 px-2 text-[10px] font-bold text-purple-600 dark:text-purple-400 bg-purple-500/10 border-purple-500/25 hover:bg-purple-500/20 hover:border-purple-500/40 cursor-pointer gap-1 shrink-0 rounded-lg shadow-2xs transition-colors"
+                        className="h-6 px-2 text-xs font-bold text-purple-600 dark:text-purple-400 bg-purple-500/10 border-purple-500/25 hover:bg-purple-500/20 hover:border-purple-500/40 cursor-pointer gap-1 shrink-0 rounded-lg shadow-2xs transition-colors"
                         title="Xem chi tiết thay đổi code diff"
                       >
                         <FileCodeIcon className="size-3" />
@@ -330,7 +330,7 @@ function PipelineTaskInspectorInternal({
                     </div>
 
                     {commit.repositoryFullName && (
-                      <div className="mt-1 flex items-center gap-1 text-[10px] text-muted-foreground min-w-0">
+                      <div className="mt-1 flex items-center gap-1 text-xs text-muted-foreground min-w-0">
                         <FolderGit2Icon className="size-2.5 shrink-0 opacity-70" />
                         <span className="truncate font-mono" title={commit.repositoryFullName}>
                           {commit.repositoryFullName}
@@ -342,12 +342,12 @@ function PipelineTaskInspectorInternal({
                       {commit.message}
                     </p>
 
-                    <div className="mt-2 flex items-center justify-between text-[11px] text-muted-foreground pt-1.5 border-t border-border/40">
+                    <div className="mt-2 flex items-center justify-between text-xs text-muted-foreground pt-1.5 border-t border-border/40">
                       <span className="truncate font-medium max-w-[180px]" title={commit.authorLabel}>
                         {commit.authorLabel}
                       </span>
                       {commit.committedAt && (
-                        <span className="text-[10px] font-mono shrink-0 ml-2">
+                        <span className="text-xs font-mono shrink-0 ml-2">
                           {formatCommitDate(commit.committedAt)}
                         </span>
                       )}
@@ -385,7 +385,7 @@ function PipelineTaskInspectorInternal({
                 <div className="h-14 animate-pulse rounded-xl bg-muted/60" />
               </div>
             ) : files.length === 0 && webLinks.length === 0 ? (
-              <div className="rounded-2xl border border-dashed border-border/80 p-5 text-center text-xs text-muted-foreground shrink-0">
+              <div className="rounded-xl border border-dashed border-border/80 p-5 text-center text-xs text-muted-foreground shrink-0">
                 <PaperclipIcon className="size-5 mx-auto mb-1.5 opacity-50" />
                 <p>Chưa có tệp tài liệu hoặc liên kết minh chứng nào được đính kèm cho task này.</p>
               </div>
@@ -393,7 +393,7 @@ function PipelineTaskInspectorInternal({
               <>
                 {files.length > 0 && (
                   <div className="space-y-2">
-                    <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block px-1">
+                    <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider block px-1">
                       Tệp đính kèm ({files.length})
                     </span>
                     {files.map((file) => {
@@ -401,7 +401,7 @@ function PipelineTaskInspectorInternal({
                       return (
                         <div
                           key={file.id}
-                          className="flex items-center justify-between gap-3 p-3 rounded-2xl border border-border/70 bg-card/90 shadow-2xs hover:border-border hover:bg-muted/30 transition-colors"
+                          className="flex items-center justify-between gap-3 p-3 rounded-xl border border-border/70 bg-card/90 shadow-2xs hover:border-border hover:bg-muted/30 transition-colors"
                         >
                           <div className="flex items-center gap-2.5 min-w-0 flex-1">
                             <div className="w-8 h-8 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400 flex items-center justify-center shrink-0 border border-purple-500/20">
@@ -411,7 +411,7 @@ function PipelineTaskInspectorInternal({
                               <p className="text-xs font-bold text-foreground truncate" title={file.filename}>
                                 {file.filename}
                               </p>
-                              <p className="text-[10px] text-muted-foreground font-mono">
+                              <p className="text-xs text-muted-foreground font-mono">
                                 {formatFileSize(file.sizeBytes)} · {formatCommitDate(file.createdAt)}
                               </p>
                             </div>
@@ -441,7 +441,7 @@ function PipelineTaskInspectorInternal({
 
                 {webLinks.length > 0 && (
                   <div className="space-y-2 pt-1">
-                    <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block px-1">
+                    <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider block px-1">
                       Liên kết ngoài ({webLinks.length})
                     </span>
                     {webLinks.map((link) => (
@@ -450,7 +450,7 @@ function PipelineTaskInspectorInternal({
                         href={link.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-center justify-between gap-2.5 p-3 rounded-2xl border border-border/70 bg-card/90 shadow-2xs hover:border-border hover:bg-muted/30 transition-colors group cursor-pointer"
+                        className="flex items-center justify-between gap-2.5 p-3 rounded-xl border border-border/70 bg-card/90 shadow-2xs hover:border-border hover:bg-muted/30 transition-colors group cursor-pointer"
                       >
                         <div className="flex items-center gap-2.5 min-w-0 flex-1">
                           <div className="w-7 h-7 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0 border border-primary/20">
@@ -460,7 +460,7 @@ function PipelineTaskInspectorInternal({
                             <p className="text-xs font-semibold text-foreground truncate group-hover:text-primary transition-colors">
                               {link.title || link.url}
                             </p>
-                            <p className="text-[10px] text-muted-foreground font-mono truncate">
+                            <p className="text-xs text-muted-foreground font-mono truncate">
                               {link.url}
                             </p>
                           </div>

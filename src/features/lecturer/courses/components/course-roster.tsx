@@ -108,8 +108,8 @@ export function CourseRoster({ courseId, onSwitchToTeams }: CourseRosterProps) {
   if (isLoading || teamsQuery.isLoading) {
     return (
       <div className="space-y-4">
-        <div className="h-20 animate-pulse rounded-2xl bg-muted/60" />
-        <div className="h-80 animate-pulse rounded-2xl bg-muted/60" />
+        <div className="h-20 animate-pulse rounded-xl bg-muted/60" />
+        <div className="h-80 animate-pulse rounded-xl bg-muted/60" />
       </div>
     );
   }
@@ -126,7 +126,7 @@ export function CourseRoster({ courseId, onSwitchToTeams }: CourseRosterProps) {
 
   return (
     <div className="space-y-5">
-      <Card className="rounded-2xl border border-border/80 bg-card p-4 shadow-xs">
+      <Card className="rounded-xl border border-border/80 bg-card p-4 shadow-xs">
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-4 sm:divide-x sm:divide-border/60">
           <div className="flex items-center gap-3.5 sm:px-3">
             <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
@@ -167,7 +167,7 @@ export function CourseRoster({ courseId, onSwitchToTeams }: CourseRosterProps) {
                 <span className="text-xs text-muted-foreground">/ {totalCount}</span>
                 <Badge
                   variant="outline"
-                  className="ml-1 border-emerald-500/30 bg-emerald-500/10 font-mono text-[10px] font-bold text-emerald-600 dark:text-emerald-400 px-1.5 py-0"
+                  className="ml-1 border-emerald-500/30 bg-emerald-500/10 font-mono text-xs font-bold text-emerald-600 dark:text-emerald-400 px-1.5 py-0"
                 >
                   {assignedPercentage}%
                 </Badge>
@@ -197,14 +197,14 @@ export function CourseRoster({ courseId, onSwitchToTeams }: CourseRosterProps) {
                 {unassignedCount > 0 ? (
                   <Badge
                     variant="outline"
-                    className="ml-1 border-amber-500/30 bg-amber-500/10 font-mono text-[10px] font-bold text-amber-700 dark:text-amber-300 px-1.5 py-0"
+                    className="ml-1 border-amber-500/30 bg-amber-500/10 font-mono text-xs font-bold text-amber-700 dark:text-amber-300 px-1.5 py-0"
                   >
                     Cần xếp nhóm
                   </Badge>
                 ) : (
                   <Badge
                     variant="outline"
-                    className="ml-1 border-emerald-500/30 bg-emerald-500/10 font-mono text-[10px] font-bold text-emerald-600 dark:text-emerald-400 px-1.5 py-0"
+                    className="ml-1 border-emerald-500/30 bg-emerald-500/10 font-mono text-xs font-bold text-emerald-600 dark:text-emerald-400 px-1.5 py-0"
                   >
                     Đầy đủ 100%
                   </Badge>
@@ -281,7 +281,7 @@ export function CourseRoster({ courseId, onSwitchToTeams }: CourseRosterProps) {
       </div>
 
       {entries.length === 0 ? (
-        <Card className="rounded-2xl border border-dashed border-border/80 p-10 text-center shadow-xs">
+        <Card className="rounded-xl border border-dashed border-border/80 p-10 text-center shadow-xs">
           <UsersIcon className="mx-auto mb-3 size-10 text-muted-foreground/40" />
           <p className="text-sm font-bold text-foreground">Chưa có sinh viên nào trong lớp</p>
           <p className="mx-auto mt-1 max-w-md text-xs text-muted-foreground">
@@ -289,7 +289,7 @@ export function CourseRoster({ courseId, onSwitchToTeams }: CourseRosterProps) {
           </p>
         </Card>
       ) : (
-        <div className="overflow-hidden rounded-2xl border border-border/80 bg-card shadow-xs">
+        <div className="overflow-hidden rounded-xl border border-border/80 bg-card shadow-xs">
           <Table>
             <TableHeader className="bg-muted/30">
               <TableRow className="border-b border-border/60">
@@ -318,7 +318,7 @@ export function CourseRoster({ courseId, onSwitchToTeams }: CourseRosterProps) {
                     <TableCell className="px-4">
                       <div className="flex items-center gap-3">
                         <Avatar size="sm" className="border border-border/60">
-                          <AvatarFallback className="bg-primary/10 font-mono text-[11px] font-bold text-primary">
+                          <AvatarFallback className="bg-primary/10 font-mono text-xs font-bold text-primary">
                             {getInitials(entry.fullName)}
                           </AvatarFallback>
                         </Avatar>
@@ -326,7 +326,7 @@ export function CourseRoster({ courseId, onSwitchToTeams }: CourseRosterProps) {
                       </div>
                     </TableCell>
                     <TableCell className="px-4">
-                      <Badge variant="secondary" className="font-mono text-[11px] font-semibold">
+                      <Badge variant="secondary" className="font-mono text-xs font-semibold">
                         {entry.classCode || "Chưa gắn lớp"}
                       </Badge>
                     </TableCell>

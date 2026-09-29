@@ -48,7 +48,10 @@ export function ProjectInfoView() {
 
   const projectId = apiProject?.projectId || team?.projectId || effectiveCourse?.projectId || "";
 
-  useProjectRealtime(projectId, { enabled: Boolean(projectId) });
+  const { status: realtimeStatus } = useProjectRealtime(projectId, {
+    enabled: Boolean(projectId),
+    includeIntegrations: true,
+  });
 
   const forbidden = getApiErrorCode(teamError) === "STUDENT_COURSE_FORBIDDEN";
   useEffect(() => { if (forbidden) void refreshCourses(); }, [forbidden, refreshCourses]);
@@ -124,7 +127,7 @@ export function ProjectInfoView() {
   if (isInvalidCourse) {
     return (
       <div className="mx-auto max-w-[1600px] pb-12">
-        <div className="rounded-3xl border border-dashed border-amber-500/40 bg-amber-500/5 p-8 text-center shadow-2xs">
+        <div className="rounded-xl border border-dashed border-amber-500/40 bg-amber-500/5 p-8 text-center shadow-2xs">
           <p className="text-sm font-bold text-foreground">Lớp học phần không còn khả dụng</p>
           <p className="mt-1 text-xs text-muted-foreground">Hãy chọn lại lớp học phần trước khi xem dự án nhóm.</p>
         </div>
@@ -135,7 +138,7 @@ export function ProjectInfoView() {
   return (
     <div className="mx-auto max-w-[1600px] space-y-6 pb-12">
       {(isProjectLoading || isTeamLoading) && !isInitialLoading && (
-        <div className="flex animate-pulse items-center gap-2.5 rounded-2xl border border-primary/20 bg-primary/10 px-4 py-2.5 text-xs font-medium text-primary">
+        <div className="flex animate-pulse items-center gap-2.5 rounded-xl border border-primary/20 bg-primary/10 px-4 py-2.5 text-xs font-medium text-primary">
           <Loader2Icon className="h-4 w-4 shrink-0 animate-spin" />
           <span>Đang đồng bộ thông tin nhóm và dự án từ máy chủ...</span>
         </div>
@@ -147,6 +150,7 @@ export function ProjectInfoView() {
         isLeader={isLeader}
         hasTeam={hasTeam}
         isRoleLoading={isRoleLoading}
+        sseStatus={realtimeStatus}
         onProjectUpdated={handleUpdateProject}
       />
 
@@ -155,9 +159,9 @@ export function ProjectInfoView() {
           <ProjectInfoSkeleton />
         ) : !hasProject ? (
           <div className="space-y-5">
-            <div className="p-8 sm:p-10 rounded-3xl border border-dashed border-primary/30 bg-primary/[0.02] text-center space-y-5">
+            <div className="p-8 sm:p-10 rounded-xl border border-dashed border-primary/30 bg-primary/[0.02] text-center space-y-5">
               <div className="relative mx-auto w-16 h-16">
-                <div className="w-16 h-16 rounded-2xl bg-primary/10 text-primary border border-primary/20 flex items-center justify-center shadow-md">
+                <div className="w-16 h-16 rounded-xl bg-primary/10 text-primary border border-primary/20 flex items-center justify-center shadow-md">
                   <FolderKanbanIcon className="w-8 h-8" />
                 </div>
                 <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-xs">
@@ -187,7 +191,7 @@ export function ProjectInfoView() {
                     <PlusIcon className="w-4 h-4" />
                     Tạo dự án mới
                   </Button>
-                  <p className="text-[11px] text-muted-foreground/80">Dành cho Trưởng nhóm (Team Leader) đăng ký đề tài ban đầu</p>
+                  <p className="text-xs text-muted-foreground/80">Dành cho Trưởng nhóm (Team Leader) đăng ký đề tài ban đầu</p>
                 </div>
               ) : (
                 <div className="inline-block px-4 py-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-300 text-xs text-center max-w-md">

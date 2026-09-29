@@ -1,16 +1,20 @@
+import { showSuccessToast, showErrorToast } from "@/lib/api-error";
 import { useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
 import { ProjectSprintService } from "../api/project-sprint-service";
 import type {
   CreateProjectSprintRequest,
   PatchProjectSprintRequest,
   ProjectSprintResponse,
 } from "../types/jira-task-types";
-import { getApiErrorCode } from "@/lib/api-error";
 import { JIRA_SPRINT_QUERY_KEYS } from "./use-sprint-data";
 import { useProjectIntegrations } from "@/features/student/project/hooks/useProjectIntegrations";
 import { useJiraSources } from "@/features/student/project/hooks/use-jira-sources";
+import {
+  areJiraSourceQueriesSettled,
+  resolveSprintQuerySource,
+  shouldRetrySprintQuery,
+} from "../lib/sprint-query-source";
 
 export function useProjectSprints(
   projectId?: string | null,
@@ -19,46 +23,73 @@ export function useProjectSprints(
 ) {
   const explicitIntegrationId = typeof jiraIntegrationIdOrOptions === "string"
     ? jiraIntegrationIdOrOptions
-    : (typeof jiraIntegrationIdOrOptions === "object" ? jiraIntegrationIdOrOptions?.jiraIntegrationId : options?.jiraIntegrationId);
+    : (typeof jiraIntegrationIdOrOptions === "object" && jiraIntegrationIdOrOptions !== null
+      ? jiraIntegrationIdOrOptions.jiraIntegrationId
+      : options?.jiraIntegrationId);
 
   const effectiveOptions = typeof jiraIntegrationIdOrOptions === "object" && jiraIntegrationIdOrOptions !== null
     ? jiraIntegrationIdOrOptions
     : options;
 
-  const { data: canonicalJiraSources } = useJiraSources(projectId, {
-    enabled: Boolean(projectId && !explicitIntegrationId),
+  const trimmedExplicit = explicitIntegrationId?.trim() || "";
+  const cleanProjectId = projectId?.trim() || "";
+  const needSources = Boolean(cleanProjectId && !trimmedExplicit);
+
+  const jiraSourcesQuery = useJiraSources(projectId, {
+    enabled: needSources,
   });
 
-  const { data: integrations } = useProjectIntegrations(projectId, {
-    enabled: Boolean(projectId && !explicitIntegrationId && (!canonicalJiraSources || canonicalJiraSources.length === 0)),
+  const canonicalFetched = jiraSourcesQuery.isFetched || jiraSourcesQuery.isError;
+  const canonicalCount = jiraSourcesQuery.data?.length ?? 0;
+  const needIntegrations = needSources && canonicalFetched && canonicalCount === 0;
+
+  const integrationsQuery = useProjectIntegrations(projectId, {
+    enabled: needIntegrations,
   });
 
-  const activeSources = useMemo(() => {
+  const integrationsFetched = integrationsQuery.isFetched || integrationsQuery.isError;
+  const sourcesSettled = areJiraSourceQueriesSettled({
+    hasExplicitId: Boolean(trimmedExplicit),
+    canonicalFetched,
+    canonicalCount,
+    integrationsEnabled: needIntegrations,
+    integrationsFetched,
+  });
+
+  const activeSourceIds = useMemo(() => {
     const sources =
-      canonicalJiraSources && canonicalJiraSources.length > 0
-        ? canonicalJiraSources
-        : integrations?.jiraSources || [];
-    return sources.filter(
-      (s) => s.connectionStatus === "ACTIVE"
-    );
-  }, [canonicalJiraSources, integrations?.jiraSources]);
+      canonicalCount > 0
+        ? jiraSourcesQuery.data || []
+        : integrationsQuery.data?.jiraSources || [];
+    return sources
+      .filter((source) => source.connectionStatus === "ACTIVE")
+      .map((source) => source.integrationId)
+      .filter((id): id is string => Boolean(id?.trim()));
+  }, [canonicalCount, jiraSourcesQuery.data, integrationsQuery.data?.jiraSources]);
 
-  const resolvedIntegrationId = explicitIntegrationId
-    || (activeSources.length > 1 ? activeSources[0].integrationId : (activeSources.length === 1 ? activeSources[0].integrationId : undefined));
-
-  return useQuery({
-    queryKey: [...JIRA_SPRINT_QUERY_KEYS.sprints(projectId), resolvedIntegrationId || "default"],
-    queryFn: () => ProjectSprintService.getSprints(projectId!, resolvedIntegrationId),
-    enabled: (effectiveOptions?.enabled ?? true) && Boolean(projectId && projectId.trim()),
-    staleTime: 1000 * 60,
-    retry: (failureCount, error) => {
-      const code = getApiErrorCode(error);
-      if (code === "INTEGRATION_REVOKED" || code === "INTEGRATION_NOT_FOUND") {
-        return false;
-      }
-      return failureCount < 1;
-    },
+  const resolution = resolveSprintQuerySource({
+    explicitIntegrationId: trimmedExplicit || null,
+    sourcesSettled,
+    activeSourceIds,
   });
+
+  const query = useQuery({
+    queryKey: [...JIRA_SPRINT_QUERY_KEYS.sprints(projectId), resolution.integrationId || "unresolved"],
+    queryFn: () => ProjectSprintService.getSprints(projectId!, resolution.integrationId),
+    enabled:
+      (effectiveOptions?.enabled ?? true) &&
+      Boolean(cleanProjectId) &&
+      resolution.enabled,
+    staleTime: 1000 * 60,
+    retry: shouldRetrySprintQuery,
+  });
+
+  return {
+    ...query,
+    isLoading: query.isLoading || resolution.status === "pending",
+    sprintSourceStatus: resolution.status,
+    resolvedIntegrationId: resolution.integrationId,
+  };
 }
 
 export function useCreateSprint() {
@@ -79,11 +110,11 @@ export function useCreateSprint() {
       queryClient.invalidateQueries({
         queryKey: JIRA_SPRINT_QUERY_KEYS.tasks(variables.projectId),
       });
-      toast.success(`Đã tạo ${res.name} đồng bộ với Jira thành công.`);
+      showSuccessToast(`Đã tạo ${res.name} đồng bộ với Jira thành công.`);
     },
     onError: (error: unknown) => {
       const err = error as { response?: { data?: { message?: string } }; message?: string };
-      toast.error(err.response?.data?.message || err.message || "Không thể tạo Sprint trên Jira.");
+      showErrorToast(err.response?.data?.message || err.message || "Không thể tạo Sprint trên Jira.");
     },
   });
 }
@@ -113,7 +144,7 @@ export function usePatchSprint() {
         { queryKey: JIRA_SPRINT_QUERY_KEYS.sprints(variables.projectId), refetchType: "none" },
         { cancelRefetch: false }
       );
-      toast.success(`Đã cập nhật ${res.name} thành công.`);
+      showSuccessToast(`Đã cập nhật ${res.name} thành công.`);
     },
     onError: (error: unknown) => {
       const err = error as { response?: { data?: { code?: string; message?: string } }; message?: string };
@@ -121,7 +152,7 @@ export function usePatchSprint() {
         err.response?.data?.code === "JIRA_FIELD_INVALID"
           ? "Jira từ chối cập nhật Sprint (do ràng buộc trạng thái hoặc quyền hạn trên Jira)."
           : err.response?.data?.message || err.message || "Không thể cập nhật Sprint.";
-      toast.error(msg);
+      showErrorToast(msg);
     },
   });
 }
@@ -144,11 +175,11 @@ export function useDeleteSprint() {
       queryClient.invalidateQueries({
         queryKey: JIRA_SPRINT_QUERY_KEYS.tasks(variables.projectId),
       });
-      toast.success("Đã xóa Sprint trên Jira thành công.");
+      showSuccessToast("Đã xóa Sprint trên Jira thành công.");
     },
     onError: (error: unknown) => {
       const err = error as { response?: { data?: { message?: string } }; message?: string };
-      toast.error(err.response?.data?.message || err.message || "Không thể xóa Sprint.");
+      showErrorToast(err.response?.data?.message || err.message || "Không thể xóa Sprint.");
     },
   });
 }
@@ -173,7 +204,7 @@ export function useAssignTaskToSprint() {
       queryClient.invalidateQueries({
         queryKey: JIRA_SPRINT_QUERY_KEYS.sprints(variables.projectId),
       });
-      toast.success(
+      showSuccessToast(
         variables.sprintId === null
           ? "Đã chuyển task về Backlog."
           : "Đã gán task vào Sprint thành công."
@@ -181,7 +212,7 @@ export function useAssignTaskToSprint() {
     },
     onError: (error: unknown) => {
       const err = error as { response?: { data?: { message?: string } }; message?: string };
-      toast.error(err.response?.data?.message || err.message || "Không thể cập nhật Sprint của task.");
+      showErrorToast(err.response?.data?.message || err.message || "Không thể cập nhật Sprint của task.");
     },
   });
 }

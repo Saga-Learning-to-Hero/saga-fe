@@ -32,7 +32,7 @@ function CourseListSkeleton() {
       {Array.from({ length: 6 }).map((_, index) => (
         <Card
           key={index}
-          className="animate-pulse rounded-2xl border border-border/70 bg-card p-6 shadow-xs"
+          className="animate-pulse rounded-xl border border-border/70 bg-card p-6 shadow-xs"
         >
           <div className="space-y-4">
             <div className="flex items-center justify-between">
@@ -71,13 +71,13 @@ function CourseListCard({
       onMouseEnter={() => {
         onPrefetch(course.id);
       }}
-      className="group relative flex flex-col justify-between overflow-hidden rounded-2xl border border-border/80 bg-card p-6 shadow-xs transition-all duration-200 hover:-translate-y-1 hover:border-primary/50 hover:shadow-md"
+      className="group relative flex flex-col justify-between overflow-hidden rounded-xl border border-border/80 bg-card p-6 shadow-xs transition-all duration-200 hover:-translate-y-1 hover:border-primary/50 hover:shadow-md"
     >
-      <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-primary/80 via-primary to-accent opacity-0 transition-opacity duration-200 group-hover:opacity-100" />
+      <div className="absolute inset-x-0 top-0 h-1 bg-linear-to-r from-primary/80 via-primary to-accent opacity-0 transition-opacity duration-200 group-hover:opacity-100" />
 
       <CardContent className="space-y-4 p-0">
         <div className="flex items-start justify-between gap-3">
-          <div className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary transition-all duration-200 group-hover:bg-primary group-hover:text-primary-foreground group-hover:shadow-sm">
+          <div className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary transition-all duration-200 group-hover:bg-primary group-hover:text-primary-foreground group-hover:shadow-sm">
             <BookOpenIcon className="size-6" />
           </div>
           <div className="flex flex-wrap items-center justify-end gap-1.5">
@@ -182,7 +182,7 @@ export function CourseList() {
 
   return (
     <div className="mx-auto max-w-[1600px] space-y-8 pb-12">
-      <div className="relative overflow-hidden rounded-3xl border border-border/80 bg-card p-6 shadow-sm sm:p-8">
+      <div className="relative overflow-hidden rounded-xl border border-border/80 bg-card p-6 shadow-sm sm:p-8">
         <div className="pointer-events-none absolute -right-20 -top-20 size-72 rounded-full bg-primary/10 blur-3xl" />
         <div className="pointer-events-none absolute -bottom-20 -left-20 size-72 rounded-full bg-accent/10 blur-3xl" />
 
@@ -194,7 +194,7 @@ export function CourseList() {
             </div>
             <h1 className="text-2xl font-extrabold tracking-tight text-foreground sm:text-3xl lg:text-4xl">
               Không gian Giảng dạy của{" "}
-              <span className="bg-gradient-to-r from-primary via-indigo-600 to-cyan-500 bg-clip-text text-transparent dark:from-indigo-400 dark:via-primary dark:to-cyan-300">
+              <span className="text-primary dark:text-cyan-400 dark:drop-shadow-[0_0_16px_rgba(34,211,238,0.45)] font-black">
                 {displayName}
               </span>
             </h1>
@@ -204,7 +204,7 @@ export function CourseList() {
           </div>
 
           <div className="grid grid-cols-2 gap-3 sm:flex sm:items-center">
-            <div className="min-w-[130px] rounded-2xl border border-border/80 bg-muted/30 p-4 text-center">
+            <div className="min-w-[130px] rounded-xl border border-border/80 bg-muted/30 p-4 text-center">
               <span className="block font-mono text-2xl font-black text-foreground">
                 {isLoading ? "…" : courses.length}
               </span>
@@ -212,7 +212,7 @@ export function CourseList() {
                 Lớp học phần
               </span>
             </div>
-            <div className="min-w-[130px] rounded-2xl border border-border/80 bg-muted/30 p-4 text-center">
+            <div className="min-w-[130px] rounded-xl border border-border/80 bg-muted/30 p-4 text-center">
               <span className="block font-mono text-2xl font-black text-foreground">
                 {isLoading ? "…" : (semesters.length > 0 ? semesters.length : 1)}
               </span>
@@ -271,7 +271,7 @@ export function CourseList() {
       {isLoading ? (
         <CourseListSkeleton />
       ) : isError ? (
-        <Card className="rounded-2xl border border-dashed border-destructive/30 p-8 text-center">
+        <Card className="rounded-xl border border-dashed border-destructive/30 p-8 text-center">
           <p className="text-sm font-semibold text-foreground">Không tải được danh sách lớp học phần</p>
           <p className="mt-1 text-xs text-muted-foreground">
             {getApiErrorMessage(error, "Vui lòng thử lại.")}
@@ -286,7 +286,7 @@ export function CourseList() {
           </Button>
         </Card>
       ) : courses.length === 0 ? (
-        <Card className="grid min-h-60 place-items-center rounded-2xl border border-dashed border-border bg-card p-8">
+        <Card className="grid min-h-60 place-items-center rounded-xl border border-dashed border-border bg-card p-8">
           <div className="text-center">
             <GraduationCapIcon className="mx-auto mb-3 size-10 text-muted-foreground/40" />
             <p className="text-sm font-semibold text-foreground">Bạn chưa được phân công lớp học phần nào</p>
@@ -296,7 +296,7 @@ export function CourseList() {
           </div>
         </Card>
       ) : filteredCourses.length === 0 ? (
-        <Card className="grid min-h-60 place-items-center rounded-2xl border border-dashed border-border bg-card p-8">
+        <Card className="grid min-h-60 place-items-center rounded-xl border border-dashed border-border bg-card p-8">
           <div className="text-center">
             <SearchIcon className="mx-auto mb-3 size-10 text-muted-foreground/40" />
             <p className="text-sm font-semibold text-foreground">Không tìm thấy lớp học phần phù hợp</p>

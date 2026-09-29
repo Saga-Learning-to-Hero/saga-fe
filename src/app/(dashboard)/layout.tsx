@@ -15,14 +15,12 @@ import { TopNavHeader } from "@/components/layout/header/top-nav-header";
 import { AdminTopHeader } from "@/components/layout/header/admin-top-header";
 import { ProfileModal } from "@/features/profile/components/profile-modal";
 import { UserRealtimeProvider } from "@/features/notification/providers/user-realtime-provider";
-import { useUserEvents } from "@/features/auth/hooks/useUserEvents";
 
 export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  useUserEvents();
   const router = useRouter();
   const pathname = usePathname();
   const { isAuthenticated, user, passwordSetupRequired, hasHydrated } = useAuthStore();
@@ -77,7 +75,7 @@ export default function DashboardLayout({
   if (isSessionError) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background p-6">
-        <div className="w-full max-w-md space-y-4 rounded-2xl border border-dashed border-border bg-card p-8 text-center shadow-xs">
+        <div className="w-full max-w-md space-y-4 rounded-xl border border-dashed border-border bg-card p-8 text-center shadow-xs">
           <SagaLogo size="sm" showText={true} showSubtitle={false} />
           <div className="space-y-1">
             <h1 className="text-base font-bold">Không thể kết nối máy chủ</h1>
@@ -126,11 +124,13 @@ export default function DashboardLayout({
             <Sidebar collapsed={collapsed} onToggle={() => setCollapsed((v) => !v)} />
           </div>
 
-          <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
-            <SheetContent side="left" className="p-0 w-64">
-              <Sidebar collapsed={false} onToggle={() => setMobileOpen(false)} />
-            </SheetContent>
-          </Sheet>
+          {mobileOpen && (
+            <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
+              <SheetContent side="left" className="p-0 w-64">
+                <Sidebar collapsed={false} onToggle={() => setMobileOpen(false)} />
+              </SheetContent>
+            </Sheet>
+          )}
 
           <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
             <AdminTopHeader onOpenMobileMenu={() => setMobileOpen(true)} />

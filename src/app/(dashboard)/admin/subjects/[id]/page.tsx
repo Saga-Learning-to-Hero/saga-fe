@@ -48,7 +48,7 @@ const DynamicSyllabusStructureBuilder = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="rounded-2xl border border-border bg-card p-6 space-y-6 shadow-xs animate-pulse">
+      <div className="rounded-xl border border-border bg-card p-6 space-y-6 shadow-xs animate-pulse">
         <div className="flex items-center justify-between pb-4 border-b border-border/60">
           <div className="space-y-2">
             <div className="h-5 bg-muted rounded w-48" />
@@ -191,8 +191,8 @@ export default function SubjectDetailPage({
       <div className="max-w-6xl mx-auto space-y-6 animate-pulse pb-16">
         <div className="space-y-4">
           <div className="h-4 bg-muted rounded w-36" />
-          <div className="p-6 rounded-2xl bg-card border border-border flex items-start gap-4">
-            <div className="w-14 h-14 rounded-2xl bg-muted shrink-0" />
+          <div className="p-6 rounded-xl bg-card border border-border flex items-start gap-4">
+            <div className="w-14 h-14 rounded-xl bg-muted shrink-0" />
             <div className="space-y-3 flex-1">
               <div className="flex items-center gap-3">
                 <div className="h-7 bg-muted rounded-lg w-20" />
@@ -204,11 +204,11 @@ export default function SubjectDetailPage({
             </div>
           </div>
         </div>
-        <div className="p-6 rounded-2xl bg-card border border-border space-y-4">
+        <div className="p-6 rounded-xl bg-card border border-border space-y-4">
           <div className="h-5 bg-muted rounded w-48" />
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-            <div className="h-28 bg-muted rounded-2xl" />
-            <div className="h-28 bg-muted rounded-2xl" />
+            <div className="h-28 bg-muted rounded-xl" />
+            <div className="h-28 bg-muted rounded-xl" />
           </div>
         </div>
       </div>
@@ -258,9 +258,9 @@ export default function SubjectDetailPage({
           </Button>
         </div>
 
-        <div className="p-6 rounded-2xl bg-card border border-border shadow-xs flex flex-col md:flex-row md:items-start justify-between gap-6">
+        <div className="p-6 rounded-xl bg-card border border-border shadow-xs flex flex-col md:flex-row md:items-start justify-between gap-6">
           <div className="flex items-start gap-4">
-            <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center text-primary shrink-0 shadow-2xs border border-primary/20">
+            <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0 shadow-2xs border border-primary/20">
               <BookOpenIcon className="w-7 h-7" />
             </div>
             <div className="space-y-2">
@@ -272,11 +272,11 @@ export default function SubjectDetailPage({
                   {subject.nameEnglish}
                 </h1>
                 {subject.status === "ACTIVE" ? (
-                  <Badge variant="secondary" className="bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 text-[10px] uppercase font-bold px-2 py-0.5">
+                  <Badge variant="secondary" className="bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 text-xs uppercase font-bold px-2 py-0.5">
                     <CheckCircle2Icon className="w-3.5 h-3.5 mr-1" /> Đang hoạt động
                   </Badge>
                 ) : (
-                  <Badge variant="outline" className="text-muted-foreground border-border text-[10px] uppercase font-semibold px-2 py-0.5">
+                  <Badge variant="outline" className="text-muted-foreground border-border text-xs uppercase font-semibold px-2 py-0.5">
                     <AlertCircleIcon className="w-3.5 h-3.5 mr-1" /> Tạm ngừng
                   </Badge>
                 )}
@@ -329,7 +329,7 @@ export default function SubjectDetailPage({
         </TabsContent>
 
         <TabsContent value="structure" keepMounted className="space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-2xl bg-card border border-border shadow-xs">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-xl bg-card border border-border shadow-xs">
             <div className="flex items-center gap-3">
               <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0">
                 <AwardIcon className="w-4 h-4" />
@@ -343,23 +343,23 @@ export default function SubjectDetailPage({
                     {activeSyllabusSummary?.versionLabel || "Đang chọn"}
                   </span>
                   {activeSyllabusSummary?.status === "PUBLISHED" ? (
-                    <Badge className="bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 text-[10px] font-bold px-2 py-0">
+                    <Badge className="bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 text-xs font-bold px-2 py-0">
                       <CheckCircle2Icon className="w-3 h-3 mr-1" />
                       Bản chuẩn áp dụng
                     </Badge>
                   ) : activeSyllabusSummary?.status === "DRAFT" ? (
-                    <Badge className="bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30 text-[10px] font-bold px-2 py-0">
+                    <Badge className="bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30 text-xs font-bold px-2 py-0">
                       <ClockIcon className="w-3 h-3 mr-1" />
                       Bản nháp biên soạn
                     </Badge>
                   ) : activeSyllabusSummary?.status === "ARCHIVED" ? (
-                    <Badge variant="outline" className="bg-muted text-muted-foreground border-border text-[10px] font-semibold px-2 py-0">
+                    <Badge variant="outline" className="bg-muted text-muted-foreground border-border text-xs font-semibold px-2 py-0">
                       <ArchiveIcon className="w-3 h-3 mr-1" />
                       Lưu trữ
                     </Badge>
                   ) : null}
                 </div>
-                <p className="text-[11px] text-muted-foreground">
+                <p className="text-xs text-muted-foreground">
                   Chuẩn đầu ra môn học (CLOs), nội dung đào tạo (Units) và các mốc bàn giao Sprint dự án.
                 </p>
               </div>
@@ -391,7 +391,7 @@ export default function SubjectDetailPage({
           </div>
 
           {syllabusDetail && (
-            <div className="rounded-2xl border border-border bg-card shadow-xs overflow-hidden">
+            <div className="rounded-xl border border-border bg-card shadow-xs overflow-hidden">
               <button
                 type="button"
                 onClick={() => setIsMetadataExpanded(!isMetadataExpanded)}
@@ -405,7 +405,7 @@ export default function SubjectDetailPage({
                     <h4 className="text-xs font-bold text-foreground">
                       Thông Tin Tổng Quan Đề Cương (FLM Curriculum Metadata)
                     </h4>
-                    <p className="text-[11px] text-muted-foreground font-mono">
+                    <p className="text-xs text-muted-foreground font-mono">
                       Mã FLM: {syllabusDetail.externalSyllabusId || "Chưa gán"} • Bậc: {syllabusDetail.level || "Bachelor"} • Tín chỉ: {syllabusDetail.credits || 3} • Điểm đạt: {syllabusDetail.gradingScale || "Thang 10"}
                     </p>
                   </div>
@@ -425,42 +425,42 @@ export default function SubjectDetailPage({
                 <div className="p-5 border-t border-border/60 bg-muted/5 space-y-4 animate-in fade-in-50 duration-200">
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-xs">
                     <div className="space-y-1 p-3 rounded-xl bg-card border border-border/60">
-                      <span className="text-[10px] font-bold text-muted-foreground uppercase">Học phần tiên quyết</span>
+                      <span className="text-xs font-bold text-muted-foreground uppercase">Học phần tiên quyết</span>
                       <p className="font-mono text-foreground font-medium">{syllabusDetail.prerequisites || "Không yêu cầu"}</p>
                     </div>
 
                     <div className="space-y-1 p-3 rounded-xl bg-card border border-border/60">
-                      <span className="text-[10px] font-bold text-muted-foreground uppercase">Phân bổ thời gian</span>
+                      <span className="text-xs font-bold text-muted-foreground uppercase">Phân bổ thời gian</span>
                       <p className="text-foreground font-medium">{syllabusDetail.timeAllocation || "Chưa cập nhật"}</p>
                     </div>
 
                     <div className="space-y-1 p-3 rounded-xl bg-card border border-border/60">
-                      <span className="text-[10px] font-bold text-muted-foreground uppercase">Phương pháp giảng dạy</span>
+                      <span className="text-xs font-bold text-muted-foreground uppercase">Phương pháp giảng dạy</span>
                       <p className="text-foreground font-medium">{syllabusDetail.learningTeachingMethod || "Chưa cập nhật"}</p>
                     </div>
 
                     <div className="space-y-1 p-3 rounded-xl bg-card border border-border/60 md:col-span-2 lg:col-span-3">
-                      <span className="text-[10px] font-bold text-muted-foreground uppercase">Công cụ & Môi trường phát triển</span>
+                      <span className="text-xs font-bold text-muted-foreground uppercase">Công cụ & Môi trường phát triển</span>
                       <p className="font-mono text-foreground font-medium">{syllabusDetail.tools || "Chưa cập nhật"}</p>
                     </div>
 
                     {syllabusDetail.description && (
                       <div className="space-y-1 p-3 rounded-xl bg-card border border-border/60 md:col-span-2 lg:col-span-3">
-                        <span className="text-[10px] font-bold text-muted-foreground uppercase">Mô tả học phần</span>
+                        <span className="text-xs font-bold text-muted-foreground uppercase">Mô tả học phần</span>
                         <p className="text-foreground leading-relaxed whitespace-pre-line">{syllabusDetail.description}</p>
                       </div>
                     )}
 
                     {syllabusDetail.studentDuties && (
                       <div className="space-y-1 p-3 rounded-xl bg-card border border-border/60 md:col-span-2 lg:col-span-3">
-                        <span className="text-[10px] font-bold text-muted-foreground uppercase">Nhiệm vụ của sinh viên</span>
+                        <span className="text-xs font-bold text-muted-foreground uppercase">Nhiệm vụ của sinh viên</span>
                         <p className="text-foreground leading-relaxed whitespace-pre-line">{syllabusDetail.studentDuties}</p>
                       </div>
                     )}
 
                     {(syllabusDetail.textbooks || syllabusDetail.referenceMaterials) && (
                       <div className="space-y-1 p-3 rounded-xl bg-card border border-border/60 md:col-span-2 lg:col-span-3">
-                        <span className="text-[10px] font-bold text-muted-foreground uppercase">Giáo trình & Tài liệu tham khảo</span>
+                        <span className="text-xs font-bold text-muted-foreground uppercase">Giáo trình & Tài liệu tham khảo</span>
                         <p className="text-foreground">
                           {syllabusDetail.textbooks && <span><strong>Giáo trình:</strong> {syllabusDetail.textbooks} </span>}
                           {syllabusDetail.referenceMaterials && <span><strong>Tài liệu:</strong> {syllabusDetail.referenceMaterials}</span>}
@@ -474,7 +474,7 @@ export default function SubjectDetailPage({
           )}
 
           {isDetailLoading ? (
-            <div className="rounded-2xl border border-border bg-card p-6 space-y-6 shadow-xs animate-pulse">
+            <div className="rounded-xl border border-border bg-card p-6 space-y-6 shadow-xs animate-pulse">
               <div className="flex items-center justify-between pb-4 border-b border-border/60">
                 <div className="space-y-2">
                   <div className="h-5 bg-muted rounded w-48" />
@@ -502,7 +502,7 @@ export default function SubjectDetailPage({
               isSaving={replaceStructureMutation.isPending}
             />
           ) : (
-            <div className="p-12 text-center space-y-3 bg-card border border-border rounded-2xl">
+            <div className="p-12 text-center space-y-3 bg-card border border-border rounded-xl">
               <p className="text-sm font-bold text-foreground">Chưa có phiên bản đề cương nào cho môn học này</p>
               <p className="text-xs text-muted-foreground">
                 Bấm nút &quot;Tạo bản đề cương mới&quot; ở tab Danh sách Phiên bản để bắt đầu cấu hình chuẩn đầu ra (CLOs) và tiêu chí dự án.

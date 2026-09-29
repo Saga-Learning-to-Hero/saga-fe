@@ -20,6 +20,9 @@ export type SSEConnectionStatus = "CONNECTING" | "OPEN" | "CLOSED" | "ERROR";
 export interface UseProjectRealtimeOptions {
   enabled?: boolean;
   onEvent?: (event: ProjectRealtimeEvent) => void;
+  includeProgress?: boolean;
+  includeGraph?: boolean;
+  includeIntegrations?: boolean;
 }
 
 export interface UseProjectRealtimeReturn {

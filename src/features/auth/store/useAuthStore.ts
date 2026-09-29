@@ -1,3 +1,4 @@
+import { showErrorToast, showInfoToast } from "@/lib/api-error";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import type { Role, User } from "@/types/auth";
@@ -5,9 +6,7 @@ import type { StudentCourse } from "@/features/student/courses/types/student-cou
 import { AuthService } from "../api/auth-service";
 import { performLogout } from "../lib/logout-orchestrator";
 import { isUnauthorizedError } from "@/lib/api-error";
-import { closeUserEvents, resetAccountDisabledState } from "../lib/user-events";
 import { getQueryClient } from "@/providers/query-provider";
-import { toast } from "sonner";
 
 interface AuthState {
   isAuthenticated: boolean;
@@ -49,7 +48,6 @@ export const useAuthStore = create<AuthState>()(
         })),
 
       loginWithCredentials: async (identifier, password) => {
-        resetAccountDisabledState();
         const res = await AuthService.login({ identifier, password });
         if (res.authenticated && res.user) {
           const mappedUser: User = {
@@ -115,7 +113,6 @@ export const useAuthStore = create<AuthState>()(
       },
 
       logout: async () => {
-        closeUserEvents();
         try {
           getQueryClient().clear();
         } catch {
@@ -152,7 +149,6 @@ if (typeof window !== "undefined") {
   // Lắng nghe sự kiện tài khoản bị khóa qua SSE hoặc qua HTTP 403 ACCOUNT_DISABLED
   window.addEventListener("saga:account-disabled", (e: Event) => {
     const customEvt = e as CustomEvent<{ message?: string }>;
-    closeUserEvents();
 
     const store = useAuthStore.getState();
     if (store.isAuthenticated || store.user) {
@@ -169,7 +165,7 @@ if (typeof window !== "undefined") {
       const noticeMsg =
         customEvt.detail?.message ||
         "Tài khoản của bạn đã bị vô hiệu hóa. Vui lòng liên hệ quản trị viên nếu bạn cần hỗ trợ.";
-      toast.error(noticeMsg);
+      showErrorToast(noticeMsg);
 
       if (window.location.pathname !== "/account-disabled") {
         // eslint-disable-next-line @next/next/no-location-assign-relative-destination
@@ -181,7 +177,6 @@ if (typeof window !== "undefined") {
   // Lắng nghe sự kiện hết hạn phiên / 401 INVALID_CREDENTIALS
   window.addEventListener("saga:unauthorized", (e: Event) => {
     const customEvt = e as CustomEvent<{ url?: string; pathname?: string; code?: string; message?: string }>;
-    closeUserEvents();
 
     const store = useAuthStore.getState();
     if (store.isAuthenticated || store.user) {
@@ -199,7 +194,7 @@ if (typeof window !== "undefined") {
         currentPath.startsWith("/auth/") ||
         currentPath.startsWith("/account-disabled");
 
-      toast.info(customEvt.detail?.message || "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.");
+      showInfoToast(customEvt.detail?.message || "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.");
 
       if (!isAuthRoute) {
         // eslint-disable-next-line @next/next/no-location-assign-relative-destination

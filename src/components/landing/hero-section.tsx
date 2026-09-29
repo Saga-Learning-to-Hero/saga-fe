@@ -38,7 +38,7 @@ export function HeroSection() {
           <div className="space-y-3.5">
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight text-foreground leading-[1.12]">
               Minh bạch Công sức qua{" "}
-              <span className="bg-gradient-to-r from-primary via-indigo-500 to-cyan-500 bg-clip-text text-transparent">
+              <span className="saga-brand-gradient">
                 Đồ thị Truy xuất
               </span>{" "}
               & AI Hub
@@ -90,7 +90,7 @@ export function HeroSection() {
         </div>
 
         <div className="lg:col-span-6 relative [perspective:1200px]">
-          <div className="relative rounded-3xl border border-border/80 bg-card/90 backdrop-blur-2xl p-6 sm:p-7 shadow-2xl space-y-6 transition-all duration-500 hover:border-primary/50 hover:shadow-primary/20">
+          <div className="relative rounded-xl border border-border/80 bg-card/90 backdrop-blur-sm p-6 sm:p-7 shadow-lg space-y-6 transition-all duration-500 hover:border-primary/50 hover:shadow-primary/20">
             <div className="flex items-center justify-between border-b border-border/60 pb-4">
               <div className="flex items-center gap-3">
                 <div className="w-3.5 h-3.5 rounded-full bg-emerald-500 animate-pulse" />
@@ -99,7 +99,7 @@ export function HeroSection() {
                     <NetworkIcon className="w-4 h-4 text-primary" />
                     Live Traceability Graph
                   </span>
-                  <p className="text-[11px] text-muted-foreground font-mono">
+                  <p className="text-xs text-muted-foreground font-mono">
                     Neo4j AuraDB · Cytoscape Engine · XAI Anomaly
                   </p>
                 </div>
@@ -109,7 +109,7 @@ export function HeroSection() {
               </Badge>
             </div>
 
-            <div className="relative h-[360px] sm:h-[390px] w-full rounded-2xl bg-muted/20 border border-border/60 overflow-hidden select-none flex items-center justify-center p-3">
+            <div className="relative h-[360px] sm:h-[390px] w-full rounded-xl bg-muted/20 border border-border/60 overflow-hidden select-none flex items-center justify-center p-3">
               <svg className="w-full h-full" viewBox="0 0 520 350" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <line x1="90" y1="175" x2="250" y2="90" stroke="#94A3B8" strokeWidth="2" strokeDasharray="5 5" className="animate-pulse" />
                 <line x1="90" y1="175" x2="250" y2="250" stroke="#94A3B8" strokeWidth="2" strokeDasharray="5 5" />
@@ -156,12 +156,12 @@ export function HeroSection() {
                 </g>
               </svg>
 
-              <div className="absolute bottom-3 left-4 bg-background/90 backdrop-blur-md px-3 py-1.5 rounded-xl border border-border text-[10px] font-mono text-muted-foreground shadow-xs">
+              <div className="absolute bottom-3 left-4 bg-background/90 backdrop-blur-sm px-3 py-1.5 rounded-xl border border-border text-xs font-mono text-muted-foreground shadow-xs">
                 <span className="text-primary font-bold">(:Student)</span>-[:ASSIGNED_TO]&gt;<span className="text-blue-600 font-bold">(:JiraTask)</span>&lt;[:IMPLEMENTS]-<span className="text-purple-600 font-bold">(:Commit)</span>
               </div>
             </div>
 
-            <div className="p-4 rounded-2xl bg-muted/40 border border-border/80 space-y-2.5">
+            <div className="p-4 rounded-xl bg-muted/40 border border-border/80 space-y-2.5">
               <div className="flex items-center justify-between gap-4 text-sm">
                 <span className="font-extrabold text-foreground flex items-center gap-2">
                   <ShieldCheckIcon className="w-4 h-4 text-primary shrink-0" />
@@ -172,7 +172,7 @@ export function HeroSection() {
                 </span>
               </div>
               <div className="w-full h-2.5 bg-muted rounded-full overflow-hidden">
-                <div className="h-full bg-gradient-to-r from-primary via-indigo-500 to-cyan-500 rounded-full w-[88%]" />
+                <div className="h-full bg-linear-to-r from-primary via-indigo-500 to-cyan-500 rounded-full w-[88%]" />
               </div>
               <div className="flex items-center justify-between text-xs text-muted-foreground font-mono pt-0.5">
                 <span className="font-semibold text-foreground flex items-center gap-1.5">

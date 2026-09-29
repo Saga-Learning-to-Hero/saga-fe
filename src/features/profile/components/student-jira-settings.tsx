@@ -1,4 +1,5 @@
 "use client";
+import { showSuccessToast, showErrorToast, showInfoToast } from "@/lib/api-error";
 
 import { useState } from "react";
 import {
@@ -18,7 +19,6 @@ import {
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { toast } from "@/components/ui/sonner";
 import { JiraConnectedCard } from "./jira/jira-connected-card";
 import { IdentityDisconnectDialog } from "./identity-disconnect-dialog";
 
@@ -45,7 +45,7 @@ export function StudentJiraSettings({
 
   const handleConnectJiraOAuth = async () => {
     try {
-      toast.loading("Đang chuyển hướng sang Atlassian ID OAuth...", { id: "jira-oauth" });
+      showInfoToast("Đang chuyển hướng sang Atlassian ID OAuth...", { id: "jira-oauth" });
       const defaultPath = "/profile/integrations";
       const currentPath = typeof window !== "undefined"
         ? (window.location.pathname.startsWith("/profile") ? window.location.pathname : defaultPath)
@@ -56,7 +56,7 @@ export function StudentJiraSettings({
         window.open(result.authorizationUrl, "_self");
       }
     } catch {
-      toast.error("Lỗi khi kết nối với máy chủ Atlassian. Vui lòng thử lại sau.", { id: "jira-oauth" });
+      showErrorToast("Lỗi khi kết nối với máy chủ Atlassian. Vui lòng thử lại sau.", { id: "jira-oauth" });
     }
   };
 
@@ -64,11 +64,11 @@ export function StudentJiraSettings({
     if (!identityId) return;
     const toastId = "jira-primary";
     try {
-      toast.loading("Đang đặt tài khoản Jira làm định danh chính...", { id: toastId });
+      showInfoToast("Đang đặt tài khoản Jira làm định danh chính...", { id: toastId });
       await setPrimaryMutation.mutateAsync(identityId);
-      toast.success("Đã đặt tài khoản Atlassian Jira làm định danh chính!", { id: toastId });
+      showSuccessToast("Đã đặt tài khoản Atlassian Jira làm định danh chính!", { id: toastId });
     } catch {
-      toast.error("Không thể đặt làm định danh chính. Vui lòng thử lại.", { id: toastId });
+      showErrorToast("Không thể đặt làm định danh chính. Vui lòng thử lại.", { id: toastId });
     }
   };
 
@@ -76,17 +76,17 @@ export function StudentJiraSettings({
     if (!disconnectItem) return;
     const toastId = "jira-disconnect";
     try {
-      toast.loading("Đang hủy liên kết tài khoản Jira...", { id: toastId });
+      showInfoToast("Đang hủy liên kết tài khoản Jira...", { id: toastId });
       await deleteMutation.mutateAsync(disconnectItem.id);
-      toast.success("Đã hủy liên kết tài khoản Atlassian Jira cá nhân thành công!", { id: toastId });
+      showSuccessToast("Đã hủy liên kết tài khoản Atlassian Jira cá nhân thành công!", { id: toastId });
       setDisconnectItem(null);
     } catch {
-      toast.error("Lỗi khi hủy liên kết tài khoản Jira. Vui lòng thử lại.", { id: toastId });
+      showErrorToast("Lỗi khi hủy liên kết tài khoản Jira. Vui lòng thử lại.", { id: toastId });
     }
   };
 
   return (
-    <Card className="rounded-2xl border border-border/80 bg-card shadow-xs overflow-hidden">
+    <Card className="rounded-xl border border-border/80 bg-card shadow-xs overflow-hidden">
       <CardHeader className="p-4 sm:p-5 border-b border-border/60 bg-card">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center gap-3">
@@ -101,7 +101,7 @@ export function StudentJiraSettings({
                 {isLoading && resolvedIdentities.length === 0 ? (
                   <Badge
                     variant="outline"
-                    className="bg-primary/10 text-primary border-primary/30 text-[11px] font-semibold gap-1 animate-pulse"
+                    className="bg-primary/10 text-primary border-primary/30 text-xs font-semibold gap-1 animate-pulse"
                   >
                     <LoaderCircleIcon className="w-3 h-3 animate-spin" />
                     Đang kiểm tra...
@@ -109,7 +109,7 @@ export function StudentJiraSettings({
                 ) : isConnected ? (
                   <Badge
                     variant="outline"
-                    className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 text-[11px] font-bold gap-1"
+                    className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 text-xs font-bold gap-1"
                   >
                     <ShieldCheckIcon className="w-3.5 h-3.5" />
                     Đã kết nối ({resolvedIdentities.length})
@@ -117,7 +117,7 @@ export function StudentJiraSettings({
                 ) : (
                   <Badge
                     variant="outline"
-                    className="bg-muted text-muted-foreground border-border text-[11px] font-semibold"
+                    className="bg-muted text-muted-foreground border-border text-xs font-semibold"
                   >
                     Chưa kết nối
                   </Badge>
@@ -175,7 +175,7 @@ export function StudentJiraSettings({
 
       <CardContent className="p-4 sm:p-5 space-y-4 bg-card">
         {isLoading && resolvedIdentities.length === 0 ? (
-          <div className="p-8 flex flex-col items-center justify-center gap-2.5 rounded-2xl bg-muted/15 border border-dashed border-border/80 text-muted-foreground animate-pulse">
+          <div className="p-8 flex flex-col items-center justify-center gap-2.5 rounded-xl bg-muted/15 border border-dashed border-border/80 text-muted-foreground animate-pulse">
             <LoaderCircleIcon className="w-5 h-5 animate-spin text-primary" />
             <span className="text-xs font-medium">Đang tải trạng thái liên kết Atlassian Jira cá nhân...</span>
           </div>
@@ -195,8 +195,8 @@ export function StudentJiraSettings({
             ))}
           </div>
         ) : (
-          <div className="p-6 sm:p-8 text-center rounded-2xl border border-dashed border-border/80 bg-muted/10 space-y-4">
-            <div className="w-12 h-12 rounded-2xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center mx-auto">
+          <div className="p-6 sm:p-8 text-center rounded-xl border border-dashed border-border/80 bg-muted/10 space-y-4">
+            <div className="w-12 h-12 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center mx-auto">
               <CheckSquareIcon className="w-6 h-6" />
             </div>
 

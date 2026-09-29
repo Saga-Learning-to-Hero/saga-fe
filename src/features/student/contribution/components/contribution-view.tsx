@@ -28,7 +28,20 @@ import { Card } from "@/components/ui/card";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { groupWarningsByMember } from "../lib/contribution-view-utils";
 import { ContributionKPICards } from "./contribution-kpi-cards";
-import { ContributionCharts } from "./contribution-charts";
+import dynamic from "next/dynamic";
+import { Loader2Icon } from "lucide-react";
+
+const ContributionCharts = dynamic(
+  () => import("./contribution-charts").then((mod) => mod.ContributionCharts),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="w-full h-[400px] flex items-center justify-center text-muted-foreground bg-muted/10 rounded-xl">
+        <Loader2Icon className="w-6 h-6 animate-spin" />
+      </div>
+    ),
+  }
+);
 import { ContributionTable } from "./contribution-table";
 import { ContributionViewSkeleton } from "./contribution-view-skeleton";
 import { LeaderBadge } from "@/components/common/leader-badge";
@@ -64,7 +77,7 @@ export function ContributionView() {
   if (!courseId) {
     return (
       <div className="max-w-[1600px] mx-auto py-16">
-        <Card className="rounded-2xl border border-dashed border-border/80 p-8 text-center shadow-xs">
+        <Card className="rounded-xl border border-dashed border-border/80 p-8 text-center shadow-xs">
           <p className="text-sm font-semibold text-foreground">
             Vui lòng chọn một môn học để xem thông tin đóng góp
           </p>
@@ -85,7 +98,7 @@ export function ContributionView() {
   if (teamQuery.isWaitingForTeam || (!teamQuery.isLoading && !teamId)) {
     return (
       <div className="max-w-[1600px] mx-auto py-16">
-        <Card className="rounded-2xl border border-dashed border-border/80 p-8 text-center shadow-xs">
+        <Card className="rounded-xl border border-dashed border-border/80 p-8 text-center shadow-xs">
           <p className="text-sm font-semibold text-foreground">
             Bạn chưa được phân vào nhóm dự án trong lớp học phần này
           </p>
@@ -136,8 +149,8 @@ export function ContributionView() {
           </div>
         </div>
 
-        <Card className="rounded-2xl border border-border/80 bg-card p-8 shadow-xs text-center max-w-2xl mx-auto space-y-4 my-8">
-          <div className="size-14 rounded-2xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center mx-auto shadow-2xs">
+        <Card className="rounded-xl border border-border/80 bg-card p-8 shadow-xs text-center max-w-2xl mx-auto space-y-4 my-8">
+          <div className="size-14 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center mx-auto shadow-2xs">
             <LockIcon className="size-7" />
           </div>
 
@@ -180,8 +193,8 @@ export function ContributionView() {
   if (!projectId) {
     return (
       <div className="max-w-[1600px] mx-auto py-16">
-        <Card className="rounded-2xl border border-dashed border-border/80 p-8 text-center shadow-xs">
-          <div className="size-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center mx-auto mb-3 shadow-2xs">
+        <Card className="rounded-xl border border-dashed border-border/80 p-8 text-center shadow-xs">
+          <div className="size-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center mx-auto mb-3 shadow-2xs">
             <FolderGit2Icon className="size-6" />
           </div>
           <p className="text-sm font-semibold text-foreground">
@@ -208,7 +221,7 @@ export function ContributionView() {
   if (evaluationQuery.isError || !evaluation) {
     return (
       <div className="max-w-[1600px] mx-auto py-16">
-        <Card className="rounded-2xl border border-destructive/30 bg-destructive/5 p-8 text-center shadow-xs">
+        <Card className="rounded-xl border border-destructive/30 bg-destructive/5 p-8 text-center shadow-xs">
           <p className="text-sm font-semibold text-destructive">
             Không thể tải dữ liệu đánh giá đóng góp của nhóm
           </p>
@@ -258,7 +271,7 @@ export function ContributionView() {
                       side="bottom"
                       align="start"
                       sideOffset={8}
-                      className="flex-col items-start w-84 p-3.5 bg-foreground text-background shadow-2xl rounded-2xl space-y-2.5 z-50 text-left border border-background/10"
+                      className="flex-col items-start w-84 p-3.5 bg-foreground text-background shadow-lg rounded-xl space-y-2.5 z-50 text-left border border-background/10"
                     >
                       <div className="w-full space-y-2.5 text-left">
                         <div className="flex items-center justify-between gap-2 border-b border-background/20 pb-2">
@@ -270,7 +283,7 @@ export function ContributionView() {
                               Khái niệm Slice Score
                             </span>
                           </div>
-                          <span className="rounded-full bg-background/20 px-2 py-0.5 font-mono text-[10px] font-bold text-background">
+                          <span className="rounded-full bg-background/20 px-2 py-0.5 font-mono text-xs font-bold text-background">
                             Slicing Pie
                           </span>
                         </div>
@@ -280,13 +293,13 @@ export function ContributionView() {
                         </p>
 
                         <div className="rounded-xl border border-background/15 bg-background/10 p-2.5 space-y-1">
-                          <div className="flex items-center justify-between text-[11px] font-semibold text-background">
+                          <div className="flex items-center justify-between text-xs font-semibold text-background">
                             <span>Nguyên lý tính toán</span>
                             <span className="font-mono font-bold text-emerald-400 dark:text-emerald-300">
                               ∑ (Effort × Trọng số)
                             </span>
                           </div>
-                          <p className="text-[10px] leading-tight text-background/70">
+                          <p className="text-xs leading-tight text-background/70">
                             Dữ liệu đối soát khách quan từ Jira & GitHub, bảo đảm tính minh bạch và công bằng cho toàn nhóm.
                           </p>
                         </div>
@@ -320,7 +333,7 @@ export function ContributionView() {
       <ContributionKPICards sliceWeights={evaluation.sliceWeights} />
 
       {memberWarnings.length > 0 && (
-        <Card className="rounded-2xl border border-amber-500/30 bg-amber-500/5 p-4 shadow-xs">
+        <Card className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-4 shadow-xs">
           <div className="flex items-start gap-3">
             <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-amber-500/15 text-amber-700 dark:text-amber-400">
               <AlertTriangleIcon className="size-5" />
@@ -331,7 +344,7 @@ export function ContributionView() {
                   <h4 className="text-sm font-extrabold text-amber-900 dark:text-amber-200">
                     Cảnh báo đối soát minh chứng theo thành viên ({memberWarnings.length})
                   </h4>
-                  <span className="rounded-full bg-amber-500/20 px-2 py-0.5 font-mono text-[10px] font-bold text-amber-800 dark:text-amber-300">
+                  <span className="rounded-full bg-amber-500/20 px-2 py-0.5 font-mono text-xs font-bold text-amber-800 dark:text-amber-300">
                     Cần hoàn thiện
                   </span>
                 </div>
@@ -349,7 +362,7 @@ export function ContributionView() {
                           <span className="text-xs font-bold text-foreground">
                             {group.fullName}
                           </span>
-                          <span className="font-mono text-[10px] text-muted-foreground">
+                          <span className="font-mono text-xs text-muted-foreground">
                             {group.studentCode}
                           </span>
                         </div>
@@ -363,7 +376,7 @@ export function ContributionView() {
                                   <span className="size-1.5 rounded-full bg-amber-500 shrink-0" />
                                   <span>{parsed.title}</span>
                                 </p>
-                                <p className="text-[11px] text-muted-foreground pl-3 leading-relaxed">
+                                <p className="text-xs text-muted-foreground pl-3 leading-relaxed">
                                   {parsed.description}
                                 </p>
                               </div>
@@ -379,7 +392,7 @@ export function ContributionView() {
                           className={buttonVariants({
                             variant: "outline",
                             size: "sm",
-                            className: "w-full h-7 text-[11px] font-bold gap-1 text-primary border-primary/30 hover:bg-primary/10 cursor-pointer justify-between",
+                            className: "w-full h-7 text-xs font-bold gap-1 text-primary border-primary/30 hover:bg-primary/10 cursor-pointer justify-between",
                           })}
                         >
                           <span>{group.ctaLabel}</span>

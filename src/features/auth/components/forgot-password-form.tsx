@@ -1,4 +1,5 @@
 "use client";
+import { showSuccessToast, showErrorToast } from "@/lib/api-error";
 
 import { useState } from "react";
 import Link from "next/link";
@@ -6,7 +7,6 @@ import { ArrowLeftIcon, MailIcon, CheckCircle2Icon, LoaderCircleIcon } from "luc
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { toast } from "@/components/ui/sonner";
 import { useForgotPassword } from "../hooks/useAuth";
 
 export function ForgotPasswordForm() {
@@ -20,7 +20,7 @@ export function ForgotPasswordForm() {
     e.preventDefault();
     const cleanEmail = email.trim();
     if (!cleanEmail) {
-      toast.error("Vui lòng nhập địa chỉ email.");
+      showErrorToast("Vui lòng nhập địa chỉ email.");
       return;
     }
 
@@ -28,10 +28,10 @@ export function ForgotPasswordForm() {
       const res = await forgotPasswordMutation.mutateAsync(cleanEmail);
       setIsSuccess(true);
       setSuccessMsg(res.message || "Nếu email tồn tại, hướng dẫn đặt lại mật khẩu đã được gửi.");
-      toast.success("Yêu cầu đặt lại mật khẩu đã được gửi đi.");
+      showSuccessToast("Yêu cầu đặt lại mật khẩu đã được gửi đi.");
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Đã có lỗi xảy ra. Vui lòng thử lại sau.";
-      toast.error(message);
+      showErrorToast(message);
     }
   };
 
@@ -39,7 +39,7 @@ export function ForgotPasswordForm() {
     return (
       <div className="space-y-6">
         <div className="space-y-2">
-          <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+          <div className="w-12 h-12 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
             <CheckCircle2Icon className="w-6 h-6" />
           </div>
           <h1 className="text-2xl font-bold text-foreground">Kiểm tra hộp thư của bạn</h1>
@@ -48,7 +48,7 @@ export function ForgotPasswordForm() {
           </p>
         </div>
 
-        <div className="p-4 rounded-2xl bg-muted/40 border border-border/80 space-y-2 text-xs text-muted-foreground">
+        <div className="p-4 rounded-xl bg-muted/40 border border-border/80 space-y-2 text-xs text-muted-foreground">
           <p className="font-semibold text-foreground">Không nhận được email?</p>
           <ul className="list-disc pl-4 space-y-1">
             <li>Kiểm tra kỹ hòm thư rác hoặc thư mục Quảng cáo (Spam/Junk).</li>

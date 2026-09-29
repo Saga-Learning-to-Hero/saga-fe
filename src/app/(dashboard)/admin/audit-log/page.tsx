@@ -144,21 +144,21 @@ export default function AdminAuditLogPage() {
       </div>
 
       {/* 2. Banner thông tin lưu trữ */}
-      <div className="rounded-2xl border border-primary/20 bg-primary/5 p-3.5 flex items-center justify-between gap-3 text-xs">
+      <div className="rounded-xl border border-primary/20 bg-primary/5 p-3.5 flex items-center justify-between gap-3 text-xs">
         <div className="flex items-center gap-2.5">
           <DatabaseIcon className="size-4 text-primary shrink-0" />
           <span className="text-muted-foreground">
             <strong className="text-foreground">Cơ sở dữ liệu kiểm toán:</strong> Mọi thao tác quản trị, phân quyền người dùng và cập nhật cấu trúc dự án đều được ghi vết tự động kèm snapshot dữ liệu trước & sau (State Diff).
           </span>
         </div>
-        <Badge variant="outline" className="text-[10px] font-mono text-primary border-primary/30 shrink-0">
+        <Badge variant="outline" className="text-xs font-mono text-primary border-primary/30 shrink-0">
           Immutable Logs
         </Badge>
       </div>
 
       {/* 3. Lỗi kết nối máy chủ nếu có */}
       {isError && (
-        <div className="p-5 rounded-2xl border border-dashed border-destructive/40 bg-destructive/5 flex items-center justify-between gap-4">
+        <div className="p-5 rounded-xl border border-dashed border-destructive/40 bg-destructive/5 flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <AlertCircleIcon className="w-5 h-5 text-destructive shrink-0" />
             <div>

@@ -343,7 +343,7 @@ Project Type dùng để phân loại hướng dự án, không điều khiển 
 
 | ID | Nghiệp vụ | BE | FE data | UI | Trạng thái/Ghi chú |
 | --- | --- | --- | --- | --- | --- |
-| AUTH-001 | CSRF, current session, login, logout | ✓ | ✓ | ✓ | `DONE`; logout phải clear toàn bộ user-scoped cache/context |
+| AUTH-001 | CSRF, current session, login, logout | ✓ | ✓ | ✓ | `DONE`; logout phải clear toàn bộ user-scoped cache/context; FE chỉ refresh CSRF và retry tối đa một lần khi Backend trả mã lỗi CSRF tường minh, không retry `ACCOUNT_DISABLED`, `ACCESS_DENIED` hoặc 403 nghiệp vụ khác; production dùng origin canonical `https://saga.autos` để khớp CORS/session contract của Backend |
 | AUTH-002 | Register, setup password | ✓ | ✓ | ✓ | `DONE` |
 | AUTH-003 | Forgot/reset password | ✓ | ✓ | ✓ | `DONE` |
 | AUTH-004 | Step-up bằng password | ✓ | ✓ | ✓ | `DONE`; retry protected request tối đa một lần |
@@ -410,7 +410,7 @@ Project Type dùng để phân loại hướng dự án, không điều khiển 
 | TASK-005 | Task type và Subtask parent | ✓ | ✓ | ✓ | `DONE` (BE & FE đồng bộ `parentTask`, `subtasks`, `parentTaskId`, `clearParent`, endpoint `GET /tasks/parent-options` phân trang và UI chọn Task cha/Subtasks) |
 | TASK-006 | Start Date/Due Date create-edit-clear-hydrate | ✓ | ✓ | ✓ | `VERIFY`; cần xác minh deploy trả đủ hai key kể cả null |
 | TASK-007 | Kanban/Backlog/Timeline | ✓ | ✓ | ✓ | `DONE`; card chỉ cần due date, backlog cảnh báo giống Jira; Task được scope theo Jira source đang chọn ở cả Student và Lecturer Pipeline |
-| SPR-001 | Sprint list/detail/create/update/delete | ✓ | ✓ | ✓ | `PARTIAL`; FE đã scope theo source bằng `jiraIntegrationId` + Sprint options và reset selection khi đổi Site. Lecturer tạm dựng source selector từ `task.source` vì integration summary dùng quyền thành viên. BE cần cho Lecturer đọc source summary theo `requireReader`, lọc `GET /projects/{id}/sprints` đúng source và bổ sung `jiraIntegrationId/source` vào Sprint response để bỏ workaround FE |
+| SPR-001 | Sprint list/detail/create/update/delete | ✓ | ✓ | ✓ | `PARTIAL`; FE đã scope theo source bằng `jiraIntegrationId` + Sprint options và reset selection khi đổi Site. Student P0: không gọi `/sprints` khi nguồn Jira chưa settle, 0 source hoặc nhiều source chưa chọn (không auto source đầu). 409 không retry. Lecturer tạm dựng source selector từ `task.source` vì integration summary dùng quyền thành viên. BE cần cho Lecturer đọc source summary theo `requireReader`, lọc `GET /projects/{id}/sprints` đúng source và bổ sung `jiraIntegrationId/source` vào Sprint response để bỏ workaround FE |
 | COM-001 | Project commit list/filter | ✓ | ✓ | ✓ | `DONE` (BE & FE đồng bộ phân trang `page, size, total, items`, nhận diện Merge Commit `isMerge`, `parentCount` và badge "Merge") |
 | COM-002 | Commits của một task | ✓ | ✓ | ✓ | `DONE`; lazy load cho inspector |
 | COM-003 | Canonical batch task–commit links theo repo/branch | ✓ | ✓ | ✓ | `DONE/VERIFY`; filter phải dựa response BE, không parse message |
@@ -446,7 +446,7 @@ Project Type dùng để phân loại hướng dự án, không điều khiển 
 
 | ID | Nghiệp vụ | BE | FE data | UI | Trạng thái/Ghi chú |
 | --- | --- | --- | --- | --- | --- |
-| PROG-001 | Project progress summary | ✓ | ✓ | ✓ | `DONE`; quyền leader/lecturer theo policy |
+| PROG-001 | Project progress summary | ✓ | ✓ | ✓ | `DONE`; quyền leader/lecturer theo policy. Student P0: Member không prefetch/gọi `GET /progress`; hover tab chỉ prefetch dashboard BFF; 403 ACCESS_DENIED không retry |
 | PROG-002 | Member progress detail | ✓ | ✓ | ✓ | `DONE`; drawer chỉ là inspector, không thay dữ liệu dashboard tổng |
 | GRAPH-001 | Project graph overview | ✓ | ✓ | ✓ | `DONE/VERIFY`; còn E2E dữ liệu lớn và authorization |
 | GRAPH-002 | Student contribution graph | ✓ | ✓ | ✓ | `DONE/VERIFY`; lazy query theo mode/student/sprint |
@@ -542,7 +542,7 @@ Project Type dùng để phân loại hướng dự án, không điều khiển 
 | --- | --- |
 | `/api/student/courses` | Đã dùng |
 | `/api/student/courses/{courseId}/team` | Đã dùng |
-| `/api/student/courses/{courseId}/dashboard` | Đã dùng (Student Personal Cockpit cho Member & Leader) |
+| `/api/student/courses/{courseId}/dashboard` | Đã dùng (Student Personal Cockpit cho Member & Leader; hỗ trợ query param `sprintId` để chọn lọc số liệu sprint tương ứng) |
 | `/api/student/courses/{courseId}/project` GET/POST | Đã dùng |
 | `/api/student/project-types` | Đã dùng nhưng cần sửa optional contract |
 | `/api/projects/{projectId}/integrations` | Đã dùng |
@@ -562,7 +562,7 @@ Project Type dùng để phân loại hướng dự án, không điều khiển 
 | Project commits | Đã dùng |
 | Canonical `/task-commit-links` | Đã dùng |
 | `/repos/{repoId}/branches` | Đã dùng |
-| `/sync`, `/sync-status` | Đã dùng |
+| `/sync`, `/sync-status` | Đã dùng; Student Tasks: không poll `/sync-status` khi SSE OPEN và idle; POST `/sync` chỉ Leader; READY debounce, không invalidate prefix `projects/{id}`. Trang Commits đọc `connectionStatus` (ACTIVE/REVOKED/NOT_CONNECTED) trên dòng GITHUB; REVOKED không hiện “Đã đồng bộ” và không gọi `/repos/{id}/branches` |
 | `/progress`, `/progress/members/{studentId}` | Đã dùng |
 | `/analytics/sprint-activity` | Chưa dùng |
 | `/events` SSE | Đã dùng |
@@ -658,6 +658,13 @@ Quan hệ attribution đúng là `Task → Commit → Identity → Student` khi 
 - có loading/error/empty state và không giữ graph của project/user cũ;
 - invalidate graph khi event liên quan Task/Commit/Link/Evidence xảy ra, nhưng refetch REST/Graph API thay vì ghép payload SSE.
 
+### 9.3 Graph click UX (Cytoscape)
+
+Áp dụng cùng một modal dùng chung cho đồ thị Sinh viên và Giảng viên. Đây là điều chỉnh luồng UI; không đổi coverage Backend, DTO graph hay cấu trúc node/edge Cytoscape.
+
+- Click node `COMMIT` mở trực tiếp màn chi tiết commit và code diff (`CommitDetailModal`). Không có modal tóm tắt trung gian. SHA fallback lấy từ `label`, message fallback lấy từ `subLabel` (nếu thiếu thì `label`). Đóng diff (X, backdrop, Escape) xóa node đang chọn.
+- Click node `TASK` mở modal thông tin Task. Nút “Tập trung Task & Xem Commit đối chiếu” chỉ hiện khi graph chưa đang tập trung đúng Task đó; khi đã trùng focus thì modal chỉ còn thông tin và Đóng. Không tự động focus graph khi click Task. Banner “Quay lại toàn cảnh” và subgraph `EVIDENCED_BY` giữ nguyên.
+
 Hiện mỗi request graph có thể kích hoạt/rebuild projection theo implementation BE. Đây là rủi ro hiệu năng; cần đo bằng integration test trước khi gọi nhiều endpoint cùng lúc. Nên lazy-load theo tab/view, cache theo query key và chỉ refetch view đang active.
 
 ---
@@ -677,6 +684,7 @@ Hiện mỗi request graph có thể kích hoạt/rebuild projection theo implem
 - Dashboard phải ưu tiên insight: tiến độ task, sprint active, commit chưa link, evidence; status bằng 0 có thể ẩn, blocked > 0 phải cảnh báo.
 - Tất cả chart phải có title, unit, full label, legend và tooltip có tên người/series/value rõ ràng.
 - Không giữ mock fallback im lặng ở màn production; nếu API thiếu, hiển thị empty/error state có nguồn gốc rõ.
+- Graph: node Commit mở thẳng chi tiết commit/code diff; node Task chỉ mở thông tin, nút tập trung đối chiếu ẩn khi đã focus đúng Task đó.
 
 ---
 

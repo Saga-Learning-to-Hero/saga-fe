@@ -101,7 +101,7 @@ export function TopNavHeader() {
   };
 
   return (
-    <header className="sticky top-0 z-30 flex flex-col w-full bg-card/95 backdrop-blur-md border-b border-border shadow-saga-xs">
+    <header className="sticky top-0 z-30 flex flex-col w-full bg-card/95 backdrop-blur-sm border-b border-border shadow-saga-xs">
       <div className="flex h-14 items-center justify-between px-4 sm:px-6 gap-4">
         <div className="flex items-center gap-3 min-w-0">
           {hasSubNav && (
@@ -170,7 +170,7 @@ export function TopNavHeader() {
                 <p className="text-xs font-bold leading-tight text-foreground group-hover:text-primary transition-colors">
                   {displayName}
                 </p>
-                <p className="text-[10px] text-muted-foreground font-medium">
+                <p className="text-xs text-muted-foreground font-medium">
                   {ROLE_LABELS[user.role]}
                 </p>
               </div>
@@ -178,7 +178,7 @@ export function TopNavHeader() {
               <ChevronDownIcon className="size-3.5 text-muted-foreground group-hover:text-foreground transition-transform duration-200 group-data-[state=open]:rotate-180" />
             </DropdownMenuTrigger>
 
-            <DropdownMenuContent align="end" sideOffset={10} className="w-68 rounded-2xl p-1.5 shadow-xl border-border">
+            <DropdownMenuContent align="end" sideOffset={10} className="w-68 rounded-xl p-1.5 shadow-md border-border">
               <div className="flex items-center gap-3 p-3 border-b border-border/80 bg-muted/30 rounded-xl mb-1">
                 <Avatar className="size-10 rounded-xl border border-border">
                   <AvatarImage src={user.avatar} alt={displayName} />
@@ -189,7 +189,7 @@ export function TopNavHeader() {
                 <div className="flex flex-col min-w-0">
                   <span className="text-sm font-bold text-foreground truncate">{displayName}</span>
                   <span className="text-xs text-muted-foreground truncate">{user.email}</span>
-                  <Badge className={cn("w-fit text-[10px] px-2 py-0.5 mt-1 border-0 font-semibold", ROLE_COLORS[user.role])}>
+                  <Badge className={cn("w-fit text-xs px-2 py-0.5 mt-1 border-0 font-semibold", ROLE_COLORS[user.role])}>
                     {ROLE_LABELS[user.role]}
                   </Badge>
                 </div>
@@ -245,78 +245,80 @@ export function TopNavHeader() {
         </div>
       )}
 
-      <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
-        <SheetContent side="left" className="w-72 p-0 flex flex-col">
-          <SheetHeader className="p-4 border-b border-border">
-            <SheetTitle className="flex items-center gap-2 text-left">
-              <SagaLogo size="xs" showText={true} showSubtitle={false} />
-            </SheetTitle>
-          </SheetHeader>
+      {mobileOpen && (
+        <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
+          <SheetContent side="left" className="w-72 p-0 flex flex-col">
+            <SheetHeader className="p-4 border-b border-border">
+              <SheetTitle className="flex items-center gap-2 text-left">
+                <SagaLogo size="xs" showText={true} showSubtitle={false} />
+              </SheetTitle>
+            </SheetHeader>
 
-          <div className="p-3 flex-1 overflow-y-auto space-y-1">
-            <p className="px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-              Menu điều hướng
-            </p>
-            {navItems.map((item) => {
-              const isActive = isNavItemActive(pathname, item);
-              return (
-                <Link
-                  key={item.id}
-                  href={user.role === "STUDENT" && studentCourseId ? studentCoursePath(item.href, studentCourseId) : item.href}
-                  prefetch={true}
-                  onClick={() => setMobileOpen(false)}
-                  className={cn(
-                    "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors",
-                    isActive
-                      ? "bg-primary/10 text-primary font-bold"
-                      : "text-muted-foreground hover:text-foreground hover:bg-muted"
-                  )}
-                >
-                  <span>{item.title}</span>
-                </Link>
-              );
-            })}
-          </div>
+            <div className="p-3 flex-1 overflow-y-auto space-y-1">
+              <p className="px-3 py-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                Menu điều hướng
+              </p>
+              {navItems.map((item) => {
+                const isActive = isNavItemActive(pathname, item);
+                return (
+                  <Link
+                    key={item.id}
+                    href={user.role === "STUDENT" && studentCourseId ? studentCoursePath(item.href, studentCourseId) : item.href}
+                    prefetch={true}
+                    onClick={() => setMobileOpen(false)}
+                    className={cn(
+                      "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors",
+                      isActive
+                        ? "bg-primary/10 text-primary font-bold"
+                        : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                    )}
+                  >
+                    <span>{item.title}</span>
+                  </Link>
+                );
+              })}
+            </div>
 
-          <div className="p-4 border-t border-border bg-muted/20 space-y-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                setMobileOpen(false);
-                router.push("/profile");
-              }}
-              className="w-full justify-start text-xs rounded-xl"
-            >
-              <UserIcon className="size-3.5 mr-2 text-primary" />
-              Hồ sơ cá nhân
-            </Button>
-            {user.role === "STUDENT" ? (
+            <div className="p-4 border-t border-border bg-muted/20 space-y-2">
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => {
                   setMobileOpen(false);
-                  router.push("/profile/integrations");
+                  router.push("/profile");
                 }}
                 className="w-full justify-start text-xs rounded-xl"
               >
-                <Link2Icon className="size-3.5 mr-2 text-primary" />
-                Tích hợp Jira & GitHub
+                <UserIcon className="size-3.5 mr-2 text-primary" />
+                Hồ sơ cá nhân
               </Button>
-            ) : null}
-            <Button
-              variant="destructive"
-              size="sm"
-              onClick={handleLogout}
-              className="w-full justify-start text-xs rounded-xl"
-            >
-              <LogOutIcon className="size-3.5 mr-2" />
-              Đăng xuất
-            </Button>
-          </div>
-        </SheetContent>
-      </Sheet>
+              {user.role === "STUDENT" ? (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setMobileOpen(false);
+                    router.push("/profile/integrations");
+                  }}
+                  className="w-full justify-start text-xs rounded-xl"
+                >
+                  <Link2Icon className="size-3.5 mr-2 text-primary" />
+                  Tích hợp Jira & GitHub
+                </Button>
+              ) : null}
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={handleLogout}
+                className="w-full justify-start text-xs rounded-xl"
+              >
+                <LogOutIcon className="size-3.5 mr-2" />
+                Đăng xuất
+              </Button>
+            </div>
+          </SheetContent>
+        </Sheet>
+      )}
     </header>
   );
 }

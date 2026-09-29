@@ -124,7 +124,7 @@ export function AdminTopHeader({ onOpenMobileMenu }: AdminTopHeaderProps) {
       </div>
 
       <div className="flex items-center gap-2.5 sm:gap-3 shrink-0">
-        <div className="hidden sm:flex items-center gap-2 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-[11px] font-semibold">
+        <div className="hidden sm:flex items-center gap-2 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs font-semibold">
           <span className="relative flex size-2">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
             <span className="relative inline-flex rounded-full size-2 bg-emerald-500" />
@@ -132,7 +132,7 @@ export function AdminTopHeader({ onOpenMobileMenu }: AdminTopHeaderProps) {
           <span>Hệ thống ổn định</span>
         </div>
 
-        <div className="hidden lg:flex items-center gap-1 px-2.5 py-1 rounded-full bg-muted/60 border border-border text-muted-foreground text-[11px] font-mono">
+        <div className="hidden lg:flex items-center gap-1 px-2.5 py-1 rounded-full bg-muted/60 border border-border text-muted-foreground text-xs font-mono">
           <span>Kỳ FA26</span>
         </div>
 

@@ -1,4 +1,5 @@
 "use client";
+import { showSuccessToast, showErrorToast, showInfoToast } from "@/lib/api-error";
 
 import { useMemo, useEffect, useRef, useState } from "react";
 import {
@@ -15,8 +16,10 @@ import type { StudentCourse } from "@/features/student/courses/types/student-cou
 import { Badge } from "@/components/ui/badge";
 import { MemberRoleBadge } from "@/components/common/leader-badge";
 import { Button } from "@/components/ui/button";
-import { toast } from "@/components/ui/sonner";
 import { useSyncProject, useProjectSyncStatus } from "../hooks/useProjectSync";
+import { canRequestProjectSync, isActivelySyncing } from "../lib/sync-job-status";
+import { useTimedSyncWindow } from "../hooks/use-timed-sync-window";
+import type { SSEConnectionStatus } from "../types/project-realtime-types";
 import { formatVietnamDateTime } from "@/lib/utils";
 import { EditProjectDialog } from "./edit-project-dialog";
 
@@ -26,6 +29,7 @@ interface ProjectBannerHeaderProps {
   isLeader?: boolean;
   hasTeam?: boolean;
   isRoleLoading?: boolean;
+  sseStatus?: SSEConnectionStatus;
   onProjectUpdated?: (updated: { name: string; description: string }) => void;
 }
 
@@ -35,6 +39,7 @@ export function ProjectBannerHeader({
   isLeader,
   hasTeam,
   isRoleLoading = false,
+  sseStatus,
   onProjectUpdated,
 }: ProjectBannerHeaderProps) {
   const [isEditOpen, setIsEditOpen] = useState(false);
@@ -45,14 +50,12 @@ export function ProjectBannerHeader({
 
   const { data: syncStatuses = [] } = useProjectSyncStatus(projectId, {
     enabled: Boolean(projectId && projectId.trim()),
+    sseStatus,
   });
 
-  const hasActiveJob = useMemo(() => {
-    return syncStatuses.some((item) => {
-      const s = (item.status || "").toUpperCase();
-      return s === "IN_PROGRESS" || s === "RUNNING" || s === "SYNCING";
-    });
-  }, [syncStatuses]);
+  const hasActiveJob = isActivelySyncing(syncStatuses);
+  const syncWindowTimedOut = useTimedSyncWindow(hasActiveJob);
+  const showSyncing = syncMutation.isPending || (hasActiveJob && !syncWindowTimedOut);
 
   const hasFailure = useMemo(() => {
     return syncStatuses.some((item) => (item.status || "").toUpperCase() === "FAILED");
@@ -62,9 +65,9 @@ export function ProjectBannerHeader({
   useEffect(() => {
     if (prevActiveRef.current && !hasActiveJob) {
       if (hasFailure) {
-        toast.error("Quá trình đồng bộ dữ liệu gặp lỗi từ phía Jira hoặc GitHub.");
+        showErrorToast("Quá trình đồng bộ dữ liệu gặp lỗi từ phía Jira hoặc GitHub.");
       } else {
-        toast.success("Đồng bộ Jira & GitHub hoàn tất! Dữ liệu đã được cập nhật mới nhất.");
+        showSuccessToast("Đồng bộ Jira & GitHub hoàn tất! Dữ liệu đã được cập nhật mới nhất.");
       }
     }
     prevActiveRef.current = hasActiveJob;
@@ -88,23 +91,24 @@ export function ProjectBannerHeader({
   }, [syncStatuses]);
 
   const handleSync = async () => {
+    if (!canRequestProjectSync(Boolean(isLeader))) return;
     if (!projectId) {
-      toast.error("Không tìm thấy mã dự án để kích hoạt đồng bộ.");
+      showErrorToast("Không tìm thấy mã dự án để kích hoạt đồng bộ.");
       return;
     }
     try {
       const res = await syncMutation.mutateAsync(projectId);
-      toast.info("Đã gửi yêu cầu đồng bộ. Máy chủ đang tải dữ liệu trong nền...", {
+      showInfoToast("Đã gửi yêu cầu đồng bộ. Máy chủ đang tải dữ liệu trong nền...", {
         description: `Trạng thái hàng đợi: Jira [${res.jira}], GitHub [${res.github}]. Nút sẽ tự dừng xoay khi xong.`,
       });
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Không thể kích hoạt đồng bộ dự án.");
+      showErrorToast(err instanceof Error ? err.message : "Không thể kích hoạt đồng bộ dự án.");
     }
   };
 
   return (
     <div
-      className="relative overflow-hidden rounded-2xl p-4 sm:p-5 border border-border/80 shadow-md"
+      className="relative overflow-hidden rounded-xl p-4 sm:p-5 border border-border/80 shadow-md"
       style={{
         background:
           "linear-gradient(135deg, oklch(from var(--saga-primary) calc(l + 0.05) c h), oklch(from var(--saga-accent) calc(l - 0.05) c h))",
@@ -123,41 +127,41 @@ export function ProjectBannerHeader({
         <div className="space-y-2 max-w-3xl">
           <div className="flex flex-wrap items-center gap-2">
             {categoryLabel && (
-              <Badge className="bg-white/20 hover:bg-white/25 text-white border-0 text-[11px] px-2.5 py-0.5 font-semibold backdrop-blur-md">
+              <Badge className="bg-white/20 hover:bg-white/25 text-white border-0 text-xs px-2.5 py-0.5 font-semibold backdrop-blur-sm">
                 <FolderKanbanIcon className="w-3 h-3 mr-1" />
                 {categoryLabel}
               </Badge>
             )}
 
             {course?.semesterCode && (
-              <Badge className="bg-emerald-500/20 text-white border-0 text-[11px] font-mono">
+              <Badge className="bg-emerald-500/20 text-white border-0 text-xs font-mono">
                 Học kỳ: {course.semesterCode}
               </Badge>
             )}
 
             {course?.adminClassCode && (
-              <Badge className="bg-blue-500/20 text-white border-0 text-[11px] font-mono">
+              <Badge className="bg-blue-500/20 text-white border-0 text-xs font-mono">
                 Lớp: {course.adminClassCode}
               </Badge>
             )}
 
             {project.name ? (
-              <Badge className="bg-emerald-400 text-emerald-950 font-bold border-0 text-[11px] gap-1">
+              <Badge className="bg-emerald-400 text-emerald-950 font-bold border-0 text-xs gap-1">
                 <CheckCircle2Icon className="w-3 h-3" /> Đang phát triển
               </Badge>
             ) : (
-              <Badge className="bg-amber-400 text-amber-950 font-bold border-0 text-[11px] gap-1">
+              <Badge className="bg-amber-400 text-amber-950 font-bold border-0 text-xs gap-1">
                 Chưa có dự án
               </Badge>
             )}
 
             {isRoleLoading ? (
-              <Badge className="bg-white/20 text-white font-medium border-0 text-[11px] px-2 py-0.5 animate-pulse backdrop-blur-md">
+              <Badge className="bg-white/20 text-white font-medium border-0 text-xs px-2 py-0.5 animate-pulse backdrop-blur-sm">
                 <UserCheck2Icon className="w-3 h-3 mr-1" />
                 Đang xác thực vai trò...
               </Badge>
             ) : hasTeam === false ? (
-              <Badge className="bg-amber-400/30 text-amber-100 font-bold border border-amber-300/40 text-[11px] px-2 py-0.5 backdrop-blur-md">
+              <Badge className="bg-amber-400/30 text-amber-100 font-bold border border-amber-300/40 text-xs px-2 py-0.5 backdrop-blur-sm">
                 Chưa có nhóm
               </Badge>
             ) : isLeader !== undefined ? (
@@ -169,7 +173,7 @@ export function ProjectBannerHeader({
             {project.name || "Chưa khởi tạo dự án nhóm"}
           </h1>
 
-          <div className="flex flex-wrap items-center gap-3 text-[11px] text-white/90">
+          <div className="flex flex-wrap items-center gap-3 text-xs text-white/90">
             {project.groupName && (
               <span className="flex items-center gap-1 font-bold">
                 <SparklesIcon className="w-3 h-3 text-amber-300" />
@@ -191,15 +195,15 @@ export function ProjectBannerHeader({
           </div>
         </div>
 
-        {projectId && (
+        {projectId && isLeader && (
           <div className="flex flex-col items-start md:items-end gap-2 shrink-0">
-            {isLeader && (
+            {canRequestProjectSync(Boolean(isLeader)) && (
               <div className="flex items-center gap-2">
                 <Button
                   type="button"
                   size="sm"
                   onClick={() => setIsEditOpen(true)}
-                  className="h-9 px-3 rounded-xl bg-white/20 hover:bg-white/30 text-white border border-white/20 text-xs font-semibold backdrop-blur-md gap-1.5 shadow-xs transition-all cursor-pointer active:scale-95"
+                  className="h-9 px-3 rounded-xl bg-white/20 hover:bg-white/30 text-white border border-white/20 text-xs font-semibold backdrop-blur-sm gap-1.5 shadow-xs transition-all cursor-pointer active:scale-95"
                 >
                   <PencilIcon className="w-3.5 h-3.5" />
                   <span>Chỉnh sửa thông tin</span>
@@ -209,17 +213,17 @@ export function ProjectBannerHeader({
                   type="button"
                   size="sm"
                   onClick={() => void handleSync()}
-                  disabled={syncMutation.isPending || hasActiveJob}
-                  className="h-9 px-3.5 rounded-xl bg-white/20 hover:bg-white/30 text-white border border-white/20 text-xs font-semibold backdrop-blur-md gap-2 shadow-xs transition-all cursor-pointer active:scale-95"
+                  disabled={showSyncing}
+                  className="h-9 px-3.5 rounded-xl bg-white/20 hover:bg-white/30 text-white border border-white/20 text-xs font-semibold backdrop-blur-sm gap-2 shadow-xs transition-all cursor-pointer active:scale-95"
                 >
                   <RefreshCwIcon
-                    className={`w-3.5 h-3.5 ${syncMutation.isPending || hasActiveJob ? "animate-spin text-amber-300" : ""
+                    className={`w-3.5 h-3.5 ${showSyncing ? "animate-spin text-amber-300" : ""
                       }`}
                   />
                   <span>
                     {syncMutation.isPending
                       ? "Đang gửi yêu cầu..."
-                      : hasActiveJob
+                      : showSyncing
                         ? "Đang đồng bộ..."
                         : "Đồng bộ Jira & GitHub"}
                   </span>
@@ -227,11 +231,16 @@ export function ProjectBannerHeader({
               </div>
             )}
 
-            <div className="text-[11px] text-white/95 bg-black/25 px-2.5 py-1 rounded-lg border border-white/10 flex items-center gap-2 font-mono backdrop-blur-sm shadow-2xs">
-              {hasActiveJob ? (
+            <div className="text-xs text-white/95 bg-black/25 px-2.5 py-1 rounded-lg border border-white/10 flex items-center gap-2 font-mono backdrop-blur-sm shadow-2xs">
+              {showSyncing ? (
                 <>
                   <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
                   <span className="font-sans text-amber-200 font-medium">Đang đồng bộ dữ liệu...</span>
+                </>
+              ) : hasActiveJob && syncWindowTimedOut ? (
+                <>
+                  <span className="w-2 h-2 rounded-full bg-amber-300" />
+                  <span className="font-sans text-amber-100 font-medium">Đã dừng chờ đồng bộ sau 90 giây</span>
                 </>
               ) : latestCompletedAt ? (
                 <>
@@ -253,7 +262,7 @@ export function ProjectBannerHeader({
             </div>
 
             {(jiraStatus?.completedAt || githubStatus?.completedAt) && !hasActiveJob && (
-              <div className="text-[10px] text-white/75 flex items-center gap-2 font-mono">
+              <div className="text-xs text-white/75 flex items-center gap-2 font-mono">
                 {jiraStatus?.completedAt && (
                   <span>
                     Jira:{" "}

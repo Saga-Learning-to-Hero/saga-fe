@@ -439,7 +439,7 @@ html {
   .custom-scrollbar,
   .scrollbar-thin {
     scrollbar-width: thin;
-    scrollbar-color: var(--border) transparent;
+    scrollbar-color: color-mix(in srgb, var(--foreground) 25%, transparent) transparent;
   }
   .custom-scrollbar::-webkit-scrollbar,
   .scrollbar-thin::-webkit-scrollbar {
@@ -452,7 +452,7 @@ html {
   }
   .custom-scrollbar::-webkit-scrollbar-thumb,
   .scrollbar-thin::-webkit-scrollbar-thumb {
-    background: var(--border);
+    background: color-mix(in srgb, var(--foreground) 22%, transparent);
     border-radius: 9999px;
   }
   .custom-scrollbar::-webkit-scrollbar-thumb:hover,
@@ -465,3 +465,33 @@ html {
   0% { transform: translateX(0%); }
   100% { transform: translateX(-50%); }
 }
+
+/* ============================================================
+   SAGA Brand Gradient Text
+   Đảm bảo luôn sáng bừng, nổi bật và chống lỗi GPU compositing /
+   xung đột Tailwind JIT khi người dùng chuyển trang & thao tác.
+   ============================================================ */
+.saga-brand-gradient {
+  background: linear-gradient(135deg, #4f46e5 0%, #6366f1 50%, #06b6d4 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  display: inline-block;
+  transform: translateZ(0);
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+  filter: drop-shadow(0 1px 2px rgba(79, 70, 229, 0.15));
+}
+
+.dark .saga-brand-gradient,
+:where(.dark, .dark *) .saga-brand-gradient {
+  background: linear-gradient(135deg, #818cf8 0%, #c084fc 45%, #22d3ee 100%) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  color: transparent !important;
+  display: inline-block;
+  transform: translateZ(0);
+  filter: drop-shadow(0 2px 8px rgba(129, 140, 248, 0.35));
+}

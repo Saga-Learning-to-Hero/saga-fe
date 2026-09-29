@@ -1,8 +1,7 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
-import { getApiErrorCode, getApiErrorMessage, getApiErrorStatus } from "@/lib/api-error";
+import { showSuccessToast, getApiErrorMessage, getApiErrorStatus, getApiErrorCode } from "@/lib/api-error";
 import { PeerReviewService } from "../api/peer-review-service";
 import type {
   PeerReviewCandidatesResponse,
@@ -120,7 +119,7 @@ export function useSubmitPeerReview() {
       await queryClient.invalidateQueries({
         queryKey: candidatesKey,
       });
-      toast.success("Đã gửi đánh giá chéo theo Sprint.");
+      showSuccessToast("Đã gửi đánh giá chéo theo Sprint.");
     },
   });
-}
+}

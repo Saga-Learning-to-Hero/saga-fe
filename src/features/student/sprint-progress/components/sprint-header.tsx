@@ -93,21 +93,21 @@ export function SprintHeader({
     switch (status) {
       case "ACTIVE":
         return (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30">
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30">
             <FlameIcon className="w-3 h-3 text-emerald-500" />
             Đang diễn ra
           </span>
         );
       case "COMPLETED":
         return (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold bg-muted text-muted-foreground border border-border">
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold bg-muted text-muted-foreground border border-border">
             <CheckCircle2Icon className="w-3 h-3 text-muted-foreground" />
             Đã hoàn thành
           </span>
         );
       default:
         return (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold bg-blue-500/15 text-blue-600 dark:text-blue-400 border border-blue-500/30">
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold bg-blue-500/15 text-blue-600 dark:text-blue-400 border border-blue-500/30">
             <CalendarIcon className="w-3 h-3 text-blue-500" />
             Kế hoạch
           </span>
@@ -117,9 +117,9 @@ export function SprintHeader({
 
   return (
     <div className="space-y-3.5 pb-2 border-b border-border/60">
-      <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-3.5 bg-card/60 p-4 rounded-3xl border border-border/70 backdrop-blur-xs shadow-2xs">
+      <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-3.5 bg-card/60 p-4 rounded-xl border border-border/70 backdrop-blur-xs shadow-2xs">
         <div className="flex items-center gap-3.5 min-w-0">
-          <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-indigo-500 to-primary text-primary-foreground flex items-center justify-center shrink-0 shadow-xs font-bold">
+          <div className="w-10 h-10 rounded-xl bg-linear-to-br from-indigo-500 to-primary text-primary-foreground flex items-center justify-center shrink-0 shadow-xs font-bold">
             <KanbanSquareIcon className="w-5 h-5" />
           </div>
           <div className="min-w-0">
@@ -127,11 +127,11 @@ export function SprintHeader({
               <h1 className="text-lg sm:text-xl font-extrabold text-foreground tracking-tight truncate">
                 Tiến độ Sprint
               </h1>
-              <Badge variant="outline" className="font-mono text-[11px] font-bold border-primary/30 bg-primary/10 text-primary">
+              <Badge variant="outline" className="font-mono text-xs font-bold border-primary/30 bg-primary/10 text-primary">
                 {courseCode}
               </Badge>
               {projectName && (
-                <Badge variant="outline" className="text-[11px] font-medium text-muted-foreground border-border/80 truncate max-w-[200px]">
+                <Badge variant="outline" className="text-xs font-medium text-muted-foreground border-border/80 truncate max-w-[200px]">
                   {projectName}
                 </Badge>
               )}
@@ -145,20 +145,20 @@ export function SprintHeader({
 
         <div className="flex flex-wrap items-center gap-3 shrink-0">
           {currentSprint && !isBacklogView && (
-            <div className="flex items-center gap-3 px-3.5 py-1.5 rounded-2xl bg-muted/40 border border-border/60 text-xs">
+            <div className="flex items-center gap-3 px-3.5 py-1.5 rounded-xl bg-muted/40 border border-border/60 text-xs">
               <div className="flex items-center gap-1.5">
                 {getSprintStatusBadge(currentSprint.status)}
               </div>
               <div className="h-4 w-px bg-border/80" />
               <div className="flex flex-col">
-                <div className="flex items-center gap-2 font-mono text-[11px]">
+                <div className="flex items-center gap-2 font-mono text-xs">
                   <span className="text-muted-foreground">Tiến độ SP:</span>
                   <span className="font-bold text-foreground">{completedSprintSP} / {totalSprintSP} SP</span>
                   <span className="font-bold text-primary">({progressPercent}%)</span>
                 </div>
                 <div className="w-32 bg-muted/80 h-1.5 rounded-full overflow-hidden mt-1">
                   <div
-                    className="h-full bg-gradient-to-r from-blue-500 to-emerald-500 transition-all duration-300"
+                    className="h-full bg-linear-to-r from-blue-500 to-emerald-500 transition-all duration-300"
                     style={{ width: `${progressPercent}%` }}
                   />
                 </div>
@@ -166,7 +166,7 @@ export function SprintHeader({
             </div>
           )}
 
-          <div className="hidden sm:flex items-center gap-2 text-xs text-muted-foreground bg-muted/40 px-3 py-1.5 rounded-2xl border border-border/60">
+          <div className="hidden sm:flex items-center gap-2 text-xs text-muted-foreground bg-muted/40 px-3 py-1.5 rounded-xl border border-border/60">
             <span>Hiển thị: <strong className="text-foreground font-mono font-bold">{totalTasksCount ?? 0}</strong></span>
             <span className="text-border">|</span>
             <span>Tổng dự án: <strong className="text-foreground font-mono font-bold">{totalProjectTasksCount ?? 0}</strong></span>
@@ -181,8 +181,8 @@ export function SprintHeader({
             />
           )}
 
-          {onSyncJira && (
-            <div className="flex items-center gap-2 shrink-0">
+          <div className="flex items-center gap-2 shrink-0">
+            {isTeamLeader && onSyncJira && (
               <Button
                 variant="outline"
                 size="sm"
@@ -193,21 +193,21 @@ export function SprintHeader({
                 <RefreshCwIcon className={`w-3.5 h-3.5 ${isSyncingJira ? "animate-spin text-blue-500" : ""}`} />
                 <span>{isSyncingJira ? "Đang đồng bộ..." : "Đồng bộ Jira & GitHub"}</span>
               </Button>
-              <div className="hidden 2xl:flex h-8.5 items-center gap-1.5 rounded-xl border border-border/60 bg-muted/40 px-2.5 text-[10px] text-muted-foreground whitespace-nowrap">
+            )}
+            {lastSyncedAt && (
+              <div className="hidden 2xl:flex h-8.5 items-center gap-1.5 rounded-xl border border-border/60 bg-muted/40 px-2.5 text-xs text-muted-foreground whitespace-nowrap">
                 <CalendarIcon className="w-3.5 h-3.5 text-primary" />
                 <span>
-                  {lastSyncedAt
-                    ? `Lần cuối: ${formatVietnamDateTime(lastSyncedAt)}`
-                    : "Chưa có lượt đồng bộ"}
+                  Lần cuối: {formatVietnamDateTime(lastSyncedAt)}
                 </span>
               </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </div>
 
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
-        <div className="flex items-center gap-1 bg-muted/40 p-1 rounded-2xl border border-border/60 w-fit">
+        <div className="flex items-center gap-1 bg-muted/40 p-1 rounded-xl border border-border/60 w-fit">
           <button
             onClick={() => onSelectView("BOARD")}
             className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer select-none ${activeView === "BOARD"
@@ -229,7 +229,7 @@ export function SprintHeader({
             <ListTodoIcon className="w-3.5 h-3.5 text-indigo-500" />
             <span>Backlog</span>
             {typeof productBacklogCount === "number" && productBacklogCount > 0 && (
-              <span className="font-mono text-[10px] px-1.5 py-0.2 rounded-full bg-muted font-bold text-muted-foreground">
+              <span className="font-mono text-xs px-1.5 py-0.2 rounded-full bg-muted font-bold text-muted-foreground">
                 {productBacklogCount}
               </span>
             )}
@@ -308,7 +308,7 @@ export function SprintHeader({
               <button
                 type="button"
                 onClick={() => onSelectAssignee(null)}
-                className={`text-[11px] font-bold px-2.5 py-1 rounded-lg transition-colors cursor-pointer select-none ${selectedAssigneeId === null
+                className={`text-xs font-bold px-2.5 py-1 rounded-lg transition-colors cursor-pointer select-none ${selectedAssigneeId === null
                   ? "bg-card text-foreground shadow-2xs font-extrabold"
                   : "text-muted-foreground hover:text-foreground"
                   }`}

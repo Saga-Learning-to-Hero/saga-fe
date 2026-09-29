@@ -146,15 +146,25 @@ function TopNavTabLink({
       const teamId = cachedTeam?.teamId || matchedCourse?.teamId;
 
       if (item.href === "/student/dashboard" || item.href === "/student") {
-        if (projectId) {
-          prefetchProjectProjection(projectId, { includeCommits: true });
-        }
+        prefetchProjectProjection(projectId, {
+          courseId: studentCourseId,
+          includeCommits: Boolean(projectId),
+          includeTeamProgress: true,
+        });
       } else if (item.href === "/student/contribution") {
         if (teamId) {
           prefetchContributionEvaluation(teamId);
         }
+      } else if (item.href === "/student/commits") {
+        prefetchProjectProjection(projectId, {
+          courseId: studentCourseId,
+          includeCommits: Boolean(projectId),
+        });
       } else if (projectId) {
-        prefetchProjectProjection(projectId);
+        prefetchProjectProjection(projectId, {
+          courseId: studentCourseId,
+          includeTeamProgress: true,
+        });
       }
     }
   };
@@ -183,7 +193,7 @@ function TopNavTabLink({
       {item.badge && (
         <span
           className={cn(
-            "px-1.5 py-0.2 rounded-full text-[10px] font-mono leading-none font-bold",
+            "px-1.5 py-0.2 rounded-full text-xs font-mono leading-none font-bold",
             isActive ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
           )}
         >

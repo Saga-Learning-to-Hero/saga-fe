@@ -1,7 +1,7 @@
+import { showErrorToast } from "@/lib/api-error";
 import { useQuery, useQueryClient, type QueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { toast } from "sonner";
 import { LecturerCourseService } from "../api/lecturer-course-service";
 import type { LecturerCourseResponse } from "../types/lecturer-course";
 import { LecturerTeamService } from "@/features/lecturer/teams/api/lecturer-team-service";
@@ -108,11 +108,11 @@ export function useLecturerCourseAccess(isError: boolean, error: unknown) {
     if (!isError || !isAccessDenied) return;
 
     if (errorCode === "LECTURER_COURSE_FORBIDDEN") {
-      toast.error("Bạn không có quyền truy cập lớp học phần này.", {
+      showErrorToast("Bạn không có quyền truy cập lớp học phần này.", {
         id: "lecturer-course-forbidden",
       });
     } else {
-      toast.error("Lớp học phần không còn tồn tại.", {
+      showErrorToast("Lớp học phần không còn tồn tại.", {
         id: "lecturer-course-not-found",
       });
     }

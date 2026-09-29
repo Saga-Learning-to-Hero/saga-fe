@@ -1,4 +1,5 @@
 "use client";
+import { showSuccessToast, showErrorToast } from "@/lib/api-error";
 
 import { useState, useRef } from "react";
 import {
@@ -29,7 +30,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { toast } from "@/components/ui/sonner";
 import { NotificationService } from "@/features/notification/api/notification-service";
 import { isValidInternalActionUrl } from "@/features/notification/lib/notification-utils";
 import { cn } from "@/lib/utils";
@@ -73,7 +73,7 @@ export function AdminNotificationComposer() {
         idempotencyKeyRef.current
       );
 
-      toast.success("Phát thông báo hệ thống thành công!", {
+      showSuccessToast("Phát thông báo hệ thống thành công!", {
         id: "admin-send-success",
         description: `Đã gửi thông báo tới ${response.recipientCount} tài khoản hoạt động (${response.createdCount} bản ghi đã lưu).`,
       });
@@ -92,14 +92,14 @@ export function AdminNotificationComposer() {
         const msg =
           "Xung đột khóa gửi thông báo (409 NOTIFICATION_SEND_CONFLICT). Yêu cầu này đã được xử lý trên hệ thống, vui lòng không gửi lại.";
         setErrorMessage(msg);
-        toast.error("Gửi thông báo thất bại", { description: msg });
+        showErrorToast("Gửi thông báo thất bại", { description: msg });
       } else {
         const msg =
           error.response?.data?.message ||
           error.message ||
           "Không thể kết nối đến máy chủ để gửi thông báo. Bạn có thể nhấn Thử lại.";
         setErrorMessage(msg);
-        toast.error("Gửi thông báo thất bại", { description: msg });
+        showErrorToast("Gửi thông báo thất bại", { description: msg });
       }
     } finally {
       setIsSending(false);
@@ -108,7 +108,7 @@ export function AdminNotificationComposer() {
 
   return (
     <div className="space-y-6">
-      <Card className="rounded-2xl border border-border/80 bg-card p-4 shadow-xs">
+      <Card className="rounded-xl border border-border/80 bg-card p-4 shadow-xs">
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-4 sm:divide-x sm:divide-border/60">
           <div className="flex items-center gap-3.5 sm:px-3">
             <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
@@ -120,7 +120,7 @@ export function AdminNotificationComposer() {
                 <span className="text-xs font-bold text-foreground">Toàn hệ thống</span>
                 <Badge
                   variant="outline"
-                  className="ml-1 border-primary/20 bg-primary/5 text-[10px] font-mono font-bold text-primary px-1.5 py-0"
+                  className="ml-1 border-primary/20 bg-primary/5 text-xs font-mono font-bold text-primary px-1.5 py-0"
                 >
                   BROADCAST
                 </Badge>
@@ -148,7 +148,7 @@ export function AdminNotificationComposer() {
                 <span className="text-xs font-bold text-foreground">Cao</span>
                 <Badge
                   variant="outline"
-                  className="border-amber-500/30 bg-amber-500/10 text-[10px] font-mono font-bold text-amber-600 dark:text-amber-400 px-1.5 py-0"
+                  className="border-amber-500/30 bg-amber-500/10 text-xs font-mono font-bold text-amber-600 dark:text-amber-400 px-1.5 py-0"
                 >
                   HIGH PRIORITY
                 </Badge>
@@ -166,7 +166,7 @@ export function AdminNotificationComposer() {
                 <span className="text-xs font-bold text-foreground">Khóa Idempotency</span>
                 <Badge
                   variant="outline"
-                  className="border-emerald-500/30 bg-emerald-500/10 text-[10px] font-mono font-bold text-emerald-600 dark:text-emerald-400 px-1.5 py-0"
+                  className="border-emerald-500/30 bg-emerald-500/10 text-xs font-mono font-bold text-emerald-600 dark:text-emerald-400 px-1.5 py-0"
                 >
                   ACTIVE
                 </Badge>
@@ -178,7 +178,7 @@ export function AdminNotificationComposer() {
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         <div className="lg:col-span-7 space-y-6">
-          <Card className="rounded-2xl border border-border/80 bg-card shadow-xs">
+          <Card className="rounded-xl border border-border/80 bg-card shadow-xs">
             <CardHeader className="p-6 border-b border-border/80">
               <div className="flex items-center gap-2.5">
                 <div className="size-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center border border-primary/20">
@@ -210,7 +210,7 @@ export function AdminNotificationComposer() {
                   </label>
                   <span
                     className={cn(
-                      "text-[11px] font-mono",
+                      "text-xs font-mono",
                       title.length > 160 ? "text-destructive font-bold" : "text-muted-foreground"
                     )}
                   >
@@ -235,7 +235,7 @@ export function AdminNotificationComposer() {
                   </label>
                   <span
                     className={cn(
-                      "text-[11px] font-mono",
+                      "text-xs font-mono",
                       message.length > 1000 ? "text-destructive font-bold" : "text-muted-foreground"
                     )}
                   >
@@ -267,7 +267,7 @@ export function AdminNotificationComposer() {
                   disabled={isSending}
                 />
                 {actionUrl.trim() && !isActionUrlValid && (
-                  <p className="text-[11px] text-destructive flex items-center gap-1 font-medium">
+                  <p className="text-xs text-destructive flex items-center gap-1 font-medium">
                     <ShieldAlertIcon className="size-3.5" />
                     Đường dẫn không hợp lệ. Phải bắt đầu bằng &quot;/&quot; và không bắt đầu bằng &quot;//&quot; hoặc chứa liên kết ngoài.
                   </p>
@@ -307,13 +307,13 @@ export function AdminNotificationComposer() {
         </div>
 
         <div className="lg:col-span-5 space-y-4">
-          <Card className="rounded-2xl border border-border/80 bg-card shadow-xs overflow-hidden">
+          <Card className="rounded-xl border border-border/80 bg-card shadow-xs overflow-hidden">
             <CardHeader className="p-4 sm:p-5 border-b border-border/80 bg-muted/20">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-xs uppercase tracking-wider font-bold text-muted-foreground">
                   Xem trước trực tiếp (Live Preview)
                 </CardTitle>
-                <Badge variant="outline" className="text-[10px] font-medium border-border/80">
+                <Badge variant="outline" className="text-xs font-medium border-border/80">
                   Mô phỏng hiển thị
                 </Badge>
               </div>
@@ -336,9 +336,9 @@ export function AdminNotificationComposer() {
                     {message.trim() || "Nội dung thông báo sẽ xuất hiện tại đây sau khi người dùng nhận được..."}
                   </p>
                   <div className="flex items-center justify-between pt-1">
-                    <span className="text-[10px] text-muted-foreground font-medium">Vừa xong</span>
+                    <span className="text-xs text-muted-foreground font-medium">Vừa xong</span>
                     {actionUrl.trim() && isActionUrlValid && (
-                      <span className="text-[10px] font-mono text-primary truncate max-w-[160px]">
+                      <span className="text-xs font-mono text-primary truncate max-w-[160px]">
                         {actionUrl.trim()}
                       </span>
                     )}
@@ -348,7 +348,7 @@ export function AdminNotificationComposer() {
             </CardContent>
           </Card>
 
-          <Card className="rounded-2xl border border-border/80 bg-muted/20 p-5 space-y-3 shadow-xs">
+          <Card className="rounded-xl border border-border/80 bg-muted/20 p-5 space-y-3 shadow-xs">
             <div className="flex items-center gap-2 text-xs font-bold text-foreground">
               <CheckCircle2Icon className="size-4 text-emerald-500" />
               Nguyên tắc bảo vệ dữ liệu & Idempotency
@@ -362,7 +362,7 @@ export function AdminNotificationComposer() {
         </div>
 
         <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
-          <AlertDialogContent className="rounded-2xl max-w-md">
+          <AlertDialogContent className="rounded-xl max-w-md">
             <AlertDialogHeader>
               <AlertDialogTitle className="text-base font-bold">
                 Xác nhận phát thông báo hệ thống?

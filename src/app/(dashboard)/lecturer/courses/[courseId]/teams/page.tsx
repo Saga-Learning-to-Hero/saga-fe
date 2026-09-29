@@ -12,7 +12,7 @@ export default async function LecturerTeamsPage({ params }: Props) {
       fallback={
         <div className="mx-auto w-full max-w-[1600px] space-y-4 pb-12">
           <div className="h-8 w-64 animate-pulse rounded-xl bg-muted" />
-          <div className="h-48 animate-pulse rounded-2xl bg-muted/60" />
+          <div className="h-48 animate-pulse rounded-xl bg-muted/60" />
         </div>
       }
     >

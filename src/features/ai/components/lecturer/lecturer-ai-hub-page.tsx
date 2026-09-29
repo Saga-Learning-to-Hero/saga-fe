@@ -134,7 +134,7 @@ export function LecturerAiHubPage({ courseId }: LecturerAiHubPageProps) {
     >
       <div className="space-y-6">
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          <Card className="rounded-2xl border border-border/80 bg-card p-4 shadow-xs">
+          <Card className="rounded-xl border border-border/80 bg-card p-4 shadow-xs">
             <CardContent className="p-0 space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-medium text-muted-foreground">Mô hình phân tích chính</span>
@@ -160,24 +160,24 @@ export function LecturerAiHubPage({ courseId }: LecturerAiHubPageProps) {
               <div className="pt-1 flex flex-wrap items-center gap-1.5">
                 {primaryCredential?.configured ? (
                   primaryCredential.status === "ACTIVE" ? (
-                    <Badge variant="outline" className="text-[10px] gap-1 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 bg-emerald-500/10">
+                    <Badge variant="outline" className="text-xs gap-1 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 bg-emerald-500/10">
                       <CheckCircle2Icon className="size-3" />
                       Đang hoạt động
                     </Badge>
                   ) : (
-                    <Badge variant="outline" className="text-[10px] gap-1 text-sky-600 dark:text-sky-400 border-sky-500/30 bg-sky-500/10">
+                    <Badge variant="outline" className="text-xs gap-1 text-sky-600 dark:text-sky-400 border-sky-500/30 bg-sky-500/10">
                       <AlertCircleIcon className="size-3" />
                       Đã lưu · Chưa xác minh
                     </Badge>
                   )
                 ) : (
-                  <Badge variant="outline" className="text-[10px] gap-1 text-amber-600 dark:text-amber-400 border-amber-500/30 bg-amber-500/10">
+                  <Badge variant="outline" className="text-xs gap-1 text-amber-600 dark:text-amber-400 border-amber-500/30 bg-amber-500/10">
                     <AlertTriangleIcon className="size-3" />
                     Thiếu khóa PRIMARY
                   </Badge>
                 )}
                 {settings?.fallbackEnabled && (settings.fallbackBindings?.length ?? 0) > 0 && (
-                  <Badge variant="secondary" className="text-[10px]">
+                  <Badge variant="secondary" className="text-xs">
                     Dự phòng: {settings.fallbackBindings.length}
                   </Badge>
                 )}
@@ -185,7 +185,7 @@ export function LecturerAiHubPage({ courseId }: LecturerAiHubPageProps) {
             </CardContent>
           </Card>
 
-          <Card className="rounded-2xl border border-border/80 bg-card p-4 shadow-xs">
+          <Card className="rounded-xl border border-border/80 bg-card p-4 shadow-xs">
             <CardContent className="p-0 space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-medium text-muted-foreground">Phạm vi giám sát</span>
@@ -202,14 +202,14 @@ export function LecturerAiHubPage({ courseId }: LecturerAiHubPageProps) {
                 </p>
               </div>
               <div className="pt-1">
-                <Badge variant="outline" className="text-[11px] text-blue-600 dark:text-blue-400 border-blue-500/30 bg-blue-500/10">
+                <Badge variant="outline" className="text-xs text-blue-600 dark:text-blue-400 border-blue-500/30 bg-blue-500/10">
                   Tiến độ và Rủi ro
                 </Badge>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="rounded-2xl border border-border/80 bg-card p-4 shadow-xs">
+          <Card className="rounded-xl border border-border/80 bg-card p-4 shadow-xs">
             <CardContent className="p-0 space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-medium text-muted-foreground">Phân loại đề cương</span>
@@ -227,11 +227,11 @@ export function LecturerAiHubPage({ courseId }: LecturerAiHubPageProps) {
               </div>
               <div className="pt-1">
                 {proposedCount > 0 ? (
-                  <Badge variant="outline" className="text-[11px] text-amber-600 dark:text-amber-400 border-amber-500/30 bg-amber-500/10 animate-pulse">
+                  <Badge variant="outline" className="text-xs text-amber-600 dark:text-amber-400 border-amber-500/30 bg-amber-500/10 animate-pulse">
                     Có đề xuất chờ duyệt
                   </Badge>
                 ) : (
-                  <Badge variant="outline" className="text-[11px] text-muted-foreground">
+                  <Badge variant="outline" className="text-xs text-muted-foreground">
                     Đã đồng bộ đầy đủ
                   </Badge>
                 )}
@@ -239,7 +239,7 @@ export function LecturerAiHubPage({ courseId }: LecturerAiHubPageProps) {
             </CardContent>
           </Card>
 
-          <Card className="rounded-2xl border border-border/80 bg-card p-4 shadow-xs">
+          <Card className="rounded-xl border border-border/80 bg-card p-4 shadow-xs">
             <CardContent className="p-0 space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-medium text-muted-foreground">Tự động hóa phân tích</span>
@@ -256,7 +256,7 @@ export function LecturerAiHubPage({ courseId }: LecturerAiHubPageProps) {
                 </p>
               </div>
               <div className="pt-1">
-                <Badge variant="outline" className="text-[11px] text-purple-600 dark:text-purple-400 border-purple-500/30 bg-purple-500/10">
+                <Badge variant="outline" className="text-xs text-purple-600 dark:text-purple-400 border-purple-500/30 bg-purple-500/10">
                   {settings?.automationEnabled ? "Tự chạy khi có Commit hoặc Task mới" : "Kích hoạt thủ công"}
                 </Badge>
               </div>
@@ -264,7 +264,7 @@ export function LecturerAiHubPage({ courseId }: LecturerAiHubPageProps) {
           </Card>
         </div>
 
-        <div className="flex flex-wrap items-center justify-between gap-4 p-2 rounded-2xl bg-muted/40 border border-border/80">
+        <div className="flex flex-wrap items-center justify-between gap-4 p-2 rounded-xl bg-muted/40 border border-border/80">
           <div className="flex items-center gap-1.5">
             <button
               type="button"
@@ -293,7 +293,7 @@ export function LecturerAiHubPage({ courseId }: LecturerAiHubPageProps) {
               <GraduationCapIcon className="w-3.5 h-3.5 text-emerald-500" />
               <span>Đối soát phân loại đề cương</span>
               {proposedCount > 0 && (
-                <span className="ml-1 px-1.5 py-0.2 rounded-full text-[10px] font-mono font-bold bg-amber-500 text-white">
+                <span className="ml-1 px-1.5 py-0.2 rounded-full text-xs font-mono font-bold bg-amber-500 text-white">
                   {proposedCount}
                 </span>
               )}

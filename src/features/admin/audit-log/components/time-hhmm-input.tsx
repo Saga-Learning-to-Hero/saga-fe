@@ -170,7 +170,7 @@ export function TimeHhMmInput({
         <PopoverContent
           align="start"
           sideOffset={6}
-          className="w-[260px] p-3 rounded-2xl border border-border shadow-2xl bg-card text-card-foreground select-none"
+          className="w-[260px] p-3 rounded-xl border border-border shadow-lg bg-card text-card-foreground select-none"
         >
           {/* Header chọn giờ */}
           <div className="flex items-center justify-between pb-2 mb-2.5 border-b border-border/60">
@@ -192,7 +192,7 @@ export function TimeHhMmInput({
                 type="button"
                 onClick={() => handleSelectPreset(p.value)}
                 className={cn(
-                  "py-1 rounded-md text-[10px] font-mono font-medium transition-colors border cursor-pointer text-center",
+                  "py-1 rounded-md text-xs font-mono font-medium transition-colors border cursor-pointer text-center",
                   value === p.value
                     ? "bg-primary text-primary-foreground border-primary"
                     : "border-border/60 bg-muted/40 hover:bg-muted text-muted-foreground hover:text-foreground"
@@ -208,7 +208,7 @@ export function TimeHhMmInput({
           <div className="grid grid-cols-2 gap-2 text-xs">
             {/* Cột Giờ */}
             <div>
-              <div className="text-[10px] font-bold text-muted-foreground uppercase mb-1 text-center">
+              <div className="text-xs font-bold text-muted-foreground uppercase mb-1 text-center">
                 Giờ
               </div>
               <div className="max-h-36 overflow-y-auto space-y-0.5 pr-1 border border-border/60 rounded-xl p-1 bg-muted/20">
@@ -235,7 +235,7 @@ export function TimeHhMmInput({
 
             {/* Cột Phút */}
             <div>
-              <div className="text-[10px] font-bold text-muted-foreground uppercase mb-1 text-center">
+              <div className="text-xs font-bold text-muted-foreground uppercase mb-1 text-center">
                 Phút
               </div>
               <div className="max-h-36 overflow-y-auto space-y-0.5 pr-1 border border-border/60 rounded-xl p-1 bg-muted/20">
@@ -268,7 +268,7 @@ export function TimeHhMmInput({
               variant="ghost"
               size="sm"
               onClick={handleSelectCurrentTime}
-              className="h-6.5 px-2 text-[11px] text-muted-foreground hover:text-foreground cursor-pointer"
+              className="h-6.5 px-2 text-xs text-muted-foreground hover:text-foreground cursor-pointer"
             >
               Hiện tại
             </Button>
@@ -278,7 +278,7 @@ export function TimeHhMmInput({
               variant="outline"
               size="sm"
               onClick={() => setIsPopoverOpen(false)}
-              className="h-6.5 px-2.5 text-[11px] font-semibold border-primary/30 text-primary hover:bg-primary/10 cursor-pointer"
+              className="h-6.5 px-2.5 text-xs font-semibold border-primary/30 text-primary hover:bg-primary/10 cursor-pointer"
             >
               <CheckIcon className="size-3 mr-1" />
               Xong

@@ -43,9 +43,9 @@ export function PeerReviewDetailPanel({
   const sprintName = fallbackSprintName || "Sprint đang chọn";
 
   return (
-    <section className="min-w-0 rounded-2xl border border-border/80 bg-card shadow-xs">
+    <section className="min-w-0 rounded-xl border border-border/80 bg-card shadow-xs">
       {selectedReviewee ? (
-        <header className="grid gap-3 border-b border-border/60 bg-gradient-to-r from-primary/8 via-primary/3 to-transparent p-4 sm:grid-cols-[minmax(240px,1fr)_auto] sm:items-center">
+        <header className="grid gap-3 border-b border-border/60 bg-linear-to-b from-primary/8 via-primary/3 to-transparent p-4 sm:grid-cols-[minmax(240px,1fr)_auto] sm:items-center">
           <div className="flex min-w-0 items-center gap-3">
             <Avatar className="size-11 border border-primary/20 shadow-xs">
               <AvatarFallback className="bg-primary/15 text-sm font-black text-primary">
@@ -53,14 +53,14 @@ export function PeerReviewDetailPanel({
               </AvatarFallback>
             </Avatar>
             <div className="min-w-0">
-              <p className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wide text-primary">
+              <p className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide text-primary">
                 <UserRoundCheckIcon className="size-3.5" aria-hidden />
                 Người được đánh giá
               </p>
               <h2 className="break-words text-base leading-5 font-extrabold text-foreground">
                 {selectedReviewee.name}
               </h2>
-              <div className="mt-1 flex flex-wrap items-center gap-2 text-[11px] text-muted-foreground">
+              <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
                 {selectedReviewee.studentCode ? (
                   <span className="rounded-md bg-primary/10 px-2 py-0.5 font-mono font-bold text-primary">
                     {selectedReviewee.studentCode}
@@ -79,7 +79,7 @@ export function PeerReviewDetailPanel({
               <p className="font-mono text-base font-black text-primary">
                 {selectedReviewee.receivedCount}
               </p>
-              <p className="text-[10px] font-semibold text-muted-foreground">
+              <p className="text-xs font-semibold text-muted-foreground">
                 Lượt nhận
               </p>
             </div>
@@ -87,12 +87,12 @@ export function PeerReviewDetailPanel({
               <p className="font-mono text-base font-black text-primary">
                 {formatScoreOutOfMax(selectedReviewee.averageScore, maxScore)}
               </p>
-              <p className="text-[10px] font-semibold text-muted-foreground">
+              <p className="text-xs font-semibold text-muted-foreground">
                 Điểm trung bình
               </p>
             </div>
           </div>
-          <p className="text-[11px] text-muted-foreground sm:col-span-2">
+          <p className="text-xs text-muted-foreground sm:col-span-2">
             Hiển thị {visibleReviews.length}/{reviews.length} lượt trong {sprintName}.
           </p>
         </header>
@@ -149,14 +149,14 @@ export function PeerReviewDetailPanel({
               <section key={group.reviewee.id} className="space-y-2.5">
                 <div className="flex flex-col gap-1 rounded-xl border border-border/70 bg-muted/20 px-3 py-2 sm:flex-row sm:items-center sm:justify-between">
                   <div className="min-w-0">
-                    <p className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
+                    <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground">
                       Tổng hợp lượt nhận
                     </p>
                     <h3 className="break-words text-sm font-extrabold text-foreground">
                       Người được đánh giá: {group.reviewee.name}
                     </h3>
                   </div>
-                  <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
                     {group.reviewee.studentCode ? (
                       <span className="rounded-md bg-primary/10 px-2 py-0.5 font-mono font-bold text-primary">
                         {group.reviewee.studentCode}

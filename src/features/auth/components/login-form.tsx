@@ -1,8 +1,9 @@
 "use client";
+import { showSuccessToast, showErrorToast, showInfoToast } from "@/lib/api-error";
 
 import { useState, useEffect, useCallback, useSyncExternalStore } from "react";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import {
   EyeIcon,
   EyeOffIcon,
@@ -13,7 +14,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { toast } from "@/components/ui/sonner";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
 import { getSafeRedirectUrl } from "@/features/auth/lib/role-routes";
 import { useLogin, useSession, useGoogleLogin, useEnsureCsrf } from "@/features/auth/hooks/useAuth";
@@ -25,7 +25,6 @@ import type { Role } from "@/types/auth";
 const emptySubscribe = () => () => { };
 
 export function LoginForm() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const { isAuthenticated, user, passwordSetupRequired } = useAuthStore();
   const { mutate: login, isPending: isLoading } = useLogin();
@@ -44,7 +43,10 @@ export function LoginForm() {
   useEffect(() => {
     if (googleError) {
       if (typeof window !== "undefined") sessionStorage.removeItem("saga_auth_provider");
-      toast.error(getGoogleErrorMessage(googleError), { id: "google-auth-error", duration: 6000 });
+      showErrorToast(getGoogleErrorMessage(googleError), undefined, {
+        id: "google-auth-error",
+        duration: 6000,
+      });
     }
   }, [googleError]);
 
@@ -66,7 +68,7 @@ export function LoginForm() {
 
       if (isFromGoogle) {
         sessionStorage.removeItem("saga_auth_provider");
-        toast.success("Đăng nhập Google thành công!", {
+        showSuccessToast("Đăng nhập Google thành công!", {
           id: "google-auth-success",
           description: `Chào mừng ${user.fullName || user.email} quay trở lại hệ thống SAGA.`,
         });
@@ -74,17 +76,18 @@ export function LoginForm() {
 
       if (passwordSetupRequired) {
         if (isFromGoogle) {
-          toast.info("Yêu cầu đặt mật khẩu", {
+          showInfoToast("Yêu cầu đặt mật khẩu", {
             id: "google-auth-setup-info",
             description: "Vui lòng đặt mật khẩu đăng nhập cho tài khoản trường của bạn.",
           });
         }
-        router.replace("/auth/setup-password");
+        // eslint-disable-next-line @next/next/no-location-assign-relative-destination
+        window.location.href = "/auth/setup-password";
       } else {
-        router.replace(getRedirectUrl(user.role));
+        window.location.href = getRedirectUrl(user.role);
       }
     }
-  }, [isAuthenticated, user, passwordSetupRequired, router, getRedirectUrl]);
+  }, [isAuthenticated, user, passwordSetupRequired, getRedirectUrl]);
 
   const handleSubmit = (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -93,7 +96,7 @@ export function LoginForm() {
     if (!validation.isValid) {
       setFieldErrors(validation.errors);
       const firstMsg = Object.values(validation.errors)[0] || "Vui lòng nhập đầy đủ thông tin đăng nhập.";
-      toast.error(firstMsg, { id: "login-validation-error" });
+      showErrorToast(firstMsg, { id: "login-validation-error" });
       return;
     }
     setFieldErrors({});
@@ -142,7 +145,7 @@ export function LoginForm() {
 
       <div className="flex items-center gap-3">
         <Separator className="flex-1" />
-        <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider whitespace-nowrap">
+        <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider whitespace-nowrap">
           hoặc đăng nhập nội bộ
         </span>
         <Separator className="flex-1" />

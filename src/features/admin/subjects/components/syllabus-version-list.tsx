@@ -52,7 +52,7 @@ export function SyllabusVersionList({
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-2xl bg-card border border-border shadow-xs">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-xl bg-card border border-border shadow-xs">
         <div className="flex items-center gap-2.5">
           <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0">
             <LayersIcon className="w-4 h-4" />
@@ -61,7 +61,7 @@ export function SyllabusVersionList({
             <h3 className="text-sm font-bold text-foreground">
               Danh sách Phiên bản Đề cương ({syllabi.length})
             </h3>
-            <p className="text-[11px] text-muted-foreground">
+            <p className="text-xs text-muted-foreground">
               Chọn phiên bản để xem cấu trúc chuẩn đầu ra (CLOs) và các mốc bàn giao Sprint.
             </p>
           </div>
@@ -124,7 +124,7 @@ export function SyllabusVersionList({
                 )}
 
                 {currentSelected.status === "ARCHIVED" && (
-                  <div className="p-2 text-[11px] text-muted-foreground text-center font-medium">
+                  <div className="p-2 text-xs text-muted-foreground text-center font-medium">
                     Phiên bản đề cương đã được lưu trữ
                   </div>
                 )}
@@ -152,7 +152,7 @@ export function SyllabusVersionList({
             <div
               key={s.id}
               onClick={() => onSelectVersion(s.id)}
-              className={`p-4 rounded-2xl border transition-all cursor-pointer text-left space-y-2 relative overflow-hidden ${isSelected
+              className={`p-4 rounded-xl border transition-all cursor-pointer text-left space-y-2 relative overflow-hidden ${isSelected
                 ? "bg-primary/5 border-primary shadow-xs ring-1 ring-primary/30"
                 : "bg-card border-border hover:border-border/80 hover:bg-muted/10"
                 }`}
@@ -170,21 +170,21 @@ export function SyllabusVersionList({
                 </div>
 
                 {s.status === "PUBLISHED" && (
-                  <Badge className="bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 text-[10px] font-bold px-2 py-0">
+                  <Badge className="bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 text-xs font-bold px-2 py-0">
                     <CheckCircle2Icon className="w-3 h-3 mr-1" />
                     Bản chuẩn áp dụng
                   </Badge>
                 )}
 
                 {s.status === "DRAFT" && (
-                  <Badge className="bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30 text-[10px] font-bold px-2 py-0">
+                  <Badge className="bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30 text-xs font-bold px-2 py-0">
                     <ClockIcon className="w-3 h-3 mr-1" />
                     Bản nháp biên soạn
                   </Badge>
                 )}
 
                 {s.status === "ARCHIVED" && (
-                  <Badge variant="outline" className="bg-muted text-muted-foreground border-border text-[10px] font-semibold px-2 py-0">
+                  <Badge variant="outline" className="bg-muted text-muted-foreground border-border text-xs font-semibold px-2 py-0">
                     <ArchiveIcon className="w-3 h-3 mr-1" />
                     Đã lưu trữ
                   </Badge>
@@ -196,13 +196,13 @@ export function SyllabusVersionList({
                   {s.titleEnglish || "Chưa có tiêu đề tiếng Anh"}
                 </p>
                 {s.titleVietnamese && (
-                  <p className="text-[11px] text-muted-foreground line-clamp-1">
+                  <p className="text-xs text-muted-foreground line-clamp-1">
                     {s.titleVietnamese}
                   </p>
                 )}
               </div>
 
-              <div className="flex items-center justify-between text-[11px] text-muted-foreground pt-1.5 border-t border-border/40 font-mono">
+              <div className="flex items-center justify-between text-xs text-muted-foreground pt-1.5 border-t border-border/40 font-mono">
                 <span>{s.credits || 3} Tín chỉ</span>
                 <div className="flex items-center gap-2">
                   {onEditMetadata && s.status === "DRAFT" && (
@@ -213,7 +213,7 @@ export function SyllabusVersionList({
                         onSelectVersion(s.id);
                         onEditMetadata(s.id);
                       }}
-                      className="font-sans text-[11px] text-muted-foreground hover:text-foreground cursor-pointer flex items-center gap-1"
+                      className="font-sans text-xs text-muted-foreground hover:text-foreground cursor-pointer flex items-center gap-1"
                     >
                       <FileTextIcon className="w-3 h-3" />
                       <span>Sửa</span>

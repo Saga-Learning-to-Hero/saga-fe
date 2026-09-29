@@ -1,5 +1,6 @@
+import { showSuccessToast, showErrorToast, showInfoToast } from "@/lib/api-error";
 import { useState } from "react";
-import { toast } from "sonner";
+import { getAiProviderDisplayName } from "../../lib/ai-provider-format";
 import {
   SparklesIcon,
   DownloadIcon,
@@ -284,14 +285,14 @@ export function CourseAiProgressTab({ courseId, onNavigateToCredentials }: Cours
       submitCourseProgressMutation.mutate(undefined, {
         onSuccess: (data) => {
           setSubmittedRunId(data.analysis.id);
-          if (data.httpStatus === 202) {
-            toast.success("Tiến trình phân tích mới đã được xếp hàng", { description: "AI đang chạy phân tích ngầm..." });
+          if (!data.isReused) {
+            showSuccessToast("Tiến trình phân tích mới đã được xếp hàng");
           } else {
-            toast.info("Đã tái sử dụng phân tích", { description: "Tiến độ hiện tại chưa có biến động mới cần phân tích." });
+            showInfoToast("Đã tái sử dụng phân tích");
           }
         },
         onError: () => {
-          toast.error("Lỗi khi gọi phân tích AI");
+          showErrorToast("Lỗi khi gọi phân tích AI");
         }
       });
     } else if (scope === "TEAM") {
@@ -329,7 +330,7 @@ export function CourseAiProgressTab({ courseId, onNavigateToCredentials }: Cours
 
   return (
     <div className="space-y-6">
-      <div className="p-6 rounded-2xl border border-border bg-card shadow-xs flex flex-col lg:flex-row lg:items-center justify-between gap-5">
+      <div className="p-6 rounded-xl border border-border bg-card shadow-xs flex flex-col lg:flex-row lg:items-center justify-between gap-5">
         <div className="space-y-1">
           <h3 className="text-base font-bold text-foreground">
             Báo cáo Tiến độ và Đánh giá Rủi ro AI
@@ -339,7 +340,7 @@ export function CourseAiProgressTab({ courseId, onNavigateToCredentials }: Cours
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-1.5 p-1 rounded-2xl bg-muted/60 border border-border shrink-0">
+        <div className="flex flex-wrap items-center gap-1.5 p-1 rounded-xl bg-muted/60 border border-border shrink-0">
           <button
             type="button"
             onClick={() => setScope("COURSE")}
@@ -383,10 +384,10 @@ export function CourseAiProgressTab({ courseId, onNavigateToCredentials }: Cours
       </div>
 
       {(scope === "TEAM" || scope === "STUDENT") && (
-        <div className="p-5 rounded-2xl border border-border bg-card shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="p-5 rounded-xl border border-border bg-card shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex flex-wrap items-center gap-3">
             <div className="w-64">
-              <label htmlFor="select-lecturer-team" className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider block mb-1.5">
+              <label htmlFor="select-lecturer-team" className="text-xs font-semibold text-muted-foreground uppercase tracking-wider block mb-1.5">
                 Nhóm dự án
               </label>
               {isTeamsLoading ? (
@@ -414,7 +415,7 @@ export function CourseAiProgressTab({ courseId, onNavigateToCredentials }: Cours
 
             {scope === "STUDENT" && (
               <div className="w-72">
-                <label htmlFor="select-lecturer-student" className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider block mb-1.5">
+                <label htmlFor="select-lecturer-student" className="text-xs font-semibold text-muted-foreground uppercase tracking-wider block mb-1.5">
                   Thành viên trong nhóm
                 </label>
                 {teamMembers.length === 0 ? (
@@ -467,7 +468,7 @@ export function CourseAiProgressTab({ courseId, onNavigateToCredentials }: Cours
       )}
 
       {(scope === "TEAM" || scope === "STUDENT") && !currentProjectId && (
-        <div className="p-8 rounded-2xl border border-dashed border-amber-500/30 bg-amber-500/5 text-center space-y-2">
+        <div className="p-8 rounded-xl border border-dashed border-amber-500/30 bg-amber-500/5 text-center space-y-2">
           <div className="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 mx-auto flex items-center justify-center">
             <AlertCircleIcon className="w-5 h-5" />
           </div>
@@ -480,7 +481,7 @@ export function CourseAiProgressTab({ courseId, onNavigateToCredentials }: Cours
 
       {!(scope !== "COURSE" && !currentProjectId) && (
         <div className="space-y-6">
-          <div className="p-5 rounded-2xl border border-border bg-card shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="p-5 rounded-xl border border-border bg-card shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="flex items-center gap-2">
               <span className="text-xs font-bold text-foreground">
                 {scope === "COURSE"
@@ -526,13 +527,13 @@ export function CourseAiProgressTab({ courseId, onNavigateToCredentials }: Cours
           </div>
 
           {isCurrentLoading ? (
-            <div className="p-12 rounded-2xl border border-border bg-card flex flex-col items-center justify-center gap-3">
+            <div className="p-12 rounded-xl border border-border bg-card flex flex-col items-center justify-center gap-3">
               <Loader2Icon className="w-6 h-6 animate-spin text-primary" />
               <span className="text-xs text-muted-foreground">Đang tải dữ liệu phân tích gần nhất từ máy chủ...</span>
             </div>
           ) : !currentAnalysis ? (
-            <div className="p-12 rounded-2xl border border-dashed border-border bg-muted/10 text-center space-y-4">
-              <div className="w-12 h-12 rounded-2xl bg-primary/10 text-primary mx-auto flex items-center justify-center">
+            <div className="p-12 rounded-xl border border-dashed border-border bg-muted/10 text-center space-y-4">
+              <div className="w-12 h-12 rounded-xl bg-primary/10 text-primary mx-auto flex items-center justify-center">
                 <SparklesIcon className="w-6 h-6" />
               </div>
               <div>
@@ -561,7 +562,7 @@ export function CourseAiProgressTab({ courseId, onNavigateToCredentials }: Cours
                 {currentAnalysis.providerDecision && (
                   <div className="flex flex-wrap items-center gap-4 text-muted-foreground font-mono">
                     {currentAnalysis.providerDecision.modelId && (
-                      <div className="flex flex-col gap-1.5 text-[11px] p-2.5 rounded-lg bg-card border border-border shadow-xs mt-1">
+                      <div className="flex flex-col gap-1.5 text-xs p-2.5 rounded-lg bg-card border border-border shadow-xs mt-1">
                         {settings?.primaryBinding && (
                           <div className="flex items-center gap-2 opacity-70">
                             <span className="font-semibold text-muted-foreground w-40">Current model:</span>
@@ -571,7 +572,7 @@ export function CourseAiProgressTab({ courseId, onNavigateToCredentials }: Cours
                         <div className="flex items-center gap-2 text-primary">
                           <CpuIcon className="w-3.5 h-3.5 shrink-0" />
                           <span className="font-semibold w-40">Model used for this analysis:</span>
-                          <span className="font-mono">{currentAnalysis.providerDecision.modelId} ({currentAnalysis.providerDecision.aiProvider || "Unknown"})</span>
+                          <span className="font-mono">{currentAnalysis.providerDecision.modelId} ({getAiProviderDisplayName(currentAnalysis.providerDecision.aiProvider)})</span>
                         </div>
                       </div>
                     )}
@@ -582,7 +583,7 @@ export function CourseAiProgressTab({ courseId, onNavigateToCredentials }: Cours
                           const successful = attempts.find((a: { outcome?: string }) => a.outcome === "SUCCEEDED");
                           return (
                             <span className="text-amber-600 dark:text-amber-400 text-xs font-sans">
-                              (Nhà cung cấp chính tạm ngưng hoạt động. Kết quả được xử lý bởi {successful?.provider || currentAnalysis.providerDecision.aiProvider})
+                              (Nhà cung cấp chính tạm ngưng hoạt động. Kết quả được xử lý bởi {getAiProviderDisplayName(successful?.provider || currentAnalysis.providerDecision.aiProvider)})
                             </span>
                           );
                         }
@@ -602,7 +603,7 @@ export function CourseAiProgressTab({ courseId, onNavigateToCredentials }: Cours
               </div>
 
               {currentAnalysis.status === "FAILED" ? (
-                <div className="p-6 rounded-2xl border border-red-500/30 bg-red-500/10 space-y-4 shadow-xs">
+                <div className="p-6 rounded-xl border border-red-500/30 bg-red-500/10 space-y-4 shadow-xs">
                   <div className="flex items-center gap-2.5 text-red-600 dark:text-red-400 font-bold text-sm">
                     <AlertOctagonIcon className="w-5 h-5 shrink-0" />
                     <span>Phân tích AI không thành công</span>
@@ -615,13 +616,13 @@ export function CourseAiProgressTab({ courseId, onNavigateToCredentials }: Cours
                   <div className="p-3.5 rounded-xl bg-card/60 border border-red-500/20 text-xs space-y-1.5 text-muted-foreground">
                     <div className="font-semibold text-foreground">Gợi ý kiểm tra và khắc phục:</div>
                     <ul className="space-y-1 list-disc list-inside">
-                      <li>Kiểm tra số dư Credit (số tiền khả dụng) hoặc hạn mức sử dụng trên tài khoản API OpenAI/Gemini cá nhân.</li>
+                      <li>Kiểm tra số dư Credit (số tiền khả dụng) hoặc hạn mức sử dụng trên tài khoản API của nhà cung cấp LLM cá nhân.</li>
                       <li>Kiểm tra cấu hình mô hình LLM trên máy chủ hoặc thiết lập lại API Key riêng.</li>
                       <li>Đảm bảo nhóm đã có commit hoặc task Jira để có dữ liệu đối soát.</li>
                     </ul>
                   </div>
 
-                  <div className="flex flex-wrap items-center gap-3 text-[11px] font-mono text-muted-foreground pt-1">
+                  <div className="flex flex-wrap items-center gap-3 text-xs font-mono text-muted-foreground pt-1">
                     <span className="px-2 py-0.5 rounded-md bg-red-500/20 text-red-700 dark:text-red-300 font-bold">
                       Mã lỗi: {currentAnalysis.failureCode || currentAnalysis.providerDecision?.safeErrorCode || "AI_ANALYSIS_FAILED"}
                     </span>
@@ -664,46 +665,46 @@ export function CourseAiProgressTab({ courseId, onNavigateToCredentials }: Cours
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                     <Card className="rounded-xl border border-border/80 bg-card p-3 shadow-xs">
                       <CardContent className="p-0 space-y-1">
-                        <span className="text-[11px] font-medium text-muted-foreground">Điểm nổi bật</span>
+                        <span className="text-xs font-medium text-muted-foreground">Điểm nổi bật</span>
                         <div className="text-lg font-black text-emerald-600 dark:text-emerald-400 font-mono">
                           {parsedNarrative.highlights?.length || 0}
                         </div>
-                        <span className="text-[10px] text-muted-foreground">mục ghi nhận</span>
+                        <span className="text-xs text-muted-foreground">mục ghi nhận</span>
                       </CardContent>
                     </Card>
 
                     <Card className="rounded-xl border border-border/80 bg-card p-3 shadow-xs">
                       <CardContent className="p-0 space-y-1">
-                        <span className="text-[11px] font-medium text-muted-foreground">Vấn đề cần lưu ý</span>
+                        <span className="text-xs font-medium text-muted-foreground">Vấn đề cần lưu ý</span>
                         <div className="text-lg font-black text-amber-600 dark:text-amber-400 font-mono">
                           {parsedNarrative.concerns?.length || 0}
                         </div>
-                        <span className="text-[10px] text-muted-foreground">cần theo dõi</span>
+                        <span className="text-xs text-muted-foreground">cần theo dõi</span>
                       </CardContent>
                     </Card>
 
                     <Card className="rounded-xl border border-border/80 bg-card p-3 shadow-xs">
                       <CardContent className="p-0 space-y-1">
-                        <span className="text-[11px] font-medium text-muted-foreground">Điểm nghẽn tiến độ</span>
+                        <span className="text-xs font-medium text-muted-foreground">Điểm nghẽn tiến độ</span>
                         <div className="text-lg font-black text-red-600 dark:text-red-400 font-mono">
                           {parsedNarrative.blockers?.length || 0}
                         </div>
-                        <span className="text-[10px] text-muted-foreground">cản trở công việc</span>
+                        <span className="text-xs text-muted-foreground">cản trở công việc</span>
                       </CardContent>
                     </Card>
 
                     <Card className="rounded-xl border border-border/80 bg-card p-3 shadow-xs">
                       <CardContent className="p-0 space-y-1">
-                        <span className="text-[11px] font-medium text-muted-foreground">Khuyến nghị của AI</span>
+                        <span className="text-xs font-medium text-muted-foreground">Khuyến nghị của AI</span>
                         <div className="text-lg font-black text-indigo-600 dark:text-indigo-400 font-mono">
                           {parsedNarrative.recommendations?.length || 0}
                         </div>
-                        <span className="text-[10px] text-muted-foreground">hành động gợi ý</span>
+                        <span className="text-xs text-muted-foreground">hành động gợi ý</span>
                       </CardContent>
                     </Card>
                   </div>
 
-                  <div className="p-6 rounded-2xl border border-primary/20 bg-primary/5 space-y-2">
+                  <div className="p-6 rounded-xl border border-primary/20 bg-primary/5 space-y-2">
                     <div className="flex items-center gap-2 text-primary font-semibold text-xs uppercase tracking-wider">
                       <SparklesIcon className="w-3.5 h-3.5" />
                       Nhận định tổng quan
@@ -714,7 +715,7 @@ export function CourseAiProgressTab({ courseId, onNavigateToCredentials }: Cours
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="p-5 rounded-2xl border border-emerald-500/20 bg-emerald-500/5 space-y-3">
+                    <div className="p-5 rounded-xl border border-emerald-500/20 bg-emerald-500/5 space-y-3">
                       <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 font-semibold text-xs uppercase tracking-wider">
                         <CheckCircle2Icon className="w-4 h-4" />
                         Điểm sáng và thành tựu nổi bật
@@ -733,7 +734,7 @@ export function CourseAiProgressTab({ courseId, onNavigateToCredentials }: Cours
                       )}
                     </div>
 
-                    <div className="p-5 rounded-2xl border border-amber-500/20 bg-amber-500/5 space-y-3">
+                    <div className="p-5 rounded-xl border border-amber-500/20 bg-amber-500/5 space-y-3">
                       <div className="flex items-center gap-2 text-amber-600 dark:text-amber-400 font-semibold text-xs uppercase tracking-wider">
                         <AlertTriangleIcon className="w-4 h-4" />
                         Vấn đề đáng quan ngại
@@ -752,7 +753,7 @@ export function CourseAiProgressTab({ courseId, onNavigateToCredentials }: Cours
                       )}
                     </div>
 
-                    <div className="p-5 rounded-2xl border border-red-500/20 bg-red-500/5 space-y-3">
+                    <div className="p-5 rounded-xl border border-red-500/20 bg-red-500/5 space-y-3">
                       <div className="flex items-center gap-2 text-red-600 dark:text-red-400 font-semibold text-xs uppercase tracking-wider">
                         <BanIcon className="w-4 h-4" />
                         Điểm nghẽn cản trở tiến độ
@@ -771,7 +772,7 @@ export function CourseAiProgressTab({ courseId, onNavigateToCredentials }: Cours
                       )}
                     </div>
 
-                    <div className="p-5 rounded-2xl border border-indigo-500/20 bg-indigo-500/5 space-y-3">
+                    <div className="p-5 rounded-xl border border-indigo-500/20 bg-indigo-500/5 space-y-3">
                       <div className="flex items-center gap-2 text-indigo-600 dark:text-indigo-400 font-semibold text-xs uppercase tracking-wider">
                         <LightbulbIcon className="w-4 h-4" />
                         Khuyến nghị can thiệp của Giảng viên
@@ -803,7 +804,7 @@ export function CourseAiProgressTab({ courseId, onNavigateToCredentials }: Cours
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                     <Card className="rounded-xl border border-border/80 bg-card p-3 shadow-xs">
                       <CardContent className="p-0 space-y-1">
-                        <span className="text-[11px] font-medium text-muted-foreground">Mức độ rủi ro</span>
+                        <span className="text-xs font-medium text-muted-foreground">Mức độ rủi ro</span>
                         <div className="text-lg font-black font-mono">
                           {parsedRisk.riskLevel}
                         </div>
@@ -813,36 +814,36 @@ export function CourseAiProgressTab({ courseId, onNavigateToCredentials }: Cours
 
                     <Card className="rounded-xl border border-border/80 bg-card p-3 shadow-xs">
                       <CardContent className="p-0 space-y-1">
-                        <span className="text-[11px] font-medium text-muted-foreground">Độ tin cậy</span>
+                        <span className="text-xs font-medium text-muted-foreground">Độ tin cậy</span>
                         <div className="text-lg font-black text-blue-600 dark:text-blue-400 font-mono">
                           {(parsedRisk.confidence * 100).toFixed(0)}%
                         </div>
-                        <span className="text-[10px] text-muted-foreground">chỉ số xác thực</span>
+                        <span className="text-xs text-muted-foreground">chỉ số xác thực</span>
                       </CardContent>
                     </Card>
 
                     <Card className="rounded-xl border border-border/80 bg-card p-3 shadow-xs">
                       <CardContent className="p-0 space-y-1">
-                        <span className="text-[11px] font-medium text-muted-foreground">Yếu tố nguy cơ</span>
+                        <span className="text-xs font-medium text-muted-foreground">Yếu tố nguy cơ</span>
                         <div className="text-lg font-black text-amber-600 dark:text-amber-400 font-mono">
                           {parsedRisk.riskReasons?.length || 0}
                         </div>
-                        <span className="text-[10px] text-muted-foreground">cảnh báo nhận diện</span>
+                        <span className="text-xs text-muted-foreground">cảnh báo nhận diện</span>
                       </CardContent>
                     </Card>
 
                     <Card className="rounded-xl border border-border/80 bg-card p-3 shadow-xs">
                       <CardContent className="p-0 space-y-1">
-                        <span className="text-[11px] font-medium text-muted-foreground">Biện pháp khắc phục</span>
+                        <span className="text-xs font-medium text-muted-foreground">Biện pháp khắc phục</span>
                         <div className="text-lg font-black text-primary font-mono">
                           {parsedRisk.recommendedActions?.length || 0}
                         </div>
-                        <span className="text-[10px] text-muted-foreground">hành động đề xuất</span>
+                        <span className="text-xs text-muted-foreground">hành động đề xuất</span>
                       </CardContent>
                     </Card>
                   </div>
 
-                  <div className="p-6 rounded-2xl border border-border bg-card shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div className="p-6 rounded-xl border border-border bg-card shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div className="flex items-center gap-3">
                       <AiRiskBadge level={parsedRisk.riskLevel} />
                       <div>
@@ -864,7 +865,7 @@ export function CourseAiProgressTab({ courseId, onNavigateToCredentials }: Cours
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="p-5 rounded-2xl border border-red-500/20 bg-red-500/5 space-y-3">
+                    <div className="p-5 rounded-xl border border-red-500/20 bg-red-500/5 space-y-3">
                       <div className="flex items-center gap-2 text-red-600 dark:text-red-400 font-semibold text-xs uppercase tracking-wider">
                         <AlertTriangleIcon className="w-4 h-4" />
                         Các yếu tố nguy cơ phát hiện
@@ -876,14 +877,14 @@ export function CourseAiProgressTab({ courseId, onNavigateToCredentials }: Cours
                               <div className="font-semibold text-foreground flex items-center justify-between">
                                 <span>{reason.code || `Yếu tố ${idx + 1}`}</span>
                                 {reason.severity && (
-                                  <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-muted text-muted-foreground uppercase">
+                                  <span className="text-xs font-mono px-1.5 py-0.5 rounded bg-muted text-muted-foreground uppercase">
                                     {reason.severity}
                                   </span>
                                 )}
                               </div>
                               <p className="text-muted-foreground">{reason.description}</p>
                               {reason.impact && (
-                                <div className="text-[11px] text-amber-600 dark:text-amber-400 font-medium">
+                                <div className="text-xs text-amber-600 dark:text-amber-400 font-medium">
                                   Hệ quả: {reason.impact}
                                 </div>
                               )}
@@ -895,7 +896,7 @@ export function CourseAiProgressTab({ courseId, onNavigateToCredentials }: Cours
                       )}
                     </div>
 
-                    <div className="p-5 rounded-2xl border border-primary/20 bg-primary/5 space-y-3">
+                    <div className="p-5 rounded-xl border border-primary/20 bg-primary/5 space-y-3">
                       <div className="flex items-center gap-2 text-primary font-semibold text-xs uppercase tracking-wider">
                         <LightbulbIcon className="w-4 h-4" />
                         Hành động giảm thiểu rủi ro đề xuất

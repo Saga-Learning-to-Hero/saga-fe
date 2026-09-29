@@ -125,7 +125,7 @@ export function CourseAnalyticsCharts({
           : "grid grid-cols-1 items-start gap-4 xl:grid-cols-2"
       }
     >
-      <Card className="rounded-2xl border border-border/80 bg-card p-5 shadow-xs">
+      <Card className="rounded-xl border border-border/80 bg-card p-5 shadow-xs">
         <div className="flex items-center justify-between gap-2">
           <div>
             <h3 className="text-sm font-bold text-foreground">Công việc Sprint hiện tại</h3>
@@ -133,7 +133,7 @@ export function CourseAnalyticsCharts({
               Trạng thái công việc của các nhóm đang có Sprint.
             </p>
           </div>
-          <Badge variant="outline" className="font-mono text-[11px] font-bold">
+          <Badge variant="outline" className="font-mono text-xs font-bold">
             {formatNullablePercent(visibleTaskTotals.completionPercent)}
           </Badge>
         </div>
@@ -198,7 +198,7 @@ export function CourseAnalyticsCharts({
         ) : null}
       </Card>
 
-      <Card className="rounded-2xl border border-border/80 bg-card p-5 shadow-xs">
+      <Card className="rounded-xl border border-border/80 bg-card p-5 shadow-xs">
         <div className="flex items-start justify-between gap-3">
           <div>
             <h3 className="text-sm font-bold text-foreground">Tình trạng các nhóm</h3>
@@ -266,7 +266,7 @@ export function CourseAnalyticsCharts({
                         />
                         <TooltipContent className="block w-64 max-w-64 rounded-xl bg-popover p-3 text-popover-foreground ring-1 ring-border">
                           <p className="font-bold text-foreground">{item.name} · {item.value} nhóm</p>
-                          <ul className="mt-2 space-y-1.5 text-[11px] text-muted-foreground">
+                          <ul className="mt-2 space-y-1.5 text-xs text-muted-foreground">
                             {matchingTeams.slice(0, 3).map((team) => (
                               <li key={team.teamId}>
                                 <span className="font-semibold text-foreground">{team.teamName}</span>
@@ -277,7 +277,7 @@ export function CourseAnalyticsCharts({
                             ))}
                           </ul>
                           {matchingTeams.length > 3 ? (
-                            <p className="mt-2 text-[11px] text-muted-foreground">
+                            <p className="mt-2 text-xs text-muted-foreground">
                               +{matchingTeams.length - 3} nhóm khác
                             </p>
                           ) : null}
@@ -316,7 +316,7 @@ export function CourseAnalyticsCharts({
       </Card>
 
       {hasAnyPeerData ? (
-        <Card className="rounded-2xl border border-border/80 bg-card p-5 shadow-xs">
+        <Card className="rounded-xl border border-border/80 bg-card p-5 shadow-xs">
         <div>
           <h3 className="text-sm font-bold text-foreground">Tiến độ đánh giá chéo</h3>
           <p className="mt-0.5 text-xs text-muted-foreground">

@@ -117,12 +117,12 @@ function FailureContent() {
 
   return (
     <div className="w-full max-w-xl mx-auto space-y-6">
-      <div className="bg-card border border-border/80 rounded-3xl p-6 sm:p-8 shadow-2xl relative overflow-hidden backdrop-blur-md">
+      <div className="bg-card border border-border/80 rounded-xl p-6 sm:p-8 shadow-lg relative overflow-hidden backdrop-blur-sm">
         <div className="absolute top-0 right-0 w-40 h-40 bg-destructive/10 rounded-full blur-3xl pointer-events-none -z-10" />
 
         <div className="text-center space-y-4">
           <div className="relative inline-flex items-center justify-center">
-            <div className="w-20 h-20 rounded-3xl bg-destructive/10 border border-destructive/25 flex items-center justify-center text-destructive shadow-lg shadow-destructive/10 animate-pulse">
+            <div className="w-20 h-20 rounded-xl bg-destructive/10 border border-destructive/25 flex items-center justify-center text-destructive shadow-lg shadow-destructive/10 animate-pulse">
               <ShieldAlertIcon className="w-10 h-10" />
             </div>
             <div className="absolute -bottom-1 -right-1 w-8 h-8 rounded-xl bg-card border border-border flex items-center justify-center text-destructive shadow-md">
@@ -163,10 +163,10 @@ function FailureContent() {
         </div>
 
         <div className="mt-6 space-y-3.5">
-          <div className="bg-muted/40 border border-border/80 rounded-2xl p-4 space-y-2.5">
+          <div className="bg-muted/40 border border-border/80 rounded-xl p-4 space-y-2.5">
             <div className="flex items-center justify-between gap-2 text-xs">
               <span className="font-semibold text-muted-foreground">Mã định danh lỗi:</span>
-              <span className="font-mono text-destructive font-bold bg-destructive/10 px-2.5 py-0.5 rounded-lg border border-destructive/20 text-[11px]">
+              <span className="font-mono text-destructive font-bold bg-destructive/10 px-2.5 py-0.5 rounded-lg border border-destructive/20 text-xs">
                 {errorCode}
               </span>
             </div>
@@ -174,12 +174,12 @@ function FailureContent() {
             {errorMessage && (
               <div className="text-xs text-muted-foreground pt-1 border-t border-border/60">
                 <span className="font-semibold text-foreground">Phản hồi từ dịch vụ: </span>
-                <span className="font-mono text-[11px] break-all">{errorMessage}</span>
+                <span className="font-mono text-xs break-all">{errorMessage}</span>
               </div>
             )}
           </div>
 
-          <div className="bg-primary/5 border border-primary/20 rounded-2xl p-4 flex items-start gap-3 text-xs text-foreground">
+          <div className="bg-primary/5 border border-primary/20 rounded-xl p-4 flex items-start gap-3 text-xs text-foreground">
             <HelpCircleIcon className="w-4 h-4 text-primary shrink-0 mt-0.5" />
             <div className="space-y-1">
               <p className="font-bold text-primary">Gợi ý khắc phục</p>
@@ -225,7 +225,7 @@ function FailureContent() {
         </div>
       </div>
 
-      <p className="text-center text-[11px] text-muted-foreground/60 font-mono">
+      <p className="text-center text-xs text-muted-foreground/60 font-mono">
         Mã kiểm toán: ERR_OAUTH_INTEGRATION_FAILED · SAGA Integration Engine
       </p>
     </div>

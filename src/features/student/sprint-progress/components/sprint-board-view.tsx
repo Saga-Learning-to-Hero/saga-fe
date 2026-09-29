@@ -142,9 +142,9 @@ export function SprintBoardView({
 
   if (isLoading) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-start animate-pulse">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 animate-pulse">
         {COLUMNS.map((col) => (
-          <div key={col.id} className="rounded-2xl border border-border/40 bg-muted/20 p-3.5 space-y-3 min-h-[420px]">
+          <div key={col.id} className="rounded-xl border border-border/40 bg-muted/20 p-3.5 space-y-3 min-h-[420px]">
             <div className="h-5 bg-muted/60 rounded-md w-2/3" />
             <div className="h-1 bg-muted/40 rounded-full" />
             <div className="space-y-2.5 pt-2">
@@ -186,8 +186,8 @@ export function SprintBoardView({
 
   if (issues.length === 0 && !showEmptyColumnsAnyway) {
     return (
-      <div className="rounded-3xl border border-dashed border-border/80 bg-card/40 p-8 sm:p-12 text-center space-y-5 max-w-2xl mx-auto shadow-2xs">
-        <div className="w-14 h-14 mx-auto rounded-2xl bg-primary/10 text-primary flex items-center justify-center shadow-xs">
+      <div className="rounded-xl border border-dashed border-border/80 bg-card/40 p-8 sm:p-12 text-center space-y-5 max-w-2xl mx-auto shadow-2xs">
+        <div className="w-14 h-14 mx-auto rounded-xl bg-primary/10 text-primary flex items-center justify-center shadow-xs">
           <LayersIcon className="w-7 h-7" />
         </div>
 
@@ -234,7 +234,7 @@ export function SprintBoardView({
   return (
     <div className="space-y-4">
       {issues.length === 0 && (
-        <div className="p-3 rounded-2xl bg-muted/40 border border-border/60 flex items-center justify-between gap-3 text-xs text-muted-foreground">
+        <div className="p-3 rounded-xl bg-muted/40 border border-border/60 flex items-center justify-between gap-3 text-xs text-muted-foreground">
           <div className="flex items-center gap-2">
             <AlertCircleIcon className="w-4 h-4 text-primary shrink-0" />
             <span>Đang hiển thị 4 cột trống của Sprint. Hãy kéo task từ Backlog vào để bắt đầu.</span>
@@ -253,7 +253,7 @@ export function SprintBoardView({
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-start">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {COLUMNS.map((col) => {
           const colIssues = issues.filter((i) => i.status === col.id);
           const colSP = colIssues.reduce((sum, i) => sum + (i.storyPoints || 0), 0);
@@ -264,7 +264,7 @@ export function SprintBoardView({
               key={col.id}
               onDragOver={handleDragOver}
               onDrop={(e) => handleDrop(e, col.id)}
-              className="rounded-2xl border border-border/60 bg-muted/20 p-3 flex flex-col transition-all max-h-[calc(100vh-220px)] min-h-[500px]"
+              className="min-w-0 h-full rounded-xl border border-border/60 bg-muted/20 p-3 flex flex-col transition-all max-h-[calc(100vh-220px)] min-h-[500px] overflow-x-hidden"
             >
               <div className="pb-2.5 mb-2.5 border-b border-border/50 shrink-0 space-y-1.5">
                 <div className="flex items-center justify-between">
@@ -273,11 +273,11 @@ export function SprintBoardView({
                     <h3 className="text-xs font-bold tracking-wider text-foreground">
                       {col.title}
                     </h3>
-                    <Badge variant="secondary" className="font-mono text-[10px] px-1.5 py-0">
+                    <Badge variant="secondary" className="font-mono text-xs px-1.5 py-0">
                       {colIssues.length}
                     </Badge>
                   </div>
-                  <span className="text-[11px] font-mono text-muted-foreground font-semibold">
+                  <span className="text-xs font-mono text-muted-foreground font-semibold">
                     {colSP} SP
                   </span>
                 </div>
@@ -291,7 +291,7 @@ export function SprintBoardView({
 
               <div className="space-y-2.5 flex-1 overflow-y-auto pr-2 pl-0.5 py-1 custom-scrollbar min-h-[300px] overscroll-contain">
                 {colIssues.length === 0 ? (
-                  <div className="h-28 flex items-center justify-center rounded-xl border border-dashed border-border/50 text-[11px] text-muted-foreground/60 select-none">
+                  <div className="h-28 flex items-center justify-center rounded-xl border border-dashed border-border/50 text-xs text-muted-foreground/60 select-none">
                     Chưa có task nào
                   </div>
                 ) : null}
@@ -335,7 +335,7 @@ export function SprintBoardView({
                         {issue.epic && (
                           <Badge
                             style={{ backgroundColor: `${issue.epic.color}15`, color: issue.epic.color }}
-                            className="border-0 text-[10px] font-bold px-1.5 py-0.2 truncate max-w-[110px]"
+                            className="border-0 text-xs font-bold px-1.5 py-0.2 truncate max-w-[110px]"
                           >
                             {issue.epic.name}
                           </Badge>
@@ -360,14 +360,14 @@ export function SprintBoardView({
                         </div>
                       )}
 
-                      <div className="flex items-center justify-between pt-1 border-t border-border/40 text-[11px] text-muted-foreground">
+                      <div className="flex items-center justify-between pt-1 border-t border-border/40 text-xs text-muted-foreground">
                         <div className="flex items-center gap-2">
                           {renderPriorityIcon(issue.priority)}
 
                           {issue.githubCommitCount && issue.githubCommitCount > 0 ? (
                             <span
                               title={`Có ${issue.githubCommitCount} commit liên kết từ GitHub`}
-                              className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-mono text-[10px] font-semibold"
+                              className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-mono text-xs font-semibold"
                             >
                               <GitCommitIcon className="w-3 h-3" />
                               {issue.githubCommitCount}
@@ -375,7 +375,7 @@ export function SprintBoardView({
                           ) : isMsrAnomaly ? (
                             <span
                               title="Cảnh báo MSR Anomaly: Task Done nhưng chưa có commit liên kết"
-                              className="flex items-center gap-1 text-amber-600 dark:text-amber-400 font-mono text-[10px] font-semibold"
+                              className="flex items-center gap-1 text-amber-600 dark:text-amber-400 font-mono text-xs font-semibold"
                             >
                               <AlertTriangleIcon className="w-3 h-3" />
                               0 commit
@@ -399,7 +399,7 @@ export function SprintBoardView({
                         </div>
 
                         <div className="flex items-center gap-2">
-                          <Badge variant="outline" className="font-mono text-[10px] px-1.5 py-0">
+                          <Badge variant="outline" className="font-mono text-xs px-1.5 py-0">
                             {issue.storyPoints > 0 ? `${issue.storyPoints} SP` : "0 SP"}
                           </Badge>
 

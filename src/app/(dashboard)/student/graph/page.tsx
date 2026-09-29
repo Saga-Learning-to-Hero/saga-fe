@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 
 export default function StudentGraphPage() {
   return (
-    <Suspense fallback={<div className="min-h-64 animate-pulse rounded-2xl bg-muted" />}>
+    <Suspense fallback={<div className="min-h-64 animate-pulse rounded-xl bg-muted" />}>
       <TraceabilityGraphView />
     </Suspense>
   );

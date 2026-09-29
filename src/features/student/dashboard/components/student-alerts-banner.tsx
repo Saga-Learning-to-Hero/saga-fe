@@ -42,7 +42,7 @@ export function StudentAlertsBanner({ alerts, courseId }: StudentAlertsBannerPro
           <div
             key={alert.id}
             className={cn(
-              "flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-2xl border shadow-xs transition-all",
+              "flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-xl border shadow-xs transition-all",
               isCritical
                 ? "bg-red-500/10 border-red-500/30 text-red-950 dark:text-red-200"
                 : isWarning
@@ -75,7 +75,7 @@ export function StudentAlertsBanner({ alerts, courseId }: StudentAlertsBannerPro
                   <Badge
                     variant="outline"
                     className={cn(
-                      "text-[10px] px-2 py-0.5 uppercase tracking-wide",
+                      "text-xs px-2 py-0.5 uppercase tracking-wide",
                       isCritical
                         ? "border-red-500/40 bg-red-500/15 text-red-700 dark:text-red-300"
                         : isWarning
@@ -86,7 +86,7 @@ export function StudentAlertsBanner({ alerts, courseId }: StudentAlertsBannerPro
                     {alert.type}
                   </Badge>
                   {typeof alert.remainingPeers === "number" && alert.remainingPeers > 0 && (
-                    <Badge variant="secondary" className="text-[10px]">
+                    <Badge variant="secondary" className="text-xs">
                       Còn {alert.remainingPeers} bạn
                     </Badge>
                   )}

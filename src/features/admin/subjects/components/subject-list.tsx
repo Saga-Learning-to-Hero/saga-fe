@@ -57,7 +57,7 @@ function SubjectSyllabiBadge({ subjectId }: { subjectId: string }) {
       {activeSyllabus && (
         <Badge
           variant="outline"
-          className="text-[10px] font-mono text-emerald-600 dark:text-emerald-400 border-emerald-500/30 bg-emerald-500/10 px-1.5 py-0"
+          className="text-xs font-mono text-emerald-600 dark:text-emerald-400 border-emerald-500/30 bg-emerald-500/10 px-1.5 py-0"
         >
           {activeSyllabus.versionLabel} Chính thức
         </Badge>
@@ -83,13 +83,13 @@ function TableSyllabiCell({ subjectId }: { subjectId: string }) {
     <div className="inline-flex flex-col items-center gap-1">
       <Badge
         variant="outline"
-        className="font-mono text-[11px] font-semibold gap-1 px-2 py-0.5 bg-muted/30"
+        className="font-mono text-xs font-semibold gap-1 px-2 py-0.5 bg-muted/30"
       >
         <LayersIcon className="w-3 h-3 text-muted-foreground" />
         {syllabiCount > 0 ? `${syllabiCount} phiên bản` : "Chưa có"}
       </Badge>
       {activeSyllabus && (
-        <span className="text-[10px] font-mono text-emerald-600 dark:text-emerald-400 font-medium">
+        <span className="text-xs font-mono text-emerald-600 dark:text-emerald-400 font-medium">
           Chính thức: {activeSyllabus.versionLabel}
         </span>
       )}
@@ -159,7 +159,7 @@ export function SubjectList({
   return (
     <div className="space-y-4 min-h-[calc(100vh-270px)] flex flex-col justify-between">
       <div className="space-y-4 flex-1 flex flex-col">
-        <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 bg-card p-4 rounded-2xl border border-border shadow-xs">
+        <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 bg-card p-4 rounded-xl border border-border shadow-xs">
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 flex-1">
             <div className="relative flex-1 max-w-md">
               <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -229,7 +229,7 @@ export function SubjectList({
           {isLoading && subjects.length === 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {Array.from({ length: 6 }).map((_, idx) => (
-                <Card key={idx} className="rounded-2xl border border-border p-5 space-y-4 animate-pulse">
+                <Card key={idx} className="rounded-xl border border-border p-5 space-y-4 animate-pulse">
                   <div className="h-5 bg-muted rounded w-1/3" />
                   <div className="h-4 bg-muted rounded w-2/3" />
                   <div className="h-8 bg-muted rounded w-full" />
@@ -237,7 +237,7 @@ export function SubjectList({
               ))}
             </div>
           ) : filteredSubjects.length === 0 ? (
-            <Card className="rounded-2xl border border-dashed border-border p-12 text-center">
+            <Card className="rounded-xl border border-dashed border-border p-12 text-center">
               <div className="flex flex-col items-center justify-center space-y-2">
                 <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center">
                   <BookOpenIcon className="w-5 h-5 text-muted-foreground/60" />
@@ -255,7 +255,7 @@ export function SubjectList({
                   <Card
                     key={sub.id}
                     onMouseEnter={() => handlePrefetch(sub.id)}
-                    className="rounded-2xl border border-border/80 hover:border-primary/40 transition-all duration-200 shadow-xs hover:shadow-md bg-card overflow-hidden group flex flex-col justify-between h-full"
+                    className="rounded-xl border border-border/80 hover:border-primary/40 transition-all duration-200 shadow-xs hover:shadow-md bg-card overflow-hidden group flex flex-col justify-between h-full"
                   >
                     <CardContent className="p-5 flex flex-col justify-between h-full space-y-4">
                       <div className="space-y-3">
@@ -267,7 +267,7 @@ export function SubjectList({
                             {sub.status === "ACTIVE" ? (
                               <Badge
                                 variant="secondary"
-                                className="bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 text-[10px] font-bold px-2 py-0.5 inline-flex items-center gap-1"
+                                className="bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 text-xs font-bold px-2 py-0.5 inline-flex items-center gap-1"
                               >
                                 <CheckCircle2Icon className="w-3 h-3" />
                                 Hoạt động
@@ -275,7 +275,7 @@ export function SubjectList({
                             ) : (
                               <Badge
                                 variant="outline"
-                                className="bg-muted text-muted-foreground border-border text-[10px] font-semibold px-2 py-0.5 inline-flex items-center gap-1"
+                                className="bg-muted text-muted-foreground border-border text-xs font-semibold px-2 py-0.5 inline-flex items-center gap-1"
                               >
                                 <AlertCircleIcon className="w-3 h-3" />
                                 Tạm ngừng
@@ -333,8 +333,8 @@ export function SubjectList({
                         <SubjectSyllabiBadge subjectId={sub.id} />
                       </div>
 
-                      <div className="flex items-center justify-between pt-2 border-t border-border/50 text-[11px] text-muted-foreground">
-                        <div className="space-y-0.5 font-mono text-[10px]">
+                      <div className="flex items-center justify-between pt-2 border-t border-border/50 text-xs text-muted-foreground">
+                        <div className="space-y-0.5 font-mono text-xs">
                           <div className="flex items-center gap-1 text-muted-foreground">
                             <CalendarIcon className="w-3 h-3 text-muted-foreground/70" />
                             <span>Tạo: {new Date(sub.createdAt).toLocaleDateString("vi-VN")}</span>
@@ -374,7 +374,7 @@ export function SubjectList({
               })}
             </div>
           ) : (
-            <div className="rounded-2xl border border-border bg-card shadow-xs overflow-hidden">
+            <div className="rounded-xl border border-border bg-card shadow-xs overflow-hidden">
               <div className="overflow-x-auto">
                 <Table>
                   <TableHeader className="bg-muted/40 border-b border-border">
@@ -406,7 +406,7 @@ export function SubjectList({
                             <div className="space-y-0.5">
                               <p className="text-xs font-bold text-foreground">{sub.nameEnglish}</p>
                               {sub.nameVietnamese && (
-                                <p className="text-[11px] text-muted-foreground">{sub.nameVietnamese}</p>
+                                <p className="text-xs text-muted-foreground">{sub.nameVietnamese}</p>
                               )}
                             </div>
                           </TableCell>
@@ -415,7 +415,7 @@ export function SubjectList({
                             {sub.status === "ACTIVE" ? (
                               <Badge
                                 variant="secondary"
-                                className="bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 text-[10px] font-bold px-2 py-0.5 inline-flex items-center gap-1"
+                                className="bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 text-xs font-bold px-2 py-0.5 inline-flex items-center gap-1"
                               >
                                 <CheckCircle2Icon className="w-3 h-3" />
                                 Hoạt động
@@ -423,7 +423,7 @@ export function SubjectList({
                             ) : (
                               <Badge
                                 variant="outline"
-                                className="bg-muted text-muted-foreground border-border text-[10px] font-semibold px-2 py-0.5 inline-flex items-center gap-1"
+                                className="bg-muted text-muted-foreground border-border text-xs font-semibold px-2 py-0.5 inline-flex items-center gap-1"
                               >
                                 <AlertCircleIcon className="w-3 h-3" />
                                 Tạm ngừng

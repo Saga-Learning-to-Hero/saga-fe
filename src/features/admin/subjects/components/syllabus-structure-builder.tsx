@@ -1,5 +1,6 @@
 "use client";
 
+import { showSuccessToast, showErrorToast } from "@/lib/api-error";
 import { useState } from "react";
 import {
   AwardIcon,
@@ -12,7 +13,6 @@ import {
   CheckCircle2Icon,
   SparklesIcon,
 } from "lucide-react";
-import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -329,17 +329,17 @@ export function SyllabusStructureBuilder({
         ],
       },
     ]);
-    toast.success("Đã nạp thành công cấu trúc đề cương mẫu chuẩn (Tổng 100% trọng số).");
+    showSuccessToast("Đã nạp thành công cấu trúc đề cương mẫu chuẩn (Tổng 100% trọng số).");
   };
 
   const handleSave = async () => {
     if (!outcomes || outcomes.length === 0) {
-      toast.error("Vui lòng thêm ít nhất 1 Chuẩn đầu ra (CLO) trước khi lưu.");
+      showErrorToast("Vui lòng thêm ít nhất 1 Chuẩn đầu ra (CLO) trước khi lưu.");
       setActiveTab("clos");
       return;
     }
     if (!phases || phases.length === 0) {
-      toast.error("Vui lòng thêm ít nhất 1 Giai đoạn & Tiêu chí đánh giá (Phase) trước khi lưu.");
+      showErrorToast("Vui lòng thêm ít nhất 1 Giai đoạn & Tiêu chí đánh giá (Phase) trước khi lưu.");
       setActiveTab("phases");
       return;
     }
@@ -358,22 +358,22 @@ export function SyllabusStructureBuilder({
   return (
     <div className="space-y-6">
       {isImmutable ? (
-        <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-between gap-4">
+        <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-between gap-4">
           <div className="flex items-center gap-3 text-emerald-700 dark:text-emerald-300 text-xs font-semibold">
             <LockIcon className="w-5 h-5 shrink-0 text-emerald-600 dark:text-emerald-400" />
             <span>
               Đề cương phiên bản <strong>{syllabus.versionLabel}</strong> đã được <strong>BAN HÀNH CHÍNH THỨC</strong>. Cấu trúc chuẩn đã khóa bất biến (Immutable) và sẵn sàng áp dụng cho các Lớp học phần.
             </span>
           </div>
-          <Badge className="bg-emerald-600 text-white font-mono text-[10px] px-2.5 py-0.5 shrink-0">
+          <Badge className="bg-emerald-600 text-white font-mono text-xs px-2.5 py-0.5 shrink-0">
             <CheckCircle2Icon className="w-3.5 h-3.5 mr-1" /> PUBLISHED
           </Badge>
         </div>
       ) : (
-        <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="text-xs text-amber-800 dark:text-amber-200">
             <p className="font-bold">Đề cương đang ở trạng thái Biên soạn (Bản nháp - DRAFT)</p>
-            <p className="text-[11px] opacity-90">
+            <p className="text-xs opacity-90">
               Bạn có thể cấu hình Chuẩn đầu ra (CLOs), phân bổ bài học (Units) và thiết lập các tiêu chí nghiệm thu từng Sprint. Sau khi lưu hoàn tất, hãy bấm &quot;Ban hành chính thức&quot; để sử dụng.
             </p>
           </div>
@@ -425,7 +425,7 @@ export function SyllabusStructureBuilder({
               <h4 className="text-xs font-bold text-foreground uppercase tracking-wider">
                 Danh sách Chuẩn Đầu Ra (Course Learning Outcomes - CLOs)
               </h4>
-              <p className="text-[11px] text-muted-foreground">
+              <p className="text-xs text-muted-foreground">
                 Định nghĩa các năng lực, kỹ năng cốt lõi sinh viên ngành Phần mềm cần đạt sau môn học.
               </p>
             </div>
@@ -434,14 +434,14 @@ export function SyllabusStructureBuilder({
                 variant="outline"
                 size="sm"
                 onClick={handleAddOutcome}
-                className="h-7 text-[11px] font-semibold gap-1 cursor-pointer"
+                className="h-7 text-xs font-semibold gap-1 cursor-pointer"
               >
                 <PlusIcon className="w-3 h-3" /> Thêm chuẩn
               </Button>
             )}
           </div>
 
-          <div className="rounded-2xl border border-border bg-card shadow-xs overflow-hidden">
+          <div className="rounded-xl border border-border bg-card shadow-xs overflow-hidden">
             <Table>
               <TableHeader className="bg-muted/40 border-b border-border">
                 <TableRow>
@@ -527,7 +527,7 @@ export function SyllabusStructureBuilder({
               <h4 className="text-xs font-bold text-foreground uppercase tracking-wider">
                 Nội Dung Đào Tạo & Bài Học (Learning Units)
               </h4>
-              <p className="text-[11px] text-muted-foreground">
+              <p className="text-xs text-muted-foreground">
                 Phân bổ chủ đề học tập và nội dung đào tạo theo từng tuần.
               </p>
             </div>
@@ -536,14 +536,14 @@ export function SyllabusStructureBuilder({
                 variant="outline"
                 size="sm"
                 onClick={handleAddUnit}
-                className="h-7 text-[11px] font-semibold gap-1 cursor-pointer"
+                className="h-7 text-xs font-semibold gap-1 cursor-pointer"
               >
                 <PlusIcon className="w-3 h-3" /> Thêm bài học
               </Button>
             )}
           </div>
 
-          <div className="rounded-2xl border border-border bg-card shadow-xs overflow-hidden">
+          <div className="rounded-xl border border-border bg-card shadow-xs overflow-hidden">
             <Table>
               <TableHeader className="bg-muted/40 border-b border-border">
                 <TableRow>
@@ -632,12 +632,12 @@ export function SyllabusStructureBuilder({
                 </h4>
                 <Badge
                   variant="outline"
-                  className="text-[11px] font-mono font-bold px-2 py-0.5 bg-primary/10 text-primary border-primary/20"
+                  className="text-xs font-mono font-bold px-2 py-0.5 bg-primary/10 text-primary border-primary/20"
                 >
                   {phases.length} Mốc Sprint
                 </Badge>
               </div>
-              <p className="text-[11px] text-muted-foreground pt-0.5">
+              <p className="text-xs text-muted-foreground pt-0.5">
                 Thiết lập các đợt nghiệm thu dự án, sản phẩm bàn giao (SRS, GitHub, Jira) và % trọng số đánh giá.
               </p>
             </div>
@@ -646,7 +646,7 @@ export function SyllabusStructureBuilder({
                 variant="outline"
                 size="sm"
                 onClick={handleAddPhase}
-                className="h-7 text-[11px] font-semibold gap-1 cursor-pointer"
+                className="h-7 text-xs font-semibold gap-1 cursor-pointer"
               >
                 <PlusIcon className="w-3 h-3" /> Thêm Sprint / Giai đoạn
               </Button>
@@ -658,7 +658,7 @@ export function SyllabusStructureBuilder({
               phases.map((ph, pIdx) => (
                 <div
                   key={pIdx}
-                  className="p-4 rounded-2xl border border-border bg-card shadow-xs space-y-3"
+                  className="p-4 rounded-xl border border-border bg-card shadow-xs space-y-3"
                 >
                   <div className="flex items-center justify-between gap-3 border-b border-border/60 pb-3">
                     <div className="flex items-center gap-2.5 flex-1 max-w-lg">
@@ -691,14 +691,14 @@ export function SyllabusStructureBuilder({
 
                   <div className="space-y-2.5">
                     <div className="flex items-center justify-between">
-                      <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
+                      <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
                         Sản phẩm bàn giao & Tiêu chí đánh giá (Deliverables):
                       </p>
                       {!isImmutable && (
                         <button
                           type="button"
                           onClick={() => handleAddDeliverable(pIdx)}
-                          className="text-[11px] text-primary hover:underline font-semibold cursor-pointer flex items-center gap-1"
+                          className="text-xs text-primary hover:underline font-semibold cursor-pointer flex items-center gap-1"
                         >
                           <PlusIcon className="w-3 h-3" /> Thêm tiêu chí
                         </button>
@@ -710,7 +710,7 @@ export function SyllabusStructureBuilder({
                         ph.deliverables.map((d, dIdx) => (
                           <div key={dIdx} className="p-2.5 flex items-center justify-between gap-3 text-xs">
                             <div className="flex items-center gap-2 flex-1">
-                              <span className="font-mono text-primary text-[11px] font-bold bg-primary/5 px-2 py-0.5 rounded border border-primary/15 shrink-0">
+                              <span className="font-mono text-primary text-xs font-bold bg-primary/5 px-2 py-0.5 rounded border border-primary/15 shrink-0">
                                 {d.code}
                               </span>
                               {isImmutable ? (
@@ -758,7 +758,7 @@ export function SyllabusStructureBuilder({
                 </div>
               ))
             ) : (
-              <div className="p-8 text-center text-xs text-muted-foreground border border-dashed border-border rounded-2xl">
+              <div className="p-8 text-center text-xs text-muted-foreground border border-dashed border-border rounded-xl">
                 Chưa có giai đoạn dự án nào được thiết lập.
               </div>
             )}

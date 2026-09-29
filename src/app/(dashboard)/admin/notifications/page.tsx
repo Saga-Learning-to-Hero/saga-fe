@@ -22,7 +22,7 @@ export default function AdminNotificationsPage() {
               </h1>
               <Badge
                 variant="outline"
-                className="border-primary/25 bg-primary/10 font-mono text-[11px] font-bold text-primary"
+                className="border-primary/25 bg-primary/10 font-mono text-xs font-bold text-primary"
               >
                 SYSTEM BROADCAST
               </Badge>

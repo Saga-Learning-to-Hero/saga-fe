@@ -1,16 +1,18 @@
+import { showSuccessToast, showErrorToast, showWarningToast } from "@/lib/api-error";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
 import { ProjectTaskService } from "../api/project-task-service";
 import type {
   CreateProjectTaskRequest,
   PatchProjectTaskRequest,
+  ProjectTaskResponse,
   TransitionProjectTaskRequest,
   GetTaskParentOptionsParams,
 } from "../types/jira-task-types";
-import type { GetTaskEvidenceParams } from "../types/task-evidence";
+
 import type { GetTaskWorkSessionTimelineParams } from "../types/work-session-timeline";
 import { getApiErrorCode } from "@/lib/api-error";
 import { JIRA_SPRINT_QUERY_KEYS } from "./use-sprint-data";
+import { upsertProjectTaskInList } from "../lib/task-list-cache";
 
 export type TransitionTaskPayload =
   | TransitionProjectTaskRequest
@@ -116,14 +118,22 @@ export function useTransitionTask() {
       return ProjectTaskService.transitionTask(projectId, taskId, data as TransitionProjectTaskRequest);
     },
     onSuccess: (updatedTask, variables) => {
-      queryClient.invalidateQueries({
-        queryKey: JIRA_SPRINT_QUERY_KEYS.tasks(variables.projectId),
+      queryClient.setQueryData(
+        JIRA_SPRINT_QUERY_KEYS.tasks(variables.projectId),
+        (old: ProjectTaskResponse[] | undefined) => upsertProjectTaskInList(old, updatedTask)
+      );
+      queryClient.setQueryData(
+        JIRA_SPRINT_QUERY_KEYS.taskDetail(variables.projectId, variables.taskId),
+        updatedTask
+      );
+      void queryClient.invalidateQueries({
+        queryKey: JIRA_SPRINT_QUERY_KEYS.taskTransitions(variables.projectId, variables.taskId),
       });
-      toast.success(`Đã chuyển trạng thái task sang "${updatedTask.jiraStatusName || updatedTask.status}".`);
+      showSuccessToast(`Đã chuyển trạng thái task sang "${updatedTask.jiraStatusName || updatedTask.status}".`);
     },
     onError: (error: unknown) => {
       const err = error as { response?: { data?: { message?: string } }; message?: string };
-      toast.error(err.response?.data?.message || err.message || "Không thể chuyển trạng thái task trên Jira.");
+      showErrorToast(err.response?.data?.message || err.message || "Không thể chuyển trạng thái task trên Jira.");
     },
   });
 }
@@ -146,7 +156,7 @@ export function useCreateProjectTask() {
       queryClient.invalidateQueries({
         queryKey: JIRA_SPRINT_QUERY_KEYS.sprints(variables.projectId),
       });
-      toast.success(`Đã tạo task [${res.externalKey}] trên Jira thành công.`);
+      showSuccessToast(`Đã tạo task [${res.externalKey}] trên Jira thành công.`);
     },
     onError: (error: unknown, variables) => {
       const err = error as { response?: { data?: { code?: string; message?: string } }; message?: string };
@@ -158,13 +168,13 @@ export function useCreateProjectTask() {
         queryClient.invalidateQueries({
           queryKey: JIRA_SPRINT_QUERY_KEYS.sprints(variables.projectId),
         });
-        toast.warning(
+        showWarningToast(
           err.response?.data?.message ||
           "Task đã được tạo trên Jira nhưng một số thuộc tính phụ chưa được cập nhật đầy đủ."
         );
         return;
       }
-      toast.error(err.response?.data?.message || err.message || "Không thể tạo task trên Jira.");
+      showErrorToast(err.response?.data?.message || err.message || "Không thể tạo task trên Jira.");
     },
   });
 }
@@ -189,7 +199,7 @@ export function usePatchProjectTask() {
       queryClient.invalidateQueries({
         queryKey: JIRA_SPRINT_QUERY_KEYS.taskDetail(variables.projectId, variables.taskId),
       });
-      toast.success(`Đã cập nhật task [${res.externalKey}] thành công.`);
+      showSuccessToast(`Đã cập nhật task [${res.externalKey}] thành công.`);
     },
     onError: (error: unknown) => {
       const err = error as { response?: { data?: { code?: string; message?: string } }; message?: string };
@@ -197,7 +207,7 @@ export function usePatchProjectTask() {
         err.response?.data?.code === "JIRA_FIELD_INVALID"
           ? "Jira từ chối cập nhật Task (do cấu hình màn hình Edit Screen hoặc quyền hạn trên Jira)."
           : err.response?.data?.message || err.message || "Không thể cập nhật task.";
-      toast.error(msg);
+      showErrorToast(msg);
     },
   });
 }
@@ -220,14 +230,14 @@ export function useDeleteProjectTask() {
       queryClient.invalidateQueries({
         queryKey: JIRA_SPRINT_QUERY_KEYS.sprints(variables.projectId),
       });
-      toast.success("Đã xóa task thành công.");
+      showSuccessToast("Đã xóa task thành công.");
     },
     onError: (error: unknown) => {
       const err = error as { response?: { data?: { code?: string; message?: string } }; message?: string };
       if (err.response?.data?.code === "TASK_DELETE_BLOCKED_BY_EVIDENCE") {
-        toast.error("Không thể xóa: Task này đã có phiên làm việc (Work Session) hoặc bằng chứng gắn vào.");
+        showErrorToast("Không thể xóa: Task này đã có phiên làm việc (Work Session) hoặc bằng chứng gắn vào.");
       } else {
-        toast.error(err.response?.data?.message || err.message || "Không thể xóa task.");
+        showErrorToast(err.response?.data?.message || err.message || "Không thể xóa task.");
       }
     },
   });
@@ -246,21 +256,7 @@ export function useParentTaskOptions(
   });
 }
 
-export function useTaskEvidenceUnified(
-  projectId?: string | null,
-  taskId?: string | null,
-  params?: GetTaskEvidenceParams,
-  options?: { enabled?: boolean }
-) {
-  return useQuery({
-    queryKey: JIRA_SPRINT_QUERY_KEYS.taskEvidence(projectId, taskId, params),
-    queryFn: () => ProjectTaskService.getTaskEvidence(projectId!, taskId!, params),
-    enabled:
-      Boolean(projectId && projectId.trim() && taskId && taskId.trim()) &&
-      (options?.enabled ?? true),
-    staleTime: 1000 * 30,
-  });
-}
+
 
 export function useTaskWorkSessionTimeline(
   projectId?: string | null,

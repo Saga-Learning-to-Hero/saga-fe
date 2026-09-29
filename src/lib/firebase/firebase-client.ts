@@ -1,12 +1,5 @@
-import { initializeApp, getApps, getApp, type FirebaseApp } from "firebase/app";
-import { getInstallations, getId as getFirebaseInstallationId } from "firebase/installations";
-import {
-  getMessaging,
-  getToken as getFcmToken,
-  deleteToken as deleteFcmToken,
-  isSupported as isFcmSupported,
-  type Messaging,
-} from "firebase/messaging";
+import type { FirebaseApp } from "firebase/app";
+import type { Messaging } from "firebase/messaging";
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -17,13 +10,14 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
-export function getFirebaseApp(): FirebaseApp | null {
+export async function getFirebaseApp(): Promise<FirebaseApp | null> {
   if (typeof window === "undefined") {
     return null;
   }
   if (!firebaseConfig.apiKey || !firebaseConfig.projectId) {
     return null;
   }
+  const { initializeApp, getApps, getApp } = await import("firebase/app");
   if (getApps().length > 0) {
     return getApp();
   }
@@ -38,18 +32,20 @@ export async function isFirebaseMessagingSupported(): Promise<boolean> {
     return false;
   }
   try {
-    return await isFcmSupported();
+    const { isSupported } = await import("firebase/messaging");
+    return await isSupported();
   } catch {
     return false;
   }
 }
 
 export async function getInstallationId(): Promise<string | null> {
-  const app = getFirebaseApp();
+  const app = await getFirebaseApp();
   if (!app) return null;
   try {
+    const { getInstallations, getId } = await import("firebase/installations");
     const installations = getInstallations(app);
-    return await getFirebaseInstallationId(installations);
+    return await getId(installations);
   } catch {
     return null;
   }
@@ -58,15 +54,16 @@ export async function getInstallationId(): Promise<string | null> {
 export async function getFcmRegistrationToken(
   swRegistration?: ServiceWorkerRegistration
 ): Promise<string | null> {
-  const app = getFirebaseApp();
+  const app = await getFirebaseApp();
   if (!app) return null;
 
   const vapidKey = process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY;
   if (!vapidKey) return null;
 
   try {
+    const { getMessaging, getToken } = await import("firebase/messaging");
     const messaging = getMessaging(app);
-    return await getFcmToken(messaging, {
+    return await getToken(messaging, {
       vapidKey,
       serviceWorkerRegistration: swRegistration,
     });
@@ -76,20 +73,22 @@ export async function getFcmRegistrationToken(
 }
 
 export async function deletePushToken(): Promise<boolean> {
-  const app = getFirebaseApp();
+  const app = await getFirebaseApp();
   if (!app) return false;
   try {
+    const { getMessaging, deleteToken } = await import("firebase/messaging");
     const messaging = getMessaging(app);
-    return await deleteFcmToken(messaging);
+    return await deleteToken(messaging);
   } catch {
     return false;
   }
 }
 
-export function getClientMessaging(): Messaging | null {
-  const app = getFirebaseApp();
+export async function getClientMessaging(): Promise<Messaging | null> {
+  const app = await getFirebaseApp();
   if (!app) return null;
   try {
+    const { getMessaging } = await import("firebase/messaging");
     return getMessaging(app);
   } catch {
     return null;

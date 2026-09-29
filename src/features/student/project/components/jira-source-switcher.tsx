@@ -27,7 +27,7 @@ export function JiraSourceSwitcher({
       className={cn(
         compact
           ? "w-full min-w-0"
-          : "flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-blue-500/30 bg-blue-500/[0.04] px-4 py-3",
+          : "flex flex-wrap items-center justify-between gap-3 rounded-xl border border-blue-500/30 bg-blue-500/[0.04] px-4 py-3",
         className
       )}
     >
@@ -53,7 +53,7 @@ export function JiraSourceSwitcher({
         </div>
       </div>
       {!compact && (
-        <span className="text-[11px] text-muted-foreground">
+        <span className="text-xs text-muted-foreground">
           Dữ liệu Task và Sprint chỉ thuộc nguồn Jira đang chọn.
         </span>
       )}

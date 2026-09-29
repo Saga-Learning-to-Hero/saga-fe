@@ -34,9 +34,9 @@ export function PipelineMatrixTable({
   onSelectTask,
 }: PipelineMatrixTableProps) {
   return (
-    <Card className="overflow-hidden rounded-3xl border border-border/80 bg-card shadow-xs">
+    <Card className="overflow-hidden rounded-xl border border-border/80 bg-card shadow-xs">
       <CardHeader className="border-b border-border/60 bg-muted/20 p-5">
-        <Badge className="w-fit border border-primary/20 bg-primary/10 text-[10px] font-bold text-primary">
+        <Badge className="w-fit border border-primary/20 bg-primary/10 text-xs font-bold text-primary">
           Bảng đối soát Task–Commit
         </Badge>
         <CardTitle className="mt-1 text-base font-extrabold tracking-tight">
@@ -54,7 +54,7 @@ export function PipelineMatrixTable({
         ) : (
           <div className="overflow-x-auto max-h-[560px] overflow-y-auto">
             <table className="w-full text-left text-xs">
-              <thead className="sticky top-0 z-10 border-b border-border/80 bg-background/95 text-[10px] font-bold uppercase tracking-wider text-muted-foreground backdrop-blur-md">
+              <thead className="sticky top-0 z-10 border-b border-border/80 bg-background/95 text-xs font-bold uppercase tracking-wider text-muted-foreground backdrop-blur-sm">
                 <tr>
                   <th className="p-3.5 pl-4">Mã Task</th>
                   <th className="p-3.5">Tiêu đề</th>
@@ -90,13 +90,13 @@ export function PipelineMatrixTable({
                       </td>
                       <td className="p-3.5 whitespace-nowrap">
                         <div className="flex items-center gap-1.5">
-                          <Badge className={`text-[10px] font-bold ${statusClass(task.status)}`}>
+                          <Badge className={`text-xs font-bold ${statusClass(task.status)}`}>
                             {task.status}
                           </Badge>
                           {hasEvidence && task.linkedCommitCount === 0 ? (
                             <Badge
                               variant="outline"
-                              className="border-purple-500/40 bg-purple-500/10 text-[10px] font-bold text-purple-600 dark:text-purple-400"
+                              className="border-purple-500/40 bg-purple-500/10 text-xs font-bold text-purple-600 dark:text-purple-400"
                             >
                               <PaperclipIcon className="mr-1 size-3" />
                               Đã có minh chứng
@@ -105,8 +105,8 @@ export function PipelineMatrixTable({
                             <Badge
                               variant="outline"
                               className={isDoc
-                                ? "border-amber-500/40 bg-amber-500/10 text-[10px] font-bold text-amber-600 dark:text-amber-400"
-                                : "border-destructive/40 bg-destructive/10 text-[10px] font-bold text-destructive"
+                                ? "border-amber-500/40 bg-amber-500/10 text-xs font-bold text-amber-600 dark:text-amber-400"
+                                : "border-destructive/40 bg-destructive/10 text-xs font-bold text-destructive"
                               }
                             >
                               <AlertTriangleIcon className="mr-1 size-3" />
@@ -130,7 +130,7 @@ export function PipelineMatrixTable({
                         ) : hasEvidence ? (
                           <Badge
                             variant="outline"
-                            className="border-purple-500/40 bg-purple-500/10 text-[10px] font-bold text-purple-600 dark:text-purple-400"
+                            className="border-purple-500/40 bg-purple-500/10 text-xs font-bold text-purple-600 dark:text-purple-400"
                           >
                             <PaperclipIcon className="mr-1 size-3" />
                             {task.evidenceCount ? `${task.evidenceCount} tệp` : "Đã có minh chứng"}

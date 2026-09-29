@@ -25,6 +25,7 @@ export function useTeamHeatmap(
     teamId &&
     params?.startDate &&
     params?.endDate &&
+    params.startDate <= params.endDate &&
     (options?.enabled ?? true)
   );
 
@@ -38,7 +39,6 @@ export function useTeamHeatmap(
       ActivityAnalyticsService.getTeamHeatmap(courseId!, teamId!, params!),
     enabled: isEnabled,
     staleTime: 1000 * 60 * 2,
-    placeholderData: (previousData) => previousData,
   });
 }
 
@@ -65,6 +65,5 @@ export function useSprintBurndown(
       ActivityAnalyticsService.getSprintBurndown(courseId!, teamId!, sprintId!),
     enabled: isEnabled,
     staleTime: 1000 * 60 * 2,
-    placeholderData: (previousData) => previousData,
   });
 }

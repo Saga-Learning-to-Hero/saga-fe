@@ -161,7 +161,7 @@ export function SemesterManagement() {
       {isLoading && semesters.length === 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {Array.from({ length: 3 }).map((_, idx) => (
-            <Card key={idx} className="rounded-2xl border border-border p-5 space-y-3.5 animate-pulse bg-card shadow-xs">
+            <Card key={idx} className="rounded-xl border border-border p-5 space-y-3.5 animate-pulse bg-card shadow-xs">
               <div className="flex items-start justify-between gap-3">
                 <div className="flex items-center gap-2.5">
                   <div className="w-10 h-10 rounded-xl bg-muted shrink-0" />
@@ -179,7 +179,7 @@ export function SemesterManagement() {
           ))}
         </div>
       ) : filteredSemesters.length === 0 ? (
-        <Card className="rounded-2xl border border-dashed border-border p-8 text-center">
+        <Card className="rounded-xl border border-dashed border-border p-8 text-center">
           <p className="text-xs text-muted-foreground">Không tìm thấy học kỳ nào phù hợp.</p>
         </Card>
       ) : viewMode === "cards" ? (
@@ -187,7 +187,7 @@ export function SemesterManagement() {
           {filteredSemesters.map((sem) => (
             <Card
               key={sem.id}
-              className="rounded-2xl border border-border/80 hover:border-primary/40 transition-all duration-200 shadow-xs hover:shadow-md bg-card overflow-hidden group"
+              className="rounded-xl border border-border/80 hover:border-primary/40 transition-all duration-200 shadow-xs hover:shadow-md bg-card overflow-hidden group"
             >
               <CardContent className="p-5 space-y-4">
                 <div className="flex items-start justify-between gap-3">
@@ -244,14 +244,14 @@ export function SemesterManagement() {
                       <ClockIcon className="w-3.5 h-3.5 text-muted-foreground" />
                       Thời gian đào tạo:
                     </span>
-                    <span className="font-mono font-medium text-foreground text-[11px]">
+                    <span className="font-mono font-medium text-foreground text-xs">
                       {sem.startDate} → {sem.endDate}
                     </span>
                   </div>
                 </div>
 
                 <div className="flex items-center justify-between pt-1 border-t border-border/50">
-                  <span className="text-[11px] text-muted-foreground">Trạng thái:</span>
+                  <span className="text-xs text-muted-foreground">Trạng thái:</span>
                   {renderStatusBadge(sem.active)}
                 </div>
               </CardContent>
@@ -259,7 +259,7 @@ export function SemesterManagement() {
           ))}
         </div>
       ) : (
-        <Card className="rounded-2xl border border-border overflow-hidden shadow-xs">
+        <Card className="rounded-xl border border-border overflow-hidden shadow-xs">
           <div className="overflow-x-auto">
             <Table className="w-full text-left text-xs border-collapse">
               <TableHeader className="bg-muted/40 border-b border-border">

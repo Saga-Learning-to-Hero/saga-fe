@@ -173,7 +173,7 @@ export function JiraFailoverWizardDialog({
 
   return (
     <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-      <div className="bg-card border border-border/80 rounded-3xl w-full max-w-3xl max-h-[92vh] flex flex-col shadow-2xl overflow-hidden animate-in fade-in zoom-in-95">
+      <div className="bg-card border border-border/80 rounded-xl w-full max-w-3xl max-h-[92vh] flex flex-col shadow-lg overflow-hidden animate-in fade-in zoom-in-95">
         <div className="p-5 border-b border-border/60 flex items-center justify-between shrink-0 bg-muted/20">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-xl bg-blue-600 text-white flex items-center justify-center shrink-0 shadow-xs">
@@ -183,7 +183,7 @@ export function JiraFailoverWizardDialog({
               <h3 className="text-sm font-bold text-foreground">
                 Chuyển giao công việc Jira dở dang (Failover Wizard)
               </h3>
-              <p className="text-[11px] text-muted-foreground">
+              <p className="text-xs text-muted-foreground">
                 Di chuyển an toàn các task dở dang từ nguồn sự cố sang nguồn Jira mới
               </p>
             </div>
@@ -199,22 +199,22 @@ export function JiraFailoverWizardDialog({
 
         <div className="px-6 py-2.5 bg-muted/30 border-b border-border/50 flex items-center gap-2 text-xs overflow-x-auto">
           <div className={`flex items-center gap-1.5 font-semibold ${step === 1 ? "text-primary" : "text-muted-foreground"}`}>
-            <span className="w-5 h-5 rounded-full border flex items-center justify-center text-[10px]">1</span>
+            <span className="w-5 h-5 rounded-full border flex items-center justify-center text-xs">1</span>
             <span>Chọn nguồn đích</span>
           </div>
           <ChevronRightIcon className="w-3.5 h-3.5 text-muted-foreground/40 shrink-0" />
           <div className={`flex items-center gap-1.5 font-semibold ${step === 2 ? "text-primary" : "text-muted-foreground"}`}>
-            <span className="w-5 h-5 rounded-full border flex items-center justify-center text-[10px]">2</span>
+            <span className="w-5 h-5 rounded-full border flex items-center justify-center text-xs">2</span>
             <span>Đối soát & Chọn Task</span>
           </div>
           <ChevronRightIcon className="w-3.5 h-3.5 text-muted-foreground/40 shrink-0" />
           <div className={`flex items-center gap-1.5 font-semibold ${step === 3 ? "text-primary" : "text-muted-foreground"}`}>
-            <span className="w-5 h-5 rounded-full border flex items-center justify-center text-[10px]">3</span>
+            <span className="w-5 h-5 rounded-full border flex items-center justify-center text-xs">3</span>
             <span>Xác nhận</span>
           </div>
           <ChevronRightIcon className="w-3.5 h-3.5 text-muted-foreground/40 shrink-0" />
           <div className={`flex items-center gap-1.5 font-semibold ${step === 4 ? "text-primary" : "text-muted-foreground"}`}>
-            <span className="w-5 h-5 rounded-full border flex items-center justify-center text-[10px]">4</span>
+            <span className="w-5 h-5 rounded-full border flex items-center justify-center text-xs">4</span>
             <span>Tiến độ thực hiện</span>
           </div>
         </div>
@@ -222,14 +222,14 @@ export function JiraFailoverWizardDialog({
         <div className="p-6 overflow-y-auto flex-1 space-y-4">
           {step === 1 && (
             <div className="space-y-4">
-              <div className="rounded-2xl border border-border/80 bg-muted/20 p-4 space-y-2">
+              <div className="rounded-xl border border-border/80 bg-muted/20 p-4 space-y-2">
                 <p className="text-xs font-bold text-foreground">Nguồn Jira chuyển đi (Source):</p>
                 <div className="flex items-center justify-between text-xs">
                   <div>
                     <span className="font-mono font-bold text-primary">{source.projectKey}</span>
                     <span className="text-muted-foreground"> · {source.siteName}</span>
                   </div>
-                  <Badge variant="outline" className="text-[10px]">
+                  <Badge variant="outline" className="text-xs">
                     {source.connectionStatus}
                   </Badge>
                 </div>
@@ -240,12 +240,12 @@ export function JiraFailoverWizardDialog({
                   Chọn nguồn Jira đích hoạt động (Target Jira Source):
                 </label>
                 {activeTargetSources.length === 0 ? (
-                  <div className="rounded-2xl border border-warning/40 bg-warning/10 p-4 text-xs text-warning space-y-1">
+                  <div className="rounded-xl border border-warning/40 bg-warning/10 p-4 text-xs text-warning space-y-1">
                     <p className="font-bold flex items-center gap-1.5">
                       <ShieldAlertIcon className="w-4 h-4" />
                       Chưa có nguồn Jira đích khả dụng
                     </p>
-                    <p className="text-muted-foreground text-[11px]">
+                    <p className="text-muted-foreground text-xs">
                       Để thực hiện chuyển giao, dự án cần ít nhất một nguồn Jira khác đang ở trạng thái ACTIVE. Hãy sử dụng nút <strong>&quot;Thêm nguồn Jira&quot;</strong> bên ngoài để kết nối nguồn mới trước.
                     </p>
                   </div>
@@ -259,9 +259,9 @@ export function JiraFailoverWizardDialog({
                 )}
               </div>
 
-              <div className="rounded-2xl border border-blue-500/20 bg-blue-500/5 p-3.5 flex items-start gap-2.5 text-xs text-muted-foreground">
+              <div className="rounded-xl border border-blue-500/20 bg-blue-500/5 p-3.5 flex items-start gap-2.5 text-xs text-muted-foreground">
                 <InfoIcon className="w-4 h-4 text-blue-500 shrink-0 mt-0.5" />
-                <div className="space-y-1 text-[11px] leading-relaxed">
+                <div className="space-y-1 text-xs leading-relaxed">
                   <p className="font-bold text-foreground">Quy tắc chuyển giao an toàn:</p>
                   <p>• Chỉ các công việc chưa hoàn thành (TODO, IN_PROGRESS, IN_REVIEW, BLOCKED) mới được chuyển giao.</p>
                   <p>• Toàn bộ công việc DONE được giữ nguyên tại nguồn cũ để bảo toàn tính toàn vẹn minh chứng học thuật.</p>
@@ -278,12 +278,12 @@ export function JiraFailoverWizardDialog({
                   <span>Đang phân tích cấu trúc công việc và tùy chọn nguồn đích...</span>
                 </div>
               ) : previewQuery.isError ? (
-                <div className="rounded-2xl border border-danger/30 bg-danger/5 p-4 text-xs text-danger space-y-2">
+                <div className="rounded-xl border border-danger/30 bg-danger/5 p-4 text-xs text-danger space-y-2">
                   <p className="font-bold flex items-center gap-1.5">
                     <AlertCircleIcon className="w-4 h-4" />
                     Không thể phân tích dữ liệu chuyển giao
                   </p>
-                  <p className="text-[11px] text-muted-foreground">
+                  <p className="text-xs text-muted-foreground">
                     Vui lòng kiểm tra lại quyền truy cập hoặc thử lại sau ít phút.
                   </p>
                 </div>
@@ -291,25 +291,25 @@ export function JiraFailoverWizardDialog({
                 <>
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-xs">
                     <div className="rounded-xl border border-border/70 bg-muted/20 p-2.5">
-                      <p className="text-[10px] text-muted-foreground">Ứng viên dở dang</p>
+                      <p className="text-xs text-muted-foreground">Ứng viên dở dang</p>
                       <p className="font-mono font-bold text-base text-foreground">
                         {previewCounts?.eligible ?? 0}
                       </p>
                     </div>
                     <div className="rounded-xl border border-border/70 bg-muted/20 p-2.5">
-                      <p className="text-[10px] text-muted-foreground">Bỏ qua (DONE)</p>
+                      <p className="text-xs text-muted-foreground">Bỏ qua (DONE)</p>
                       <p className="font-mono font-bold text-base text-muted-foreground">
                         {previewCounts?.skippedDone ?? 0}
                       </p>
                     </div>
                     <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/5 p-2.5">
-                      <p className="text-[10px] text-emerald-600 dark:text-emerald-400">Sẵn sàng (Ready)</p>
+                      <p className="text-xs text-emerald-600 dark:text-emerald-400">Sẵn sàng (Ready)</p>
                       <p className="font-mono font-bold text-base text-emerald-600 dark:text-emerald-400">
                         {previewCounts?.ready ?? 0}
                       </p>
                     </div>
                     <div className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-2.5">
-                      <p className="text-[10px] text-amber-600 dark:text-amber-400">Cảnh báo / Chặn</p>
+                      <p className="text-xs text-amber-600 dark:text-amber-400">Cảnh báo / Chặn</p>
                       <p className="font-mono font-bold text-base text-amber-600 dark:text-amber-400">
                         {(previewCounts?.withWarnings ?? 0) + (previewCounts?.blocked ?? 0)}
                       </p>
@@ -340,7 +340,7 @@ export function JiraFailoverWizardDialog({
                   {(!targetSprintId || targetSprintId === "backlog") && (
                     <div className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-3 flex items-start gap-2 text-xs text-amber-700 dark:text-amber-300">
                       <AlertTriangleIcon className="w-4 h-4 shrink-0 mt-0.5" />
-                      <p className="text-[11px] leading-relaxed">
+                      <p className="text-xs leading-relaxed">
                         <strong>Lưu ý:</strong> Task chuyển vào Backlog sẽ chưa đủ điều kiện tính điểm đóng góp (Slicing Pie) cho đến khi được đưa vào một Sprint chính thức trên Jira đích.
                       </p>
                     </div>
@@ -356,15 +356,15 @@ export function JiraFailoverWizardDialog({
                         variant="ghost"
                         size="sm"
                         onClick={handleSelectAllEligible}
-                        className="h-7 text-[11px] text-primary"
+                        className="h-7 text-xs text-primary"
                       >
                         Chọn toàn bộ task hợp lệ ({previewCounts?.ready ?? 0})
                       </Button>
                     </div>
 
-                    <div className="rounded-2xl border border-border/80 overflow-hidden max-h-56 overflow-y-auto">
+                    <div className="rounded-xl border border-border/80 overflow-hidden max-h-56 overflow-y-auto">
                       <table className="w-full text-left text-xs border-collapse">
-                        <thead className="bg-muted/40 sticky top-0 border-b border-border/60 text-[11px] text-muted-foreground font-semibold">
+                        <thead className="bg-muted/40 sticky top-0 border-b border-border/60 text-xs text-muted-foreground font-semibold">
                           <tr>
                             <th className="p-2.5 w-10 text-center">#</th>
                             <th className="p-2.5">Mã Task & Tiêu đề</th>
@@ -392,38 +392,38 @@ export function JiraFailoverWizardDialog({
                                   />
                                 </td>
                                 <td className="p-2.5">
-                                  <div className="font-mono font-bold text-foreground text-[11px]">
+                                  <div className="font-mono font-bold text-foreground text-xs">
                                     {item.externalKey}
                                   </div>
-                                  <div className="text-muted-foreground truncate max-w-xs text-[11px]">
+                                  <div className="text-muted-foreground truncate max-w-xs text-xs">
                                     {item.title}
                                   </div>
                                 </td>
                                 <td className="p-2.5">
-                                  <Badge variant="outline" className="text-[10px]">
+                                  <Badge variant="outline" className="text-xs">
                                     {item.status}
                                   </Badge>
                                 </td>
                                 <td className="p-2.5">
                                   {item.readiness === "READY" && (
-                                    <Badge className="bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-0 text-[10px]">
+                                    <Badge className="bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-0 text-xs">
                                       Sẵn sàng
                                     </Badge>
                                   )}
                                   {item.readiness === "WARNING" && (
                                     <div className="space-y-0.5">
-                                      <Badge variant="outline" className="text-amber-500 border-amber-500/30 bg-amber-500/10 text-[10px]">
+                                      <Badge variant="outline" className="text-amber-500 border-amber-500/30 bg-amber-500/10 text-xs">
                                         Cảnh báo mapping
                                       </Badge>
                                       {item.warnings.length > 0 && (
-                                        <p className="text-[10px] text-muted-foreground truncate max-w-44">
+                                        <p className="text-xs text-muted-foreground truncate max-w-44">
                                           {item.warnings[0]}
                                         </p>
                                       )}
                                     </div>
                                   )}
                                   {item.readiness === "BLOCKED" && (
-                                    <Badge variant="outline" className="text-rose-500 border-rose-500/30 bg-rose-500/10 text-[10px]">
+                                    <Badge variant="outline" className="text-rose-500 border-rose-500/30 bg-rose-500/10 text-xs">
                                       Bị chặn
                                     </Badge>
                                   )}
@@ -455,7 +455,7 @@ export function JiraFailoverWizardDialog({
 
           {step === 3 && (
             <div className="space-y-4">
-              <div className="rounded-2xl border border-warning/30 bg-warning/5 p-4 space-y-3">
+              <div className="rounded-xl border border-warning/30 bg-warning/5 p-4 space-y-3">
                 <div className="flex items-center gap-2 text-warning font-bold text-sm">
                   <AlertTriangleIcon className="w-5 h-5" />
                   <span>Xác nhận chuyển giao công việc dở dang</span>
@@ -467,7 +467,7 @@ export function JiraFailoverWizardDialog({
                     <strong className="font-mono">{source.projectKey}</strong> sang nguồn{" "}
                     <strong className="font-mono">{targetSource?.projectKey}</strong>.
                   </p>
-                  <ul className="list-disc pl-5 space-y-1 text-muted-foreground text-[11px]">
+                  <ul className="list-disc pl-5 space-y-1 text-muted-foreground text-xs">
                     <li>Các task được chọn sẽ được tạo mới trên Jira đích tương ứng.</li>
                     <li>Nguồn gốc sẽ chuyển sang trạng thái <strong>REVOKED</strong> (Lịch sử).</li>
                     <li>
@@ -478,7 +478,7 @@ export function JiraFailoverWizardDialog({
                 </div>
               </div>
 
-              <div className="rounded-2xl border border-border/80 bg-muted/20 p-4 space-y-2 text-xs">
+              <div className="rounded-xl border border-border/80 bg-muted/20 p-4 space-y-2 text-xs">
                 <div className="flex items-center justify-between">
                   <span className="text-muted-foreground">Nguồn cũ:</span>
                   <span className="font-mono font-bold text-foreground">{source.projectKey} ({source.siteName})</span>
@@ -501,7 +501,7 @@ export function JiraFailoverWizardDialog({
 
           {step === 4 && (
             <div className="space-y-4">
-              <div className="rounded-2xl border border-border/80 bg-muted/20 p-4 space-y-3">
+              <div className="rounded-xl border border-border/80 bg-muted/20 p-4 space-y-3">
                 <div className="flex items-center justify-between">
                   <div>
                     <h4 className="text-xs font-bold text-foreground">Tiến độ chuyển giao công việc</h4>
@@ -541,12 +541,12 @@ export function JiraFailoverWizardDialog({
               </div>
 
               {source.connectionStatus === "ACTIVE" && (
-                <div className="rounded-2xl border border-warning/40 bg-warning/10 p-3.5 flex items-start justify-between gap-3 text-xs">
+                <div className="rounded-xl border border-warning/40 bg-warning/10 p-3.5 flex items-start justify-between gap-3 text-xs">
                   <div className="flex items-start gap-2 text-warning">
                     <ShieldAlertIcon className="w-4 h-4 shrink-0 mt-0.5" />
                     <div>
                       <p className="font-bold">Nguồn Jira cũ vẫn đang ở trạng thái Hoạt động (ACTIVE)</p>
-                      <p className="text-[11px] text-muted-foreground">
+                      <p className="text-xs text-muted-foreground">
                         Backend yêu cầu nguồn cũ phải được ngắt kết nối (REVOKED) trước khi có thể thử lại các ca lỗi.
                       </p>
                     </div>
@@ -557,7 +557,7 @@ export function JiraFailoverWizardDialog({
                     variant="outline"
                     onClick={handleSoftRevokeSource}
                     disabled={disconnectMutation.isPending}
-                    className="h-7 text-[11px] shrink-0 border-warning/40 text-warning hover:bg-warning/10"
+                    className="h-7 text-xs shrink-0 border-warning/40 text-warning hover:bg-warning/10"
                   >
                     {disconnectMutation.isPending ? "Đang ngắt..." : "Ngắt kết nối nguồn"}
                   </Button>
@@ -566,9 +566,9 @@ export function JiraFailoverWizardDialog({
 
               <div className="space-y-2">
                 <p className="text-xs font-bold text-foreground">Chi tiết các công việc ({runData?.items.length ?? 0}):</p>
-                <div className="rounded-2xl border border-border/80 overflow-hidden max-h-64 overflow-y-auto">
+                <div className="rounded-xl border border-border/80 overflow-hidden max-h-64 overflow-y-auto">
                   <table className="w-full text-left text-xs border-collapse">
-                    <thead className="bg-muted/40 sticky top-0 border-b border-border/60 text-[11px] text-muted-foreground font-semibold">
+                    <thead className="bg-muted/40 sticky top-0 border-b border-border/60 text-xs text-muted-foreground font-semibold">
                       <tr>
                         <th className="p-2.5">Task nguồn</th>
                         <th className="p-2.5">Trạng thái xử lý</th>
@@ -580,50 +580,50 @@ export function JiraFailoverWizardDialog({
                       {runData?.items.map((item) => (
                         <tr key={item.id} className="hover:bg-muted/20 transition-colors">
                           <td className="p-2.5">
-                            <div className="font-mono font-bold text-foreground text-[11px]">
+                            <div className="font-mono font-bold text-foreground text-xs">
                               {item.sourceExternalKey}
                             </div>
-                            <div className="text-muted-foreground truncate max-w-xs text-[11px]">
+                            <div className="text-muted-foreground truncate max-w-xs text-xs">
                               {item.sourceTitle}
                             </div>
                           </td>
                           <td className="p-2.5">
-                            {item.status === "PENDING" && <span className="text-muted-foreground text-[11px]">Đang chờ</span>}
+                            {item.status === "PENDING" && <span className="text-muted-foreground text-xs">Đang chờ</span>}
                             {item.status === "CREATING" && (
-                              <span className="inline-flex items-center gap-1 text-primary text-[11px]">
+                              <span className="inline-flex items-center gap-1 text-primary text-xs">
                                 <Loader2Icon className="w-3 h-3 animate-spin" /> Đang tạo...
                               </span>
                             )}
                             {item.status === "REMOTE_BOUND" && (
-                              <Badge variant="outline" className="text-blue-500 border-blue-500/30 bg-blue-500/10 text-[10px]">
+                              <Badge variant="outline" className="text-blue-500 border-blue-500/30 bg-blue-500/10 text-xs">
                                 Đã tạo trên Jira, đang lưu
                               </Badge>
                             )}
                             {item.status === "SUCCEEDED" && (
-                              <Badge className="bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-0 text-[10px]">
+                              <Badge className="bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-0 text-xs">
                                 Thành công
                               </Badge>
                             )}
                             {item.status === "FAILED" && (
-                              <Badge variant="outline" className="text-rose-500 border-rose-500/30 bg-rose-500/10 text-[10px]">
+                              <Badge variant="outline" className="text-rose-500 border-rose-500/30 bg-rose-500/10 text-xs">
                                 Lỗi: {item.errorCode || "Tạo thất bại"}
                               </Badge>
                             )}
                             {item.status === "REMOTE_OUTCOME_UNKNOWN" && (
-                              <Badge variant="outline" className="text-amber-500 border-amber-500/30 bg-amber-500/10 text-[10px]">
+                              <Badge variant="outline" className="text-amber-500 border-amber-500/30 bg-amber-500/10 text-xs">
                                 Kết quả không rõ
                               </Badge>
                             )}
                           </td>
                           <td className="p-2.5">
                             {item.targetExternalKey ? (
-                              <div className="flex items-center gap-1 font-mono font-bold text-emerald-600 dark:text-emerald-400 text-[11px]">
+                              <div className="flex items-center gap-1 font-mono font-bold text-emerald-600 dark:text-emerald-400 text-xs">
                                 <span>{item.sourceExternalKey}</span>
                                 <ArrowRightIcon className="w-3 h-3" />
                                 <span>{item.targetExternalKey}</span>
                               </div>
                             ) : (
-                              <span className="text-muted-foreground text-[11px]">—</span>
+                              <span className="text-muted-foreground text-xs">—</span>
                             )}
                           </td>
                           <td className="p-2.5 text-right">
@@ -633,7 +633,7 @@ export function JiraFailoverWizardDialog({
                                 size="sm"
                                 variant="outline"
                                 onClick={() => setReconcileItem(item)}
-                                className="h-6.5 text-[10px] rounded-lg border-amber-500/40 text-amber-600 hover:bg-amber-500/10"
+                                className="h-6.5 text-xs rounded-lg border-amber-500/40 text-amber-600 hover:bg-amber-500/10"
                               >
                                 Đối soát & Liên kết
                               </Button>

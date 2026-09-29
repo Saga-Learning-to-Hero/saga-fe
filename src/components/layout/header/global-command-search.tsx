@@ -106,8 +106,8 @@ export function GlobalCommandSearch() {
           <SearchIcon className="size-3.5 text-muted-foreground group-hover:text-primary transition-colors" />
           <span className="truncate">Tìm kiếm, chuyển trang...</span>
         </span>
-        <kbd className="hidden sm:inline-flex items-center gap-0.5 px-1.5 py-0.5 text-[10px] font-mono font-bold bg-card border border-border/80 rounded-md text-muted-foreground shadow-2xs">
-          <span className="text-[11px]">⌘</span>K
+        <kbd className="hidden sm:inline-flex items-center gap-0.5 px-1.5 py-0.5 text-xs font-mono font-bold bg-card border border-border/80 rounded-md text-muted-foreground shadow-2xs">
+          <span className="text-xs">⌘</span>K
         </kbd>
       </button>
 

@@ -151,14 +151,14 @@ export function QuickAssigneeEdit({
         align="end"
         side="bottom"
         sideOffset={6}
-        className="w-64 p-2 space-y-2 z-50 bg-card border-border/80 shadow-xl rounded-2xl"
+        className="w-64 p-2 space-y-2 z-50 bg-card border-border/80 shadow-md rounded-xl"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between border-b border-border/60 px-2 py-1">
           <span className="text-xs font-bold text-foreground">
             Phân công người thực hiện
           </span>
-          <span className="font-mono text-[10px] font-bold text-primary px-1.5 py-0.2 rounded bg-primary/10 border border-primary/20">
+          <span className="font-mono text-xs font-bold text-primary px-1.5 py-0.2 rounded bg-primary/10 border border-primary/20">
             {issueKey}
           </span>
         </div>
@@ -179,7 +179,7 @@ export function QuickAssigneeEdit({
               </div>
               <div className="min-w-0">
                 <p className="truncate font-medium text-xs">Chưa phân công</p>
-                <p className="text-[10px] text-muted-foreground font-mono">Unassigned</p>
+                <p className="text-xs text-muted-foreground font-mono">Unassigned</p>
               </div>
             </div>
             {isUnassigned && <CheckIcon className="w-3.5 h-3.5 text-primary shrink-0" />}
@@ -212,7 +212,7 @@ export function QuickAssigneeEdit({
                   </Avatar>
                   <div className="min-w-0">
                     <p className="truncate font-semibold text-xs text-foreground">{item.displayName}</p>
-                    <p className="text-[10px] text-muted-foreground font-mono">
+                    <p className="text-xs text-muted-foreground font-mono">
                       {item.subLabel}
                     </p>
                   </div>

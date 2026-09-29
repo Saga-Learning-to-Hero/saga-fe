@@ -31,7 +31,7 @@ import { cn } from "@/lib/utils";
 
 const CourseAnalyticsCharts = dynamic(
   () => import("./course-analytics-charts").then((mod) => mod.CourseAnalyticsCharts),
-  { ssr: false, loading: () => <div className="h-64 animate-pulse rounded-2xl bg-muted/60" /> }
+  { ssr: false, loading: () => <div className="h-64 animate-pulse rounded-xl bg-muted/60" /> }
 );
 
 interface CourseOverviewPageProps {
@@ -63,7 +63,7 @@ export function CourseOverviewPage({ courseId }: CourseOverviewPageProps) {
 
   if (isAccessDenied) {
     return (
-      <div className="rounded-2xl border border-dashed border-border p-8 text-center text-sm text-muted-foreground">
+      <div className="rounded-xl border border-dashed border-border p-8 text-center text-sm text-muted-foreground">
         Đang chuyển về danh sách lớp...
       </div>
     );
@@ -101,7 +101,7 @@ export function CourseOverviewPage({ courseId }: CourseOverviewPageProps) {
       actions={
         <>
           {generatedAtLabel ? (
-            <p className="hidden text-[11px] text-muted-foreground sm:block">
+            <p className="hidden text-xs text-muted-foreground sm:block">
               Cập nhật lúc {generatedAtLabel}
             </p>
           ) : null}
@@ -133,7 +133,7 @@ export function CourseOverviewPage({ courseId }: CourseOverviewPageProps) {
               value={dashboard.summary.enrolledStudents}
               subValue="sinh viên"
               badge={
-                <Badge variant="outline" className="font-mono text-[11px]">
+                <Badge variant="outline" className="font-mono text-xs">
                   {dashboard.summary.unassignedStudents > 0
                     ? `${dashboard.summary.unassignedStudents} chưa có nhóm`
                     : "Đã phân nhóm đầy đủ"}
@@ -147,7 +147,7 @@ export function CourseOverviewPage({ courseId }: CourseOverviewPageProps) {
               value={dashboard.summary.totalTeams}
               subValue="nhóm"
               badge={
-                <Badge variant="outline" className="font-mono text-[11px]">
+                <Badge variant="outline" className="font-mono text-xs">
                   {dashboard.summary.teamsWithoutProject > 0
                     ? `${dashboard.summary.teamsWithoutProject} chưa có dự án`
                     : "Đã có dự án đầy đủ"}
@@ -161,7 +161,7 @@ export function CourseOverviewPage({ courseId }: CourseOverviewPageProps) {
               value={atRisk}
               subValue="nhóm"
               badge={
-                <Badge variant="outline" className="font-mono text-[11px]">
+                <Badge variant="outline" className="font-mono text-xs">
                   {dashboard.summary.criticalTeams} nghiêm trọng · {dashboard.summary.warningTeams} cần chú ý
                   {dashboard.summary.unknownTeams > 0
                     ? ` · ${dashboard.summary.unknownTeams} thiếu dữ liệu`
@@ -176,7 +176,7 @@ export function CourseOverviewPage({ courseId }: CourseOverviewPageProps) {
               value={dashboard.taskStatusTotals.done}
               subValue={`/ ${dashboard.taskStatusTotals.total}`}
               badge={
-                <Badge variant="outline" className="font-mono text-[11px] font-bold">
+                <Badge variant="outline" className="font-mono text-xs font-bold">
                   {formatNullablePercent(dashboard.taskStatusTotals.completionPercent)}
                   {dashboard.taskStatusTotals.overdue > 0
                     ? ` · ${dashboard.taskStatusTotals.overdue} quá hạn`
@@ -198,7 +198,7 @@ export function CourseOverviewPage({ courseId }: CourseOverviewPageProps) {
             onHighlightedTeamIdsChange={setHighlightedTeamIds}
           />
 
-          <Card className="space-y-4 rounded-2xl border border-border/80 p-5 shadow-xs">
+          <Card className="space-y-4 rounded-xl border border-border/80 p-5 shadow-xs">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <h2 className="text-base font-extrabold text-foreground">
@@ -239,7 +239,7 @@ export function CourseOverviewPage({ courseId }: CourseOverviewPageProps) {
             </div>
 
             {displayedTeams.length === 0 ? (
-              <div className="rounded-2xl border border-dashed border-border/80 p-8 text-center text-sm text-muted-foreground">
+              <div className="rounded-xl border border-dashed border-border/80 p-8 text-center text-sm text-muted-foreground">
                 {teams.length === 0
                   ? "Chưa có nhóm nào trong lớp học phần này."
                   : "Không có nhóm nào cần chú ý trong Sprint hiện tại."}
@@ -281,7 +281,7 @@ function OverviewStatCard({
   badge,
 }: OverviewStatCardProps) {
   return (
-    <Card className="rounded-2xl border border-border/80 bg-card p-4 shadow-xs">
+    <Card className="rounded-xl border border-border/80 bg-card p-4 shadow-xs">
       <CardContent className="flex items-center gap-3.5 p-0">
         <div
           className={cn(

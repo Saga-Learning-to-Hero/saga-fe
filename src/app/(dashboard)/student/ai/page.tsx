@@ -23,7 +23,7 @@ function StudentAiPageContent() {
 
   if (!projectId) {
     return (
-      <div className="p-12 rounded-3xl border border-dashed border-border bg-card text-center space-y-3 max-w-xl mx-auto mt-8">
+      <div className="p-12 rounded-xl border border-dashed border-border bg-card text-center space-y-3 max-w-xl mx-auto mt-8">
         <AlertCircleIcon className="w-8 h-8 text-amber-500 mx-auto" />
         <h3 className="text-base font-bold text-foreground">Chưa có dự án được liên kết</h3>
         <p className="text-xs text-muted-foreground">
