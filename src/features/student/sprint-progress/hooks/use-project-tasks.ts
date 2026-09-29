@@ -4,6 +4,7 @@ import { ProjectTaskService } from "../api/project-task-service";
 import type {
   CreateProjectTaskRequest,
   PatchProjectTaskRequest,
+  ProjectTaskResponse,
   TransitionProjectTaskRequest,
   GetTaskParentOptionsParams,
 } from "../types/jira-task-types";
@@ -11,6 +12,7 @@ import type {
 import type { GetTaskWorkSessionTimelineParams } from "../types/work-session-timeline";
 import { getApiErrorCode } from "@/lib/api-error";
 import { JIRA_SPRINT_QUERY_KEYS } from "./use-sprint-data";
+import { upsertProjectTaskInList } from "../lib/task-list-cache";
 
 export type TransitionTaskPayload =
   | TransitionProjectTaskRequest
@@ -116,8 +118,16 @@ export function useTransitionTask() {
       return ProjectTaskService.transitionTask(projectId, taskId, data as TransitionProjectTaskRequest);
     },
     onSuccess: (updatedTask, variables) => {
-      queryClient.invalidateQueries({
-        queryKey: JIRA_SPRINT_QUERY_KEYS.tasks(variables.projectId),
+      queryClient.setQueryData(
+        JIRA_SPRINT_QUERY_KEYS.tasks(variables.projectId),
+        (old: ProjectTaskResponse[] | undefined) => upsertProjectTaskInList(old, updatedTask)
+      );
+      queryClient.setQueryData(
+        JIRA_SPRINT_QUERY_KEYS.taskDetail(variables.projectId, variables.taskId),
+        updatedTask
+      );
+      void queryClient.invalidateQueries({
+        queryKey: JIRA_SPRINT_QUERY_KEYS.taskTransitions(variables.projectId, variables.taskId),
       });
       showSuccessToast(`Đã chuyển trạng thái task sang "${updatedTask.jiraStatusName || updatedTask.status}".`);
     },

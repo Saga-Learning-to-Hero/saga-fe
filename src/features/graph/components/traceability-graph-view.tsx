@@ -890,6 +890,7 @@ export function TraceabilityGraphView() {
           setFocusedNodeId(nodeId);
           setFocusedNodeLabel(nodeLabel || null);
         }}
+        focusedNodeId={activeFocusedNodeId}
         projectId={projectId}
         onViewContribution={(studentId) => {
           handleSelectDrillDownStudent(studentId, selectedNode?.label);

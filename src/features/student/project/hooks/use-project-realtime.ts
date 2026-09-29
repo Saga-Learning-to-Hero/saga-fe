@@ -6,6 +6,7 @@ import { API_BASE_URL } from "@/lib/axios";
 import { JIRA_SPRINT_QUERY_KEYS } from "@/features/student/sprint-progress/hooks/use-sprint-data";
 import { TASK_EVIDENCE_QUERY_KEYS } from "@/features/student/sprint-progress/hooks/use-task-evidence";
 import { PROJECT_PROJECTION_QUERY_KEYS } from "@/features/student/project/hooks/useProjectSync";
+import { PROJECT_INTEGRATIONS_QUERY_KEYS } from "@/features/student/project/hooks/useProjectIntegrations";
 import { PROJECT_GRAPH_QUERY_KEY } from "@/features/graph/hooks/use-project-graph";
 import type { GraphType } from "@/features/graph/types/graph";
 import type {
@@ -27,6 +28,8 @@ const REALTIME_EVENT_NAMES: ProjectRealtimeEventType[] = [
   "GRAPH_CHANGED",
 ];
 
+const READY_DEBOUNCE_MS = 1000;
+
 export function useProjectRealtime(
   projectId?: string | null,
   options?: UseProjectRealtimeOptions
@@ -40,6 +43,7 @@ export function useProjectRealtime(
   const eventSourceRef = useRef<EventSource | null>(null);
   const optionsRef = useRef(options);
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const readyDebounceTimerRef = useRef<NodeJS.Timeout | null>(null);
   const pendingGraphTypesRef = useRef<Set<GraphType | "ALL">>(new Set());
 
   useEffect(() => {
@@ -51,6 +55,8 @@ export function useProjectRealtime(
 
   const scheduleGraphInvalidation = useCallback(
     (pid: string, types: (GraphType | "ALL")[]) => {
+      if (optionsRef.current?.includeGraph !== true) return;
+
       types.forEach((t) => pendingGraphTypesRef.current.add(t));
 
       if (debounceTimerRef.current) {
@@ -81,6 +87,8 @@ export function useProjectRealtime(
 
   const invalidateForEvent = useCallback(
     (type: ProjectRealtimeEventType, pid: string, entityId?: string) => {
+      const includeProgress = optionsRef.current?.includeProgress === true;
+      const includeIntegrations = optionsRef.current?.includeIntegrations === true;
       const invalidateTasks = () => {
         void queryClient.invalidateQueries({ queryKey: JIRA_SPRINT_QUERY_KEYS.tasks(pid) });
         void queryClient.invalidateQueries({ queryKey: PROJECT_PROJECTION_QUERY_KEYS.tasks(pid) });
@@ -89,7 +97,6 @@ export function useProjectRealtime(
         void queryClient.invalidateQueries({ queryKey: JIRA_SPRINT_QUERY_KEYS.sprints(pid) });
       };
       const invalidateCommits = () => {
-        void queryClient.invalidateQueries({ queryKey: ["projects", pid, "commits"] });
         void queryClient.invalidateQueries({ queryKey: PROJECT_PROJECTION_QUERY_KEYS.commits(pid) });
       };
       const invalidateTaskDetails = () => {
@@ -104,29 +111,48 @@ export function useProjectRealtime(
         });
       };
       const invalidateSyncStatus = () => {
-        void queryClient.invalidateQueries({ queryKey: ["projects", pid, "sync-status"] });
         void queryClient.invalidateQueries({ queryKey: PROJECT_PROJECTION_QUERY_KEYS.syncStatus(pid) });
       };
       const invalidateProgress = () => {
+        if (!includeProgress) return;
         void queryClient.invalidateQueries({ queryKey: PROJECT_PROJECTION_QUERY_KEYS.progress(pid) });
       };
       const invalidateMemberProgress = () => {
+        if (!includeProgress) return;
         void queryClient.invalidateQueries({
           queryKey: [...PROJECT_PROJECTION_QUERY_KEYS.all, "member-progress", pid],
         });
       };
+      const invalidateIntegrations = () => {
+        if (!includeIntegrations) return;
+        void queryClient.invalidateQueries({
+          queryKey: PROJECT_INTEGRATIONS_QUERY_KEYS.projectIntegrations(pid),
+          exact: true,
+        });
+      };
 
-      switch (type) {
-        case "READY":
-          void queryClient.invalidateQueries({ queryKey: ["projects", pid] });
+      const scheduleReadyInvalidation = () => {
+        if (readyDebounceTimerRef.current) {
+          clearTimeout(readyDebounceTimerRef.current);
+        }
+        readyDebounceTimerRef.current = setTimeout(() => {
+          readyDebounceTimerRef.current = null;
           invalidateTasks();
           invalidateSprints();
           invalidateCommits();
-          invalidateTaskCommitLinks();
           invalidateSyncStatus();
+          invalidateIntegrations();
           invalidateProgress();
           invalidateMemberProgress();
-          scheduleGraphInvalidation(pid, ["ALL"]);
+          if (optionsRef.current?.includeGraph === true) {
+            scheduleGraphInvalidation(pid, ["ALL"]);
+          }
+        }, READY_DEBOUNCE_MS);
+      };
+
+      switch (type) {
+        case "READY":
+          scheduleReadyInvalidation();
           break;
         case "GRAPH_CHANGED":
           scheduleGraphInvalidation(pid, ["ALL"]);
@@ -183,6 +209,9 @@ export function useProjectRealtime(
     return () => {
       if (debounceTimerRef.current) {
         clearTimeout(debounceTimerRef.current);
+      }
+      if (readyDebounceTimerRef.current) {
+        clearTimeout(readyDebounceTimerRef.current);
       }
     };
   }, []);

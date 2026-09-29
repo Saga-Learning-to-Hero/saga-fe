@@ -83,6 +83,8 @@ export function usePipelineGraphData({
   });
   const realtime = useProjectRealtime(plan.projectId, {
     enabled: commitsPlan.realtimeEnabled,
+    includeGraph: true,
+    includeProgress: true,
   });
 
   const members = useMemo(() => {

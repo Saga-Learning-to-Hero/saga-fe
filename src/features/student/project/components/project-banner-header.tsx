@@ -17,6 +17,9 @@ import { Badge } from "@/components/ui/badge";
 import { MemberRoleBadge } from "@/components/common/leader-badge";
 import { Button } from "@/components/ui/button";
 import { useSyncProject, useProjectSyncStatus } from "../hooks/useProjectSync";
+import { canRequestProjectSync, isActivelySyncing } from "../lib/sync-job-status";
+import { useTimedSyncWindow } from "../hooks/use-timed-sync-window";
+import type { SSEConnectionStatus } from "../types/project-realtime-types";
 import { formatVietnamDateTime } from "@/lib/utils";
 import { EditProjectDialog } from "./edit-project-dialog";
 
@@ -26,6 +29,7 @@ interface ProjectBannerHeaderProps {
   isLeader?: boolean;
   hasTeam?: boolean;
   isRoleLoading?: boolean;
+  sseStatus?: SSEConnectionStatus;
   onProjectUpdated?: (updated: { name: string; description: string }) => void;
 }
 
@@ -35,6 +39,7 @@ export function ProjectBannerHeader({
   isLeader,
   hasTeam,
   isRoleLoading = false,
+  sseStatus,
   onProjectUpdated,
 }: ProjectBannerHeaderProps) {
   const [isEditOpen, setIsEditOpen] = useState(false);
@@ -45,14 +50,12 @@ export function ProjectBannerHeader({
 
   const { data: syncStatuses = [] } = useProjectSyncStatus(projectId, {
     enabled: Boolean(projectId && projectId.trim()),
+    sseStatus,
   });
 
-  const hasActiveJob = useMemo(() => {
-    return syncStatuses.some((item) => {
-      const s = (item.status || "").toUpperCase();
-      return s === "IN_PROGRESS" || s === "RUNNING" || s === "SYNCING";
-    });
-  }, [syncStatuses]);
+  const hasActiveJob = isActivelySyncing(syncStatuses);
+  const syncWindowTimedOut = useTimedSyncWindow(hasActiveJob);
+  const showSyncing = syncMutation.isPending || (hasActiveJob && !syncWindowTimedOut);
 
   const hasFailure = useMemo(() => {
     return syncStatuses.some((item) => (item.status || "").toUpperCase() === "FAILED");
@@ -88,6 +91,7 @@ export function ProjectBannerHeader({
   }, [syncStatuses]);
 
   const handleSync = async () => {
+    if (!canRequestProjectSync(Boolean(isLeader))) return;
     if (!projectId) {
       showErrorToast("Không tìm thấy mã dự án để kích hoạt đồng bộ.");
       return;
@@ -193,7 +197,7 @@ export function ProjectBannerHeader({
 
         {projectId && (
           <div className="flex flex-col items-start md:items-end gap-2 shrink-0">
-            {isLeader && (
+            {canRequestProjectSync(Boolean(isLeader)) && (
               <div className="flex items-center gap-2">
                 <Button
                   type="button"
@@ -209,17 +213,17 @@ export function ProjectBannerHeader({
                   type="button"
                   size="sm"
                   onClick={() => void handleSync()}
-                  disabled={syncMutation.isPending || hasActiveJob}
+                  disabled={showSyncing}
                   className="h-9 px-3.5 rounded-xl bg-white/20 hover:bg-white/30 text-white border border-white/20 text-xs font-semibold backdrop-blur-sm gap-2 shadow-xs transition-all cursor-pointer active:scale-95"
                 >
                   <RefreshCwIcon
-                    className={`w-3.5 h-3.5 ${syncMutation.isPending || hasActiveJob ? "animate-spin text-amber-300" : ""
+                    className={`w-3.5 h-3.5 ${showSyncing ? "animate-spin text-amber-300" : ""
                       }`}
                   />
                   <span>
                     {syncMutation.isPending
                       ? "Đang gửi yêu cầu..."
-                      : hasActiveJob
+                      : showSyncing
                         ? "Đang đồng bộ..."
                         : "Đồng bộ Jira & GitHub"}
                   </span>
@@ -228,10 +232,15 @@ export function ProjectBannerHeader({
             )}
 
             <div className="text-xs text-white/95 bg-black/25 px-2.5 py-1 rounded-lg border border-white/10 flex items-center gap-2 font-mono backdrop-blur-sm shadow-2xs">
-              {hasActiveJob ? (
+              {showSyncing ? (
                 <>
                   <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
                   <span className="font-sans text-amber-200 font-medium">Đang đồng bộ dữ liệu...</span>
+                </>
+              ) : hasActiveJob && syncWindowTimedOut ? (
+                <>
+                  <span className="w-2 h-2 rounded-full bg-amber-300" />
+                  <span className="font-sans text-amber-100 font-medium">Đã dừng chờ đồng bộ sau 90 giây</span>
                 </>
               ) : latestCompletedAt ? (
                 <>

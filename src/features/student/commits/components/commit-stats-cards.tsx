@@ -7,48 +7,59 @@ import {
   RefreshCwIcon,
 } from "lucide-react";
 import type { CommitStats } from "../types/commits";
+import type { GitHubSyncBadgeKind } from "../lib/github-commit-connection";
 import { Badge } from "@/components/ui/badge";
 
 interface CommitStatsCardsProps {
   stats: CommitStats;
   selectedRepoName: string;
   selectedBranchName: string;
-  githubSyncStatus?: string | null;
-  isGitHubSyncing?: boolean;
-  isGitHubSyncFailed?: boolean;
+  syncBadge: GitHubSyncBadgeKind;
 }
+
+const SYNC_BADGE: Record<
+  GitHubSyncBadgeKind,
+  { label: string; color: string; dot: string }
+> = {
+  syncing: {
+    label: "Đang đồng bộ",
+    color: "text-amber-600 dark:text-amber-400",
+    dot: "bg-amber-500 animate-pulse",
+  },
+  failed: {
+    label: "Đồng bộ lỗi",
+    color: "text-destructive",
+    dot: "bg-destructive",
+  },
+  revoked: {
+    label: "Đã ngắt kết nối",
+    color: "text-destructive",
+    dot: "bg-muted-foreground/50",
+  },
+  not_connected: {
+    label: "Chưa kết nối GitHub",
+    color: "text-muted-foreground",
+    dot: "bg-muted-foreground/50",
+  },
+  synced: {
+    label: "Đã đồng bộ",
+    color: "text-emerald-600 dark:text-emerald-400",
+    dot: "bg-emerald-500",
+  },
+  idle: {
+    label: "Chưa đồng bộ",
+    color: "text-muted-foreground",
+    dot: "bg-muted-foreground/50",
+  },
+};
 
 export function CommitStatsCards({
   stats,
   selectedRepoName,
   selectedBranchName,
-  githubSyncStatus,
-  isGitHubSyncing = false,
-  isGitHubSyncFailed = false,
+  syncBadge,
 }: CommitStatsCardsProps) {
-  const syncLabel = isGitHubSyncing
-    ? "Đang đồng bộ"
-    : isGitHubSyncFailed
-      ? "Đồng bộ lỗi"
-      : githubSyncStatus
-        ? "Đã đồng bộ"
-        : "Chưa đồng bộ";
-
-  const syncColor = isGitHubSyncing
-    ? "text-amber-600 dark:text-amber-400"
-    : isGitHubSyncFailed
-      ? "text-destructive"
-      : githubSyncStatus
-        ? "text-emerald-600 dark:text-emerald-400"
-        : "text-muted-foreground";
-
-  const syncDotColor = isGitHubSyncing
-    ? "bg-amber-500 animate-pulse"
-    : isGitHubSyncFailed
-      ? "bg-destructive"
-      : githubSyncStatus
-        ? "bg-emerald-500"
-        : "bg-muted-foreground/50";
+  const { label: syncLabel, color: syncColor, dot: syncDotColor } = SYNC_BADGE[syncBadge];
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">

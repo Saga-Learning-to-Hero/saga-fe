@@ -48,7 +48,10 @@ export function ProjectInfoView() {
 
   const projectId = apiProject?.projectId || team?.projectId || effectiveCourse?.projectId || "";
 
-  useProjectRealtime(projectId, { enabled: Boolean(projectId) });
+  const { status: realtimeStatus } = useProjectRealtime(projectId, {
+    enabled: Boolean(projectId),
+    includeIntegrations: true,
+  });
 
   const forbidden = getApiErrorCode(teamError) === "STUDENT_COURSE_FORBIDDEN";
   useEffect(() => { if (forbidden) void refreshCourses(); }, [forbidden, refreshCourses]);
@@ -147,6 +150,7 @@ export function ProjectInfoView() {
         isLeader={isLeader}
         hasTeam={hasTeam}
         isRoleLoading={isRoleLoading}
+        sseStatus={realtimeStatus}
         onProjectUpdated={handleUpdateProject}
       />
 

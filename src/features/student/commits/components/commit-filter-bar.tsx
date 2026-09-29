@@ -51,7 +51,10 @@ export function CommitFilterBar({
             onChange={onSelectRepo}
             options={repositories.map((repo) => ({
               value: repo.id,
-              label: repo.fullPath,
+              label:
+                repo.connectionStatus && repo.connectionStatus !== "ACTIVE"
+                  ? `${repo.fullPath} (đã ngắt kết nối)`
+                  : repo.fullPath,
               icon: <FolderGit2Icon className="w-3.5 h-3.5 text-blue-500" />,
             }))}
           />
