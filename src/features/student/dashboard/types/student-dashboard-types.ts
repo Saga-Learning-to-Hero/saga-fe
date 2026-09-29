@@ -133,6 +133,7 @@ export interface StudentDashboardResponse {
   team: StudentDashboardTeam | null;
   integrations?: StudentDashboardIntegrations | null;
   currentSprint?: StudentDashboardCurrentSprint | null;
+  sprintMetrics?: StudentDashboardMetrics | null;
   myMetrics: StudentDashboardMetrics;
   myActiveTasks: StudentDashboardActiveTask[];
   recentCommits: StudentDashboardRecentCommit[];

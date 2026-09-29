@@ -484,7 +484,7 @@ describe("LecturerPeerReviewPage", () => {
 
       const trigger = document.getElementById("peer-review-reviewee") as HTMLButtonElement;
       fireEvent.click(trigger);
-      const dropdown = trigger.parentElement?.querySelector(".absolute") as HTMLElement;
+      const dropdown = (document.querySelector("[role='listbox']") || trigger.parentElement?.querySelector(".absolute")) as HTMLElement;
       fireEvent.click(within(dropdown).getByText("SE2"));
       const filterHref = String(mocks.navigation.replace.mock.calls.at(-1)?.[0] || "");
       expect(filterHref).toContain("teamId=team-1");

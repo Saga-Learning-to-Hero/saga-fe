@@ -20,6 +20,7 @@ interface QuickStoryPointsEditProps {
   storyPoints: number;
   projectId?: string | null;
   isTeamLeader: boolean;
+  isOwner?: boolean;
 }
 
 export function QuickStoryPointsEdit({
@@ -28,12 +29,13 @@ export function QuickStoryPointsEdit({
   storyPoints,
   projectId,
   isTeamLeader,
+  isOwner = false,
 }: QuickStoryPointsEditProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [customValue, setCustomValue] = useState<string>(String(storyPoints));
   const patchTaskMutation = usePatchProjectTask();
 
-  if (!isTeamLeader || !projectId) {
+  if (!projectId || (!isTeamLeader && !isOwner)) {
     return (
       <Badge variant="secondary" className="font-mono text-xs px-2 py-0.5">
         {storyPoints} SP
@@ -82,7 +84,11 @@ export function QuickStoryPointsEdit({
         type="button"
         onClick={(e) => e.stopPropagation()}
         className="inline-flex items-center gap-1 font-mono text-xs font-bold px-2 py-0.5 rounded-md border border-border/70 bg-muted/60 hover:bg-primary/10 hover:text-primary hover:border-primary/50 cursor-pointer transition-colors"
-        title="Nhấn để đổi Story Points (Trưởng nhóm)"
+        title={
+          isTeamLeader
+            ? "Nhấn để đổi Story Points (Trưởng nhóm)"
+            : "Nhấn để đổi Story Points"
+        }
       >
         {patchTaskMutation.isPending ? (
           <Loader2Icon className="w-3 h-3 animate-spin text-primary" />

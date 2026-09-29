@@ -504,7 +504,7 @@ export function StudentDashboardAnalytics() {
           </div>
 
           {/* Biểu đồ Commit theo tuần & Phân bố Task của tôi */}
-          <StudentWeeklyCommitsChart weeklyCommits={weeklyCommits} tasks={myMetrics.tasks} />
+          <StudentWeeklyCommitsChart weeklyCommits={weeklyCommits} tasks={data.sprintMetrics?.tasks ?? myMetrics.tasks} />
 
           {/* Grid 2 Cột: Nhiệm vụ đang làm & Nhật ký commit gần đây */}
           <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
