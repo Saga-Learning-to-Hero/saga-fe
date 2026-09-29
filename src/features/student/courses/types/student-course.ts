@@ -82,6 +82,8 @@ export interface StudentTeamResponse {
   teamNo: number;
   teamName: string;
   myRole: "LEADER" | "MEMBER" | string;
+  myStudentCode?: string;
+  myStudentId?: string;
   projectId: string | null;
   members: StudentTeamMember[];
 }

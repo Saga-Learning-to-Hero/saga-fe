@@ -160,7 +160,11 @@ export function SprintBoardView({
   const totalSprintSP = issues.reduce((sum, i) => sum + (i.storyPoints || 0), 0);
 
   const handleDragStart = (e: React.DragEvent, issue: SprintIssue) => {
-    const canDrag = isTeamLeader || issue.assignee.studentCode === currentUserStudentCode;
+    const canDrag =
+      isTeamLeader ||
+      (Boolean(currentUserStudentCode) &&
+        Boolean(issue.assignee?.studentCode) &&
+        issue.assignee.studentCode === currentUserStudentCode);
     if (!canDrag) {
       e.preventDefault();
       return;
@@ -297,7 +301,11 @@ export function SprintBoardView({
                 ) : null}
 
                 {colIssues.map((issue) => {
-                  const canDrag = isTeamLeader || issue.assignee.studentCode === currentUserStudentCode;
+                  const canDrag =
+                    isTeamLeader ||
+                    (Boolean(currentUserStudentCode) &&
+                      Boolean(issue.assignee?.studentCode) &&
+                      issue.assignee.studentCode === currentUserStudentCode);
                   const isMsrAnomaly = issue.status === "DONE" && (issue.githubCommitCount ?? 0) === 0;
 
                   return (

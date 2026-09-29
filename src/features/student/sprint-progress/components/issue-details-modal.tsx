@@ -112,14 +112,18 @@ export function IssueDetailsModal({
   currentUserStudentCode,
 }: IssueDetailsModalProps) {
   const isEditing = Boolean(issue);
-  const isOwner = issue ? issue.assignee.studentCode === currentUserStudentCode : false;
+  const isOwner = issue
+    ? Boolean(currentUserStudentCode) &&
+      Boolean(issue.assignee?.studentCode) &&
+      issue.assignee.studentCode === currentUserStudentCode
+    : false;
 
   const { data: taskDetail } = useProjectTaskDetail(projectId, issue?.id, {
     enabled: Boolean(isOpen && projectId && issue?.id),
   });
 
   const isSuperseded = Boolean(issue?.superseded || taskDetail?.superseded);
-  const canEdit = isSuperseded ? false : (isEditing ? (isTeamLeader || isOwner) : isTeamLeader);
+  const canEdit = isSuperseded ? false : (isEditing ? (isTeamLeader || isOwner) : true);
 
   const { data: jiraSources } = useJiraSources(projectId, {
     enabled: Boolean(isOpen && projectId),
@@ -797,11 +801,15 @@ export function IssueDetailsModal({
                 <div className="space-y-1.5">
                   <Label htmlFor="issue-type" className="text-xs font-semibold flex items-center gap-1.5 text-foreground">
                     <span>Loại thẻ</span>
-                    <span className="text-xs font-normal text-muted-foreground">(Tùy chọn)</span>
+                    {isEditing ? (
+                      <span className="text-xs font-normal text-muted-foreground">(Cố định)</span>
+                    ) : (
+                      <span className="text-xs font-normal text-muted-foreground">(Tùy chọn)</span>
+                    )}
                   </Label>
                   <CustomSelect
                     id="issue-type"
-                    disabled={!canEdit}
+                    disabled={!canEdit || isEditing}
                     value={
                       issueTypeOptions.find((option) => option.value === form.issueTypeId)?.value ||
                       issueTypeOptions.find((option) => option.type === form.type)?.value ||
@@ -818,6 +826,11 @@ export function IssueDetailsModal({
                     }}
                     options={issueTypeOptions}
                   />
+                  {isEditing && (
+                    <p className="text-[11px] text-muted-foreground italic">
+                      Muốn đổi loại thẻ thì dùng Move trên Jira
+                    </p>
+                  )}
                 </div>
 
                 <div className="space-y-1.5">
@@ -841,11 +854,15 @@ export function IssueDetailsModal({
                 <div className="space-y-1.5">
                   <Label htmlFor="issue-assignee" className="text-xs font-semibold flex items-center gap-1.5 text-foreground">
                     <span>Người thực hiện</span>
-                    <span className="text-xs font-normal text-muted-foreground">(Tùy chọn)</span>
+                    {!isTeamLeader ? (
+                      <span className="text-xs font-normal text-muted-foreground">(Cố định về bạn)</span>
+                    ) : (
+                      <span className="text-xs font-normal text-muted-foreground">(Tùy chọn)</span>
+                    )}
                   </Label>
                   <CustomSelect
                     id="issue-assignee"
-                    disabled={!canEdit}
+                    disabled={!canEdit || !isTeamLeader}
                     value={form.assigneeAccountId}
                     onChange={(val) => {
                       const matchedUser = taskOptions?.assignableUsers?.find((u) => u.accountId === val);

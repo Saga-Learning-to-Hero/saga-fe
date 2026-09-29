@@ -100,7 +100,7 @@ export function SprintProgressView() {
     enabled: Boolean(projectId && isJiraConnected),
     jiraIntegrationId: effectiveSourceId,
   });
-  const currentUserStudentCode = authUser?.studentCode || "";
+  const currentUserStudentCode = team?.myStudentCode || authUser?.studentCode || "";
   const isLeaderInGroup = effectiveCourse && "myGroup" in effectiveCourse && effectiveCourse.myGroup?.role === "LEADER";
   const isTeamLeader = team?.myRole === "LEADER" || Boolean(isLeaderInGroup);
 
@@ -397,14 +397,22 @@ export function SprintProgressView() {
 
   const handleSaveIssue = (savedIssue: SprintIssue) => {
     const isProjectedTask = projectTasks.some((task) => task.id === savedIssue.id);
-    setLocalCustomIssues((prev) => {
-      if (isProjectedTask) {
-        return prev.filter((issue) => issue.id !== savedIssue.id);
-      }
-      const idx = prev.findIndex((i) => i.id === savedIssue.id);
-      if (idx >= 0) return prev.map((i) => (i.id === savedIssue.id ? savedIssue : i));
-      return [savedIssue, ...prev];
-    });
+    if (isProjectedTask) {
+      setLocalTaskOverrides((prev) => {
+        if (!(savedIssue.id in prev)) return prev;
+        const next = { ...prev };
+        delete next[savedIssue.id];
+        return next;
+      });
+      setLocalCustomIssues((prev) => prev.filter((i) => i.id !== savedIssue.id));
+      return;
+    }
+    const idx = localCustomIssues.findIndex((i) => i.id === savedIssue.id);
+    if (idx >= 0) {
+      setLocalCustomIssues((prev) => prev.map((i) => (i.id === savedIssue.id ? savedIssue : i)));
+    } else {
+      setLocalCustomIssues((prev) => [savedIssue, ...prev]);
+    }
     setLocalTaskOverrides((prev) => ({ ...prev, [savedIssue.id]: savedIssue }));
   };
 
