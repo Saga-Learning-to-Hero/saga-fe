@@ -659,6 +659,7 @@ export function SprintProgressView() {
               name: s.name,
               startDate: s.startDate,
               endDate: s.endDate,
+              state: s.status,
             }))}
             students={teamMembers.map((m) => ({
               studentId: m.studentCode,
@@ -667,6 +668,7 @@ export function SprintProgressView() {
               avatar: m.avatar,
             }))}
             initialSprintId={selectedSprintId === "backlog" ? undefined : selectedSprintId}
+            onSelectSprint={setUserSelectedSprintId}
           />
         </div>
       )}

@@ -1,6 +1,4 @@
-"use client";
-
-import { useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { StudentDashboardService } from "../api/student-dashboard-service";
 import { getApiErrorCode } from "@/lib/api-error";
 import type { StudentDashboardResponse } from "../types/student-dashboard-types";
@@ -38,9 +36,14 @@ export function useStudentDashboard(
     queryFn: () => StudentDashboardService.getDashboard(cleanCourseId, cleanSprintId),
     enabled: (effectiveOptions?.enabled ?? true) && Boolean(cleanCourseId),
     staleTime: 1000 * 30, // 30s cache
+    placeholderData: keepPreviousData,
     retry: (failureCount, error) => {
       const code = getApiErrorCode(error);
-      if (code === "STUDENT_COURSE_FORBIDDEN" || code === "INVALID_COURSE_ID") {
+      if (
+        code === "STUDENT_COURSE_FORBIDDEN" ||
+        code === "INVALID_COURSE_ID" ||
+        code === "SPRINT_NOT_FOUND"
+      ) {
         return false;
       }
       return failureCount < 1;
