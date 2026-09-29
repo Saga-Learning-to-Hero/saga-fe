@@ -8,12 +8,14 @@ import { useStudentDashboard } from "@/features/student/dashboard/hooks/use-stud
 import { useProjectSprints } from "@/features/student/sprint-progress/hooks/use-project-sprints";
 import { useProjectProgress } from "@/features/student/project/hooks/useProjectSync";
 import { useProjectRealtime } from "@/features/student/project/hooks/use-project-realtime";
+import { useProjectJiraSourceSelection } from "@/features/student/project/hooks/use-project-jira-source-selection";
 
 vi.mock("@/features/student/courses/hooks/use-student-course-context");
 vi.mock("@/features/student/dashboard/hooks/use-student-dashboard");
 vi.mock("@/features/student/sprint-progress/hooks/use-project-sprints");
 vi.mock("@/features/student/project/hooks/useProjectSync");
 vi.mock("@/features/student/project/hooks/use-project-realtime");
+vi.mock("@/features/student/project/hooks/use-project-jira-source-selection");
 vi.mock("@/features/student/dashboard/components/student-weekly-commits-chart", () => ({
   StudentWeeklyCommitsChart: () => <div data-testid="weekly-commits-chart" />,
 }));
@@ -98,6 +100,13 @@ describe("StudentDashboardAnalytics - Sprint Scope & Card Labels", () => {
     } as never);
 
     vi.mocked(useProjectRealtime).mockReturnValue(undefined as never);
+    vi.mocked(useProjectJiraSourceSelection).mockReturnValue({
+      effectiveSourceId: undefined,
+      sources: [],
+      selectedSourceId: undefined,
+      setSelectedSourceId: vi.fn(),
+      needsSelection: false,
+    } as never);
   });
 
   fptTest(
