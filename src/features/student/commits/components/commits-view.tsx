@@ -543,6 +543,7 @@ export function CommitsView() {
             selectedRepoName={selectedRepo.fullPath}
             selectedBranchName={effectiveSelectedBranchName}
             syncBadge={githubSyncBadge}
+            isTeamLeader={isTeamLeader}
           />
 
           <CommitFilterBar
