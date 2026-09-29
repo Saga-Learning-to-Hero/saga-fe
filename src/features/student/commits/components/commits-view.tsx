@@ -408,7 +408,7 @@ export function CommitsView() {
     <div className="space-y-6 max-w-[1600px] mx-auto pb-12">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-3.5 bg-card/60 p-4 rounded-xl border border-border/70 backdrop-blur-xs shadow-2xs">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-popover from-slate-900 to-slate-800 text-white dark:from-slate-100 dark:to-slate-200 dark:text-slate-900 flex items-center justify-center shrink-0 shadow-xs font-bold">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-slate-800 to-slate-700 dark:from-slate-200 dark:to-slate-300 text-white dark:text-slate-900 flex items-center justify-center shrink-0 shadow-sm border border-slate-700/50 dark:border-slate-300/50">
             <GitCommitIcon className="w-5 h-5" />
           </div>
           <div>
