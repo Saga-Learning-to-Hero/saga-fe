@@ -450,6 +450,11 @@ export function SprintProgressView() {
         lastEventTime={lastEventTime}
         lastEvent={lastEvent}
         onReconnectRealtime={reconnectRealtime}
+        onCreateTask={() => {
+          setActiveIssueForModal(null);
+          setDefaultSprintIdForModal(selectedSprintId === "backlog" ? undefined : selectedSprintId);
+          setIsIssueModalOpen(true);
+        }}
       />
 
       {activeJiraSources.length > 1 && (

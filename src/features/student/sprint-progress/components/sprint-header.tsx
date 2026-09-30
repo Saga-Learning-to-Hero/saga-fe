@@ -48,6 +48,7 @@ interface SprintHeaderProps {
   lastEventTime?: Date | null;
   lastEvent?: ProjectRealtimeEvent | null;
   onReconnectRealtime?: () => void;
+  onCreateTask?: () => void;
 }
 
 export function SprintHeader({
@@ -74,6 +75,7 @@ export function SprintHeader({
   lastEventTime,
   lastEvent,
   onReconnectRealtime,
+  onCreateTask,
 }: SprintHeaderProps) {
   const hasActiveFilters = Boolean(searchQuery.trim() || selectedAssigneeId);
 
@@ -182,6 +184,17 @@ export function SprintHeader({
           )}
 
           <div className="flex items-center gap-2 shrink-0">
+            {onCreateTask && (
+              <Button
+                variant="default"
+                size="sm"
+                onClick={onCreateTask}
+                className="h-8.5 px-3 text-xs font-bold rounded-xl gap-1.5 shadow-2xs bg-primary text-primary-foreground hover:bg-primary/90"
+              >
+                <ListTodoIcon className="w-3.5 h-3.5" />
+                <span>Tạo task</span>
+              </Button>
+            )}
             {isTeamLeader && onSyncJira && (
               <Button
                 variant="outline"

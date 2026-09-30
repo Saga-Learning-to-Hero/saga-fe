@@ -70,7 +70,6 @@ export function TeamMembersCard({
               <CardDescription className="text-xs text-muted-foreground">
                 Thành viên do giảng viên phân nhóm
                 {course?.semesterCode ? ` · học kỳ ${course.semesterCode}` : ""}
-                {team?.myRole ? ` · vai trò của tôi: ${team.myRole === "LEADER" ? "Leader" : "Member"}` : ""}
               </CardDescription>
             </div>
           </div>
