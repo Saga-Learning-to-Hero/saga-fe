@@ -100,7 +100,7 @@ export function ProjectIntegrationsCard({ projectId, isLeader }: ProjectIntegrat
         : "/student/project-info?jira_setup=true";
       const result = await connectJiraMutation.mutateAsync({ projectId, returnPath });
       if (result.authorizationUrl && typeof window !== "undefined") {
-        window.location.href = result.authorizationUrl;
+        window.open(result.authorizationUrl, "_blank");
       }
     } catch {
       showErrorToast("Lỗi khi kết nối Jira với dự án. Vui lòng thử lại sau.", { id: "jira-connect" });
@@ -119,7 +119,7 @@ export function ProjectIntegrationsCard({ projectId, isLeader }: ProjectIntegrat
         : "/student/project-info";
       const result = await connectGitHubMutation.mutateAsync({ projectId, returnPath });
       if (result.authorizationUrl && typeof window !== "undefined") {
-        window.location.href = result.authorizationUrl;
+        window.open(result.authorizationUrl, "_blank");
       }
     } catch (error: unknown) {
       const err = error as { code?: string; status?: number; data?: { code?: string } };

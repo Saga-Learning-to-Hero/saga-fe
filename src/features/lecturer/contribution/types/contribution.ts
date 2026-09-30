@@ -87,6 +87,15 @@ export type ContributionMember = {
   warnings: string[];
 };
 
+export interface ContributionSprintOverlapWarning {
+  sprintName: string;
+  overlappingSprintName?: string;
+  siteName?: string;
+  startDate?: string;
+  endDate?: string;
+  message?: string;
+}
+
 export type ContributionEvaluation = {
   teamId: string;
   projectId: string | null;
@@ -94,6 +103,8 @@ export type ContributionEvaluation = {
   configMode: ContributionConfigMode;
   sliceWeights: ContributionSliceWeightValues;
   members: ContributionMember[];
+  hasSprintOverlap?: boolean;
+  sprintOverlapWarnings?: ContributionSprintOverlapWarning[];
 };
 
 export const EMPTY_SLICE_WEIGHTS: ContributionSliceWeightValues = {
@@ -213,6 +224,28 @@ function parseContributionMember(value: unknown): ContributionMember {
 export function parseContributionEvaluation(value: unknown, teamId: string): ContributionEvaluation {
   const source = (value ?? {}) as Record<string, unknown>;
   const members = Array.isArray(source.members) ? source.members.map(parseContributionMember) : [];
+  const rawOverlapWarnings = Array.isArray(source.sprintOverlapWarnings)
+    ? source.sprintOverlapWarnings
+    : Array.isArray(source.overlapWarnings)
+    ? source.overlapWarnings
+    : [];
+
+  const sprintOverlapWarnings: ContributionSprintOverlapWarning[] = rawOverlapWarnings.map(
+    (w: unknown) => {
+      const item = (w ?? {}) as Record<string, unknown>;
+      return {
+        sprintName: typeof item.sprintName === "string" ? item.sprintName : "",
+        overlappingSprintName:
+          typeof item.overlappingSprintName === "string" ? item.overlappingSprintName : undefined,
+        siteName: typeof item.siteName === "string" ? item.siteName : undefined,
+        startDate: typeof item.startDate === "string" ? item.startDate : undefined,
+        endDate: typeof item.endDate === "string" ? item.endDate : undefined,
+        message: typeof item.message === "string" ? item.message : undefined,
+      };
+    }
+  );
+
+  const hasSprintOverlap = Boolean(source.hasSprintOverlap || sprintOverlapWarnings.length > 0);
 
   return {
     teamId: toOptionalId(source.teamId) || teamId,
@@ -221,5 +254,7 @@ export function parseContributionEvaluation(value: unknown, teamId: string): Con
     configMode: parseContributionConfigMode(source.configMode ?? source.mode),
     sliceWeights: parseSliceWeightValues(source.sliceWeights),
     members,
+    hasSprintOverlap,
+    sprintOverlapWarnings,
   };
 }

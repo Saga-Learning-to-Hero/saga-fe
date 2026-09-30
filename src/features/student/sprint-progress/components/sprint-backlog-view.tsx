@@ -35,6 +35,8 @@ import {
   type JiraAssignableUserInfo,
 } from "./quick-assignee-edit";
 import type { IssueStatus } from "../types/sprint-progress";
+import { isTaskOwnedByCurrentStudent } from "../lib/task-permissions";
+import { useUserIdentities } from "@/features/integrations/hooks/useUserIntegrations";
 
 interface SprintBacklogViewProps {
   sprints: Sprint[];
@@ -49,6 +51,7 @@ interface SprintBacklogViewProps {
   onStatusChange?: (issueId: string, newStatus: IssueStatus) => Promise<void> | void;
   updatingSprintId?: string | null;
   isTeamLeader: boolean;
+  currentUserStudentId?: string;
   currentUserStudentCode: string;
   courseId: string;
   projectId?: string | null;
@@ -71,6 +74,7 @@ export function SprintBacklogView({
   onStatusChange,
   updatingSprintId,
   isTeamLeader,
+  currentUserStudentId,
   currentUserStudentCode,
   courseId,
   projectId,
@@ -82,6 +86,16 @@ export function SprintBacklogView({
   const [collapsedSprints, setCollapsedSprints] = useState<Record<string, boolean>>({});
   const [expandedSubtaskParents, setExpandedSubtaskParents] = useState<Record<string, boolean>>({});
   const [draggedIssueId, setDraggedIssueId] = useState<string | null>(null);
+  const {
+    isJiraConnected,
+    isGitHubConnected,
+    isInitialLoading: isLoadingPersonalIntegrations,
+  } = useUserIdentities();
+  const missingPersonalIntegrations = !isJiraConnected && !isGitHubConnected
+    ? "Jira và GitHub"
+    : !isJiraConnected
+      ? "Jira"
+      : "GitHub";
 
   const toggleSprint = (sprintId: string) => {
     setCollapsedSprints((prev) => ({ ...prev, [sprintId]: !prev[sprintId] }));
@@ -94,9 +108,7 @@ export function SprintBacklogView({
   const handleDragStart = (e: React.DragEvent, issue: SprintIssue) => {
     const canDrag =
       isTeamLeader ||
-      (Boolean(currentUserStudentCode) &&
-        Boolean(issue.assignee?.studentCode) &&
-        issue.assignee.studentCode === currentUserStudentCode);
+      isTaskOwnedByCurrentStudent(issue, currentUserStudentId, currentUserStudentCode);
     if (!canDrag) {
       e.preventDefault();
       return;
@@ -137,9 +149,7 @@ export function SprintBacklogView({
     const canDrag =
       !isNestedSubtask &&
       (isTeamLeader ||
-        (Boolean(currentUserStudentCode) &&
-          Boolean(issue.assignee?.studentCode) &&
-          issue.assignee.studentCode === currentUserStudentCode));
+        isTaskOwnedByCurrentStudent(issue, currentUserStudentId, currentUserStudentCode));
     const isMsrAnomaly = issue.status === "DONE" && (issue.githubCommitCount ?? 0) === 0;
     const areSubtasksExpanded = Boolean(expandedSubtaskParents[issue.key]);
 
@@ -290,11 +300,11 @@ export function SprintBacklogView({
               issueKey={issue.key}
               status={issue.status}
               isTeamLeader={isTeamLeader}
-              isOwner={
-                Boolean(currentUserStudentCode) &&
-                Boolean(issue.assignee?.studentCode) &&
-                issue.assignee.studentCode === currentUserStudentCode
-              }
+              isOwner={isTaskOwnedByCurrentStudent(
+                issue,
+                currentUserStudentId,
+                currentUserStudentCode
+              )}
               onStatusChange={onStatusChange}
             />
 
@@ -304,11 +314,11 @@ export function SprintBacklogView({
               storyPoints={issue.storyPoints}
               projectId={projectId}
               isTeamLeader={isTeamLeader}
-              isOwner={
-                Boolean(currentUserStudentCode) &&
-                Boolean(issue.assignee?.studentCode) &&
-                issue.assignee.studentCode === currentUserStudentCode
-              }
+              isOwner={isTaskOwnedByCurrentStudent(
+                issue,
+                currentUserStudentId,
+                currentUserStudentCode
+              )}
             />
 
             <QuickAssigneeEdit
@@ -425,6 +435,24 @@ export function SprintBacklogView({
                           <Badge variant="outline" className="text-xs font-bold text-muted-foreground">
                             KẾ HOẠCH
                           </Badge>
+                        )}
+
+                        {Boolean(
+                          (sprint.overlaps && sprint.overlaps.length > 0) || sprint.hasOverlap
+                        ) && (
+                          <span
+                            className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold bg-red-500/15 text-red-600 dark:text-red-400 border border-red-500/30"
+                            title={
+                              sprint.overlaps && sprint.overlaps.length > 0
+                                ? sprint.overlaps
+                                    .map((o) => (o.siteName ? `${o.name} — ${o.siteName}` : o.name))
+                                    .join("\n")
+                                : `Trùng thời gian với ${sprint.overlapWith?.sprintName || "sprint khác"}${sprint.overlapWith?.siteName ? ` (${sprint.overlapWith.siteName})` : ""}`
+                            }
+                          >
+                            <AlertTriangleIcon className="w-3 h-3 text-red-600 dark:text-red-400" />
+                            Trùng thời gian
+                          </span>
                         )}
 
                         <Badge variant="secondary" className="text-xs font-mono font-semibold px-2">
@@ -606,6 +634,9 @@ export function SprintBacklogView({
                     sprintExternalId={sprint.externalSprintId != null ? String(sprint.externalSprintId) : undefined}
                     sprintName={sprint.name}
                     canCreate={canCreateTask}
+                    isPersonalIntegrationReady={isJiraConnected && isGitHubConnected}
+                    isLoadingPersonalIntegrations={isLoadingPersonalIntegrations}
+                    missingPersonalIntegrations={missingPersonalIntegrations}
                     onOpenFullModal={() => onCreateIssueClick(sprint.id)}
                   />
                 </div>
@@ -724,6 +755,9 @@ export function SprintBacklogView({
               sprintId="backlog"
               sprintName="Backlog"
               canCreate={canCreateTask}
+              isPersonalIntegrationReady={isJiraConnected && isGitHubConnected}
+              isLoadingPersonalIntegrations={isLoadingPersonalIntegrations}
+              missingPersonalIntegrations={missingPersonalIntegrations}
               onOpenFullModal={() => onCreateIssueClick("backlog")}
             />
           </div>

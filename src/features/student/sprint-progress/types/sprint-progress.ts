@@ -14,6 +14,7 @@ export interface SprintIssue {
   storyPoints: number;
   assignee: {
     id: string;
+    studentId?: string | null;
     name: string;
     avatar: string;
     studentCode: string;
@@ -44,6 +45,21 @@ export interface SprintIssue {
   sourceProjectKey?: string | null;
 }
 
+export interface SprintOverlapItem {
+  sprintId: string;
+  name: string;
+  state: string;
+  jiraIntegrationId?: string | null;
+  siteName?: string;
+}
+
+export interface SprintOverlapInfo {
+  sprintName?: string;
+  siteName?: string;
+  startDate?: string;
+  endDate?: string;
+}
+
 export interface Sprint {
   id: string;
   externalSprintId?: string | number | null;
@@ -54,6 +70,9 @@ export interface Sprint {
   endDate: string;
   totalStoryPoints: number;
   completedStoryPoints: number;
+  overlaps?: SprintOverlapItem[];
+  hasOverlap?: boolean;
+  overlapWith?: SprintOverlapInfo | null;
 }
 
 export interface Epic {

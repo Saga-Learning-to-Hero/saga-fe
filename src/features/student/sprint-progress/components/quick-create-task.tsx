@@ -6,8 +6,12 @@ import { PlusIcon, Loader2Icon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useCreateProjectTask } from "../hooks/use-project-tasks";
+import { RequirePersonalIntegrationModal } from "@/features/integrations/components/require-personal-integration-modal";
 
-import { getPersonalIntegrationErrorMessage } from "../lib/personal-integration-error";
+import {
+  getPersonalIntegrationErrorMessage,
+  getTaskLabelErrorMessage,
+} from "../lib/personal-integration-error";
 
 interface QuickCreateTaskProps {
   projectId?: string | null;
@@ -16,6 +20,9 @@ interface QuickCreateTaskProps {
   sprintExternalId?: string;
   sprintName?: string;
   canCreate: boolean;
+  isPersonalIntegrationReady?: boolean;
+  isLoadingPersonalIntegrations?: boolean;
+  missingPersonalIntegrations?: string;
   onOpenFullModal?: () => void;
 }
 
@@ -26,9 +33,13 @@ export function QuickCreateTask({
   sprintExternalId,
   sprintName,
   canCreate,
+  isPersonalIntegrationReady = true,
+  isLoadingPersonalIntegrations = false,
+  missingPersonalIntegrations = "Jira hoặc GitHub",
   onOpenFullModal,
 }: QuickCreateTaskProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [isMissingIntegrationModalOpen, setIsMissingIntegrationModalOpen] = useState(false);
   const [summary, setSummary] = useState("");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
@@ -108,6 +119,11 @@ export function QuickCreateTask({
       return;
     }
 
+    if (!isPersonalIntegrationReady) {
+      setIsMissingIntegrationModalOpen(true);
+      return;
+    }
+
     const isSprint = Boolean(sprintId && sprintId !== "backlog");
     let targetExternalSprintId: string | undefined;
 
@@ -140,6 +156,12 @@ export function QuickCreateTask({
         showErrorToast(personalIntegrationMsg);
         return;
       }
+      const labelNotAllowedMsg = getTaskLabelErrorMessage(error);
+      if (labelNotAllowedMsg) {
+        setErrorMessage(labelNotAllowedMsg);
+        showErrorToast(labelNotAllowedMsg);
+        return;
+      }
       const err = error as {
         response?: { data?: { code?: string; message?: string } };
         message?: string;
@@ -158,10 +180,15 @@ export function QuickCreateTask({
 
   if (!isOpen) {
     return (
+      <>
       <div className="flex items-center justify-between px-3.5 py-2 border-t border-border/40 hover:bg-muted/30 transition-colors">
         <button
           type="button"
           onClick={() => {
+            if (!isPersonalIntegrationReady) {
+              setIsMissingIntegrationModalOpen(true);
+              return;
+            }
             setIsOpen(true);
             setErrorMessage(null);
           }}
@@ -174,7 +201,13 @@ export function QuickCreateTask({
         {onOpenFullModal && (
           <button
             type="button"
-            onClick={onOpenFullModal}
+            onClick={() => {
+              if (!isPersonalIntegrationReady) {
+                setIsMissingIntegrationModalOpen(true);
+                return;
+              }
+              onOpenFullModal();
+            }}
             className="text-xs text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
             title="Mở modal tạo task với đầy đủ thuộc tính"
           >
@@ -182,6 +215,15 @@ export function QuickCreateTask({
           </button>
         )}
       </div>
+
+      {isMissingIntegrationModalOpen && (
+        <RequirePersonalIntegrationModal
+          isOpen={isMissingIntegrationModalOpen}
+          onClose={() => setIsMissingIntegrationModalOpen(false)}
+          missingProviders={missingPersonalIntegrations === "Jira hoặc GitHub" ? ["Jira", "GitHub"] : [missingPersonalIntegrations]}
+        />
+      )}
+      </>
     );
   }
 
@@ -195,6 +237,7 @@ export function QuickCreateTask({
           <Input
             ref={inputRef}
             type="text"
+            maxLength={255}
             value={summary}
             onChange={(e) => {
               setSummary(e.target.value);
@@ -202,13 +245,18 @@ export function QuickCreateTask({
             }}
             onKeyDown={handleKeyDown}
             placeholder="Cần làm gì? Nhập tên task..."
-            disabled={createTaskMutation.isPending}
+            disabled={createTaskMutation.isPending || isLoadingPersonalIntegrations}
             className="h-8.5 text-xs rounded-xl bg-card border-border/80"
           />
           <Button
             type="submit"
             size="sm"
-            disabled={createTaskMutation.isPending || !summary.trim()}
+            disabled={
+              createTaskMutation.isPending ||
+              isLoadingPersonalIntegrations ||
+              !summary.trim() ||
+              !isPersonalIntegrationReady
+            }
             className="h-8.5 px-3.5 text-xs font-bold rounded-xl gap-1.5 bg-primary hover:bg-primary/90 text-primary-foreground shrink-0 cursor-pointer shadow-2xs"
           >
             {createTaskMutation.isPending ? (
@@ -236,6 +284,8 @@ export function QuickCreateTask({
           <p className="text-xs font-medium text-destructive">{errorMessage}</p>
         )}
 
+
+
         <div className="flex items-center justify-between text-xs text-muted-foreground">
           <span>
             Nhấn <kbd className="font-mono bg-muted px-1 py-0.5 rounded border border-border/50">Enter</kbd> để tạo,{" "}
@@ -244,7 +294,13 @@ export function QuickCreateTask({
           {onOpenFullModal && (
             <button
               type="button"
-              onClick={onOpenFullModal}
+              onClick={() => {
+                if (!isPersonalIntegrationReady) {
+                  setIsMissingIntegrationModalOpen(true);
+                  return;
+                }
+                onOpenFullModal();
+              }}
               className="hover:text-primary transition-colors cursor-pointer underline underline-offset-2"
             >
               Tạo với đầy đủ thông tin
@@ -252,6 +308,14 @@ export function QuickCreateTask({
           )}
         </div>
       </form>
+
+      {isMissingIntegrationModalOpen && (
+        <RequirePersonalIntegrationModal
+          isOpen={isMissingIntegrationModalOpen}
+          onClose={() => setIsMissingIntegrationModalOpen(false)}
+          missingProviders={missingPersonalIntegrations === "Jira hoặc GitHub" ? ["Jira", "GitHub"] : [missingPersonalIntegrations]}
+        />
+      )}
     </div>
   );
 }

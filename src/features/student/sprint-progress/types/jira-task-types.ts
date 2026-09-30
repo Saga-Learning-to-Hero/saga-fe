@@ -23,6 +23,16 @@ export interface ProjectSprintResponse {
   completedDate?: string | null;
   source?: ProjectSprintSource | null;
   jiraIntegrationId?: string | null;
+  overlaps?: SprintOverlapItem[];
+  hasOverlap?: boolean;
+}
+
+export interface SprintOverlapItem {
+  sprintId: string;
+  name: string;
+  state: string;
+  jiraIntegrationId?: string | null;
+  siteName?: string;
 }
 
 export interface CreateProjectSprintRequest {
@@ -72,6 +82,18 @@ export interface TaskJiraSourceProvenance {
   connectionStatus?: string | null;
 }
 
+export type EvidenceCheckStatus =
+  | "MISSING_COMMIT"
+  | "MISSING_DOCUMENT"
+  | "MISSING_COMMIT_AND_DOCUMENT"
+  | "UNLABELED"
+  | "SATISFIED"
+  | "NOT_DONE";
+
+export interface TaskEvidenceCheck {
+  status: EvidenceCheckStatus;
+}
+
 export interface ProjectTaskResponse {
   id: string;
   externalId: string;
@@ -97,6 +119,7 @@ export interface ProjectTaskResponse {
   linkedCommitCount: number;
   evidenceCount?: number;
   hasEvidence?: boolean;
+  evidenceCheck?: TaskEvidenceCheck | null;
   externalUpdatedAt?: string | null;
   createdAt: string;
   updatedAt: string;

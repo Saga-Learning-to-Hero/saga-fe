@@ -3,14 +3,11 @@ import { fptTest } from "@/testing/fpt-test-helper";
 import type { ProjectTaskResponse } from "@/features/student/sprint-progress/types/jira-task-types";
 import type { TaskLinkedCommitItem } from "@/features/student/project/types/student-project";
 import {
-  buildPipelineTasksCsv,
   collectPipelineSprints,
   computePipelineStats,
   filterPipelineTasks,
   findTaskLaneMember,
   groupTasksIntoLanes,
-  isDocumentOrResearchTask,
-  isDoneWithoutLinkedCommit,
   mapMembersFromProgress,
   mapMembersFromTeam,
   mapPipelineCommits,
@@ -127,19 +124,6 @@ describe("pipeline-mapper", () => {
     }
   );
 
-  fptTest(
-    {
-      id: "UTCID05",
-      type: "B",
-      executedDate: "14/09/2026",
-      description: "Task DONE linkedCommitCount 0 la canh bao thieu commit",
-    },
-    () => {
-      expect(isDoneWithoutLinkedCommit({ status: "DONE", linkedCommitCount: 0 })).toBe(true);
-      expect(isDoneWithoutLinkedCommit({ status: "DONE", linkedCommitCount: 1 })).toBe(false);
-      expect(isDoneWithoutLinkedCommit({ status: "IN_PROGRESS", linkedCommitCount: 0 })).toBe(false);
-    }
-  );
 
   fptTest(
     {
@@ -172,7 +156,6 @@ describe("pipeline-mapper", () => {
       expect(stats.totalTasks).toBe(2);
       expect(stats.totalCommits).toBe(10);
       expect(stats.tasksWithLinkedCommits).toBe(1);
-      expect(stats.doneWithoutLinkedCommits).toBe(1);
       expect(collectPipelineSprints(mapped).some((item) => item.id === BACKLOG_SPRINT_ID)).toBe(true);
     }
   );
@@ -304,40 +287,6 @@ describe("pipeline-mapper", () => {
     }
   );
 
-  fptTest(
-    {
-      id: "UTCID12",
-      type: "B",
-      executedDate: "14/09/2026",
-      description: "CSV Task gom dung cot hop dong, khong them additions hay score",
-    },
-    () => {
-      const csv = buildPipelineTasksCsv([
-        {
-          id: "t7",
-          key: "SAGA-7",
-          title: "Export",
-          status: "DONE",
-          issueTypeName: "Task",
-          assigneeStudentId: "stu-1",
-          assigneeDisplayName: "Le Hoang Hai",
-          assigneeExternalId: null,
-          sprintId: "sp-1",
-          sprintName: "Sprint 3",
-          storyPoint: 3,
-          priority: "High",
-          linkedCommitCount: 2,
-        },
-      ]);
-      expect(csv).toContain("Mã Task");
-      expect(csv).toContain("SAGA-7");
-      expect(csv).toContain("Commit liên kết");
-      expect(csv).toContain("2");
-      expect(csv).not.toContain("linkedCommitCount");
-      expect(csv).not.toContain("traceabilityScore");
-      expect(csv).not.toContain("additions");
-    }
-  );
 
   fptTest(
     {
@@ -421,58 +370,6 @@ describe("pipeline-mapper", () => {
     }
   );
 
-  fptTest(
-    {
-      id: "UTCID15",
-      type: "N",
-      executedDate: "19/09/2026",
-      description: "isDoneWithoutLinkedCommit tra ve false khi task da co tep hoac link minh chung",
-    },
-    () => {
-      const taskWithEvidence = {
-        status: "DONE",
-        linkedCommitCount: 0,
-        hasEvidence: true,
-        evidenceCount: 2,
-      };
-      expect(isDoneWithoutLinkedCommit(taskWithEvidence)).toBe(false);
 
-      const taskWithEvidenceCountOnly = {
-        status: "DONE",
-        linkedCommitCount: 0,
-        evidenceCount: 1,
-      };
-      expect(isDoneWithoutLinkedCommit(taskWithEvidenceCountOnly)).toBe(false);
-    }
-  );
 
-  fptTest(
-    {
-      id: "UTCID16",
-      type: "N",
-      executedDate: "19/09/2026",
-      description: "isDocumentOrResearchTask nhan dien dung task bao cao tai lieu nghien cuu",
-    },
-    () => {
-      expect(isDocumentOrResearchTask({ title: "Làm và chỉnh sửa tài liệu Report 1" })).toBe(true);
-      expect(isDocumentOrResearchTask({ title: "Viết báo cáo SRS" })).toBe(true);
-      expect(isDocumentOrResearchTask({ title: "Khảo sát công nghệ", issueTypeName: "Research" })).toBe(true);
-      expect(isDocumentOrResearchTask({ title: "Coding UI", labels: ["saga:document"] })).toBe(true);
-      expect(isDocumentOrResearchTask({ title: "Fix bug auth API", issueTypeName: "Task" })).toBe(false);
-    }
-  );
-
-  fptTest(
-    {
-      id: "UTCID17",
-      type: "B",
-      executedDate: "19/09/2026",
-      description: "isDoneWithoutLinkedCommit tra ve true cho task Done 0 commit khi chua co minh chung",
-    },
-    () => {
-      expect(isDoneWithoutLinkedCommit({ status: "DONE", linkedCommitCount: 0 })).toBe(true);
-      expect(isDoneWithoutLinkedCommit({ status: "TODO", linkedCommitCount: 0 })).toBe(false);
-      expect(isDoneWithoutLinkedCommit({ status: "DONE", linkedCommitCount: 1 })).toBe(false);
-    }
-  );
 });

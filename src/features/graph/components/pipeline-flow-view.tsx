@@ -13,7 +13,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { teamRoleLabel } from "@/features/progress/lib/progress-format";
 import { UNASSIGNED_LANE_ID } from "../types/pipeline";
-import { isDoneWithoutLinkedCommit, isDocumentOrResearchTask } from "../lib/pipeline-mapper";
+import { isMissingCommit, isMissingDocument } from "../lib/pipeline-mapper";
 import type { PipelineCommit, PipelineLane, PipelineTask } from "../types/pipeline";
 
 interface PipelineFlowViewProps {
@@ -49,9 +49,11 @@ function TaskCard({
   selected: boolean;
   onSelect: () => void;
 }) {
-  const isDoc = isDocumentOrResearchTask(task);
   const hasEvidence = (task.evidenceCount ?? 0) > 0 || task.hasEvidence === true;
-  const warning = isDoneWithoutLinkedCommit(task);
+  const missingCommit = isMissingCommit(task);
+  const missingDoc = isMissingDocument(task);
+  const warning = missingCommit || missingDoc;
+
   return (
     <button
       type="button"
@@ -85,17 +87,39 @@ function TaskCard({
           <GitCommitIcon className="size-3" />
           {task.linkedCommitCount}
         </span>
-        {hasEvidence ? (
-          <span className="inline-flex items-center gap-1 font-semibold text-purple-600 dark:text-purple-400">
-            <PaperclipIcon className="size-3" />
-            Đã có tệp minh chứng {task.evidenceCount ? `(${task.evidenceCount})` : ""}
-          </span>
-        ) : warning ? (
-          <span className={`inline-flex items-center gap-1 font-semibold ${isDoc ? "text-amber-600 dark:text-amber-400" : "text-destructive"}`}>
+
+        {task.evidenceCheck?.status === "MISSING_COMMIT" && (
+          <span className="inline-flex items-center gap-1 font-semibold text-destructive">
             <AlertTriangleIcon className="size-3" />
-            {isDoc ? "Cần nộp tệp / liên kết minh chứng" : "Hoàn thành chưa có Commit liên kết"}
+            Thiếu Commit
           </span>
-        ) : null}
+        )}
+        {task.evidenceCheck?.status === "MISSING_DOCUMENT" && (
+          <span className="inline-flex items-center gap-1 font-semibold text-amber-600 dark:text-amber-400">
+            <AlertTriangleIcon className="size-3" />
+            Thiếu tài liệu
+          </span>
+        )}
+        {task.evidenceCheck?.status === "MISSING_COMMIT_AND_DOCUMENT" && (
+          <span className="inline-flex items-center gap-1 font-semibold text-destructive">
+            <AlertTriangleIcon className="size-3" />
+            Thiếu Commit và tài liệu
+          </span>
+        )}
+        {task.evidenceCheck?.status === "UNLABELED" && (
+          <span className="inline-flex items-center gap-1 font-semibold text-muted-foreground">
+            <AlertTriangleIcon className="size-3" />
+            Chưa gắn nhãn SAGA
+          </span>
+        )}
+        {(task.evidenceCheck?.status === "SATISFIED" || task.evidenceCheck?.status === "NOT_DONE" || (!task.evidenceCheck && hasEvidence)) && (
+          hasEvidence ? (
+            <span className="inline-flex items-center gap-1 font-semibold text-purple-600 dark:text-purple-400">
+              <PaperclipIcon className="size-3" />
+              Đã có tệp minh chứng {task.evidenceCount ? `(${task.evidenceCount})` : ""}
+            </span>
+          ) : null
+        )}
       </div>
     </button>
   );

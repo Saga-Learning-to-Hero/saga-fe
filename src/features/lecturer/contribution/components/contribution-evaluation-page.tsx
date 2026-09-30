@@ -402,6 +402,41 @@ export function ContributionEvaluationPage({ courseId }: ContributionEvaluationP
         })}
       </div>
 
+      {Boolean(evaluation?.hasSprintOverlap) && (
+        <Card className="rounded-xl border border-amber-500/40 bg-amber-500/10 p-4 shadow-xs">
+          <div className="flex items-start gap-3">
+            <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-amber-500/20 text-amber-800 dark:text-amber-300">
+              <AlertTriangleIcon className="size-5" />
+            </div>
+            <div className="flex-1 space-y-1.5 text-xs text-amber-950 dark:text-amber-100">
+              <div className="flex items-center gap-2">
+                <h4 className="text-sm font-extrabold text-amber-900 dark:text-amber-200">
+                  Cảnh báo: Nhóm có Sprint bị trùng lặp thời gian trên Jira
+                </h4>
+                <Badge variant="outline" className="border-amber-500/40 bg-amber-500/20 font-bold text-amber-800 dark:text-amber-300 text-xs">
+                  Đối soát Jira
+                </Badge>
+              </div>
+              <p className="leading-relaxed">
+                Hệ thống phát hiện nhóm dự án này có các Sprint bị giao nhau về mặt thời gian. Dữ liệu điểm và tỷ lệ đóng góp Slicing Pie bên dưới vẫn được giữ nguyên đầy đủ để phục vụ đối soát, không tự ý thay đổi. Giảng viên vui lòng nhắc nhóm kiểm tra và điều chỉnh lại ngày bắt đầu/kết thúc trên Jira trước khi chốt điểm.
+              </p>
+              {evaluation?.sprintOverlapWarnings && evaluation.sprintOverlapWarnings.length > 0 && (
+                <ul className="list-disc list-inside space-y-0.5 font-medium pt-0.5">
+                  {evaluation.sprintOverlapWarnings.map((item, idx) => (
+                    <li key={idx}>
+                      Sprint <strong>&quot;{item.sprintName}&quot;</strong> trùng với{" "}
+                      <strong>&quot;{item.overlappingSprintName || "sprint khác"}&quot;</strong>
+                      {item.siteName ? ` (workspace: ${item.siteName})` : ""}
+                      {item.startDate && item.endDate ? ` [${item.startDate} ~ ${item.endDate}]` : ""}.
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </div>
+        </Card>
+      )}
+
       {warnings.length > 0 && (
         <Card className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-4 shadow-xs">
           <div className="flex items-start gap-3">

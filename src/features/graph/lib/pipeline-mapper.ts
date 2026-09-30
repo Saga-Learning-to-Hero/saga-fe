@@ -21,55 +21,20 @@ export function isCompletedStatus(status?: string | null): boolean {
   return DONE_STATUSES.some((token) => value.includes(token));
 }
 
-export function isDocumentOrResearchTask(task: {
-  title?: string | null;
-  issueTypeName?: string | null;
-  labels?: string[] | null;
-}): boolean {
-  const title = (task.title || "").toLowerCase();
-  const issueType = (task.issueTypeName || "").toLowerCase();
-  const labels = (task.labels || []).map((l) => l.toLowerCase());
-
-  const docKeywords = [
-    "tài liệu",
-    "báo cáo",
-    "report",
-    "srs",
-    "document",
-    "documentation",
-    "research",
-    "khảo sát",
-    "nghiên cứu",
-    "slide",
-    "thuyết trình",
-    "biên bản",
-    "meeting note",
-  ];
-
-  const isDocByTitle = docKeywords.some((kw) => title.includes(kw));
-  const isDocByIssueType = ["documentation", "document", "research", "report"].some((t) =>
-    issueType.includes(t)
+export function isMissingCommit(task: Pick<PipelineTask, "evidenceCheck">): boolean {
+  if (!task.evidenceCheck) return false;
+  return (
+    task.evidenceCheck.status === "MISSING_COMMIT" ||
+    task.evidenceCheck.status === "MISSING_COMMIT_AND_DOCUMENT"
   );
-  const isDocByLabel = labels.some(
-    (l) => l.includes("document") || l.includes("research") || l.includes("doc")
-  );
-
-  return isDocByTitle || isDocByIssueType || isDocByLabel;
 }
 
-export function isDoneWithoutLinkedCommit(
-  task: Pick<PipelineTask, "status" | "linkedCommitCount"> & {
-    title?: string | null;
-    issueTypeName?: string | null;
-    labels?: string[] | null;
-    hasEvidence?: boolean;
-    evidenceCount?: number;
-  }
-): boolean {
-  if (!isCompletedStatus(task.status)) return false;
-  if ((task.linkedCommitCount ?? 0) > 0) return false;
-  if (task.hasEvidence === true || (task.evidenceCount ?? 0) > 0) return false;
-  return true;
+export function isMissingDocument(task: Pick<PipelineTask, "evidenceCheck">): boolean {
+  if (!task.evidenceCheck) return false;
+  return (
+    task.evidenceCheck.status === "MISSING_DOCUMENT" ||
+    task.evidenceCheck.status === "MISSING_COMMIT_AND_DOCUMENT"
+  );
 }
 
 export function mapMembersFromProgress(members: ProjectProgressMemberSummary[]): PipelineMember[] {
@@ -123,6 +88,9 @@ export function mapPipelineTasks(tasks: ProjectTaskResponse[]): PipelineTask[] {
       priority: task.priority || task.priorityDetail?.name || null,
       linkedCommitCount: task.linkedCommitCount || 0,
       labels: task.labels || [],
+      evidenceCount: task.evidenceCount,
+      hasEvidence: task.hasEvidence,
+      evidenceCheck: task.evidenceCheck || null,
     };
   });
 }
@@ -217,7 +185,8 @@ export function computePipelineStats(
     totalTasks: tasks.length,
     totalCommits,
     tasksWithLinkedCommits: tasks.filter((task) => task.linkedCommitCount > 0).length,
-    doneWithoutLinkedCommits: tasks.filter(isDoneWithoutLinkedCommit).length,
+    doneWithoutLinkedCommits: tasks.filter(isMissingCommit).length,
+    missingDocumentTasks: tasks.filter(isMissingDocument).length,
   };
 }
 
@@ -239,10 +208,10 @@ export function filterPipelineTasks(
     if (filter.sprintId !== "ALL" && task.sprintId !== filter.sprintId) return false;
 
     if (filter.anomalyType && filter.anomalyType !== "ALL") {
-      if (filter.anomalyType === "DONE_NO_COMMIT" && !isDoneWithoutLinkedCommit(task)) return false;
+      if (filter.anomalyType === "DONE_NO_COMMIT" && !isMissingCommit(task)) return false;
       if (filter.anomalyType === "UNASSIGNED" && (task.assigneeStudentId || task.assigneeDisplayName)) return false;
       if (filter.anomalyType === "MISSING_COMMITS" && task.linkedCommitCount > 0) return false;
-    } else if (filter.anomaliesOnly && !isDoneWithoutLinkedCommit(task)) {
+    } else if (filter.anomaliesOnly && !isMissingCommit(task)) {
       return false;
     }
 
@@ -309,27 +278,3 @@ export function sanitizePipelineFilter(
   };
 }
 
-export function buildPipelineTasksCsv(tasks: PipelineTask[]): string {
-  const header = ["Mã Task", "Tiêu đề", "Trạng thái", "Sprint", "Người làm", "Commit liên kết"];
-  const rows = tasks.map((task) => [
-    task.key,
-    task.title.replaceAll('"', '""'),
-    task.status,
-    task.sprintName,
-    task.assigneeDisplayName || "Chưa phân công",
-    String(task.linkedCommitCount),
-  ]);
-  return [header, ...rows]
-    .map((cols) => cols.map((col) => `"${col}"`).join(","))
-    .join("\n");
-}
-
-export function downloadTextFile(filename: string, content: string, mime = "text/csv;charset=utf-8") {
-  const blob = new Blob([content], { type: mime });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = filename;
-  link.click();
-  URL.revokeObjectURL(url);
-}

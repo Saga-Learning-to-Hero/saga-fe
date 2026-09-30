@@ -40,7 +40,7 @@ export function CommitAiIntelligenceModal({
 
   if (!isOpen) return null;
 
-  const latestRun = historyQuery.data?.content?.[0];
+  const latestRun = historyQuery.data?.items?.[0];
   let parsedResult: AiStructuredResult | null = null;
   if (latestRun?.providerDecision?.structuredResultJson) {
     try {
