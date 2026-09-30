@@ -46,7 +46,10 @@ import {
 } from "../hooks/use-project-tasks";
 import { useJiraSources } from "@/features/student/project/hooks/use-jira-sources";
 import { showErrorToast } from "@/lib/api-error";
-import { getPersonalIntegrationErrorMessage } from "../lib/personal-integration-error";
+import {
+  getPersonalIntegrationErrorMessage,
+  getTaskLabelErrorMessage,
+} from "../lib/personal-integration-error";
 
 function getTodayLocalDateString(d: Date = new Date()): string {
   const year = d.getFullYear();
@@ -115,7 +118,7 @@ export function IssueDetailsModal({
   defaultSprintId,
   sprints,
   teamMembers,
-  availableLabels = [],
+  availableLabels = ["saga:code", "saga:test", "saga:document", "saga:research"],
   onClose,
   onSave,
   onDelete,
@@ -653,7 +656,14 @@ export function IssueDetailsModal({
       const personalIntegrationMsg = getPersonalIntegrationErrorMessage(err);
       if (personalIntegrationMsg) {
         showErrorToast(personalIntegrationMsg);
+        return;
       }
+      const labelNotAllowedMsg = getTaskLabelErrorMessage(err);
+      if (labelNotAllowedMsg) {
+        showErrorToast(labelNotAllowedMsg);
+        return;
+      }
+      showErrorToast(err instanceof Error ? err.message : "Đã xảy ra lỗi khi lưu task.");
     } finally {
       setIsSubmitting(false);
     }
@@ -1072,7 +1082,7 @@ export function IssueDetailsModal({
                     value={form.labels}
                     onChange={(newLabels) => setForm((f) => ({ ...f, labels: newLabels }))}
                     availableLabels={availableLabels}
-                    placeholder="Chọn hoặc gõ nhãn mới (nhấn Enter hoặc dấu phẩy)..."
+                    placeholder="Chọn nhãn (saga:code, saga:test...)"
                   />
                 </div>
               </div>

@@ -7,7 +7,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useCreateProjectTask } from "../hooks/use-project-tasks";
 
-import { getPersonalIntegrationErrorMessage } from "../lib/personal-integration-error";
+import {
+  getPersonalIntegrationErrorMessage,
+  getTaskLabelErrorMessage,
+} from "../lib/personal-integration-error";
 
 interface QuickCreateTaskProps {
   projectId?: string | null;
@@ -138,6 +141,12 @@ export function QuickCreateTask({
       if (personalIntegrationMsg) {
         setErrorMessage(personalIntegrationMsg);
         showErrorToast(personalIntegrationMsg);
+        return;
+      }
+      const labelNotAllowedMsg = getTaskLabelErrorMessage(error);
+      if (labelNotAllowedMsg) {
+        setErrorMessage(labelNotAllowedMsg);
+        showErrorToast(labelNotAllowedMsg);
         return;
       }
       const err = error as {
