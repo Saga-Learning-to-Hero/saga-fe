@@ -8,7 +8,7 @@ describe("sprint-error helper", () => {
       id: "UTCID01",
       type: "N",
       executedDate: "30/09/2026",
-      description: "Tra ve thong bao chi tiet khi gap loi SPRINT_PERIOD_OVERLAP co details",
+      description: "Tra ve thong bao chi tiet khi gap loi SPRINT_PERIOD_OVERLAP co conflicting details",
     },
     () => {
       const error = {
@@ -17,10 +17,10 @@ describe("sprint-error helper", () => {
           data: {
             code: "SPRINT_PERIOD_OVERLAP",
             details: {
-              overlappingSprintName: "Sprint 1 - SRS & Architecture",
-              siteName: "jira-dev",
-              startDate: "2026-09-01",
-              endDate: "2026-09-14",
+              conflictingSprintName: "Sprint 1 - SRS & Architecture",
+              conflictingSiteName: "jira-dev",
+              conflictingStartDate: "2026-09-01",
+              conflictingEndDate: "2026-09-14",
             },
           },
         },
@@ -28,7 +28,7 @@ describe("sprint-error helper", () => {
 
       const result = getSprintOverlapErrorMessage(error);
       expect(result).toBe(
-        'Không thể thực hiện: Thời gian Sprint bị trùng lặp với "Sprint 1 - SRS & Architecture" tại workspace/site "jira-dev" (từ 2026-09-01 đến 2026-09-14). Mỗi giai đoạn dự án chỉ được phép có duy nhất một Sprint hoạt động.'
+        "Trùng thời gian với sprint Sprint 1 - SRS & Architecture của site jira-dev (từ 2026-09-01 tới 2026-09-14). Hãy chọn ngày bắt đầu từ ngày sprint đó kết thúc trở đi."
       );
     }
   );
@@ -72,7 +72,9 @@ describe("sprint-error helper", () => {
       };
 
       const result = getSprintOverlapErrorMessage(error);
-      expect(result).toContain("Mỗi giai đoạn chỉ được phép có duy nhất một Sprint hoạt động.");
+      expect(result).toBe(
+        "Trùng thời gian với một sprint khác trong dự án. Hãy chọn ngày bắt đầu từ ngày sprint đó kết thúc trở đi."
+      );
     }
   );
 

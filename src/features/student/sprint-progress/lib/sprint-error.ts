@@ -1,9 +1,22 @@
 /**
  * Helper trích xuất và định dạng thông báo lỗi khi có xung đột thời gian giữa các Sprint (mã lỗi SPRINT_PERIOD_OVERLAP - HTTP 409).
+ *
+ * Backend trả về:
+ * - code: "SPRINT_PERIOD_OVERLAP"
+ * - details: { conflictingSprintName, conflictingSiteName, conflictingStartDate, conflictingEndDate }
+ *
+ * Định dạng hiển thị:
+ * "Trùng thời gian với sprint {conflictingSprintName} của site {conflictingSiteName} (từ {start} tới {end}). Hãy chọn ngày bắt đầu từ ngày sprint đó kết thúc trở đi."
  */
+
+function formatDateOnly(dateStr?: string): string {
+  if (!dateStr) return "";
+  return dateStr.includes("T") ? dateStr.split("T")[0] : dateStr;
+}
+
 export function getSprintOverlapErrorMessage(
   error: unknown,
-  fallback = "Khoảng thời gian của Sprint bị trùng lặp với một Sprint khác trong dự án. Mỗi giai đoạn chỉ được phép có duy nhất một Sprint hoạt động."
+  fallback = "Trùng thời gian với một sprint khác trong dự án. Hãy chọn ngày bắt đầu từ ngày sprint đó kết thúc trở đi."
 ): string | null {
   if (!error) return null;
 
@@ -14,6 +27,11 @@ export function getSprintOverlapErrorMessage(
         code?: string;
         message?: string;
         details?: {
+          conflictingSprintName?: string;
+          conflictingSiteName?: string;
+          conflictingStartDate?: string;
+          conflictingEndDate?: string;
+          // Fallback tương thích các biến thể cũ
           overlappingSprintName?: string;
           sprintName?: string;
           siteName?: string;
@@ -32,15 +50,21 @@ export function getSprintOverlapErrorMessage(
 
   if (status === 409 || errorCode === "SPRINT_PERIOD_OVERLAP") {
     const details = data?.details;
-    const targetSprintName = details?.overlappingSprintName || details?.sprintName;
-    if (targetSprintName) {
-      const site = details?.siteName ? ` tại workspace/site "${details.siteName}"` : "";
-      const dates =
-        details?.startDate && details?.endDate
-          ? ` (từ ${details.startDate} đến ${details.endDate})`
-          : "";
-      return `Không thể thực hiện: Thời gian Sprint bị trùng lặp với "${targetSprintName}"${site}${dates}. Mỗi giai đoạn dự án chỉ được phép có duy nhất một Sprint hoạt động.`;
+    const sprintName =
+      details?.conflictingSprintName || details?.overlappingSprintName || details?.sprintName;
+    const siteName = details?.conflictingSiteName || details?.siteName;
+    const rawStart = details?.conflictingStartDate || details?.startDate;
+    const rawEnd = details?.conflictingEndDate || details?.endDate;
+
+    const start = formatDateOnly(rawStart);
+    const end = formatDateOnly(rawEnd);
+
+    if (sprintName) {
+      const sitePart = siteName ? ` của site ${siteName}` : "";
+      const datePart = start && end ? ` (từ ${start} tới ${end})` : "";
+      return `Trùng thời gian với sprint ${sprintName}${sitePart}${datePart}. Hãy chọn ngày bắt đầu từ ngày sprint đó kết thúc trở đi.`;
     }
+
     return data?.message || fallback;
   }
 

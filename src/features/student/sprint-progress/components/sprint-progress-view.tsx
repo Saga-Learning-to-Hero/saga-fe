@@ -219,6 +219,8 @@ export function SprintProgressView() {
       const completedIssues = sprintIssues.filter((i) => i.status === "DONE");
       const totalPoints = sprintIssues.reduce((acc, i) => acc + (i.storyPoints || 0), 0);
       const completedPoints = completedIssues.reduce((acc, i) => acc + (i.storyPoints || 0), 0);
+      const overlaps = Array.isArray(s.overlaps) ? s.overlaps : [];
+      const hasOverlap = overlaps.length > 0 || Boolean(s.hasOverlap);
       return {
         id: sId,
         externalSprintId: s.externalSprintId,
@@ -229,8 +231,8 @@ export function SprintProgressView() {
         status: s.state === "active" ? "ACTIVE" : s.state === "closed" ? "COMPLETED" : "PLANNED",
         totalStoryPoints: totalPoints,
         completedStoryPoints: completedPoints,
-        hasOverlap: Boolean(s.hasOverlap),
-        overlapWith: s.overlapWith || null,
+        overlaps,
+        hasOverlap,
       };
     });
   }, [sourceScopedApiSprints, topLevelIssues]);
@@ -571,16 +573,19 @@ export function SprintProgressView() {
               Hệ thống phát hiện mốc thời gian của một hoặc nhiều Sprint đang bị chồng lấn nhau trên Jira:
             </p>
             <ul className="list-disc list-inside space-y-0.5 font-medium">
-              {overlappingSprints.map((s) => (
-                <li key={s.id}>
-                  Sprint <strong>&quot;{s.name}&quot;</strong> bị trùng thời gian với{" "}
-                  <strong>&quot;{s.overlapWith?.sprintName || "một sprint khác"}&quot;</strong>
-                  {s.overlapWith?.siteName ? ` tại workspace "${s.overlapWith.siteName}"` : ""}
-                  {s.overlapWith?.startDate && s.overlapWith?.endDate
-                    ? ` (khoảng ${s.overlapWith.startDate} - ${s.overlapWith.endDate})`
-                    : ""}.
-                </li>
-              ))}
+              {overlappingSprints.map((s) => {
+                const overlapText =
+                  s.overlaps && s.overlaps.length > 0
+                    ? s.overlaps
+                        .map((o) => (o.siteName ? `"${o.name}" (site: ${o.siteName})` : `"${o.name}"`))
+                        .join(", ")
+                    : "một sprint khác";
+                return (
+                  <li key={s.id}>
+                    Sprint <strong>&quot;{s.name}&quot;</strong> bị trùng thời gian với {overlapText}.
+                  </li>
+                );
+              })}
             </ul>
             <p className="text-muted-foreground dark:text-amber-300/80 pt-0.5">
               Vui lòng điều chỉnh lại ngày bắt đầu và kết thúc trên Jira để đảm bảo dữ liệu ghi nhận công sức, Slicing Pie và đánh giá chéo phản ánh chính xác nhất.

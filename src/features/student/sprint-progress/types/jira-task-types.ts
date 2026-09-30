@@ -23,13 +23,16 @@ export interface ProjectSprintResponse {
   completedDate?: string | null;
   source?: ProjectSprintSource | null;
   jiraIntegrationId?: string | null;
+  overlaps?: SprintOverlapItem[];
   hasOverlap?: boolean;
-  overlapWith?: {
-    sprintName?: string;
-    siteName?: string;
-    startDate?: string;
-    endDate?: string;
-  } | null;
+}
+
+export interface SprintOverlapItem {
+  sprintId: string;
+  name: string;
+  state: string;
+  jiraIntegrationId?: string | null;
+  siteName?: string;
 }
 
 export interface CreateProjectSprintRequest {

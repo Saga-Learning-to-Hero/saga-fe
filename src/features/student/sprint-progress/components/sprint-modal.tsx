@@ -287,6 +287,10 @@ export function SprintModal({
                 />
               </div>
             </div>
+
+            <p className="text-[11px] text-muted-foreground/80 sm:col-span-2 leading-relaxed">
+              Các Sprint trong dự án phải chạy nối tiếp, không được chồng thời gian (cho phép bắt đầu đúng ngày Sprint trước kết thúc).
+            </p>
           </div>
 
           <div className="pt-3 border-t border-border/60 flex items-center justify-end gap-2">
