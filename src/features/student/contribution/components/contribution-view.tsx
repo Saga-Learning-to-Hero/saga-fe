@@ -156,7 +156,7 @@ export function ContributionView() {
 
           <div className="space-y-2">
             <h2 className="text-lg font-extrabold text-foreground">
-              Chỉ Trưởng Nhóm (Leader) Mới Có Quyền Xem Bảng Đánh Giá Đóng Góp
+              Chỉ Trưởng Nhóm Mới Có Quyền Xem Bảng Đánh Giá Đóng Góp
             </h2>
             <p className="text-xs text-muted-foreground leading-relaxed">
               Theo quy chuẩn phân quyền của hệ thống SAGA, bảng đánh giá tổng hợp tỷ lệ cổ phần Slicing Pie chỉ hiển thị cho Trưởng nhóm và Giảng viên để quản trị công bằng.

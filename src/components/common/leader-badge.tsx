@@ -28,7 +28,7 @@ export function LeaderBadge({
     );
   }
 
-  const label = children ?? (showEnglish ? "Trưởng nhóm (Leader)" : "Trưởng nhóm");
+  const label = children ?? (showEnglish ? "Trưởng nhóm" : "Trưởng nhóm");
 
   return (
     <Badge

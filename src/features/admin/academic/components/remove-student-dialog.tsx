@@ -81,7 +81,7 @@ export function RemoveStudentDialog({
 
       if (code === "TEAM_LEADER_REMOVAL_REQUIRES_REASSIGNMENT") {
         setErrorMessage(
-          "Sinh viên đang là Trưởng nhóm (Leader) của một nhóm trong lớp. Giảng viên cần chỉ định Trưởng nhóm mới trước khi bạn có thể xóa sinh viên khỏi lớp."
+          "Sinh viên đang là Trưởng nhóm của một nhóm trong lớp. Giảng viên cần chỉ định Trưởng nhóm mới trước khi bạn có thể xóa sinh viên khỏi lớp."
         );
       } else if (code === "ROSTER_STUDENT_ALREADY_REMOVED") {
         setErrorMessage("Sinh viên hoặc thư mời này đã được xóa hoặc hủy trước đó.");

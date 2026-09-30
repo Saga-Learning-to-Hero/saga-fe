@@ -38,15 +38,23 @@ export function isActiveSyncStatus(status?: string | null): boolean {
   return ACTIVE_SYNC_STATUSES.has(normalized);
 }
 
-/** Job đang chạy: status whitelist và chưa có completedAt. Status lạ không poll vô hạn. */
-export function isActiveSyncJob(job?: Pick<ProjectSyncStatusItem, "status" | "completedAt"> | null): boolean {
+export function isActiveSyncJob(job?: Pick<ProjectSyncStatusItem, "status" | "completedAt" | "startedAt"> | null): boolean {
   if (!job) return false;
   if (job.completedAt) return false;
-  return isActiveSyncStatus(job.status);
+  if (!isActiveSyncStatus(job.status)) return false;
+
+  if (job.startedAt) {
+    const startedTime = new Date(job.startedAt).getTime();
+    if (Date.now() - startedTime > 10 * 60 * 1000) {
+      return false;
+    }
+  }
+
+  return true;
 }
 
 export function isActivelySyncing(
-  jobs?: Array<Pick<ProjectSyncStatusItem, "status" | "completedAt">> | null
+  jobs?: Array<Pick<ProjectSyncStatusItem, "status" | "completedAt" | "startedAt">> | null
 ): boolean {
   return Boolean(jobs?.some((job) => isActiveSyncJob(job)));
 }
