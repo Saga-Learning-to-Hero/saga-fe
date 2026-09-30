@@ -41,124 +41,8 @@ import { cn, formatVietnamDateTime } from "@/lib/utils";
 import type {
   AiProgressNarrativeResult,
   AiRiskAnalysisResult,
-  AiAnalysisResponse,
 } from "../../types";
 
-const MOCK_PROGRESS_ANALYSIS: AiAnalysisResponse = {
-  id: "mock-12345",
-  projectId: null,
-  courseId: "mock-course-id",
-  artifactType: "COURSE",
-  artifactId: "mock-course-id",
-  artifactRevision: "mock-rev",
-  analysisType: "PROGRESS_NARRATIVE",
-  status: "COMPLETED",
-  evidenceHash: "mock-hash",
-  policyVersion: "v1",
-  promptVersion: "v1",
-  schemaVersion: "v1",
-  taxonomyVersion: "v1",
-  providerConfigHash: "mock-hash",
-  startedAt: "2026-09-24T19:51:29.969264",
-  completedAt: "2026-09-24T19:51:33.169264",
-  failureCode: null,
-  createdAt: "2026-09-24T19:51:29.969264",
-  evidence: [],
-  providerDecision: {
-    id: "provider-dec-123",
-    providerRole: "PRIMARY",
-    providerKey: "google-ai",
-    modelId: "gemini-1.5-flash",
-    modelRevision: "latest",
-    route: "REST",
-    status: "SUCCEEDED",
-    schemaValid: true,
-    latencyMs: 1250,
-    inputUnits: 4500,
-    outputUnits: 1250,
-    safeErrorCode: null,
-    aiProvider: "Google",
-    fallbackAttemptsJson: null,
-    structuredResultJson: JSON.stringify({
-      overview: "Tiến độ dự án hiện tại đang rất tốt. Nhóm đã hoàn thành 85% Sprint hiện tại và chất lượng commit mã nguồn đạt chuẩn học thuật. Các task trên Jira được liên kết và truy xuất minh chứng chính xác.",
-      highlights: [
-        "Độ phủ tiến độ đạt 85%, vượt mức kỳ vọng của Sprint.",
-        "Mật độ commit đồng đều, không có dấu hiệu thao túng hệ thống hay Ghosting.",
-        "Traceability Matrix được mapping rõ ràng 1-1 giữa Jira Issue và Git Commit."
-      ],
-      concerns: [
-        "Ghi nhận một số cảnh báo từ SonarQube về Technical Debt ở module Payment, cần được refactor."
-      ],
-      recommendations: [
-        "Tiến hành code review kỹ hơn cho các module liên quan đến thanh toán.",
-        "Lên kế hoạch deployment lên môi trường Staging sớm để kiểm thử tích hợp (UAT)."
-      ],
-      blockers: [],
-      dueSoonOverdueNote: "Không có task nào bị quá hạn nghiêm trọng.",
-      evidence: [],
-      humanReviewRecommended: false
-    }),
-    completedAt: "2026-09-24T19:51:33.169264",
-  }
-};
-
-const MOCK_RISK_ANALYSIS: AiAnalysisResponse = {
-  id: "mock-risk-12345",
-  projectId: null,
-  courseId: "mock-course-id",
-  artifactType: "TEAM",
-  artifactId: "mock-team-id",
-  artifactRevision: "mock-rev",
-  analysisType: "RISK_ANALYSIS",
-  status: "COMPLETED",
-  evidenceHash: "mock-hash",
-  policyVersion: "v1",
-  promptVersion: "v1",
-  schemaVersion: "v1",
-  taxonomyVersion: "v1",
-  providerConfigHash: "mock-hash",
-  startedAt: "2026-09-24T19:51:29.969264",
-  completedAt: "2026-09-24T19:51:33.169264",
-  failureCode: null,
-  createdAt: "2026-09-24T19:51:29.969264",
-  evidence: [],
-  providerDecision: {
-    id: "provider-dec-124",
-    providerRole: "PRIMARY",
-    providerKey: "google-ai",
-    modelId: "gemini-1.5-flash",
-    modelRevision: "latest",
-    route: "REST",
-    status: "SUCCEEDED",
-    schemaValid: true,
-    latencyMs: 850,
-    inputUnits: 1500,
-    outputUnits: 300,
-    safeErrorCode: null,
-    aiProvider: "Google",
-    fallbackAttemptsJson: null,
-    structuredResultJson: JSON.stringify({
-      riskLevel: "LOW",
-      riskReasons: [
-        {
-          description: "Các thành viên giao tiếp thường xuyên, tần suất code đều đặn, không có dấu hiệu nợ kỹ thuật đáng kể.",
-          impact: "LOW"
-        },
-        {
-          description: "Có 1 thành viên review PR trễ 1 ngày nhưng đã khắc phục và merge code ổn thỏa.",
-          impact: "LOW"
-        }
-      ],
-      recommendedActions: [
-        "Tiếp tục duy trì nhịp độ làm việc như hiện tại và chuẩn bị sớm cho Sprint Review.",
-        "Khuyến khích team leader phân công review chéo để giảm tải."
-      ],
-      humanReviewRecommended: false,
-      confidence: 0.95
-    }),
-    completedAt: "2026-09-24T19:51:33.169264",
-  }
-};
 
 interface StudentAiHubPageProps {
   projectId: string;
@@ -214,14 +98,8 @@ export function StudentAiHubPage({ projectId }: StudentAiHubPageProps) {
     }
   };
 
-  let progressAnalysis = currentProgress?.analysis;
-  let riskAnalysis = currentRisk?.analysis;
-
-  const ENABLE_MOCK = true;
-  if (ENABLE_MOCK) {
-    progressAnalysis = MOCK_PROGRESS_ANALYSIS;
-    riskAnalysis = MOCK_RISK_ANALYSIS;
-  }
+  const progressAnalysis = currentProgress?.analysis;
+  const riskAnalysis = currentRisk?.analysis;
 
   let parsedNarrative: AiProgressNarrativeResult | null = null;
   if (progressAnalysis?.providerDecision?.structuredResultJson) {

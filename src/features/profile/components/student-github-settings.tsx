@@ -53,7 +53,7 @@ export function StudentGitHubSettings({
       const result = await startLinkMutation.mutateAsync(currentPath);
 
       if (result.authorizationUrl && typeof window !== "undefined") {
-        window.open(result.authorizationUrl, "_self");
+        window.open(result.authorizationUrl, "_blank");
       }
     } catch {
       showErrorToast("Lỗi khi kết nối với máy chủ GitHub. Vui lòng thử lại sau.", { id: "github-oauth" });
