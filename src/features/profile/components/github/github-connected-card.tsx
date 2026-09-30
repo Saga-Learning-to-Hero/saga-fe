@@ -120,9 +120,9 @@ export function GitHubConnectedCard({
           </span>
         </div>
         <div className="p-3 rounded-xl bg-background border border-border/60 space-y-1">
-          <span className="text-muted-foreground text-xs block">Quyền truy cập:</span>
-          <span className="font-medium text-foreground text-xs block">
-            read:user, user:email
+          <span className="text-muted-foreground text-xs block">Mã định danh (Subject ID):</span>
+          <span className="font-mono font-medium text-foreground text-xs block truncate" title={identity?.providerSubject || ""}>
+            {identity?.providerSubject || "N/A"}
           </span>
         </div>
       </div>

@@ -23,8 +23,8 @@ describe("sync-job-status", () => {
     () => {
       expect(isActiveSyncStatus("QUEUED")).toBe(true);
       expect(isActiveSyncStatus("RUNNING")).toBe(true);
-      expect(isActiveSyncJob({ status: "ENQUEUED", completedAt: null })).toBe(true);
-      expect(isActivelySyncing([{ status: "SYNCING", completedAt: null }])).toBe(true);
+      expect(isActiveSyncJob({ status: "ENQUEUED", completedAt: null, startedAt: new Date().toISOString() })).toBe(true);
+      expect(isActivelySyncing([{ status: "SYNCING", completedAt: null, startedAt: new Date().toISOString() }])).toBe(true);
     }
   );
 
@@ -38,7 +38,7 @@ describe("sync-job-status", () => {
     () => {
       expect(isTerminalSyncStatus("SUCCEEDED")).toBe(true);
       expect(isTerminalSyncStatus("FAILED")).toBe(true);
-      expect(isActiveSyncJob({ status: "SUCCEEDED", completedAt: null })).toBe(false);
+      expect(isActiveSyncJob({ status: "SUCCEEDED", completedAt: null, startedAt: new Date().toISOString() })).toBe(false);
     }
   );
 
@@ -51,7 +51,7 @@ describe("sync-job-status", () => {
     },
     () => {
       expect(isActiveSyncStatus("UNKNOWN_PROVIDER_STATE")).toBe(false);
-      expect(isActivelySyncing([{ status: "WEIRD", completedAt: null }])).toBe(false);
+      expect(isActivelySyncing([{ status: "WEIRD", completedAt: null, startedAt: new Date().toISOString() }])).toBe(false);
     }
   );
 
@@ -64,7 +64,7 @@ describe("sync-job-status", () => {
     },
     () => {
       expect(
-        isActiveSyncJob({ status: "RUNNING", completedAt: "2026-09-29T00:00:00.000Z" })
+        isActiveSyncJob({ status: "RUNNING", completedAt: "2026-09-29T00:00:00.000Z", startedAt: "2026-09-28T00:00:00.000Z" })
       ).toBe(false);
     }
   );
