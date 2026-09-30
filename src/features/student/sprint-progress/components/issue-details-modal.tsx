@@ -45,6 +45,15 @@ import {
   useParentTaskOptions,
 } from "../hooks/use-project-tasks";
 import { useJiraSources } from "@/features/student/project/hooks/use-jira-sources";
+import { showErrorToast } from "@/lib/api-error";
+import { getPersonalIntegrationErrorMessage } from "../lib/personal-integration-error";
+
+function getTodayLocalDateString(d: Date = new Date()): string {
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
 
 function parseIssueStatus(status?: string | null, jiraStatusName?: string | null): IssueStatus {
   const combined = `${status || ""} ${jiraStatusName || ""}`.toUpperCase();
@@ -94,6 +103,7 @@ interface IssueDetailsModalProps {
   onDelete?: (issueId: string) => void;
   isTeamLeader: boolean;
   currentUserStudentCode: string;
+  canCreateTask?: boolean;
 }
 
 export function IssueDetailsModal({
@@ -111,6 +121,7 @@ export function IssueDetailsModal({
   onDelete,
   isTeamLeader,
   currentUserStudentCode,
+  canCreateTask = true,
 }: IssueDetailsModalProps) {
   const isEditing = Boolean(issue);
   const isOwner = issue
@@ -232,6 +243,10 @@ export function IssueDetailsModal({
         ? defaultSprintId
         : "backlog";
 
+    const initialStartDate = issue
+      ? (issue.startDate || taskDetail?.startDate || "")
+      : getTodayLocalDateString();
+
     return {
       key: issue?.key || "SAGA-NEW",
       summary: issue?.summary || "",
@@ -245,7 +260,7 @@ export function IssueDetailsModal({
       assigneeAccountId: initialAssigneeAccountId,
       labels: Array.isArray(issue?.labels) ? issue.labels : [],
       sprintId: initialSprintId,
-      startDate: issue?.startDate || taskDetail?.startDate || "",
+      startDate: initialStartDate,
       dueDate: issue?.dueDate || taskDetail?.dueDate || "",
       parentTaskId: taskDetail?.parentTask?.id || "",
       jiraIntegrationId:
@@ -389,6 +404,11 @@ export function IssueDetailsModal({
   const handleSubmit = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     if (!canEdit) return;
+
+    if (!isEditing && !canCreateTask) {
+      showErrorToast("Bạn cần liên kết tài khoản Jira và GitHub cá nhân trước khi tạo task.");
+      return;
+    }
 
     setIsSubmitting(true);
 
@@ -629,7 +649,11 @@ export function IssueDetailsModal({
 
       onSave(finalIssue);
       onClose();
-    } catch {
+    } catch (err: unknown) {
+      const personalIntegrationMsg = getPersonalIntegrationErrorMessage(err);
+      if (personalIntegrationMsg) {
+        showErrorToast(personalIntegrationMsg);
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -1176,8 +1200,17 @@ export function IssueDetailsModal({
               <Button
                 type="button"
                 onClick={() => void handleSubmit()}
-                disabled={isSubmitting || (!isEditing && !form.summary.trim())}
-                className="h-9 text-xs font-bold rounded-xl gap-2 cursor-pointer shadow-xs bg-blue-600 hover:bg-blue-700 text-white px-5"
+                disabled={
+                  isSubmitting ||
+                  (!isEditing && !form.summary.trim()) ||
+                  (!isEditing && !canCreateTask)
+                }
+                title={
+                  !isEditing && !canCreateTask
+                    ? "Cần liên kết tài khoản Jira và GitHub cá nhân để tạo task"
+                    : undefined
+                }
+                className="h-9 text-xs font-bold rounded-xl gap-2 cursor-pointer shadow-xs bg-blue-600 hover:bg-blue-700 text-white px-5 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isSubmitting ? (
                   <>

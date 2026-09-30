@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useCreateProjectTask } from "../hooks/use-project-tasks";
 
+import { getPersonalIntegrationErrorMessage } from "../lib/personal-integration-error";
+
 interface QuickCreateTaskProps {
   projectId?: string | null;
   jiraIntegrationId?: string;
@@ -63,7 +65,19 @@ export function QuickCreateTask({
   }, [isOpen, createTaskMutation.isPending]);
 
   if (!canCreate) {
-    return null;
+    return (
+      <div className="flex items-center justify-between px-3.5 py-2 border-t border-border/40 bg-muted/10 opacity-75">
+        <button
+          type="button"
+          disabled
+          className="inline-flex items-center gap-1.5 text-xs font-semibold text-muted-foreground cursor-not-allowed py-1"
+          title="Vui lòng liên kết tài khoản Jira và GitHub cá nhân để tạo task nhanh"
+        >
+          <PlusIcon className="w-3.5 h-3.5" />
+          <span>Tạo task nhanh (Cần liên kết Jira & GitHub)</span>
+        </button>
+      </div>
+    );
   }
 
   const handleCancel = () => {
@@ -120,6 +134,12 @@ export function QuickCreateTask({
       setIsOpen(false);
       setErrorMessage(null);
     } catch (error: unknown) {
+      const personalIntegrationMsg = getPersonalIntegrationErrorMessage(error);
+      if (personalIntegrationMsg) {
+        setErrorMessage(personalIntegrationMsg);
+        showErrorToast(personalIntegrationMsg);
+        return;
+      }
       const err = error as {
         response?: { data?: { code?: string; message?: string } };
         message?: string;

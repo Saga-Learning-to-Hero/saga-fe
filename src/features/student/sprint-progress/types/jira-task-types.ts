@@ -190,6 +190,7 @@ export interface ProjectTaskOptionsResponse {
   assignableUsers: ProjectAssignableUser[];
   estimation: ProjectEstimationOption;
   sprints: { id: string; name: string; state: string }[];
+  labels?: string[];
 }
 
 export interface ProjectTaskTransitionItem {

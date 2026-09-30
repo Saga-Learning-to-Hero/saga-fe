@@ -101,7 +101,7 @@ export function TopNavHeader() {
   };
 
   return (
-    <header className="sticky top-0 z-30 flex flex-col w-full bg-card/95 backdrop-blur-sm border-b border-border shadow-saga-xs">
+    <header className="sticky top-0 z-40 flex flex-col w-full bg-card/95 backdrop-blur-sm border-b border-border shadow-saga-xs">
       <div className="flex h-14 items-center justify-between px-4 sm:px-6 gap-4">
         <div className="flex items-center gap-3 min-w-0">
           {hasSubNav && (

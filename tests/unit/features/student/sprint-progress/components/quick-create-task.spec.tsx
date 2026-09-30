@@ -32,11 +32,11 @@ describe("QuickCreateTask", () => {
     {
       id: "UTCID01",
       type: "A",
-      executedDate: "14/09/2026",
-      description: "An hoan toan component khi canCreate = false",
+      executedDate: "30/09/2026",
+      description: "Khoa nut Tao task nhanh khi canCreate = false",
     },
     () => {
-      const { container } = render(
+      render(
         <QuickCreateTask
           projectId="proj-123"
           canCreate={false}
@@ -45,8 +45,9 @@ describe("QuickCreateTask", () => {
         />
       );
 
-      expect(container.firstChild).toBeNull();
-      expect(screen.queryByText("Tạo task nhanh")).not.toBeInTheDocument();
+      const button = screen.getByRole("button", { name: /Tạo task nhanh/i });
+      expect(button).toBeDisabled();
+      expect(button).toHaveAttribute("title", expect.stringContaining("liên kết"));
     }
   );
 
