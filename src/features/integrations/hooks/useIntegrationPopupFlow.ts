@@ -8,6 +8,7 @@ import {
   type IntegrationProvider,
   type IntegrationScope,
 } from "../lib/integration-broadcast";
+import { markIntegrationPopupWindow } from "../lib/integration-popup-context";
 import { USER_INTEGRATIONS_QUERY_KEY } from "./useUserIntegrations";
 import { showSuccessToast, showErrorToast } from "@/lib/api-error";
 
@@ -75,6 +76,10 @@ export function useIntegrationPopupFlow(options: UseIntegrationPopupFlowOptions 
       return false;
     }
 
+    markIntegrationPopupWindow(popup, {
+      provider: targetProvider,
+      scope: "personal",
+    });
     popup.focus();
     newWindowRef.current = popup;
     return true;
@@ -144,6 +149,11 @@ export function useIntegrationPopupFlow(options: UseIntegrationPopupFlowOptions 
           return;
         }
 
+        markIntegrationPopupWindow(popup, {
+          provider: params.provider,
+          scope: targetScope,
+          projectId: params.projectId,
+        });
         popup.location.replace(params.authorizationUrl);
         popup.focus();
         newWindowRef.current = popup;
@@ -170,19 +180,22 @@ export function useIntegrationPopupFlow(options: UseIntegrationPopupFlowOptions 
 
   const retryOpenPopup = useCallback(() => {
     if (authUrl && typeof window !== "undefined") {
+      const popupName = `saga_${scope}_${provider}_oauth`;
       const popup = window.open(
-        authUrl,
-        `saga_personal_${provider}_oauth`,
+        `/integrations/popup?provider=${encodeURIComponent(provider)}`,
+        popupName,
         getPopupFeatures()
       );
       if (!popup) {
         showErrorToast("Trình duyệt đang chặn cửa sổ xác thực. Vui lòng cho phép popup rồi thử lại.");
         return;
       }
+      markIntegrationPopupWindow(popup, { provider, scope, projectId });
+      popup.location.replace(authUrl);
       popup.focus();
       newWindowRef.current = popup;
     }
-  }, [authUrl, provider]);
+  }, [authUrl, projectId, provider, scope]);
 
   const checkNow = useCallback(async () => {
     await queryClient.invalidateQueries({ queryKey: USER_INTEGRATIONS_QUERY_KEY });

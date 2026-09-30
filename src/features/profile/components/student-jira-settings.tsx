@@ -17,6 +17,7 @@ import {
   useDeleteJiraIdentity,
 } from "@/features/integrations/hooks/useJiraIntegrations";
 import { useIntegrationPopupFlow } from "@/features/integrations/hooks/useIntegrationPopupFlow";
+import { PERSONAL_INTEGRATION_SUCCESS_PATH } from "@/features/integrations/lib/integration-popup-context";
 import { IntegrationWaitingModal } from "@/features/integrations/components/integration-waiting-modal";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -58,11 +59,7 @@ export function StudentJiraSettings({
     if (!preparePopup("jira")) return;
     try {
       showInfoToast("Đang mở trang Atlassian ID OAuth...", { id: "jira-oauth" });
-      const defaultPath = "/profile/integrations";
-      const currentPath = typeof window !== "undefined"
-        ? (window.location.pathname.startsWith("/profile") ? window.location.pathname : defaultPath)
-        : defaultPath;
-      const result = await startLinkMutation.mutateAsync(currentPath);
+      const result = await startLinkMutation.mutateAsync(PERSONAL_INTEGRATION_SUCCESS_PATH);
 
       if (!result.authorizationUrl) throw new Error("Missing Jira authorization URL");
       startFlow({

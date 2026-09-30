@@ -17,6 +17,7 @@ import {
   useDeleteGitHubIdentity,
 } from "@/features/integrations/hooks/useGithubIntegrations";
 import { useIntegrationPopupFlow } from "@/features/integrations/hooks/useIntegrationPopupFlow";
+import { PERSONAL_INTEGRATION_SUCCESS_PATH } from "@/features/integrations/lib/integration-popup-context";
 import { IntegrationWaitingModal } from "@/features/integrations/components/integration-waiting-modal";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -58,11 +59,7 @@ export function StudentGitHubSettings({
     if (!preparePopup("github")) return;
     try {
       showInfoToast("Đang mở trang GitHub OAuth...", { id: "github-oauth" });
-      const defaultPath = "/profile/integrations";
-      const currentPath = typeof window !== "undefined"
-        ? (window.location.pathname.startsWith("/profile") ? window.location.pathname : defaultPath)
-        : defaultPath;
-      const result = await startLinkMutation.mutateAsync(currentPath);
+      const result = await startLinkMutation.mutateAsync(PERSONAL_INTEGRATION_SUCCESS_PATH);
 
       if (!result.authorizationUrl) throw new Error("Missing GitHub authorization URL");
       startFlow({

@@ -168,7 +168,7 @@ describe("PersonalIntegrationRequiredModal", () => {
       fireEvent.click(btn);
 
       await waitFor(() => {
-        expect(mockStartJiraMutateAsync).toHaveBeenCalled();
+        expect(mockStartJiraMutateAsync).toHaveBeenCalledWith("/integrations/success");
         expect(popup.location.replace).toHaveBeenCalledWith("https://jira.atlassian.com/auth");
       });
       expect(windowOpenSpy).toHaveBeenCalledWith(
@@ -207,7 +207,7 @@ describe("PersonalIntegrationRequiredModal", () => {
       fireEvent.click(btn);
 
       await waitFor(() => {
-        expect(mockStartGitHubMutateAsync).toHaveBeenCalled();
+        expect(mockStartGitHubMutateAsync).toHaveBeenCalledWith("/integrations/success");
         expect(popup.location.replace).toHaveBeenCalledWith("https://github.com/login/oauth");
       });
       expect(windowOpenSpy).toHaveBeenCalledWith(

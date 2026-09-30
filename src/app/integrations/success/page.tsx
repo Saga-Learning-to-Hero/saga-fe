@@ -20,6 +20,10 @@ import { useAuthStore } from "@/features/auth/store/useAuthStore";
 import { getRoleHomePath } from "@/features/auth/lib/role-routes";
 import { useRefreshUserIntegrations } from "@/features/integrations/hooks/useUserIntegrations";
 import { sendIntegrationResult } from "@/features/integrations/lib/integration-broadcast";
+import {
+  getIntegrationPopupSnapshot,
+  parseIntegrationPopupSnapshot,
+} from "@/features/integrations/lib/integration-popup-context";
 
 function SuccessContent() {
   const router = useRouter();
@@ -29,20 +33,25 @@ function SuccessContent() {
   const [isSyncing, setIsSyncing] = useState<boolean>(true);
   const [countdown, setCountdown] = useState<number>(1);
 
-  const isPopupWindow = useSyncExternalStore(
+  const popupSnapshot = useSyncExternalStore(
     () => () => {},
-    () => Boolean(window.opener),
-    () => false
+    () => getIntegrationPopupSnapshot(window),
+    () => ""
   );
+  const popupContext = parseIntegrationPopupSnapshot(popupSnapshot);
+  const isPopupWindow = Boolean(popupSnapshot);
 
   const rawProvider = (searchParams.get("provider") || "").toLowerCase();
-  const isJira = rawProvider.includes("jira") || rawProvider.includes("atlassian");
-  const isGithub = rawProvider.includes("github");
+  const resolvedProvider = popupContext?.provider
+    || (rawProvider.includes("jira") || rawProvider.includes("atlassian") ? "jira" : "github");
+  const isJira = resolvedProvider === "jira";
+  const isGithub = resolvedProvider === "github";
   const returnParam = searchParams.get("returnPath") || searchParams.get("returnUrl");
   const scopeParam = searchParams.get("scope");
   const projectIdParam = searchParams.get("projectId") || undefined;
 
   const isProjectScope =
+    popupContext?.scope === "project" ||
     scopeParam === "project" ||
     (Boolean(returnParam) && returnParam!.includes("project"));
 
@@ -67,23 +76,20 @@ function SuccessContent() {
     });
 
     // Callback nằm trong popup thì báo tab chính và tự đóng sau khi đồng bộ.
-    const hasOpener = typeof window !== "undefined" && Boolean(window.opener);
-
     async function syncIntegrationsAndNavigate() {
+      if (isPopupWindow) {
+        setIsSyncing(false);
+        closeTimer = setTimeout(() => {
+          window.close();
+        }, 1000);
+        return;
+      }
+
       try {
         await refreshIntegrations();
       } finally {
         if (!isMounted) return;
         setIsSyncing(false);
-
-        if (hasOpener) {
-          closeTimer = setTimeout(() => {
-            if (typeof window !== "undefined") {
-              window.close();
-            }
-          }, 1000);
-          return;
-        }
 
         // Nếu mở ở cùng tab: điều hướng về trang đích như cũ
         const target = returnParam || (user?.role === "STUDENT" ? "/student/courses" : "/profile/integrations");
@@ -109,7 +115,7 @@ function SuccessContent() {
       clearInterval(interval);
       if (closeTimer) clearTimeout(closeTimer);
     };
-  }, [isGithub, isJira, isProjectScope, projectIdParam, refreshIntegrations, returnParam, router, searchParams, user?.role]);
+  }, [isGithub, isJira, isPopupWindow, isProjectScope, projectIdParam, refreshIntegrations, returnParam, router, searchParams, user?.role]);
 
   return (
     <div className="w-full max-w-xl mx-auto space-y-6">

@@ -19,6 +19,10 @@ import { Button } from "@/components/ui/button";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
 import { getRoleHomePath } from "@/features/auth/lib/role-routes";
 import { sendIntegrationResult } from "@/features/integrations/lib/integration-broadcast";
+import {
+  getIntegrationPopupSnapshot,
+  parseIntegrationPopupSnapshot,
+} from "@/features/integrations/lib/integration-popup-context";
 import { useEffect, useSyncExternalStore } from "react";
 
 interface ErrorInfo {
@@ -99,10 +103,19 @@ function FailureContent() {
 
   const errorCode = searchParams.get("error") || searchParams.get("code") || "INTEGRATION_FAILED";
   const errorMessage = searchParams.get("message") || searchParams.get("error_description");
+  const popupSnapshot = useSyncExternalStore(
+    () => () => {},
+    () => getIntegrationPopupSnapshot(window),
+    () => ""
+  );
+  const popupContext = parseIntegrationPopupSnapshot(popupSnapshot);
+  const isPopupWindow = Boolean(popupSnapshot);
   const rawProvider = (searchParams.get("provider") || "").toLowerCase();
+  const resolvedProvider = popupContext?.provider
+    || (rawProvider.includes("jira") || rawProvider.includes("atlassian") ? "jira" : "github");
 
-  const isJira = rawProvider.includes("jira") || rawProvider.includes("atlassian");
-  const isGithub = rawProvider.includes("github");
+  const isJira = resolvedProvider === "jira";
+  const isGithub = resolvedProvider === "github";
 
   const errorInfo: ErrorInfo = ERROR_DETAILS_MAP[errorCode] || {
     title: "Liên kết tài khoản thất bại",
@@ -114,15 +127,9 @@ function FailureContent() {
 
   const homeHref = isAuthenticated && user ? getRoleHomePath(user.role) : "/dashboard";
   const returnParam = searchParams.get("returnPath") || searchParams.get("returnUrl");
-  const isProject = Boolean(returnParam?.includes("project"));
+  const isProject = popupContext?.scope === "project" || Boolean(returnParam?.includes("project"));
   const backHref = returnParam || (user?.role === "STUDENT" ? "/student/courses" : "/profile/integrations");
   const backLabel = isProject ? "Quay lại Thông tin Dự án" : "Quay lại Cài đặt Tích hợp";
-
-  const isPopupWindow = useSyncExternalStore(
-    () => () => {},
-    () => Boolean(window.opener),
-    () => false
-  );
 
   useEffect(() => {
     sendIntegrationResult({

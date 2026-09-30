@@ -18,6 +18,7 @@ import { useStartJiraLink } from "../hooks/useJiraIntegrations";
 import { useStartGitHubLink } from "../hooks/useGithubIntegrations";
 import { useUserIdentities } from "../hooks/useUserIntegrations";
 import { useIntegrationPopupFlow } from "../hooks/useIntegrationPopupFlow";
+import { PERSONAL_INTEGRATION_SUCCESS_PATH } from "../lib/integration-popup-context";
 import { IntegrationWaitingModal } from "./integration-waiting-modal";
 import { studentCoursePath } from "@/features/student/courses/hooks/use-student-course-context";
 import { showInfoToast, showErrorToast } from "@/lib/api-error";
@@ -86,8 +87,7 @@ export function PersonalIntegrationRequiredModal({
     if (!preparePopup("jira")) return;
     try {
       showInfoToast("Đang mở trang Atlassian Jira OAuth...", { id: "jira-oauth" });
-      const currentPath = typeof window !== "undefined" ? window.location.pathname : "/student/sprint-progress";
-      const result = await startJiraLinkMutation.mutateAsync(currentPath);
+      const result = await startJiraLinkMutation.mutateAsync(PERSONAL_INTEGRATION_SUCCESS_PATH);
       if (!result.authorizationUrl) throw new Error("Missing Jira authorization URL");
       startFlow({
         provider: "jira",
@@ -104,8 +104,7 @@ export function PersonalIntegrationRequiredModal({
     if (!preparePopup("github")) return;
     try {
       showInfoToast("Đang mở trang GitHub OAuth...", { id: "github-oauth" });
-      const currentPath = typeof window !== "undefined" ? window.location.pathname : "/student/commits";
-      const result = await startGitHubLinkMutation.mutateAsync(currentPath);
+      const result = await startGitHubLinkMutation.mutateAsync(PERSONAL_INTEGRATION_SUCCESS_PATH);
       if (!result.authorizationUrl) throw new Error("Missing GitHub authorization URL");
       startFlow({
         provider: "github",

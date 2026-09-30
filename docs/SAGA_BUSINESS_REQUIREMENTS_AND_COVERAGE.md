@@ -233,7 +233,7 @@ Payload SSE không phải dữ liệu để render trực tiếp. FE phải ch�
    - Xác nhận chuyển giao: Backend xử lý bất đồng bộ trả mã `202 Accepted` kèm `runId`; FE polling định kỳ 2.5s.
    - Nguyên tắc chống trùng lặp (Anti-Duplication): Các task cũ được chuyển trạng thái `superseded = true`, task mới được tạo mang cờ `migratedFrom`.
    - Cơ chế Reconcile: Đối với các item gặp trạng thái bất định `REMOTE_OUTCOME_UNKNOWN` do timeout mạng, FE cung cấp luồng "Xác minh & Liên kết (Verify & Bind)" thay vì tạo lặp; tuyệt đối không sao chép mù bằng chứng giữa hai nguồn.
-9. Liên kết Jira/GitHub cá nhân dùng cửa sổ OAuth dạng popup, không điều hướng tab chính. Popup callback phát kết quả qua `BroadcastChannel("personal_integration_channel")`, có `window.opener.postMessage` và storage event làm dự phòng; khi thành công popup tự đóng, tab chính refetch danh tính, đóng trạng thái chờ và giữ nguyên dữ liệu form đang nhập.
+9. Liên kết Jira/GitHub cá nhân dùng cửa sổ OAuth dạng popup, không điều hướng tab chính. Luồng luôn trả popup về `/integrations/success`; context provider/scope được giữ trong popup để không phụ thuộc vào `window.opener`. Popup callback phát kết quả qua `BroadcastChannel("personal_integration_channel")`, có `window.opener.postMessage` và storage event làm dự phòng; khi thành công popup tự đóng, tab chính refetch danh tính, đóng trạng thái chờ và giữ nguyên dữ liệu form đang nhập.
 
 ### 5.4 Thực thi Sprint
 
@@ -403,7 +403,7 @@ Project Type dùng để phân loại hướng dự án, không điều khiển 
 | INT-003 | Jira connect/sites/projects/boards/config/disconnect | ✓ | ✓ | ✓ | `DONE`; hỗ trợ đa nguồn Jira (Multi-Jira Sources), đồng bộ từng nguồn (202), kết nối lại và ngắt kết nối mềm (soft disconnect bảo toàn dữ liệu) |
 | INT-004 | GitHub repository role | ✓ | ✓ | ✓ | `PARTIAL`; FE đang cho thêm `FULLSTACK/DOCS` nhưng BE chỉ có `FRONTEND/BACKEND/OTHER` |
 | INT-005 | Jira Failover Wizard & Reconciliation | ✓ | ✓ | ✓ | `DONE`; quy trình chuyển giao công việc 4 bước (Target Selection -> Preview/Filter -> Confirm -> Progress Polling 202/runId), xử lý trạng thái bất định `REMOTE_OUTCOME_UNKNOWN` qua Verify & Bind modal |
-| INT-006 | Jira/GitHub personal OAuth popup | ✓ | ✓ | ✓ | `DONE`; mở popup đồng bộ từ thao tác click để tránh popup blocker, callback dùng `personal_integration_channel`, tự đóng khi thành công, refetch danh tính tại tab chính và không làm mất trạng thái form |
+| INT-006 | Jira/GitHub personal OAuth popup | ✓ | ✓ | ✓ | `DONE`; mở popup đồng bộ từ thao tác click để tránh popup blocker, BE trả về callback `/integrations/success`, callback nhận diện popup độc lập với `window.opener`, dùng `personal_integration_channel`, tự đóng khi thành công, refetch danh tính tại tab chính và không làm mất trạng thái form |
 
 ### 7.5 Jira Task, Sprint và Git Commit
 
