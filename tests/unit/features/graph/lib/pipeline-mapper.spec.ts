@@ -269,7 +269,6 @@ describe("pipeline-mapper", () => {
           sprint: { id: "sp-1", name: "Sprint 3", state: "active" },
           evidenceCheck: {
             status: "MISSING_COMMIT",
-            lastCheckedAt: "2026-09-14T00:00:00Z",
           },
         }),
         task({
