@@ -1,4 +1,5 @@
 import type { CustomSelectOption } from "@/components/common/custom-select";
+import type { EvidenceCheckStatus } from "@/features/student/sprint-progress/types/jira-task-types";
 
 export const UNASSIGNED_LANE_ID = "unassigned";
 export const BACKLOG_SPRINT_ID = "backlog";
@@ -28,6 +29,9 @@ export interface PipelineTask {
   labels?: string[];
   evidenceCount?: number;
   hasEvidence?: boolean;
+  evidenceCheck?: {
+    status: EvidenceCheckStatus;
+  } | null;
 }
 
 export interface PipelineCommit {
@@ -61,6 +65,7 @@ export interface PipelineStats {
   totalCommits: number | null;
   tasksWithLinkedCommits: number;
   doneWithoutLinkedCommits: number;
+  missingDocumentTasks: number;
 }
 
 export type PipelineAnomalyFilterType = "ALL" | "DONE_NO_COMMIT" | "UNASSIGNED" | "MISSING_COMMITS";

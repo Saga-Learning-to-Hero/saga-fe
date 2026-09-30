@@ -1,9 +1,11 @@
 "use client";
 
-import { AlertTriangleIcon, CheckSquareIcon, GitCommitIcon, PaperclipIcon } from "lucide-react";
+import { useState, useMemo } from "react";
+import { AlertTriangleIcon, CheckSquareIcon, GitCommitIcon, PaperclipIcon, ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { isDoneWithoutLinkedCommit, isDocumentOrResearchTask } from "../lib/pipeline-mapper";
+import { isMissingCommit, isMissingDocument } from "../lib/pipeline-mapper";
 import type { PipelineCommit, PipelineTask } from "../types/pipeline";
 
 interface PipelineMatrixTableProps {
@@ -33,6 +35,24 @@ export function PipelineMatrixTable({
   selectedTaskId,
   onSelectTask,
 }: PipelineMatrixTableProps) {
+  const [currentPage, setCurrentPage] = useState(1);
+  const PAGE_SIZE = 15;
+
+  const [prevTasksLength, setPrevTasksLength] = useState(tasks.length);
+  if (tasks.length !== prevTasksLength) {
+    setCurrentPage(1);
+    setPrevTasksLength(tasks.length);
+  }
+
+  const { paginatedTasks, totalPages } = useMemo(() => {
+    const total = Math.ceil(tasks.length / PAGE_SIZE);
+    const start = (currentPage - 1) * PAGE_SIZE;
+    return {
+      paginatedTasks: tasks.slice(start, start + PAGE_SIZE),
+      totalPages: total,
+    };
+  }, [tasks, currentPage]);
+
   return (
     <Card className="overflow-hidden rounded-xl border border-border/80 bg-card shadow-xs">
       <CardHeader className="border-b border-border/60 bg-muted/20 p-5">
@@ -65,11 +85,13 @@ export function PipelineMatrixTable({
                 </tr>
               </thead>
               <tbody className="divide-y divide-border/50">
-                {tasks.map((task) => {
+                {paginatedTasks.map((task) => {
                   const selected = task.id === selectedTaskId;
-                  const isDoc = isDocumentOrResearchTask(task);
                   const hasEvidence = (task.evidenceCount ?? 0) > 0 || task.hasEvidence === true;
-                  const warning = isDoneWithoutLinkedCommit(task);
+                  const missingCommit = isMissingCommit(task);
+                  const missingDoc = isMissingDocument(task);
+                  const warning = missingCommit || missingDoc;
+
                   return (
                     <tr
                       key={task.id}
@@ -88,31 +110,59 @@ export function PipelineMatrixTable({
                       <td className="p-3.5 max-w-xs">
                         <p className="line-clamp-2 font-semibold text-foreground">{task.title}</p>
                       </td>
-                      <td className="p-3.5 whitespace-nowrap">
-                        <div className="flex items-center gap-1.5">
+                      <td className="p-3.5">
+                        <div className="flex flex-wrap items-center gap-1.5">
                           <Badge className={`text-xs font-bold ${statusClass(task.status)}`}>
                             {task.status}
                           </Badge>
-                          {hasEvidence && task.linkedCommitCount === 0 ? (
+
+                          {task.evidenceCheck?.status === "MISSING_COMMIT" && (
                             <Badge
                               variant="outline"
-                              className="border-purple-500/40 bg-purple-500/10 text-xs font-bold text-purple-600 dark:text-purple-400"
-                            >
-                              <PaperclipIcon className="mr-1 size-3" />
-                              Đã có minh chứng
-                            </Badge>
-                          ) : warning ? (
-                            <Badge
-                              variant="outline"
-                              className={isDoc
-                                ? "border-amber-500/40 bg-amber-500/10 text-xs font-bold text-amber-600 dark:text-amber-400"
-                                : "border-destructive/40 bg-destructive/10 text-xs font-bold text-destructive"
-                              }
+                              className="border-destructive/40 bg-destructive/10 text-xs font-bold text-destructive"
                             >
                               <AlertTriangleIcon className="mr-1 size-3" />
-                              {isDoc ? "Cần minh chứng" : "Thiếu Commit"}
+                              Thiếu Commit
                             </Badge>
-                          ) : null}
+                          )}
+                          {task.evidenceCheck?.status === "MISSING_DOCUMENT" && (
+                            <Badge
+                              variant="outline"
+                              className="border-amber-500/40 bg-amber-500/10 text-xs font-bold text-amber-600 dark:text-amber-400"
+                            >
+                              <AlertTriangleIcon className="mr-1 size-3" />
+                              Thiếu tài liệu
+                            </Badge>
+                          )}
+                          {task.evidenceCheck?.status === "MISSING_COMMIT_AND_DOCUMENT" && (
+                            <Badge
+                              variant="outline"
+                              className="border-destructive/40 bg-destructive/10 text-xs font-bold text-destructive"
+                            >
+                              <AlertTriangleIcon className="mr-1 size-3" />
+                              Thiếu Commit và tài liệu
+                            </Badge>
+                          )}
+                          {task.evidenceCheck?.status === "UNLABELED" && (
+                            <Badge
+                              variant="outline"
+                              className="border-muted-foreground/40 bg-muted/10 text-xs font-bold text-muted-foreground"
+                            >
+                              <AlertTriangleIcon className="mr-1 size-3" />
+                              Chưa gắn nhãn SAGA
+                            </Badge>
+                          )}
+                          {(task.evidenceCheck?.status === "SATISFIED" || task.evidenceCheck?.status === "NOT_DONE" || (!task.evidenceCheck && hasEvidence)) && (
+                            hasEvidence ? (
+                              <Badge
+                                variant="outline"
+                                className="border-purple-500/40 bg-purple-500/10 text-xs font-bold text-purple-600 dark:text-purple-400"
+                              >
+                                <PaperclipIcon className="mr-1 size-3" />
+                                Đã có minh chứng
+                              </Badge>
+                            ) : null
+                          )}
                         </div>
                       </td>
                       <td className="p-3.5 text-muted-foreground whitespace-nowrap">
@@ -147,6 +197,37 @@ export function PipelineMatrixTable({
                 })}
               </tbody>
             </table>
+          </div>
+        )}
+
+        {tasks.length > 0 && totalPages > 1 && (
+          <div className="flex items-center justify-between border-t border-border/50 p-4 bg-muted/10">
+            <span className="text-xs text-muted-foreground font-medium">
+              Hiển thị {((currentPage - 1) * PAGE_SIZE) + 1} - {Math.min(currentPage * PAGE_SIZE, tasks.length)} trong tổng số {tasks.length} task
+            </span>
+            <div className="flex items-center gap-1.5">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+                className="h-7 w-7 p-0 rounded-lg cursor-pointer disabled:opacity-50"
+              >
+                <ChevronLeftIcon className="h-4 w-4" />
+              </Button>
+              <span className="text-xs font-bold px-3 text-foreground min-w-[80px] text-center">
+                {currentPage} / {totalPages}
+              </span>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                disabled={currentPage === totalPages}
+                className="h-7 w-7 p-0 rounded-lg cursor-pointer disabled:opacity-50"
+              >
+                <ChevronRightIcon className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
         )}
       </CardContent>

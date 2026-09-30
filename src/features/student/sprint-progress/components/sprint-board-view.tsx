@@ -24,12 +24,14 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { getAssigneeAvatarClass, getAssigneeInitials } from "../lib/assignee-avatar";
 import { TaskDueDate } from "./task-due-date";
+import { isTaskOwnedByCurrentStudent } from "../lib/task-permissions";
 
 interface SprintBoardViewProps {
   issues: SprintIssue[];
   onIssueClick: (issue: SprintIssue) => void;
   onMoveTaskStatus: (issueId: string, newStatus: IssueStatus) => void;
   isTeamLeader: boolean;
+  currentUserStudentId?: string;
   currentUserStudentCode: string;
   onSwitchToBacklog?: () => void;
   totalBacklogCount?: number;
@@ -131,6 +133,7 @@ export function SprintBoardView({
   onIssueClick,
   onMoveTaskStatus,
   isTeamLeader,
+  currentUserStudentId,
   currentUserStudentCode,
   onSwitchToBacklog,
   totalBacklogCount,
@@ -162,9 +165,7 @@ export function SprintBoardView({
   const handleDragStart = (e: React.DragEvent, issue: SprintIssue) => {
     const canDrag =
       isTeamLeader ||
-      (Boolean(currentUserStudentCode) &&
-        Boolean(issue.assignee?.studentCode) &&
-        issue.assignee.studentCode === currentUserStudentCode);
+      isTaskOwnedByCurrentStudent(issue, currentUserStudentId, currentUserStudentCode);
     if (!canDrag) {
       e.preventDefault();
       return;
@@ -303,9 +304,7 @@ export function SprintBoardView({
                 {colIssues.map((issue) => {
                   const canDrag =
                     isTeamLeader ||
-                    (Boolean(currentUserStudentCode) &&
-                      Boolean(issue.assignee?.studentCode) &&
-                      issue.assignee.studentCode === currentUserStudentCode);
+                    isTaskOwnedByCurrentStudent(issue, currentUserStudentId, currentUserStudentCode);
                   const isMsrAnomaly = issue.status === "DONE" && (issue.githubCommitCount ?? 0) === 0;
 
                   return (

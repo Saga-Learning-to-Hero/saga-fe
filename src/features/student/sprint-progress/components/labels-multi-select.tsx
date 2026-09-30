@@ -18,6 +18,7 @@ export interface LabelsMultiSelectProps {
   availableLabels?: string[];
   disabled?: boolean;
   placeholder?: string;
+  allowCustom?: boolean;
 }
 
 function getLabelBadgeStyle(label: string): string {

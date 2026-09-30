@@ -38,7 +38,7 @@ const CytoscapeGraphCanvas = dynamic(
     loading: () => (
       <div className="w-full h-[580px] sm:h-[640px] lg:h-[calc(100vh-230px)] min-h-[540px] max-h-[780px] rounded-xl border border-border/90 bg-muted/20 flex flex-col items-center justify-center text-muted-foreground gap-3">
         <Loader2Icon className="w-8 h-8 animate-spin text-primary" />
-        <span className="text-xs font-medium">Đang khởi tạo Engine Đồ thị...</span>
+        <span className="text-xs font-medium">Đang xử lý Đồ thị...</span>
       </div>
     )
   }
@@ -560,7 +560,7 @@ export function LecturerGraphView({
         icon: <CheckCircle2Icon className="size-3.5 shrink-0 text-emerald-600 dark:text-emerald-400" />,
       };
     }
-    if (pipeline.stats.doneWithoutLinkedCommits > 0) {
+    if (pipeline.stats.doneWithoutLinkedCommits > 0 || pipeline.stats.missingDocumentTasks > 0) {
       return {
         label: "Cần đối soát",
         variant: "warning" as const,
@@ -586,6 +586,7 @@ export function LecturerGraphView({
     graphQuery.data?.nodes,
     structuralStats.anomalyCount,
     pipeline.stats.doneWithoutLinkedCommits,
+    pipeline.stats.missingDocumentTasks,
     pipeline.tasks.length,
   ]);
 

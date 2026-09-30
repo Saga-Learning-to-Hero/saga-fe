@@ -211,8 +211,11 @@ export function useAssignTaskToSprint() {
       );
     },
     onError: (error: unknown) => {
-      const err = error as { response?: { data?: { message?: string } }; message?: string };
-      showErrorToast(err.response?.data?.message || err.message || "Không thể cập nhật Sprint của task.");
+      const err = error as { response?: { data?: { code?: string; message?: string } }; message?: string };
+      const message = err.response?.data?.code === "TASK_NOT_ASSIGNED_TO_YOU"
+        ? "Bạn chỉ có thể đổi Sprint cho Task được giao cho mình."
+        : err.response?.data?.message || err.message || "Không thể cập nhật Sprint của Task.";
+      showErrorToast(message);
     },
   });
 }

@@ -408,4 +408,36 @@ describe("QuickCreateTask", () => {
       });
     }
   );
+
+  fptTest(
+    {
+      id: "UTCID12",
+      type: "A",
+      executedDate: "30/09/2026",
+      description: "Chan tao nhanh va dan den trang tich hop khi thieu Jira hoac GitHub ca nhan",
+    },
+    async () => {
+      const user = userEvent.setup();
+      render(
+        <QuickCreateTask
+          projectId="proj-123"
+          canCreate={true}
+          sprintId="backlog"
+          isPersonalIntegrationReady={false}
+          missingPersonalIntegrations="GitHub"
+        />
+      );
+
+      await user.click(screen.getByRole("button", { name: /Tạo task nhanh/i }));
+      await user.type(screen.getByPlaceholderText("Cần làm gì? Nhập tên task..."), "Task mới");
+
+      expect(screen.getByRole("button", { name: "Tạo" })).toBeDisabled();
+      expect(screen.getByText(/Thiếu liên kết GitHub/i)).toBeInTheDocument();
+      expect(screen.getByRole("link", { name: "Mở trang tích hợp" })).toHaveAttribute(
+        "href",
+        "/profile/integrations"
+      );
+      expect(mockMutateAsync).not.toHaveBeenCalled();
+    }
+  );
 });

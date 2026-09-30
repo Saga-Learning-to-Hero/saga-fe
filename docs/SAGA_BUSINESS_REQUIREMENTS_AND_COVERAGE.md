@@ -242,6 +242,10 @@ Payload SSE không phải dữ liệu để render trực tiếp. FE phải ch�
 4. Tạo nhanh chỉ yêu cầu summary nếu Jira/BE cho phép default; form đầy đủ dùng cho chỉnh các thuộc tính nâng cao.
 5. Create/Patch/Transition/Move sprint xong phải invalidate và refetch dữ liệu canonical.
 6. `startDate`/`dueDate` dùng định dạng `YYYY-MM-DD`, có thể null; clear dùng cờ clear tương ứng nếu contract yêu cầu.
+7. Quyền thay đổi Task theo policy `Leader/Member-own`: Leader thao tác mọi Task; Member chỉ patch, chuyển trạng thái, đổi Sprint, đổi Task cha hoặc xóa Task được gán cho chính mình theo `assigneeStudentId`. Member không được bỏ gán hoặc giao Task cho người khác. Tạo/sửa/xóa Sprint chỉ dành cho Leader.
+8. Khi Member tạo Task, Backend luôn tự gán Jira account đã liên kết của chính Member; FE không suy đoán account theo tên hiển thị. Cả Leader và Member phải liên kết Jira và GitHub cá nhân trước khi tạo Task (`PERSONAL_INTEGRATION_REQUIRED`).
+9. Ngày bắt đầu phải bằng hoặc trước hạn hoàn thành. Task trong Backlog được phép có lịch riêng; Task có ngày nằm ngoài lịch Sprint được cảnh báo và yêu cầu xác nhận, không chặn cứng. Không cho tạo mới hoặc chuyển Task vào Sprint đã hoàn thành.
+10. Xóa Task phải có xác nhận. Backend chặn xóa khi Task có phiên làm việc, xác nhận đóng góp hoặc Task con đang hoạt động.
 
 ### 5.5 Minh chứng và phiên làm việc
 
@@ -404,11 +408,11 @@ Project Type dùng để phân loại hướng dự án, không điều khiển 
 | ID | Nghiệp vụ | BE | FE data | UI | Trạng thái/Ghi chú |
 | --- | --- | --- | --- | --- | --- |
 | TASK-001 | Task list/options/detail | ✓ | ✓ | ✓ | `DONE`; hỗ trợ đa nguồn Jira (`jiraIntegrationId`), hiển thị badge Lịch sử (`superseded`) và liên kết nguồn/đích chuyển giao (`migratedFrom`, `migratedTo`) |
-| TASK-002 | Task create/patch/delete | ✓ | ✓ | ✓ | `DONE`; quick create chỉ gửi field tối thiểu, form tạo chi tiết cho phép chọn nguồn Jira khi dự án có từ 2 nguồn active trở lên |
+| TASK-002 | Task create/patch/delete | ✓ | ✓ | ✓ | `DONE`; áp dụng `Leader/Member-own` theo `assigneeStudentId`; Member tạo Task được BE tự gán Jira account của mình và không được bỏ gán/giao người khác; mọi người tạo Task phải có Jira + GitHub cá nhân; quick create chỉ gửi field tối thiểu; form đầy đủ chọn đúng nguồn Jira; xóa có modal xác nhận và BE chặn khi có work session/contribution confirmation/Task con |
 | TASK-003 | Task transition và transition options | ✓ | ✓ | ✓ | `DONE` |
-| TASK-004 | Move task vào/ra sprint | ✓ | ✓ | ✓ | `DONE` |
+| TASK-004 | Move task vào/ra sprint | ✓ | ✓ | ✓ | `DONE`; Leader đổi mọi Task, Member chỉ đổi Task của mình; FE chặn đích là Sprint đã hoàn thành |
 | TASK-005 | Task type và Subtask parent | ✓ | ✓ | ✓ | `DONE` (BE & FE đồng bộ `parentTask`, `subtasks`, `parentTaskId`, `clearParent`, endpoint `GET /tasks/parent-options` phân trang và UI chọn Task cha/Subtasks) |
-| TASK-006 | Start Date/Due Date create-edit-clear-hydrate | ✓ | ✓ | ✓ | `VERIFY`; cần xác minh deploy trả đủ hai key kể cả null |
+| TASK-006 | Start Date/Due Date create-edit-clear-hydrate | ✓ | ✓ | ✓ | `VERIFY`; FE chặn `startDate > dueDate`, cho phép lịch riêng ở Backlog và xác nhận mềm khi lịch Task vượt lịch Sprint; cần xác minh deploy trả đủ hai key kể cả null |
 | TASK-007 | Kanban/Backlog/Timeline | ✓ | ✓ | ✓ | `DONE`; card chỉ cần due date, backlog cảnh báo giống Jira; Task được scope theo Jira source đang chọn ở cả Student và Lecturer Pipeline |
 | SPR-001 | Sprint list/detail/create/update/delete | ✓ | ✓ | ✓ | `PARTIAL`; FE đã scope theo source bằng `jiraIntegrationId` + Sprint options và reset selection khi đổi Site. Student P0: không gọi `/sprints` khi nguồn Jira chưa settle, 0 source hoặc nhiều source chưa chọn (không auto source đầu). 409 không retry. Lecturer tạm dựng source selector từ `task.source` vì integration summary dùng quyền thành viên. BE cần cho Lecturer đọc source summary theo `requireReader`, lọc `GET /projects/{id}/sprints` đúng source và bổ sung `jiraIntegrationId/source` vào Sprint response để bỏ workaround FE |
 | COM-001 | Project commit list/filter | ✓ | ✓ | ✓ | `DONE` (BE & FE đồng bộ phân trang `page, size, total, items`, nhận diện Merge Commit `isMerge`, `parentCount` và badge "Merge") |

@@ -114,6 +114,7 @@ export function mapProjectTaskToSprintIssue(
         : 0,
     assignee: {
       id: member?.id || task.assigneeStudentId || task.assigneeExternalId || "unassigned",
+      studentId: task.assigneeStudentId || taskResponse.assignee?.studentId || null,
       name: displayName,
       avatar: member?.avatar || "",
       studentCode: member?.studentCode || "",

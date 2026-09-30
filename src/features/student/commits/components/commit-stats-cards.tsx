@@ -19,12 +19,11 @@ export function CommitStatsCards({
   stats,
   selectedRepoName,
   selectedBranchName,
-  isTeamLeader = false,
 }: CommitStatsCardsProps) {
 
   return (
-    <div className={`grid grid-cols-1 gap-3.5 ${isTeamLeader ? "sm:grid-cols-3" : "sm:grid-cols-2"}`}>
-      <div className="p-4 rounded-xl border border-border/70 bg-card/60 backdrop-blur-xs shadow-2xs space-y-2 hover:border-primary/50 transition-all group">
+    <div className="flex flex-col sm:flex-row flex-wrap items-start gap-4">
+      <div className="w-full sm:w-[360px] p-4 rounded-xl border border-border/70 bg-card/60 backdrop-blur-xs shadow-2xs space-y-2 hover:border-primary/50 transition-all group">
         <div className="flex items-center justify-between">
           <span className="text-xs font-semibold text-muted-foreground">Tổng số Commits</span>
           <div className="w-8 h-8 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
@@ -53,7 +52,7 @@ export function CommitStatsCards({
         </div>
       </div>
 
-      <div className="p-4 rounded-xl border border-border/70 bg-card/60 backdrop-blur-xs shadow-2xs space-y-2 hover:border-primary/50 transition-all group">
+      <div className="w-full sm:w-[360px] p-4 rounded-xl border border-border/70 bg-card/60 backdrop-blur-xs shadow-2xs space-y-2 hover:border-primary/50 transition-all group">
         <div className="flex items-center justify-between">
           <span className="text-xs font-semibold text-muted-foreground">Nhánh đang Active</span>
           <div className="w-8 h-8 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400 flex items-center justify-center shrink-0">
