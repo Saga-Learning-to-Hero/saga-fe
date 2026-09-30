@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import {
   ArrowRightIcon,
+  ArrowRightLeftIcon,
   CheckCircle2Icon,
   ClockIcon,
   DownloadIcon,
@@ -13,6 +14,8 @@ import {
   MoreVerticalIcon,
   RefreshCwIcon,
   UserCheck2Icon,
+  UserMinusIcon,
+  UserPlusIcon,
   UsersIcon,
 } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -36,12 +39,22 @@ import {
 } from "@/features/lecturer/courses/lib/course-routes";
 import { formatQueryUpdatedAt } from "@/features/lecturer/courses/lib/format-query-updated-at";
 import {
+  useAddTeamMember,
   useDownloadTeamTemplate,
   useLecturerTeams,
+  useMoveTeamMember,
   useReplaceTeamLeader,
 } from "../hooks/use-lecturer-teams";
-import { sortTeamMembers } from "../types/lecturer-team";
+import {
+  sortTeamMembers,
+  type LecturerTeamItem,
+  type LecturerTeamMember,
+  type UnassignedStudent,
+} from "../types/lecturer-team";
 import { TeamImportDialog } from "./team-import-dialog";
+import { AddTeamMemberDialog } from "./add-team-member-dialog";
+import { MoveTeamMemberDialog } from "./move-team-member-dialog";
+import { AssignUnassignedStudentDialog } from "./assign-unassigned-student-dialog";
 import { cn } from "@/lib/utils";
 
 interface TeamListProps {
@@ -60,8 +73,18 @@ export function TeamList({ courseId, courseCode }: TeamListProps) {
   const { data, isLoading, isError, error, refetch, dataUpdatedAt, isFetching } =
     useLecturerTeams(courseId);
   const [importOpen, setImportOpen] = useState(false);
+  const [addingStudentTeam, setAddingStudentTeam] = useState<LecturerTeamItem | null>(null);
+  const [movingMember, setMovingMember] = useState<{
+    member: LecturerTeamMember;
+    currentTeam: LecturerTeamItem;
+  } | null>(null);
+  const [assigningStudent, setAssigningStudent] = useState<UnassignedStudent | null>(null);
+
   const downloadTemplateMutation = useDownloadTeamTemplate();
   const replaceLeaderMutation = useReplaceTeamLeader(courseId);
+  const addTeamMemberMutation = useAddTeamMember(courseId);
+  const moveTeamMemberMutation = useMoveTeamMember(courseId);
+
   const updatedAt = formatQueryUpdatedAt([dataUpdatedAt]);
 
   const sortedTeams = useMemo(
@@ -73,12 +96,24 @@ export function TeamList({ courseId, courseCode }: TeamListProps) {
     [data?.teams]
   );
 
+  const unassignedStudents = useMemo(
+    () => data?.unassignedStudents ?? [],
+    [data?.unassignedStudents]
+  );
+
   const stats = useMemo(() => {
     const total = sortedTeams.length;
     const withProject = sortedTeams.filter((t) => Boolean(t.projectId)).length;
     const totalMembers = sortedTeams.reduce((acc, t) => acc + t.members.length, 0);
-    return { total, withProject, waiting: total - withProject, totalMembers };
-  }, [sortedTeams]);
+    const unassignedCount = unassignedStudents.length;
+    return {
+      total,
+      withProject,
+      waiting: total - withProject,
+      totalMembers,
+      unassignedCount,
+    };
+  }, [sortedTeams, unassignedStudents]);
 
   if (isLoading) {
     return (
@@ -106,7 +141,7 @@ export function TeamList({ courseId, courseCode }: TeamListProps) {
   return (
     <div className="space-y-5">
       <Card className="rounded-xl border border-border/80 bg-card p-4 shadow-xs">
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-4 sm:divide-x sm:divide-border/60">
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-5 sm:divide-x sm:divide-border/60">
           <div className="flex items-center gap-3.5 sm:px-3">
             <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
               <FolderKanbanIcon className="size-5" />
@@ -155,15 +190,116 @@ export function TeamList({ courseId, courseCode }: TeamListProps) {
               <UsersIcon className="size-5" />
             </div>
             <div>
-              <p className="text-xs font-semibold text-muted-foreground">Sinh viên trong nhóm</p>
+              <p className="text-xs font-semibold text-muted-foreground">Đã vào nhóm</p>
               <div className="flex items-baseline gap-1 mt-0.5">
                 <span className="font-mono text-xl font-black text-foreground">{stats.totalMembers}</span>
                 <span className="text-xs text-muted-foreground">thành viên</span>
               </div>
             </div>
           </div>
+
+          <div className="flex items-center gap-3.5 sm:px-3 col-span-2 sm:col-span-1">
+            <div
+              className={cn(
+                "flex size-10 shrink-0 items-center justify-center rounded-xl",
+                stats.unassignedCount > 0
+                  ? "bg-rose-500/10 text-rose-600 dark:text-rose-400"
+                  : "bg-muted/40 text-muted-foreground"
+              )}
+            >
+              <UserMinusIcon className="size-5" />
+            </div>
+            <div>
+              <p className="text-xs font-semibold text-muted-foreground">Chưa có nhóm</p>
+              <div className="flex items-baseline gap-1 mt-0.5">
+                <span
+                  className={cn(
+                    "font-mono text-xl font-black",
+                    stats.unassignedCount > 0
+                      ? "text-rose-600 dark:text-rose-400"
+                      : "text-muted-foreground"
+                  )}
+                >
+                  {stats.unassignedCount}
+                </span>
+                <span className="text-xs text-muted-foreground">sinh viên</span>
+              </div>
+            </div>
+          </div>
         </div>
       </Card>
+
+      {/* Khối hiển thị sinh viên chưa có nhóm */}
+      {unassignedStudents.length > 0 && (
+        <Card className="rounded-xl border border-rose-500/30 bg-rose-500/5 p-4 shadow-xs">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between mb-3">
+            <div className="flex items-center gap-2.5">
+              <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-rose-500/20 text-rose-700 dark:text-rose-300">
+                <UserMinusIcon className="size-4" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <h3 className="text-sm font-extrabold text-foreground">
+                    Sinh viên chưa vào nhóm
+                  </h3>
+                  <Badge
+                    variant="outline"
+                    className="border-rose-500/40 bg-rose-500/15 font-mono text-xs font-bold text-rose-700 dark:text-rose-300"
+                  >
+                    {unassignedStudents.length} sinh viên
+                  </Badge>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Các sinh viên đã đăng ký vào lớp học phần nhưng chưa được gán vào nhóm dự án.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 max-h-60 overflow-y-auto pr-1">
+            {unassignedStudents.map((student) => (
+              <div
+                key={student.courseEnrollmentId}
+                className="flex items-center justify-between gap-2.5 rounded-xl border border-border/80 bg-card p-2.5 transition-colors hover:border-primary/40 shadow-2xs"
+              >
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <Avatar size="sm" className="border border-border/60 shrink-0">
+                    <AvatarFallback className="bg-primary/10 text-primary font-mono text-xs font-bold">
+                      {getInitials(student.fullName)}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="min-w-0">
+                    <p className="text-xs font-bold text-foreground truncate">
+                      {student.fullName}
+                    </p>
+                    <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+                      <span className="font-mono font-medium">{student.studentCode}</span>
+                      {student.email && (
+                        <>
+                          <span>•</span>
+                          <span className="truncate max-w-[120px]">{student.email}</span>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {sortedTeams.length > 0 && (
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    className="h-7 px-2.5 text-xs font-semibold text-primary hover:bg-primary/10 cursor-pointer shrink-0"
+                    onClick={() => setAssigningStudent(student)}
+                  >
+                    Phân nhóm
+                  </Button>
+                )}
+              </div>
+            ))}
+          </div>
+        </Card>
+      )}
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
@@ -248,13 +384,23 @@ export function TeamList({ courseId, courseCode }: TeamListProps) {
               <div>
                 <div className="mb-4 flex items-start justify-between gap-3">
                   <div className="space-y-1">
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
                       <span className="rounded-md border border-primary/25 bg-primary/10 px-2.5 py-0.5 font-mono text-xs font-black text-primary">
                         Team #{team.teamNo}
                       </span>
                       <Badge variant="secondary" className="font-mono text-xs font-semibold">
                         {team.members.length} thành viên
                       </Badge>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        className="h-6 px-2 gap-1 text-[11px] font-semibold cursor-pointer border-dashed hover:border-primary/50 hover:bg-primary/5"
+                        onClick={() => setAddingStudentTeam(team)}
+                      >
+                        <UserPlusIcon className="size-3 text-primary" />
+                        Thêm sinh viên
+                      </Button>
                     </div>
                     <h3 className="text-base font-extrabold text-foreground">
                       {team.teamName}
@@ -308,7 +454,7 @@ export function TeamList({ courseId, courseCode }: TeamListProps) {
 
                     return (
                       <div
-                        key={member.courseEnrollmentId}
+                        key={member.courseEnrollmentId || member.teamMemberId}
                         className={cn(
                           "flex items-center justify-between rounded-xl border px-3.5 py-2.5 transition-colors",
                           isLeader
@@ -353,19 +499,19 @@ export function TeamList({ courseId, courseCode }: TeamListProps) {
                         <div className="flex items-center gap-2 shrink-0">
                           <MemberRoleBadge role={member.role} />
 
-                          {!isLeader && (
-                            <DropdownMenu>
-                              <DropdownMenuTrigger
-                                className="inline-flex size-7 cursor-pointer items-center justify-center rounded-lg border border-transparent text-muted-foreground transition-colors hover:border-border hover:bg-muted hover:text-foreground disabled:pointer-events-none disabled:opacity-50"
-                                aria-label="Tùy chọn thành viên"
-                              >
-                                <MoreVerticalIcon className="size-3.5" />
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end" className="w-48">
-                                <DropdownMenuLabel className="text-xs font-semibold">
-                                  Thao tác thành viên
-                                </DropdownMenuLabel>
-                                <DropdownMenuSeparator />
+                          <DropdownMenu>
+                            <DropdownMenuTrigger
+                              className="inline-flex size-7 cursor-pointer items-center justify-center rounded-lg border border-transparent text-muted-foreground transition-colors hover:border-border hover:bg-muted hover:text-foreground disabled:pointer-events-none disabled:opacity-50"
+                              aria-label="Tùy chọn thành viên"
+                            >
+                              <MoreVerticalIcon className="size-3.5" />
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="w-52">
+                              <DropdownMenuLabel className="text-xs font-semibold">
+                                Thao tác thành viên
+                              </DropdownMenuLabel>
+                              <DropdownMenuSeparator />
+                              {!isLeader && (
                                 <DropdownMenuItem
                                   className="cursor-pointer text-xs font-semibold gap-2"
                                   disabled={replaceLeaderMutation.isPending}
@@ -379,9 +525,16 @@ export function TeamList({ courseId, courseCode }: TeamListProps) {
                                   <UserCheck2Icon className="size-3.5 text-amber-500" />
                                   Chỉ định làm Trưởng nhóm
                                 </DropdownMenuItem>
-                              </DropdownMenuContent>
-                            </DropdownMenu>
-                          )}
+                              )}
+                              <DropdownMenuItem
+                                className="cursor-pointer text-xs font-semibold gap-2"
+                                onClick={() => setMovingMember({ member, currentTeam: team })}
+                              >
+                                <ArrowRightLeftIcon className="size-3.5 text-primary" />
+                                Chuyển sang nhóm khác
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
                         </div>
                       </div>
                     );
@@ -435,12 +588,63 @@ export function TeamList({ courseId, courseCode }: TeamListProps) {
         </div>
       )}
 
+      {/* Modal Phân nhóm bằng Excel */}
       <TeamImportDialog
         key={courseId}
         courseId={courseId}
         courseCode={courseCode}
         isOpen={importOpen}
         onOpenChange={setImportOpen}
+      />
+
+      {/* Modal Thêm sinh viên vào nhóm cụ thể */}
+      <AddTeamMemberDialog
+        open={Boolean(addingStudentTeam)}
+        team={addingStudentTeam}
+        unassignedStudents={unassignedStudents}
+        isSaving={addTeamMemberMutation.isPending}
+        onOpenChange={(open) => !open && setAddingStudentTeam(null)}
+        onConfirm={async (courseEnrollmentId) => {
+          if (!addingStudentTeam) return;
+          await addTeamMemberMutation.mutateAsync({
+            teamId: addingStudentTeam.teamId,
+            courseEnrollmentId,
+          });
+          setAddingStudentTeam(null);
+        }}
+      />
+
+      {/* Modal Chuyển thành viên sang nhóm khác */}
+      <MoveTeamMemberDialog
+        open={Boolean(movingMember)}
+        member={movingMember?.member ?? null}
+        currentTeam={movingMember?.currentTeam ?? null}
+        teams={sortedTeams}
+        isSaving={moveTeamMemberMutation.isPending}
+        onOpenChange={(open) => !open && setMovingMember(null)}
+        onConfirm={async (targetTeamId, courseEnrollmentId) => {
+          await moveTeamMemberMutation.mutateAsync({
+            targetTeamId,
+            courseEnrollmentId,
+          });
+          setMovingMember(null);
+        }}
+      />
+
+      {/* Modal Phân sinh viên chưa có nhóm vào 1 nhóm đích */}
+      <AssignUnassignedStudentDialog
+        open={Boolean(assigningStudent)}
+        student={assigningStudent}
+        teams={sortedTeams}
+        isSaving={addTeamMemberMutation.isPending}
+        onOpenChange={(open) => !open && setAssigningStudent(null)}
+        onConfirm={async (teamId, courseEnrollmentId) => {
+          await addTeamMemberMutation.mutateAsync({
+            teamId,
+            courseEnrollmentId,
+          });
+          setAssigningStudent(null);
+        }}
       />
     </div>
   );

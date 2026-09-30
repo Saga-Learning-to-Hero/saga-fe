@@ -29,6 +29,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { CustomSelect } from "@/components/common/custom-select";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TaskEvidencePanel } from "./task-evidence-panel";
 import { TaskWorkSessionControl } from "./task-work-session-control";
@@ -197,8 +198,16 @@ export function IssueDetailsModal({
     });
   }, [issueTypes]);
 
+  const currentMember = useMemo(() => {
+    return (
+      teamMembers.find(
+        (m) => Boolean(currentUserStudentCode) && m.studentCode === currentUserStudentCode
+      ) || (teamMembers.length > 0 ? teamMembers[0] : undefined)
+    );
+  }, [teamMembers, currentUserStudentCode]);
+
   const matchedAssignee = useMemo(() => {
-    if (!issue?.assignee) return teamMembers[0];
+    if (!issue?.assignee) return currentMember || teamMembers[0];
     return (
       teamMembers.find(
         (m) =>
@@ -207,7 +216,7 @@ export function IssueDetailsModal({
           m.name === issue.assignee?.name
       ) || issue.assignee
     );
-  }, [issue, teamMembers]);
+  }, [issue, teamMembers, currentMember]);
 
   const initialAssigneeAccountId =
     issue?.assignee?.accountId ||
@@ -247,6 +256,13 @@ export function IssueDetailsModal({
     };
   });
 
+  const displayAssignee = useMemo(() => {
+    if (!isEditing) {
+      return currentMember;
+    }
+    return form.assignee;
+  }, [isEditing, currentMember, form.assignee]);
+
   const [prevTaskDetail, setPrevTaskDetail] = useState(taskDetail);
   if (taskDetail !== prevTaskDetail) {
     setPrevTaskDetail(taskDetail);
@@ -279,15 +295,7 @@ export function IssueDetailsModal({
   if (!hasSyncedJiraAssignee && taskOptions?.assignableUsers && taskOptions.assignableUsers.length > 0) {
     setHasSyncedJiraAssignee(true);
     if (!form.assigneeAccountId) {
-      if (!isEditing) {
-        const currentMember = teamMembers.find((m) => m.studentCode === currentUserStudentCode);
-        const currentUser = taskOptions.assignableUsers.find((u) =>
-          currentMember ? matchJiraUserWithMember(u.displayName, [currentMember]) : false
-        );
-        if (currentUser) {
-          setForm((prev) => ({ ...prev, assigneeAccountId: currentUser.accountId }));
-        }
-      } else if (issue?.assignee && issue.assignee.name !== "Chưa phân công") {
+      if (isEditing && issue?.assignee && issue.assignee.name !== "Chưa phân công") {
         const matched = taskOptions.assignableUsers.find((u) =>
           matchJiraUserWithMember(u.displayName, [issue.assignee])
         );
@@ -539,9 +547,11 @@ export function IssueDetailsModal({
                 : undefined;
 
           const assigneeAccountId =
-            form.assigneeAccountId && form.assigneeAccountId.trim()
-              ? form.assigneeAccountId.trim()
-              : undefined;
+            !isTeamLeader
+              ? undefined
+              : form.assigneeAccountId && form.assigneeAccountId.trim()
+                ? form.assigneeAccountId.trim()
+                : undefined;
 
           const res = await createTaskMutation.mutateAsync({
             projectId,
@@ -570,21 +580,29 @@ export function IssueDetailsModal({
         ? matchJiraUserWithMember(matchedUser.displayName, teamMembers)
         : teamMembers.find((m) => m.id === form.assigneeAccountId);
 
-      const finalAssignee = form.assigneeAccountId
+      const finalAssignee = !isTeamLeader && !isEditing
         ? {
-          id: matchedMember?.id || form.assigneeAccountId,
-          name: matchedUser?.displayName || matchedMember?.name || form.assignee?.name || "Người dùng Jira",
-          avatar: matchedMember?.avatar || "",
-          studentCode: matchedMember?.studentCode || "",
-          accountId: form.assigneeAccountId,
-        }
-        : {
-          id: "unassigned",
-          name: "Chưa phân công",
-          avatar: "",
-          studentCode: "",
-          accountId: null,
-        };
+            id: currentMember?.id || "me",
+            name: currentMember?.name || "Bạn",
+            avatar: currentMember?.avatar || "",
+            studentCode: currentMember?.studentCode || currentUserStudentCode,
+            accountId: null,
+          }
+        : form.assigneeAccountId
+          ? {
+              id: matchedMember?.id || form.assigneeAccountId,
+              name: matchedUser?.displayName || matchedMember?.name || form.assignee?.name || "Người dùng Jira",
+              avatar: matchedMember?.avatar || "",
+              studentCode: matchedMember?.studentCode || (isOwner ? currentUserStudentCode : ""),
+              accountId: form.assigneeAccountId,
+            }
+          : {
+              id: "unassigned",
+              name: "Chưa phân công",
+              avatar: "",
+              studentCode: "",
+              accountId: null,
+            };
 
       const finalIssue: SprintIssue = {
         id: issue?.id || `issue-${Date.now()}`,
@@ -855,35 +873,59 @@ export function IssueDetailsModal({
                   <Label htmlFor="issue-assignee" className="text-xs font-semibold flex items-center gap-1.5 text-foreground">
                     <span>Người thực hiện</span>
                     {!isTeamLeader ? (
-                      <span className="text-xs font-normal text-muted-foreground">(Cố định về bạn)</span>
+                      <span className="text-xs font-normal text-muted-foreground">
+                        {!isEditing ? "(Tự động gán cho bạn)" : "(Chỉ Leader mới có thể đổi)"}
+                      </span>
                     ) : (
                       <span className="text-xs font-normal text-muted-foreground">(Tùy chọn)</span>
                     )}
                   </Label>
-                  <CustomSelect
-                    id="issue-assignee"
-                    disabled={!canEdit || !isTeamLeader}
-                    value={form.assigneeAccountId}
-                    onChange={(val) => {
-                      const matchedUser = taskOptions?.assignableUsers?.find((u) => u.accountId === val);
-                      const matchedMember = matchedUser
-                        ? matchJiraUserWithMember(matchedUser.displayName, teamMembers)
-                        : teamMembers.find((m) => m.id === val);
-                      setForm((f) => ({
-                        ...f,
-                        assigneeAccountId: val,
-                        assignee: matchedMember || (matchedUser ? {
-                          id: matchedUser.accountId,
-                          name: matchedUser.displayName,
-                          avatar: "",
-                          studentCode: "",
-                          accountId: matchedUser.accountId,
-                        } : f.assignee),
-                      }));
-                    }}
-                    placeholder="Chọn người thực hiện..."
-                    options={assigneeOptions}
-                  />
+                  {!isTeamLeader ? (
+                    <div
+                      id="issue-assignee"
+                      className="flex items-center gap-2.5 h-9 px-3 rounded-xl border border-border/70 bg-muted/40 text-xs text-foreground select-none"
+                    >
+                      <Avatar className="w-5 h-5 rounded-full border border-primary/20 shrink-0">
+                        <AvatarImage src={displayAssignee?.avatar || undefined} />
+                        <AvatarFallback className="text-[9px] font-bold bg-primary/10 text-primary font-mono">
+                          {(displayAssignee?.name || "SV").slice(0, 2).toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span className="font-medium truncate">
+                        {displayAssignee?.name || (!isEditing ? "Chính bạn" : "Chưa phân công")}
+                      </span>
+                      {(displayAssignee?.studentCode || (!isEditing && currentUserStudentCode)) && (
+                        <span className="text-xs text-muted-foreground font-mono">
+                          ({displayAssignee?.studentCode || currentUserStudentCode})
+                        </span>
+                      )}
+                    </div>
+                  ) : (
+                    <CustomSelect
+                      id="issue-assignee"
+                      disabled={!canEdit}
+                      value={form.assigneeAccountId}
+                      onChange={(val) => {
+                        const matchedUser = taskOptions?.assignableUsers?.find((u) => u.accountId === val);
+                        const matchedMember = matchedUser
+                          ? matchJiraUserWithMember(matchedUser.displayName, teamMembers)
+                          : teamMembers.find((m) => m.id === val);
+                        setForm((f) => ({
+                          ...f,
+                          assigneeAccountId: val,
+                          assignee: matchedMember || (matchedUser ? {
+                            id: matchedUser.accountId,
+                            name: matchedUser.displayName,
+                            avatar: "",
+                            studentCode: "",
+                            accountId: matchedUser.accountId,
+                          } : f.assignee),
+                        }));
+                      }}
+                      placeholder="Chọn người thực hiện..."
+                      options={assigneeOptions}
+                    />
+                  )}
                 </div>
 
                 <div className="space-y-1.5">

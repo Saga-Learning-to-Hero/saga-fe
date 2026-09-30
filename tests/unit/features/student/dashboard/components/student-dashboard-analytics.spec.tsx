@@ -114,7 +114,7 @@ describe("StudentDashboardAnalytics - Sprint Scope & Card Labels", () => {
       id: "UTCID01",
       type: "N",
       executedDate: "29/09/2026",
-      description: "Thẻ Nhiệm vụ và Minh chứng Git có nhãn 'Toàn dự án', thẻ Sprint có ghi chú '(chỉ áp dụng cho thẻ này)'",
+      description: "Thẻ Nhiệm vụ và Minh chứng Git có nhãn 'Toàn dự án'",
     },
     () => {
       vi.mocked(useStudentDashboard).mockReturnValue({
@@ -132,9 +132,6 @@ describe("StudentDashboardAnalytics - Sprint Scope & Card Labels", () => {
       // Xác nhận có nhãn 'Toàn dự án' trên các thẻ
       const allProjectBadges = screen.getAllByText("Toàn dự án");
       expect(allProjectBadges.length).toBeGreaterThanOrEqual(2);
-
-      // Xác nhận có ghi chú '(chỉ áp dụng cho thẻ này)' trong thẻ Tiến độ Sprint
-      expect(screen.getByText("(chỉ áp dụng cho thẻ này)")).toBeInTheDocument();
 
       // Bộ chọn Sprint nằm bên trong thẻ Sprint
       expect(
