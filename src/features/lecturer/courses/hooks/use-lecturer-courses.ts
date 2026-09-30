@@ -1,9 +1,9 @@
 import { showErrorToast } from "@/lib/api-error";
-import { useQuery, useQueryClient, type QueryClient } from "@tanstack/react-query";
+import { keepPreviousData, useQuery, useQueryClient, type QueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { LecturerCourseService } from "../api/lecturer-course-service";
-import type { LecturerCourseResponse } from "../types/lecturer-course";
+import type { CoursePagedParams, LecturerCourseResponse } from "../types/lecturer-course";
 import { LecturerTeamService } from "@/features/lecturer/teams/api/lecturer-team-service";
 import { LecturerWeightsService } from "@/features/lecturer/contribution/api/lecturer-weights-service";
 import { CONTRIBUTION_QUERY_KEYS } from "@/features/lecturer/contribution/hooks/use-lecturer-contribution";
@@ -12,6 +12,8 @@ import { lecturerCoursesPath } from "../lib/course-routes";
 
 export const LECTURER_COURSE_QUERY_KEYS = {
   lecturerCourses: ["lecturerCourses"] as const,
+  lecturerCoursesPaged: (params: CoursePagedParams) =>
+    ["lecturerCourses", "paged", params] as const,
   lecturerCourse: (courseId: string) => ["lecturerCourse", courseId] as const,
   lecturerRoster: (courseId: string) => ["lecturerRoster", courseId] as const,
   lecturerCourseProgress: (courseId: string) => ["lecturerCourseProgress", courseId] as const,
@@ -33,6 +35,19 @@ export function useLecturerCourses(options?: { enabled?: boolean }) {
     queryKey: LECTURER_COURSE_QUERY_KEYS.lecturerCourses,
     queryFn: () => LecturerCourseService.getCourses(),
     staleTime: 1000 * 60 * 5,
+    enabled: options?.enabled ?? true,
+  });
+}
+
+export function useLecturerCoursesPaged(
+  params: CoursePagedParams,
+  options?: { enabled?: boolean },
+) {
+  return useQuery({
+    queryKey: LECTURER_COURSE_QUERY_KEYS.lecturerCoursesPaged(params),
+    queryFn: () => LecturerCourseService.getCoursesPaged(params),
+    staleTime: 1000 * 60 * 5,
+    placeholderData: keepPreviousData,
     enabled: options?.enabled ?? true,
   });
 }

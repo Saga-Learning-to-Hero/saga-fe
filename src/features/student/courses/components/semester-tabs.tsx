@@ -16,34 +16,52 @@ import {
 
 interface SemesterTabsProps {
   semesters: StudentSemester[];
-  activeSemesterCode: string;
-  onSelectSemester: (code: string) => void;
+  activeSemesterId: string;
+  onSelectSemester: (semesterId: string) => void;
+  includeAll?: boolean;
 }
 
 export function SemesterTabs({
   semesters,
-  activeSemesterCode,
+  activeSemesterId,
   onSelectSemester,
+  includeAll = false,
 }: SemesterTabsProps) {
   const topSemesters = useMemo(() => semesters.slice(0, 5), [semesters]);
   const olderSemesters = useMemo(() => semesters.slice(5), [semesters]);
 
   const activeOlderSemester = useMemo(
-    () => olderSemesters.find((s) => s.code === activeSemesterCode),
-    [olderSemesters, activeSemesterCode]
+    () => olderSemesters.find((s) => s.id === activeSemesterId),
+    [olderSemesters, activeSemesterId]
   );
 
   const isOlderActive = Boolean(activeOlderSemester);
+  const isAllActive = includeAll && !activeSemesterId;
 
   return (
     <div className="w-full bg-card/60 backdrop-blur-sm p-1.5 rounded-xl border border-border/80 shadow-xs">
       <nav className="flex items-center gap-1.5 overflow-x-auto no-scrollbar scroll-smooth">
+        {includeAll && (
+          <button
+            type="button"
+            onClick={() => onSelectSemester("")}
+            className={cn(
+              "group relative flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold tracking-tight transition-all duration-200 cursor-pointer shrink-0 select-none",
+              isAllActive
+                ? "bg-primary text-primary-foreground shadow-sm shadow-primary/25"
+                : "text-muted-foreground hover:text-foreground hover:bg-muted/70"
+            )}
+          >
+            <span>Tất cả</span>
+          </button>
+        )}
         {topSemesters.map((sem) => {
-          const isActive = sem.code === activeSemesterCode;
+          const isActive = sem.id === activeSemesterId;
           return (
             <button
               key={sem.id}
-              onClick={() => onSelectSemester(sem.code)}
+              type="button"
+              onClick={() => onSelectSemester(sem.id)}
               className={cn(
                 "group relative flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold tracking-tight transition-all duration-200 cursor-pointer shrink-0 select-none",
                 isActive
@@ -104,11 +122,11 @@ export function SemesterTabs({
               <DropdownMenuSeparator />
 
               {olderSemesters.map((sem) => {
-                const isSelected = sem.code === activeSemesterCode;
+                const isSelected = sem.id === activeSemesterId;
                 return (
                   <DropdownMenuItem
                     key={sem.id}
-                    onClick={() => onSelectSemester(sem.code)}
+                    onClick={() => onSelectSemester(sem.id)}
                     className={cn(
                       "flex items-center justify-between text-xs py-2 px-2.5 rounded-lg cursor-pointer my-0.5",
                       isSelected && "bg-primary/10 text-primary font-semibold"

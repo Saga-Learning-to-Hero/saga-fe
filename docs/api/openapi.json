@@ -112,9 +112,7 @@
   "paths": {
     "/api/projects/{projectId}/tasks/{taskId}/sprint": {
       "put": {
-        "tags": [
-          "Project projections"
-        ],
+        "tags": ["Project projections"],
         "summary": "Move task to a Jira sprint or backlog (sprintId=null). Team Leader only.",
         "operationId": "putTaskSprint",
         "parameters": [
@@ -168,9 +166,7 @@
     },
     "/api/projects/{projectId}/integrations/jira": {
       "put": {
-        "tags": [
-          "Project integrations"
-        ],
+        "tags": ["Project integrations"],
         "summary": "Save the selected Jira site, project, and optional board. Team Leader only.",
         "operationId": "saveJira",
         "parameters": [
@@ -226,9 +222,7 @@
         ]
       },
       "delete": {
-        "tags": [
-          "Project integrations"
-        ],
+        "tags": ["Project integrations"],
         "operationId": "deleteJira",
         "parameters": [
           {
@@ -255,9 +249,7 @@
     },
     "/api/projects/{projectId}/integrations/github/repositories": {
       "get": {
-        "tags": [
-          "Project integrations"
-        ],
+        "tags": ["Project integrations"],
         "operationId": "githubRepos",
         "parameters": [
           {
@@ -292,9 +284,7 @@
         ]
       },
       "put": {
-        "tags": [
-          "Project integrations"
-        ],
+        "tags": ["Project integrations"],
         "summary": "Select GitHub repositories for the project. Team Leader only.",
         "operationId": "selectGithubRepos",
         "parameters": [
@@ -360,9 +350,7 @@
     },
     "/api/projects/{projectId}/group-weights": {
       "get": {
-        "tags": [
-          "Project group weights"
-        ],
+        "tags": ["Project group weights"],
         "summary": "Get project-group contribution weights",
         "operationId": "get",
         "parameters": [
@@ -395,9 +383,7 @@
         ]
       },
       "put": {
-        "tags": [
-          "Project group weights"
-        ],
+        "tags": ["Project group weights"],
         "summary": "Create or replace project-group contribution weights",
         "operationId": "put",
         "parameters": [
@@ -442,9 +428,7 @@
     },
     "/api/lecturer/courses/{courseId}/teams/{teamId}/leader": {
       "put": {
-        "tags": [
-          "Lecturer teams"
-        ],
+        "tags": ["Lecturer teams"],
         "summary": "Atomically replace the team Leader (old Leader becomes Member)",
         "operationId": "replaceLeader",
         "parameters": [
@@ -498,9 +482,7 @@
     },
     "/api/lecturer/courses/{courseId}/contribution-slice-weights": {
       "get": {
-        "tags": [
-          "Course contribution weights"
-        ],
+        "tags": ["Course contribution weights"],
         "summary": "Get course contribution slice weights",
         "operationId": "getWeights",
         "parameters": [
@@ -533,9 +515,7 @@
         ]
       },
       "put": {
-        "tags": [
-          "Course contribution weights"
-        ],
+        "tags": ["Course contribution weights"],
         "summary": "Update course contribution slice weights (COURSE mode)",
         "operationId": "putWeights",
         "parameters": [
@@ -580,9 +560,7 @@
     },
     "/api/lecturer/courses/{courseId}/contribution-config-mode": {
       "put": {
-        "tags": [
-          "Course contribution weights"
-        ],
+        "tags": ["Course contribution weights"],
         "summary": "Switch COURSE vs PROJECT_GROUP contribution weight mode",
         "operationId": "putMode",
         "parameters": [
@@ -627,9 +605,7 @@
     },
     "/api/admin/subjects/{subjectId}/syllabi/{syllabusVersionId}/structure": {
       "put": {
-        "tags": [
-          "Admin subjects"
-        ],
+        "tags": ["Admin subjects"],
         "summary": "Replace DRAFT academic structure atomically",
         "operationId": "replaceStructure",
         "parameters": [
@@ -683,9 +659,7 @@
     },
     "/api/admin/semesters/active": {
       "get": {
-        "tags": [
-          "Admin semesters"
-        ],
+        "tags": ["Admin semesters"],
         "summary": "Get the platform active semester setting",
         "operationId": "getActive",
         "responses": {
@@ -707,9 +681,7 @@
         ]
       },
       "put": {
-        "tags": [
-          "Admin semesters"
-        ],
+        "tags": ["Admin semesters"],
         "summary": "Set the platform active semester",
         "operationId": "setActive",
         "requestBody": {
@@ -743,9 +715,7 @@
     },
     "/api/webhooks/jira": {
       "post": {
-        "tags": [
-          "provider-webhook-controller"
-        ],
+        "tags": ["provider-webhook-controller"],
         "operationId": "jira",
         "parameters": [
           {
@@ -782,9 +752,7 @@
     },
     "/api/webhooks/github": {
       "post": {
-        "tags": [
-          "provider-webhook-controller"
-        ],
+        "tags": ["provider-webhook-controller"],
         "operationId": "github",
         "parameters": [
           {
@@ -821,9 +789,7 @@
     },
     "/api/teams/{teamId}/contribution-override": {
       "post": {
-        "tags": [
-          "Team contribution"
-        ],
+        "tags": ["Team contribution"],
         "summary": "Override a member contribution percentage",
         "operationId": "override",
         "parameters": [
@@ -868,9 +834,7 @@
     },
     "/api/tasks/{taskId}/work-sessions/{sessionId}/stop": {
       "post": {
-        "tags": [
-          "Task evidence"
-        ],
+        "tags": ["Task evidence"],
         "operationId": "stop",
         "parameters": [
           {
@@ -914,9 +878,7 @@
     },
     "/api/tasks/{taskId}/work-sessions/start": {
       "post": {
-        "tags": [
-          "Task evidence"
-        ],
+        "tags": ["Task evidence"],
         "operationId": "start",
         "parameters": [
           {
@@ -951,9 +913,7 @@
     },
     "/api/tasks/{taskId}/web-links": {
       "get": {
-        "tags": [
-          "Task evidence"
-        ],
+        "tags": ["Task evidence"],
         "summary": "List URLs attached to a task",
         "operationId": "listLinks",
         "parameters": [
@@ -989,9 +949,7 @@
         ]
       },
       "post": {
-        "tags": [
-          "Task evidence"
-        ],
+        "tags": ["Task evidence"],
         "summary": "Attach an http(s) URL to a task as DOCUMENT/RESEARCH evidence",
         "operationId": "addLink",
         "parameters": [
@@ -1036,9 +994,7 @@
     },
     "/api/tasks/{taskId}/files": {
       "get": {
-        "tags": [
-          "Task evidence"
-        ],
+        "tags": ["Task evidence"],
         "summary": "List files students uploaded to a task",
         "operationId": "listFiles",
         "parameters": [
@@ -1074,9 +1030,7 @@
         ]
       },
       "post": {
-        "tags": [
-          "Task evidence"
-        ],
+        "tags": ["Task evidence"],
         "summary": "Upload a document or image as DOCUMENT/RESEARCH evidence",
         "operationId": "addFile",
         "parameters": [
@@ -1101,9 +1055,7 @@
                     "format": "binary"
                   }
                 },
-                "required": [
-                  "file"
-                ]
+                "required": ["file"]
               }
             }
           }
@@ -1129,9 +1081,7 @@
     },
     "/api/tasks/{taskId}/contribution-confirmations": {
       "post": {
-        "tags": [
-          "Task evidence"
-        ],
+        "tags": ["Task evidence"],
         "operationId": "confirm",
         "parameters": [
           {
@@ -1182,9 +1132,7 @@
     },
     "/api/student/courses/{courseId}/project": {
       "get": {
-        "tags": [
-          "Student project"
-        ],
+        "tags": ["Student project"],
         "summary": "Get the current student's team project in a course",
         "operationId": "get_1",
         "parameters": [
@@ -1217,9 +1165,7 @@
         ]
       },
       "post": {
-        "tags": [
-          "Student project"
-        ],
+        "tags": ["Student project"],
         "summary": "Create the team project. Team Leader only.",
         "operationId": "create",
         "parameters": [
@@ -1264,9 +1210,7 @@
     },
     "/api/projects/{projectId}/tasks": {
       "get": {
-        "tags": [
-          "Project projections"
-        ],
+        "tags": ["Project projections"],
         "summary": "List projected Jira tasks. Owning team students and assigned lecturer.",
         "operationId": "tasks",
         "parameters": [
@@ -1302,9 +1246,7 @@
         ]
       },
       "post": {
-        "tags": [
-          "Project projections"
-        ],
+        "tags": ["Project projections"],
         "summary": "Create a Jira issue then reconcile local Task projection. Team Leader only.",
         "operationId": "createTask",
         "parameters": [
@@ -1349,9 +1291,7 @@
     },
     "/api/projects/{projectId}/tasks/{taskId}/transition": {
       "post": {
-        "tags": [
-          "Project projections"
-        ],
+        "tags": ["Project projections"],
         "summary": "Transition Jira issue status via available transitions. Team Leader only.",
         "operationId": "transitionTask",
         "parameters": [
@@ -1405,9 +1345,7 @@
     },
     "/api/projects/{projectId}/sync": {
       "post": {
-        "tags": [
-          "Project projections"
-        ],
+        "tags": ["Project projections"],
         "summary": "Team Leader recovery enqueue for Jira/GitHub backfill. Does not wait for provider HTTP.",
         "operationId": "sync",
         "parameters": [
@@ -1442,9 +1380,7 @@
     },
     "/api/projects/{projectId}/sprints": {
       "get": {
-        "tags": [
-          "Project projections"
-        ],
+        "tags": ["Project projections"],
         "summary": "List/reconcile Jira Software sprints for the project's board.",
         "operationId": "sprints",
         "parameters": [
@@ -1480,9 +1416,7 @@
         ]
       },
       "post": {
-        "tags": [
-          "Project projections"
-        ],
+        "tags": ["Project projections"],
         "summary": "Create a Jira Software sprint then reconcile projection. Team Leader only.",
         "operationId": "createSprint",
         "parameters": [
@@ -1527,9 +1461,7 @@
     },
     "/api/projects/{projectId}/integrations/jira/connect": {
       "post": {
-        "tags": [
-          "Project integrations"
-        ],
+        "tags": ["Project integrations"],
         "operationId": "jiraConnect",
         "parameters": [
           {
@@ -1571,9 +1503,7 @@
     },
     "/api/projects/{projectId}/integrations/github/connect": {
       "post": {
-        "tags": [
-          "Project integrations"
-        ],
+        "tags": ["Project integrations"],
         "summary": "Start GitHub App connect/reconnect for the project. Team Leader only.",
         "description": "Default: resolve historical provenance / discover existing installations via user OAuth.\nPass installationId to bind a chosen candidate (re-verified after OAuth).\nPass mode=install_new to open GitHub App /installations/new (another account/org) without\nguessing among candidates — does not delete historical git_repo rows.\n",
         "operationId": "githubConnect",
@@ -1634,9 +1564,7 @@
     },
     "/api/lecturer/courses/{courseId}/teams/import/preview": {
       "post": {
-        "tags": [
-          "Lecturer teams"
-        ],
+        "tags": ["Lecturer teams"],
         "summary": "Validate a team assignment workbook without writing teams",
         "operationId": "preview",
         "parameters": [
@@ -1661,9 +1589,7 @@
                     "format": "binary"
                   }
                 },
-                "required": [
-                  "file"
-                ]
+                "required": ["file"]
               }
             }
           }
@@ -1689,9 +1615,7 @@
     },
     "/api/lecturer/courses/{courseId}/teams/import/confirm": {
       "post": {
-        "tags": [
-          "Lecturer teams"
-        ],
+        "tags": ["Lecturer teams"],
         "summary": "Atomically apply a team assignment preview token",
         "operationId": "confirm_1",
         "parameters": [
@@ -1736,9 +1660,7 @@
     },
     "/api/integrations/jira/link": {
       "post": {
-        "tags": [
-          "Personal integrations"
-        ],
+        "tags": ["Personal integrations"],
         "operationId": "startJira",
         "parameters": [
           {
@@ -1766,9 +1688,7 @@
     },
     "/api/integrations/github/link": {
       "post": {
-        "tags": [
-          "Personal integrations"
-        ],
+        "tags": ["Personal integrations"],
         "operationId": "startGithub",
         "parameters": [
           {
@@ -1796,9 +1716,7 @@
     },
     "/api/auth/register": {
       "post": {
-        "tags": [
-          "Authentication"
-        ],
+        "tags": ["Authentication"],
         "summary": "Public Student registration",
         "description": "Public, CSRF-protected. Always creates `STUDENT`. The client must not send `role`. Institutional `@fpt.edu.vn` / `@fe.edu.vn` (and other configured Google hosted domains) must use Google login instead.\n\nDoes not create a session. Does not create Team membership. Matching PENDING course invitations for this verified email + StudentCode are claimed automatically.\n",
         "operationId": "register",
@@ -1904,9 +1822,7 @@
     },
     "/api/auth/reauth/webauthn": {
       "post": {
-        "tags": [
-          "reauth-controller"
-        ],
+        "tags": ["reauth-controller"],
         "operationId": "webauthn",
         "responses": {
           "200": {
@@ -1924,9 +1840,7 @@
     },
     "/api/auth/reauth/password": {
       "post": {
-        "tags": [
-          "reauth-controller"
-        ],
+        "tags": ["reauth-controller"],
         "operationId": "password",
         "requestBody": {
           "content": {
@@ -1954,9 +1868,7 @@
     },
     "/api/auth/password/setup": {
       "post": {
-        "tags": [
-          "Authentication"
-        ],
+        "tags": ["Authentication"],
         "summary": "Set first local password",
         "description": "Requires an authenticated Google-linked STUDENT or LECTURER session with password_hash NULL. CSRF required. Does not overwrite an existing hash. ADMIN cannot use this endpoint.",
         "operationId": "setupPassword",
@@ -2019,9 +1931,7 @@
     },
     "/api/auth/password/reset": {
       "post": {
-        "tags": [
-          "Authentication"
-        ],
+        "tags": ["Authentication"],
         "summary": "Reset password using an emailed one-time token",
         "description": "Public, CSRF-protected. Consumes the one-time token from the reset email and sets a new local password with the existing password policy/encoder. Works even for Google-linked accounts that have no local password yet — Google login remains available afterward.\n",
         "operationId": "resetPassword",
@@ -2077,9 +1987,7 @@
     },
     "/api/auth/password/forgot": {
       "post": {
-        "tags": [
-          "Authentication"
-        ],
+        "tags": ["Authentication"],
         "summary": "Request a password reset link",
         "description": "Public, CSRF-protected. Always returns the same generic response, whether or not the email is registered, Google-only, or already has a local password — this endpoint never reveals account existence. If the account exists, a one-time reset link is emailed via the transactional email outbox.\n",
         "operationId": "forgotPassword",
@@ -2109,9 +2017,7 @@
     },
     "/api/auth/logout": {
       "post": {
-        "tags": [
-          "Authentication"
-        ],
+        "tags": ["Authentication"],
         "summary": "End session",
         "description": "Invalidates the server session, clears cookie `SAGA_SESSION`, and rotates cookie `XSRF-TOKEN` to a fresh anonymous CSRF token so the next POST (e.g. login) can succeed without an extra GET /csrf. CSRF required.",
         "operationId": "logout",
@@ -2138,9 +2044,7 @@
     },
     "/api/auth/login": {
       "post": {
-        "tags": [
-          "Authentication"
-        ],
+        "tags": ["Authentication"],
         "summary": "Local username/email login",
         "description": "Public endpoint, CSRF-protected. On success the server sets HttpOnly cookie `SAGA_SESSION` (server-side session in Valkey/Redis). The client must not send `role`. Identifier with `@` is treated as email; otherwise username.\n\nCall `GET /api/auth/csrf` first. Missing/invalid CSRF returns 403 ACCESS_DENIED.\n",
         "operationId": "login",
@@ -2215,9 +2119,7 @@
     },
     "/api/admin/subjects": {
       "get": {
-        "tags": [
-          "Admin subjects"
-        ],
+        "tags": ["Admin subjects"],
         "summary": "List subjects",
         "operationId": "list",
         "parameters": [
@@ -2235,10 +2137,7 @@
             "required": false,
             "schema": {
               "type": "string",
-              "enum": [
-                "ACTIVE",
-                "INACTIVE"
-              ]
+              "enum": ["ACTIVE", "INACTIVE"]
             }
           },
           {
@@ -2272,9 +2171,7 @@
         ]
       },
       "post": {
-        "tags": [
-          "Admin subjects"
-        ],
+        "tags": ["Admin subjects"],
         "summary": "Create a subject catalog entry",
         "operationId": "create_1",
         "requestBody": {
@@ -2308,9 +2205,7 @@
     },
     "/api/admin/subjects/{subjectId}/syllabi": {
       "get": {
-        "tags": [
-          "Admin subjects"
-        ],
+        "tags": ["Admin subjects"],
         "summary": "List syllabus versions for a subject",
         "operationId": "listSyllabi",
         "parameters": [
@@ -2346,9 +2241,7 @@
         ]
       },
       "post": {
-        "tags": [
-          "Admin subjects"
-        ],
+        "tags": ["Admin subjects"],
         "summary": "Create a DRAFT syllabus version",
         "operationId": "createSyllabus",
         "parameters": [
@@ -2393,9 +2286,7 @@
     },
     "/api/admin/subjects/{subjectId}/syllabi/{syllabusVersionId}/publish": {
       "post": {
-        "tags": [
-          "Admin subjects"
-        ],
+        "tags": ["Admin subjects"],
         "summary": "Publish a DRAFT syllabus; the snapshot becomes immutable",
         "operationId": "publish",
         "parameters": [
@@ -2439,9 +2330,7 @@
     },
     "/api/admin/subjects/{subjectId}/syllabi/{syllabusVersionId}/archive": {
       "post": {
-        "tags": [
-          "Admin subjects"
-        ],
+        "tags": ["Admin subjects"],
         "summary": "Archive a PUBLISHED syllabus; it remains readable",
         "operationId": "archive",
         "parameters": [
@@ -2485,9 +2374,7 @@
     },
     "/api/admin/semesters": {
       "get": {
-        "tags": [
-          "Admin semesters"
-        ],
+        "tags": ["Admin semesters"],
         "summary": "List semesters",
         "operationId": "list_1",
         "responses": {
@@ -2512,9 +2399,7 @@
         ]
       },
       "post": {
-        "tags": [
-          "Admin semesters"
-        ],
+        "tags": ["Admin semesters"],
         "summary": "Create a semester",
         "operationId": "create_2",
         "requestBody": {
@@ -2548,9 +2433,7 @@
     },
     "/api/admin/dev/email-test": {
       "post": {
-        "tags": [
-          "Admin mail smoke"
-        ],
+        "tags": ["Admin mail smoke"],
         "summary": "Enqueue a test email and run the outbox worker once",
         "operationId": "sendTest",
         "requestBody": {
@@ -2584,9 +2467,7 @@
     },
     "/api/admin/courses": {
       "get": {
-        "tags": [
-          "Admin courses"
-        ],
+        "tags": ["Admin courses"],
         "summary": "List courses",
         "operationId": "list_2",
         "parameters": [
@@ -2649,9 +2530,7 @@
         ]
       },
       "post": {
-        "tags": [
-          "Admin courses"
-        ],
+        "tags": ["Admin courses"],
         "summary": "Create a course offering pinned to a published syllabus",
         "operationId": "create_3",
         "requestBody": {
@@ -2685,9 +2564,7 @@
     },
     "/api/admin/courses/{courseId}/roster/students": {
       "post": {
-        "tags": [
-          "Admin course roster"
-        ],
+        "tags": ["Admin course roster"],
         "summary": "Add or invite one student using the same rules as roster import",
         "operationId": "addStudent",
         "parameters": [
@@ -2732,9 +2609,7 @@
     },
     "/api/admin/courses/{courseId}/roster/import/preview": {
       "post": {
-        "tags": [
-          "Admin course roster"
-        ],
+        "tags": ["Admin course roster"],
         "summary": "Validate an XLSX roster without mutating membership",
         "operationId": "preview_1",
         "parameters": [
@@ -2759,9 +2634,7 @@
                     "format": "binary"
                   }
                 },
-                "required": [
-                  "file"
-                ]
+                "required": ["file"]
               }
             }
           }
@@ -2787,9 +2660,7 @@
     },
     "/api/admin/courses/{courseId}/roster/import/confirm": {
       "post": {
-        "tags": [
-          "Admin course roster"
-        ],
+        "tags": ["Admin course roster"],
         "summary": "Atomically apply a roster preview token",
         "operationId": "confirm_2",
         "parameters": [
@@ -2834,9 +2705,7 @@
     },
     "/api/admin/classes": {
       "get": {
-        "tags": [
-          "Admin classes"
-        ],
+        "tags": ["Admin classes"],
         "summary": "List academic classes, optionally filtered by semester",
         "operationId": "list_3",
         "parameters": [
@@ -2872,9 +2741,7 @@
         ]
       },
       "post": {
-        "tags": [
-          "Admin classes"
-        ],
+        "tags": ["Admin classes"],
         "summary": "Create an academic class in a semester",
         "operationId": "create_4",
         "requestBody": {
@@ -2908,9 +2775,7 @@
     },
     "/api/users/me/profile": {
       "get": {
-        "tags": [
-          "User Profile"
-        ],
+        "tags": ["User Profile"],
         "summary": "Get my profile",
         "description": "Returns the authenticated caller's own profile. studentCode is included only for STUDENT accounts.",
         "operationId": "getMyProfile",
@@ -2947,9 +2812,7 @@
         ]
       },
       "patch": {
-        "tags": [
-          "User Profile"
-        ],
+        "tags": ["User Profile"],
         "summary": "Update my profile",
         "description": "Partial update of the caller's own profile. Only fields present in the request body are changed; omitted fields are left untouched. Editable fields: `fullName` (non-blank if present) and `avatarUrl` (must be http(s):// if non-blank; an empty string clears it). All other fields (id, email, username, role, accountStatus, studentCode) are read-only and cannot be changed here. Returns the full updated profile and refreshes the session so `/api/auth/me` reflects the change immediately.\n",
         "operationId": "updateMyProfile",
@@ -3024,9 +2887,7 @@
     },
     "/api/projects/{projectId}/tasks/{taskId}": {
       "get": {
-        "tags": [
-          "Project projections"
-        ],
+        "tags": ["Project projections"],
         "summary": "Get one projected Jira task.",
         "operationId": "task",
         "parameters": [
@@ -3068,9 +2929,7 @@
         ]
       },
       "delete": {
-        "tags": [
-          "Project projections"
-        ],
+        "tags": ["Project projections"],
         "summary": "Delete Jira issue then soft-delete local projection. Team Leader only.",
         "operationId": "deleteTask",
         "parameters": [
@@ -3105,9 +2964,7 @@
         ]
       },
       "patch": {
-        "tags": [
-          "Project projections"
-        ],
+        "tags": ["Project projections"],
         "summary": "Update Jira issue fields then reconcile projection. Team Leader only. Status via /transition.",
         "operationId": "patchTask",
         "parameters": [
@@ -3161,9 +3018,7 @@
     },
     "/api/projects/{projectId}/sprints/{sprintId}": {
       "get": {
-        "tags": [
-          "Project projections"
-        ],
+        "tags": ["Project projections"],
         "summary": "Get one projected sprint.",
         "operationId": "sprint",
         "parameters": [
@@ -3205,9 +3060,7 @@
         ]
       },
       "delete": {
-        "tags": [
-          "Project projections"
-        ],
+        "tags": ["Project projections"],
         "summary": "Delete a Jira Software sprint then soft-delete projection. Team Leader only.",
         "operationId": "deleteSprint",
         "parameters": [
@@ -3242,9 +3095,7 @@
         ]
       },
       "patch": {
-        "tags": [
-          "Project projections"
-        ],
+        "tags": ["Project projections"],
         "summary": "Update a Jira Software sprint then reconcile projection. Team Leader only.",
         "operationId": "patchSprint",
         "parameters": [
@@ -3298,9 +3149,7 @@
     },
     "/api/lecturer/courses/{courseId}/team-members/{teamMemberId}/team": {
       "patch": {
-        "tags": [
-          "Lecturer teams"
-        ],
+        "tags": ["Lecturer teams"],
         "summary": "Move a team member to another team in the same course",
         "operationId": "moveMember",
         "parameters": [
@@ -3354,9 +3203,7 @@
     },
     "/api/integrations/jira/{identityId}/primary": {
       "patch": {
-        "tags": [
-          "Personal integrations"
-        ],
+        "tags": ["Personal integrations"],
         "operationId": "jiraPrimary",
         "parameters": [
           {
@@ -3388,9 +3235,7 @@
     },
     "/api/integrations/github/{identityId}/primary": {
       "patch": {
-        "tags": [
-          "Personal integrations"
-        ],
+        "tags": ["Personal integrations"],
         "operationId": "githubPrimary",
         "parameters": [
           {
@@ -3422,9 +3267,7 @@
     },
     "/api/admin/subjects/{subjectId}": {
       "get": {
-        "tags": [
-          "Admin subjects"
-        ],
+        "tags": ["Admin subjects"],
         "summary": "Get subject detail including syllabus versions",
         "operationId": "get_2",
         "parameters": [
@@ -3457,9 +3300,7 @@
         ]
       },
       "patch": {
-        "tags": [
-          "Admin subjects"
-        ],
+        "tags": ["Admin subjects"],
         "summary": "Update subject catalog fields or ACTIVE/INACTIVE status",
         "operationId": "patch",
         "parameters": [
@@ -3504,9 +3345,7 @@
     },
     "/api/admin/subjects/{subjectId}/syllabi/{syllabusVersionId}": {
       "get": {
-        "tags": [
-          "Admin subjects"
-        ],
+        "tags": ["Admin subjects"],
         "summary": "Get syllabus version with ordered academic structure",
         "operationId": "getSyllabus",
         "parameters": [
@@ -3548,9 +3387,7 @@
         ]
       },
       "patch": {
-        "tags": [
-          "Admin subjects"
-        ],
+        "tags": ["Admin subjects"],
         "summary": "Update DRAFT syllabus metadata",
         "operationId": "patchSyllabus",
         "parameters": [
@@ -3604,9 +3441,7 @@
     },
     "/api/admin/semesters/{semesterId}": {
       "get": {
-        "tags": [
-          "Admin semesters"
-        ],
+        "tags": ["Admin semesters"],
         "summary": "Get a semester",
         "operationId": "get_3",
         "parameters": [
@@ -3639,9 +3474,7 @@
         ]
       },
       "patch": {
-        "tags": [
-          "Admin semesters"
-        ],
+        "tags": ["Admin semesters"],
         "summary": "Update semester code, name, or dates",
         "operationId": "patch_1",
         "parameters": [
@@ -3686,9 +3519,7 @@
     },
     "/api/admin/courses/{courseId}": {
       "get": {
-        "tags": [
-          "Admin courses"
-        ],
+        "tags": ["Admin courses"],
         "summary": "Get a course with class, semester, subject, syllabus, and lecturer",
         "operationId": "get_4",
         "parameters": [
@@ -3721,9 +3552,7 @@
         ]
       },
       "patch": {
-        "tags": [
-          "Admin courses"
-        ],
+        "tags": ["Admin courses"],
         "summary": "Update course name, lecturer, or syllabus pin when no downstream data exists",
         "operationId": "patch_2",
         "parameters": [
@@ -3768,9 +3597,7 @@
     },
     "/api/admin/classes/{classId}": {
       "get": {
-        "tags": [
-          "Admin classes"
-        ],
+        "tags": ["Admin classes"],
         "summary": "Get an academic class",
         "operationId": "get_5",
         "parameters": [
@@ -3803,9 +3630,7 @@
         ]
       },
       "patch": {
-        "tags": [
-          "Admin classes"
-        ],
+        "tags": ["Admin classes"],
         "summary": "Update class code or name",
         "operationId": "patch_3",
         "parameters": [
@@ -3850,9 +3675,7 @@
     },
     "/api/teams/{teamId}/contribution-evaluation": {
       "get": {
-        "tags": [
-          "Team contribution"
-        ],
+        "tags": ["Team contribution"],
         "summary": "Evaluate team contribution percentages",
         "operationId": "evaluate",
         "parameters": [
@@ -3887,9 +3710,7 @@
     },
     "/api/tasks/{taskId}/files/{fileId}": {
       "get": {
-        "tags": [
-          "Task evidence"
-        ],
+        "tags": ["Task evidence"],
         "summary": "Download a student-uploaded task file",
         "operationId": "downloadFile",
         "parameters": [
@@ -3932,9 +3753,7 @@
         ]
       },
       "delete": {
-        "tags": [
-          "Task evidence"
-        ],
+        "tags": ["Task evidence"],
         "summary": "Remove a student-uploaded file from a task",
         "operationId": "deleteFile",
         "parameters": [
@@ -3971,9 +3790,7 @@
     },
     "/api/student/project-types": {
       "get": {
-        "tags": [
-          "Student project types"
-        ],
+        "tags": ["Student project types"],
         "summary": "List seeded project types",
         "operationId": "list_4",
         "responses": {
@@ -4000,9 +3817,7 @@
     },
     "/api/student/courses": {
       "get": {
-        "tags": [
-          "Student courses"
-        ],
+        "tags": ["Student courses"],
         "summary": "List the authenticated student's ACTIVE enrolled courses.",
         "operationId": "listMine",
         "responses": {
@@ -4029,9 +3844,7 @@
     },
     "/api/student/courses/{courseId}/team": {
       "get": {
-        "tags": [
-          "Student team"
-        ],
+        "tags": ["Student team"],
         "summary": "Get the current student's team in a course",
         "operationId": "myTeam",
         "parameters": [
@@ -4066,9 +3879,7 @@
     },
     "/api/projects/{projectId}/tasks/{taskId}/transitions": {
       "get": {
-        "tags": [
-          "Project projections"
-        ],
+        "tags": ["Project projections"],
         "summary": "List available Jira transitions for a task. Team Leader only.",
         "operationId": "taskTransitions",
         "parameters": [
@@ -4115,9 +3926,7 @@
     },
     "/api/projects/{projectId}/tasks/{taskId}/commits": {
       "get": {
-        "tags": [
-          "Project projections"
-        ],
+        "tags": ["Project projections"],
         "summary": "List commits linked to a projected task via task_git_commit_link.",
         "operationId": "taskCommits",
         "parameters": [
@@ -4164,9 +3973,7 @@
     },
     "/api/projects/{projectId}/tasks/options": {
       "get": {
-        "tags": [
-          "Project projections"
-        ],
+        "tags": ["Project projections"],
         "summary": "Provider-backed create/edit options (issue types, priorities, assignable users, estimation, sprints).",
         "operationId": "taskOptions",
         "parameters": [
@@ -4201,9 +4008,7 @@
     },
     "/api/projects/{projectId}/sync-status": {
       "get": {
-        "tags": [
-          "Project projections"
-        ],
+        "tags": ["Project projections"],
         "summary": "Latest sync_job_log status per provider for the project.",
         "operationId": "syncStatus",
         "parameters": [
@@ -4241,9 +4046,7 @@
     },
     "/api/projects/{projectId}/repos/{repoId}/branches": {
       "get": {
-        "tags": [
-          "Project projections"
-        ],
+        "tags": ["Project projections"],
         "summary": "Live GitHub branch inventory for one ACTIVE project repository.",
         "description": "Authoritative source for the repository branch dropdown and current branch count --\nfetched directly from GitHub (fully paginated), not derived from GitCommit.headRef.\nheadRef only records the single branch a commit was observed under during ingestion,\nnot complete branch membership, so commit-by-branch filtering via\ncommit.headRef == selectedBranch remains best-effort/observed-branch filtering only.\n",
         "operationId": "repositoryBranches",
@@ -4288,9 +4091,7 @@
     },
     "/api/projects/{projectId}/progress": {
       "get": {
-        "tags": [
-          "Project projections"
-        ],
+        "tags": ["Project projections"],
         "summary": "Factual Task/Sprint/Commit/evidence progress dashboard for the project.",
         "description": "Read-only aggregation of canonical DB projections — no live Jira/GitHub call, no\ngrading/contribution formula (see GET /api/teams/{teamId}/contribution-evaluation\nfor that). Same reader authorization as every other endpoint on this controller.\n",
         "operationId": "projectProgress",
@@ -4326,9 +4127,7 @@
     },
     "/api/projects/{projectId}/progress/members/{studentId}": {
       "get": {
-        "tags": [
-          "Project projections"
-        ],
+        "tags": ["Project projections"],
         "summary": "Factual per-member progress drill-down (assigned tasks, commit/evidence attribution).",
         "operationId": "memberProgress",
         "parameters": [
@@ -4372,9 +4171,7 @@
     },
     "/api/projects/{projectId}/integrations": {
       "get": {
-        "tags": [
-          "Project integrations"
-        ],
+        "tags": ["Project integrations"],
         "operationId": "summary",
         "parameters": [
           {
@@ -4408,9 +4205,7 @@
     },
     "/api/projects/{projectId}/integrations/jira/sites": {
       "get": {
-        "tags": [
-          "Project integrations"
-        ],
+        "tags": ["Project integrations"],
         "operationId": "jiraSites",
         "parameters": [
           {
@@ -4447,9 +4242,7 @@
     },
     "/api/projects/{projectId}/integrations/jira/projects": {
       "get": {
-        "tags": [
-          "Project integrations"
-        ],
+        "tags": ["Project integrations"],
         "operationId": "jiraProjects",
         "parameters": [
           {
@@ -4494,9 +4287,7 @@
     },
     "/api/projects/{projectId}/integrations/jira/boards": {
       "get": {
-        "tags": [
-          "Project integrations"
-        ],
+        "tags": ["Project integrations"],
         "operationId": "jiraBoards",
         "parameters": [
           {
@@ -4549,9 +4340,7 @@
     },
     "/api/projects/{projectId}/integrations/github/setup/callback": {
       "get": {
-        "tags": [
-          "Project integrations"
-        ],
+        "tags": ["Project integrations"],
         "operationId": "githubSetup",
         "parameters": [
           {
@@ -4594,9 +4383,7 @@
     },
     "/api/projects/{projectId}/integrations/github/reconnect/candidates": {
       "get": {
-        "tags": [
-          "Project integrations"
-        ],
+        "tags": ["Project integrations"],
         "summary": "List GitHub installation candidates for reconnect selection. Team Leader only.",
         "description": "Returns OAuth-verified eligible candidates when present; otherwise historical provenance hints. Display fields only — no tokens.",
         "operationId": "githubReconnectCandidates",
@@ -4635,9 +4422,7 @@
     },
     "/api/projects/{projectId}/events": {
       "get": {
-        "tags": [
-          "Project realtime"
-        ],
+        "tags": ["Project realtime"],
         "summary": "Subscribe to project realtime invalidation events. Refetch REST after each event.",
         "operationId": "subscribe",
         "parameters": [
@@ -4672,9 +4457,7 @@
     },
     "/api/projects/{projectId}/commits": {
       "get": {
-        "tags": [
-          "Project projections"
-        ],
+        "tags": ["Project projections"],
         "summary": "List projected GitHub commits. Owning team students and assigned lecturer.",
         "operationId": "commits",
         "parameters": [
@@ -4712,9 +4495,7 @@
     },
     "/api/lecturer/courses": {
       "get": {
-        "tags": [
-          "Lecturer courses"
-        ],
+        "tags": ["Lecturer courses"],
         "summary": "List courses assigned to the current lecturer",
         "operationId": "list_5",
         "responses": {
@@ -4741,9 +4522,7 @@
     },
     "/api/lecturer/courses/{courseId}": {
       "get": {
-        "tags": [
-          "Lecturer courses"
-        ],
+        "tags": ["Lecturer courses"],
         "summary": "Get an assigned course",
         "operationId": "get_6",
         "parameters": [
@@ -4778,9 +4557,7 @@
     },
     "/api/lecturer/courses/{courseId}/teams": {
       "get": {
-        "tags": [
-          "Lecturer teams"
-        ],
+        "tags": ["Lecturer teams"],
         "summary": "List teams and members for an assigned course",
         "operationId": "list_6",
         "parameters": [
@@ -4815,9 +4592,7 @@
     },
     "/api/lecturer/courses/{courseId}/teams/template": {
       "get": {
-        "tags": [
-          "Lecturer teams"
-        ],
+        "tags": ["Lecturer teams"],
         "summary": "Download the team assignment XLSX template",
         "operationId": "template",
         "parameters": [
@@ -4853,9 +4628,7 @@
     },
     "/api/lecturer/courses/{courseId}/roster": {
       "get": {
-        "tags": [
-          "Lecturer courses"
-        ],
+        "tags": ["Lecturer courses"],
         "summary": "List ACTIVE enrollments for an assigned course",
         "operationId": "roster",
         "parameters": [
@@ -4890,9 +4663,7 @@
     },
     "/api/lecturer/courses/{courseId}/progress": {
       "get": {
-        "tags": [
-          "Lecturer courses"
-        ],
+        "tags": ["Lecturer courses"],
         "summary": "Lightweight Task/Sprint/Commit progress summary per Team in this course, for dashboard cards.",
         "description": "Bounded, constant-query-count aggregation — not per-team live provider calls. Click a team's projectId into GET /api/projects/{projectId}/progress for full detail.",
         "operationId": "progress",
@@ -4926,69 +4697,9 @@
         ]
       }
     },
-    "/api/lecturer/courses/{courseId}/dashboard": {
-      "get": {
-        "tags": [
-          "Lecturer courses"
-        ],
-        "summary": "Course dashboard aggregate for the assigned lecturer.",
-        "description": "Single GET for the lecturer course overview. Backend owns KPI and risk. Default scope is CURRENT_SPRINT. Do not send ALL_TIME or PREVIOUS_SPRINT. teams[].reminder is always null. Do not use this payload as contribution percentages.",
-        "operationId": "lecturerCourseDashboard",
-        "parameters": [
-          {
-            "name": "courseId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          },
-          {
-            "name": "scope",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "string",
-              "enum": [
-                "CURRENT_SPRINT"
-              ]
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK — empty teams/sprint still 200",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/LecturerCourseDashboardResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "INVALID_DASHBOARD_SCOPE"
-          },
-          "403": {
-            "description": "LECTURER_COURSE_FORBIDDEN"
-          },
-          "404": {
-            "description": "COURSE_NOT_FOUND"
-          }
-        },
-        "security": [
-          {
-            "SAGA_SESSION": []
-          }
-        ]
-      }
-    },
     "/api/lecturer/courses/{courseId}/contribution-team-weights": {
       "get": {
-        "tags": [
-          "Course contribution weights"
-        ],
+        "tags": ["Course contribution weights"],
         "summary": "List whether each team has project-group weights",
         "operationId": "teamWeights",
         "parameters": [
@@ -5023,9 +4734,7 @@
     },
     "/api/integrations/me": {
       "get": {
-        "tags": [
-          "Personal integrations"
-        ],
+        "tags": ["Personal integrations"],
         "summary": "List linked provider identities for the current user",
         "operationId": "me",
         "responses": {
@@ -5044,9 +4753,7 @@
     },
     "/api/integrations/jira/team/callback": {
       "get": {
-        "tags": [
-          "integration-callback-controller"
-        ],
+        "tags": ["integration-callback-controller"],
         "operationId": "jiraTeam",
         "parameters": [
           {
@@ -5091,9 +4798,7 @@
     },
     "/api/integrations/jira/oauth/callback": {
       "get": {
-        "tags": [
-          "Personal integrations"
-        ],
+        "tags": ["Personal integrations"],
         "operationId": "jiraCallback",
         "parameters": [
           {
@@ -5138,9 +4843,7 @@
     },
     "/api/integrations/github/setup/callback": {
       "get": {
-        "tags": [
-          "integration-callback-controller"
-        ],
+        "tags": ["integration-callback-controller"],
         "operationId": "githubSetup_1",
         "parameters": [
           {
@@ -5178,9 +4881,7 @@
     },
     "/api/integrations/github/oauth/callback": {
       "get": {
-        "tags": [
-          "Personal integrations"
-        ],
+        "tags": ["Personal integrations"],
         "operationId": "githubCallback",
         "parameters": [
           {
@@ -5209,9 +4910,7 @@
     },
     "/api/auth/me": {
       "get": {
-        "tags": [
-          "Authentication"
-        ],
+        "tags": ["Authentication"],
         "summary": "Current session",
         "description": "Returns the authenticated user when cookie `SAGA_SESSION` is valid. Anonymous callers receive authenticated=false. Role is loaded from MySQL.",
         "operationId": "me_1",
@@ -5256,9 +4955,7 @@
     },
     "/api/auth/csrf": {
       "get": {
-        "tags": [
-          "Authentication"
-        ],
+        "tags": ["Authentication"],
         "summary": "Issue CSRF token",
         "description": "Returns the raw CSRF token and sets cookie `XSRF-TOKEN`. This endpoint has no request parameters or body. Send the same value as header `X-XSRF-TOKEN` on POST/PUT/PATCH/DELETE. Swagger UI copies the cookie automatically.",
         "operationId": "csrf",
@@ -5278,9 +4975,7 @@
     },
     "/api/admin/lecturers": {
       "get": {
-        "tags": [
-          "Admin lecturers"
-        ],
+        "tags": ["Admin lecturers"],
         "summary": "List lecturers for Admin management and Course lecturer dropdown",
         "description": "Default list is assignable lecturers only (LECTURER + ACTIVE), matching COURSE_LECTURER_INVALID. Use lecturerProfileId as CreateCourseRequest.lecturerId. Do not send userId.",
         "operationId": "list_7",
@@ -5326,9 +5021,7 @@
     },
     "/api/admin/courses/{courseId}/roster": {
       "get": {
-        "tags": [
-          "Admin course roster"
-        ],
+        "tags": ["Admin course roster"],
         "summary": "List enrollments and pending invitations for a course",
         "operationId": "get_7",
         "parameters": [
@@ -5363,9 +5056,7 @@
     },
     "/api/admin/courses/{courseId}/roster/template": {
       "get": {
-        "tags": [
-          "Admin course roster"
-        ],
+        "tags": ["Admin course roster"],
         "summary": "Download the course roster XLSX template",
         "operationId": "template_1",
         "parameters": [
@@ -5401,9 +5092,7 @@
     },
     "/api/tasks/{taskId}/web-links/{linkId}": {
       "delete": {
-        "tags": [
-          "Task evidence"
-        ],
+        "tags": ["Task evidence"],
         "summary": "Remove a URL from a task",
         "operationId": "deleteLink",
         "parameters": [
@@ -5440,9 +5129,7 @@
     },
     "/api/projects/{projectId}/integrations/github": {
       "delete": {
-        "tags": [
-          "Project integrations"
-        ],
+        "tags": ["Project integrations"],
         "operationId": "deleteGithub",
         "parameters": [
           {
@@ -5469,9 +5156,7 @@
     },
     "/api/integrations/jira/{identityId}": {
       "delete": {
-        "tags": [
-          "Personal integrations"
-        ],
+        "tags": ["Personal integrations"],
         "operationId": "unlinkJira",
         "parameters": [
           {
@@ -5493,9 +5178,7 @@
     },
     "/api/integrations/github/{identityId}": {
       "delete": {
-        "tags": [
-          "Personal integrations"
-        ],
+        "tags": ["Personal integrations"],
         "operationId": "unlinkGithub",
         "parameters": [
           {
@@ -5517,9 +5200,7 @@
     },
     "/api/admin/courses/{courseId}/roster/invitations/{invitationId}": {
       "delete": {
-        "tags": [
-          "Admin course roster"
-        ],
+        "tags": ["Admin course roster"],
         "summary": "Cancel a pending roster invitation",
         "description": "Cancels a PENDING/SENT StudentCourseInvitation (status becomes CANCELLED); the row is kept, not deleted, so a later signup cannot silently claim it. A later POST .../roster/students for the same email/studentCode reuses and reactivates this same row. Repeating this call on an already-cancelled/claimed invitation returns 409 ROSTER_STUDENT_ALREADY_REMOVED.\n",
         "operationId": "cancelInvitation",
@@ -5564,9 +5245,7 @@
     },
     "/api/admin/courses/{courseId}/roster/enrollments/{enrollmentId}": {
       "delete": {
-        "tags": [
-          "Admin course roster"
-        ],
+        "tags": ["Admin course roster"],
         "summary": "Remove an actively-enrolled student from the roster",
         "description": "Withdraws the CourseEnrollment (status becomes WITHDRAWN). Never deletes the UserAccount, StudentProfile, or historical records. If the student is the ACTIVE Leader of a team in this course, this is refused with 409 TEAM_LEADER_REMOVAL_REQUIRES_REASSIGNMENT — reassign the team's Leader first, then retry. Repeating this call on an already-withdrawn enrollment returns 409 ROSTER_STUDENT_ALREADY_REMOVED.\n",
         "operationId": "removeEnrollment",
@@ -5611,9 +5290,7 @@
     },
     "/oauth2/authorization/google": {
       "get": {
-        "tags": [
-          "Authentication"
-        ],
+        "tags": ["Authentication"],
         "summary": "Start Google OIDC login",
         "description": "Browser entry point when Google OAuth is configured. This is a redirect, not a JSON login. Requires `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` in the server environment. Do not put the client secret in Swagger.\n",
         "responses": {
@@ -5625,9 +5302,7 @@
     },
     "/api/teams/{teamId}/sprints/{sprintId}/peer-reviews": {
       "get": {
-        "tags": [
-          "Peer review"
-        ],
+        "tags": ["Peer review"],
         "summary": "List peer reviews for the team in this sprint. Members, assigned lecturer, or ADMIN.",
         "operationId": "list",
         "parameters": [
@@ -5669,9 +5344,7 @@
         ]
       },
       "post": {
-        "tags": [
-          "Peer review"
-        ],
+        "tags": ["Peer review"],
         "summary": "Create or update a peer review for one teammate in this sprint. Student members only.",
         "operationId": "submit",
         "parameters": [
@@ -5725,9 +5398,7 @@
     },
     "/api/teams/{teamId}/sprints/{sprintId}/peer-reviews/candidates": {
       "get": {
-        "tags": [
-          "Peer review"
-        ],
+        "tags": ["Peer review"],
         "summary": "Teammates the current student can review in this sprint. Student members only.",
         "operationId": "candidates",
         "parameters": [
@@ -5771,9 +5442,7 @@
     },
     "/api/teams/{teamId}/peer-review-rubric": {
       "get": {
-        "tags": [
-          "Peer review"
-        ],
+        "tags": ["Peer review"],
         "summary": "Active rubric for the team (subject rubric, else global).",
         "operationId": "teamRubric",
         "parameters": [
@@ -5808,9 +5477,7 @@
     },
     "/api/peer-review-rubrics/default": {
       "get": {
-        "tags": [
-          "Peer review"
-        ],
+        "tags": ["Peer review"],
         "summary": "Global peer-review rubric (subject_id is null).",
         "operationId": "defaultRubric",
         "responses": {
@@ -6005,10 +5672,7 @@
             "example": "68"
           }
         },
-        "required": [
-          "cloudId",
-          "jiraProjectId"
-        ]
+        "required": ["cloudId", "jiraProjectId"]
       },
       "ApiErrorResponse": {
         "type": "object",
@@ -6038,17 +5702,11 @@
           "role": {
             "type": "string",
             "description": "Repository role inside the SAGA project",
-            "enum": [
-              "FRONTEND",
-              "BACKEND",
-              "OTHER"
-            ],
+            "enum": ["FRONTEND", "BACKEND", "OTHER"],
             "example": "FRONTEND"
           }
         },
-        "required": [
-          "repositoryId"
-        ]
+        "required": ["repositoryId"]
       },
       "ProjectGroupWeightsRequest": {
         "type": "object",
@@ -6116,9 +5774,7 @@
             "format": "uuid"
           }
         },
-        "required": [
-          "teamMemberId"
-        ]
+        "required": ["teamMemberId"]
       },
       "LecturerCourseTeamsResponse": {
         "type": "object",
@@ -6218,10 +5874,7 @@
         "properties": {
           "mode": {
             "type": "string",
-            "enum": [
-              "COURSE",
-              "PROJECT_GROUP"
-            ]
+            "enum": ["COURSE", "PROJECT_GROUP"]
           },
           "codeWeight": {
             "type": "number"
@@ -6242,15 +5895,10 @@
         "properties": {
           "mode": {
             "type": "string",
-            "enum": [
-              "COURSE",
-              "PROJECT_GROUP"
-            ]
+            "enum": ["COURSE", "PROJECT_GROUP"]
           }
         },
-        "required": [
-          "mode"
-        ]
+        "required": ["mode"]
       },
       "ActivityInput": {
         "type": "object",
@@ -6273,11 +5921,7 @@
             "format": "int32"
           }
         },
-        "required": [
-          "code",
-          "name",
-          "orderIndex"
-        ]
+        "required": ["code", "name", "orderIndex"]
       },
       "DeliverableInput": {
         "type": "object",
@@ -6306,11 +5950,7 @@
             }
           }
         },
-        "required": [
-          "code",
-          "name",
-          "orderIndex"
-        ]
+        "required": ["code", "name", "orderIndex"]
       },
       "LearningOutcomeInput": {
         "type": "object",
@@ -6333,11 +5973,7 @@
             "format": "int32"
           }
         },
-        "required": [
-          "code",
-          "name",
-          "orderIndex"
-        ]
+        "required": ["code", "name", "orderIndex"]
       },
       "LearningUnitInput": {
         "type": "object",
@@ -6366,11 +6002,7 @@
             }
           }
         },
-        "required": [
-          "code",
-          "name",
-          "orderIndex"
-        ]
+        "required": ["code", "name", "orderIndex"]
       },
       "PhaseInput": {
         "type": "object",
@@ -6411,11 +6043,7 @@
             }
           }
         },
-        "required": [
-          "code",
-          "name",
-          "orderIndex"
-        ]
+        "required": ["code", "name", "orderIndex"]
       },
       "SyllabusStructureRequest": {
         "type": "object",
@@ -6439,10 +6067,7 @@
             }
           }
         },
-        "required": [
-          "learningOutcomes",
-          "phases"
-        ]
+        "required": ["learningOutcomes", "phases"]
       },
       "ActivityResponse": {
         "type": "object",
@@ -6606,11 +6231,7 @@
           },
           "status": {
             "type": "string",
-            "enum": [
-              "DRAFT",
-              "PUBLISHED",
-              "ARCHIVED"
-            ]
+            "enum": ["DRAFT", "PUBLISHED", "ARCHIVED"]
           },
           "titleEnglish": {
             "type": "string"
@@ -6691,9 +6312,7 @@
             "format": "uuid"
           }
         },
-        "required": [
-          "semesterId"
-        ]
+        "required": ["semesterId"]
       },
       "SemesterResponse": {
         "type": "object",
@@ -6743,10 +6362,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "percentage",
-          "studentProfileId"
-        ]
+        "required": ["percentage", "studentProfileId"]
       },
       "ContributionOverrideResponse": {
         "type": "object",
@@ -6784,9 +6400,7 @@
             "minLength": 0
           }
         },
-        "required": [
-          "url"
-        ]
+        "required": ["url"]
       },
       "TaskWebLinkResponse": {
         "type": "object",
@@ -6868,9 +6482,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "name"
-        ]
+        "required": ["name"]
       },
       "CreatedBy": {
         "type": "object",
@@ -6979,9 +6591,7 @@
             }
           }
         },
-        "required": [
-          "summary"
-        ]
+        "required": ["summary"]
       },
       "TransitionProjectTaskRequest": {
         "type": "object",
@@ -7028,9 +6638,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "name"
-        ]
+        "required": ["name"]
       },
       "ProjectSprintResponse": {
         "type": "object",
@@ -7212,9 +6820,7 @@
             "minLength": 1
           }
         },
-        "required": [
-          "previewToken"
-        ]
+        "required": ["previewToken"]
       },
       "TeamConfirmResponse": {
         "type": "object",
@@ -7352,9 +6958,7 @@
             "minLength": 1
           }
         },
-        "required": [
-          "password"
-        ]
+        "required": ["password"]
       },
       "PasswordSetupRequest": {
         "type": "object",
@@ -7371,10 +6975,7 @@
             "minLength": 1
           }
         },
-        "required": [
-          "confirmPassword",
-          "newPassword"
-        ]
+        "required": ["confirmPassword", "newPassword"]
       },
       "AuthMeResponse": {
         "type": "object",
@@ -7432,10 +7033,7 @@
             "minLength": 1
           }
         },
-        "required": [
-          "newPassword",
-          "token"
-        ]
+        "required": ["newPassword", "token"]
       },
       "ResetPasswordResponse": {
         "type": "object",
@@ -7454,9 +7052,7 @@
             "minLength": 1
           }
         },
-        "required": [
-          "email"
-        ]
+        "required": ["email"]
       },
       "ForgotPasswordResponse": {
         "type": "object",
@@ -7483,10 +7079,7 @@
             "minLength": 1
           }
         },
-        "required": [
-          "identifier",
-          "password"
-        ]
+        "required": ["identifier", "password"]
       },
       "CreateSubjectRequest": {
         "type": "object",
@@ -7507,10 +7100,7 @@
             "minLength": 0
           }
         },
-        "required": [
-          "code",
-          "nameEnglish"
-        ]
+        "required": ["code", "nameEnglish"]
       },
       "SubjectResponse": {
         "type": "object",
@@ -7530,10 +7120,7 @@
           },
           "status": {
             "type": "string",
-            "enum": [
-              "ACTIVE",
-              "INACTIVE"
-            ]
+            "enum": ["ACTIVE", "INACTIVE"]
           },
           "createdAt": {
             "type": "string",
@@ -7570,11 +7157,7 @@
           },
           "status": {
             "type": "string",
-            "enum": [
-              "DRAFT",
-              "PUBLISHED",
-              "ARCHIVED"
-            ]
+            "enum": ["DRAFT", "PUBLISHED", "ARCHIVED"]
           },
           "titleEnglish": {
             "type": "string"
@@ -7658,9 +7241,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "versionLabel"
-        ]
+        "required": ["versionLabel"]
       },
       "CreateSemesterRequest": {
         "type": "object",
@@ -7684,12 +7265,7 @@
             "format": "date"
           }
         },
-        "required": [
-          "code",
-          "endDate",
-          "name",
-          "startDate"
-        ]
+        "required": ["code", "endDate", "name", "startDate"]
       },
       "DevEmailTestRequest": {
         "type": "object",
@@ -7703,9 +7279,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "to"
-        ]
+        "required": ["to"]
       },
       "DevEmailTestResponse": {
         "type": "object",
@@ -7716,13 +7290,7 @@
           },
           "deliveryStatus": {
             "type": "string",
-            "enum": [
-              "PENDING",
-              "PROCESSING",
-              "SENT",
-              "FAILED",
-              "CANCELLED"
-            ]
+            "enum": ["PENDING", "PROCESSING", "SENT", "FAILED", "CANCELLED"]
           },
           "attemptCount": {
             "type": "integer",
@@ -7829,11 +7397,7 @@
           },
           "syllabusStatus": {
             "type": "string",
-            "enum": [
-              "DRAFT",
-              "PUBLISHED",
-              "ARCHIVED"
-            ]
+            "enum": ["DRAFT", "PUBLISHED", "ARCHIVED"]
           },
           "lecturerId": {
             "type": "string",
@@ -7884,11 +7448,7 @@
             "minLength": 0
           }
         },
-        "required": [
-          "email",
-          "fullName",
-          "studentCode"
-        ]
+        "required": ["email", "fullName", "studentCode"]
       },
       "AddRosterStudentResponse": {
         "type": "object",
@@ -8051,9 +7611,7 @@
             "minLength": 1
           }
         },
-        "required": [
-          "previewToken"
-        ]
+        "required": ["previewToken"]
       },
       "RosterConfirmResponse": {
         "type": "object",
@@ -8102,10 +7660,7 @@
             "minLength": 0
           }
         },
-        "required": [
-          "classCode",
-          "semesterId"
-        ]
+        "required": ["classCode", "semesterId"]
       },
       "AcademicClassResponse": {
         "type": "object",
@@ -8269,9 +7824,7 @@
             "format": "uuid"
           }
         },
-        "required": [
-          "targetTeamId"
-        ]
+        "required": ["targetTeamId"]
       },
       "PatchSubjectRequest": {
         "type": "object",
@@ -8293,10 +7846,7 @@
           },
           "status": {
             "type": "string",
-            "enum": [
-              "ACTIVE",
-              "INACTIVE"
-            ]
+            "enum": ["ACTIVE", "INACTIVE"]
           }
         }
       },
@@ -8438,10 +7988,7 @@
           },
           "configMode": {
             "type": "string",
-            "enum": [
-              "COURSE",
-              "PROJECT_GROUP"
-            ]
+            "enum": ["COURSE", "PROJECT_GROUP"]
           },
           "sliceWeights": {
             "$ref": "#/components/schemas/ContributionSliceWeightsResponse"
@@ -8469,11 +8016,7 @@
           },
           "roleInTeam": {
             "type": "string",
-            "enum": [
-              "LEADER",
-              "MEMBER",
-              "MENTOR"
-            ]
+            "enum": ["LEADER", "MEMBER", "MENTOR"]
           },
           "sliceScore": {
             "type": "number"
@@ -9484,56 +9027,6 @@
           }
         }
       },
-      "LecturerCourseDashboardResponse": {
-        "type": "object",
-        "description": "Lecturer course dashboard aggregate. See docs/FRONTEND_LECTURER_COURSE_DASHBOARD_API.md.",
-        "properties": {
-          "courseId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "courseCode": {
-            "type": "string"
-          },
-          "subjectCode": {
-            "type": "string"
-          },
-          "subjectName": {
-            "type": "string"
-          },
-          "classCode": {
-            "type": "string"
-          },
-          "semesterCode": {
-            "type": "string"
-          },
-          "scope": {
-            "type": "string",
-            "enum": [
-              "CURRENT_SPRINT"
-            ]
-          },
-          "generatedAt": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "riskPolicy": {
-            "type": "object"
-          },
-          "summary": {
-            "type": "object"
-          },
-          "taskStatusTotals": {
-            "type": "object"
-          },
-          "teams": {
-            "type": "array",
-            "items": {
-              "type": "object"
-            }
-          }
-        }
-      },
       "ContributionTeamWeightRowResponse": {
         "type": "object",
         "properties": {
@@ -9566,10 +9059,7 @@
           },
           "mode": {
             "type": "string",
-            "enum": [
-              "COURSE",
-              "PROJECT_GROUP"
-            ]
+            "enum": ["COURSE", "PROJECT_GROUP"]
           },
           "teams": {
             "type": "array",
@@ -9588,10 +9078,7 @@
           },
           "provider": {
             "type": "string",
-            "enum": [
-              "JIRA",
-              "GITHUB"
-            ]
+            "enum": ["JIRA", "GITHUB"]
           },
           "providerSubject": {
             "type": "string"
@@ -9728,9 +9215,7 @@
             "minLength": 0
           }
         },
-        "required": [
-          "revieweeId"
-        ]
+        "required": ["revieweeId"]
       },
       "PeerReviewResponse": {
         "type": "object",
@@ -9876,10 +9361,7 @@
             "minimum": 1
           }
         },
-        "required": [
-          "rubricId",
-          "starRating"
-        ]
+        "required": ["rubricId", "starRating"]
       },
       "Candidate": {
         "type": "object",

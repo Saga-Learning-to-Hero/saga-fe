@@ -5,9 +5,7 @@ import {
   lecturerCourseGradesPath,
   lecturerCourseGraphPath,
   lecturerCourseContributionPath,
-  lecturerCoursePeerReviewsPath,
   lecturerCourseTeamsPath,
-  lecturerCourseAiPath,
 } from "@/features/lecturer/courses/lib/course-routes";
 
 export type NavMatchMode = "exact" | "prefix";
@@ -90,13 +88,6 @@ export const ADMIN_NAV: NavGroup[] = [
         icon: "ScrollText",
         match: "exact",
       },
-      {
-        id: "admin-notifications",
-        title: "Thông báo hệ thống",
-        href: "/admin/notifications",
-        icon: "Bell",
-        match: "exact",
-      },
     ],
   },
 ];
@@ -119,21 +110,14 @@ export function getLecturerNavItems(courseId: string): NavItem[] {
     },
     {
       id: "course-graph",
-      title: "Đồ thị & Mạng lưới SNA",
+      title: "Đồ thị",
       href: lecturerCourseGraphPath(courseId),
       icon: "GitGraph",
       match: "exact",
     },
     {
-      id: "course-peer-reviews",
-      title: "Đánh giá chéo",
-      href: lecturerCoursePeerReviewsPath(courseId),
-      icon: "UserCheck",
-      match: "exact",
-    },
-    {
       id: "course-grades",
-      title: "Bảng điểm đóng góp",
+      title: "Bảng đóng góp",
       href: lecturerCourseGradesPath(courseId),
       icon: "ScrollText",
       match: "exact",
@@ -143,13 +127,6 @@ export function getLecturerNavItems(courseId: string): NavItem[] {
       title: "Cấu hình trọng số",
       href: lecturerCourseContributionPath(courseId),
       icon: "SlidersHorizontal",
-      match: "prefix",
-    },
-    {
-      id: "course-ai",
-      title: "Trí tuệ nhân tạo AI",
-      href: lecturerCourseAiPath(courseId),
-      icon: "Sparkles",
       match: "prefix",
     },
   ];
@@ -172,6 +149,13 @@ export function getStudentNavItems(): NavItem[] {
       match: "exact",
     },
     {
+      id: "student-graph",
+      title: "Đồ thị",
+      href: "/student/graph",
+      icon: "GitGraph",
+      match: "exact",
+    },
+    {
       id: "student-sprint",
       title: "Tasks",
       href: "/student/sprint-progress",
@@ -186,31 +170,18 @@ export function getStudentNavItems(): NavItem[] {
       match: "exact",
     },
     {
-      id: "student-graph",
-      title: "Đồ thị Traceability",
-      href: "/student/graph",
-      icon: "GitGraph",
-      match: "exact",
-    },
-    {
       id: "student-assessment",
       title: "Đánh giá chéo",
       href: "/student/assessment",
       icon: "UserCheck",
       match: "exact",
+      badge: "Sắp mở",
     },
     {
       id: "student-contribution",
       title: "Đóng góp",
       href: "/student/contribution",
       icon: "PieChart",
-      match: "exact",
-    },
-    {
-      id: "student-ai",
-      title: "Trí tuệ nhân tạo AI",
-      href: "/student/ai",
-      icon: "Sparkles",
       match: "exact",
     },
   ];

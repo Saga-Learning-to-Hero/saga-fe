@@ -1,6 +1,6 @@
 # SAGA — Hướng dẫn tích hợp API cho Frontend
 
-> Tài liệu này được viết lại từ đầu, kiểm chứng trực tiếp trên source code backend hiện tại (không viết theo trí nhớ). Mọi route, DTO, mã lỗi đều có thể tra ngược lại file/class tương ứng trong repo `saga-be`. Nếu một mục không thể xác minh từ source, tài liệu sẽ ghi rõ: *"Không tìm thấy contract này trong backend hiện tại."*
+> Tài liệu này được viết lại từ đầu, kiểm chứng trực tiếp trên source code backend hiện tại (không viết theo trí nhớ). Mọi route, DTO, mã lỗi đều có thể tra ngược lại file/class tương ứng trong repo `saga-be`. Nếu một mục không thể xác minh từ source, tài liệu sẽ ghi rõ: _"Không tìm thấy contract này trong backend hiện tại."_
 
 ## Mục lục
 
@@ -30,7 +30,7 @@
 24. [Sprint CRUD](#24-sprint-crud)
 25. [GitHub Commits / Task-Commit Links](#25-github-commits--task-commit-links)
 26. [Project Sync](#26-project-sync)
-26a. [Team / Project Progress](#26a-team--project-progress)
+    26a. [Team / Project Progress](#26a-team--project-progress)
 27. [SSE Realtime](#27-sse-realtime)
 28. [Contribution / Evidence APIs](#28-contribution--evidence-apis)
 29. [Error Handling](#29-error-handling)
@@ -48,6 +48,7 @@
 Tài liệu này là **nguồn sự thật (source of truth)** để đội Frontend tích hợp với backend SAGA. Nó được tạo lại bằng cách đọc trực tiếp source code hiện tại (controllers, DTOs, enum lỗi, `SecurityConfig`), **không** viết theo trí nhớ hay đoán.
 
 Swagger UI (`/swagger-ui.html`) vẫn hữu ích để thử nghiệm thủ công từng endpoint, nhưng nó **không** giải thích được:
+
 - Thứ tự gọi API nào trước, API nào sau trong một luồng nghiệp vụ (vd: phải tạo Semester trước AcademicClass, phải chọn Team Leader trước khi tạo Project...).
 - Khi nào FE cần refetch, khi nào có SSE tự báo thay đổi.
 - Ý nghĩa nghiệp vụ của một mã lỗi 409.
@@ -61,6 +62,7 @@ Tài liệu này giải quyết đúng phần đó — **luồng ứng dụng v�
 Backend không hard-code base URL trong source đã commit — mọi giá trị đều đọc từ biến môi trường (`${VAR:default}`), khớp với cách triển khai trên Railway.
 
 **Giá trị mặc định khi chạy local** (từ `application.properties`, dùng khi không có biến môi trường override):
+
 - Backend: `http://localhost:8080` (cổng mặc định Spring Boot)
 - Frontend (dùng làm đích redirect mặc định của Google OAuth, Jira/GitHub OAuth): `http://localhost:3000`
 
@@ -86,10 +88,10 @@ Backend dùng **session cookie**, không dùng JWT/Bearer token.
 
 ### 3.1. Hai cookie quan trọng
 
-| Cookie | HttpOnly | Mục đích | FE có được đọc không? |
-|---|---|---|---|
-| `SAGA_SESSION` | `true` | Cookie session (Spring Session), server tự quản lý | **KHÔNG** — trình duyệt tự đính kèm, JS không đọc được và cũng không cần đọc |
-| `XSRF-TOKEN` | `false` | Token chống CSRF | **CÓ** — JS phải đọc giá trị này để gửi lại trong header |
+| Cookie         | HttpOnly | Mục đích                                           | FE có được đọc không?                                                        |
+| -------------- | -------- | -------------------------------------------------- | ---------------------------------------------------------------------------- |
+| `SAGA_SESSION` | `true`   | Cookie session (Spring Session), server tự quản lý | **KHÔNG** — trình duyệt tự đính kèm, JS không đọc được và cũng không cần đọc |
+| `XSRF-TOKEN`   | `false`  | Token chống CSRF                                   | **CÓ** — JS phải đọc giá trị này để gửi lại trong header                     |
 
 Cờ `Secure`/`SameSite` của cả hai cookie đi theo cấu hình `saga.auth.cookie.*`: môi trường local mặc định `Secure=false, SameSite=Lax`; môi trường deploy (`dev` profile) là `Secure=true, SameSite=None` (vì FE/BE khác origin qua HTTPS).
 
@@ -100,12 +102,14 @@ Cờ `Secure`/`SameSite` của cả hai cookie đi theo cấu hình `saga.auth.c
 - Endpoint cấp token: `GET /api/auth/csrf` → trả về `{ "parameterName": ..., "token": "...", "headerName": "X-XSRF-TOKEN" }` và set cookie `XSRF-TOKEN`.
 
 **CSRF được bỏ qua (ignore) chỉ cho các path sau** (theo `SecurityConfig`):
+
 ```
 /login/oauth2/**
 /oauth2/**
 /api/webhooks/github
 /api/webhooks/jira
 ```
+
 Tất cả các API khác — **kể cả các API "public" như `/api/auth/login`, `/api/auth/register`, `/api/auth/logout`** — đều yêu cầu CSRF nếu là method thay đổi dữ liệu (POST/PUT/PATCH/DELETE). Các method GET không cần CSRF.
 
 ### 3.3. Trình tự chuẩn cho một request có thay đổi dữ liệu
@@ -113,7 +117,7 @@ Tất cả các API khác — **kể cả các API "public" như `/api/auth/logi
 ```
 1. GET /api/auth/csrf                     → trình duyệt nhận cookie XSRF-TOKEN
 2. Đọc giá trị cookie XSRF-TOKEN bằng JS
-3. POST/PATCH/PUT/DELETE ... 
+3. POST/PATCH/PUT/DELETE ...
    headers: { "X-XSRF-TOKEN": "<giá trị cookie>" }
    credentials: "include"
 ```
@@ -123,16 +127,17 @@ Trong thực tế, FE có thể gọi `GET /api/auth/csrf` một lần khi app k
 ### 3.4. Xử lý lỗi liên quan auth ở tầng FE
 
 Mọi lỗi domain trả về theo format cố định:
+
 ```json
 { "code": "MÃ_LỖI", "message": "Mô tả" }
 ```
 
-| Tình huống | HTTP status | Body ví dụ | FE nên làm gì |
-|---|---|---|---|
-| Chưa đăng nhập, gọi API cần `authenticated()` (vd `/api/users/me/profile`) | 401 | `{"code":"INVALID_CREDENTIALS","message":"Authentication failed."}` | Điều hướng về trang login |
-| Sai vai trò (vd STUDENT gọi `/api/admin/**`) | 403 | `{"code":"ACCESS_DENIED","message":"Access denied."}` | Hiển thị "Không có quyền truy cập" |
-| Thiếu/sai CSRF token | 403 | `{"code":"ACCESS_DENIED","message":"Access denied."}` | Gọi lại `GET /api/auth/csrf` rồi thử lại — **không tự động retry vô hạn** |
-| Tài khoản Google/Local chưa đặt mật khẩu lần đầu | 403 | `{"code":"PASSWORD_SETUP_REQUIRED","message":"Password setup is required."}` | Điều hướng sang trang đặt mật khẩu — **lưu ý**: khi cờ này bật, backend chặn gần như MỌI API khác (xem mục 6) |
+| Tình huống                                                                 | HTTP status | Body ví dụ                                                                   | FE nên làm gì                                                                                                 |
+| -------------------------------------------------------------------------- | ----------- | ---------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| Chưa đăng nhập, gọi API cần `authenticated()` (vd `/api/users/me/profile`) | 401         | `{"code":"INVALID_CREDENTIALS","message":"Authentication failed."}`          | Điều hướng về trang login                                                                                     |
+| Sai vai trò (vd STUDENT gọi `/api/admin/**`)                               | 403         | `{"code":"ACCESS_DENIED","message":"Access denied."}`                        | Hiển thị "Không có quyền truy cập"                                                                            |
+| Thiếu/sai CSRF token                                                       | 403         | `{"code":"ACCESS_DENIED","message":"Access denied."}`                        | Gọi lại `GET /api/auth/csrf` rồi thử lại — **không tự động retry vô hạn**                                     |
+| Tài khoản Google/Local chưa đặt mật khẩu lần đầu                           | 403         | `{"code":"PASSWORD_SETUP_REQUIRED","message":"Password setup is required."}` | Điều hướng sang trang đặt mật khẩu — **lưu ý**: khi cờ này bật, backend chặn gần như MỌI API khác (xem mục 6) |
 
 **Lưu ý quan trọng**: khi tài khoản đang ở trạng thái `passwordSetupRequired=true`, một bộ lọc toàn cục (`PasswordSetupEnforcementFilter`) sẽ trả `403 PASSWORD_SETUP_REQUIRED` cho **hầu hết mọi API**, chỉ trừ: `/api/auth/me`, `/api/auth/csrf`, `POST /api/auth/login`, `/register`, `/password/setup`, `/logout`, các path OAuth/webhook, và các path tĩnh (swagger, index.html). Vì vậy sau khi đăng nhập Google lần đầu, FE **phải** hoàn tất `POST /api/auth/password/setup` trước khi gọi bất kỳ API nghiệp vụ nào khác.
 
@@ -141,10 +146,12 @@ Mọi lỗi domain trả về theo format cố định:
 ## 4. Current User / Auth State
 
 ### `GET /api/auth/me`
+
 - **Public** (không cần đăng nhập để gọi — dùng để kiểm tra trạng thái).
 - Không cần CSRF (GET).
 
 Response — `AuthMeResponse`:
+
 ```json
 {
   "authenticated": true,
@@ -161,6 +168,7 @@ Response — `AuthMeResponse`:
 ```
 
 Khi chưa đăng nhập:
+
 ```json
 { "authenticated": false, "passwordSetupRequired": false, "user": null }
 ```
@@ -183,20 +191,24 @@ App load
 ## 5. Local Login / Logout
 
 ### `POST /api/auth/login`
+
 - **CSRF bắt buộc.**
 - Request:
+
 ```json
 { "identifier": "email hoặc username", "password": "..." }
 ```
+
 `identifier` chứa `@` → backend hiểu là email; ngược lại hiểu là username. **Không** gửi field `role`.
+
 - Response thành công: `AuthMeResponse` giống hệt `GET /api/auth/me` (luôn `authenticated:true`).
 - Lỗi:
 
-| Status | code | Ý nghĩa |
-|---|---|---|
-| 401 | `INVALID_CREDENTIALS` | Sai tài khoản/mật khẩu |
-| 403 | `ACCOUNT_DISABLED` | Tài khoản bị khoá |
-| 403 | `ACCESS_DENIED` | CSRF sai/thiếu |
+| Status | code                  | Ý nghĩa                |
+| ------ | --------------------- | ---------------------- |
+| 401    | `INVALID_CREDENTIALS` | Sai tài khoản/mật khẩu |
+| 403    | `ACCOUNT_DISABLED`    | Tài khoản bị khoá      |
+| 403    | `ACCESS_DENIED`       | CSRF sai/thiếu         |
 
 ### Luồng màn hình Login
 
@@ -209,6 +221,7 @@ App load
 ```
 
 ### `POST /api/auth/logout`
+
 - **CSRF bắt buộc.** Không có request body.
 - Response: **204 No Content**.
 - Sau khi gọi: session bị huỷ, cookie `SAGA_SESSION` bị xoá, và **backend tự cấp lại một `XSRF-TOKEN` mới ở trạng thái ẩn danh** (để lần đăng nhập kế tiếp không cần gọi lại `GET /api/auth/csrf`).
@@ -249,12 +262,15 @@ Các mã lỗi có thể xuất hiện ở `?error=`: `GOOGLE_EMAIL_NOT_VERIFIED
 `POST /api/auth/password/setup` — **cần session đã đăng nhập + CSRF**.
 
 Request:
+
 ```json
 { "newPassword": "...", "confirmPassword": "..." }
 ```
+
 Response thành công: `AuthMeResponse` (session được làm mới, `passwordSetupRequired` chuyển thành `false`).
 
 Điều kiện/lỗi:
+
 - Chỉ dành cho `STUDENT`/`LECTURER` có liên kết Google và **chưa** có mật khẩu local — ADMIN không dùng được endpoint này.
 - Nếu tài khoản đã có mật khẩu → `409 PASSWORD_ALREADY_SET` (không ghi đè).
 - Nếu không đủ điều kiện (không phải Google-linked, hoặc là ADMIN) → `403 GOOGLE_ACCOUNT_NOT_ELIGIBLE`.
@@ -264,20 +280,25 @@ Response thành công: `AuthMeResponse` (session được làm mới, `passwordS
 ## 7. Forgot Password / Reset Password
 
 ### `POST /api/auth/password/forgot`
+
 - **CSRF bắt buộc.**
 - Request: `{ "email": "..." }`
 - Response: **luôn** một message chung, **không tiết lộ** email có tồn tại hay không:
+
 ```json
 { "message": "Nếu email tồn tại, hướng dẫn đặt lại mật khẩu đã được gửi." }
 ```
 
 ### `POST /api/auth/password/reset`
+
 - **CSRF bắt buộc.**
 - Request: `{ "token": "...", "newPassword": "..." }`
 - Response thành công:
+
 ```json
 { "message": "Mật khẩu đã được cập nhật. Vui lòng đăng nhập lại." }
 ```
+
 - Lỗi: `400 PASSWORD_RESET_TOKEN_INVALID` (token sai/đã dùng), `400 PASSWORD_RESET_TOKEN_EXPIRED` (hết hạn, mặc định 30 phút), `400 PASSWORD_POLICY_VIOLATION`/`PASSWORD_CONFIRMATION_MISMATCH` (chính sách mật khẩu).
 
 ### Luồng FE hoàn chỉnh
@@ -306,7 +327,9 @@ Trang "Đặt lại mật khẩu"
 ## 8. Current User Profile
 
 ### `GET /api/users/me/profile`
+
 Yêu cầu đã đăng nhập (bất kỳ role). Response — `UserProfileResponse`:
+
 ```json
 {
   "id": "uuid",
@@ -319,13 +342,17 @@ Yêu cầu đã đăng nhập (bất kỳ role). Response — `UserProfileRespon
   "studentCode": "SE123456"
 }
 ```
+
 `studentCode` chỉ xuất hiện (khác `null`) khi `role == "STUDENT"`.
 
 ### `PATCH /api/users/me/profile`
+
 Request — `UpdateProfileRequest` (**chỉ 2 field, không có field nào khác**):
+
 ```json
 { "fullName": "Nguyễn Văn A", "avatarUrl": "https://example.com/avatar.png" }
 ```
+
 - `fullName`: tối đa 255 ký tự. **Field không gửi lên (omit)** = giữ nguyên. Gửi lên nhưng rỗng/toàn khoảng trắng → lỗi `400 PROFILE_FULL_NAME_INVALID`.
 - `avatarUrl`: tối đa 500 ký tự. Không gửi = giữ nguyên. Gửi chuỗi rỗng `""` = **xoá avatar** (set về `null`). Gửi giá trị không bắt đầu bằng `http://`/`https://` → lỗi `400 PROFILE_AVATAR_URL_INVALID`.
 
@@ -370,27 +397,27 @@ Nếu gọi tạo Course khi Syllabus chưa `PUBLISHED` → `COURSE_SYLLABUS_NOT
 
 ### Bảng endpoint chính
 
-| Method | Path | Ghi chú |
-|---|---|---|
-| POST | `/api/admin/subjects` | 201, body: `code, nameEnglish, nameVietnamese` |
-| GET | `/api/admin/subjects?code&status&q` | |
-| GET/PATCH | `/api/admin/subjects/{subjectId}` | PATCH: partial patch |
-| POST | `/api/admin/subjects/{subjectId}/syllabi` | 201 |
-| GET/PATCH | `/api/admin/subjects/{subjectId}/syllabi/{syllabusVersionId}` | |
-| PUT | `.../syllabi/{syllabusVersionId}/structure` | body: `learningOutcomes[], learningUnits[], phases[]` |
-| POST | `.../syllabi/{syllabusVersionId}/publish` | Chuyển `DRAFT` → `PUBLISHED` |
-| POST | `.../syllabi/{syllabusVersionId}/archive` | |
-| POST | `/api/admin/semesters` | 201, body: `code, name, startDate, endDate` |
-| GET | `/api/admin/semesters` | |
-| GET/PUT | `/api/admin/semesters/active` | PUT body: `{ semesterId }` — chọn kỳ hiện hành |
-| GET/PATCH | `/api/admin/semesters/{semesterId}` | |
-| POST | `/api/admin/classes` | 201, body: `semesterId, classCode, name` |
-| GET | `/api/admin/classes?semesterId` | |
-| GET/PATCH | `/api/admin/classes/{classId}` | |
-| POST | `/api/admin/courses` | 201, body: `academicClassId, subjectId, syllabusVersionId, lecturerId, courseCode, name` |
-| GET | `/api/admin/courses?semesterId&academicClassId&subjectId&lecturerId` | |
-| GET/PATCH | `/api/admin/courses/{courseId}` | PATCH không cho đổi `syllabusVersionId` nếu course đã có enrollment/project (`409 COURSE_SYLLABUS_IMMUTABLE`) |
-| GET | `/api/admin/lecturers?active&search` | trả `lecturerProfileId` + `userId` **riêng biệt** — dùng **`lecturerProfileId`** khi gửi `CreateCourseRequest.lecturerId`, KHÔNG dùng `userId` |
+| Method    | Path                                                                 | Ghi chú                                                                                                                                        |
+| --------- | -------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| POST      | `/api/admin/subjects`                                                | 201, body: `code, nameEnglish, nameVietnamese`                                                                                                 |
+| GET       | `/api/admin/subjects?code&status&q`                                  |                                                                                                                                                |
+| GET/PATCH | `/api/admin/subjects/{subjectId}`                                    | PATCH: partial patch                                                                                                                           |
+| POST      | `/api/admin/subjects/{subjectId}/syllabi`                            | 201                                                                                                                                            |
+| GET/PATCH | `/api/admin/subjects/{subjectId}/syllabi/{syllabusVersionId}`        |                                                                                                                                                |
+| PUT       | `.../syllabi/{syllabusVersionId}/structure`                          | body: `learningOutcomes[], learningUnits[], phases[]`                                                                                          |
+| POST      | `.../syllabi/{syllabusVersionId}/publish`                            | Chuyển `DRAFT` → `PUBLISHED`                                                                                                                   |
+| POST      | `.../syllabi/{syllabusVersionId}/archive`                            |                                                                                                                                                |
+| POST      | `/api/admin/semesters`                                               | 201, body: `code, name, startDate, endDate`                                                                                                    |
+| GET       | `/api/admin/semesters`                                               |                                                                                                                                                |
+| GET/PUT   | `/api/admin/semesters/active`                                        | PUT body: `{ semesterId }` — chọn kỳ hiện hành                                                                                                 |
+| GET/PATCH | `/api/admin/semesters/{semesterId}`                                  |                                                                                                                                                |
+| POST      | `/api/admin/classes`                                                 | 201, body: `semesterId, classCode, name`                                                                                                       |
+| GET       | `/api/admin/classes?semesterId`                                      |                                                                                                                                                |
+| GET/PATCH | `/api/admin/classes/{classId}`                                       |                                                                                                                                                |
+| POST      | `/api/admin/courses`                                                 | 201, body: `academicClassId, subjectId, syllabusVersionId, lecturerId, courseCode, name`                                                       |
+| GET       | `/api/admin/courses?semesterId&academicClassId&subjectId&lecturerId` |                                                                                                                                                |
+| GET/PATCH | `/api/admin/courses/{courseId}`                                      | PATCH không cho đổi `syllabusVersionId` nếu course đã có enrollment/project (`409 COURSE_SYLLABUS_IMMUTABLE`)                                  |
+| GET       | `/api/admin/lecturers?active&search`                                 | trả `lecturerProfileId` + `userId` **riêng biệt** — dùng **`lecturerProfileId`** khi gửi `CreateCourseRequest.lecturerId`, KHÔNG dùng `userId` |
 
 ---
 
@@ -398,15 +425,15 @@ Nếu gọi tạo Course khi Syllabus chưa `PUBLISHED` → `COURSE_SYLLABUS_NOT
 
 Base: `/api/admin/courses/{courseId}/roster` — ADMIN only.
 
-| Method | Path | Mục đích |
-|---|---|---|
-| GET | `/template` | Tải file XLSX mẫu |
-| GET | `` (gốc) | Danh sách roster (enrollment + invitation) |
-| POST | `/import/preview` (multipart `file`) | Đọc & validate file XLSX, **chưa** ghi dữ liệu |
-| POST | `/import/confirm` | Áp dụng preview (dùng `previewToken` từ bước trên) |
-| POST | `/students` | Thêm/mời 1 sinh viên |
-| DELETE | `/enrollments/{enrollmentId}` | Xoá 1 sinh viên đã có tài khoản khỏi lớp |
-| DELETE | `/invitations/{invitationId}` | Huỷ lời mời cho sinh viên chưa có tài khoản |
+| Method | Path                                 | Mục đích                                           |
+| ------ | ------------------------------------ | -------------------------------------------------- |
+| GET    | `/template`                          | Tải file XLSX mẫu                                  |
+| GET    | `` (gốc)                             | Danh sách roster (enrollment + invitation)         |
+| POST   | `/import/preview` (multipart `file`) | Đọc & validate file XLSX, **chưa** ghi dữ liệu     |
+| POST   | `/import/confirm`                    | Áp dụng preview (dùng `previewToken` từ bước trên) |
+| POST   | `/students`                          | Thêm/mời 1 sinh viên                               |
+| DELETE | `/enrollments/{enrollmentId}`        | Xoá 1 sinh viên đã có tài khoản khỏi lớp           |
+| DELETE | `/invitations/{invitationId}`        | Huỷ lời mời cho sinh viên chưa có tài khoản        |
 
 ### Phân biệt ENROLLMENT vs INVITATION
 
@@ -422,7 +449,9 @@ Mỗi dòng trong `GET .../roster` là **một trong hai loại**, phân biệt 
   "enrollmentId": "uuid-hoặc-null",
   "invitationId": "uuid-hoặc-null",
   "studentUserId": "uuid-hoặc-null",
-  "studentCode": "...", "fullName": "...", "email": "...",
+  "studentCode": "...",
+  "fullName": "...",
+  "email": "...",
   "enrollmentStatus": "ACTIVE",
   "invitationStatus": null,
   "accountState": "REGISTERED"
@@ -448,11 +477,14 @@ GET /api/admin/courses/{courseId}/roster
 ```
 DELETE /api/admin/courses/{courseId}/roster/enrollments/{enrollmentId}
 ```
+
 - **Thành công (200)**: trả về `CourseRosterEntryResponse` với `enrollmentStatus: "WITHDRAWN"`. Đây **không phải** xoá cứng — bản ghi vẫn còn, chỉ đổi trạng thái. Tài khoản (`UserAccount`)/hồ sơ (`StudentProfile`) và toàn bộ lịch sử (task, commit, work session, contribution confirmation...) **không bị ảnh hưởng**.
 - **409 `TEAM_LEADER_REMOVAL_REQUIRES_REASSIGNMENT`**: sinh viên đang là **Trưởng nhóm (LEADER)** đang hoạt động của một Team trong course này. Backend **từ chối hoàn toàn thao tác** (không có gì bị thay đổi). FE nên hiển thị:
+
   > "Sinh viên đang là trưởng nhóm. Hãy chuyển quyền trưởng nhóm cho thành viên khác trước khi xóa sinh viên khỏi lớp."
 
   **Không tự động retry.** Quy trình đúng: Lecturer vào màn hình quản lý Team (mục 13) → dùng chức năng "Đổi trưởng nhóm" (`PUT /api/lecturer/courses/{courseId}/teams/{teamId}/leader`) để chuyển leader sang người khác → Admin quay lại bấm xoá lần nữa.
+
 - **409 `ROSTER_STUDENT_ALREADY_REMOVED`**: đã xoá trước đó rồi (enrollment không còn `ACTIVE`). FE nên refetch danh sách roster để đồng bộ UI thay vì báo lỗi khó hiểu.
 - **404 `ROSTER_STUDENT_NOT_FOUND`**: sai ID hoặc ID không thuộc `courseId` này.
 
@@ -463,6 +495,7 @@ Sau khi xoá thành công: sinh viên **mất quyền truy cập Team/Project** 
 ```
 DELETE /api/admin/courses/{courseId}/roster/invitations/{invitationId}
 ```
+
 - Thành công (200): `invitationStatus: "CANCELLED"`. Dòng invitation vẫn giữ trong DB nhưng **không còn tính là thành viên đang chờ** (`GET roster` sẽ không hiển thị nữa vì chỉ hiển thị `PENDING`/`SENT`).
 - 409 `ROSTER_STUDENT_ALREADY_REMOVED`: đã huỷ/đã claim trước đó.
 - Nếu người này sau đó tự đăng ký tài khoản (register) bằng đúng email/mã số sinh viên đã bị huỷ mời → **KHÔNG** tự động kích hoạt lại lời mời đã huỷ (invitation `CANCELLED` không được coi là hợp lệ để tự động claim).
@@ -470,10 +503,12 @@ DELETE /api/admin/courses/{courseId}/roster/invitations/{invitationId}
 ### Thêm lại sinh viên (re-add) sau khi đã xoá
 
 Gọi lại **API thêm sinh viên bình thường**:
+
 ```
 POST /api/admin/courses/{courseId}/roster/students
 { "fullName": "...", "studentCode": "...", "email": "...", "memberCode": "..." (tuỳ chọn) }
 ```
+
 - Nếu trước đó là **ENROLLMENT bị WITHDRAWN**: backend tái sử dụng lại đúng bản ghi enrollment cũ, chuyển về `ACTIVE` — không tạo bản ghi trùng (ràng buộc unique `student_profile_id + course_id` không cho phép trùng).
 - Nếu trước đó là **INVITATION bị CANCELLED**: backend tái sử dụng lại đúng bản ghi invitation cũ, chuyển về `PENDING` và gửi lại email mời.
 - **Về vai trò/nhóm cũ**: việc thêm lại chỉ khôi phục **trạng thái ghi danh (enrollment)**, sinh viên sẽ **không** tự động quay lại nhóm/Team cũ mà họ từng ở trước khi bị xoá — Lecturer cần gán lại nhóm cho họ thủ công nếu cần (qua màn hình quản lý Team, mục 13).
@@ -486,21 +521,22 @@ Base: `/api/lecturer/courses/{courseId}` — role `LECTURER` hoặc `ADMIN`.
 
 **Quan trọng: Lecturer KHÔNG tạo Project.** Việc tạo Project chỉ do STUDENT giữ vai trò Team Leader thực hiện (mục 15).
 
-| Method | Path | Mục đích |
-|---|---|---|
-| GET | `/api/lecturer/courses` | Danh sách course được phân công cho lecturer đang đăng nhập |
-| GET | `/api/lecturer/courses/{courseId}` | Chi tiết 1 course |
-| GET | `/api/lecturer/courses/{courseId}/roster` | Danh sách sinh viên **ACTIVE** (chỉ đọc, không thao tác được ở đây) |
-| GET | `/api/lecturer/courses/{courseId}/teams` | Danh sách team + thành viên |
-| GET | `/api/lecturer/courses/{courseId}/teams/template` | Tải XLSX mẫu chia nhóm |
-| POST | `/api/lecturer/courses/{courseId}/teams/import/preview` (multipart `file`) | Xem trước kết quả chia nhóm từ file |
-| POST | `/api/lecturer/courses/{courseId}/teams/import/confirm` | Áp dụng kết quả chia nhóm |
-| PUT | `/api/lecturer/courses/{courseId}/teams/{teamId}/leader` | **Đổi trưởng nhóm** — body: `{ "teamMemberId": "uuid" }` |
-| PATCH | `/api/lecturer/courses/{courseId}/team-members/{teamMemberId}/team` | Chuyển 1 thành viên sang team khác — body: `{ "targetTeamId": "uuid" }` |
+| Method | Path                                                                       | Mục đích                                                                |
+| ------ | -------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| GET    | `/api/lecturer/courses`                                                    | Danh sách course được phân công cho lecturer đang đăng nhập             |
+| GET    | `/api/lecturer/courses/{courseId}`                                         | Chi tiết 1 course                                                       |
+| GET    | `/api/lecturer/courses/{courseId}/roster`                                  | Danh sách sinh viên **ACTIVE** (chỉ đọc, không thao tác được ở đây)     |
+| GET    | `/api/lecturer/courses/{courseId}/teams`                                   | Danh sách team + thành viên                                             |
+| GET    | `/api/lecturer/courses/{courseId}/teams/template`                          | Tải XLSX mẫu chia nhóm                                                  |
+| POST   | `/api/lecturer/courses/{courseId}/teams/import/preview` (multipart `file`) | Xem trước kết quả chia nhóm từ file                                     |
+| POST   | `/api/lecturer/courses/{courseId}/teams/import/confirm`                    | Áp dụng kết quả chia nhóm                                               |
+| PUT    | `/api/lecturer/courses/{courseId}/teams/{teamId}/leader`                   | **Đổi trưởng nhóm** — body: `{ "teamMemberId": "uuid" }`                |
+| PATCH  | `/api/lecturer/courses/{courseId}/team-members/{teamMemberId}/team`        | Chuyển 1 thành viên sang team khác — body: `{ "targetTeamId": "uuid" }` |
 
 ### Bất biến bắt buộc: mỗi team đang hoạt động phải có đúng 1 LEADER
 
 Backend enforce nghiêm ngặt (`assertLeadershipForOccupiedTeams`): nếu một team có ≥1 thành viên `ACTIVE` mà số lượng `LEADER` khác 1 → `409 TEAM_LEADER_INVALID`. Cụ thể:
+
 - Không cho di chuyển Leader duy nhất sang team khác nếu chưa chỉ định người thay thế trước.
 - Không cho chuyển thành viên vào một team đang không có Leader active nào.
 
@@ -513,22 +549,30 @@ FE nên thiết kế UI "Đổi trưởng nhóm"/"Chuyển thành viên" xử l�
 Base: `/api/student/**` — role `STUDENT` only.
 
 ### `GET /api/student/courses`
+
 Danh sách các course sinh viên **đang** ghi danh ACTIVE (course đã bị withdraw sẽ **không** hiện ở đây nữa — khớp đúng với hành vi xoá ở mục 12).
 
 Mỗi phần tử:
+
 ```json
 {
-  "courseId": "...", "courseCode": "...", "subjectCode": "...", "subjectName": "...",
-  "classCode": "...", "semesterCode": "...", "semesterName": "...",
+  "courseId": "...",
+  "courseCode": "...",
+  "subjectCode": "...",
+  "subjectName": "...",
+  "classCode": "...",
+  "semesterCode": "...",
+  "semesterName": "...",
   "enrollmentStatus": "ACTIVE",
-  "teamId": null,       // null cho tới khi Lecturer gán nhóm
+  "teamId": null, // null cho tới khi Lecturer gán nhóm
   "teamNo": null,
   "teamName": null,
-  "projectId": null     // null cho tới khi Team Leader tạo Project
+  "projectId": null // null cho tới khi Team Leader tạo Project
 }
 ```
 
 ### `GET /api/student/courses/{courseId}/team`
+
 ```json
 {
   "teamId": "...", "teamNo": 1, "teamName": "Team 1",
@@ -537,6 +581,7 @@ Mỗi phần tử:
   "members": [{ "studentCode": "...", "fullName": "...", "role": "LEADER" }, ...]
 }
 ```
+
 Dùng `myRole` để quyết định UI: hiện nút "Tạo Project"/"Cấu hình tích hợp" chỉ khi `myRole === "LEADER"`.
 
 - `403 STUDENT_COURSE_FORBIDDEN`: chưa ghi danh ACTIVE course này.
@@ -551,27 +596,30 @@ Dùng `myRole` để quyết định UI: hiện nút "Tạo Project"/"Cấu hìn
 > **Chỉ STUDENT giữ vai trò Team Leader (`myRole === "LEADER"`) mới được tạo Project.** Lecturer không tạo Project. Thành viên thường (MEMBER/MENTOR) không tạo Project.
 
 ### Tạo Project — `POST /api/student/courses/{courseId}/project` (STUDENT only)
+
 ```json
 // request — CreateStudentProjectRequest
 { "name": "...", "projectTypeId": "uuid-tuỳ-chọn", "description": "tuỳ-chọn" }
 ```
+
 - Nếu người gọi không phải Leader của team → `403 NOT_TEAM_LEADER`.
 - Nếu team đã có Project rồi → `409 PROJECT_ALREADY_EXISTS` (mỗi team chỉ có đúng 1 Project).
 - Response (201) — `StudentProjectResponse`: `projectId, courseId, teamId, teamNo, teamName, name, description, projectType{id,code,name}, createdBy{userId,fullName}, createdAt`.
 
 ### Đọc Project — `GET /api/student/courses/{courseId}/project` (STUDENT only)
+
 Bất kỳ thành viên nào trong team (Leader lẫn Member) đều đọc được — không giới hạn chỉ Leader. `404 PROJECT_NOT_FOUND` nếu team chưa tạo Project.
 
 ### Đọc dữ liệu Project chi tiết (Task/Sprint/Commit...) qua `/api/projects/{projectId}/**`
 
 Phân quyền tập trung tại tầng service (`ProjectDataAuthorization`), **không** phải theo prefix path như Admin/Lecturer/Student:
 
-| Role | Đọc (GET tasks/sprints/commits/sync-status/SSE) | Ghi (tạo/sửa/xoá task, sprint, transition, sync) |
-|---|---|---|
-| `ADMIN` | ❌ **Bị từ chối hoàn toàn** — Admin không đọc được dữ liệu Task/Sprint/Commit qua các API này | ❌ |
-| `LECTURER` | ✅ chỉ khi được phân công dạy course sở hữu project đó | ❌ luôn bị từ chối |
-| `STUDENT` (thành viên active trong team) | ✅ | ❌ nếu không phải Leader |
-| `STUDENT` (Leader active của team) | ✅ | ✅ |
+| Role                                     | Đọc (GET tasks/sprints/commits/sync-status/SSE)                                               | Ghi (tạo/sửa/xoá task, sprint, transition, sync) |
+| ---------------------------------------- | --------------------------------------------------------------------------------------------- | ------------------------------------------------ |
+| `ADMIN`                                  | ❌ **Bị từ chối hoàn toàn** — Admin không đọc được dữ liệu Task/Sprint/Commit qua các API này | ❌                                               |
+| `LECTURER`                               | ✅ chỉ khi được phân công dạy course sở hữu project đó                                        | ❌ luôn bị từ chối                               |
+| `STUDENT` (thành viên active trong team) | ✅                                                                                            | ❌ nếu không phải Leader                         |
+| `STUDENT` (Leader active của team)       | ✅                                                                                            | ✅                                               |
 
 Đây là điểm rất dễ làm sai UI nếu không kiểm tra kỹ: **đừng cho Admin vào màn hình xem Task/Sprint của một Project cụ thể** — API sẽ trả lỗi 403 (`INTEGRATION_FORBIDDEN`/`ACCESS_DENIED`) ngay cả khi Admin xem được mọi thứ khác.
 
@@ -583,15 +631,15 @@ Phân quyền tập trung tại tầng service (`ProjectDataAuthorization`), **k
 
 Base: `/api/projects/{projectId}/integrations` (yêu cầu là thành viên project; các thao tác kết nối yêu cầu **Team Leader**).
 
-| Method | Path | Role | Mục đích |
-|---|---|---|---|
-| GET | `` (gốc) | thành viên | Trạng thái tích hợp Jira + GitHub (mục 18) |
-| POST | `/jira/connect?returnPath=` | Leader | Bắt đầu OAuth Jira → trả `{authorizationUrl, state}` |
-| GET | `/jira/sites` | Leader | Danh sách Cloud site truy cập được (sau khi OAuth xong) |
-| GET | `/jira/projects?cloudId=` | Leader | Danh sách Jira Project trong 1 site |
-| GET | `/jira/boards?cloudId=&jiraProjectId=` | Leader | Danh sách board trong 1 Jira Project |
-| PUT | `/jira` | Leader | **Lưu lựa chọn cuối cùng** — body: `{ "cloudId", "jiraProjectId", "boardId"? }` → 204 |
-| DELETE | `/jira` | Leader | Ngắt kết nối (soft-revoke, xem 16.4) |
+| Method | Path                                   | Role       | Mục đích                                                                              |
+| ------ | -------------------------------------- | ---------- | ------------------------------------------------------------------------------------- |
+| GET    | `` (gốc)                               | thành viên | Trạng thái tích hợp Jira + GitHub (mục 18)                                            |
+| POST   | `/jira/connect?returnPath=`            | Leader     | Bắt đầu OAuth Jira → trả `{authorizationUrl, state}`                                  |
+| GET    | `/jira/sites`                          | Leader     | Danh sách Cloud site truy cập được (sau khi OAuth xong)                               |
+| GET    | `/jira/projects?cloudId=`              | Leader     | Danh sách Jira Project trong 1 site                                                   |
+| GET    | `/jira/boards?cloudId=&jiraProjectId=` | Leader     | Danh sách board trong 1 Jira Project                                                  |
+| PUT    | `/jira`                                | Leader     | **Lưu lựa chọn cuối cùng** — body: `{ "cloudId", "jiraProjectId", "boardId"? }` → 204 |
+| DELETE | `/jira`                                | Leader     | Ngắt kết nối (soft-revoke, xem 16.4)                                                  |
 
 **Không có** endpoint "reconnect" riêng cho Jira — reconnect = gọi lại đúng `POST /jira/connect` → chọn lại site/project/board → `PUT /jira`.
 
@@ -625,8 +673,15 @@ Base: `/api/projects/{projectId}/integrations` (yêu cầu là thành viên proj
 ### 16.4. Kiểm tra trạng thái — TUYỆT ĐỐI không dùng `jira != null`
 
 `GET /api/projects/{projectId}/integrations` trả field `jira`:
+
 ```json
-{ "cloudId": "...", "siteName": "...", "projectKey": "SAGA", "boardId": "...", "status": "ACTIVE" }
+{
+  "cloudId": "...",
+  "siteName": "...",
+  "projectKey": "SAGA",
+  "boardId": "...",
+  "status": "ACTIVE"
+}
 ```
 
 **Vì sao không được check `jira != null`**: khi Leader bấm "Ngắt kết nối" (`DELETE .../jira`), backend chỉ **soft-revoke** — đổi `status` thành `"REVOKED"` nhưng **vẫn giữ nguyên** `cloudId`/`siteName`/`projectKey` (để hiển thị lại cho người dùng biết trước đó đã kết nối gì). Nghĩa là **`jira` sẽ KHÔNG BAO GIỜ trở lại `null` sau khi từng kết nối** — nếu FE chỉ check `jira != null` sẽ hiển thị sai là "đã kết nối" ngay cả khi đã ngắt.
@@ -635,13 +690,13 @@ Base: `/api/projects/{projectId}/integrations` (yêu cầu là thành viên proj
 
 ### 16.5. Mã lỗi Jira quan trọng
 
-| Mã lỗi | HTTP | Ý nghĩa | FE nên làm |
-|---|---|---|---|
-| `JIRA_OAUTH_CANCELLED` | redirect `?code=` | Người dùng huỷ OAuth giữa chừng | Cho phép bấm "Kết nối lại" |
-| `JIRA_OAUTH_CALLBACK_INVALID` | redirect `?code=` | Callback không hợp lệ/hết hạn | Thử kết nối lại từ đầu |
-| `JIRA_PROJECT_IN_USE` | 409 | Jira Project này đã được SAGA Project khác dùng | Chọn Jira Project khác |
-| `JIRA_PROJECT_KEY_AMBIGUOUS` | 409 | Không xác định rõ project key | Chọn lại rõ ràng từ danh sách |
-| `JIRA_SOURCE_REPLACE_BLOCKED_BY_EVIDENCE` | 409 | Không thể đổi nguồn Jira vì đã có bằng chứng đóng góp gắn với nguồn cũ | Không cho đổi; giải thích rõ cho người dùng |
+| Mã lỗi                                    | HTTP              | Ý nghĩa                                                                | FE nên làm                                  |
+| ----------------------------------------- | ----------------- | ---------------------------------------------------------------------- | ------------------------------------------- |
+| `JIRA_OAUTH_CANCELLED`                    | redirect `?code=` | Người dùng huỷ OAuth giữa chừng                                        | Cho phép bấm "Kết nối lại"                  |
+| `JIRA_OAUTH_CALLBACK_INVALID`             | redirect `?code=` | Callback không hợp lệ/hết hạn                                          | Thử kết nối lại từ đầu                      |
+| `JIRA_PROJECT_IN_USE`                     | 409               | Jira Project này đã được SAGA Project khác dùng                        | Chọn Jira Project khác                      |
+| `JIRA_PROJECT_KEY_AMBIGUOUS`              | 409               | Không xác định rõ project key                                          | Chọn lại rõ ràng từ danh sách               |
+| `JIRA_SOURCE_REPLACE_BLOCKED_BY_EVIDENCE` | 409               | Không thể đổi nguồn Jira vì đã có bằng chứng đóng góp gắn với nguồn cũ | Không cho đổi; giải thích rõ cho người dùng |
 
 `error_description` từ Atlassian **không bao giờ** được phản ánh vào URL redirect (để tránh lộ thông tin nhạy cảm) — chỉ có `code` là mã enum ngắn gọn.
 
@@ -659,15 +714,15 @@ Xung đột chỉ xảy ra ở **cấp repository**, không phải cấp install
 
 Base: `/api/projects/{projectId}/integrations` (Leader-only cho các thao tác kết nối/chọn repo/ngắt kết nối):
 
-| Method | Path | Role | Mục đích |
-|---|---|---|---|
-| GET | `` (gốc) | thành viên | Trạng thái tích hợp (mục 18) |
-| POST | `/github/connect?returnPath=&installationId=&mode=` | Leader | Bắt đầu kết nối/kết nối lại |
-| GET | `/github/reconnect/candidates` | Leader | Danh sách installation cũ có thể chọn lại |
-| GET | `/github/setup/callback` | (redirect, không gọi trực tiếp) | Callback GitHub App gọi về sau khi cài đặt |
-| GET | `/github/repositories` | Leader | Danh sách repo truy cập được qua installation hiện tại |
-| PUT | `/github/repositories` | Leader | **Lưu** danh sách repo đã chọn — body: `[{ "repositoryId": 123, "role": "FRONTEND"|"BACKEND"|"OTHER" }]` → 204 |
-| DELETE | `/github` | Leader | Ngắt kết nối GitHub khỏi project này (chỉ gỡ liên kết của project này, installation dùng chung vẫn còn cho project khác) |
+| Method | Path                                                | Role                            | Mục đích                                                                                                                 |
+| ------ | --------------------------------------------------- | ------------------------------- | ------------------------------------------------------------------------------------------------------------------------ | --------- | ----------------- |
+| GET    | `` (gốc)                                            | thành viên                      | Trạng thái tích hợp (mục 18)                                                                                             |
+| POST   | `/github/connect?returnPath=&installationId=&mode=` | Leader                          | Bắt đầu kết nối/kết nối lại                                                                                              |
+| GET    | `/github/reconnect/candidates`                      | Leader                          | Danh sách installation cũ có thể chọn lại                                                                                |
+| GET    | `/github/setup/callback`                            | (redirect, không gọi trực tiếp) | Callback GitHub App gọi về sau khi cài đặt                                                                               |
+| GET    | `/github/repositories`                              | Leader                          | Danh sách repo truy cập được qua installation hiện tại                                                                   |
+| PUT    | `/github/repositories`                              | Leader                          | **Lưu** danh sách repo đã chọn — body: `[{ "repositoryId": 123, "role": "FRONTEND"                                       | "BACKEND" | "OTHER" }]` → 204 |
+| DELETE | `/github`                                           | Leader                          | Ngắt kết nối GitHub khỏi project này (chỉ gỡ liên kết của project này, installation dùng chung vẫn còn cho project khác) |
 
 ### 17.3. Luồng "Connect GitHub từ đầu tới lúc chọn repo xong"
 
@@ -689,6 +744,7 @@ Base: `/api/projects/{projectId}/integrations` (Leader-only cho các thao tác k
 ### 17.4. Khi có nhiều installation cũ — `GITHUB_INSTALLATION_SELECTION_REQUIRED`
 
 Nếu trang success redirect kèm `?code=GITHUB_INSTALLATION_SELECTION_REQUIRED`, nghĩa là hệ thống phát hiện **nhiều** installation từng liên kết với project này trong quá khứ và **không tự đoán** — FE phải:
+
 ```
 1. GET .../github/reconnect/candidates
    → [{ installationId, accountLogin, accountType }, ...]
@@ -696,6 +752,7 @@ Nếu trang success redirect kèm `?code=GITHUB_INSTALLATION_SELECTION_REQUIRED`
 3. POST .../github/connect?installationId=<đã chọn>
    (tiếp tục luồng OAuth bình thường như 17.3 bước 3 trở đi)
 ```
+
 Nếu muốn cài đặt installation **hoàn toàn mới** thay vì chọn lại cái cũ: `POST .../github/connect?mode=install_new`.
 
 ### 17.5. Kiểm tra trạng thái GitHub
@@ -704,22 +761,29 @@ Nếu muốn cài đặt installation **hoàn toàn mới** thay vì chọn lạ
 {
   "installationId": 12345,
   "accountLogin": "my-org",
-  "status": "ACTIVE",   // hoặc SUSPENDED | DELETED
+  "status": "ACTIVE", // hoặc SUSPENDED | DELETED
   "repositories": [
-    { "id": "uuid", "repositoryId": 999, "fullName": "org/repo", "role": "BACKEND", "status": "ACTIVE" }
+    {
+      "id": "uuid",
+      "repositoryId": 999,
+      "fullName": "org/repo",
+      "role": "BACKEND",
+      "status": "ACTIVE"
+    }
   ]
 }
 ```
+
 `github` là `null` nếu project **chưa từng** kết nối. Mảng `repositories` có thể chứa cả repo đã `REVOKED` (đã gỡ) — **lọc `status === "ACTIVE"`** để chỉ hiện repo đang thực sự kết nối.
 
 ### 17.6. Mã lỗi GitHub quan trọng
 
-| Mã lỗi | HTTP | Ý nghĩa |
-|---|---|---|
-| `GITHUB_REPOSITORY_IN_USE` | 409 | Repository đã gắn với SAGA Project khác — chọn repo khác |
-| `GITHUB_INSTALLATION_SELECTION_REQUIRED` | 409 (hoặc `?code=` trên redirect thành công) | Nhiều installation cũ, cần người dùng chọn (xem 17.4) |
-| `GITHUB_INSTALLATION_INVALID` | 400 | `installationId` gửi lên không hợp lệ/không khớp lịch sử |
-| `GITHUB_INSTALLATION_NOT_AUTHORIZED` | 403 | Tài khoản GitHub hiện tại không có quyền trên installation này |
+| Mã lỗi                                   | HTTP                                         | Ý nghĩa                                                        |
+| ---------------------------------------- | -------------------------------------------- | -------------------------------------------------------------- |
+| `GITHUB_REPOSITORY_IN_USE`               | 409                                          | Repository đã gắn với SAGA Project khác — chọn repo khác       |
+| `GITHUB_INSTALLATION_SELECTION_REQUIRED` | 409 (hoặc `?code=` trên redirect thành công) | Nhiều installation cũ, cần người dùng chọn (xem 17.4)          |
+| `GITHUB_INSTALLATION_INVALID`            | 400                                          | `installationId` gửi lên không hợp lệ/không khớp lịch sử       |
+| `GITHUB_INSTALLATION_NOT_AUTHORIZED`     | 403                                          | Tài khoản GitHub hiện tại không có quyền trên installation này |
 
 ---
 
@@ -742,22 +806,23 @@ Nếu muốn cài đặt installation **hoàn toàn mới** thay vì chọn lạ
 
 Base: `/api/projects/{projectId}/tasks`. Phân quyền theo mục 15 (đọc: thành viên active + lecturer được phân công; ghi: chỉ Leader).
 
-| Method | Path | Mục đích |
-|---|---|---|
-| GET | `/tasks` | Danh sách task |
-| GET | `/tasks/{taskId}` | Chi tiết 1 task |
-| POST | `/tasks` | Tạo task (201) |
-| PATCH | `/tasks/{taskId}` | Cập nhật task (một phần) |
-| DELETE | `/tasks/{taskId}` | Xoá task (204) |
-| GET | `/tasks/options` | Dữ liệu dựng form (mục 20) |
-| GET | `/tasks/{taskId}/transitions` | Danh sách transition khả dụng (mục 21) |
-| POST | `/tasks/{taskId}/transition` | Đổi trạng thái task (mục 21) |
-| PUT | `/tasks/{taskId}/sprint` | Gán/gỡ task khỏi sprint (mục 24) |
-| GET | `/tasks/{taskId}/commits` | Commit liên kết với task (mục 25) |
+| Method | Path                          | Mục đích                               |
+| ------ | ----------------------------- | -------------------------------------- |
+| GET    | `/tasks`                      | Danh sách task                         |
+| GET    | `/tasks/{taskId}`             | Chi tiết 1 task                        |
+| POST   | `/tasks`                      | Tạo task (201)                         |
+| PATCH  | `/tasks/{taskId}`             | Cập nhật task (một phần)               |
+| DELETE | `/tasks/{taskId}`             | Xoá task (204)                         |
+| GET    | `/tasks/options`              | Dữ liệu dựng form (mục 20)             |
+| GET    | `/tasks/{taskId}/transitions` | Danh sách transition khả dụng (mục 21) |
+| POST   | `/tasks/{taskId}/transition`  | Đổi trạng thái task (mục 21)           |
+| PUT    | `/tasks/{taskId}/sprint`      | Gán/gỡ task khỏi sprint (mục 24)       |
+| GET    | `/tasks/{taskId}/commits`     | Commit liên kết với task (mục 25)      |
 
 **Task trong SAGA lấy Jira làm nguồn dữ liệu chuẩn (Jira-authoritative)**: mọi lệnh tạo/sửa/xoá/transition từ SAGA đều **gọi trực tiếp và đồng bộ (synchronous) sang Jira trước**, sau đó backend đọc lại kết quả chính thức từ Jira và lưu vào bảng chiếu (projection) của SAGA, rồi mới trả response cho FE. Nghĩa là: response của `PATCH`/`POST`/`transition` **luôn** là dữ liệu đã được Jira xác nhận — FE không cần refetch thêm sau các lệnh ghi thành công.
 
 ### Request tạo task — `POST /tasks`
+
 ```json
 {
   "summary": "Bắt buộc, tối đa 255 ký tự",
@@ -772,38 +837,58 @@ Base: `/api/projects/{projectId}/tasks`. Phân quyền theo mục 15 (đọc: th
 ```
 
 ### Request cập nhật — `PATCH /tasks/{taskId}`
+
 ```json
 {
-  "summary": "...", "description": "...", "issueTypeId": "...",
-  "assigneeAccountId": "...", "clearAssignee": false,
-  "priorityId": "...", "storyPoints": 5,
-  "sprintExternalId": "...", "moveToBacklog": false
+  "summary": "...",
+  "description": "...",
+  "issueTypeId": "...",
+  "assigneeAccountId": "...",
+  "clearAssignee": false,
+  "priorityId": "...",
+  "storyPoints": 5,
+  "sprintExternalId": "...",
+  "moveToBacklog": false
 }
 ```
+
 Mọi field đều tuỳ chọn — chỉ field khác `null` mới được cập nhật vào Jira. **Lưu ý**: DTO này có tồn tại 2 field `transitionId`/`targetStatusId` nhưng **backend không dùng chúng trong PATCH** — đổi trạng thái task **bắt buộc phải dùng endpoint riêng** `POST /tasks/{taskId}/transition` (mục 21), không được PATCH trạng thái trực tiếp.
 
 ### Response — `ProjectTaskResponse` (đầy đủ field, đã xác minh từ DTO)
+
 ```json
 {
-  "id": "uuid", "externalId": "...", "externalKey": "SAGA-123",
-  "title": "...", "description": "...",
+  "id": "uuid",
+  "externalId": "...",
+  "externalKey": "SAGA-123",
+  "title": "...",
+  "description": "...",
   "status": "TODO | IN_PROGRESS | IN_REVIEW | DONE | BLOCKED",
-  "jiraStatusId": "...", "jiraStatusName": "To Do",
+  "jiraStatusId": "...",
+  "jiraStatusName": "To Do",
   "issueTypeName": "Story",
   "assigneeExternalId": "jira-account-id-hoặc-null",
   "assigneeDisplayName": "Tên hiển thị-hoặc-null",
   "assigneeStudentId": "uuid-hoặc-null",
-  "assignee": { "accountId": "...", "displayName": "...", "studentId": "uuid" } ,
+  "assignee": { "accountId": "...", "displayName": "...", "studentId": "uuid" },
   "priority": "High",
   "priorityDetail": { "id": null, "name": "High" },
   "storyPoint": 5,
-  "sprint": { "id": "uuid", "externalSprintId": "...", "name": "Sprint 1", "state": "active" },
+  "sprint": {
+    "id": "uuid",
+    "externalSprintId": "...",
+    "name": "Sprint 1",
+    "state": "active"
+  },
   "linkedCommitCount": 3,
-  "externalUpdatedAt": "...", "createdAt": "...", "updatedAt": "..."
+  "externalUpdatedAt": "...",
+  "createdAt": "...",
+  "updatedAt": "..."
 }
 ```
 
 Vài lưu ý chính xác cần nhớ:
+
 - Field tên là **`issueTypeName`**, không phải `issueType`.
 - Field tên là **`storyPoint`** (số ít), không phải `storyPoints` (response khác request).
 - `priorityDetail.id` **luôn là `null`** trong implementation hiện tại — chỉ `priorityDetail.name` có giá trị thật.
@@ -812,6 +897,7 @@ Vài lưu ý chính xác cần nhớ:
 - `linkedCommitCount` được tính lại mỗi lần đọc (không phải cột lưu sẵn).
 
 ### Xoá task — chặn nếu đã có bằng chứng
+
 `DELETE /tasks/{taskId}` → **409 `TASK_DELETE_BLOCKED_BY_EVIDENCE`** nếu task đã có Work Session hoặc Contribution Confirmation gắn vào (mục 28) — không cho xoá để bảo toàn dữ liệu chấm điểm.
 
 ---
@@ -825,10 +911,15 @@ Vài lưu ý chính xác cần nhớ:
   "issueTypes": [{ "id": "...", "name": "Story", "description": "..." }],
   "priorities": [{ "id": "...", "name": "High" }],
   "assignableUsers": [{ "accountId": "...", "displayName": "..." }],
-  "estimation": { "supported": true, "fieldId": "...", "fieldName": "Story Points" },
+  "estimation": {
+    "supported": true,
+    "fieldId": "...",
+    "fieldName": "Story Points"
+  },
   "sprints": [{ "id": "...", "name": "Sprint 1", "state": "active" }]
 }
 ```
+
 Dùng đúng `id` từ đây khi gửi `issueTypeId`/`priorityId` trong `POST`/`PATCH` task; dùng `accountId` từ `assignableUsers` khi gửi `assigneeAccountId` (mục 23). `sprints` trả rỗng nếu project chưa cấu hình board.
 
 ---
@@ -846,6 +937,7 @@ Dùng đúng `id` từ đây khi gửi `issueTypeId`/`priorityId` trong `POST`/`
    (hoặc dùng { "targetStatusId": "..." } nếu chỉ biết trạng thái đích, không có transitionId cụ thể)
 4. Response: ProjectTaskResponse đầy đủ, đã cập nhật status/jiraStatusName mới
 ```
+
 Chỉ **Team Leader** được gọi bước 3 (`403 NOT_TEAM_LEADER` nếu không phải). GET transitions (bước 1) thì mọi thành viên active đều gọi được. Đây là lệnh gọi **đồng bộ sang Jira** — có độ trễ mạng thật sự, nên hiển thị loading state khi chờ.
 
 ---
@@ -872,23 +964,37 @@ Chỉ **Team Leader** được gọi bước 3 (`403 NOT_TEAM_LEADER` nếu khô
 
 Base: `/api/projects/{projectId}/sprints`.
 
-| Method | Path | Ghi chú |
-|---|---|---|
-| GET | `/sprints` | **Không phải đọc thuần** — backend tự đồng bộ với board Jira trước khi trả danh sách, nên gọi endpoint này cũng có độ trễ mạng nhất định |
-| GET | `/sprints/{sprintId}` | Đọc thuần từ DB |
-| POST | `/sprints` | Leader-only, 201 |
-| PATCH | `/sprints/{sprintId}` | Leader-only |
-| DELETE | `/sprints/{sprintId}` | Leader-only, 204 — xoá sprint cũng phát sinh SSE `TASKS_CHANGED` (vì các task trong sprint bị ảnh hưởng) |
+| Method | Path                  | Ghi chú                                                                                                                                  |
+| ------ | --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| GET    | `/sprints`            | **Không phải đọc thuần** — backend tự đồng bộ với board Jira trước khi trả danh sách, nên gọi endpoint này cũng có độ trễ mạng nhất định |
+| GET    | `/sprints/{sprintId}` | Đọc thuần từ DB                                                                                                                          |
+| POST   | `/sprints`            | Leader-only, 201                                                                                                                         |
+| PATCH  | `/sprints/{sprintId}` | Leader-only                                                                                                                              |
+| DELETE | `/sprints/{sprintId}` | Leader-only, 204 — xoá sprint cũng phát sinh SSE `TASKS_CHANGED` (vì các task trong sprint bị ảnh hưởng)                                 |
 
 Request tạo:
-```json
-{ "name": "Sprint 1", "goal": "tuỳ chọn", "startDate": "tuỳ chọn", "endDate": "tuỳ chọn" }
-```
-Response:
+
 ```json
 {
-  "id": "uuid", "externalSprintId": "...", "name": "...", "state": "active",
-  "goal": "...", "startDate": "...", "endDate": "...", "completeDate": null
+  "name": "Sprint 1",
+  "goal": "tuỳ chọn",
+  "startDate": "tuỳ chọn",
+  "endDate": "tuỳ chọn"
+}
+```
+
+Response:
+
+```json
+{
+  "id": "uuid",
+  "externalSprintId": "...",
+  "name": "...",
+  "state": "active",
+  "goal": "...",
+  "startDate": "...",
+  "endDate": "...",
+  "completeDate": null
 }
 ```
 
@@ -904,17 +1010,23 @@ PUT /api/projects/{projectId}/tasks/{taskId}/sprint
 
 ## 25. GitHub Commits / Task-Commit Links
 
-| Method | Path | Mục đích |
-|---|---|---|
-| GET | `/api/projects/{projectId}/commits` | Toàn bộ commit đã đồng bộ của project |
-| GET | `/api/projects/{projectId}/tasks/{taskId}/commits` | Commit đã liên kết với 1 task cụ thể |
+| Method | Path                                               | Mục đích                              |
+| ------ | -------------------------------------------------- | ------------------------------------- |
+| GET    | `/api/projects/{projectId}/commits`                | Toàn bộ commit đã đồng bộ của project |
+| GET    | `/api/projects/{projectId}/tasks/{taskId}/commits` | Commit đã liên kết với 1 task cụ thể  |
 
 ```json
 // ProjectCommitResponse
 {
-  "id": "uuid", "repoId": "uuid", "repositoryFullName": "org/repo",
-  "sha": "...", "message": "...", "authorExternalId": "github-login",
-  "authorStudentId": "uuid-hoặc-null", "committedAt": "...", "createdAt": "..."
+  "id": "uuid",
+  "repoId": "uuid",
+  "repositoryFullName": "org/repo",
+  "sha": "...",
+  "message": "...",
+  "authorExternalId": "github-login",
+  "authorStudentId": "uuid-hoặc-null",
+  "committedAt": "...",
+  "createdAt": "..."
 }
 ```
 
@@ -928,6 +1040,7 @@ Lập trình viên push code lên GitHub (có nhắc mã task trong message/bran
   → SSE bắn sự kiện COMMITS_CHANGED và/hoặc TASK_LINKS_CHANGED
   → FE nhận sự kiện → refetch danh sách commit/task tương ứng (mục 27)
 ```
+
 FE không cần và không thể tự dựng liên kết này qua API.
 
 ---
@@ -940,18 +1053,22 @@ GET  /api/projects/{projectId}/sync-status
 ```
 
 **ĐÂY KHÔNG PHẢI LUỒNG KẾT NỐI BÌNH THƯỜNG.** Kết nối Jira (mục 16) và GitHub (mục 17) đã **tự động** kích hoạt đồng bộ ban đầu ngay khi hoàn tất — endpoint `/sync` ở đây chỉ là **cơ chế khôi phục thủ công** (recovery/backfill), dùng khi:
+
 - Có webhook bị lỡ/mất do sự cố tạm thời từ Jira/GitHub.
 - Cần đồng bộ lại toàn bộ dữ liệu sau một khoảng thời gian gián đoạn.
 
 **Không nên thiết kế UI bắt người dùng phải bấm "Sync" sau mỗi lần kết nối provider** — điều đó là thừa và sai với thiết kế thực tế của backend.
 
 Request `POST /sync`: không có body. Response:
+
 ```json
 { "projectId": "...", "jira": "QUEUED", "github": "SKIPPED_NOT_CONFIGURED" }
 ```
+
 Giá trị `jira`/`github` có thể là: `QUEUED`, `SKIPPED_NOT_CONFIGURED`, `SKIPPED_NOT_ACTIVE`, `SKIPPED_ALREADY_RUNNING`, `SKIPPED_NO_CREDENTIAL` (chỉ Jira).
 
 `GET /sync-status` (không giới hạn Leader, thành viên active đều xem được):
+
 ```json
 [
   { "projectId": "...", "provider": "JIRA", "status": "SUCCEEDED", "startedAt": "...", "completedAt": "...", "itemsProcessed": 42, "itemsFailed": 0 },
@@ -973,19 +1090,19 @@ GET /api/projects/{projectId}/progress/members/{studentId}
 
 ### Quyền
 
-| Actor | Course progress | Project progress | Member progress |
-|---|---|---|---|
-| Lecturer được phân công course | Được | Được | Được |
-| ACTIVE Team Leader của đúng project | Không (không cần gọi) | Được | Được |
-| Ordinary Team Member | Không | Không (403) | Không (403) |
-| Student ngoài lớp | Không | Không | Không |
-| ADMIN | Không trên endpoint analytics này | Không | Không |
+| Actor                               | Course progress                   | Project progress | Member progress |
+| ----------------------------------- | --------------------------------- | ---------------- | --------------- |
+| Lecturer được phân công course      | Được                              | Được             | Được            |
+| ACTIVE Team Leader của đúng project | Không (không cần gọi)             | Được             | Được            |
+| Ordinary Team Member                | Không                             | Không (403)      | Không (403)     |
+| Student ngoài lớp                   | Không                             | Không            | Không           |
+| ADMIN                               | Không trên endpoint analytics này | Không            | Không           |
 
 `studentId` phải là thành viên ACTIVE của đúng team sở hữu project. Nếu không thuộc team / đã WITHDRAWN, backend trả `TEAM_NOT_FOUND`.
 
 ### Màn hình FE đang dùng
 
-- Course overview giảng viên: `GET /api/lecturer/courses/{courseId}/dashboard` (một request, scope mặc định `CURRENT_SPRINT`). Không dùng `/progress` thay dashboard. Không có course-wide SSE — refetch khi vào trang, khi cửa sổ lấy lại focus, và nút Làm mới. Không polling.
+- Course overview giảng viên: `GET /api/lecturer/courses/{courseId}/progress`. Không có course-wide SSE — refetch khi vào trang, khi cửa sổ lấy lại focus, và nút Làm mới. Không polling.
 - Dashboard sinh viên (`/student/dashboard`): chỉ Leader gọi `GET /api/projects/{projectId}/progress`. Member thường không phát request.
 - Chi tiết nhóm giảng viên: gọi project progress khi đã có `projectId`.
 - Drill-down thành viên: `GET .../progress/members/{studentId}` từ bảng thành viên.
@@ -1004,15 +1121,15 @@ Progress dashboard **khác** `GET /api/teams/{teamId}/contribution-evaluation`.
 
 Khi đang ở trang project progress, mở `GET /api/projects/{projectId}/events`. REST response mới là dữ liệu chuẩn.
 
-| Sự kiện | Refetch |
-|---|---|
-| `READY` | progress + member detail nếu đang mở |
-| `TASKS_CHANGED` | progress + member detail nếu đang mở |
-| `SPRINTS_CHANGED` | progress |
-| `COMMITS_CHANGED` | progress + member detail nếu đang mở |
-| `TASK_LINKS_CHANGED` | progress + member detail nếu đang mở |
+| Sự kiện                 | Refetch                              |
+| ----------------------- | ------------------------------------ |
+| `READY`                 | progress + member detail nếu đang mở |
+| `TASKS_CHANGED`         | progress + member detail nếu đang mở |
+| `SPRINTS_CHANGED`       | progress                             |
+| `COMMITS_CHANGED`       | progress + member detail nếu đang mở |
+| `TASK_LINKS_CHANGED`    | progress + member detail nếu đang mở |
 | `TASK_EVIDENCE_CHANGED` | progress + member detail nếu đang mở |
-| `SYNC_STATUS_CHANGED` | progress |
+| `SYNC_STATUS_CHANGED`   | progress                             |
 
 ---
 
@@ -1021,12 +1138,16 @@ Khi đang ở trang project progress, mở `GET /api/projects/{projectId}/events
 ```
 GET /api/projects/{projectId}/events
 ```
+
 Yêu cầu quyền đọc project (giống bảng ở mục 15 — **ADMIN không dùng được**).
 
 ```ts
-const source = new EventSource(`${API_BASE_URL}/api/projects/${projectId}/events`, {
-  withCredentials: true,
-});
+const source = new EventSource(
+  `${API_BASE_URL}/api/projects/${projectId}/events`,
+  {
+    withCredentials: true,
+  },
+);
 ```
 
 ### Toàn bộ tên sự kiện thực tế tồn tại (đã xác minh trong enum `ProjectRealtimeEventType`)
@@ -1043,15 +1164,15 @@ SYNC_STATUS_CHANGED
 
 **SSE chỉ gửi tín hiệu "có gì đó đã thay đổi" (invalidation), KHÔNG gửi kèm dữ liệu đầy đủ.** Khi nhận sự kiện, FE phải **gọi lại REST API tương ứng** để lấy dữ liệu chuẩn mới nhất — không dùng payload SSE làm state cuối cùng.
 
-| Sự kiện nhận được | FE nên làm |
-|---|---|
-| `READY` | Gửi ngay khi vừa kết nối SSE thành công (kể cả sau khi reconnect) — coi như tín hiệu "làm mới toàn bộ dữ liệu project hiện tại", gồm `GET .../progress` và member progress nếu đang mở |
-| `TASKS_CHANGED` | Refetch danh sách task + project progress + member progress nếu đang mở |
-| `SPRINTS_CHANGED` | Refetch danh sách sprint (và task nếu màn hình đang hiển thị theo sprint) + project progress |
-| `COMMITS_CHANGED` | Refetch danh sách commit + project progress + member progress nếu đang mở |
-| `TASK_LINKS_CHANGED` | Refetch `linkedCommitCount` / danh sách commit của task đang mở + project progress + member progress nếu đang mở |
-| `TASK_EVIDENCE_CHANGED` | Refetch dữ liệu evidence/work-session/contribution của task đang mở + project progress + member progress nếu đang mở |
-| `SYNC_STATUS_CHANGED` | Refetch `GET /sync-status` + project progress |
+| Sự kiện nhận được       | FE nên làm                                                                                                                                                                             |
+| ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `READY`                 | Gửi ngay khi vừa kết nối SSE thành công (kể cả sau khi reconnect) — coi như tín hiệu "làm mới toàn bộ dữ liệu project hiện tại", gồm `GET .../progress` và member progress nếu đang mở |
+| `TASKS_CHANGED`         | Refetch danh sách task + project progress + member progress nếu đang mở                                                                                                                |
+| `SPRINTS_CHANGED`       | Refetch danh sách sprint (và task nếu màn hình đang hiển thị theo sprint) + project progress                                                                                           |
+| `COMMITS_CHANGED`       | Refetch danh sách commit + project progress + member progress nếu đang mở                                                                                                              |
+| `TASK_LINKS_CHANGED`    | Refetch `linkedCommitCount` / danh sách commit của task đang mở + project progress + member progress nếu đang mở                                                                       |
+| `TASK_EVIDENCE_CHANGED` | Refetch dữ liệu evidence/work-session/contribution của task đang mở + project progress + member progress nếu đang mở                                                                   |
+| `SYNC_STATUS_CHANGED`   | Refetch `GET /sync-status` + project progress                                                                                                                                          |
 
 Server gửi heartbeat (comment SSE, không phải event có tên) mỗi ~25 giây để giữ kết nối — FE không cần xử lý riêng, `EventSource` tự bỏ qua comment. Nếu `EventSource` tự reconnect (mất mạng tạm thời), sự kiện `READY` sẽ được gửi lại ngay khi kết nối lại thành công — dùng đây làm điểm neo để refetch toàn bộ.
 
@@ -1063,16 +1184,16 @@ Server gửi heartbeat (comment SSE, không phải event có tên) mỗi ~25 gi�
 
 Base: `/api/tasks/{taskId}` — **lưu ý path KHÔNG nằm dưới `/api/projects/{projectId}`** mà độc lập, chỉ cần `taskId`.
 
-| Method | Path | Mục đích |
-|---|---|---|
-| POST | `/work-sessions/start` | Bắt đầu 1 phiên làm việc trên task |
-| POST | `/work-sessions/{sessionId}/stop` | Kết thúc phiên |
-| POST | `/contribution-confirmations` | Xác nhận đóng góp — body: `{ "commitShas": [...], "pullRequests": [...] }`, **yêu cầu step-up session** (xác thực lại gần đây) |
-| GET/POST | `/web-links` | Danh sách / thêm link tham khảo cho task |
-| DELETE | `/web-links/{linkId}` | Xoá link |
-| GET/POST | `/files` | Danh sách / upload file đính kèm (multipart) |
-| GET | `/files/{fileId}` | Tải file |
-| DELETE | `/files/{fileId}` | Xoá file |
+| Method   | Path                              | Mục đích                                                                                                                       |
+| -------- | --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| POST     | `/work-sessions/start`            | Bắt đầu 1 phiên làm việc trên task                                                                                             |
+| POST     | `/work-sessions/{sessionId}/stop` | Kết thúc phiên                                                                                                                 |
+| POST     | `/contribution-confirmations`     | Xác nhận đóng góp — body: `{ "commitShas": [...], "pullRequests": [...] }`, **yêu cầu step-up session** (xác thực lại gần đây) |
+| GET/POST | `/web-links`                      | Danh sách / thêm link tham khảo cho task                                                                                       |
+| DELETE   | `/web-links/{linkId}`             | Xoá link                                                                                                                       |
+| GET/POST | `/files`                          | Danh sách / upload file đính kèm (multipart)                                                                                   |
+| GET      | `/files/{fileId}`                 | Tải file                                                                                                                       |
+| DELETE   | `/files/{fileId}`                 | Xoá file                                                                                                                       |
 
 **Bằng chứng đồng bộ từ Jira là bất biến**: nếu `source === "JIRA"` (field `source` trong response web-link/file), request `DELETE` sẽ bị từ chối với `409 TASK_EVIDENCE_JIRA_IMMUTABLE` — chỉ nội dung do chính SAGA tạo ra (`source === "SAGA"`) mới xoá được.
 
@@ -1083,81 +1204,104 @@ Không có endpoint tính điểm đóng góp (contribution scoring) trong nhóm
 ## 29. Error Handling
 
 Mọi lỗi domain (không phải lỗi mạng) trả về đúng 1 khuôn dạng:
+
 ```json
-{ "code": "TÊN_MÃ_LỖI", "message": "Mô tả bằng tiếng Anh, không nên hiển thị trực tiếp cho người dùng cuối" }
+{
+  "code": "TÊN_MÃ_LỖI",
+  "message": "Mô tả bằng tiếng Anh, không nên hiển thị trực tiếp cho người dùng cuối"
+}
 ```
+
 → FE nên có bảng ánh xạ `code` → thông điệp tiếng Việt riêng, không hiển thị thẳng `message` gốc.
 
 ### Xử lý theo nhóm HTTP status
 
-| Status | Ý nghĩa chung | Hành động FE |
-|---|---|---|
-| 400 | Dữ liệu gửi lên sai. **Lưu ý**: các lỗi `@Valid` (thiếu field bắt buộc, sai định dạng...) đều bị gộp chung thành **`400 REQUEST_INVALID`** — backend **không** trả chi tiết field nào sai. FE phải tự validate phía client trước khi gửi để có UX tốt. | Kiểm tra lại form, hiển thị lỗi chung "Dữ liệu không hợp lệ" nếu không map được `code` cụ thể |
-| 401 | Chưa đăng nhập / session hết hạn | Điều hướng Login |
-| 403 | Sai quyền, CSRF sai, hoặc `PASSWORD_SETUP_REQUIRED` | Xem bảng mục 3.4 |
-| 404 | Không tìm thấy tài nguyên | Hiển thị "không tìm thấy", refetch danh sách cha |
-| 409 | Xung đột nghiệp vụ (đây là nhóm quan trọng nhất cần xử lý tử tế) | Xem bảng mã lỗi bên dưới — **không tự động retry** |
-| 5xx | Lỗi hệ thống/hạ tầng (bao gồm `503 SESSION_STORE_UNAVAILABLE` khi Redis lỗi) | Hiển thị lỗi tạm thời, cho phép thử lại sau |
+| Status | Ý nghĩa chung                                                                                                                                                                                                                                          | Hành động FE                                                                                  |
+| ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------- |
+| 400    | Dữ liệu gửi lên sai. **Lưu ý**: các lỗi `@Valid` (thiếu field bắt buộc, sai định dạng...) đều bị gộp chung thành **`400 REQUEST_INVALID`** — backend **không** trả chi tiết field nào sai. FE phải tự validate phía client trước khi gửi để có UX tốt. | Kiểm tra lại form, hiển thị lỗi chung "Dữ liệu không hợp lệ" nếu không map được `code` cụ thể |
+| 401    | Chưa đăng nhập / session hết hạn                                                                                                                                                                                                                       | Điều hướng Login                                                                              |
+| 403    | Sai quyền, CSRF sai, hoặc `PASSWORD_SETUP_REQUIRED`                                                                                                                                                                                                    | Xem bảng mục 3.4                                                                              |
+| 404    | Không tìm thấy tài nguyên                                                                                                                                                                                                                              | Hiển thị "không tìm thấy", refetch danh sách cha                                              |
+| 409    | Xung đột nghiệp vụ (đây là nhóm quan trọng nhất cần xử lý tử tế)                                                                                                                                                                                       | Xem bảng mã lỗi bên dưới — **không tự động retry**                                            |
+| 5xx    | Lỗi hệ thống/hạ tầng (bao gồm `503 SESSION_STORE_UNAVAILABLE` khi Redis lỗi)                                                                                                                                                                           | Hiển thị lỗi tạm thời, cho phép thử lại sau                                                   |
 
 ### Bảng mã lỗi nghiệp vụ quan trọng (đã xác minh tồn tại trong source)
 
-| Mã lỗi | HTTP | Ý nghĩa | FE hiển thị / hành động |
-|---|---|---|---|
-| `TEAM_LEADER_REMOVAL_REQUIRES_REASSIGNMENT` | 409 | Không thể xoá sinh viên vì đang là Leader | Yêu cầu đổi Leader trước (mục 12) |
-| `ROSTER_STUDENT_ALREADY_REMOVED` | 409 | Đã xoá/huỷ trước đó | Refetch roster, không báo lỗi gay gắt |
-| `GITHUB_REPOSITORY_IN_USE` | 409 | Repo đã dùng cho Project khác | Chọn repo khác |
-| `GITHUB_INSTALLATION_SELECTION_REQUIRED` | 409 / query `?code=` | Cần chọn 1 trong nhiều installation cũ | Gọi `reconnect/candidates` (mục 17.4) |
-| `JIRA_PROJECT_IN_USE` | 409 | Jira Project đã dùng cho SAGA Project khác | Chọn Jira Project khác |
-| `JIRA_SOURCE_REPLACE_BLOCKED_BY_EVIDENCE` | 409 | Không đổi được nguồn Jira vì đã có bằng chứng gắn với nguồn cũ | Không cho đổi, giải thích rõ |
-| `TASK_DELETE_BLOCKED_BY_EVIDENCE` | 409 | Task đã có Work Session/Contribution Confirmation | Không cho xoá |
-| `TASK_EVIDENCE_JIRA_IMMUTABLE` | 409 | Link/file đồng bộ từ Jira không thể xoá ở SAGA | Ẩn nút xoá cho các mục `source === "JIRA"` |
-| `PASSWORD_RESET_TOKEN_INVALID` | 400 | Link đặt lại mật khẩu sai/đã dùng | Yêu cầu gửi lại email quên mật khẩu |
-| `PASSWORD_RESET_TOKEN_EXPIRED` | 400 | Link đặt lại mật khẩu hết hạn | Yêu cầu gửi lại email |
-| `NOT_TEAM_LEADER` | 403 | Hành động chỉ dành cho Leader | Ẩn nút hành động nếu `myRole !== "LEADER"` |
-| `PROJECT_ALREADY_EXISTS` | 409 | Team đã có Project | Điều hướng sang xem Project hiện có thay vì tạo mới |
+| Mã lỗi                                      | HTTP                 | Ý nghĩa                                                        | FE hiển thị / hành động                             |
+| ------------------------------------------- | -------------------- | -------------------------------------------------------------- | --------------------------------------------------- |
+| `TEAM_LEADER_REMOVAL_REQUIRES_REASSIGNMENT` | 409                  | Không thể xoá sinh viên vì đang là Leader                      | Yêu cầu đổi Leader trước (mục 12)                   |
+| `ROSTER_STUDENT_ALREADY_REMOVED`            | 409                  | Đã xoá/huỷ trước đó                                            | Refetch roster, không báo lỗi gay gắt               |
+| `GITHUB_REPOSITORY_IN_USE`                  | 409                  | Repo đã dùng cho Project khác                                  | Chọn repo khác                                      |
+| `GITHUB_INSTALLATION_SELECTION_REQUIRED`    | 409 / query `?code=` | Cần chọn 1 trong nhiều installation cũ                         | Gọi `reconnect/candidates` (mục 17.4)               |
+| `JIRA_PROJECT_IN_USE`                       | 409                  | Jira Project đã dùng cho SAGA Project khác                     | Chọn Jira Project khác                              |
+| `JIRA_SOURCE_REPLACE_BLOCKED_BY_EVIDENCE`   | 409                  | Không đổi được nguồn Jira vì đã có bằng chứng gắn với nguồn cũ | Không cho đổi, giải thích rõ                        |
+| `TASK_DELETE_BLOCKED_BY_EVIDENCE`           | 409                  | Task đã có Work Session/Contribution Confirmation              | Không cho xoá                                       |
+| `TASK_EVIDENCE_JIRA_IMMUTABLE`              | 409                  | Link/file đồng bộ từ Jira không thể xoá ở SAGA                 | Ẩn nút xoá cho các mục `source === "JIRA"`          |
+| `PASSWORD_RESET_TOKEN_INVALID`              | 400                  | Link đặt lại mật khẩu sai/đã dùng                              | Yêu cầu gửi lại email quên mật khẩu                 |
+| `PASSWORD_RESET_TOKEN_EXPIRED`              | 400                  | Link đặt lại mật khẩu hết hạn                                  | Yêu cầu gửi lại email                               |
+| `NOT_TEAM_LEADER`                           | 403                  | Hành động chỉ dành cho Leader                                  | Ẩn nút hành động nếu `myRole !== "LEADER"`          |
+| `PROJECT_ALREADY_EXISTS`                    | 409                  | Team đã có Project                                             | Điều hướng sang xem Project hiện có thay vì tạo mới |
 
 ---
 
 ## 30. Frontend Query Invalidation Strategy
 
-*(Đây là khuyến nghị kiến trúc FE, không phải hợp đồng API — tuỳ chỉnh theo thư viện thực tế đội dùng, ví dụ dưới đây theo phong cách TanStack Query.)*
+_(Đây là khuyến nghị kiến trúc FE, không phải hợp đồng API — tuỳ chỉnh theo thư viện thực tế đội dùng, ví dụ dưới đây theo phong cách TanStack Query.)_
 
 Gợi ý đặt query key theo cấu trúc phân cấp để dễ invalidate:
+
 ```ts
-["project", projectId, "tasks"]
-["project", projectId, "tasks", taskId]
-["project", projectId, "sprints"]
-["project", projectId, "commits"]
-["project", projectId, "integration"]
-["project", projectId, "sync-status"]
+["project", projectId, "tasks"][("project", projectId, "tasks", taskId)][
+  ("project", projectId, "sprints")
+][("project", projectId, "commits")][("project", projectId, "integration")][
+  ("project", projectId, "sync-status")
+];
 ```
 
 Bảng ánh xạ sự kiện SSE → query cần invalidate (tiếp nối mục 27):
 
 ```ts
-function handleSseEvent(type: string, projectId: string, queryClient: QueryClient) {
+function handleSseEvent(
+  type: string,
+  projectId: string,
+  queryClient: QueryClient,
+) {
   switch (type) {
     case "READY":
       queryClient.invalidateQueries({ queryKey: ["project", projectId] });
       break;
     case "TASKS_CHANGED":
-      queryClient.invalidateQueries({ queryKey: ["project", projectId, "tasks"] });
+      queryClient.invalidateQueries({
+        queryKey: ["project", projectId, "tasks"],
+      });
       break;
     case "SPRINTS_CHANGED":
-      queryClient.invalidateQueries({ queryKey: ["project", projectId, "sprints"] });
-      queryClient.invalidateQueries({ queryKey: ["project", projectId, "tasks"] });
+      queryClient.invalidateQueries({
+        queryKey: ["project", projectId, "sprints"],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["project", projectId, "tasks"],
+      });
       break;
     case "COMMITS_CHANGED":
-      queryClient.invalidateQueries({ queryKey: ["project", projectId, "commits"] });
+      queryClient.invalidateQueries({
+        queryKey: ["project", projectId, "commits"],
+      });
       break;
     case "TASK_LINKS_CHANGED":
-      queryClient.invalidateQueries({ queryKey: ["project", projectId, "tasks"] });
+      queryClient.invalidateQueries({
+        queryKey: ["project", projectId, "tasks"],
+      });
       break;
     case "TASK_EVIDENCE_CHANGED":
-      queryClient.invalidateQueries({ queryKey: ["project", projectId, "tasks"] });
+      queryClient.invalidateQueries({
+        queryKey: ["project", projectId, "tasks"],
+      });
       break;
     case "SYNC_STATUS_CHANGED":
-      queryClient.invalidateQueries({ queryKey: ["project", projectId, "sync-status"] });
+      queryClient.invalidateQueries({
+        queryKey: ["project", projectId, "sync-status"],
+      });
       break;
   }
 }
@@ -1168,6 +1312,7 @@ function handleSseEvent(type: string, projectId: string, queryClient: QueryClien
 ## 31. Complete User Flows
 
 ### A. Khởi động app / khôi phục phiên đăng nhập
+
 ```
 1. GET /api/auth/csrf     → nhận cookie XSRF-TOKEN
 2. GET /api/auth/me       → biết authenticated, passwordSetupRequired, role
@@ -1175,12 +1320,14 @@ function handleSseEvent(type: string, projectId: string, queryClient: QueryClien
 ```
 
 ### B. Đăng nhập local
+
 ```
 1. POST /api/auth/login { identifier, password }  (cần CSRF)
 2. Điều hướng theo user.role trong response
 ```
 
 ### C. Đăng nhập Google
+
 ```
 1. window.location.href = "<API_BASE_URL>/oauth2/authorization/google"
 2. (trình duyệt tự xử lý, quay lại 1 trong 3 URL: success/password-setup/failure)
@@ -1188,6 +1335,7 @@ function handleSseEvent(type: string, projectId: string, queryClient: QueryClien
 ```
 
 ### D. Quên/đặt lại mật khẩu
+
 ```
 1. POST /api/auth/password/forgot { email }         → luôn hiện thông báo chung
 2. Người dùng mở link email: /reset-password?token=...
@@ -1196,6 +1344,7 @@ function handleSseEvent(type: string, projectId: string, queryClient: QueryClien
 ```
 
 ### E. Sửa hồ sơ cá nhân
+
 ```
 1. GET /api/users/me/profile     → hiển thị form (fullName, avatarUrl hiện có)
 2. PATCH /api/users/me/profile { fullName?, avatarUrl? }  (cần CSRF)
@@ -1203,6 +1352,7 @@ function handleSseEvent(type: string, projectId: string, queryClient: QueryClien
 ```
 
 ### F. Admin tạo/nhập danh sách lớp
+
 ```
 1. (đã có sẵn) Semester → AcademicClass → Subject → Syllabus (published) → Course — mục 10
 2. GET /api/admin/courses/{courseId}/roster/template   → tải file mẫu
@@ -1214,9 +1364,11 @@ function handleSseEvent(type: string, projectId: string, queryClient: QueryClien
 ```
 
 ### G. Admin xoá sinh viên khỏi lớp
+
 → xem chi tiết đầy đủ ở **mục 12**.
 
 ### H. Lecturer chia nhóm / đổi trưởng nhóm
+
 ```
 1. GET /api/lecturer/courses/{courseId}/teams/template  → tải file mẫu chia nhóm
 2. POST .../teams/import/preview (multipart)  → xem trước
@@ -1227,6 +1379,7 @@ function handleSseEvent(type: string, projectId: string, queryClient: QueryClien
 ```
 
 ### I. Team Leader tạo Project
+
 ```
 1. GET /api/student/courses/{courseId}/team   → xác nhận myRole === "LEADER"
 2. GET /api/student/courses/{courseId}/project → 404 nếu chưa có
@@ -1235,21 +1388,26 @@ function handleSseEvent(type: string, projectId: string, queryClient: QueryClien
 ```
 
 ### J. Kết nối Jira từ đầu tới lúc dùng được
+
 → xem đầy đủ ở **mục 16.2**.
 
 ### K. Kết nối lại Jira đã bị revoke
+
 ```
 1. GET /api/projects/{projectId}/integrations → thấy jira.status === "REVOKED"
 2. POST .../jira/connect  (chạy lại y hệt luồng kết nối mới — mục 16.2)
 ```
 
 ### L. Kết nối GitHub từ đầu tới lúc chọn xong repo
+
 → xem đầy đủ ở **mục 17.3**.
 
 ### M. Kết nối lại GitHub / installation dùng chung
+
 → xem đầy đủ ở **mục 17.4**.
 
 ### N. Tạo Task
+
 ```
 1. GET /api/projects/{projectId}/tasks/options  → dữ liệu dựng form
 2. POST /api/projects/{projectId}/tasks { summary, issueTypeId?, assigneeAccountId?, priorityId?, storyPoints?, sprintId? }
@@ -1257,26 +1415,31 @@ function handleSseEvent(type: string, projectId: string, queryClient: QueryClien
 ```
 
 ### O. Sửa story point / assignee / priority của Task
+
 ```
 PATCH /api/projects/{projectId}/tasks/{taskId} { storyPoints?, assigneeAccountId?, priorityId? }
 → dùng response mới để cập nhật UI
 ```
 
 ### P. Chuyển trạng thái Task
+
 → xem đầy đủ ở **mục 21**.
 
 ### Q. Gán Task vào Sprint / đưa về Backlog
+
 ```
 PUT /api/projects/{projectId}/tasks/{taskId}/sprint { sprintId: 123 }   // hoặc null để về backlog
 ```
 
 ### R. Tạo/sửa Sprint
+
 ```
 POST /api/projects/{projectId}/sprints { name, goal?, startDate?, endDate? }
 PATCH /api/projects/{projectId}/sprints/{sprintId} { name?, goal?, state?, startDate?, endDate? }
 ```
 
 ### S. Jira tạo/sửa Task từ phía Jira, SAGA tự cập nhật
+
 ```
 1. Người dùng thao tác trực tiếp trên Jira (không qua SAGA)
 2. Jira gửi webhook (jira:issue_created/updated/deleted) về backend SAGA
@@ -1287,9 +1450,11 @@ PATCH /api/projects/{projectId}/sprints/{sprintId} { name?, goal?, state?, start
 ```
 
 ### T. GitHub push code, tự liên kết commit với Task
+
 → xem đầy đủ ở **mục 25**; kết thúc bằng SSE `COMMITS_CHANGED`/`TASK_LINKS_CHANGED`.
 
 ### U. Trang project nhận cập nhật realtime qua SSE
+
 ```
 1. Mở trang → new EventSource("/api/projects/{projectId}/events", { withCredentials: true })
 2. Nhận READY ngay lập tức → refetch toàn bộ dữ liệu trang
@@ -1298,6 +1463,7 @@ PATCH /api/projects/{projectId}/sprints/{sprintId} { name?, goal?, state?, start
 ```
 
 ### V. Khôi phục thủ công khi nghi ngờ dữ liệu bị thiếu (Manual Sync)
+
 ```
 1. POST /api/projects/{projectId}/sync   (chỉ Leader, chỉ dùng khi nghi ngờ có sự cố)
 2. GET /api/projects/{projectId}/sync-status  → theo dõi tiến trình (poll định kỳ vài giây,
@@ -1365,13 +1531,21 @@ export async function apiFetch(path: string, options: RequestInit = {}) {
   });
   if (!res.ok) {
     const body = await res.json().catch(() => null);
-    throw new ApiError(res.status, body?.code ?? "UNKNOWN", body?.message ?? res.statusText);
+    throw new ApiError(
+      res.status,
+      body?.code ?? "UNKNOWN",
+      body?.message ?? res.statusText,
+    );
   }
   return res.status === 204 ? null : res.json();
 }
 
 export class ApiError extends Error {
-  constructor(public status: number, public code: string, message: string) {
+  constructor(
+    public status: number,
+    public code: string,
+    message: string,
+  ) {
     super(message);
   }
 }
@@ -1391,8 +1565,14 @@ export function login(identifier: string, password: string) {
 ### Sửa hồ sơ
 
 ```ts
-export function updateProfile(patch: { fullName?: string; avatarUrl?: string }) {
-  return apiFetch("/api/users/me/profile", { method: "PATCH", body: JSON.stringify(patch) });
+export function updateProfile(patch: {
+  fullName?: string;
+  avatarUrl?: string;
+}) {
+  return apiFetch("/api/users/me/profile", {
+    method: "PATCH",
+    body: JSON.stringify(patch),
+  });
 }
 ```
 
@@ -1400,7 +1580,10 @@ export function updateProfile(patch: { fullName?: string; avatarUrl?: string }) 
 
 ```ts
 export function forgotPassword(email: string) {
-  return apiFetch("/api/auth/password/forgot", { method: "POST", body: JSON.stringify({ email }) });
+  return apiFetch("/api/auth/password/forgot", {
+    method: "POST",
+    body: JSON.stringify({ email }),
+  });
 }
 
 export function resetPassword(token: string, newPassword: string) {
@@ -1418,11 +1601,21 @@ export function listTasks(projectId: string) {
   return apiFetch(`/api/projects/${projectId}/tasks`);
 }
 
-export function createTask(projectId: string, body: {
-  summary: string; issueTypeId?: string; assigneeAccountId?: string;
-  priorityId?: string; storyPoints?: number; sprintId?: number;
-}) {
-  return apiFetch(`/api/projects/${projectId}/tasks`, { method: "POST", body: JSON.stringify(body) });
+export function createTask(
+  projectId: string,
+  body: {
+    summary: string;
+    issueTypeId?: string;
+    assigneeAccountId?: string;
+    priorityId?: string;
+    storyPoints?: number;
+    sprintId?: number;
+  },
+) {
+  return apiFetch(`/api/projects/${projectId}/tasks`, {
+    method: "POST",
+    body: JSON.stringify(body),
+  });
 }
 ```
 
@@ -1433,7 +1626,11 @@ export function listTransitions(projectId: string, taskId: string) {
   return apiFetch(`/api/projects/${projectId}/tasks/${taskId}/transitions`);
 }
 
-export function transitionTask(projectId: string, taskId: string, transitionId: string) {
+export function transitionTask(
+  projectId: string,
+  taskId: string,
+  transitionId: string,
+) {
   return apiFetch(`/api/projects/${projectId}/tasks/${taskId}/transition`, {
     method: "POST",
     body: JSON.stringify({ transitionId }),
@@ -1448,13 +1645,21 @@ export function subscribeProjectEvents(
   projectId: string,
   onEvent: (type: string) => void,
 ): () => void {
-  const source = new EventSource(`${API_BASE_URL}/api/projects/${projectId}/events`, {
-    withCredentials: true,
-  } as EventSourceInit);
+  const source = new EventSource(
+    `${API_BASE_URL}/api/projects/${projectId}/events`,
+    {
+      withCredentials: true,
+    } as EventSourceInit,
+  );
 
   const types = [
-    "READY", "TASKS_CHANGED", "SPRINTS_CHANGED", "COMMITS_CHANGED",
-    "TASK_LINKS_CHANGED", "TASK_EVIDENCE_CHANGED", "SYNC_STATUS_CHANGED",
+    "READY",
+    "TASKS_CHANGED",
+    "SPRINTS_CHANGED",
+    "COMMITS_CHANGED",
+    "TASK_LINKS_CHANGED",
+    "TASK_EVIDENCE_CHANGED",
+    "SYNC_STATUS_CHANGED",
   ];
   types.forEach((type) => source.addEventListener(type, () => onEvent(type)));
 
@@ -1481,124 +1686,140 @@ export function subscribeProjectEvents(
 > Bảng tra nhanh. Chi tiết đầy đủ (request/response/lỗi) nằm ở các mục tương ứng phía trên.
 
 ### AUTH
-| Method | Path | Role | Mục |
-|---|---|---|---|
-| GET | `/api/auth/csrf` | public | 3 |
-| GET | `/api/auth/me` | public | 4 |
-| POST | `/api/auth/login` | public | 5 |
-| POST | `/api/auth/register` | public | 5 |
-| POST | `/api/auth/logout` | any | 5 |
-| GET | `/oauth2/authorization/google` | public (browser nav) | 6 |
-| POST | `/api/auth/password/setup` | any (session) | 6 |
-| POST | `/api/auth/password/forgot` | public | 7 |
-| POST | `/api/auth/password/reset` | public | 7 |
+
+| Method | Path                           | Role                 | Mục |
+| ------ | ------------------------------ | -------------------- | --- |
+| GET    | `/api/auth/csrf`               | public               | 3   |
+| GET    | `/api/auth/me`                 | public               | 4   |
+| POST   | `/api/auth/login`              | public               | 5   |
+| POST   | `/api/auth/register`           | public               | 5   |
+| POST   | `/api/auth/logout`             | any                  | 5   |
+| GET    | `/oauth2/authorization/google` | public (browser nav) | 6   |
+| POST   | `/api/auth/password/setup`     | any (session)        | 6   |
+| POST   | `/api/auth/password/forgot`    | public               | 7   |
+| POST   | `/api/auth/password/reset`     | public               | 7   |
 
 ### PROFILE
-| Method | Path | Role |
-|---|---|---|
-| GET / PATCH | `/api/users/me/profile` | any |
+
+| Method      | Path                    | Role |
+| ----------- | ----------------------- | ---- |
+| GET / PATCH | `/api/users/me/profile` | any  |
 
 ### ADMIN / ACADEMIC
-| Method | Path | Role |
-|---|---|---|
-| POST/GET/PATCH | `/api/admin/subjects`, `/{subjectId}` | ADMIN |
-| POST/GET/PATCH/POST publish/archive | `/api/admin/subjects/{subjectId}/syllabi/...` | ADMIN |
-| POST/GET/PUT/PATCH | `/api/admin/semesters`, `/active`, `/{semesterId}` | ADMIN |
-| POST/GET/PATCH | `/api/admin/classes`, `/{classId}` | ADMIN |
-| POST/GET/PATCH | `/api/admin/courses`, `/{courseId}` | ADMIN |
-| GET | `/api/admin/lecturers` | ADMIN |
+
+| Method                              | Path                                               | Role  |
+| ----------------------------------- | -------------------------------------------------- | ----- |
+| POST/GET/PATCH                      | `/api/admin/subjects`, `/{subjectId}`              | ADMIN |
+| POST/GET/PATCH/POST publish/archive | `/api/admin/subjects/{subjectId}/syllabi/...`      | ADMIN |
+| POST/GET/PUT/PATCH                  | `/api/admin/semesters`, `/active`, `/{semesterId}` | ADMIN |
+| POST/GET/PATCH                      | `/api/admin/classes`, `/{classId}`                 | ADMIN |
+| POST/GET/PATCH                      | `/api/admin/courses`, `/{courseId}`                | ADMIN |
+| GET                                 | `/api/admin/lecturers`                             | ADMIN |
 
 ### ROSTER
-| Method | Path | Role |
-|---|---|---|
-| GET | `/api/admin/courses/{courseId}/roster/template` | ADMIN |
-| GET | `/api/admin/courses/{courseId}/roster` | ADMIN |
-| POST | `/api/admin/courses/{courseId}/roster/import/preview` | ADMIN |
-| POST | `/api/admin/courses/{courseId}/roster/import/confirm` | ADMIN |
-| POST | `/api/admin/courses/{courseId}/roster/students` | ADMIN |
+
+| Method | Path                                                              | Role  |
+| ------ | ----------------------------------------------------------------- | ----- |
+| GET    | `/api/admin/courses/{courseId}/roster/template`                   | ADMIN |
+| GET    | `/api/admin/courses/{courseId}/roster`                            | ADMIN |
+| POST   | `/api/admin/courses/{courseId}/roster/import/preview`             | ADMIN |
+| POST   | `/api/admin/courses/{courseId}/roster/import/confirm`             | ADMIN |
+| POST   | `/api/admin/courses/{courseId}/roster/students`                   | ADMIN |
 | DELETE | `/api/admin/courses/{courseId}/roster/enrollments/{enrollmentId}` | ADMIN |
 | DELETE | `/api/admin/courses/{courseId}/roster/invitations/{invitationId}` | ADMIN |
 
 ### LECTURER / TEAM
-| Method | Path | Role |
-|---|---|---|
-| GET | `/api/lecturer/courses`, `/{courseId}`, `/{courseId}/roster` | LECTURER/ADMIN |
-| GET | `/api/lecturer/courses/{courseId}/teams`, `/teams/template` | LECTURER/ADMIN |
-| POST | `/api/lecturer/courses/{courseId}/teams/import/preview`, `/confirm` | LECTURER/ADMIN |
-| PUT | `/api/lecturer/courses/{courseId}/teams/{teamId}/leader` | LECTURER/ADMIN |
-| PATCH | `/api/lecturer/courses/{courseId}/team-members/{teamMemberId}/team` | LECTURER/ADMIN |
+
+| Method | Path                                                                | Role           |
+| ------ | ------------------------------------------------------------------- | -------------- |
+| GET    | `/api/lecturer/courses`, `/{courseId}`, `/{courseId}/roster`        | LECTURER/ADMIN |
+| GET    | `/api/lecturer/courses/{courseId}/teams`, `/teams/template`         | LECTURER/ADMIN |
+| POST   | `/api/lecturer/courses/{courseId}/teams/import/preview`, `/confirm` | LECTURER/ADMIN |
+| PUT    | `/api/lecturer/courses/{courseId}/teams/{teamId}/leader`            | LECTURER/ADMIN |
+| PATCH  | `/api/lecturer/courses/{courseId}/team-members/{teamMemberId}/team` | LECTURER/ADMIN |
 
 ### STUDENT
-| Method | Path | Role |
-|---|---|---|
-| GET | `/api/student/courses` | STUDENT |
-| GET | `/api/student/courses/{courseId}/team` | STUDENT |
-| GET | `/api/student/project-types` | STUDENT |
+
+| Method | Path                                   | Role    |
+| ------ | -------------------------------------- | ------- |
+| GET    | `/api/student/courses`                 | STUDENT |
+| GET    | `/api/student/courses/{courseId}/team` | STUDENT |
+| GET    | `/api/student/project-types`           | STUDENT |
 
 ### PROJECT
-| Method | Path | Role |
-|---|---|---|
+
+| Method   | Path                                      | Role                        |
+| -------- | ----------------------------------------- | --------------------------- |
 | GET/POST | `/api/student/courses/{courseId}/project` | STUDENT (POST: Leader only) |
-| GET | `/api/projects/{projectId}/integrations` | thành viên |
+| GET      | `/api/projects/{projectId}/integrations`  | thành viên                  |
 
 ### JIRA
-| Method | Path | Role |
-|---|---|---|
-| POST | `/api/projects/{projectId}/integrations/jira/connect` | Leader |
-| GET | `.../jira/sites`, `.../jira/projects`, `.../jira/boards` | Leader |
-| PUT/DELETE | `.../jira` | Leader |
+
+| Method                | Path                                                                                       | Role           |
+| --------------------- | ------------------------------------------------------------------------------------------ | -------------- |
+| POST                  | `/api/projects/{projectId}/integrations/jira/connect`                                      | Leader         |
+| GET                   | `.../jira/sites`, `.../jira/projects`, `.../jira/boards`                                   | Leader         |
+| PUT/DELETE            | `.../jira`                                                                                 | Leader         |
 | POST/PATCH/DELETE/GET | `/api/integrations/jira/link`, `/{identityId}/primary`, `/{identityId}`, `/oauth/callback` | any (personal) |
 
 ### GITHUB
-| Method | Path | Role |
-|---|---|---|
-| POST | `.../integrations/github/connect` | Leader |
-| GET | `.../github/reconnect/candidates`, `.../github/repositories` | Leader |
-| PUT/DELETE | `.../github/repositories`, `.../github` | Leader |
-| GET | `.../github/setup/callback` | (redirect) |
+
+| Method                | Path                                                                                         | Role           |
+| --------------------- | -------------------------------------------------------------------------------------------- | -------------- |
+| POST                  | `.../integrations/github/connect`                                                            | Leader         |
+| GET                   | `.../github/reconnect/candidates`, `.../github/repositories`                                 | Leader         |
+| PUT/DELETE            | `.../github/repositories`, `.../github`                                                      | Leader         |
+| GET                   | `.../github/setup/callback`                                                                  | (redirect)     |
 | POST/PATCH/DELETE/GET | `/api/integrations/github/link`, `/{identityId}/primary`, `/{identityId}`, `/oauth/callback` | any (personal) |
 
 ### TASK
-| Method | Path | Role |
-|---|---|---|
-| GET | `/api/projects/{projectId}/tasks`, `/{taskId}`, `/options`, `/{taskId}/transitions`, `/{taskId}/commits` | thành viên |
-| POST/PATCH/DELETE | `/api/projects/{projectId}/tasks`, `/{taskId}` | Leader |
-| PUT | `.../tasks/{taskId}/sprint` | Leader |
-| POST | `.../tasks/{taskId}/transition` | Leader |
+
+| Method            | Path                                                                                                     | Role       |
+| ----------------- | -------------------------------------------------------------------------------------------------------- | ---------- |
+| GET               | `/api/projects/{projectId}/tasks`, `/{taskId}`, `/options`, `/{taskId}/transitions`, `/{taskId}/commits` | thành viên |
+| POST/PATCH/DELETE | `/api/projects/{projectId}/tasks`, `/{taskId}`                                                           | Leader     |
+| PUT               | `.../tasks/{taskId}/sprint`                                                                              | Leader     |
+| POST              | `.../tasks/{taskId}/transition`                                                                          | Leader     |
 
 ### SPRINT
-| Method | Path | Role |
-|---|---|---|
-| GET | `/api/projects/{projectId}/sprints`, `/{sprintId}` | thành viên |
-| POST/PATCH/DELETE | `/api/projects/{projectId}/sprints`, `/{sprintId}` | Leader |
+
+| Method            | Path                                               | Role       |
+| ----------------- | -------------------------------------------------- | ---------- |
+| GET               | `/api/projects/{projectId}/sprints`, `/{sprintId}` | thành viên |
+| POST/PATCH/DELETE | `/api/projects/{projectId}/sprints`, `/{sprintId}` | Leader     |
 
 ### COMMIT
-| Method | Path | Role |
-|---|---|---|
-| GET | `/api/projects/{projectId}/commits` | thành viên |
+
+| Method | Path                                | Role       |
+| ------ | ----------------------------------- | ---------- |
+| GET    | `/api/projects/{projectId}/commits` | thành viên |
 
 ### SYNC
-| Method | Path | Role |
-|---|---|---|
-| POST | `/api/projects/{projectId}/sync` | Leader |
-| GET | `/api/projects/{projectId}/sync-status` | thành viên |
+
+| Method | Path                                    | Role       |
+| ------ | --------------------------------------- | ---------- |
+| POST   | `/api/projects/{projectId}/sync`        | Leader     |
+| GET    | `/api/projects/{projectId}/sync-status` | thành viên |
 
 ### PROGRESS
-| Method | Path | Role |
-|---|---|---|
-| GET | `/api/lecturer/courses/{courseId}/progress` | Lecturer được phân công |
-| GET | `/api/projects/{projectId}/progress` | Lecturer được phân công hoặc ACTIVE Leader |
-| GET | `/api/projects/{projectId}/progress/members/{studentId}` | Lecturer được phân công hoặc ACTIVE Leader |
+
+| Method | Path                                                     | Role                                       |
+| ------ | -------------------------------------------------------- | ------------------------------------------ |
+| GET    | `/api/lecturer/courses/{courseId}/progress`              | Lecturer được phân công                    |
+| GET    | `/api/projects/{projectId}/progress`                     | Lecturer được phân công hoặc ACTIVE Leader |
+| GET    | `/api/projects/{projectId}/progress/members/{studentId}` | Lecturer được phân công hoặc ACTIVE Leader |
 
 ### SSE
-| Method | Path | Role |
-|---|---|---|
-| GET | `/api/projects/{projectId}/events` | thành viên (dùng để refetch REST, gồm progress) |
+
+| Method | Path                               | Role                                            |
+| ------ | ---------------------------------- | ----------------------------------------------- |
+| GET    | `/api/projects/{projectId}/events` | thành viên (dùng để refetch REST, gồm progress) |
 
 ### EVIDENCE / CONTRIBUTION
-| Method | Path | Role |
-|---|---|---|
-| POST | `/api/tasks/{taskId}/work-sessions/start`, `/{sessionId}/stop` | thành viên |
-| POST | `/api/tasks/{taskId}/contribution-confirmations` | thành viên (cần step-up) |
-| GET/POST/DELETE | `/api/tasks/{taskId}/web-links`, `/{linkId}` | thành viên |
-| GET/POST/DELETE | `/api/tasks/{taskId}/files`, `/{fileId}` | thành viên |
+
+| Method          | Path                                                           | Role                     |
+| --------------- | -------------------------------------------------------------- | ------------------------ |
+| POST            | `/api/tasks/{taskId}/work-sessions/start`, `/{sessionId}/stop` | thành viên               |
+| POST            | `/api/tasks/{taskId}/contribution-confirmations`               | thành viên (cần step-up) |
+| GET/POST/DELETE | `/api/tasks/{taskId}/web-links`, `/{linkId}`                   | thành viên               |
+| GET/POST/DELETE | `/api/tasks/{taskId}/files`, `/{fileId}`                       | thành viên               |
