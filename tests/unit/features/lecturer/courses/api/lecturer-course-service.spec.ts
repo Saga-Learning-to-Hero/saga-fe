@@ -648,4 +648,372 @@ describe("LecturerCourseService", () => {
       expect(res.taskStatusTotals.total).toBe(0);
     }
   );
+
+  const mockPaged = {
+    items: [mockCourse],
+    page: 0,
+    size: 9,
+    total: 1,
+  };
+
+  fptTest(
+    {
+      id: "UTCID26",
+      type: "N",
+      executedDate: "01/10/2026",
+      description: "GET /api/lecturer/courses/paged gui dung page, size, semesterId, search",
+    },
+    async () => {
+      const getSpy = vi.spyOn(apiClient, "get").mockResolvedValueOnce({ data: mockPaged });
+
+      const res = await LecturerCourseService.getCoursesPaged({
+        page: 0,
+        size: 9,
+        semesterId: "b1c6e936-18cd-4b2b-a455-0d78f536dffe",
+        search: "SWP",
+      });
+
+      expect(getSpy).toHaveBeenCalledWith("/api/lecturer/courses/paged", {
+        params: {
+          page: 0,
+          size: 9,
+          semesterId: "b1c6e936-18cd-4b2b-a455-0d78f536dffe",
+          search: "SWP",
+        },
+      });
+      expect(res.items[0].id).toBe(mockCourseId);
+      expect(res.page).toBe(0);
+      expect(res.size).toBe(9);
+      expect(res.total).toBe(1);
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID27",
+      type: "N",
+      executedDate: "01/10/2026",
+      description: "GET paged chi gui page va size khi khong co semesterId/search",
+    },
+    async () => {
+      const getSpy = vi.spyOn(apiClient, "get").mockResolvedValueOnce({ data: mockPaged });
+
+      await LecturerCourseService.getCoursesPaged({ page: 2, size: 18 });
+
+      expect(getSpy).toHaveBeenCalledWith("/api/lecturer/courses/paged", {
+        params: { page: 2, size: 18 },
+      });
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID28",
+      type: "N",
+      executedDate: "01/10/2026",
+      description: "Item paged giu dung shape CourseResponse, id dung lam courseId",
+    },
+    async () => {
+      vi.spyOn(apiClient, "get").mockResolvedValueOnce({ data: mockPaged });
+
+      const res = await LecturerCourseService.getCoursesPaged({ page: 1, size: 9 });
+
+      expect(res.items[0].id).toBe(mockCourseId);
+      expect(res.items[0].courseCode).toBe("SWP391-SE1705-FA26");
+      expect(res.items[0].semesterId).toBe("b1c6e936-18cd-4b2b-a455-0d78f536dffe");
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID29",
+      type: "N",
+      executedDate: "01/10/2026",
+      description: "GET paged nhan dung page/size/total do server tra ve",
+    },
+    async () => {
+      vi.spyOn(apiClient, "get").mockResolvedValueOnce({
+        data: { items: [mockCourse], page: 3, size: 9, total: 21 },
+      });
+
+      const res = await LecturerCourseService.getCoursesPaged({ page: 3, size: 9 });
+
+      expect(res.page).toBe(3);
+      expect(res.size).toBe(9);
+      expect(res.total).toBe(21);
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID30",
+      type: "A",
+      executedDate: "01/10/2026",
+      description: "items null duoc chuan hoa thanh mang rong",
+    },
+    async () => {
+      vi.spyOn(apiClient, "get").mockResolvedValueOnce({
+        data: { items: null, page: 1, size: 9, total: 4 },
+      });
+
+      const res = await LecturerCourseService.getCoursesPaged({ page: 1, size: 9 });
+
+      expect(res.items).toEqual([]);
+      expect(res.total).toBe(4);
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID31",
+      type: "A",
+      executedDate: "01/10/2026",
+      description: "items khong phai mang duoc chuan hoa thanh mang rong",
+    },
+    async () => {
+      vi.spyOn(apiClient, "get").mockResolvedValueOnce({
+        data: { items: { id: mockCourseId }, page: 1, size: 9, total: 1 },
+      });
+
+      const res = await LecturerCourseService.getCoursesPaged({ page: 1, size: 9 });
+
+      expect(res.items).toEqual([]);
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID32",
+      type: "A",
+      executedDate: "01/10/2026",
+      description: "total sai kieu duoc chuan hoa ve 0",
+    },
+    async () => {
+      vi.spyOn(apiClient, "get").mockResolvedValueOnce({
+        data: { items: [mockCourse], page: 1, size: 9, total: "10" },
+      });
+
+      const res = await LecturerCourseService.getCoursesPaged({ page: 1, size: 9 });
+
+      expect(res.total).toBe(0);
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID33",
+      type: "A",
+      executedDate: "01/10/2026",
+      description: "Khong nuot loi 400 khi GET paged",
+    },
+    async () => {
+      vi.spyOn(apiClient, "get").mockRejectedValueOnce(
+        apiError("Tham so phan trang khong hop le", "REQUEST_INVALID", 400)
+      );
+
+      await expect(
+        LecturerCourseService.getCoursesPaged({ page: 0, size: 9 })
+      ).rejects.toMatchObject({
+        code: "REQUEST_INVALID",
+        status: 400,
+      });
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID34",
+      type: "A",
+      executedDate: "01/10/2026",
+      description: "Khong nuot loi 401 INVALID_CREDENTIALS khi GET paged",
+    },
+    async () => {
+      vi.spyOn(apiClient, "get").mockRejectedValueOnce(
+        apiError("Phiên đăng nhập đã hết hạn", "INVALID_CREDENTIALS", 401)
+      );
+
+      await expect(
+        LecturerCourseService.getCoursesPaged({ page: 1, size: 9 })
+      ).rejects.toMatchObject({
+        code: "INVALID_CREDENTIALS",
+        status: 401,
+      });
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID35",
+      type: "A",
+      executedDate: "01/10/2026",
+      description: "Khong nuot loi 403 LECTURER_COURSE_FORBIDDEN khi GET paged",
+    },
+    async () => {
+      vi.spyOn(apiClient, "get").mockRejectedValueOnce(
+        apiError("Không có quyền truy cập lớp", "LECTURER_COURSE_FORBIDDEN", 403)
+      );
+
+      await expect(
+        LecturerCourseService.getCoursesPaged({ page: 1, size: 9 })
+      ).rejects.toMatchObject({
+        code: "LECTURER_COURSE_FORBIDDEN",
+        status: 403,
+      });
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID36",
+      type: "A",
+      executedDate: "01/10/2026",
+      description: "Khong nuot loi 500 khi GET paged",
+    },
+    async () => {
+      vi.spyOn(apiClient, "get").mockRejectedValueOnce(
+        apiError("Lỗi máy chủ", "INTERNAL_ERROR", 500)
+      );
+
+      await expect(
+        LecturerCourseService.getCoursesPaged({ page: 1, size: 9 })
+      ).rejects.toMatchObject({
+        code: "INTERNAL_ERROR",
+        status: 500,
+      });
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID37",
+      type: "A",
+      executedDate: "01/10/2026",
+      description: "Khong nuot loi mang khi GET paged",
+    },
+    async () => {
+      vi.spyOn(apiClient, "get").mockRejectedValueOnce(new Error("Network Error"));
+
+      await expect(
+        LecturerCourseService.getCoursesPaged({ page: 1, size: 9 })
+      ).rejects.toThrow("Network Error");
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID38",
+      type: "B",
+      executedDate: "01/10/2026",
+      description: "page bang 0 la trang dau, khong bi doi thanh 1",
+    },
+    async () => {
+      const getSpy = vi.spyOn(apiClient, "get").mockResolvedValueOnce({ data: mockPaged });
+
+      await LecturerCourseService.getCoursesPaged({ page: 0, size: 9 });
+
+      expect(getSpy).toHaveBeenCalledWith("/api/lecturer/courses/paged", {
+        params: { page: 0, size: 9 },
+      });
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID39",
+      type: "B",
+      executedDate: "01/10/2026",
+      description: "size am/0 thanh 50, size >200 bi kep 200",
+    },
+    async () => {
+      const getSpy = vi.spyOn(apiClient, "get")
+        .mockResolvedValueOnce({ data: mockPaged })
+        .mockResolvedValueOnce({ data: mockPaged });
+
+      await LecturerCourseService.getCoursesPaged({ page: 0, size: -5 });
+      await LecturerCourseService.getCoursesPaged({ page: 0, size: 201 });
+
+      expect(getSpy).toHaveBeenNthCalledWith(1, "/api/lecturer/courses/paged", {
+        params: { page: 0, size: 50 },
+      });
+      expect(getSpy).toHaveBeenNthCalledWith(2, "/api/lecturer/courses/paged", {
+        params: { page: 0, size: 200 },
+      });
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID40",
+      type: "B",
+      executedDate: "01/10/2026",
+      description: "search chi gom khoang trang bi bo khoi query",
+    },
+    async () => {
+      const getSpy = vi.spyOn(apiClient, "get").mockResolvedValueOnce({ data: mockPaged });
+
+      await LecturerCourseService.getCoursesPaged({ page: 1, size: 9, search: "   " });
+
+      expect(getSpy).toHaveBeenCalledWith("/api/lecturer/courses/paged", {
+        params: { page: 1, size: 9 },
+      });
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID41",
+      type: "B",
+      executedDate: "01/10/2026",
+      description: "semesterId rong bi bo khoi query",
+    },
+    async () => {
+      const getSpy = vi.spyOn(apiClient, "get").mockResolvedValueOnce({ data: mockPaged });
+
+      await LecturerCourseService.getCoursesPaged({ page: 1, size: 9, semesterId: "  " });
+
+      expect(getSpy).toHaveBeenCalledWith("/api/lecturer/courses/paged", {
+        params: { page: 1, size: 9 },
+      });
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID42",
+      type: "B",
+      executedDate: "01/10/2026",
+      description: "total bang 0 va items rong la hop le",
+    },
+    async () => {
+      vi.spyOn(apiClient, "get").mockResolvedValueOnce({
+        data: { items: [], page: 1, size: 9, total: 0 },
+      });
+
+      const res = await LecturerCourseService.getCoursesPaged({ page: 1, size: 9 });
+
+      expect(res.items).toEqual([]);
+      expect(res.total).toBe(0);
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID43",
+      type: "B",
+      executedDate: "01/10/2026",
+      description: "Trang cuoi 0-based: page=2 size=9 total=21 giu nguyen shape",
+    },
+    async () => {
+      vi.spyOn(apiClient, "get").mockResolvedValueOnce({
+        data: { items: [mockCourse], page: 2, size: 9, total: 21 },
+      });
+
+      const res = await LecturerCourseService.getCoursesPaged({ page: 2, size: 9 });
+
+      expect(res.page).toBe(2);
+      expect(res.size).toBe(9);
+      expect(res.total).toBe(21);
+      expect(res.items).toHaveLength(1);
+    }
+  );
 });

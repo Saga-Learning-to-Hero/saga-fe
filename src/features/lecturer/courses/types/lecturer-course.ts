@@ -1,3 +1,17 @@
+export interface CoursePagedParams {
+  page: number;
+  size: number;
+  semesterId?: string;
+  search?: string;
+}
+
+export interface PagedResponse<T> {
+  items: T[];
+  page: number;
+  size: number;
+  total: number;
+}
+
 export interface LecturerCourseResponse {
   id: string;
   courseCode: string;
@@ -22,6 +36,8 @@ export interface LecturerCourseResponse {
   createdAt: string;
   updatedAt?: string;
 }
+
+export type LecturerCoursePagedResponse = PagedResponse<LecturerCourseResponse>;
 
 export interface LecturerRosterEntry {
   courseEnrollmentId: string;

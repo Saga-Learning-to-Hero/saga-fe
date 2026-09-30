@@ -52,12 +52,27 @@ export interface StudentCourse {
   enrollmentStatus?: string;
 }
 
+export interface CoursePagedParams {
+  page: number;
+  size: number;
+  semesterId?: string;
+  search?: string;
+}
+
+export interface PagedResponse<T> {
+  items: T[];
+  page: number;
+  size: number;
+  total: number;
+}
+
 export interface StudentCourseResponse {
   courseId: string;
   courseCode: string;
   subjectCode: string;
   subjectName: string;
   classCode: string;
+  semesterId?: string;
   semesterCode: string;
   semesterName: string;
   enrollmentStatus: "ACTIVE" | string;
@@ -66,6 +81,8 @@ export interface StudentCourseResponse {
   teamName: string | null;
   projectId: string | null;
 }
+
+export type StudentCoursePagedResponse = PagedResponse<StudentCourseResponse>;
 
 export type StudentCourseTeamStatus = "WAITING_TEAM" | "WAITING_PROJECT" | "PROJECT_READY";
 

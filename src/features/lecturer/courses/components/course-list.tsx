@@ -1,6 +1,6 @@
 "use client";
 
-import { useDeferredValue, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import {
   ArrowRightIcon,
@@ -16,15 +16,21 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { TablePagination } from "@/components/common/table-pagination";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
 import {
   useLecturerCourses,
+  useLecturerCoursesPaged,
   usePrefetchLecturerCourse,
 } from "../hooks/use-lecturer-courses";
 import { lecturerCourseDashboardPath } from "../lib/course-routes";
 import type { LecturerCourseResponse } from "../types/lecturer-course";
 import { getApiErrorMessage } from "@/lib/api-error";
 import { cn } from "@/lib/utils";
+
+const PAGE_SIZE_OPTIONS = [9, 18, 36];
+const DEFAULT_PAGE_SIZE = 9;
+const SEARCH_DEBOUNCE_MS = 350;
 
 function CourseListSkeleton() {
   return (
@@ -141,42 +147,91 @@ function CourseListCard({
 
 export function CourseList() {
   const { user } = useAuthStore();
-  const { data: courses = [], isLoading, isError, error, refetch } = useLecturerCourses();
+  const { data: allCourses = [], isLoading: isListLoading } = useLecturerCourses();
   const prefetchCourse = usePrefetchLecturerCourse();
-  const [selectedSemester, setSelectedSemester] = useState<string>("ALL");
+  const [selectedSemesterId, setSelectedSemesterId] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
-  const deferredQuery = useDeferredValue(searchQuery);
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchQuery.trim());
+      setPage(1);
+    }, SEARCH_DEBOUNCE_MS);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  const pagedParams = useMemo(
+    () => ({
+      page: Math.max(0, page - 1),
+      size: pageSize,
+      semesterId: selectedSemesterId || undefined,
+      search: debouncedSearch || undefined,
+    }),
+    [page, pageSize, selectedSemesterId, debouncedSearch]
+  );
+
+  const {
+    data: paged,
+    isLoading,
+    isError,
+    error,
+    refetch,
+    isPlaceholderData,
+  } = useLecturerCoursesPaged(pagedParams);
+
+  const courses = paged?.items ?? [];
+  const total = paged?.total ?? 0;
+  const isInitialLoading = isLoading && !paged;
+  const hasActiveFilters = Boolean(selectedSemesterId || debouncedSearch);
+
+  if (paged) {
+    const totalPages = Math.max(1, Math.ceil(paged.total / pageSize));
+    if (page > totalPages) {
+      setPage(totalPages);
+    }
+  }
 
   const semesters = useMemo(() => {
-    const map = new Map<string, { code: string; name: string; count: number }>();
-    for (const c of courses) {
-      const code = c.semesterCode || "OTHER";
-      const name = c.semesterName || c.semesterCode || "Học kỳ khác";
-      const existing = map.get(code);
+    const map = new Map<string, { id: string; code: string; name: string; count: number }>();
+    for (const course of allCourses) {
+      const id = course.semesterId?.trim();
+      if (!id) continue;
+      const existing = map.get(id);
       if (existing) {
         existing.count += 1;
       } else {
-        map.set(code, { code, name, count: 1 });
+        map.set(id, {
+          id,
+          code: course.semesterCode || id,
+          name: course.semesterName || course.semesterCode || "Học kỳ khác",
+          count: 1,
+        });
       }
     }
     return Array.from(map.values());
-  }, [courses]);
+  }, [allCourses]);
 
-  const filteredCourses = useMemo(() => {
-    const query = deferredQuery.toLowerCase().trim();
-    return courses.filter((course) => {
-      const matchSemester =
-        selectedSemester === "ALL" ||
-        course.semesterCode === selectedSemester ||
-        (!course.semesterCode && selectedSemester === "OTHER");
-      const matchQuery =
-        !query ||
-        `${course.courseCode} ${course.name} ${course.subjectCode ?? ""} ${course.subjectName ?? ""} ${course.classCode ?? ""} ${course.semesterCode ?? ""} ${course.semesterName ?? ""}`
-          .toLowerCase()
-          .includes(query);
-      return matchSemester && matchQuery;
-    });
-  }, [courses, deferredQuery, selectedSemester]);
+  const semesterCount = useMemo(() => {
+    const codes = new Set(
+      allCourses.map((course) => course.semesterCode || course.semesterId).filter(Boolean)
+    );
+    return codes.size;
+  }, [allCourses]);
+
+  const handleSelectSemester = (semesterId: string) => {
+    setSelectedSemesterId(semesterId);
+    setPage(1);
+  };
+
+  const handleClearFilters = () => {
+    setSearchQuery("");
+    setDebouncedSearch("");
+    setSelectedSemesterId("");
+    setPage(1);
+  };
 
   const displayName = user?.fullName || user?.name || "Giảng viên";
 
@@ -206,7 +261,7 @@ export function CourseList() {
           <div className="grid grid-cols-2 gap-3 sm:flex sm:items-center">
             <div className="min-w-[130px] rounded-xl border border-border/80 bg-muted/30 p-4 text-center">
               <span className="block font-mono text-2xl font-black text-foreground">
-                {isLoading ? "…" : courses.length}
+                {isListLoading ? "…" : allCourses.length}
               </span>
               <span className="mt-1 block text-xs font-semibold text-muted-foreground">
                 Lớp học phần
@@ -214,7 +269,7 @@ export function CourseList() {
             </div>
             <div className="min-w-[130px] rounded-xl border border-border/80 bg-muted/30 p-4 text-center">
               <span className="block font-mono text-2xl font-black text-foreground">
-                {isLoading ? "…" : (semesters.length > 0 ? semesters.length : 1)}
+                {isListLoading ? "…" : semesterCount}
               </span>
               <span className="mt-1 block text-xs font-semibold text-muted-foreground">
                 Học kỳ hoạt động
@@ -225,37 +280,39 @@ export function CourseList() {
       </div>
 
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        {semesters.length > 1 ? (
+        {semesters.length > 0 ? (
           <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
             <button
               type="button"
-              onClick={() => setSelectedSemester("ALL")}
+              onClick={() => handleSelectSemester("")}
               className={cn(
                 "cursor-pointer shrink-0 rounded-xl px-4 py-2 text-xs font-bold transition-all",
-                selectedSemester === "ALL"
+                !selectedSemesterId
                   ? "bg-primary text-primary-foreground shadow-xs"
                   : "bg-muted/70 text-muted-foreground hover:bg-muted hover:text-foreground"
               )}
             >
-              Tất cả ({courses.length})
+              Tất cả ({allCourses.length})
             </button>
-            {semesters.map((s) => (
+            {semesters.map((semester) => (
               <button
-                key={s.code}
+                key={semester.id}
                 type="button"
-                onClick={() => setSelectedSemester(s.code)}
+                onClick={() => handleSelectSemester(semester.id)}
                 className={cn(
                   "cursor-pointer shrink-0 rounded-xl px-4 py-2 text-xs font-bold transition-all",
-                  selectedSemester === s.code
+                  selectedSemesterId === semester.id
                     ? "bg-primary text-primary-foreground shadow-xs"
                     : "bg-muted/70 text-muted-foreground hover:bg-muted hover:text-foreground"
                 )}
               >
-                {s.name} ({s.count})
+                {semester.name} ({semester.count})
               </button>
             ))}
           </div>
-        ) : <div />}
+        ) : (
+          <div />
+        )}
 
         <div className="relative w-full sm:max-w-xs">
           <SearchIcon className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
@@ -268,7 +325,7 @@ export function CourseList() {
         </div>
       </div>
 
-      {isLoading ? (
+      {isInitialLoading ? (
         <CourseListSkeleton />
       ) : isError ? (
         <Card className="rounded-xl border border-dashed border-destructive/30 p-8 text-center">
@@ -285,7 +342,7 @@ export function CourseList() {
             Thử lại
           </Button>
         </Card>
-      ) : courses.length === 0 ? (
+      ) : !hasActiveFilters && total === 0 ? (
         <Card className="grid min-h-60 place-items-center rounded-xl border border-dashed border-border bg-card p-8">
           <div className="text-center">
             <GraduationCapIcon className="mx-auto mb-3 size-10 text-muted-foreground/40" />
@@ -295,7 +352,7 @@ export function CourseList() {
             </p>
           </div>
         </Card>
-      ) : filteredCourses.length === 0 ? (
+      ) : courses.length === 0 ? (
         <Card className="grid min-h-60 place-items-center rounded-xl border border-dashed border-border bg-card p-8">
           <div className="text-center">
             <SearchIcon className="mx-auto mb-3 size-10 text-muted-foreground/40" />
@@ -303,21 +360,42 @@ export function CourseList() {
             <p className="mt-1 text-xs text-muted-foreground">
               Vui lòng thử tìm kiếm với từ khóa khác hoặc xóa bộ lọc.
             </p>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setSearchQuery("")}
-              className="mt-4 cursor-pointer text-xs"
-            >
-              Xóa bộ lọc
-            </Button>
+            {hasActiveFilters && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleClearFilters}
+                className="mt-4 cursor-pointer text-xs"
+              >
+                Xóa bộ lọc
+              </Button>
+            )}
           </div>
         </Card>
       ) : (
-        <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
-          {filteredCourses.map((course) => (
-            <CourseListCard key={course.id} course={course} onPrefetch={prefetchCourse} />
-          ))}
+        <div
+          className={cn(
+            "space-y-5 transition-opacity",
+            isPlaceholderData && "pointer-events-none opacity-60"
+          )}
+        >
+          <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
+            {courses.map((course) => (
+              <CourseListCard key={course.id} course={course} onPrefetch={prefetchCourse} />
+            ))}
+          </div>
+          <TablePagination
+            page={page}
+            pageSize={pageSize}
+            totalItems={total}
+            onPageChange={setPage}
+            onPageSizeChange={(size) => {
+              setPageSize(size);
+              setPage(1);
+            }}
+            pageSizeOptions={PAGE_SIZE_OPTIONS}
+            itemLabel="lớp học phần"
+          />
         </div>
       )}
     </div>

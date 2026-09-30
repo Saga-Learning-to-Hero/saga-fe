@@ -377,7 +377,7 @@ Project Type dùng để phân loại hướng dự án, không điều khiển 
 
 | ID | Nghiệp vụ | BE | FE data | UI | Trạng thái/Ghi chú |
 | --- | --- | --- | --- | --- | --- |
-| LEC-001 | Course list/detail/roster/progress | ✓ | ✓ | ✓ | `DONE` |
+| LEC-001 | Course list/detail/roster/progress | ✓ | ✓ | ✓ | `DONE`; trang chọn lớp dùng `GET /api/lecturer/courses/paged` (`page` 0-based default 0, `size` max 200, tùy chọn `semesterId`/`search`, `{ items, page, size, total }`); header/context/composer vẫn dùng `GET /api/lecturer/courses` |
 | LEC-002 | Team list/template/import preview-confirm | ✓ | ✓ | ✓ | `DONE`; list/detail dùng trạng thái nghiệp vụ, không hiển thị UUID nội bộ của project/team |
 | LEC-003 | Đổi Team Leader | ✓ | ✓ | ✓ | `DONE` |
 | LEC-004 | Chuyển member giữa team | ✓ | ✓ | ✓ | `DONE` |
@@ -393,7 +393,7 @@ Project Type dùng để phân loại hướng dự án, không điều khiển 
 
 | ID | Nghiệp vụ | BE | FE data | UI | Trạng thái/Ghi chú |
 | --- | --- | --- | --- | --- | --- |
-| STU-001 | Course list và chọn course context | ✓ | ✓ | ✓ | `DONE`; phải reset khi đổi tài khoản |
+| STU-001 | Course list và chọn course context | ✓ | ✓ | ✓ | `DONE`; trang chọn lớp dùng `GET /api/student/courses/paged` (`page` 0-based default 0, `size` max 200, tùy chọn `semesterId`/`search`); header/context vẫn dùng `GET /api/student/courses`; tab học kỳ chỉ hiện khi item có `semesterId`, không suy từ `semesterCode` |
 | STU-002 | Xem team của course | ✓ | ✓ | ✓ | `DONE` |
 | PRJ-001 | Xem/tạo project của team | ✓ | ✓ | ✓ | `PARTIAL`; FE đang ép project type/description hơn contract BE |
 | PRJ-002 | Project type catalog | ✓ | ✓ | ✓ | `PARTIAL`; phải coi là optional metadata |
@@ -530,7 +530,8 @@ Project Type dùng để phân loại hướng dự án, không điều khiển 
 
 | Endpoint group | FE hiện tại |
 | --- | --- |
-| `/api/lecturer/courses`, `/{id}`, `/roster`, `/progress` | Đã dùng |
+| `/api/lecturer/courses`, `/{id}`, `/roster`, `/progress` | Đã dùng; list đầy đủ cho header, command search, composer và xác định course đang chọn |
+| `/api/lecturer/courses/paged` | Đã dùng cho trang chọn lớp (`page` 0-based default 0, `size` max 200, tùy chọn `semesterId`/`search`; `{ items, page, size, total }`) |
 | `/api/lecturer/courses/{courseId}/dashboard` | Đã dùng cho trang Tổng quan lớp; FE chỉ render payload BE |
 | `/api/lecturer/courses/{id}/teams/**` | Đã dùng (GET teams & unassignedStudents, POST `/teams/{teamId}/members` để thêm sinh viên unassigned hoặc chuyển nhóm thành viên với courseEnrollmentId, PUT `/leader`, import Excel) |
 | Contribution slice weights/config mode/team weights | Đã dùng |
@@ -546,7 +547,8 @@ Project Type dùng để phân loại hướng dự án, không điều khiển 
 
 | Endpoint group | FE hiện tại |
 | --- | --- |
-| `/api/student/courses` | Đã dùng |
+| `/api/student/courses` | Đã dùng cho header, course context và xác định lớp đang chọn |
+| `/api/student/courses/paged` | Đã dùng cho trang chọn lớp (`page` 0-based default 0, `size` max 200, tùy chọn `semesterId`/`search`; `{ items, page, size, total }`). Tab học kỳ cần `semesterId` trên từng item; Swagger student hiện không trả field này, FE không suy từ `semesterCode` |
 | `/api/student/courses/{courseId}/team` | Đã dùng |
 | `/api/student/courses/{courseId}/dashboard` | Đã dùng (Student Personal Cockpit cho Member & Leader; hỗ trợ query param `sprintId` để chọn lọc số liệu sprint tương ứng) |
 | `/api/student/courses/{courseId}/project` GET/POST | Đã dùng |
@@ -731,6 +733,7 @@ Hiện mỗi request graph có thể kích hoạt/rebuild projection theo implem
 - [ ] Sprint activity DTO có đủ Task completed và Commit theo cùng sprint/timezone.
 - [ ] Task date/parent keys luôn xuất hiện trong response kể cả khi null.
 - [ ] Project update/delete có nằm trong scope release hay không.
+- [ ] `GET /api/student/courses` và `/paged` cần trả `semesterId` trên từng item để tab lọc học kỳ gửi đúng query; FE không map `semesterCode` thành `semesterId`.
 
 ---
 
