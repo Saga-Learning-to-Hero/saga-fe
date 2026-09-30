@@ -7,51 +7,64 @@ import {
   RefreshCwIcon,
 } from "lucide-react";
 import type { CommitStats } from "../types/commits";
+import type { GitHubSyncBadgeKind } from "../lib/github-commit-connection";
 import { Badge } from "@/components/ui/badge";
 
 interface CommitStatsCardsProps {
   stats: CommitStats;
   selectedRepoName: string;
   selectedBranchName: string;
-  githubSyncStatus?: string | null;
-  isGitHubSyncing?: boolean;
-  isGitHubSyncFailed?: boolean;
+  syncBadge: GitHubSyncBadgeKind;
+  isTeamLeader?: boolean;
 }
+
+const SYNC_BADGE: Record<
+  GitHubSyncBadgeKind,
+  { label: string; color: string; dot: string }
+> = {
+  syncing: {
+    label: "Đang đồng bộ",
+    color: "text-amber-600 dark:text-amber-400",
+    dot: "bg-amber-500 animate-pulse",
+  },
+  failed: {
+    label: "Đồng bộ lỗi",
+    color: "text-destructive",
+    dot: "bg-destructive",
+  },
+  revoked: {
+    label: "Đã ngắt kết nối",
+    color: "text-destructive",
+    dot: "bg-muted-foreground/50",
+  },
+  not_connected: {
+    label: "Chưa kết nối GitHub",
+    color: "text-muted-foreground",
+    dot: "bg-muted-foreground/50",
+  },
+  synced: {
+    label: "Đã đồng bộ",
+    color: "text-emerald-600 dark:text-emerald-400",
+    dot: "bg-emerald-500",
+  },
+  idle: {
+    label: "Chưa đồng bộ",
+    color: "text-muted-foreground",
+    dot: "bg-muted-foreground/50",
+  },
+};
 
 export function CommitStatsCards({
   stats,
   selectedRepoName,
   selectedBranchName,
-  githubSyncStatus,
-  isGitHubSyncing = false,
-  isGitHubSyncFailed = false,
+  syncBadge,
+  isTeamLeader = false,
 }: CommitStatsCardsProps) {
-  const syncLabel = isGitHubSyncing
-    ? "Đang đồng bộ"
-    : isGitHubSyncFailed
-      ? "Đồng bộ lỗi"
-      : githubSyncStatus
-        ? "Đã đồng bộ"
-        : "Chưa đồng bộ";
-
-  const syncColor = isGitHubSyncing
-    ? "text-amber-600 dark:text-amber-400"
-    : isGitHubSyncFailed
-      ? "text-destructive"
-      : githubSyncStatus
-        ? "text-emerald-600 dark:text-emerald-400"
-        : "text-muted-foreground";
-
-  const syncDotColor = isGitHubSyncing
-    ? "bg-amber-500 animate-pulse"
-    : isGitHubSyncFailed
-      ? "bg-destructive"
-      : githubSyncStatus
-        ? "bg-emerald-500"
-        : "bg-muted-foreground/50";
+  const { label: syncLabel, color: syncColor, dot: syncDotColor } = SYNC_BADGE[syncBadge];
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+    <div className={`grid grid-cols-1 gap-3.5 ${isTeamLeader ? "sm:grid-cols-3" : "sm:grid-cols-2"}`}>
       <div className="p-4 rounded-xl border border-border/70 bg-card/60 backdrop-blur-xs shadow-2xs space-y-2 hover:border-primary/50 transition-all group">
         <div className="flex items-center justify-between">
           <span className="text-xs font-semibold text-muted-foreground">Tổng số Commits</span>
@@ -101,22 +114,24 @@ export function CommitStatsCards({
         </p>
       </div>
 
-      <div className="p-4 rounded-xl border border-border/70 bg-card/60 backdrop-blur-xs shadow-2xs space-y-2 hover:border-primary/50 transition-all group">
-        <div className="flex items-center justify-between">
-          <span className="text-xs font-semibold text-muted-foreground">Đồng bộ GitHub</span>
-          <div className="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
-            <CheckCircle2Icon className="w-4 h-4" />
+      {isTeamLeader && (
+        <div className="p-4 rounded-xl border border-border/70 bg-card/60 backdrop-blur-xs shadow-2xs space-y-2 hover:border-primary/50 transition-all group">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-muted-foreground">Đồng bộ GitHub</span>
+            <div className="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+              <CheckCircle2Icon className="w-4 h-4" />
+            </div>
           </div>
+          <div className={`flex items-center gap-2 font-bold text-sm ${syncColor}`}>
+            <span className={`w-2 h-2 rounded-full ${syncDotColor}`} />
+            <span>{syncLabel}</span>
+          </div>
+          <p className="text-xs text-muted-foreground flex items-center gap-1 truncate pt-0.5">
+            <RefreshCwIcon className="w-3 h-3 text-muted-foreground shrink-0" />
+            <span>Lần cuối: {stats.lastSyncedAt}</span>
+          </p>
         </div>
-        <div className={`flex items-center gap-2 font-bold text-sm ${syncColor}`}>
-          <span className={`w-2 h-2 rounded-full ${syncDotColor}`} />
-          <span>{syncLabel}</span>
-        </div>
-        <p className="text-xs text-muted-foreground flex items-center gap-1 truncate pt-0.5">
-          <RefreshCwIcon className="w-3 h-3 text-muted-foreground shrink-0" />
-          <span>Lần cuối: {stats.lastSyncedAt}</span>
-        </p>
-      </div>
+      )}
     </div>
   );
 }

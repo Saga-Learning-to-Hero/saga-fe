@@ -15,7 +15,7 @@ export function ProfileModal() {
   const { user } = useAuthStore();
   const { isOpen, setProfileModalOpen } = useProfileModalStore();
 
-  if (!user) return null;
+  if (!user || !isOpen) return null;
 
   return (
     <Dialog open={isOpen} onOpenChange={setProfileModalOpen}>

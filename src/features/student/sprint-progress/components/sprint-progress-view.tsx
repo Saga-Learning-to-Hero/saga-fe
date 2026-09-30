@@ -1,7 +1,9 @@
 "use client";
 
-import { showSuccessToast, showErrorToast, getApiErrorMessage } from "@/lib/api-error";
-import { useState, useMemo } from "react";
+import { showSuccessToast, showErrorToast, getApiErrorMessage, getApiErrorStatus } from "@/lib/api-error";
+import { getSprintSourceUserMessage } from "../lib/sprint-query-source";
+import { useState, useMemo, useEffect, useRef } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import type { SprintIssue, Sprint, IssueStatus, Epic } from "../types/sprint-progress";
 import { SprintHeader } from "./sprint-header";
 import { SprintBoardView } from "./sprint-board-view";
@@ -31,7 +33,11 @@ import {
 import { useProjectTasksData, useTransitionTask, useTaskOptions } from "../hooks/use-project-tasks";
 import { useProjectJiraSourceSelection } from "@/features/student/project/hooks/use-project-jira-source-selection";
 import { useProjectRealtime } from "@/features/student/project/hooks/use-project-realtime";
-import { useProjectSyncStatus, useSyncProject } from "@/features/student/project/hooks/useProjectSync";
+import { useProjectSyncStatus, useSyncProject, PROJECT_PROJECTION_QUERY_KEYS } from "@/features/student/project/hooks/useProjectSync";
+import { canRequestProjectSync, isActivelySyncing } from "@/features/student/project/lib/sync-job-status";
+import { useTimedSyncWindow } from "@/features/student/project/hooks/use-timed-sync-window";
+import { JIRA_SPRINT_QUERY_KEYS } from "../hooks/use-sprint-data";
+import { dropMatchedStatusOverrides } from "../lib/task-list-cache";
 import {
   moveLocalIssueToSprint,
   restoreLocalSprintOverride,
@@ -86,25 +92,55 @@ export function SprintProgressView() {
     isError: isSprintsError,
     error: sprintsError,
     refetch: refetchSprints,
+    sprintSourceStatus,
   } = useProjectSprints(projectId, effectiveSourceId, {
     enabled: Boolean(projectId && isJiraConnected),
-  });
-  const { data: syncJobs = [] } = useProjectSyncStatus(projectId, {
-    enabled: Boolean(projectId),
   });
   const { data: taskOptions } = useTaskOptions(projectId, {
     enabled: Boolean(projectId && isJiraConnected),
     jiraIntegrationId: effectiveSourceId,
   });
-  const hasActiveSyncJob = useMemo(
-    () =>
-      syncJobs.some((job) =>
-        ["ENQUEUED", "IN_PROGRESS", "RUNNING", "SYNCING"].includes(
-          (job.status || "").toUpperCase()
-        )
-      ),
-    [syncJobs]
-  );
+  const currentUserStudentCode = team?.myStudentCode || authUser?.studentCode || "";
+  const isLeaderInGroup = effectiveCourse && "myGroup" in effectiveCourse && effectiveCourse.myGroup?.role === "LEADER";
+  const isTeamLeader = team?.myRole === "LEADER" || Boolean(isLeaderInGroup);
+
+  const [userSelectedSprintId, setUserSelectedSprintId] = useState<string | null>(null);
+  const [activeView, setActiveView] = useState<"BOARD" | "BACKLOG" | "TIMELINE" | "ANALYTICS">("BOARD");
+  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [selectedAssigneeId, setSelectedAssigneeId] = useState<string | null>(null);
+  const [localTaskOverrides, setLocalTaskOverrides] = useState<Record<string, Partial<SprintIssue>>>({});
+  const [localCustomIssues, setLocalCustomIssues] = useState<SprintIssue[]>([]);
+  const wasActiveSyncRef = useRef(false);
+
+  const {
+    status: realtimeStatus,
+    lastEventTime,
+    lastEvent,
+    reconnect: reconnectRealtime,
+  } = useProjectRealtime(projectId, {
+    enabled: Boolean(
+      projectId &&
+      (isJiraConnected || projectIntegrations?.github?.status === "ACTIVE")
+    ),
+  });
+
+  const { data: syncJobs = [] } = useProjectSyncStatus(projectId, {
+    enabled: Boolean(projectId),
+    sseStatus: realtimeStatus,
+  });
+  const queryClient = useQueryClient();
+  const hasActiveSyncJob = isActivelySyncing(syncJobs);
+  const syncWindowTimedOut = useTimedSyncWindow(hasActiveSyncJob);
+
+  useEffect(() => {
+    if (wasActiveSyncRef.current && !hasActiveSyncJob && projectId) {
+      void queryClient.invalidateQueries({ queryKey: JIRA_SPRINT_QUERY_KEYS.tasks(projectId) });
+      void queryClient.invalidateQueries({ queryKey: JIRA_SPRINT_QUERY_KEYS.sprints(projectId) });
+      void queryClient.invalidateQueries({ queryKey: PROJECT_PROJECTION_QUERY_KEYS.commits(projectId) });
+    }
+    wasActiveSyncRef.current = hasActiveSyncJob;
+  }, [hasActiveSyncJob, projectId, queryClient]);
+
   const lastSyncedAt = useMemo(() => {
     return syncJobs
       .map((job) => job.completedAt)
@@ -115,10 +151,7 @@ export function SprintProgressView() {
   const assignTaskToSprintMutation = useAssignTaskToSprint();
   const patchSprintMutation = usePatchSprint();
   const syncProjectMutation = useSyncProject();
-
-  const currentUserStudentCode = authUser?.studentCode || "";
-  const isLeaderInGroup = effectiveCourse && "myGroup" in effectiveCourse && effectiveCourse.myGroup?.role === "LEADER";
-  const isTeamLeader = team?.myRole === "LEADER" || Boolean(isLeaderInGroup);
+  const isSyncingJira = syncProjectMutation.isPending || (hasActiveSyncJob && !syncWindowTimedOut);
 
   const teamMembers = useMemo(() => {
     const assignable = taskOptions?.assignableUsers || [];
@@ -143,46 +176,19 @@ export function SprintProgressView() {
     });
   }, [team?.members, taskOptions?.assignableUsers]);
 
-  const [userSelectedSprintId, setUserSelectedSprintId] = useState<string | null>(null);
-  const [activeView, setActiveView] = useState<"BOARD" | "BACKLOG" | "TIMELINE" | "ANALYTICS">("BOARD");
-  const [searchQuery, setSearchQuery] = useState<string>("");
-  const [selectedAssigneeId, setSelectedAssigneeId] = useState<string | null>(null);
-
-  const [localTaskOverrides, setLocalTaskOverrides] = useState<Record<string, Partial<SprintIssue>>>({});
-  const [localCustomIssues, setLocalCustomIssues] = useState<SprintIssue[]>([]);
-  const {
-    status: realtimeStatus,
-    lastEventTime,
-    lastEvent,
-    reconnect: reconnectRealtime,
-  } = useProjectRealtime(projectId, {
-    enabled: Boolean(
-      projectId &&
-      (isJiraConnected || projectIntegrations?.github?.status === "ACTIVE")
-    ),
-    onEvent: (event) => {
-      if (event.type !== "TASKS_CHANGED" && event.type !== "SPRINTS_CHANGED") return;
-
-      setLocalTaskOverrides((previous) => {
-        if (event.entityId) {
-          if (!(event.entityId in previous)) return previous;
-          const remaining = { ...previous };
-          delete remaining[event.entityId];
-          return remaining;
-        }
-        return Object.keys(previous).length > 0 ? {} : previous;
-      });
-    },
-  });
+  const statusAwareOverrides = dropMatchedStatusOverrides(localTaskOverrides, projectTasks);
+  if (statusAwareOverrides !== localTaskOverrides) {
+    setLocalTaskOverrides(statusAwareOverrides);
+  }
 
   const rawIssues: SprintIssue[] = useMemo(() => {
     const fromApi = projectTasks.map((t) => {
       const mapped = mapProjectTaskToSprintIssue(t, teamMembers);
-      const override = localTaskOverrides[t.id];
+      const override = statusAwareOverrides[t.id];
       return override ? { ...mapped, ...override } : mapped;
     });
     return mergeProjectedAndLocalIssues(fromApi, localCustomIssues);
-  }, [projectTasks, teamMembers, localTaskOverrides, localCustomIssues]);
+  }, [projectTasks, teamMembers, statusAwareOverrides, localCustomIssues]);
 
   const scopedIssues = useMemo(() => {
     return scopeIssuesToJiraSource(
@@ -380,7 +386,7 @@ export function SprintProgressView() {
   };
 
   const handleSyncJira = async () => {
-    if (!projectId) return;
+    if (!projectId || !canRequestProjectSync(isTeamLeader)) return;
     try {
       await syncProjectMutation.mutateAsync(projectId);
       showSuccessToast("Đã gửi yêu cầu đồng bộ Jira & GitHub. Dữ liệu sẽ tự động cập nhật.");
@@ -391,14 +397,22 @@ export function SprintProgressView() {
 
   const handleSaveIssue = (savedIssue: SprintIssue) => {
     const isProjectedTask = projectTasks.some((task) => task.id === savedIssue.id);
-    setLocalCustomIssues((prev) => {
-      if (isProjectedTask) {
-        return prev.filter((issue) => issue.id !== savedIssue.id);
-      }
-      const idx = prev.findIndex((i) => i.id === savedIssue.id);
-      if (idx >= 0) return prev.map((i) => (i.id === savedIssue.id ? savedIssue : i));
-      return [savedIssue, ...prev];
-    });
+    if (isProjectedTask) {
+      setLocalTaskOverrides((prev) => {
+        if (!(savedIssue.id in prev)) return prev;
+        const next = { ...prev };
+        delete next[savedIssue.id];
+        return next;
+      });
+      setLocalCustomIssues((prev) => prev.filter((i) => i.id !== savedIssue.id));
+      return;
+    }
+    const idx = localCustomIssues.findIndex((i) => i.id === savedIssue.id);
+    if (idx >= 0) {
+      setLocalCustomIssues((prev) => prev.map((i) => (i.id === savedIssue.id ? savedIssue : i)));
+    } else {
+      setLocalCustomIssues((prev) => [savedIssue, ...prev]);
+    }
     setLocalTaskOverrides((prev) => ({ ...prev, [savedIssue.id]: savedIssue }));
   };
 
@@ -429,8 +443,8 @@ export function SprintProgressView() {
         totalTasksCount={activeView === "BOARD" ? boardIssues.length : filteredIssues.length}
         totalProjectTasksCount={topLevelIssues.length}
         productBacklogCount={productBacklogCount}
-        onSyncJira={handleSyncJira}
-        isSyncingJira={syncProjectMutation.isPending || hasActiveSyncJob}
+        onSyncJira={canRequestProjectSync(isTeamLeader) ? handleSyncJira : undefined}
+        isSyncingJira={isSyncingJira}
         lastSyncedAt={lastSyncedAt}
         realtimeStatus={realtimeStatus}
         lastEventTime={lastEventTime}
@@ -491,18 +505,31 @@ export function SprintProgressView() {
         </div>
       )}
 
-      {!isLoadingSprints && Boolean(projectId) && isSprintsError && (
-        <div className="p-6 rounded-xl border border-dashed border-destructive/40 bg-destructive/5 text-center space-y-3">
-          <AlertCircleIcon className="w-6 h-6 text-destructive mx-auto" />
+      {!isLoadingSprints && Boolean(projectId) && (isSprintsError || sprintSourceStatus === "needs_selection") && (
+        <div className="p-6 rounded-xl border border-dashed border-amber-500/40 bg-amber-500/5 text-center space-y-3">
+          <AlertCircleIcon className="w-6 h-6 text-amber-500 mx-auto" />
           <div>
-            <p className="text-sm font-bold text-foreground">Không tải được danh sách Sprint</p>
+            <p className="text-sm font-bold text-foreground">
+              {getSprintSourceUserMessage({ status: sprintSourceStatus, error: sprintsError }).title}
+            </p>
             <p className="mt-1 text-xs text-muted-foreground">
-              {getApiErrorMessage(sprintsError, "Vui lòng thử lại hoặc kiểm tra kết nối Jira của dự án.")}
+              {getSprintSourceUserMessage({ status: sprintSourceStatus, error: sprintsError }).description}
             </p>
           </div>
-          <Button type="button" size="sm" variant="outline" onClick={() => void refetchSprints()} className="cursor-pointer text-xs">
-            Thử lại
-          </Button>
+          <div className="flex items-center justify-center gap-2">
+            <Link href={studentCoursePath("/student/project-info", courseId)} prefetch={true}>
+              <Button type="button" size="sm" variant="outline" className="cursor-pointer text-xs">
+                {sprintSourceStatus === "needs_selection" || getApiErrorStatus(sprintsError) === 409
+                  ? "Chọn nguồn Jira"
+                  : "Kết nối Jira"}
+              </Button>
+            </Link>
+            {isSprintsError ? (
+              <Button type="button" size="sm" variant="outline" onClick={() => void refetchSprints()} className="cursor-pointer text-xs">
+                Thử lại
+              </Button>
+            ) : null}
+          </div>
         </div>
       )}
 
@@ -526,10 +553,19 @@ export function SprintProgressView() {
         </div>
       )}
 
-      {hasActiveSyncJob && (
+      {isTeamLeader && hasActiveSyncJob && !syncWindowTimedOut && (
         <div className="flex items-center gap-2 rounded-xl border border-primary/20 bg-primary/5 px-3.5 py-3 text-xs text-primary">
           <Loader2Icon className="size-4 animate-spin shrink-0" />
           <span>Dữ liệu Jira/GitHub đang được đồng bộ. Bảng tiến độ sẽ tự làm mới khi hoàn tất.</span>
+        </div>
+      )}
+
+      {isTeamLeader && hasActiveSyncJob && syncWindowTimedOut && (
+        <div className="flex items-start gap-2 rounded-xl border border-amber-500/30 bg-amber-500/10 px-3.5 py-3 text-xs text-amber-800 dark:text-amber-200">
+          <AlertCircleIcon className="size-4 shrink-0 text-amber-500" />
+          <span>
+            Không nhận được trạng thái hoàn tất sau 90 giây. Đã dừng làm mới tự động. Dữ liệu hiện tại vẫn hiển thị; hãy bấm Đồng bộ lại hoặc tải lại trang nếu cần.
+          </span>
         </div>
       )}
 
@@ -631,6 +667,7 @@ export function SprintProgressView() {
               name: s.name,
               startDate: s.startDate,
               endDate: s.endDate,
+              state: s.status,
             }))}
             students={teamMembers.map((m) => ({
               studentId: m.studentCode,
@@ -639,6 +676,7 @@ export function SprintProgressView() {
               avatar: m.avatar,
             }))}
             initialSprintId={selectedSprintId === "backlog" ? undefined : selectedSprintId}
+            onSelectSprint={setUserSelectedSprintId}
           />
         </div>
       )}

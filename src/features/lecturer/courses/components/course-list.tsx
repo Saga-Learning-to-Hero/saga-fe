@@ -73,7 +73,7 @@ function CourseListCard({
       }}
       className="group relative flex flex-col justify-between overflow-hidden rounded-xl border border-border/80 bg-card p-6 shadow-xs transition-all duration-200 hover:-translate-y-1 hover:border-primary/50 hover:shadow-md"
     >
-      <div className="absolute inset-x-0 top-0 h-1 bg-popover from-primary/80 via-primary to-accent opacity-0 transition-opacity duration-200 group-hover:opacity-100" />
+      <div className="absolute inset-x-0 top-0 h-1 bg-linear-to-r from-primary/80 via-primary to-accent opacity-0 transition-opacity duration-200 group-hover:opacity-100" />
 
       <CardContent className="space-y-4 p-0">
         <div className="flex items-start justify-between gap-3">
@@ -194,7 +194,7 @@ export function CourseList() {
             </div>
             <h1 className="text-2xl font-extrabold tracking-tight text-foreground sm:text-3xl lg:text-4xl">
               Không gian Giảng dạy của{" "}
-              <span className="bg-popover from-primary via-indigo-600 to-cyan-500 bg-clip-text text-transparent dark:from-indigo-400 dark:via-primary dark:to-cyan-300">
+              <span className="text-primary dark:text-cyan-400 dark:drop-shadow-[0_0_16px_rgba(34,211,238,0.45)] font-black">
                 {displayName}
               </span>
             </h1>

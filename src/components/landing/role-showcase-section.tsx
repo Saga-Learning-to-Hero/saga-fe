@@ -125,7 +125,7 @@ export function RoleShowcaseSection() {
           </div>
 
           <div className="lg:col-span-5">
-            <div className="rounded-xl border border-primary/20 bg-popover from-primary/10 via-primary/5 to-cyan-500/10 p-6 space-y-5 shadow-xs">
+            <div className="rounded-xl border border-primary/20 bg-linear-to-br from-primary/10 via-primary/5 to-cyan-500/10 p-6 space-y-5 shadow-xs">
               <div className="flex items-center justify-between pb-3 border-b border-border/60">
                 <span className="text-xs font-mono font-bold text-foreground">
                   {currentRole.previewTitle}
@@ -148,7 +148,7 @@ export function RoleShowcaseSection() {
                   <span className="text-emerald-600 dark:text-emerald-400 font-bold">Hoạt động</span>
                 </div>
                 <div className="w-full h-1.5 bg-muted rounded-full overflow-hidden">
-                  <div className="h-full bg-popover from-primary to-cyan-500 rounded-full w-[90%]" />
+                  <div className="h-full bg-linear-to-r from-primary to-cyan-500 rounded-full w-[90%]" />
                 </div>
               </div>
             </div>

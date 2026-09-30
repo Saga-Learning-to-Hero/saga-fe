@@ -146,15 +146,25 @@ function TopNavTabLink({
       const teamId = cachedTeam?.teamId || matchedCourse?.teamId;
 
       if (item.href === "/student/dashboard" || item.href === "/student") {
-        if (projectId) {
-          prefetchProjectProjection(projectId, { includeCommits: true });
-        }
+        prefetchProjectProjection(projectId, {
+          courseId: studentCourseId,
+          includeCommits: Boolean(projectId),
+          includeTeamProgress: true,
+        });
       } else if (item.href === "/student/contribution") {
         if (teamId) {
           prefetchContributionEvaluation(teamId);
         }
+      } else if (item.href === "/student/commits") {
+        prefetchProjectProjection(projectId, {
+          courseId: studentCourseId,
+          includeCommits: Boolean(projectId),
+        });
       } else if (projectId) {
-        prefetchProjectProjection(projectId);
+        prefetchProjectProjection(projectId, {
+          courseId: studentCourseId,
+          includeTeamProgress: true,
+        });
       }
     }
   };

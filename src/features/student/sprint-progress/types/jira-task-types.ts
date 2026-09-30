@@ -20,6 +20,7 @@ export interface ProjectSprintResponse {
   startDate?: string | null;
   endDate?: string | null;
   completeDate?: string | null;
+  completedDate?: string | null;
   source?: ProjectSprintSource | null;
   jiraIntegrationId?: string | null;
 }

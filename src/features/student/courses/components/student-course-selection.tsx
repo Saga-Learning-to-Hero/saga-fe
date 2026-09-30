@@ -91,8 +91,8 @@ export function StudentCourseSelection({ onSelectCourse }: StudentCourseSelectio
             </div>
             <h1 className="text-2xl font-extrabold tracking-tight text-foreground sm:text-3xl lg:text-4xl">
               Xin chào,{" "}
-              <span className="bg-popover from-primary via-indigo-600 to-cyan-500 bg-clip-text text-transparent dark:from-indigo-400 dark:via-primary dark:to-cyan-300">
-                {user?.name || "Sinh viên"}
+              <span className="saga-brand-gradient font-black">
+                {user?.fullName || user?.name || "Sinh viên"}
               </span>
             </h1>
             <p className="text-xs leading-relaxed text-muted-foreground sm:text-sm">

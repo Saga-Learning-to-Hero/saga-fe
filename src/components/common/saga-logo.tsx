@@ -40,7 +40,7 @@ export function SagaLogo({
           "relative flex items-center justify-center shrink-0 rounded-xl transition-transform",
           isOnDark
             ? "bg-white text-primary shadow-md shadow-black/10"
-            : "bg-popover from-[#4F46E5] to-[#4338CA] text-white shadow-md shadow-indigo-500/25",
+            : "bg-linear-to-br from-[#4F46E5] to-[#4338CA] text-white shadow-md shadow-indigo-500/25 border border-indigo-400/20",
           iconClassName
         )}
         style={{
@@ -99,9 +99,7 @@ export function SagaLogo({
               className={cn(
                 "font-[family-name:var(--font-outfit)] font-black tracking-tight leading-none select-none",
                 iconDimensions.text,
-                isOnDark
-                  ? "text-white"
-                  : "bg-popover from-[#4F46E5] via-[#6366F1] to-[#06B6D4] bg-clip-text text-transparent",
+                isOnDark ? "text-white" : "saga-brand-gradient",
                 textClassName
               )}
             >
@@ -112,9 +110,9 @@ export function SagaLogo({
           {showSubtitle && (
             <span
               className={cn(
-                "font-bold tracking-wider uppercase mt-1 leading-none",
+                "font-bold tracking-wider uppercase mt-1 leading-none text-muted-foreground font-semibold",
                 iconDimensions.sub,
-                isOnDark ? "text-white/80" : "text-slate-500 font-semibold"
+                isOnDark && "text-white/80"
               )}
             >
               {subtitleText}

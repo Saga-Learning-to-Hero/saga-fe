@@ -12,7 +12,7 @@ export const metadata = {
 
 export default function AccountDisabledPage() {
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 sm:p-6 bg-popover from-background via-muted/20 to-background">
+    <div className="min-h-screen flex items-center justify-center p-4 sm:p-6 bg-linear-to-b from-background via-muted/20 to-background">
       <div className="w-full max-w-md space-y-6">
         {/* Header Logo */}
         <div className="flex flex-col items-center text-center space-y-2">

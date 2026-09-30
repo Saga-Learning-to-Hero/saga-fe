@@ -233,4 +233,29 @@ describe("ActivityAnalyticsService", () => {
     expect(result.points).toEqual([]);
     expect(result.totalScope).toBe(0);
   });
+
+  it("UTCID14 - [A] Abnormal: Throw ValidationException khi startDate hoac endDate khong dung dinh dang yyyy-MM-dd", async () => {
+    await expect(
+      ActivityAnalyticsService.getTeamHeatmap(mockCourseId, mockTeamId, {
+        startDate: "01-03-2026",
+        endDate: "2026-03-07",
+      })
+    ).rejects.toThrow("Throw ValidationException: Start date must be in format yyyy-MM-dd");
+
+    await expect(
+      ActivityAnalyticsService.getTeamHeatmap(mockCourseId, mockTeamId, {
+        startDate: "2026-03-01",
+        endDate: "2026/03/07",
+      })
+    ).rejects.toThrow("Throw ValidationException: End date must be in format yyyy-MM-dd");
+  });
+
+  it("UTCID15 - [B] Boundary: Throw ValidationException khi khoang thoi gian vuot qua 366 ngay", async () => {
+    await expect(
+      ActivityAnalyticsService.getTeamHeatmap(mockCourseId, mockTeamId, {
+        startDate: "2025-01-01",
+        endDate: "2026-01-05", // 370 days
+      })
+    ).rejects.toThrow("Throw ValidationException: Date range cannot exceed 366 days");
+  });
 });

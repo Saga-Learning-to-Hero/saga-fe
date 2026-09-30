@@ -102,6 +102,7 @@ Không đưa business logic lớn vào `page.tsx`. Tên code/file bằng tiếng
 
 - Backend dùng session cookie; `apiClient` có `withCredentials: true`.
 - CSRF được lấy từ `/api/auth/csrf`, cache trong sessionStorage/cookie và tự thêm `X-XSRF-TOKEN` cho request thay đổi dữ liệu.
+- Chỉ retry mutation tối đa một lần khi mã lỗi Backend chỉ rõ lỗi CSRF; không retry các 403 nghiệp vụ như `ACCOUNT_DISABLED`, `ACCESS_DENIED`, `PASSWORD_SETUP_REQUIRED` hoặc `STEP_UP_REQUIRED`.
 - Không tự thêm JWT, không gửi `role` trong request body. Backend quyết định quyền từ session.
 - `useAuthStore` chỉ persist user, trạng thái đăng nhập, lựa chọn course và trạng thái thiết lập mật khẩu; khi reload phải xác nhận lại phiên qua `useSession`/`AuthService.getMe()`.
 - Response 401 không phải auth endpoint phát event `saga:unauthorized`, xoá session UI và chuyển về `/login?next=...`.
@@ -397,12 +398,12 @@ npm run start
 
 - `npm run start` chạy artefact production sau khi build, không thay cho `npm run dev`.
 - Build không được dựa vào mock ID, API secret hay browser-only object được gọi lúc SSR.
-- Không có cấu hình deploy frontend (Vercel, container, CI workflow hay hosting URL) được version hóa trong repo tại thời điểm viết tài liệu. Không tự chọn nhà cung cấp hay publish production. Khi đội dự án cung cấp target deploy, cần xác nhận: Node version, biến `NEXT_PUBLIC_API_URL`, domain backend/CORS/cookie `SameSite`/`Secure`, URL callback OAuth GitHub/Jira và lệnh build/start của platform.
+- Frontend production hiện chạy trên Vercel với origin canonical `https://saga.autos`; `next.config.ts` chuyển `www.saga.autos` về origin này vì Backend chỉ cho phép CORS có credential từ apex domain. Khi thay đổi domain hoặc bật Preview Deployment, phải đồng bộ allow-list CORS, cookie `SameSite`/`Secure`, frontend redirect URL và Google/GitHub/Jira OAuth callback ở Backend; URL `*.vercel.app` không tự động hợp lệ.
 - Sau deploy phải smoke test login/session cookie, CSRF mutation, OAuth callback, direct navigation/reload route động, và route guard theo từng role.
 
 ## 12. Known issues / điểm cần xác minh trước khi sửa
 
-1. `next.config.ts` hiện dựng rewrite bằng `${process.env.NEXT_PUBLIC_API_URL}` trực tiếp. Nếu biến môi trường không có, Next sẽ báo destination `undefined/api/...` và không khởi động được. Trước khi thay đổi config, kiểm tra `.env` và contract dev; phương án an toàn là chuẩn hoá base URL/fallback trước khi tạo rewrite, nhưng chỉ sửa khi user yêu cầu hoặc có lỗi đang cần khắc phục.
+1. `NEXT_PUBLIC_API_URL` được đóng băng lúc build và vừa là base URL client vừa là target rewrite. Source đã có fallback canonical `https://api.saga.autos`, nhưng mỗi môi trường Vercel vẫn phải cấu hình đúng URL trước build. Không chuyển Google OAuth sang rewrite một cách máy móc: proxy hiện làm Backend suy ra callback hostname Railway nội bộ; cần sửa forwarded-host/callback contract ở Backend trước nếu muốn OAuth same-origin.
 2. Một số rule và README mô tả backlog/mock cũ, còn source đã có một số API service mới. Luôn ưu tiên source hiện tại + API contract, không lấy mô tả UI cũ làm bằng chứng API tồn tại.
 3. Các trang lecturer dashboard, final grades, graph, weight config và team-project activity có phần mock/UI lịch sử. Phân biệt rõ UI presentation với API integration thực trước khi đánh giá “hoàn thành”.
 4. Không tự push branch SAGA-52 khi chưa có commit/user yêu cầu. Branch hiện được tạo từ `origin/dev`; kiểm tra remote trước khi pull nếu mạng GitHub lỗi.

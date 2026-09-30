@@ -264,7 +264,11 @@ describe("usePipelineGraphData", () => {
           }),
         { wrapper }
       );
-      expect(realtimeMock).toHaveBeenCalledWith("proj-1", { enabled: true });
+      expect(realtimeMock).toHaveBeenCalledWith("proj-1", {
+        enabled: true,
+        includeGraph: true,
+        includeProgress: true,
+      });
     }
   );
 

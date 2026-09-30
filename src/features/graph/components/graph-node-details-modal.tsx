@@ -11,9 +11,8 @@ import {
   CalendarIcon,
   ShieldCheckIcon,
   FingerprintIcon,
-  FileCodeIcon,
 } from "lucide-react";
-import { useState, useEffect, useSyncExternalStore } from "react";
+import { useEffect, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
 
 const emptySubscribe = () => () => { };
@@ -29,6 +28,7 @@ interface GraphNodeDetailsModalProps {
   onClose: () => void;
   onViewContribution?: (studentId: string) => void;
   onFocusNode?: (nodeId: string, nodeLabel?: string) => void;
+  focusedNodeId?: string | null;
   projectId?: string | null;
 }
 
@@ -50,41 +50,51 @@ const TYPE_CONFIG: Record<
   IDENTITY: { label: "Danh tính Git", icon: FingerprintIcon, bgClass: "bg-slate-600" },
 };
 
+const COMMIT_NODE_PREFIX = "commit:";
+
+export function resolveGitCommitId(nodeId: string): string {
+  return nodeId.startsWith(COMMIT_NODE_PREFIX) ? nodeId.slice(COMMIT_NODE_PREFIX.length) : nodeId;
+}
+
 export function GraphNodeDetailsModal({
   nodeData,
   onClose,
   onViewContribution,
   onFocusNode,
+  focusedNodeId,
   projectId,
 }: GraphNodeDetailsModalProps) {
-  const [showCommitDetail, setShowCommitDetail] = useState(false);
   const mounted = useSyncExternalStore(
     emptySubscribe,
     () => true,
     () => false
   );
+  const isCommitNode = nodeData?.type === "COMMIT";
 
   useEffect(() => {
-    if (!nodeData) return;
+    if (!nodeData || isCommitNode) return;
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [nodeData, onClose]);
+  }, [nodeData, isCommitNode, onClose]);
 
   if (!nodeData) return null;
 
-  if (showCommitDetail) {
+  if (isCommitNode) {
+    const commitMessage = nodeData.subLabel || nodeData.label;
     return (
       <CommitDetailModal
         isOpen={true}
-        onClose={() => setShowCommitDetail(false)}
+        onClose={onClose}
         projectId={projectId}
-        gitCommitId={nodeData.id.startsWith("commit:") ? nodeData.id.slice(7) : nodeData.id}
+        gitCommitId={resolveGitCommitId(nodeData.id)}
+        fallbackShortHash={nodeData.label}
+        fallbackMessage={commitMessage}
         fallbackCommit={{
-          commitHash: nodeData.subLabel || nodeData.label,
-          commitMessage: nodeData.label,
+          commitHash: nodeData.label,
+          commitMessage,
           authorName: "",
           committedDate: "",
         }}
@@ -102,6 +112,8 @@ export function GraphNodeDetailsModal({
   const IconComponent = config.icon;
   const isStudent = nodeData.type === "STUDENT";
   const avatarUrl = nodeData.avatar?.trim() || undefined;
+  const showTaskFocusButton =
+    nodeData.type === "TASK" && Boolean(onFocusNode) && focusedNodeId !== nodeData.id;
 
   return createPortal(
     <div
@@ -139,6 +151,7 @@ export function GraphNodeDetailsModal({
           </div>
 
           <button
+            type="button"
             onClick={onClose}
             className="w-8 h-8 rounded-xl flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted cursor-pointer transition-colors"
           >
@@ -243,7 +256,7 @@ export function GraphNodeDetailsModal({
                 Xem chi tiết đóng góp
               </Button>
             )}
-            {nodeData.type === "TASK" && onFocusNode && (
+            {showTaskFocusButton && (
               <Button
                 variant="outline"
                 size="sm"
@@ -252,23 +265,12 @@ export function GraphNodeDetailsModal({
                     nodeData.subLabel && nodeData.subLabel !== nodeData.label
                       ? `${nodeData.label} - ${nodeData.subLabel}`
                       : nodeData.label;
-                  onFocusNode(nodeData.id, taskLabel);
+                  onFocusNode?.(nodeData.id, taskLabel);
                   onClose();
                 }}
                 className="h-9 text-xs rounded-xl cursor-pointer text-emerald-600 dark:text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/10"
               >
                 Tập trung Task & Xem Commit đối chiếu
-              </Button>
-            )}
-            {nodeData.type === "COMMIT" && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setShowCommitDetail(true)}
-                className="h-9 text-xs rounded-xl cursor-pointer text-purple-600 dark:text-purple-400 border-purple-500/30 hover:bg-purple-500/10 gap-1.5"
-              >
-                <FileCodeIcon className="w-3.5 h-3.5" />
-                Xem Code Diff chi tiết
               </Button>
             )}
           </div>

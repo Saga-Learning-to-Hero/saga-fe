@@ -31,6 +31,7 @@ import { scopeSprintsToJiraSource } from "@/features/student/sprint-progress/lib
 import { JiraSourceSwitcher } from "@/features/student/project/components/jira-source-switcher";
 import { useProjectJiraSourceSelection } from "@/features/student/project/hooks/use-project-jira-source-selection";
 import { getApiErrorCode, getApiErrorMessage } from "@/lib/api-error";
+import { getSprintSourceUserMessage } from "@/features/student/sprint-progress/lib/sprint-query-source";
 import { cn } from "@/lib/utils";
 import { PeerAssessmentHeader } from "./peer-assessment-header";
 import { PeerReviewModal } from "./peer-review-modal";
@@ -202,7 +203,8 @@ export function PeerAssessmentView() {
   const isRubricFallbackPending =
     teamRubricQuery.isSuccess &&
     !hasRubricCriteria(teamRubricQuery.data) &&
-    defaultRubricQuery.isFetching;
+    defaultRubricQuery.isLoading &&
+    !defaultRubricQuery.data;
   const showRubricSkeleton =
     teamRubricQuery.isLoading || isRubricFallbackPending;
   const showEmptyRubric =
@@ -508,24 +510,29 @@ export function PeerAssessmentView() {
               </Label>
               {sprintsQuery.isLoading ? (
                 <div className="h-10 animate-pulse rounded-xl bg-muted" />
-              ) : sprintsQuery.isError ? (
+              ) : sprintsQuery.isError || sprintsQuery.sprintSourceStatus === "needs_selection" ? (
                 <StatusPanel
-                  tone="danger"
-                  title="Không tải được Sprint"
-                  description={getApiErrorMessage(
-                    sprintsQuery.error,
-                    "Vui lòng thử lại.",
-                  )}
+                  tone="warning"
+                  title={getSprintSourceUserMessage({
+                    status: sprintsQuery.sprintSourceStatus,
+                    error: sprintsQuery.error,
+                  }).title}
+                  description={getSprintSourceUserMessage({
+                    status: sprintsQuery.sprintSourceStatus,
+                    error: sprintsQuery.error,
+                  }).description}
                   action={
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant="outline"
-                      className="mt-3 cursor-pointer text-xs"
-                      onClick={() => void sprintsQuery.refetch()}
-                    >
-                      Thử lại
-                    </Button>
+                    sprintsQuery.isError ? (
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        className="mt-3 cursor-pointer text-xs"
+                        onClick={() => void sprintsQuery.refetch()}
+                      >
+                        Thử lại
+                      </Button>
+                    ) : undefined
                   }
                 />
               ) : sprints.length === 0 ? (

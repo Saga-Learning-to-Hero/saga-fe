@@ -62,7 +62,8 @@ export async function performLogout(options?: LogoutOptions): Promise<void> {
     if (options?.onRedirect) {
       options.onRedirect();
     } else if (typeof window !== "undefined") {
-      window.open("/login", "_self");
+      // eslint-disable-next-line @next/next/no-location-assign-relative-destination
+      window.location.href = "/login";
     }
   }
 }

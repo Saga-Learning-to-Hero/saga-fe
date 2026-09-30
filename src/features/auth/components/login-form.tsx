@@ -3,7 +3,7 @@ import { showSuccessToast, showErrorToast, showInfoToast } from "@/lib/api-error
 
 import { useState, useEffect, useCallback, useSyncExternalStore } from "react";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import {
   EyeIcon,
   EyeOffIcon,
@@ -25,7 +25,6 @@ import type { Role } from "@/types/auth";
 const emptySubscribe = () => () => { };
 
 export function LoginForm() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const { isAuthenticated, user, passwordSetupRequired } = useAuthStore();
   const { mutate: login, isPending: isLoading } = useLogin();
@@ -44,7 +43,10 @@ export function LoginForm() {
   useEffect(() => {
     if (googleError) {
       if (typeof window !== "undefined") sessionStorage.removeItem("saga_auth_provider");
-      showErrorToast(getGoogleErrorMessage(googleError), { id: "google-auth-error", duration: 6000 });
+      showErrorToast(getGoogleErrorMessage(googleError), undefined, {
+        id: "google-auth-error",
+        duration: 6000,
+      });
     }
   }, [googleError]);
 
@@ -79,12 +81,13 @@ export function LoginForm() {
             description: "Vui lòng đặt mật khẩu đăng nhập cho tài khoản trường của bạn.",
           });
         }
-        router.replace("/auth/setup-password");
+        // eslint-disable-next-line @next/next/no-location-assign-relative-destination
+        window.location.href = "/auth/setup-password";
       } else {
-        router.replace(getRedirectUrl(user.role));
+        window.location.href = getRedirectUrl(user.role);
       }
     }
-  }, [isAuthenticated, user, passwordSetupRequired, router, getRedirectUrl]);
+  }, [isAuthenticated, user, passwordSetupRequired, getRedirectUrl]);
 
   const handleSubmit = (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();

@@ -23,6 +23,7 @@ import {
   getAssigneeAvatarClass,
 } from "@/features/student/sprint-progress/lib/assignee-avatar";
 import { cn } from "@/lib/utils";
+import { getApiErrorCode } from "@/lib/api-error";
 import { useTeamHeatmap } from "../hooks/use-activity-analytics";
 import type {
   HeatmapCell,
@@ -34,6 +35,7 @@ interface SprintOption {
   name: string;
   startDate?: string | null;
   endDate?: string | null;
+  state?: string | null;
 }
 
 interface StudentOption {
@@ -51,6 +53,7 @@ interface ActivityHeatmapGridProps {
   initialPreset?: HeatmapDatePreset;
   initialSprintId?: string;
   initialStudentId?: string;
+  onSelectSprint?: (sprintId: string) => void;
 }
 
 function formatDateString(date: Date): string {
@@ -62,18 +65,27 @@ function formatDateString(date: Date): string {
 
 function getIntensityClass(activities: number): string {
   if (activities <= 0) {
+    // Không có hoạt động
     return "bg-muted/15 border-border/50 text-muted-foreground/60 hover:border-border";
   }
   if (activities <= 2) {
-    return "bg-chart-2/20 border-chart-2/20 text-chart-2 hover:bg-chart-2/30";
+    // Ít — Xanh lam
+    return "bg-blue-500/20 border-blue-500/30 text-blue-700 dark:text-blue-300 hover:bg-blue-500/30";
   }
   if (activities <= 5) {
-    return "bg-chart-2/40 border-chart-2/30 text-chart-2 hover:bg-chart-2/50";
+    // Trung bình — Xanh lá
+    return "bg-emerald-500/30 border-emerald-500/40 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/45 font-semibold";
   }
   if (activities <= 9) {
-    return "bg-chart-2/65 border-chart-2/45 text-primary-foreground hover:bg-chart-2/80 font-semibold";
+    // Khá nhiều — Vàng amber
+    return "bg-amber-400/50 border-amber-500/60 text-amber-800 dark:text-amber-200 hover:bg-amber-400/65 font-semibold";
   }
-  return "bg-chart-2 border-chart-2/60 text-primary-foreground font-extrabold shadow-xs hover:brightness-105 ring-1 ring-chart-2/50";
+  if (activities <= 15) {
+    // Nhiều — Cam
+    return "bg-orange-500/60 border-orange-500/70 text-white hover:bg-orange-500/75 font-bold shadow-xs";
+  }
+  // Rất nhiều — Đỏ
+  return "bg-red-500/75 border-red-500/80 text-white font-extrabold shadow-sm hover:brightness-105 ring-1 ring-red-500/50";
 }
 
 const WEEKDAYS = [
@@ -217,30 +229,64 @@ export function ActivityHeatmapGrid({
   initialPreset,
   initialSprintId,
   initialStudentId = "ALL",
+  onSelectSprint,
 }: ActivityHeatmapGridProps) {
+  const [prevInitialSprintId, setPrevInitialSprintId] = useState(initialSprintId);
   const [userPreset, setUserPreset] = useState<HeatmapDatePreset | null>(initialPreset ?? null);
   const [userSprintId, setUserSprintId] = useState<string>(initialSprintId ?? "");
   const [selectedStudentId, setSelectedStudentId] = useState<string>(initialStudentId);
 
+  // Lựa chọn mới từ component cha luôn được ưu tiên
+  if (initialSprintId !== prevInitialSprintId) {
+    setPrevInitialSprintId(initialSprintId);
+    setUserSprintId(initialSprintId ?? "");
+  }
+
+  const defaultSprintId = useMemo(
+    () =>
+      sprints.find((sprint) => sprint.id === initialSprintId)?.id ??
+      sprints.find((sprint) => sprint.state?.toLowerCase() === "active")?.id ??
+      sprints[0]?.id ??
+      "",
+    [initialSprintId, sprints]
+  );
+
   const rawPreset = userPreset ?? (sprints.length > 0 ? "sprint" : "30days");
   const preset: HeatmapDatePreset = rawPreset === "sprint" && sprints.length === 0 ? "30days" : rawPreset;
 
-  const effectiveSprintId = userSprintId || (sprints[0]?.id ?? "");
+  const effectiveSprintId = useMemo(() => {
+    if (userSprintId && sprints.some((s) => s.id === userSprintId)) {
+      return userSprintId;
+    }
+    return defaultSprintId;
+  }, [userSprintId, sprints, defaultSprintId]);
+
+  const handleSprintChange = (sprintId: string) => {
+    setUserSprintId(sprintId);
+    setUserPreset("sprint");
+    if (onSelectSprint) {
+      onSelectSprint(sprintId);
+    }
+  };
+
   const selectedSprint = useMemo(
     () => sprints.find((s) => s.id === effectiveSprintId) || sprints[0],
     [sprints, effectiveSprintId]
   );
 
+  const sprintHasValidDates = Boolean(
+    selectedSprint?.startDate?.trim() && selectedSprint?.endDate?.trim()
+  );
+
   const dateRange = useMemo(() => {
     const today = new Date();
 
-    if (preset === "sprint" && selectedSprint) {
-      const start = selectedSprint.startDate
-        ? selectedSprint.startDate.substring(0, 10)
-        : formatDateString(new Date(today.getTime() - 14 * 86400000));
-      const end = selectedSprint.endDate
-        ? selectedSprint.endDate.substring(0, 10)
-        : formatDateString(today);
+    if (preset === "sprint") {
+      if (!selectedSprint || !sprintHasValidDates) {
+        return { startDate: "", endDate: "" };
+      }
+      const start = selectedSprint.startDate!.substring(0, 10);
+      const end = selectedSprint.endDate!.substring(0, 10);
       return { startDate: start, endDate: end };
     }
 
@@ -268,24 +314,55 @@ export function ActivityHeatmapGrid({
       startDate: formatDateString(defaultStart),
       endDate: formatDateString(today),
     };
-  }, [preset, selectedSprint]);
+  }, [preset, selectedSprint, sprintHasValidDates]);
+
+  const isDateValid = Boolean(
+    dateRange.startDate &&
+    dateRange.endDate &&
+    dateRange.startDate <= dateRange.endDate
+  );
 
   const dayCount = useMemo(() => {
-    const start = new Date(`${dateRange.startDate}T00:00:00`).getTime();
-    const end = new Date(`${dateRange.endDate}T00:00:00`).getTime();
+    if (!isDateValid) return 0;
+    const start = new Date(`${dateRange.startDate}T00:00:00Z`).getTime();
+    const end = new Date(`${dateRange.endDate}T00:00:00Z`).getTime();
     const diffDays = Math.round((end - start) / (1000 * 60 * 60 * 24)) + 1;
     return Math.max(1, diffDays);
-  }, [dateRange]);
+  }, [dateRange, isDateValid]);
 
-  const { data, isLoading, isError, refetch } = useTeamHeatmap(
+  const isRangeExceeded = dayCount > 366;
+
+  const isQueryEnabled = Boolean(
+    courseId &&
+    teamId &&
+    isDateValid &&
+    !isRangeExceeded &&
+    (preset !== "sprint" || sprintHasValidDates)
+  );
+
+  const { data, isLoading, isError, error, refetch } = useTeamHeatmap(
     courseId,
     teamId,
     {
       startDate: dateRange.startDate,
       endDate: dateRange.endDate,
     },
-    { enabled: Boolean(courseId && teamId) }
+    { enabled: isQueryEnabled }
   );
+
+  const errorCode = getApiErrorCode(error);
+  const errorMessage = useMemo(() => {
+    if (errorCode === "PROJECT_NOT_FOUND") {
+      return "Không tìm thấy dự án";
+    }
+    if (errorCode === "TEAM_NOT_FOUND") {
+      return "Không tìm thấy nhóm";
+    }
+    if (errorCode === "REQUEST_INVALID") {
+      return "Khoảng thời gian không hợp lệ hoặc vượt quá 366 ngày";
+    }
+    return "Không thể tải dữ liệu hoạt động của nhóm";
+  }, [errorCode]);
 
   const activeDays = useMemo(() => {
     if (!data) return [];
@@ -387,7 +464,7 @@ export function ActivityHeatmapGrid({
   }, [data, students]);
 
   const calendarWeeks = useMemo(() => {
-    if (activeDays.length === 0) return [];
+    if (activeDays.length === 0 || !isDateValid) return [];
 
     const cellsByDate = new Map<string, HeatmapCell>();
     activeDays.forEach((cell) => {
@@ -470,7 +547,7 @@ export function ActivityHeatmapGrid({
     }
 
     return weeks;
-  }, [activeDays, dateRange]);
+  }, [activeDays, dateRange, isDateValid]);
 
   return (
     <div className="bg-card border border-border/80 rounded-xl p-6 shadow-sm space-y-6">
@@ -496,8 +573,9 @@ export function ActivityHeatmapGrid({
               disabled={sprints.length === 0}
               onClick={() => {
                 setUserPreset("sprint");
-                if (sprints.length > 0 && !userSprintId) {
-                  setUserSprintId(sprints[0].id);
+                const targetSprintId = effectiveSprintId || defaultSprintId || sprints[0]?.id;
+                if (targetSprintId) {
+                  handleSprintChange(targetSprintId);
                 }
               }}
               className={cn(
@@ -541,10 +619,7 @@ export function ActivityHeatmapGrid({
               <CustomSelect
                 id="heatmap-sprint-select"
                 value={effectiveSprintId}
-                onChange={(val) => {
-                  setUserSprintId(val);
-                  setUserPreset("sprint");
-                }}
+                onChange={handleSprintChange}
                 options={sprintOptions}
                 placeholder="Chọn Sprint..."
               />
@@ -564,6 +639,20 @@ export function ActivityHeatmapGrid({
           )}
         </div>
       </div>
+
+      {preset === "sprint" && sprintHasValidDates && (
+        <div className="flex items-start gap-2.5 p-3.5 rounded-xl bg-primary/5 border border-primary/20 text-xs text-muted-foreground">
+          <Info className="w-4 h-4 text-primary shrink-0 mt-0.5" />
+          <div className="space-y-0.5">
+            <span className="font-semibold text-foreground">
+              Phạm vi hoạt động theo khoảng ngày Sprint ({dateRange.startDate} → {dateRange.endDate}):
+            </span>
+            <p>
+              Đây là hoạt động của nhóm trong khoảng ngày của Sprint (commit, task, đánh giá chéo, tài liệu), không phải hoạt động của riêng task trong Sprint.
+            </p>
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
         <div className="p-3.5 rounded-xl bg-muted/20 border border-border/60">
@@ -632,14 +721,43 @@ export function ActivityHeatmapGrid({
         </div>
       </div>
 
-      {isLoading ? (
+      {sprints.length === 0 && preset === "sprint" ? (
+        <div className="h-48 rounded-xl border border-dashed border-border/80 flex flex-col items-center justify-center text-center p-6 text-muted-foreground space-y-2">
+          <Info className="w-8 h-8 text-muted-foreground/50" />
+          <p className="text-sm font-semibold text-foreground">
+            Chưa có thông tin Sprint
+          </p>
+          <p className="text-xs text-muted-foreground">
+            Dự án hiện chưa có Sprint nào được đồng bộ từ Jira.
+          </p>
+        </div>
+      ) : preset === "sprint" && !sprintHasValidDates ? (
+        <div className="h-48 rounded-xl border border-dashed border-border/80 flex flex-col items-center justify-center text-center p-6 text-muted-foreground space-y-2">
+          <Info className="w-8 h-8 text-muted-foreground/50" />
+          <p className="text-sm font-semibold text-foreground">
+            Sprint chưa có ngày bắt đầu và kết thúc trên Jira
+          </p>
+          <p className="text-xs text-muted-foreground">
+            Vui lòng cập nhật thời gian bắt đầu và kết thúc của Sprint trên Jira để hiển thị dữ liệu lưới hoạt động.
+          </p>
+        </div>
+      ) : isRangeExceeded ? (
+        <div className="p-6 rounded-xl bg-destructive/10 border border-destructive/20 text-center space-y-2">
+          <p className="text-sm font-semibold text-destructive">
+            Khoảng thời gian vượt quá giới hạn tối đa 366 ngày
+          </p>
+          <p className="text-xs text-muted-foreground">
+            Vui lòng chọn khoảng thời gian ngắn hơn (tối đa 366 ngày).
+          </p>
+        </div>
+      ) : isLoading ? (
         <div className="h-48 rounded-xl bg-muted/30 border border-border/60 animate-pulse flex items-center justify-center text-xs text-muted-foreground">
           Đang tổng hợp dữ liệu làm việc của nhóm...
         </div>
       ) : isError ? (
         <div className="p-6 rounded-xl bg-destructive/10 border border-destructive/20 text-center space-y-3">
           <p className="text-sm font-semibold text-destructive">
-            Không thể tải dữ liệu hoạt động của nhóm
+            {errorMessage}
           </p>
           <button
             type="button"
@@ -785,11 +903,12 @@ export function ActivityHeatmapGrid({
 
               <div className="flex items-center gap-1.5 text-xs">
                 <span>Ít</span>
-                <span className="w-3.5 h-3.5 rounded-md bg-muted/20 border border-border/40" />
-                <span className="w-3.5 h-3.5 rounded-md bg-emerald-500/10 border border-emerald-500/30" />
-                <span className="w-3.5 h-3.5 rounded-md bg-emerald-500/20 border border-emerald-500/45" />
-                <span className="w-3.5 h-3.5 rounded-md bg-emerald-500/35 border border-emerald-500/65" />
-                <span className="w-3.5 h-3.5 rounded-md bg-emerald-500/55 border border-emerald-400" />
+                <span className="w-3.5 h-3.5 rounded-md bg-muted/20 border border-border/40" title="0 hoạt động" />
+                <span className="w-3.5 h-3.5 rounded-md bg-blue-500/20 border border-blue-500/30" title="1–2 hoạt động" />
+                <span className="w-3.5 h-3.5 rounded-md bg-emerald-500/30 border border-emerald-500/40" title="3–5 hoạt động" />
+                <span className="w-3.5 h-3.5 rounded-md bg-amber-400/50 border border-amber-500/60" title="6–9 hoạt động" />
+                <span className="w-3.5 h-3.5 rounded-md bg-orange-500/60 border border-orange-500/70" title="10–15 hoạt động" />
+                <span className="w-3.5 h-3.5 rounded-md bg-red-500/75 border border-red-500/80" title="16+ hoạt động" />
                 <span>Nhiều</span>
               </div>
             </div>

@@ -301,7 +301,7 @@ function TableRowGroup({
                 className={cn(
                   "h-full rounded-full transition-all duration-300",
                   finalPercentage > 0
-                    ? "bg-popover from-primary to-primary/80"
+                    ? "bg-linear-to-r from-primary to-primary/80"
                     : "bg-muted",
                 )}
                 style={{

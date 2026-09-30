@@ -45,7 +45,7 @@ export function PeerReviewDetailPanel({
   return (
     <section className="min-w-0 rounded-xl border border-border/80 bg-card shadow-xs">
       {selectedReviewee ? (
-        <header className="grid gap-3 border-b border-border/60 bg-popover from-primary/8 via-primary/3 to-transparent p-4 sm:grid-cols-[minmax(240px,1fr)_auto] sm:items-center">
+        <header className="grid gap-3 border-b border-border/60 bg-linear-to-b from-primary/8 via-primary/3 to-transparent p-4 sm:grid-cols-[minmax(240px,1fr)_auto] sm:items-center">
           <div className="flex min-w-0 items-center gap-3">
             <Avatar className="size-11 border border-primary/20 shadow-xs">
               <AvatarFallback className="bg-primary/15 text-sm font-black text-primary">

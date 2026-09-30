@@ -90,6 +90,7 @@ export function TeamProjectDetailPage({ courseId, teamId }: TeamProjectDetailPag
   const moveMember = useMoveTeamMember(courseId);
   const [leaderCandidate, setLeaderCandidate] = useState<LecturerTeamMember | null>(null);
   const [movingMember, setMovingMember] = useState<LecturerTeamMember | null>(null);
+  const [selectedSprintId, setSelectedSprintId] = useState<string | undefined>(undefined);
 
   const teams = teamsQuery.data?.teams ?? [];
   const team = teams.find((item) => item.teamId === teamId);
@@ -425,6 +426,8 @@ export function TeamProjectDetailPage({ courseId, teamId }: TeamProjectDetailPag
                 endDate: s.endDate,
                 state: s.state,
               }))}
+              initialSprintId={selectedSprintId}
+              onSelectSprint={setSelectedSprintId}
             />
 
             <ActivityHeatmapGrid
@@ -436,12 +439,15 @@ export function TeamProjectDetailPage({ courseId, teamId }: TeamProjectDetailPag
                 name: s.name,
                 startDate: s.startDate,
                 endDate: s.endDate,
+                state: s.state,
               }))}
               students={members.map((m) => ({
                 studentId: m.studentProfileId,
                 fullName: m.fullName,
                 studentCode: m.studentCode,
               }))}
+              initialSprintId={selectedSprintId}
+              onSelectSprint={setSelectedSprintId}
             />
           </div>
         ) : (

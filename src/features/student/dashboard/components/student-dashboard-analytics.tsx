@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import Link from "next/link";
 import {
   CheckCircle2Icon,
@@ -26,12 +26,15 @@ import {
 } from "@/features/student/courses/hooks/use-student-course-context";
 import { useProjectRealtime } from "@/features/student/project/hooks/use-project-realtime";
 import { useProjectProgress } from "@/features/student/project/hooks/useProjectSync";
-import { getApiErrorMessage } from "@/lib/api-error";
+import { getApiErrorCode, getApiErrorMessage, getApiErrorStatus } from "@/lib/api-error";
 import { cn } from "@/lib/utils";
 import { CustomSelect } from "@/components/common/custom-select";
 import { useProjectSprints } from "@/features/student/sprint-progress/hooks/use-project-sprints";
+import { useProjectJiraSourceSelection } from "@/features/student/project/hooks/use-project-jira-source-selection";
 import { normalizeProjectProgress } from "@/features/progress/lib/progress-format";
 import { useStudentDashboard } from "../hooks/use-student-dashboard";
+import { formatStudentNullablePercent } from "../lib/student-dashboard-format";
+import { getSprintSourceUserMessage } from "@/features/student/sprint-progress/lib/sprint-query-source";
 import { StudentActiveTasksCard } from "./student-active-tasks-card";
 import { StudentAlertsBanner } from "./student-alerts-banner";
 import { StudentRecentCommitsCard } from "./student-recent-commits-card";
@@ -68,13 +71,30 @@ export function StudentDashboardAnalytics() {
 
   const projectId = data?.team?.projectId || null;
   const canLoadProgress = Boolean(isLeader && projectId && activeTab === "team");
+  const [isManualRefresh, setIsManualRefresh] = useState(false);
 
-  // Danh sách sprint của dự án để sinh viên chọn xem thống kê từng sprint
-  const { data: projectSprints } = useProjectSprints(projectId, { enabled: Boolean(projectId) });
+  // Lấy effectiveSourceId giống SprintProgressView để useProjectSprints resolve đúng nguồn Jira
+  const jiraSource = useProjectJiraSourceSelection(projectId);
+  const effectiveSourceId = jiraSource.effectiveSourceId;
 
-  // Dữ liệu mở rộng cho Trưởng nhóm khi chuyển sang tab Toàn nhóm
+  // Danh sách sprint: truyền effectiveSourceId để tránh trạng thái "needs_selection" khi có nhiều nguồn
+  const { data: projectSprints } = useProjectSprints(projectId, effectiveSourceId, { enabled: Boolean(projectId) });
+
+  // Tiến độ nhóm và SSE project chỉ khi Leader đang xem tab Toàn nhóm
   const progressQuery = useProjectProgress(projectId, { enabled: canLoadProgress });
-  useProjectRealtime(projectId, { enabled: Boolean(projectId) });
+  useProjectRealtime(projectId, { enabled: canLoadProgress, includeProgress: true });
+
+  const handleManualRefresh = useCallback(async () => {
+    setIsManualRefresh(true);
+    try {
+      await dashboardQuery.refetch();
+      if (canLoadProgress) {
+        await progressQuery.refetch();
+      }
+    } finally {
+      setIsManualRefresh(false);
+    }
+  }, [canLoadProgress, dashboardQuery, progressQuery]);
 
   const progress = normalizeProjectProgress(progressQuery.data);
   const members = progress?.memberProgress ?? [];
@@ -94,21 +114,18 @@ export function StudentDashboardAnalytics() {
         if (!sp.id || seen.has(sp.id)) continue;
         seen.add(sp.id);
 
-        const isCurrent =
-          (currentSprint?.id && sp.id === currentSprint.id) ||
-          (currentSprint?.name && sp.name && currentSprint.name.toLowerCase().trim() === sp.name.toLowerCase().trim());
-
+        const isActive = sp.state?.toLowerCase() === "active";
         const stateLabel =
-          sp.state === "active"
+          isActive
             ? "Đang diễn ra"
-            : sp.state === "closed"
+            : sp.state?.toLowerCase() === "closed"
               ? "Đã đóng"
               : "Dự kiến";
 
         options.push({
           value: sp.id,
           label: sp.name,
-          subLabel: isCurrent ? `Sprint hiện tại (${stateLabel})` : `Trạng thái: ${stateLabel}`,
+          subLabel: isActive ? `Sprint hiện tại (${stateLabel})` : `Trạng thái: ${stateLabel}`,
         });
       }
     }
@@ -116,12 +133,18 @@ export function StudentDashboardAnalytics() {
     // 2. Nếu currentSprint từ dashboard chưa có trong options thì bổ sung vào đầu
     if (currentSprint?.id && !seen.has(currentSprint.id)) {
       seen.add(currentSprint.id);
+      const isActive = currentSprint.state?.toLowerCase() === "active";
+      const stateLabel =
+        isActive
+          ? "Đang diễn ra"
+          : currentSprint.state?.toLowerCase() === "closed"
+            ? "Đã đóng"
+            : currentSprint.state || "Dự kiến";
+
       options.unshift({
         value: currentSprint.id,
-        label: currentSprint.name || "Sprint hiện tại",
-        subLabel: currentSprint.state
-          ? `Sprint hiện tại (${currentSprint.state.toUpperCase() === "ACTIVE" ? "Đang diễn ra" : currentSprint.state})`
-          : "Sprint hiện tại",
+        label: currentSprint.name || (isActive ? "Sprint hiện tại" : "Sprint đang xem"),
+        subLabel: isActive ? `Sprint hiện tại (${stateLabel})` : `Trạng thái: ${stateLabel}`,
       });
     }
 
@@ -139,14 +162,25 @@ export function StudentDashboardAnalytics() {
 
   const selectedSprintValue = useMemo(() => {
     if (selectedSprintId) return selectedSprintId;
+    const activeSprint = projectSprints?.find((sp) => sp.state?.toLowerCase() === "active");
+    if (activeSprint?.id) return activeSprint.id;
     if (currentSprint?.id) return currentSprint.id;
     if (sprintSelectOptions.length > 0) return sprintSelectOptions[0].value;
     return "";
-  }, [selectedSprintId, currentSprint, sprintSelectOptions]);
+  }, [selectedSprintId, projectSprints, currentSprint, sprintSelectOptions]);
 
-  const isViewingDifferentSprint = Boolean(
-    selectedSprintId && currentSprint?.id && selectedSprintId !== currentSprint.id
-  );
+  // Một Sprint là 'hiện tại' chỉ khi state === 'active', so khớp bằng id
+  const isCurrentSprint = useMemo(() => {
+    if (currentSprint?.state) {
+      return currentSprint.state.toLowerCase() === "active";
+    }
+    const matched = projectSprints?.find((sp) => sp.id === selectedSprintValue);
+    return matched?.state?.toLowerCase() === "active";
+  }, [currentSprint, projectSprints, selectedSprintValue]);
+
+  const isSprintLoading =
+    Boolean(dashboardQuery.isPlaceholderData) ||
+    Boolean(dashboardQuery.isFetching && selectedSprintId);
 
   if (isInvalidCourse) {
     return (
@@ -173,6 +207,17 @@ export function StudentDashboardAnalytics() {
   }
 
   if (dashboardQuery.isError) {
+    const errorCode = getApiErrorCode(dashboardQuery.error);
+    if (errorCode === "SPRINT_NOT_FOUND") {
+      return (
+        <EmptyPanel
+          title="Không tìm thấy Sprint"
+          description="Sprint đã chọn không thuộc dự án của nhóm bạn hoặc không tồn tại."
+          action="Quay về Sprint hiện tại"
+          onAction={() => setSelectedSprintId(null)}
+        />
+      );
+    }
     return (
       <EmptyPanel
         title="Không tải được dữ liệu bảng điều khiển"
@@ -265,42 +310,6 @@ export function StudentDashboardAnalytics() {
         </div>
 
         <div className="flex flex-wrap items-center gap-2.5 self-end sm:self-center">
-          {/* Dropdown chọn Sprint theo sprintId */}
-          <div
-            className={cn(
-              "flex items-center gap-1.5 rounded-xl px-2.5 py-1 transition-all border",
-              isViewingDifferentSprint
-                ? "bg-primary/10 border-primary/40 text-primary shadow-xs ring-1 ring-primary/20"
-                : "bg-muted/40 border-border/70"
-            )}
-          >
-            <KanbanIcon
-              className={cn("size-3.5 shrink-0", isViewingDifferentSprint ? "text-primary" : "text-amber-500")}
-            />
-            <span
-              className={cn(
-                "text-xs font-semibold whitespace-nowrap",
-                isViewingDifferentSprint ? "text-primary" : "text-muted-foreground"
-              )}
-            >
-              Sprint:
-            </span>
-            <div className="w-48 sm:w-56">
-              <CustomSelect
-                id="student-dashboard-header-sprint-select"
-                value={selectedSprintValue}
-                onChange={(val) => setSelectedSprintId(val)}
-                options={sprintSelectOptions}
-                placeholder={currentSprint?.name || "Chọn Sprint..."}
-                triggerClassName={cn(
-                  "h-7 text-xs font-semibold py-0 px-2 rounded-lg border-transparent bg-transparent hover:bg-background/80",
-                  isViewingDifferentSprint && "text-primary font-bold hover:bg-primary/15"
-                )}
-                dropdownClassName="min-w-[240px] sm:min-w-[280px] max-h-56 sm:max-h-60 overflow-y-auto custom-scrollbar sm:right-0 sm:left-auto"
-              />
-            </div>
-          </div>
-
           {isLeader && (
             <div className="flex items-center rounded-xl border border-border/70 bg-muted/30 p-1">
               <button
@@ -334,12 +343,12 @@ export function StudentDashboardAnalytics() {
           <Button
             variant="outline"
             size="sm"
-            onClick={() => void dashboardQuery.refetch()}
-            disabled={dashboardQuery.isFetching}
+            onClick={() => void handleManualRefresh()}
+            disabled={isManualRefresh}
             className="h-8 gap-1.5 text-xs cursor-pointer"
           >
-            <RefreshCwIcon className={cn("size-3.5", dashboardQuery.isFetching && "animate-spin")} />
-            <span className="hidden sm:inline">Làm mới</span>
+            <RefreshCwIcon className={cn("size-3.5", isManualRefresh && "animate-spin")} />
+            <span className="hidden sm:inline">{isManualRefresh ? "Đang làm mới" : "Làm mới"}</span>
           </Button>
         </div>
       </div>
@@ -356,7 +365,12 @@ export function StudentDashboardAnalytics() {
             <Card className="rounded-xl border border-border/80 bg-card/90 p-4 shadow-xs">
               <CardContent className="p-0 space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs text-muted-foreground font-medium">Nhiệm vụ của tôi</span>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-xs text-muted-foreground font-medium">Nhiệm vụ của tôi</span>
+                    <Badge variant="outline" className="text-[10px] font-semibold text-muted-foreground bg-muted/40 border-border/70 px-1.5 py-0">
+                      Toàn dự án
+                    </Badge>
+                  </div>
                   <div className="p-1.5 rounded-lg bg-primary/10 text-primary">
                     <CheckCircle2Icon className="size-4" />
                   </div>
@@ -369,7 +383,7 @@ export function StudentDashboardAnalytics() {
                     </span>
                   </div>
                   <Badge variant="outline" className="font-mono text-xs bg-primary/10 text-primary border-primary/20">
-                    {Math.round(myMetrics.tasks.completionPercent || 0)}%
+                    {formatStudentNullablePercent(myMetrics.tasks.completionPercent)}
                   </Badge>
                 </div>
                 <div className="flex items-center justify-between text-xs text-muted-foreground pt-1 border-t border-border/50">
@@ -385,7 +399,12 @@ export function StudentDashboardAnalytics() {
             <Card className="rounded-xl border border-border/80 bg-card/90 p-4 shadow-xs">
               <CardContent className="p-0 space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs text-muted-foreground font-medium">Minh chứng Git</span>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-xs text-muted-foreground font-medium">Minh chứng Git</span>
+                    <Badge variant="outline" className="text-[10px] font-semibold text-muted-foreground bg-muted/40 border-border/70 px-1.5 py-0">
+                      Toàn dự án
+                    </Badge>
+                  </div>
                   <div className="p-1.5 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
                     <GitCommitIcon className="size-4" />
                   </div>
@@ -411,55 +430,81 @@ export function StudentDashboardAnalytics() {
               </CardContent>
             </Card>
 
-            {/* Thẻ 3: Sprint hiện tại & Đồng bộ */}
+            {/* Thẻ 3: Sprint & Đồng bộ */}
             <Card className="rounded-xl border border-border/80 bg-card/90 p-4 shadow-xs">
               <CardContent className="p-0 space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs text-muted-foreground font-medium">
-                    {isViewingDifferentSprint ? "Sprint đang xem" : "Sprint hiện tại"}
-                  </span>
-                  <div className="p-1.5 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400">
+                  <div className="flex items-center gap-1.5 min-w-0">
+                    <span className="text-xs text-muted-foreground font-medium">
+                      {isCurrentSprint ? "Sprint hiện tại" : "Sprint đang xem"}
+                    </span>
+                    <span className="text-[10px] text-muted-foreground/80 font-normal italic truncate">
+                      (chỉ áp dụng cho thẻ này)
+                    </span>
+                  </div>
+                  <div className="p-1.5 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400 shrink-0">
                     <KanbanIcon className="size-4" />
                   </div>
                 </div>
 
-                <div className="flex items-baseline justify-between">
-                  <div className="text-base font-bold text-foreground truncate max-w-[180px]" title={currentSprint?.name || "Chưa có Sprint"}>
-                    {currentSprint?.name || "Chưa bắt đầu"}
-                  </div>
-                  {currentSprint?.state && (
-                    <Badge variant="outline" className="text-xs uppercase font-bold">
-                      {currentSprint.state}
-                    </Badge>
-                  )}
+                {/* Bộ chọn Sprint đặt trực tiếp trong thẻ */}
+                <div className="pt-0.5">
+                  <CustomSelect
+                    id="student-dashboard-card-sprint-select"
+                    value={selectedSprintValue}
+                    onChange={(val) => setSelectedSprintId(val)}
+                    options={sprintSelectOptions}
+                    placeholder={currentSprint?.name || "Chọn Sprint..."}
+                    triggerClassName="h-7 text-xs font-semibold px-2 rounded-lg border-border/70 bg-muted/20 hover:bg-muted/40"
+                    dropdownClassName="min-w-[240px] sm:min-w-[280px] max-h-56 sm:max-h-60 overflow-y-auto custom-scrollbar"
+                  />
                 </div>
 
-                <div className="flex items-center justify-between text-xs text-muted-foreground pt-1 border-t border-border/50">
-                  <span>Tiến độ nhóm:</span>
-                  <span className="font-mono font-bold text-foreground">
-                    {currentSprint ? `${currentSprint.completedTasks}/${currentSprint.totalTasks} (${Math.round(currentSprint.completionPercent || 0)}%)` : "N/A"}
-                  </span>
-                </div>
-                {(integrations?.jira?.connected || integrations?.github?.connected) && (
-                  <div className="flex items-center gap-1.5 pt-0.5">
-                    {integrations?.jira?.connected && (
-                      <Badge variant="outline" className="text-[9px] px-1.5 py-0 border-sky-500/30 text-sky-700 dark:text-sky-300">
-                        Jira: {integrations.jira.projectKey || "Đã kết nối"}
-                      </Badge>
-                    )}
-                    {integrations?.github?.connected && (
-                      <Badge variant="outline" className="text-[9px] px-1.5 py-0 border-emerald-500/30 text-emerald-700 dark:text-emerald-300">
-                        GitHub: {integrations.github.repositoryCount ?? 0} repos
-                      </Badge>
-                    )}
+                {isSprintLoading ? (
+                  <div className="flex items-center justify-center py-5 text-xs text-muted-foreground gap-2">
+                    <Loader2Icon className="size-4 animate-spin text-primary" />
+                    <span>Đang tải số liệu Sprint...</span>
                   </div>
+                ) : (
+                  <>
+                    <div className="flex items-baseline justify-between pt-0.5">
+                      <div className="text-sm font-bold text-foreground truncate max-w-[170px]" title={currentSprint?.name || "Chưa có Sprint"}>
+                        {currentSprint?.name || "Chưa bắt đầu"}
+                      </div>
+                      {getSprintStateBadge(currentSprint?.state)}
+                    </div>
+
+                    <div className="flex items-center justify-between text-xs text-muted-foreground pt-1 border-t border-border/50">
+                      <span>Tiến độ nhóm:</span>
+                      <span className="font-mono font-bold text-foreground">
+                        {currentSprint
+                          ? `${currentSprint.completedTasks}/${currentSprint.totalTasks} (${formatStudentNullablePercent(currentSprint.completionPercent)})`
+                          : "N/A"}
+                      </span>
+                    </div>
+
+                    {(integrations?.jira?.connected || integrations?.github?.connected) && (
+                      <div className="flex items-center gap-1.5 pt-0.5">
+                        {integrations?.jira?.connected && (
+                          <Badge variant="outline" className="text-[9px] px-1.5 py-0 border-sky-500/30 text-sky-700 dark:text-sky-300">
+                            Jira: {integrations.jira.projectKey || "Đã kết nối"}
+                          </Badge>
+                        )}
+                        {integrations?.github?.connected && (
+                          <Badge variant="outline" className="text-[9px] px-1.5 py-0 border-emerald-500/30 text-emerald-700 dark:text-emerald-300">
+                            GitHub: {integrations.github.repositoryCount ?? 0} repos
+                          </Badge>
+                        )}
+                      </div>
+                    )}
+                  </>
                 )}
               </CardContent>
             </Card>
           </div>
 
           {/* Biểu đồ Commit theo tuần & Phân bố Task của tôi */}
-          <StudentWeeklyCommitsChart weeklyCommits={weeklyCommits} tasks={myMetrics.tasks} />
+          <StudentWeeklyCommitsChart weeklyCommits={weeklyCommits} tasks={data.sprintMetrics?.tasks ?? myMetrics.tasks} />
 
           {/* Grid 2 Cột: Nhiệm vụ đang làm & Nhật ký commit gần đây */}
           <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
@@ -470,8 +515,19 @@ export function StudentDashboardAnalytics() {
       ) : (
         /* Tab Toàn Nhóm (Dành cho Trưởng nhóm) */
         <div className="space-y-6">
-          {progressQuery.isLoading ? (
+          {progressQuery.isLoading && !progress ? (
             <StudentDashboardSkeleton />
+          ) : progressQuery.isError ? (
+            <EmptyPanel
+              title={getSprintSourceUserMessage({ error: progressQuery.error }).title}
+              description={
+                getApiErrorStatus(progressQuery.error) === 403 ||
+                getApiErrorCode(progressQuery.error) === "ACCESS_DENIED"
+                  ? "Thành viên nhóm xem tiến độ cá nhân trên bảng điều khiển. Tiến độ toàn nhóm dành cho trưởng nhóm."
+                  : getSprintSourceUserMessage({ error: progressQuery.error }).description
+              }
+              onRetry={() => void progressQuery.refetch()}
+            />
           ) : progress ? (
             <>
               <ProjectProgressSummary progress={progress} />
@@ -503,17 +559,50 @@ export function StudentDashboardAnalytics() {
   );
 }
 
+function getSprintStateBadge(state?: string | null) {
+  if (!state) return null;
+  const upper = state.toUpperCase();
+  if (upper === "ACTIVE") {
+    return (
+      <Badge variant="outline" className="text-xs font-bold bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30">
+        Đang chạy
+      </Badge>
+    );
+  }
+  if (upper === "CLOSED") {
+    return (
+      <Badge variant="outline" className="text-xs font-bold bg-muted text-muted-foreground border-border">
+        Đã đóng
+      </Badge>
+    );
+  }
+  if (upper === "FUTURE") {
+    return (
+      <Badge variant="outline" className="text-xs font-bold bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30">
+        Dự kiến
+      </Badge>
+    );
+  }
+  return (
+    <Badge variant="outline" className="text-xs font-bold uppercase">
+      {state}
+    </Badge>
+  );
+}
+
 function EmptyPanel({
   title,
   description,
   href,
   action,
+  onAction,
   onRetry,
 }: {
   title: string;
   description: string;
   href?: string;
   action?: string;
+  onAction?: () => void;
   onRetry?: () => void;
 }) {
   return (
@@ -526,6 +615,14 @@ function EmptyPanel({
           <Link href={href} prefetch={true} className={cn(buttonVariants({ size: "sm" }), "text-xs")}>
             {action}
           </Link>
+        ) : onAction && action ? (
+          <button
+            type="button"
+            onClick={onAction}
+            className={cn(buttonVariants({ size: "sm" }), "cursor-pointer text-xs")}
+          >
+            {action}
+          </button>
         ) : null}
         {onRetry ? (
           <button

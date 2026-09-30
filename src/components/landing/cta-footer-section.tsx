@@ -22,7 +22,7 @@ export function CtaFooterSection() {
 
   return (
     <>
-      <section className="py-20 md:py-24 border-t border-border/80 relative overflow-hidden bg-popover from-background via-muted/20 to-background">
+      <section className="py-20 md:py-24 border-t border-border/80 relative overflow-hidden bg-linear-to-b from-background via-muted/20 to-background">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[250px] bg-primary/10 rounded-full blur-3xl pointer-events-none -z-10" />
 
         <div className="max-w-4xl mx-auto px-6 text-center space-y-6">
@@ -33,7 +33,7 @@ export function CtaFooterSection() {
 
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-foreground tracking-tight leading-tight max-w-2xl mx-auto">
             Nâng tầm Quản trị & Đánh giá Đồ án SE cùng{" "}
-            <span className="bg-popover from-primary to-cyan-500 bg-clip-text text-transparent">
+            <span className="saga-brand-gradient">
               SAGA
             </span>
           </h2>

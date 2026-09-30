@@ -142,7 +142,7 @@ export function SprintBoardView({
 
   if (isLoading) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-start animate-pulse">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 animate-pulse">
         {COLUMNS.map((col) => (
           <div key={col.id} className="rounded-xl border border-border/40 bg-muted/20 p-3.5 space-y-3 min-h-[420px]">
             <div className="h-5 bg-muted/60 rounded-md w-2/3" />
@@ -160,7 +160,11 @@ export function SprintBoardView({
   const totalSprintSP = issues.reduce((sum, i) => sum + (i.storyPoints || 0), 0);
 
   const handleDragStart = (e: React.DragEvent, issue: SprintIssue) => {
-    const canDrag = isTeamLeader || issue.assignee.studentCode === currentUserStudentCode;
+    const canDrag =
+      isTeamLeader ||
+      (Boolean(currentUserStudentCode) &&
+        Boolean(issue.assignee?.studentCode) &&
+        issue.assignee.studentCode === currentUserStudentCode);
     if (!canDrag) {
       e.preventDefault();
       return;
@@ -253,7 +257,7 @@ export function SprintBoardView({
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-start">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {COLUMNS.map((col) => {
           const colIssues = issues.filter((i) => i.status === col.id);
           const colSP = colIssues.reduce((sum, i) => sum + (i.storyPoints || 0), 0);
@@ -264,7 +268,7 @@ export function SprintBoardView({
               key={col.id}
               onDragOver={handleDragOver}
               onDrop={(e) => handleDrop(e, col.id)}
-              className="rounded-xl border border-border/60 bg-muted/20 p-3 flex flex-col transition-all max-h-[calc(100vh-220px)] min-h-[500px]"
+              className="min-w-0 h-full rounded-xl border border-border/60 bg-muted/20 p-3 flex flex-col transition-all max-h-[calc(100vh-220px)] min-h-[500px] overflow-x-hidden"
             >
               <div className="pb-2.5 mb-2.5 border-b border-border/50 shrink-0 space-y-1.5">
                 <div className="flex items-center justify-between">
@@ -297,7 +301,11 @@ export function SprintBoardView({
                 ) : null}
 
                 {colIssues.map((issue) => {
-                  const canDrag = isTeamLeader || issue.assignee.studentCode === currentUserStudentCode;
+                  const canDrag =
+                    isTeamLeader ||
+                    (Boolean(currentUserStudentCode) &&
+                      Boolean(issue.assignee?.studentCode) &&
+                      issue.assignee.studentCode === currentUserStudentCode);
                   const isMsrAnomaly = issue.status === "DONE" && (issue.githubCommitCount ?? 0) === 0;
 
                   return (

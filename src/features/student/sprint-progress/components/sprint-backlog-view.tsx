@@ -90,7 +90,11 @@ export function SprintBacklogView({
   };
 
   const handleDragStart = (e: React.DragEvent, issue: SprintIssue) => {
-    const canDrag = isTeamLeader || issue.assignee.studentCode === currentUserStudentCode;
+    const canDrag =
+      isTeamLeader ||
+      (Boolean(currentUserStudentCode) &&
+        Boolean(issue.assignee?.studentCode) &&
+        issue.assignee.studentCode === currentUserStudentCode);
     if (!canDrag) {
       e.preventDefault();
       return;
@@ -128,7 +132,12 @@ export function SprintBacklogView({
     isNestedSubtask = false,
     subtaskCount = 0
   ) => {
-    const canDrag = !isNestedSubtask && (isTeamLeader || issue.assignee.studentCode === currentUserStudentCode);
+    const canDrag =
+      !isNestedSubtask &&
+      (isTeamLeader ||
+        (Boolean(currentUserStudentCode) &&
+          Boolean(issue.assignee?.studentCode) &&
+          issue.assignee.studentCode === currentUserStudentCode));
     const isMsrAnomaly = issue.status === "DONE" && (issue.githubCommitCount ?? 0) === 0;
     const areSubtasksExpanded = Boolean(expandedSubtaskParents[issue.key]);
 
@@ -279,7 +288,11 @@ export function SprintBacklogView({
               issueKey={issue.key}
               status={issue.status}
               isTeamLeader={isTeamLeader}
-              isOwner={issue.assignee?.studentCode === currentUserStudentCode}
+              isOwner={
+                Boolean(currentUserStudentCode) &&
+                Boolean(issue.assignee?.studentCode) &&
+                issue.assignee.studentCode === currentUserStudentCode
+              }
               onStatusChange={onStatusChange}
             />
 
@@ -289,6 +302,11 @@ export function SprintBacklogView({
               storyPoints={issue.storyPoints}
               projectId={projectId}
               isTeamLeader={isTeamLeader}
+              isOwner={
+                Boolean(currentUserStudentCode) &&
+                Boolean(issue.assignee?.studentCode) &&
+                issue.assignee.studentCode === currentUserStudentCode
+              }
             />
 
             <QuickAssigneeEdit
@@ -512,19 +530,17 @@ export function SprintBacklogView({
                         </>
                       )}
 
-                      {isTeamLeader && (
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={() => onCreateIssueClick(sprint.id)}
-                          title="Tạo với đầy đủ thông tin"
-                          className="h-7.5 text-xs font-semibold rounded-xl gap-1 cursor-pointer hover:bg-primary/10 hover:text-primary hover:border-primary/40 px-2.5"
-                        >
-                          <PlusIcon className="w-3 h-3" />
-                          <span>Thêm task</span>
-                        </Button>
-                      )}
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => onCreateIssueClick(sprint.id)}
+                        title="Tạo với đầy đủ thông tin"
+                        className="h-7.5 text-xs font-semibold rounded-xl gap-1 cursor-pointer hover:bg-primary/10 hover:text-primary hover:border-primary/40 px-2.5"
+                      >
+                        <PlusIcon className="w-3 h-3" />
+                        <span>Thêm task</span>
+                      </Button>
                     </div>
                   </div>
                 </div>
@@ -535,18 +551,16 @@ export function SprintBacklogView({
                   {sprintHierarchy.workItems.length === 0 ? (
                     <div className="m-3 p-4 rounded-xl border border-dashed border-border/70 hover:border-primary/50 bg-muted/10 hover:bg-muted/20 transition-all flex items-center justify-between gap-3 text-xs text-muted-foreground">
                       <span>Kéo thả task từ Backlog vào đây để phân bổ cho Sprint này</span>
-                      {isTeamLeader && (
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={() => onCreateIssueClick(sprint.id)}
-                          className="h-7 text-xs font-semibold rounded-lg gap-1 cursor-pointer shrink-0"
-                        >
-                          <PlusIcon className="w-3 h-3" />
-                          <span>Tạo task mới</span>
-                        </Button>
-                      )}
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => onCreateIssueClick(sprint.id)}
+                        className="h-7 text-xs font-semibold rounded-lg gap-1 cursor-pointer shrink-0"
+                      >
+                        <PlusIcon className="w-3 h-3" />
+                        <span>Tạo task mới</span>
+                      </Button>
                     </div>
                   ) : (
                     sprintHierarchy.workItems.map((issue) => {
@@ -586,7 +600,7 @@ export function SprintBacklogView({
                     sprintId={sprint.id}
                     sprintExternalId={sprint.externalSprintId != null ? String(sprint.externalSprintId) : undefined}
                     sprintName={sprint.name}
-                    canCreate={isTeamLeader}
+                    canCreate={true}
                     onOpenFullModal={() => onCreateIssueClick(sprint.id)}
                   />
                 </div>
@@ -644,7 +658,6 @@ export function SprintBacklogView({
               </div>
             </div>
 
-            {isTeamLeader && (
               <div className="flex items-center gap-2 shrink-0 self-end sm:self-auto">
                 <Button
                   type="button"
@@ -658,7 +671,6 @@ export function SprintBacklogView({
                   <span>Thêm task vào Backlog</span>
                 </Button>
               </div>
-            )}
           </div>
         </div>
 
@@ -705,7 +717,7 @@ export function SprintBacklogView({
               jiraIntegrationId={jiraIntegrationId}
               sprintId="backlog"
               sprintName="Backlog"
-              canCreate={isTeamLeader}
+              canCreate={true}
               onOpenFullModal={() => onCreateIssueClick("backlog")}
             />
           </div>
