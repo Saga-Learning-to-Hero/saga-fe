@@ -14,6 +14,7 @@ export interface SprintIssue {
   storyPoints: number;
   assignee: {
     id: string;
+    studentId?: string | null;
     name: string;
     avatar: string;
     studentCode: string;

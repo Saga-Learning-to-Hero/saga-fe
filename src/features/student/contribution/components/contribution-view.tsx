@@ -135,7 +135,7 @@ export function ContributionView() {
                   </Badge>
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  Mô hình tính toán cổ phần đóng góp theo DEC-092 từ Jira Tasks, Git Commits và Đánh giá đồng đẳng.
+                  Mô hình tính toán cổ phần đóng góp từ Jira Tasks, Git Commits và Đánh giá đồng đẳng.
                 </p>
               </div>
             </div>

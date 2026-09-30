@@ -79,12 +79,6 @@ export function ContributionTable({
               số Peer review đến tỷ lệ cuối cùng
             </CardDescription>
           </div>
-          <Badge
-            variant="outline"
-            className="text-xs font-mono font-bold self-start sm:self-auto py-1 px-2.5"
-          >
-            DEC-092 Live Evaluation
-          </Badge>
         </div>
       </CardHeader>
 

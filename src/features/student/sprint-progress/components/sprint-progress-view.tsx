@@ -294,12 +294,6 @@ export function SprintProgressView() {
     setIsIssueModalOpen(true);
   };
 
-  const availableLabels = useMemo(() => {
-    if (taskOptions?.labels && taskOptions.labels.length > 0) {
-      return taskOptions.labels;
-    }
-    return ["saga:code", "saga:test", "saga:document", "saga:research"];
-  }, [taskOptions]);
 
   const filteredIssues = useMemo(() => {
     return scopedIssues.filter((issue) => {
@@ -577,8 +571,8 @@ export function SprintProgressView() {
                 const overlapText =
                   s.overlaps && s.overlaps.length > 0
                     ? s.overlaps
-                        .map((o) => (o.siteName ? `"${o.name}" (site: ${o.siteName})` : `"${o.name}"`))
-                        .join(", ")
+                      .map((o) => (o.siteName ? `"${o.name}" (site: ${o.siteName})` : `"${o.name}"`))
+                      .join(", ")
                     : "một sprint khác";
                 return (
                   <li key={s.id}>
@@ -600,6 +594,7 @@ export function SprintProgressView() {
           onIssueClick={handleOpenIssueModal}
           onMoveTaskStatus={handleMoveTaskStatus}
           isTeamLeader={isTeamLeader}
+          currentUserStudentId={team?.myStudentId}
           currentUserStudentCode={currentUserStudentCode}
           onSwitchToBacklog={() => setActiveView("BACKLOG")}
           totalBacklogCount={productBacklogCount}
@@ -657,6 +652,7 @@ export function SprintProgressView() {
           }}
           updatingSprintId={patchSprintMutation.isPending ? patchSprintMutation.variables?.sprintId : null}
           isTeamLeader={isTeamLeader}
+          currentUserStudentId={team?.myStudentId}
           currentUserStudentCode={currentUserStudentCode}
           courseId={courseId}
           projectId={projectId}
@@ -727,11 +723,11 @@ export function SprintProgressView() {
           defaultSprintId={defaultSprintIdForModal}
           sprints={sprints}
           teamMembers={teamMembers}
-          availableLabels={availableLabels}
           onClose={() => setIsIssueModalOpen(false)}
           onSave={handleSaveIssue}
           onDelete={handleDeleteIssue}
           isTeamLeader={isTeamLeader}
+          currentUserStudentId={team?.myStudentId}
           currentUserStudentCode={currentUserStudentCode}
           canCreateTask={canCreateTask}
         />

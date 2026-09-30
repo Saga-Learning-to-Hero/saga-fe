@@ -23,7 +23,7 @@ const CytoscapeGraphCanvas = dynamic(
     loading: () => (
       <div className="w-full h-[580px] sm:h-[640px] lg:h-[calc(100vh-230px)] min-h-[540px] max-h-[780px] rounded-xl border border-border/90 bg-muted/20 flex flex-col items-center justify-center text-muted-foreground gap-3">
         <Loader2Icon className="w-8 h-8 animate-spin text-primary" />
-        <span className="text-xs font-medium">Đang khởi tạo Engine Đồ thị...</span>
+        <span className="text-xs font-medium">Đang xử lý Đồ thị...</span>
       </div>
     )
   }
@@ -38,7 +38,6 @@ import { PipelineStatsBar } from "./pipeline-stats-bar";
 import { PipelineWorkspace } from "./pipeline-workspace";
 import { usePipelineGraphData } from "../hooks/use-pipeline-graph-data";
 import { useProjectGraph } from "../hooks/use-project-graph";
-import { buildPipelineTasksCsv, downloadTextFile } from "../lib/pipeline-mapper";
 import {
   mapStudentNodesToMemberOptions,
   resolveDrillDownStudent,
@@ -361,15 +360,6 @@ export function TraceabilityGraphView() {
       })),
     [pipeline.sprints]
   );
-
-  const handleExport = () => {
-    if (viewMode === "GRAPH") {
-      const exportJson = JSON.stringify(graphQuery.data || { nodes: [], edges: [] }, null, 2);
-      downloadTextFile(`neo4j-graph-${activeGraphType.toLowerCase()}.json`, exportJson);
-      return;
-    }
-    downloadTextFile("pipeline-tasks.csv", buildPipelineTasksCsv(pipeline.filteredTasks));
-  };
 
   const teamLabel = teamQuery.data
     ? `Nhóm ${teamQuery.data.teamNo}${teamQuery.data.teamName ? ` - ${teamQuery.data.teamName}` : ""}`
@@ -767,7 +757,6 @@ export function TraceabilityGraphView() {
             }
             setNeo4jFilterType(type);
           }}
-          onExport={handleExport}
           onReset={() => {
             if (pipelineOpen) {
               setPipelineFilter({
@@ -786,9 +775,9 @@ export function TraceabilityGraphView() {
             setScopeMode("COMPACT");
           }}
           anomaliesCount={
-            pipelineOpen ? pipeline.stats.doneWithoutLinkedCommits : structuralStats.anomalyCount
+            pipelineOpen ? pipeline.stats.doneWithoutLinkedCommits + pipeline.stats.missingDocumentTasks : structuralStats.anomalyCount
           }
-          anomalyLabel={pipelineOpen ? "Task hoàn thành chưa có Commit" : "Node bất thường"}
+          anomalyLabel={pipelineOpen ? "Task cần đối soát minh chứng" : "Node bất thường"}
           memberOptions={pipelineOpen ? pipelineMemberOptions : neo4jMemberOptions}
           sprintOptions={pipelineOpen ? pipelineSprintOptions : sprintOptions}
           viewMode={viewMode}

@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import {
   ClockIcon,
   UnlinkIcon,
@@ -16,7 +15,6 @@ interface GitHubConnectedCardProps {
   identity?: UserIdentityItem | null;
   fallbackName?: string;
   fallbackUsername?: string;
-  avatarUrl?: string;
   isDeleting?: boolean;
   isSettingPrimary?: boolean;
   onSetPrimary?: () => void;
@@ -27,7 +25,6 @@ export function GitHubConnectedCard({
   identity,
   fallbackName = "Thành viên GitHub",
   fallbackUsername = "",
-  avatarUrl,
   isDeleting = false,
   isSettingPrimary = false,
   onSetPrimary,
@@ -38,26 +35,11 @@ export function GitHubConnectedCard({
   const firstLinked = formatVietnamDateTime(identity?.linkedAt);
   const lastVerified = formatVietnamDateTime(identity?.lastVerifiedAt || identity?.linkedAt);
   const isPrimary = Boolean(identity?.primary);
-  const resolvedAvatar =
-    avatarUrl ||
-    (username
-      ? `https://github.com/${username}.png`
-      : "https://avatars.githubusercontent.com/u/9919?v=4");
 
   return (
     <div className="p-4 sm:p-5 rounded-xl border border-purple-500/30 bg-purple-500/5 space-y-4">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="flex items-center gap-3">
-          <div className="relative w-12 h-12 rounded-xl overflow-hidden bg-purple-600/20 border border-purple-500/30 shrink-0">
-            <Image
-              src={resolvedAvatar}
-              alt={username || "GitHub Avatar"}
-              fill
-              sizes="48px"
-              className="object-cover"
-              unoptimized
-            />
-          </div>
           <div>
             <div className="flex items-center gap-2">
               <h4 className="text-sm font-bold text-foreground">{displayName}</h4>

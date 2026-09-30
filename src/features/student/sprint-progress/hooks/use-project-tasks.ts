@@ -15,6 +15,29 @@ import { JIRA_SPRINT_QUERY_KEYS } from "./use-sprint-data";
 import { upsertProjectTaskInList } from "../lib/task-list-cache";
 import { getPersonalIntegrationErrorMessage } from "../lib/personal-integration-error";
 
+type TaskApiError = {
+  response?: { data?: { code?: string; message?: string } };
+  message?: string;
+};
+
+function getTaskMutationErrorMessage(error: unknown, fallback: string): string {
+  const apiError = error as TaskApiError;
+  switch (apiError.response?.data?.code) {
+    case "TASK_NOT_ASSIGNED_TO_YOU":
+      return "Bạn chỉ có thể thay đổi Task được giao cho mình.";
+    case "NOT_TEAM_LEADER":
+      return "Chỉ Leader được bỏ gán hoặc giao Task cho thành viên khác.";
+    case "PERSONAL_INTEGRATION_REQUIRED":
+      return "Vui lòng liên kết tài khoản Jira và GitHub cá nhân trước khi tạo Task.";
+    case "JIRA_ACCOUNT_NOT_LINKED_TO_CURRENT_USER":
+      return "Vui lòng liên kết tài khoản Jira cá nhân trước khi tạo Task.";
+    case "TASK_DELETE_BLOCKED_BY_EVIDENCE":
+      return "Không thể xóa Task đã có phiên làm việc hoặc xác nhận đóng góp.";
+    default:
+      return apiError.response?.data?.message || apiError.message || fallback;
+  }
+}
+
 export type TransitionTaskPayload =
   | TransitionProjectTaskRequest
   | { targetStatus: string };
@@ -133,8 +156,7 @@ export function useTransitionTask() {
       showSuccessToast(`Đã chuyển trạng thái task sang "${updatedTask.jiraStatusName || updatedTask.status}".`);
     },
     onError: (error: unknown) => {
-      const err = error as { response?: { data?: { message?: string } }; message?: string };
-      showErrorToast(err.response?.data?.message || err.message || "Không thể chuyển trạng thái task trên Jira.");
+      showErrorToast(getTaskMutationErrorMessage(error, "Không thể chuyển trạng thái Task trên Jira."));
     },
   });
 }
@@ -180,7 +202,7 @@ export function useCreateProjectTask() {
         );
         return;
       }
-      showErrorToast(err.response?.data?.message || err.message || "Không thể tạo task trên Jira.");
+      showErrorToast(getTaskMutationErrorMessage(error, "Không thể tạo Task trên Jira."));
     },
   });
 }
@@ -217,7 +239,7 @@ export function usePatchProjectTask() {
       const msg =
         err.response?.data?.code === "JIRA_FIELD_INVALID"
           ? "Jira từ chối cập nhật Task (do cấu hình màn hình Edit Screen hoặc quyền hạn trên Jira)."
-          : err.response?.data?.message || err.message || "Không thể cập nhật task.";
+          : getTaskMutationErrorMessage(error, "Không thể cập nhật Task.");
       showErrorToast(msg);
     },
   });
@@ -244,12 +266,7 @@ export function useDeleteProjectTask() {
       showSuccessToast("Đã xóa task thành công.");
     },
     onError: (error: unknown) => {
-      const err = error as { response?: { data?: { code?: string; message?: string } }; message?: string };
-      if (err.response?.data?.code === "TASK_DELETE_BLOCKED_BY_EVIDENCE") {
-        showErrorToast("Không thể xóa: Task này đã có phiên làm việc (Work Session) hoặc bằng chứng gắn vào.");
-      } else {
-        showErrorToast(err.response?.data?.message || err.message || "Không thể xóa task.");
-      }
+      showErrorToast(getTaskMutationErrorMessage(error, "Không thể xóa Task."));
     },
   });
 }

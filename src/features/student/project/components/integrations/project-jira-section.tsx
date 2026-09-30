@@ -37,6 +37,8 @@ import {
 } from "../../hooks/use-jira-sources";
 import { JiraSourcesService } from "../../api/jira-sources-service";
 import { JiraFailoverWizardDialog } from "../failover/jira-failover-wizard-dialog";
+import { useProjectSyncStatus } from "../../hooks/useProjectSync";
+import { isActiveSyncJob } from "../../lib/sync-job-status";
 
 interface ProjectJiraSectionProps {
   projectId?: string;
@@ -67,6 +69,7 @@ export function ProjectJiraSection({
   const sourcesQuery = useJiraSources(projectId);
   const syncMutation = useJiraSourceSync(projectId);
   const disconnectMutation = useJiraSourceDisconnect(projectId);
+  const { data: syncJobs = [] } = useProjectSyncStatus(projectId);
 
   const sources: JiraSourceSummary[] = useMemo(() => {
     if (sourcesQuery.data && sourcesQuery.data.length > 0) {
@@ -265,6 +268,10 @@ export function ProjectJiraSection({
                 ? `https://${src.siteName}`
                 : `https://${src.siteName}.atlassian.net`;
 
+            const activeJob = syncJobs.find((j) => j.provider === "JIRA" && j.jiraIntegrationId === src.integrationId);
+            const isSyncing = isActiveSyncJob(activeJob) || (syncMutation.isPending && syncMutation.variables === src.integrationId);
+
+
             return (
               <div
                 key={src.integrationId}
@@ -305,7 +312,14 @@ export function ProjectJiraSection({
                     <div className="flex items-center gap-3 text-xs text-muted-foreground flex-wrap pt-0.5">
                       <span>Bảng Jira: <strong className="font-mono text-foreground">{src.boardId ?? "Mặc định"}</strong></span>
                       <span>•</span>
-                      <span>Đồng bộ thành công: <strong>{formatDateTime(src.lastSuccessfulSyncAt)}</strong></span>
+                      {isSyncing ? (
+                        <span className="flex items-center gap-1.5 text-blue-600 dark:text-blue-400 font-medium">
+                          <LoaderCircleIcon className="w-3 h-3 animate-spin" />
+                          Đang đồng bộ dữ liệu...
+                        </span>
+                      ) : (
+                        <span>Đồng bộ thành công: <strong>{formatDateTime(src.lastSuccessfulSyncAt)}</strong></span>
+                      )}
                       {src.consecutiveFailures !== undefined && src.consecutiveFailures !== null && src.consecutiveFailures > 0 && (
                         <>
                           <span>•</span>
@@ -332,10 +346,10 @@ export function ProjectJiraSection({
                         variant="outline"
                         size="sm"
                         onClick={() => syncMutation.mutate(src.integrationId)}
-                        disabled={syncMutation.isPending}
+                        disabled={isSyncing}
                         className="h-7.5 px-2.5 text-xs font-medium rounded-lg gap-1 border-border/80 text-foreground cursor-pointer"
                       >
-                        <RefreshCwIcon className={`w-3 h-3 ${syncMutation.isPending ? "animate-spin" : ""}`} />
+                        <RefreshCwIcon className={`w-3 h-3 ${isSyncing ? "animate-spin" : ""}`} />
                         <span>Đồng bộ</span>
                       </Button>
                     )}

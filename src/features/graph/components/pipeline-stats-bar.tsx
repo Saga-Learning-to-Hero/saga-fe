@@ -79,11 +79,10 @@ export function PipelineStatsBar({
             <button
               type="button"
               onClick={onFilterAnomalies}
-              className={`inline-flex items-center gap-1.5 rounded-xl border px-3 py-1 text-xs font-bold transition-all cursor-pointer ${
-                isAnomaliesActive
+              className={`inline-flex items-center gap-1.5 rounded-xl border px-3 py-1 text-xs font-bold transition-all cursor-pointer ${isAnomaliesActive
                   ? "border-destructive bg-destructive/20 text-destructive shadow-xs ring-2 ring-destructive/30"
                   : "border-destructive/30 bg-destructive/10 text-destructive hover:border-destructive/60 hover:bg-destructive/15"
-              }`}
+                }`}
             >
               <AlertTriangleIcon className="size-3.5" />
               <span>{stats.doneWithoutLinkedCommits} Task hoàn thành chưa có Commit</span>
@@ -97,6 +96,13 @@ export function PipelineStatsBar({
         ) : (
           <Badge className="border border-emerald-500/30 bg-emerald-500/10 text-xs font-bold text-emerald-700 dark:text-emerald-300">
             Không có Task hoàn thành thiếu Commit
+          </Badge>
+        )}
+
+        {stats.missingDocumentTasks > 0 && (
+          <Badge className="border border-amber-500/30 bg-amber-500/10 text-xs font-bold text-amber-600 dark:text-amber-400">
+            <AlertTriangleIcon className="mr-1.5 size-3.5" />
+            {stats.missingDocumentTasks} Task thiếu tài liệu
           </Badge>
         )}
       </div>

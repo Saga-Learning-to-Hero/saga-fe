@@ -5,7 +5,6 @@ import {
   UserIcon,
   LayersIcon,
   AlertTriangleIcon,
-  DownloadIcon,
   RefreshCwIcon,
   SparklesIcon,
   NetworkIcon,
@@ -26,7 +25,6 @@ interface GraphFilterBarProps {
   onSelectSprint: (sprint: string) => void;
   filterType: GraphFilterType;
   onSelectFilterType: (type: GraphFilterType) => void;
-  onExport: () => void;
   onReset: () => void;
   anomaliesCount: number;
   memberOptions: CustomSelectOption[];
@@ -51,7 +49,6 @@ export function GraphFilterBar({
   onSelectSprint,
   filterType,
   onSelectFilterType,
-  onExport,
   onReset,
   anomaliesCount,
   memberOptions,
@@ -175,16 +172,6 @@ export function GraphFilterBar({
               <span className="hidden sm:inline">Đặt lại</span>
             </Button>
           )}
-
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={onExport}
-            className="h-9 cursor-pointer gap-1.5 rounded-xl text-xs font-semibold"
-          >
-            <DownloadIcon className="size-3.5 text-muted-foreground" />
-            <span className="hidden md:inline">Xuất dữ liệu</span>
-          </Button>
         </div>
       </div>
 

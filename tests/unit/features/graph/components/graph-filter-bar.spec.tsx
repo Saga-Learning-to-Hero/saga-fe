@@ -26,20 +26,20 @@ function FilterHarness() {
   const extraActiveFilters = [
     repoId !== "ALL"
       ? {
-          key: "repository",
-          label: `Repository: ${selectedRepository?.fullName || repoId}`,
-          onClear: () => {
-            setRepoId("ALL");
-            setBranchName("ALL");
-          },
-        }
+        key: "repository",
+        label: `Repository: ${selectedRepository?.fullName || repoId}`,
+        onClear: () => {
+          setRepoId("ALL");
+          setBranchName("ALL");
+        },
+      }
       : null,
     branchName !== "ALL"
       ? {
-          key: "branch",
-          label: `Branch: ${branchName}`,
-          onClear: () => setBranchName("ALL"),
-        }
+        key: "branch",
+        label: `Branch: ${branchName}`,
+        onClear: () => setBranchName("ALL"),
+      }
       : null,
   ].filter(
     (filter): filter is { key: string; label: string; onClear: () => void } => filter !== null
@@ -53,7 +53,6 @@ function FilterHarness() {
       onSelectSprint={setSprintId}
       filterType="ALL"
       onSelectFilterType={vi.fn()}
-      onExport={vi.fn()}
       onReset={reset}
       anomaliesCount={2}
       memberOptions={[{ value: "student-1", label: "Lê Hoàng Hải" }]}
@@ -154,7 +153,6 @@ describe("GraphFilterBar", () => {
         onSelectSprint={vi.fn()}
         filterType="ALL"
         onSelectFilterType={vi.fn()}
-        onExport={vi.fn()}
         onReset={vi.fn()}
         anomaliesCount={0}
         memberOptions={[]}

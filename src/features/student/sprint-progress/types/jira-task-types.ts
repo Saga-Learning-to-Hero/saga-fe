@@ -82,6 +82,18 @@ export interface TaskJiraSourceProvenance {
   connectionStatus?: string | null;
 }
 
+export type EvidenceCheckStatus =
+  | "MISSING_COMMIT"
+  | "MISSING_DOCUMENT"
+  | "MISSING_COMMIT_AND_DOCUMENT"
+  | "UNLABELED"
+  | "SATISFIED"
+  | "NOT_DONE";
+
+export interface TaskEvidenceCheck {
+  status: EvidenceCheckStatus;
+}
+
 export interface ProjectTaskResponse {
   id: string;
   externalId: string;
@@ -107,6 +119,7 @@ export interface ProjectTaskResponse {
   linkedCommitCount: number;
   evidenceCount?: number;
   hasEvidence?: boolean;
+  evidenceCheck?: TaskEvidenceCheck | null;
   externalUpdatedAt?: string | null;
   createdAt: string;
   updatedAt: string;
