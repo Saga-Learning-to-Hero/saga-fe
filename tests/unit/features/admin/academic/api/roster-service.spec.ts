@@ -74,6 +74,47 @@ describe("RosterService", () => {
 
   fptTest(
     {
+      id: "UTCID21",
+      type: "N",
+      executedDate: "30/09/2026",
+      description: "Map roster mang tran giu avatarUrl va avatar",
+    },
+    async () => {
+      vi.spyOn(apiClient, "get").mockResolvedValueOnce({
+        data: [
+          {
+            ...mockRosterItem,
+            avatarUrl: "https://cdn.example.com/hai.png",
+            avatar: "https://cdn.example.com/legacy.png",
+          },
+        ],
+      });
+
+      const res = await RosterService.getRoster(mockCourseId);
+      expect(res.entries[0].avatarUrl).toBe("https://cdn.example.com/hai.png");
+      expect(res.entries[0].avatar).toBe("https://cdn.example.com/legacy.png");
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID22",
+      type: "A",
+      executedDate: "30/09/2026",
+      description: "Invitation hoac thieu avatarUrl map thanh null",
+    },
+    async () => {
+      vi.spyOn(apiClient, "get").mockResolvedValueOnce({
+        data: [{ ...mockRosterItem, status: "INVITED", avatarUrl: null }],
+      });
+
+      const res = await RosterService.getRoster(mockCourseId);
+      expect(res.entries[0].avatarUrl).toBeNull();
+    }
+  );
+
+  fptTest(
+    {
       id: "UTCID03",
       type: "N",
       executedDate: "07/09/2026",

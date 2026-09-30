@@ -1,7 +1,8 @@
 "use client";
 
 import { SearchIcon, UsersIcon } from "lucide-react";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { resolveHttpAvatarUrl } from "@/lib/avatar-url";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { formatScoreOutOfMax } from "../lib/lecturer-peer-review";
@@ -109,6 +110,7 @@ export function PeerReviewRevieweeList({
               >
                 <span className="flex items-start gap-2.5">
                   <Avatar className="size-9 shrink-0 border border-border/70">
+                    <AvatarImage src={resolveHttpAvatarUrl(item.avatarUrl)} alt={item.name} />
                     <AvatarFallback
                       className={cn(
                         "text-xs font-extrabold",

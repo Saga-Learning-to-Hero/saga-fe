@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/sheet";
 import { TaskWorkSessionTimeline } from "@/features/student/sprint-progress/components/task-work-session-timeline";
 import { getAssigneeAvatarClass, getAssigneeInitials } from "@/features/student/sprint-progress/lib/assignee-avatar";
+import { resolveHttpAvatarUrl } from "@/lib/avatar-url";
 import { useMemberProgress } from "@/features/student/project/hooks/useProjectSync";
 import { getApiErrorCode, getApiErrorMessage } from "@/lib/api-error";
 import { cn } from "@/lib/utils";
@@ -94,12 +95,10 @@ export function MemberProgressSheet({
   }, [inProgressFromSummary, assignedTasks]);
 
   const rawData = data as Record<string, unknown> | undefined;
-  const avatarUrl =
-    typeof rawData?.avatarUrl === "string" && rawData.avatarUrl.trim()
-      ? rawData.avatarUrl.trim()
-      : typeof rawData?.avatar === "string" && rawData.avatar.trim()
-        ? rawData.avatar.trim()
-        : null;
+  const avatarUrl = resolveHttpAvatarUrl(
+    data?.avatarUrl,
+    typeof rawData?.avatar === "string" ? rawData.avatar : undefined
+  );
 
   const initials = getAssigneeInitials(data?.fullName);
   const avatarColorClass = getAssigneeAvatarClass(

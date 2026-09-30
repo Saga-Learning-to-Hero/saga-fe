@@ -111,6 +111,8 @@ export interface RosterItemResponse {
   status: RosterEnrollmentStatus;
   invitedAt?: string | null;
   enrolledAt?: string | null;
+  avatarUrl?: string | null;
+  avatar?: string | null;
 }
 
 export type RosterPreviewRowAction =

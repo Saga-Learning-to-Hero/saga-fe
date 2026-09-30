@@ -1,8 +1,8 @@
 # Kịch bản thuyết trình SAGA trong 45 phút - 5 thành viên
 
-Nguồn chính: `D:\paper\SAGA Capstone Slide.pdf` (23 slide).
+Nguồn chính đã kiểm tra lại: `D:\paper\SAGA Capstone.pdf` (23 slide, bản cập nhật ngày 30/09/2026).
 
-Người trình bày: Trần Đức Trung, Bùi Đăng Khoa, Lê Hoàng Hải, Bùi Phan Nhật Minh, Huỳnh Phước Thiện.
+Quy ước người trình bày trong kịch bản: **Người 1, Người 2, Người 3, Người 4 và Người 5**.
 
 ## 1. Cách dùng kịch bản
 
@@ -17,40 +17,56 @@ Người trình bày: Trần Đức Trung, Bùi Đăng Khoa, Lê Hoàng Hải, B
 
 | Thời gian | Người nói | Slide | Nội dung chính |
 |---|---:|---:|---|
-| 00:00-07:30 | Trung | 1-5 | Mở bài, đội ngũ, vấn đề, người dùng, pain points |
-| 07:30-15:30 | Khoa | 6-10 | Kiến trúc, công nghệ, bốn vai trò chính |
-| 15:30-23:00 | Hải | 11-14 | Mở phần tính năng; roster, chia nhóm, kết nối tài khoản |
-| 23:00-31:30 | Minh | 15-18 | Khởi tạo project, sprint/backlog, peer review, giảng viên giám sát |
-| 31:30-39:30 | Thiện | 19-21 | Task-Commit Pipeline, contribution, giới hạn và hướng phát triển |
-| 39:30-44:30 | Trung điều phối; cả nhóm trả lời | 22 | Q&A |
-| 44:30-45:00 | Trung | 23 | Kết thúc |
+| 00:00-07:30 | Người 1 | 1-5 | Mở bài, đội ngũ, vấn đề, người dùng, pain points |
+| 07:30-15:30 | Người 2 | 6-10 | Kiến trúc, công nghệ, bốn vai trò chính |
+| 15:30-23:00 | Người 3 | 11-14 | Mở phần tính năng; roster, chia nhóm, kết nối tài khoản |
+| 23:00-31:30 | Người 4 | 15-18 | Khởi tạo project, sprint/backlog, peer review, giảng viên giám sát |
+| 31:30-39:30 | Người 5 | 19-21 | Task-Commit Pipeline, contribution, giới hạn và hướng phát triển |
+| 39:30-44:30 | Người 1 điều phối; cả nhóm trả lời | 22 | Q&A |
+| 44:30-45:00 | Người 1 | 23 | Kết thúc |
 
-## 3. Các điểm cần sửa trên slide trước khi bảo vệ
+## 3. Kết quả kiểm tra chính tả và trình bày của bản mới
 
-Đây là các lỗi dễ bị Hội đồng bắt ngay. Nên sửa trong file gốc trước buổi trình bày:
+### Các lỗi cũ đã được sửa
 
-1. Slide 1: chuẩn hóa tên thành **Student Activity Graph-Based Continuous Assessment for PBL**.
-2. Slide 5: sửa thành **"Fake Agile" & Fake Reporting**; hiện đang thiếu dấu ngoặc kép mở.
-3. Slide 7: sửa câu hỏi thành **What can administrators do?**
-4. Slide 8: nội dung bị dồn và dòng cuối có dấu hiệu bị cắt. Rút còn 4 ý, bỏ câu lặp và kiểm tra lại `export progress report`.
-5. Slide 13: sửa **LECTURE GROUPING STUDENTS** thành **LECTURER GROUPING STUDENTS** hoặc tự nhiên hơn là **LECTURER GROUPING WORKFLOW**.
-6. Slide 14-15: thống nhất cách viết **GitHub**; sửa `Input require fields` thành **Enter required fields**.
-7. Slide 16: sửa nhãn **`saga:doc`** thành **`saga:document`**. Đây là tên reserved label canonical của hệ thống.
-8. Slide 19: `Symmetric commit` không rõ nghĩa. Nếu muốn nói commit chưa ánh xạ danh tính, dùng **Unmapped/Orphan Commit**; nếu muốn nói task hoàn thành nhưng thiếu commit, dùng **Done Task Without Linked Commit**.
-9. Slide 19: gọi anomaly là **cảnh báo cần đối soát**, không khẳng định đó là gian lận.
-10. Slide 20: làm rõ SAGA tính **Final Contribution Percentage**, không tự quyết định điểm học phần cuối cùng. Giảng viên dùng tỷ lệ và minh chứng để ra quyết định học thuật.
-11. Slide 6 và các slide workflow 12-19 khá dày. Khi chiếu, dùng con trỏ đi theo từng nhánh; không giải thích tất cả mũi tên cùng lúc.
-12. Slide 22 và 23 không nên chiếu liên tiếp trước Q&A. Dừng ở slide 22 để nhận câu hỏi; chỉ chuyển slide 23 sau câu trả lời cuối.
+- Slide 1 đã dùng đúng tiêu đề **Student Activity Graph-Based Continuous Assessment for PBL**.
+- Slide 5 đã bổ sung đủ dấu ngoặc kép. Tuy nhiên, cách viết tự nhiên và cân đối hơn là **"Fake Agile" & "Fake Reporting"**.
+- Slide 8 đã sửa `export progress repo` thành **export progress report**.
+- Slide 13 đã sửa tiêu đề thành **LECTURER GROUPING WORKFLOW**.
+- Slide 15 đã sửa `Input require fields` thành **Enter required fields**.
+
+### Các lỗi vẫn cần sửa trước khi bảo vệ
+
+1. **Slide 7:** bỏ khoảng trắng trước dấu hỏi: `What can administrators do ?` → **What can administrators do?**
+2. **Slide 8:** nội dung vẫn bị tràn khỏi khung; phần đầu của tiêu đề/câu hỏi và một số bullet bị cắt ở mép trái, dòng cuối bị sát hoặc cắt ở mép dưới. Đây là lỗi bố cục nghiêm trọng hơn lỗi chính tả.
+3. **Slide 9:** `Student ( Member )` → **Student (Member)**. Câu `Request authorized Task, Commit, risk, and progress analysis.` nên sửa thành **Request authorized task, commit, risk, and progress analyses.**
+4. **Slide 12:** `Detail course` → **Course details**; `Select Tab` → **Select tab** để tự nhiên và thống nhất cách viết.
+5. **Slide 13:** `Grouping in file` → **Group students in the file**; `Import file into class` → **Import the file into the course**.
+6. **Slide 15:** `Course's dashboard` → **Course dashboard**; `Connect Github` → **Connect GitHub**; `Choose GitHub's repository` → **Choose a GitHub repository**. Phần dưới bên phải đang chồng chữ và mũi tên, cần giãn lại bố cục. Nếu hệ thống dùng Jira project key, nên đổi `Choose Space & select Jira's space key` thành **Choose a Jira site and select the project key**.
+7. **Slide 16:** `saga: doc` → **`saga:document`**. Đây là reserved label canonical của hệ thống.
+8. **Slide 17:** `Detail Sprint` → **Sprint details**; `Pre-condition: Sprint closed` → **Precondition: Sprint is closed.**
+9. **Slide 18:** `LECTURER SUPERVISE` → **LECTURER SUPERVISION**; `View contrbution member` → **View member contribution**; `View detail commit (Git diff)` → **View commit details (Git diff)**; `View node commit` → **View commit node**. Các nhãn ở nửa dưới cũng đang quá sát và có chỗ chồng nhau.
+10. **Slide 19:** `View all task` → **View all tasks**; `Task Jira Member` → **Member's Jira task**. `Symmetric commit` không rõ nghĩa: dùng **Unmapped/Orphan Commit** nếu commit chưa ánh xạ danh tính, hoặc **Done Task Without Linked Commit** nếu task đã hoàn thành nhưng thiếu commit.
+11. **Slide 20:** `System calculate` → **System calculates**; `Final % contribution` → **Final contribution percentage**. Không nên dùng mũi tên `Record → Master gradebook` nếu SAGA không tự ghi điểm; nên dùng **Use as grading evidence** để thể hiện đây là dữ liệu hỗ trợ giảng viên.
+12. **Slide 21:** `Future works` → **Future work**. Có thể sửa `Campus identity and code quality` thành **Campus identity integration and code-quality analysis** để cùng dạng hành động với các ý còn lại.
+13. **Slide 23:** `THANKYOU FOR LISTENING` → **THANK YOU FOR LISTENING**.
+
+### Lưu ý khi thuyết trình
+
+- Ở slide 19, gọi anomaly là **cảnh báo cần đối soát**, không khẳng định đó là gian lận.
+- Ở slide 20, nhấn mạnh SAGA tính **Final Contribution Percentage**, không tự quyết định điểm học phần cuối cùng.
+- Slide 6 và các slide workflow 12-19 khá dày; dùng con trỏ đi theo từng nhánh, không giải thích tất cả mũi tên cùng lúc.
+- Dừng ở slide 22 để nhận câu hỏi; chỉ chuyển slide 23 sau câu trả lời cuối.
 
 ---
 
 # 4. Kịch bản chi tiết
 
-## PHẦN 1 - TRUNG - 00:00-07:30
+## PHẦN 1 - NGƯỜI 1 - 00:00-07:30
 
 ### Slide 1 - Mở bài - 00:00-00:50
 
-**Trung nói:**
+**Người 1 nói:**
 
 > Kính thưa thầy cô trong Hội đồng. Nhóm em là SU26SE094_GSU01. Hôm nay nhóm xin trình bày đề tài SAGA - Student Activity Graph-Based Continuous Assessment for PBL.
 >
@@ -62,9 +78,9 @@ Người trình bày: Trần Đức Trung, Bùi Đăng Khoa, Lê Hoàng Hải, B
 
 ### Slide 2 - Thành viên - 00:50-01:25
 
-**Trung nói:**
+**Người 1 nói:**
 
-> Nhóm gồm năm thành viên. Em là Trần Đức Trung, trưởng nhóm, phụ trách Backend. Bùi Đăng Khoa phụ trách Backend. Lê Hoàng Hải, Bùi Phan Nhật Minh và Huỳnh Phước Thiện phụ trách Frontend.
+> Nhóm gồm năm thành viên. Trong kịch bản này, nhóm thống nhất thứ tự trình bày từ Người 1 đến Người 5. Người 1 phụ trách mở bài và bài toán; Người 2 trình bày kiến trúc và vai trò; Người 3 trình bày roster, grouping và tích hợp tài khoản; Người 4 trình bày project, sprint, peer review và graph; Người 5 trình bày pipeline, contribution, giới hạn và hướng phát triển.
 >
 > Trong phần trình bày hôm nay, mỗi thành viên sẽ phụ trách đúng phần mình hiểu sâu nhất: từ bài toán, kiến trúc, các quy trình cấu hình, trải nghiệm người dùng cho đến pipeline đối soát và kết quả đóng góp.
 
@@ -72,7 +88,7 @@ Người trình bày: Trần Đức Trung, Bùi Đăng Khoa, Lê Hoàng Hải, B
 
 ### Slide 3 - Mục lục - 01:25-01:55
 
-**Trung nói:**
+**Người 1 nói:**
 
 > Bài trình bày đi theo sáu bước. Đầu tiên là vấn đề và người dùng mục tiêu. Tiếp theo là các pain point cốt lõi. Sau đó nhóm trình bày kiến trúc, các vai trò, các tính năng chính kèm demo, và cuối cùng là giới hạn cùng hướng phát triển.
 >
@@ -82,7 +98,7 @@ Người trình bày: Trần Đức Trung, Bùi Đăng Khoa, Lê Hoàng Hải, B
 
 ### Slide 4 - Problem Statement & Target Users - 01:55-04:15
 
-**Trung nói:**
+**Người 1 nói:**
 
 > Người dùng mục tiêu của SAGA là giảng viên ngành Software Engineering và sinh viên tham gia các môn học hoặc đồ án theo mô hình Project-Based Learning.
 >
@@ -98,7 +114,7 @@ Người trình bày: Trần Đức Trung, Bùi Đăng Khoa, Lê Hoàng Hải, B
 
 ### Slide 5 - Core Pain Points - 04:15-07:05
 
-**Trung nói:**
+**Người 1 nói:**
 
 > Nhóm tổng hợp bài toán thành ba pain point chính.
 >
@@ -112,19 +128,19 @@ Người trình bày: Trần Đức Trung, Bùi Đăng Khoa, Lê Hoàng Hải, B
 
 ### Chuyển người - 07:05-07:30
 
-**Trung nói:**
+**Người 1 nói:**
 
-> Để biến nguyên tắc đó thành một hệ thống có thể vận hành, SAGA cần tách rõ dữ liệu giao dịch, dữ liệu đồ thị, luồng realtime và các tích hợp ngoài. Sau đây, Khoa sẽ trình bày kiến trúc và cách từng vai trò tham gia vào hệ thống.
+> Để biến nguyên tắc đó thành một hệ thống có thể vận hành, SAGA cần tách rõ dữ liệu giao dịch, dữ liệu đồ thị, luồng realtime và các tích hợp ngoài. Sau đây, Người 2 sẽ trình bày kiến trúc và cách từng vai trò tham gia vào hệ thống.
 
-`[Trung lùi lại, Khoa bước lên; chuyển slide]`
+`[Người 1 lùi lại, Người 2 bước lên; chuyển slide]`
 
 ---
 
-## PHẦN 2 - KHOA - 07:30-15:30
+## PHẦN 2 - NGƯỜI 2 - 07:30-15:30
 
 ### Slide 6 - System Architecture & Tech Stack - 07:30-11:15
 
-**Khoa nói:**
+**Người 2 nói:**
 
 > Em xin tiếp tục với kiến trúc tổng thể. Khi nhìn slide này, mình không cần đọc từng mũi tên. Có thể chia hệ thống thành bốn lớp chính.
 >
@@ -146,7 +162,7 @@ Người trình bày: Trần Đức Trung, Bùi Đăng Khoa, Lê Hoàng Hải, B
 
 ### Slide 7 - Admin - 11:15-12:10
 
-**Khoa nói:**
+**Người 2 nói:**
 
 > Vai trò đầu tiên là Admin. Admin quản lý vòng đời dữ liệu học thuật: tài khoản, học kỳ, lớp, môn học, roster, subject và syllabus version. Admin cũng có audit log để xem hoạt động hệ thống và có thể gửi thông báo toàn hệ thống.
 >
@@ -156,7 +172,7 @@ Người trình bày: Trần Đức Trung, Bùi Đăng Khoa, Lê Hoàng Hải, B
 
 ### Slide 8 - Lecturer - 12:10-13:20
 
-**Khoa nói:**
+**Người 2 nói:**
 
 > Vai trò thứ hai là Lecturer. Giảng viên quản lý các course và team được phân công, theo dõi tiến độ sprint, activity và traceability evidence. Giảng viên cũng cấu hình trọng số đóng góp theo bốn nhóm Code, Test, Document và Research.
 >
@@ -166,7 +182,7 @@ Người trình bày: Trần Đức Trung, Bùi Đăng Khoa, Lê Hoàng Hải, B
 
 ### Slide 9 - Student Member - 13:20-14:15
 
-**Khoa nói:**
+**Người 2 nói:**
 
 > Student Member là người trực tiếp tạo ra và kiểm tra minh chứng. Sinh viên xem course, team, task, sprint, commit và graph; quản lý work session hoặc task evidence; thực hiện peer review; và xem kết quả đóng góp của mình theo quyền được cấp.
 >
@@ -176,7 +192,7 @@ Người trình bày: Trần Đức Trung, Bùi Đăng Khoa, Lê Hoàng Hải, B
 
 ### Slide 10 - Student Leader - 14:15-15:05
 
-**Khoa nói:**
+**Người 2 nói:**
 
 > Student Leader có toàn bộ quyền của thành viên và thêm trách nhiệm cấu hình project. Leader kết nối Jira source, GitHub repository, tạo hoặc quản lý task và sprint trong phạm vi được hỗ trợ, kích hoạt đồng bộ và xử lý chuyển nguồn khi cần.
 >
@@ -184,19 +200,19 @@ Người trình bày: Trần Đức Trung, Bùi Đăng Khoa, Lê Hoàng Hải, B
 
 ### Chuyển người - 15:05-15:30
 
-**Khoa nói:**
+**Người 2 nói:**
 
-> Như vậy, kiến trúc cung cấp nền tảng, còn bốn vai trò xác định ai được làm gì. Tiếp theo, Hải sẽ đi vào các workflow đầu tiên: chuẩn bị roster, chia nhóm và kết nối tài khoản để tạo dữ liệu đầu vào cho project.
+> Như vậy, kiến trúc cung cấp nền tảng, còn bốn vai trò xác định ai được làm gì. Tiếp theo, Người 3 sẽ đi vào các workflow đầu tiên: chuẩn bị roster, chia nhóm và kết nối tài khoản để tạo dữ liệu đầu vào cho project.
 
-`[chuyển slide 11, Hải bước lên]`
+`[chuyển slide 11, Người 3 bước lên]`
 
 ---
 
-## PHẦN 3 - HẢI - 15:30-23:00
+## PHẦN 3 - NGƯỜI 3 - 15:30-23:00
 
 ### Slide 11 - Key Features - 15:30-15:55
 
-**Hải nói:**
+**Người 3 nói:**
 
 > Từ phần này, nhóm xin trình bày các tính năng theo đúng thứ tự vận hành, thay vì liệt kê rời rạc. Ba workflow đầu tiên trả lời câu hỏi: làm thế nào để hệ thống biết đúng lớp, đúng nhóm và đúng danh tính trên các nền tảng bên ngoài?
 
@@ -204,7 +220,7 @@ Người trình bày: Trần Đức Trung, Bùi Đăng Khoa, Lê Hoàng Hải, B
 
 ### Slide 12 - Team & Roster Management - 15:55-18:10
 
-**Hải nói:**
+**Người 3 nói:**
 
 > Workflow đầu tiên là quản lý roster ở góc nhìn Admin.
 >
@@ -225,7 +241,7 @@ Người trình bày: Trần Đức Trung, Bùi Đăng Khoa, Lê Hoàng Hải, B
 
 ### Slide 13 - Lecturer Grouping Students - 18:10-20:05
 
-**Hải nói:**
+**Người 3 nói:**
 
 > Khi roster đã sẵn sàng, giảng viên thực hiện chia nhóm. Lecturer vào workspace, chọn course, tải template có danh sách sinh viên, điền cấu trúc nhóm và chỉ định leader, sau đó import file trở lại hệ thống.
 >
@@ -243,7 +259,7 @@ Người trình bày: Trần Đức Trung, Bùi Đăng Khoa, Lê Hoàng Hải, B
 
 ### Slide 14 - Account Integration & Setup - 20:05-22:35
 
-**Hải nói:**
+**Người 3 nói:**
 
 > Workflow thứ ba là kết nối identity cá nhân. Sinh viên đăng nhập SAGA, vào Workspace, mở Profile hoặc Integration Settings, sau đó thực hiện luồng cấp quyền với GitHub và Jira.
 >
@@ -261,19 +277,19 @@ Người trình bày: Trần Đức Trung, Bùi Đăng Khoa, Lê Hoàng Hải, B
 
 ### Chuyển người - 22:35-23:00
 
-**Hải nói:**
+**Người 3 nói:**
 
-> Sau ba bước này, hệ thống đã có lớp học, team và danh tính tích hợp. Bước tiếp theo là Leader tạo project, đội thực hiện sprint, gửi peer review và giảng viên quan sát toàn bộ chuỗi. Phần này Minh sẽ trình bày.
+> Sau ba bước này, hệ thống đã có lớp học, team và danh tính tích hợp. Bước tiếp theo là Leader tạo project, đội thực hiện sprint, gửi peer review và giảng viên quan sát toàn bộ chuỗi. Phần này Người 4 sẽ trình bày.
 
-`[Minh bước lên; chuyển slide]`
+`[Người 4 bước lên; chuyển slide]`
 
 ---
 
-## PHẦN 4 - MINH - 23:00-31:30
+## PHẦN 4 - NGƯỜI 4 - 23:00-31:30
 
 ### Slide 15 - Project Registration & Configuration - 23:00-25:40
 
-**Minh nói:**
+**Người 4 nói:**
 
 > Sau khi team được tạo, Team Leader bắt đầu đăng ký project. Leader vào course dashboard, mở Project Configuration và tạo project mới.
 >
@@ -294,7 +310,7 @@ Người trình bày: Trần Đức Trung, Bùi Đăng Khoa, Lê Hoàng Hải, B
 
 ### Slide 16 - Sprint & Backlog Planning - 25:40-27:45
 
-**Minh nói:**
+**Người 4 nói:**
 
 > Trong giai đoạn thực thi, task được tạo, đưa vào sprint, giao cho thành viên và phân loại bằng reserved label. Bốn label canonical là `saga:code`, `saga:test`, `saga:document` và `saga:research`.
 >
@@ -314,7 +330,7 @@ Người trình bày: Trần Đức Trung, Bùi Đăng Khoa, Lê Hoàng Hải, B
 
 ### Slide 17 - Peer Review Evaluation - 27:45-29:15
 
-**Minh nói:**
+**Người 4 nói:**
 
 > Sau khi sprint đóng, sinh viên thực hiện peer review. Người dùng vào Overview, mở Peer Review, chọn sprint, chọn đồng đội và đánh giá theo rubric.
 >
@@ -332,7 +348,7 @@ Người trình bày: Trần Đức Trung, Bùi Đăng Khoa, Lê Hoàng Hải, B
 
 ### Slide 18 - Lecturer Supervise - 29:15-31:05
 
-**Minh nói:**
+**Người 4 nói:**
 
 > Ở góc nhìn giảng viên, dữ liệu được tổng hợp thành graph và các dashboard giám sát. Lecturer mở course dashboard, chọn Graph và có thể xem ba lớp thông tin.
 >
@@ -349,19 +365,19 @@ Người trình bày: Trần Đức Trung, Bùi Đăng Khoa, Lê Hoàng Hải, B
 
 ### Chuyển người - 31:05-31:30
 
-**Minh nói:**
+**Người 4 nói:**
 
-> Graph giúp quan sát tổng thể, nhưng khi cần kiểm tra một bất thường cụ thể, giảng viên cần một luồng Task-Commit rõ ràng và một kết quả đóng góp có thể giải thích. Thiện sẽ trình bày hai phần này cùng các giới hạn hiện tại của SAGA.
+> Graph giúp quan sát tổng thể, nhưng khi cần kiểm tra một bất thường cụ thể, giảng viên cần một luồng Task-Commit rõ ràng và một kết quả đóng góp có thể giải thích. Người 5 sẽ trình bày hai phần này cùng các giới hạn hiện tại của SAGA.
 
-`[Thiện bước lên; chuyển slide]`
+`[Người 5 bước lên; chuyển slide]`
 
 ---
 
-## PHẦN 5 - THIỆN - 31:30-39:30
+## PHẦN 5 - NGƯỜI 5 - 31:30-39:30
 
 ### Slide 19 - Inspect the Task-Commit Pipeline - 31:30-34:30
 
-**Thiện nói:**
+**Người 5 nói:**
 
 > Task-Commit Pipeline là màn hình phục vụ đối soát. Lecturer hoặc Team Leader vào Graph, chọn Pipeline Flow và có hai hướng kiểm tra.
 >
@@ -385,7 +401,7 @@ Người trình bày: Trần Đức Trung, Bùi Đăng Khoa, Lê Hoàng Hải, B
 
 ### Slide 20 - Lecturer Grading - 34:30-36:45
 
-**Thiện nói:**
+**Người 5 nói:**
 
 > Sau bước đối soát, giảng viên xem kết quả đóng góp. Lecturer cấu hình trọng số cho bốn nhóm Code, Test, Document và Research. Backend áp dụng rule về evidence eligibility, dữ liệu công việc và peer coefficient, sau đó chuẩn hóa để tạo Final Contribution Percentage cho từng thành viên.
 >
@@ -406,7 +422,7 @@ Người trình bày: Trần Đức Trung, Bùi Đăng Khoa, Lê Hoàng Hải, B
 
 ### Slide 21 - Limitations & Future Work - 36:45-39:00
 
-**Thiện nói:**
+**Người 5 nói:**
 
 > Nhóm nhìn nhận ba giới hạn chính.
 >
@@ -420,17 +436,17 @@ Người trình bày: Trần Đức Trung, Bùi Đăng Khoa, Lê Hoàng Hải, B
 
 ### Chuyển sang Q&A - 39:00-39:30
 
-**Thiện nói:**
+**Người 5 nói:**
 
-> Tóm lại, SAGA tạo ra một chuỗi bằng chứng từ dữ liệu học thuật, công việc và kỹ thuật; dùng graph để truy xuất; dùng contribution để tổng hợp; và dùng cảnh báo để hỗ trợ đối soát. Em xin chuyển lại cho Trung để điều phối phần câu hỏi.
+> Tóm lại, SAGA tạo ra một chuỗi bằng chứng từ dữ liệu học thuật, công việc và kỹ thuật; dùng graph để truy xuất; dùng contribution để tổng hợp; và dùng cảnh báo để hỗ trợ đối soát. Em xin chuyển lại cho Người 1 để điều phối phần câu hỏi.
 
-`[chuyển slide 22; Trung bước lên]`
+`[chuyển slide 22; Người 1 bước lên]`
 
 ---
 
 ## PHẦN 6 - Q&A - 39:30-44:30
 
-### Câu mở Q&A của Trung
+### Câu mở Q&A của Người 1
 
 > Nhóm em xin cảm ơn Hội đồng đã lắng nghe. Nhóm xin sẵn sàng trả lời câu hỏi. Để trả lời ngắn gọn và đúng chuyên môn, em sẽ điều phối câu hỏi cho thành viên phụ trách phần liên quan.
 
@@ -438,59 +454,59 @@ Người trình bày: Trần Đức Trung, Bùi Đăng Khoa, Lê Hoàng Hải, B
 
 | Chủ đề câu hỏi | Người trả lời chính | Người bổ sung |
 |---|---|---|
-| Bài toán, phạm vi, quyết định nghiệp vụ, phân quyền | Trung | Thiện |
-| Backend, database, sync, session, API, graph projection | Khoa | Trung |
-| Roster, grouping, account integration, OAuth UI | Hải | Khoa |
-| Project, sprint, peer review, graph UI | Minh | Hải |
-| Pipeline, anomaly, contribution, giới hạn, AI advisory | Thiện | Trung |
+| Bài toán, phạm vi, quyết định nghiệp vụ, phân quyền | Người 1 | Người 5 |
+| Backend, database, sync, session, API, graph projection | Người 2 | Người 1 |
+| Roster, grouping, account integration, OAuth UI | Người 3 | Người 2 |
+| Project, sprint, peer review, graph UI | Người 4 | Người 3 |
+| Pipeline, anomaly, contribution, giới hạn, AI advisory | Người 5 | Người 1 |
 
 ### Mẫu trả lời ngắn cho các câu hỏi dễ gặp
 
 #### 1. Vì sao cần cả MySQL và Neo4j?
 
-**Khoa trả lời:**
+**Người 2 trả lời:**
 
 > MySQL giữ dữ liệu nghiệp vụ canonical và các quan hệ cần tính toàn vẹn giao dịch. Neo4j là graph projection phục vụ truy vấn nhiều bước như Student - Identity - Commit - Task và các chế độ drill-down. Neo4j không thay thế MySQL và không phải nguồn sự thật thứ hai; nếu dữ liệu thay đổi, projection được cập nhật từ dữ liệu canonical.
 
 #### 2. Task Done nhưng không có commit có chắc là gian lận không?
 
-**Thiện trả lời:**
+**Người 5 trả lời:**
 
 > Không. Đó chỉ là cảnh báo cần đối soát. Task có thể thuộc Document hoặc Research và sử dụng file hoặc link làm evidence; cũng có thể identity chưa map hoặc đồng bộ chưa hoàn tất. Giảng viên phải mở task type, evidence, repository, branch và trạng thái sync trước khi kết luận.
 
 #### 3. Nếu sinh viên spam commit thì sao?
 
-**Thiện trả lời:**
+**Người 5 trả lời:**
 
 > SAGA không xem số lượng commit là chất lượng. Hệ thống đặt commit trong ngữ cảnh repository, branch, task, identity và diff; đồng thời có peer review và evidence khác để đối chiếu. Với chất lượng nội dung, AI chỉ đưa phân tích tư vấn và giảng viên vẫn review. Vì vậy nhóm không tuyên bố loại bỏ hoàn toàn hành vi gian lận chỉ bằng thuật toán.
 
 #### 4. Vì sao AI không trực tiếp chấm điểm?
 
-**Trung trả lời:**
+**Người 1 trả lời:**
 
 > Vì AI có thể sai và quyết định học thuật cần trách nhiệm giải trình. Trong SAGA, AI trả kết quả có cấu trúc gắn với evidence và có bước Lecturer review. Kết quả AI được tách khỏi Final Contribution Percentage và điểm học phần.
 
 #### 5. Nếu Jira hoặc GitHub tạm thời không truy cập được?
 
-**Khoa trả lời:**
+**Người 2 trả lời:**
 
 > Người dùng vẫn có thể xem dữ liệu đã đồng bộ gần nhất trong SAGA, nhưng giao diện phải thể hiện freshness và trạng thái sync. Khi nguồn ngoài hoạt động lại, Leader có thể kích hoạt đồng bộ hoặc thực hiện luồng reconciliation. Nhóm không trình bày dữ liệu cũ như dữ liệu realtime.
 
 #### 6. Tỷ lệ đóng góp có phải điểm cuối không?
 
-**Thiện trả lời:**
+**Người 5 trả lời:**
 
 > Không. SAGA tính tỷ lệ đóng góp tương đối dựa trên bốn nhóm tiêu chí, evidence và peer coefficient theo rule Backend. Đây là dữ liệu hỗ trợ giảng viên giải thích và ra quyết định; điểm học phần cuối vẫn thuộc quy trình học thuật của giảng viên và nhà trường.
 
 #### 7. Làm sao bảo vệ dữ liệu giữa các lớp và các nhóm?
 
-**Trung trả lời:**
+**Người 1 trả lời:**
 
 > Backend kiểm tra quyền theo vai trò và phạm vi được phân công. Student chỉ xem dữ liệu course và team được phép; Leader có thêm quyền ở cấp project của team; Lecturer xem course được phân công; Admin quản lý dữ liệu hệ thống. Frontend chỉ ẩn hoặc hiện thao tác để cải thiện trải nghiệm, còn quyền thật phải được enforce ở Backend.
 
 #### 8. Điểm khác biệt lớn nhất của SAGA là gì?
 
-**Trung trả lời:**
+**Người 1 trả lời:**
 
 > Điểm khác biệt không nằm ở một biểu đồ riêng lẻ, mà ở chuỗi truy xuất end-to-end: roster và team tạo đúng phạm vi; Jira và GitHub cung cấp dữ liệu; identity mapping gắn hoạt động với người; graph giải thích quan hệ; pipeline chỉ ra thiếu hụt; contribution tổng hợp kết quả mà vẫn cho phép mở minh chứng.
 
@@ -506,9 +522,9 @@ Người trình bày: Trần Đức Trung, Bùi Đăng Khoa, Lê Hoàng Hải, B
 
 ## PHẦN 7 - KẾT THÚC - 44:30-45:00
 
-`[sau câu hỏi cuối, Trung chuyển slide 23]`
+`[sau câu hỏi cuối, Người 1 chuyển slide 23]`
 
-**Trung nói:**
+**Người 1 nói:**
 
 > Nhóm em xin cảm ơn các thầy cô. Thông điệp cuối cùng của SAGA là: đánh giá liên tục chỉ có ý nghĩa khi kết quả truy xuất được về đúng công việc và đúng minh chứng. SAGA hỗ trợ biến dữ liệu rời rạc thành một bức tranh có thể kiểm tra và giải thích, còn quyết định học thuật cuối cùng vẫn thuộc về giảng viên. Nhóm em xin trân trọng cảm ơn.
 

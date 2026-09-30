@@ -1,6 +1,7 @@
 import type { ProjectTaskItem } from "@/features/student/project/types/student-project";
 import type { ProjectTaskResponse } from "../types/jira-task-types";
 import type { SprintIssue, IssueStatus, IssueType, IssuePriority } from "../types/sprint-progress";
+import { resolveHttpAvatarUrl } from "@/lib/avatar-url";
 
 export interface SimpleTeamMember {
   id: string;
@@ -8,6 +9,7 @@ export interface SimpleTeamMember {
   fullName?: string;
   studentCode?: string;
   avatar?: string;
+  avatarUrl?: string | null;
   accountId?: string | null;
 }
 
@@ -116,7 +118,9 @@ export function mapProjectTaskToSprintIssue(
       id: member?.id || task.assigneeStudentId || task.assigneeExternalId || "unassigned",
       studentId: task.assigneeStudentId || taskResponse.assignee?.studentId || null,
       name: displayName,
-      avatar: member?.avatar || "",
+      avatar:
+        resolveHttpAvatarUrl(taskResponse.assignee?.avatarUrl, member?.avatarUrl, member?.avatar) ||
+        "",
       studentCode: member?.studentCode || "",
       accountId: taskAssigneeAccountId,
     },

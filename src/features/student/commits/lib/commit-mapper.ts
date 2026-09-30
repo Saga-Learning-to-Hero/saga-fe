@@ -1,5 +1,6 @@
 import type { TaskLinkedCommitItem } from "@/features/student/project/types/student-project";
 import type { CommitItem, Repository, Branch } from "../types/commits";
+import { resolveHttpAvatarUrl } from "@/lib/avatar-url";
 
 export interface CommitTeamMember {
   id?: string;
@@ -7,6 +8,7 @@ export interface CommitTeamMember {
   fullName?: string;
   name?: string;
   avatar?: string;
+  avatarUrl?: string | null;
 }
 
 export function formatRelativeTime(dateStr?: string | null): string {
@@ -54,7 +56,8 @@ export function mapProjectCommitToCommitItem(
   const authorName = member?.fullName || member?.name || commit.authorExternalId || "GitHub Committer";
   const studentCode = member?.studentCode || "";
   const username = commit.authorExternalId || "author";
-  const avatar = member?.avatar || "";
+  const avatar =
+    resolveHttpAvatarUrl(commit.authorAvatarUrl, member?.avatarUrl, member?.avatar) || "";
 
   const repoName = commit.repositoryFullName
     ? commit.repositoryFullName.split("/").pop() || commit.repositoryFullName

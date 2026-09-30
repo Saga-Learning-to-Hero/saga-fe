@@ -12,6 +12,7 @@ import {
   UserIcon,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { resolveHttpAvatarUrl } from "@/lib/avatar-url";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useTaskWorkSessionTimeline } from "../hooks/use-project-tasks";
@@ -254,7 +255,12 @@ export function TaskWorkSessionTimeline({
                 >
                   <div className="flex items-center gap-2.5 min-w-0">
                     <Avatar className={`size-7 text-xs font-bold border border-border/80 ${colorClass}`}>
-                      {session.avatarUrl && <AvatarImage src={session.avatarUrl} alt={session.fullName || "User"} />}
+                      {resolveHttpAvatarUrl(session.avatarUrl) && (
+                        <AvatarImage
+                          src={resolveHttpAvatarUrl(session.avatarUrl)}
+                          alt={session.fullName || "User"}
+                        />
+                      )}
                       <AvatarFallback>{initials}</AvatarFallback>
                     </Avatar>
                     <div className="min-w-0">
@@ -381,7 +387,12 @@ export function TaskWorkSessionTimeline({
                     <div className="flex items-center justify-between gap-2">
                       <div className="flex items-center gap-2 min-w-0">
                         <Avatar className={`size-5 text-[9px] font-bold border border-border/60 ${colorClass}`}>
-                          {session.avatarUrl && <AvatarImage src={session.avatarUrl} alt={session.fullName || "User"} />}
+                          {resolveHttpAvatarUrl(session.avatarUrl) && (
+                        <AvatarImage
+                          src={resolveHttpAvatarUrl(session.avatarUrl)}
+                          alt={session.fullName || "User"}
+                        />
+                      )}
                           <AvatarFallback>{initials}</AvatarFallback>
                         </Avatar>
                         <span className="text-xs font-semibold text-foreground truncate">
@@ -430,6 +441,15 @@ export function TaskWorkSessionTimeline({
                   }`}>
                   <div className="flex items-center justify-between gap-2">
                     <div className="flex items-center gap-2 min-w-0">
+                      <Avatar className="size-6 shrink-0 border border-border/60">
+                        <AvatarImage
+                          src={resolveHttpAvatarUrl(commit.authorAvatarUrl)}
+                          alt="Tác giả commit"
+                        />
+                        <AvatarFallback className="text-[8px] font-bold bg-purple-500/10 text-purple-700 dark:text-purple-300">
+                          {(shortSha || "CM").slice(0, 2).toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
                       <span className="font-mono text-xs font-bold text-purple-600 dark:text-purple-400 bg-purple-500/10 border border-purple-500/20 px-1.5 py-0.5 rounded-md shrink-0">
                         {shortSha}
                       </span>

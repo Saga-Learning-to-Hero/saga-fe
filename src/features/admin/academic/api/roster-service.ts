@@ -49,6 +49,8 @@ export class RosterService {
         invitationStatus: item.status === "INVITED" ? "PENDING" : null,
         accountState: "REGISTERED",
         enrolledAt: item.enrolledAt,
+        avatarUrl: item.avatarUrl ?? item.avatar ?? null,
+        avatar: item.avatar ?? null,
       }));
 
       return {

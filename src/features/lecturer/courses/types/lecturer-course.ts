@@ -30,6 +30,7 @@ export interface LecturerRosterEntry {
   fullName: string;
   email: string;
   classCode: string;
+  avatarUrl?: string | null;
 }
 
 export interface LecturerRosterResponse {

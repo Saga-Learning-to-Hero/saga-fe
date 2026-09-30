@@ -35,6 +35,7 @@ describe("TeamContributionService", () => {
         studentProfileId: mockStudentProfileId,
         fullName: "Alpha Leader",
         studentCode: "SE111111",
+        avatarUrl: "https://cdn.example.com/alpha.png",
         roleInTeam: "LEADER",
         sliceScore: 12,
         sliceContributionPercentage: 40,
@@ -199,6 +200,20 @@ describe("TeamContributionService", () => {
       expect(res.hasSprintOverlap).toBe(true);
       expect(res.sprintOverlapWarnings).toHaveLength(1);
       expect(res.sprintOverlapWarnings?.[0].overlappingSprintName).toBe("Sprint 1 - SRS");
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID14",
+      type: "N",
+      executedDate: "30/09/2026",
+      description: "getEvaluation giu members[].avatarUrl",
+    },
+    async () => {
+      vi.spyOn(apiClient, "get").mockResolvedValueOnce({ data: evaluation });
+      const res = await TeamContributionService.getEvaluation(mockTeamId);
+      expect(res.members[0].avatarUrl).toBe("https://cdn.example.com/alpha.png");
     }
   );
 });

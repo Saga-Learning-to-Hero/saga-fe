@@ -60,6 +60,7 @@ export interface JiraAssigneeSummary {
   accountId: string;
   displayName: string;
   studentId?: string | null;
+  avatarUrl?: string | null;
 }
 
 export interface JiraSprintSummary {

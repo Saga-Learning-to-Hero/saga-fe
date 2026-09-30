@@ -2,6 +2,7 @@ import { describe, expect } from "vitest";
 import { fptTest } from "@/testing/fpt-test-helper";
 import {
   excludeSelfReviewCandidates,
+  parsePeerReviewCandidate,
   parsePeerReviewRubric,
   resolvePeerReviewRubric,
   rubricSourceLabel,
@@ -110,6 +111,42 @@ describe("peer-review-payload rubric fallback", () => {
         ],
       });
       expect(parsed.criteria.map((item) => item.rubricId)).toEqual(["second", "third"]);
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID05",
+      type: "N",
+      executedDate: "30/09/2026",
+      description: "parsePeerReviewCandidate giu avatarUrl hop le",
+    },
+    () => {
+      const parsed = parsePeerReviewCandidate({
+        studentId: "stu-1",
+        studentCode: "SE1",
+        fullName: "An",
+        avatarUrl: "https://cdn.example.com/an.png",
+        alreadyReviewed: false,
+      });
+      expect(parsed?.avatarUrl).toBe("https://cdn.example.com/an.png");
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID06",
+      type: "A",
+      executedDate: "30/09/2026",
+      description: "parsePeerReviewCandidate avatarUrl rong thanh null",
+    },
+    () => {
+      const parsed = parsePeerReviewCandidate({
+        studentId: "stu-1",
+        fullName: "An",
+        avatarUrl: "  ",
+      });
+      expect(parsed?.avatarUrl).toBeNull();
     }
   );
 });

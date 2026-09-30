@@ -361,4 +361,44 @@ describe("progress-format", () => {
       expect(oldInfo.isStaleOrMissing).toBe(true);
     }
   );
+
+  fptTest(
+    {
+      id: "UTCID18",
+      type: "N",
+      executedDate: "30/09/2026",
+      description: "normalizeMemberSummary giu avatarUrl tu API progress",
+    },
+    () => {
+      const member = normalizeMemberSummary({
+        studentId: "stu-1",
+        fullName: "A",
+        studentCode: "HE1",
+        teamRole: "LEADER",
+        avatarUrl: "https://cdn.example.com/a.png",
+        tasks: { assigned: 1, completed: 0, incomplete: 1 },
+        commits: { total: 0, linkedToTasks: 0 },
+      });
+      expect(member.avatarUrl).toBe("https://cdn.example.com/a.png");
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID19",
+      type: "A",
+      executedDate: "30/09/2026",
+      description: "normalizeMemberSummary avatarUrl thieu thanh null",
+    },
+    () => {
+      const member = normalizeMemberSummary({
+        studentId: "stu-1",
+        fullName: "A",
+        studentCode: "HE1",
+        tasks: { assigned: 0, completed: 0 },
+        commits: { total: 0 },
+      });
+      expect(member.avatarUrl).toBeNull();
+    }
+  );
 });

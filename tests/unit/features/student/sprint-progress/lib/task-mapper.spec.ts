@@ -193,4 +193,51 @@ describe("task-mapper", () => {
       expect(result.dueDate).toBeUndefined();
     }
   );
+
+  fptTest(
+    {
+      id: "UTCID10",
+      type: "N",
+      executedDate: "30/09/2026",
+      description: "Uu tien assignee.avatarUrl, fallback roster avatarUrl",
+    },
+    () => {
+      const fromApi = mapProjectTaskToSprintIssue({
+        ...baseTask,
+        assignee: {
+          accountId: "jira-1",
+          displayName: "An",
+          studentId: "stu-1",
+          avatarUrl: "https://cdn.example.com/assignee.png",
+        },
+      });
+      expect(fromApi.assignee.avatar).toBe("https://cdn.example.com/assignee.png");
+
+      const fromRoster = mapProjectTaskToSprintIssue(
+        {
+          ...baseTask,
+          assigneeStudentId: "stu-1",
+          assignee: { accountId: "jira-1", displayName: "An", studentId: "stu-1", avatarUrl: null },
+        },
+        [{ id: "stu-1", name: "An", avatarUrl: "https://cdn.example.com/roster.png" }]
+      );
+      expect(fromRoster.assignee.avatar).toBe("https://cdn.example.com/roster.png");
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID11",
+      type: "A",
+      executedDate: "30/09/2026",
+      description: "Khong gan avatar khi assignee va roster deu thieu URL hop le",
+    },
+    () => {
+      const result = mapProjectTaskToSprintIssue({
+        ...baseTask,
+        assignee: { accountId: "jira-1", displayName: "An", avatarUrl: null },
+      });
+      expect(result.assignee.avatar).toBe("");
+    }
+  );
 });

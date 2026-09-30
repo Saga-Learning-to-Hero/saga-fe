@@ -101,6 +101,7 @@ export function CommitsView() {
           fullName: m.fullName,
           name: m.fullName,
           avatar: m.avatar || m.avatarUrl || "",
+          avatarUrl: m.avatarUrl ?? null,
         });
       }
     });
@@ -114,6 +115,7 @@ export function CommitsView() {
         fullName: pm.fullName,
         name: pm.fullName,
         avatar: existing?.avatar || "",
+        avatarUrl: existing?.avatarUrl || pm.avatarUrl || null,
       };
       if (pm.studentId) {
         memberMap.set(pm.studentId.trim().toLowerCase(), fullItem);

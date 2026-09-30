@@ -15,6 +15,7 @@ import {
   Users2Icon,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { resolveHttpAvatarUrl } from "@/lib/avatar-url";
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -142,12 +143,11 @@ export function TeamMemberProgressPage({
   }, [filteredTasks, currentPage, pageSize]);
 
   const rawData = progressData as Record<string, unknown> | undefined;
-  const avatarUrl =
-    typeof rawData?.avatarUrl === "string" && rawData.avatarUrl.trim()
-      ? rawData.avatarUrl.trim()
-      : typeof rawData?.avatar === "string" && rawData.avatar.trim()
-        ? rawData.avatar.trim()
-        : null;
+  const avatarUrl = resolveHttpAvatarUrl(
+    progressData?.avatarUrl,
+    typeof rawData?.avatar === "string" ? rawData.avatar : undefined,
+    member?.avatarUrl
+  );
 
   const displayName = progressData?.fullName || member?.fullName || "Sinh viên";
   const displayCode = progressData?.studentCode || member?.studentCode || "...";

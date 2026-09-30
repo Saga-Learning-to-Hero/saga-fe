@@ -15,7 +15,8 @@ import type { Sprint } from "../types/sprint-progress";
 import { Badge } from "@/components/ui/badge";
 import { LeaderBadge } from "@/components/common/leader-badge";
 import { Input } from "@/components/ui/input";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { resolveHttpAvatarUrl } from "@/lib/avatar-url";
 import { Button } from "@/components/ui/button";
 import { CustomSelect } from "@/components/common/custom-select";
 import { ProjectRealtimeBadge } from "@/features/student/project/components/project-realtime-badge";
@@ -316,6 +317,7 @@ export function SprintHeader({
                         }`}
                     >
                       <Avatar className="w-6.5 h-6.5 border border-border/80">
+                        <AvatarImage src={resolveHttpAvatarUrl(m.avatar)} alt={m.name} />
                         <AvatarFallback className={`text-[9px] font-bold ${getAssigneeAvatarClass(m.id)}`}>
                           {getAssigneeInitials(m.name)}
                         </AvatarFallback>

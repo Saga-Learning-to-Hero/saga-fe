@@ -257,6 +257,7 @@ export interface TaskLinkedCommitItem {
   message: string;
   authorExternalId?: string | null;
   authorStudentId?: string | null;
+  authorAvatarUrl?: string | null;
   headRef?: string | null;
   committedAt: string;
   createdAt: string;
@@ -335,6 +336,7 @@ export interface ProjectProgressMemberSummary {
   fullName: string;
   studentCode: string;
   teamRole: string;
+  avatarUrl?: string | null;
   tasks: ProjectProgressTaskAttribution;
   commits: ProjectProgressCommitAttribution;
   evidenceConfirmations: number;
@@ -375,6 +377,7 @@ export interface ProjectMemberProgressResponse {
   fullName: string;
   studentCode: string;
   teamRole: string;
+  avatarUrl?: string | null;
   taskSummary: ProjectProgressTaskAttribution;
   assignedTasks: ProjectMemberProgressAssignedTask[];
   commitSummary: ProjectProgressCommitAttribution;

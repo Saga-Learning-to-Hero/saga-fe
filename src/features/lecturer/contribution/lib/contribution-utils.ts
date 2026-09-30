@@ -46,13 +46,20 @@ const RATIO_SUM = 1;
 const PERCENT_EPSILON = 0.01;
 const RATIO_EPSILON = 0.0001;
 
-export function sumSliceWeights(weights: ContributionSliceWeightValues): number {
+export function sumSliceWeights(
+  weights: ContributionSliceWeightValues,
+): number {
   return (
-    weights.codeWeight + weights.testWeight + weights.documentWeight + weights.researchWeight
+    weights.codeWeight +
+    weights.testWeight +
+    weights.documentWeight +
+    weights.researchWeight
   );
 }
 
-export function detectSliceWeightScale(weights: ContributionSliceWeightValues): SliceWeightScale {
+export function detectSliceWeightScale(
+  weights: ContributionSliceWeightValues,
+): SliceWeightScale {
   const total = sumSliceWeights(weights);
   if (total > 0 && total <= RATIO_SUM + RATIO_EPSILON) return 1;
   return 100;
@@ -60,7 +67,7 @@ export function detectSliceWeightScale(weights: ContributionSliceWeightValues): 
 
 export function toDisplaySliceWeights(
   weights: ContributionSliceWeightValues,
-  scale: SliceWeightScale
+  scale: SliceWeightScale,
 ): ContributionSliceWeightValues {
   if (scale === 100) return { ...weights };
   return {
@@ -73,7 +80,7 @@ export function toDisplaySliceWeights(
 
 export function toApiSliceWeights(
   displayWeights: ContributionSliceWeightValues,
-  scale: SliceWeightScale
+  scale: SliceWeightScale,
 ): ContributionSliceWeightValues {
   if (scale === 100) {
     return {
@@ -91,33 +98,43 @@ export function toApiSliceWeights(
   };
 }
 
-export function isDisplayPercentSumValid(weights: ContributionSliceWeightValues): boolean {
+export function isDisplayPercentSumValid(
+  weights: ContributionSliceWeightValues,
+): boolean {
   return Math.abs(sumSliceWeights(weights) - PERCENT_SUM) <= PERCENT_EPSILON;
 }
 
 export function areSliceWeightsEqual(
   left: ContributionSliceWeightValues,
-  right: ContributionSliceWeightValues
+  right: ContributionSliceWeightValues,
 ): boolean {
   return SLICE_WEIGHT_FIELDS.every((field) => left[field] === right[field]);
 }
 
-export function hasInvalidSliceWeight(weights: ContributionSliceWeightValues): boolean {
+export function hasInvalidSliceWeight(
+  weights: ContributionSliceWeightValues,
+): boolean {
   return SLICE_WEIGHT_FIELDS.some((field) => {
     const value = weights[field];
     return !Number.isFinite(value) || value < 0;
   });
 }
 
-export function canEditProjectGroupWeights(projectId: string | null | undefined): boolean {
+export function canEditProjectGroupWeights(
+  projectId: string | null | undefined,
+): boolean {
   return Boolean(projectId && projectId.trim());
 }
 
 export function contributionModeLabel(mode: ContributionConfigMode): string {
-  return mode === "PROJECT_GROUP" ? "Riêng theo từng nhóm" : "Dùng chung cho lớp";
+  return mode === "PROJECT_GROUP"
+    ? "Riêng theo từng nhóm"
+    : "Dùng chung cho lớp";
 }
 
-export function appliedContributionModeLabel(mode: ContributionConfigMode): string {
+export function appliedContributionModeLabel(
+  mode: ContributionConfigMode,
+): string {
   return `Đang áp dụng: ${contributionModeLabel(mode)}`;
 }
 
@@ -126,37 +143,49 @@ export function isGroupWeightsNotConfigured(error: unknown): boolean {
 }
 
 export function pickDefaultGradesTeamId(
-  teams: Array<{ teamId: string; teamNo?: number }>
+  teams: Array<{ teamId: string; teamNo?: number }>,
 ): string | null {
-  const valid = teams.filter((team) => Boolean(team.teamId && team.teamId.trim()));
+  const valid = teams.filter((team) =>
+    Boolean(team.teamId && team.teamId.trim()),
+  );
   if (valid.length === 0) return null;
   const sorted = [...valid].sort((a, b) => (a.teamNo ?? 0) - (b.teamNo ?? 0));
   return sorted[0].teamId;
 }
 
-export function getProjectTeams<T extends { projectId?: string | null }>(teams: T[]): T[] {
-  return teams.filter((team) => Boolean(team.projectId && String(team.projectId).trim()));
+export function getProjectTeams<T extends { projectId?: string | null }>(
+  teams: T[],
+): T[] {
+  return teams.filter((team) =>
+    Boolean(team.projectId && String(team.projectId).trim()),
+  );
 }
 
-export function getIncompleteProjectTeams<T extends { projectId?: string | null; configured: boolean }>(
-  teams: T[]
-): T[] {
+export function getIncompleteProjectTeams<
+  T extends { projectId?: string | null; configured: boolean },
+>(teams: T[]): T[] {
   return getProjectTeams(teams).filter((team) => !team.configured);
 }
 
-export function canApplyProjectGroupMode<T extends { projectId?: string | null; configured: boolean }>(
-  teams: T[]
-): boolean {
+export function canApplyProjectGroupMode<
+  T extends { projectId?: string | null; configured: boolean },
+>(teams: T[]): boolean {
   const projectTeams = getProjectTeams(teams);
-  return projectTeams.length > 0 && projectTeams.every((team) => team.configured);
+  return (
+    projectTeams.length > 0 && projectTeams.every((team) => team.configured)
+  );
 }
 
 export function canFetchContributionEvaluation(
   teamsLoaded: boolean,
   teamId: string,
-  teams: Array<{ teamId: string }>
+  teams: Array<{ teamId: string }>,
 ): boolean {
-  return teamsLoaded && Boolean(teamId.trim()) && teams.some((team) => team.teamId === teamId);
+  return (
+    teamsLoaded &&
+    Boolean(teamId.trim()) &&
+    teams.some((team) => team.teamId === teamId)
+  );
 }
 
 export function contributionRoleLabel(role: string): string {
@@ -165,13 +194,17 @@ export function contributionRoleLabel(role: string): string {
   return "Thành viên";
 }
 
-export function formatContributionNumber(value: number | null | undefined): string {
+export function formatContributionNumber(
+  value: number | null | undefined,
+): string {
   if (value == null || Number.isNaN(value)) return "—";
   if (Number.isInteger(value)) return String(value);
   return value.toFixed(2);
 }
 
-export function formatContributionPercent(value: number | null | undefined): string {
+export function formatContributionPercent(
+  value: number | null | undefined,
+): string {
   if (value == null || Number.isNaN(value)) return "—";
   return `${formatContributionNumber(value)}%`;
 }
@@ -185,31 +218,36 @@ export function formatContributionWarning(warning: string): {
     case "NO_EVIDENCE":
       return {
         title: "Chưa có minh chứng hợp lệ",
-        description: "Thành viên chưa có Task Jira hoàn thành, chưa đính kèm tài liệu/link nộp và chưa có đánh giá chéo.",
+        description:
+          "Thành viên chưa có Task Jira hoàn thành, chưa đính kèm tài liệu/link nộp và chưa có đánh giá chéo.",
         severity: "high",
       };
     case "INSUFFICIENT_EVIDENCE":
       return {
         title: "Minh chứng chưa tương xứng",
-        description: "Tỷ lệ đóng góp cao nhưng chưa đủ đa dạng các nguồn minh chứng kiểm định.",
+        description:
+          "Tỷ lệ đóng góp cao nhưng chưa đủ đa dạng các nguồn minh chứng kiểm định.",
         severity: "medium",
       };
     case "NO_PEER_REVIEW":
       return {
         title: "Chưa có đánh giá chéo",
-        description: "Thành viên chưa nhận được lượt đánh giá chéo từ các thành viên khác trong nhóm.",
+        description:
+          "Thành viên chưa nhận được lượt đánh giá chéo từ các thành viên khác trong nhóm.",
         severity: "medium",
       };
     case "LOW_PEER_REVIEW":
       return {
         title: "Điểm đánh giá chéo thấp",
-        description: "Hệ số đánh giá chéo từ đồng đội ở mức thấp (≤ 0.60), cần giảng viên đối soát kỹ.",
+        description:
+          "Hệ số đánh giá chéo của các thành viên trong nhóm ở mức thấp, cần giảng viên đối soát kỹ.",
         severity: "high",
       };
     default:
       return {
         title: warning,
-        description: "Cần giảng viên kiểm tra và đối soát lại dữ liệu công sức.",
+        description:
+          "Cần giảng viên kiểm tra và đối soát lại dữ liệu công sức.",
         severity: "low",
       };
   }

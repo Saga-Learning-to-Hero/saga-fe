@@ -5,7 +5,8 @@ import {
   MessageSquareQuoteIcon,
   StarIcon,
 } from "lucide-react";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { resolveHttpAvatarUrl } from "@/lib/avatar-url";
 import { cn } from "@/lib/utils";
 import {
   CRITERION_STAR_MAX,
@@ -98,6 +99,10 @@ export function PeerReviewReviewCard({
       <header className="grid gap-3 border-b border-border/60 bg-muted/20 px-4 py-3 sm:grid-cols-[minmax(240px,1fr)_auto] sm:items-center">
         <div className="flex min-w-0 items-center gap-3">
           <Avatar className="size-10 border border-primary/15">
+            <AvatarImage
+              src={resolveHttpAvatarUrl(review.reviewerAvatarUrl)}
+              alt={review.reviewerName}
+            />
             <AvatarFallback className="bg-primary/10 text-xs font-extrabold text-primary">
               {getInitials(review.reviewerName)}
             </AvatarFallback>

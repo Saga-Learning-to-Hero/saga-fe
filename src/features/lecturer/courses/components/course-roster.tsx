@@ -12,7 +12,8 @@ import {
   UserCheck2Icon,
   UsersIcon,
 } from "lucide-react";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { resolveHttpAvatarUrl } from "@/lib/avatar-url";
 import { Badge } from "@/components/ui/badge";
 import { MemberRoleBadge } from "@/components/common/leader-badge";
 import { Button } from "@/components/ui/button";
@@ -318,6 +319,10 @@ export function CourseRoster({ courseId, onSwitchToTeams }: CourseRosterProps) {
                     <TableCell className="px-4">
                       <div className="flex items-center gap-3">
                         <Avatar size="sm" className="border border-border/60">
+                          <AvatarImage
+                            src={resolveHttpAvatarUrl(entry.avatarUrl)}
+                            alt={entry.fullName}
+                          />
                           <AvatarFallback className="bg-primary/10 font-mono text-xs font-bold text-primary">
                             {getInitials(entry.fullName)}
                           </AvatarFallback>

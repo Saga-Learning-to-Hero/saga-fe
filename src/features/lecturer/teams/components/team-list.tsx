@@ -18,7 +18,8 @@ import {
   UserPlusIcon,
   UsersIcon,
 } from "lucide-react";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { resolveHttpAvatarUrl } from "@/lib/avatar-url";
 import { Badge } from "@/components/ui/badge";
 import { LeaderBadge, MemberRoleBadge } from "@/components/common/leader-badge";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -464,6 +465,10 @@ export function TeamList({ courseId, courseCode }: TeamListProps) {
                       >
                         <div className="flex items-center gap-3 min-w-0">
                           <Avatar size="sm" className="border border-border/60 shrink-0">
+                            <AvatarImage
+                              src={resolveHttpAvatarUrl(member.avatarUrl)}
+                              alt={member.fullName}
+                            />
                             <AvatarFallback
                               className={cn(
                                 "font-mono text-xs font-bold",

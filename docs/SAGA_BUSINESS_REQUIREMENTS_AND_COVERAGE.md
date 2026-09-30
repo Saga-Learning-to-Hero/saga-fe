@@ -686,11 +686,13 @@ Hiện mỗi request graph có thể kích hoạt/rebuild projection theo implem
 - Desktop dùng sticky Task Inspector; mobile/tablet mở sheet/drawer.
 - Filter Pipeline dùng cùng grid cho Member/Sprint/Repository/Branch; Branch disabled đến khi chọn Repository.
 - Board/Backlog phải dùng initials/avatar theo assignee canonical và không render icon type trùng.
+- Avatar sinh viên trên roster/team/peer/progress/task/commit đọc field additive `avatarUrl` / `authorAvatarUrl` / `reviewerAvatarUrl` / `revieweeAvatarUrl` (`string | null`). Chỉ hiện ảnh khi URL là `http`/`https`; `null` hoặc URL không hợp lệ thì initials. Graph STUDENT và heatmap vẫn dùng field cũ `avatar`. Không đổi coverage Backend chỉ vì có field.
 - Due date hiển thị với nhãn/tooltip dễ hiểu và trạng thái overdue/due soon; icon lịch không đứng một mình nếu gây khó hiểu.
 - Dashboard phải ưu tiên insight: tiến độ task, sprint active, commit chưa link, evidence; status bằng 0 có thể ẩn, blocked > 0 phải cảnh báo.
 - Tất cả chart phải có title, unit, full label, legend và tooltip có tên người/series/value rõ ràng.
 - Không giữ mock fallback im lặng ở màn production; nếu API thiếu, hiển thị empty/error state có nguồn gốc rõ.
 - Graph: node Commit mở thẳng chi tiết commit/code diff; node Task chỉ mở thông tin, nút tập trung đối chiếu ẩn khi đã focus đúng Task đó.
+- Roster/team/peer review/progress/Kanban/commit đọc avatar hồ sơ từ field additive; graph/heatmap giữ `avatar`.
 
 ---
 

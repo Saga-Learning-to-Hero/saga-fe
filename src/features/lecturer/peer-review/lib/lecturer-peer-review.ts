@@ -86,8 +86,10 @@ export function parseLecturerPeerReviewItem(raw: unknown): LecturerPeerReviewIte
     sprintName: asNullableString(item.sprintName),
     reviewerId,
     reviewerName: asString(item.reviewerName, reviewerId),
+    reviewerAvatarUrl: asNullableString(item.reviewerAvatarUrl),
     revieweeId,
     revieweeName: asString(item.revieweeName, revieweeId),
+    revieweeAvatarUrl: asNullableString(item.revieweeAvatarUrl),
     starRating: asNullableNumber(item.starRating),
     criteriaRatings: ratingsRaw
       .map(parseCriterionRating)
@@ -340,7 +342,12 @@ function normalizePeerReviewSearch(value: string): string {
 }
 
 export function buildRevieweeSummaries(
-  members: Array<{ studentProfileId: string; fullName: string; studentCode?: string | null }>,
+  members: Array<{
+    studentProfileId: string;
+    fullName: string;
+    studentCode?: string | null;
+    avatarUrl?: string | null;
+  }>,
   reviews: LecturerPeerReviewItem[],
   teamSize?: number
 ): RevieweeSummary[] {
@@ -352,6 +359,7 @@ export function buildRevieweeSummaries(
       id,
       name: member.fullName.trim() || id,
       studentCode: member.studentCode?.trim() || null,
+      avatarUrl: member.avatarUrl ?? null,
       receivedCount: 0,
       averageScore: null,
       hasEnoughReviews: false,
@@ -363,10 +371,13 @@ export function buildRevieweeSummaries(
         id: review.revieweeId,
         name: review.revieweeName,
         studentCode: null,
+        avatarUrl: review.revieweeAvatarUrl ?? null,
         receivedCount: 0,
         averageScore: null,
         hasEnoughReviews: false,
       });
+    } else if (!byId.get(review.revieweeId)?.avatarUrl && review.revieweeAvatarUrl) {
+      byId.get(review.revieweeId)!.avatarUrl = review.revieweeAvatarUrl;
     }
   }
 
@@ -422,6 +433,7 @@ export function groupReviewsByReviewee(
         id: revieweeId,
         name: grouped[0]?.revieweeName || revieweeId,
         studentCode: null,
+        avatarUrl: grouped[0]?.revieweeAvatarUrl ?? null,
         receivedCount: grouped.length,
         averageScore: null,
         hasEnoughReviews: false,

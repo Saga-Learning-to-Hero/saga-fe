@@ -48,6 +48,7 @@ describe("LecturerCourseService", () => {
         fullName: "Alpha Leader",
         email: "alpha@gmail.com",
         classCode: "SE1705",
+        avatarUrl: "https://cdn.example.com/alpha.png",
       },
     ],
   };
@@ -106,6 +107,7 @@ describe("LecturerCourseService", () => {
       expect(res.entries[0].courseEnrollmentId).toBe("dddddddd-dddd-dddd-dddd-dddddddddddd");
       expect(res.entries[0].studentProfileId).toBe("eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee");
       expect(res.entries[0].studentCode).toBe("SE111111");
+      expect(res.entries[0].avatarUrl).toBe("https://cdn.example.com/alpha.png");
     }
   );
 
