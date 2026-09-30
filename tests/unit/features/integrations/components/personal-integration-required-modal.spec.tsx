@@ -1,5 +1,6 @@
 import { describe, expect, vi, beforeEach } from "vitest";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { fptTest } from "@/testing/fpt-test-helper";
 import { PersonalIntegrationRequiredModal } from "@/features/integrations/components/personal-integration-required-modal";
 
@@ -42,6 +43,16 @@ vi.mock("@/lib/api-error", () => ({
   showErrorToast: vi.fn(),
 }));
 
+function renderWithClient(ui: React.ReactElement) {
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: { retry: false },
+      mutations: { retry: false },
+    },
+  });
+  return render(<QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>);
+}
+
 describe("PersonalIntegrationRequiredModal", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -55,7 +66,7 @@ describe("PersonalIntegrationRequiredModal", () => {
       description: "Khong render gi khi isOpen = false",
     },
     () => {
-      const { container } = render(
+      const { container } = renderWithClient(
         <PersonalIntegrationRequiredModal
           isOpen={false}
           isJiraConnected={false}
@@ -77,7 +88,7 @@ describe("PersonalIntegrationRequiredModal", () => {
       description: "Render modal chan hoan toan khi isOpen = true va ca 2 deu chua lien ket",
     },
     () => {
-      render(
+      renderWithClient(
         <PersonalIntegrationRequiredModal
           isOpen={true}
           isJiraConnected={false}
@@ -102,7 +113,7 @@ describe("PersonalIntegrationRequiredModal", () => {
       description: "Hien thi thong tin Da ket noi khi chi moi lien ket Jira",
     },
     () => {
-      render(
+      renderWithClient(
         <PersonalIntegrationRequiredModal
           isOpen={true}
           isJiraConnected={true}
@@ -133,7 +144,7 @@ describe("PersonalIntegrationRequiredModal", () => {
       mockStartJiraMutateAsync.mockResolvedValueOnce({ authorizationUrl: "https://jira.atlassian.com/auth" });
       const windowOpenSpy = vi.spyOn(window, "open").mockImplementation(() => null);
 
-      render(
+      renderWithClient(
         <PersonalIntegrationRequiredModal
           isOpen={true}
           isJiraConnected={false}
@@ -165,7 +176,7 @@ describe("PersonalIntegrationRequiredModal", () => {
       mockStartGitHubMutateAsync.mockResolvedValueOnce({ authorizationUrl: "https://github.com/login/oauth" });
       const windowOpenSpy = vi.spyOn(window, "open").mockImplementation(() => null);
 
-      render(
+      renderWithClient(
         <PersonalIntegrationRequiredModal
           isOpen={true}
           isJiraConnected={true}
@@ -194,7 +205,7 @@ describe("PersonalIntegrationRequiredModal", () => {
       description: "Click nut Ve Dashboard goi router.push ve /student/dashboard voi courseId",
     },
     () => {
-      render(
+      renderWithClient(
         <PersonalIntegrationRequiredModal
           isOpen={true}
           isJiraConnected={false}
@@ -219,7 +230,7 @@ describe("PersonalIntegrationRequiredModal", () => {
       description: "Click nut Ve Dashboard khi khong co courseId thi dieu huong ve /student/courses",
     },
     () => {
-      render(
+      renderWithClient(
         <PersonalIntegrationRequiredModal
           isOpen={true}
           isJiraConnected={false}
@@ -243,7 +254,7 @@ describe("PersonalIntegrationRequiredModal", () => {
       description: "Khoa cuon document.body khi modal dang mo va hoan tra khi unmount",
     },
     () => {
-      const { unmount } = render(
+      const { unmount } = renderWithClient(
         <PersonalIntegrationRequiredModal
           isOpen={true}
           isJiraConnected={false}

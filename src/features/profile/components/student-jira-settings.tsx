@@ -16,6 +16,8 @@ import {
   useSetPrimaryJiraIdentity,
   useDeleteJiraIdentity,
 } from "@/features/integrations/hooks/useJiraIntegrations";
+import { useIntegrationPopupFlow } from "@/features/integrations/hooks/useIntegrationPopupFlow";
+import { IntegrationWaitingModal } from "@/features/integrations/components/integration-waiting-modal";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -43,17 +45,29 @@ export function StudentJiraSettings({
   const deleteMutation = useDeleteJiraIdentity();
   const [disconnectItem, setDisconnectItem] = useState<UserIdentityItem | null>(null);
 
+  const {
+    isWaiting,
+    startFlow,
+    cancelFlow,
+    retryOpenTab,
+    checkNow,
+  } = useIntegrationPopupFlow();
+
   const handleConnectJiraOAuth = async () => {
     try {
-      showInfoToast("Đang chuyển hướng sang Atlassian ID OAuth...", { id: "jira-oauth" });
+      showInfoToast("Đang mở trang Atlassian ID OAuth...", { id: "jira-oauth" });
       const defaultPath = "/profile/integrations";
       const currentPath = typeof window !== "undefined"
         ? (window.location.pathname.startsWith("/profile") ? window.location.pathname : defaultPath)
         : defaultPath;
       const result = await startLinkMutation.mutateAsync(currentPath);
 
-      if (result.authorizationUrl && typeof window !== "undefined") {
-        window.open(result.authorizationUrl, "_blank");
+      if (result.authorizationUrl) {
+        startFlow({
+          provider: "jira",
+          scope: "personal",
+          authorizationUrl: result.authorizationUrl,
+        });
       }
     } catch {
       showErrorToast("Lỗi khi kết nối với máy chủ Atlassian. Vui lòng thử lại sau.", { id: "jira-oauth" });
@@ -235,6 +249,15 @@ export function StudentJiraSettings({
         accountLabel={disconnectItem?.displayName || disconnectItem?.login}
         isPending={deleteMutation.isPending}
         onConfirm={handleConfirmDisconnect}
+      />
+
+      <IntegrationWaitingModal
+        isOpen={isWaiting}
+        provider="jira"
+        scope="personal"
+        onClose={cancelFlow}
+        onRetryOpen={retryOpenTab}
+        onCheckNow={checkNow}
       />
     </Card>
   );

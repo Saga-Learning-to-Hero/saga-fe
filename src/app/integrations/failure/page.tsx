@@ -15,8 +15,11 @@ import {
   UserIcon,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
 import { getRoleHomePath } from "@/features/auth/lib/role-routes";
+import { sendIntegrationResult } from "@/features/integrations/lib/integration-broadcast";
+import { useEffect, useSyncExternalStore } from "react";
 
 interface ErrorInfo {
   title: string;
@@ -115,6 +118,27 @@ function FailureContent() {
   const backHref = returnParam || (user?.role === "STUDENT" ? "/student/courses" : "/profile/integrations");
   const backLabel = isProject ? "Quay lại Thông tin Dự án" : "Quay lại Cài đặt Tích hợp";
 
+  const isPopupTab = useSyncExternalStore(
+    () => () => {},
+    () => Boolean(window.opener) || window.history.length <= 2,
+    () => false
+  );
+
+  useEffect(() => {
+    sendIntegrationResult({
+      status: "error",
+      provider: isJira ? "jira" : "github",
+      scope: isProject ? "project" : "personal",
+      message: errorInfo.title,
+    });
+  }, [errorInfo.title, isJira, isProject]);
+
+  const handleClose = () => {
+    if (typeof window !== "undefined") {
+      window.close();
+    }
+  };
+
   return (
     <div className="w-full max-w-xl mx-auto space-y-6">
       <div className="bg-card border border-border/80 rounded-xl p-6 sm:p-8 shadow-lg relative overflow-hidden backdrop-blur-sm">
@@ -205,6 +229,20 @@ function FailureContent() {
             Về trang tổng quan
           </Link>
         </div>
+
+        {isPopupTab && (
+          <div className="mt-4 text-center">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleClose}
+              className="text-xs font-semibold rounded-xl gap-1.5 cursor-pointer"
+            >
+              <ArrowLeftIcon className="w-3.5 h-3.5" />
+              Đóng tab này và quay lại tab SAGA
+            </Button>
+          </div>
+        )}
 
         <div className="mt-6 pt-5 border-t border-border/60 flex flex-wrap items-center justify-between gap-3 text-xs text-muted-foreground">
           <Link

@@ -434,6 +434,14 @@ export function CommitsView() {
         </div>
       )}
 
+      <PersonalIntegrationRequiredModal
+        isOpen={!isLoadingUserIdentities && isPersonalIntegrationMissing}
+        isJiraConnected={isUserJiraConnected}
+        isGitHubConnected={isUserGitHubConnected}
+        courseId={courseId}
+        moduleName="commit"
+      />
+
       {!isCommitsError && !isInvalidCourse && (
         <>
           <CommitStatsCards
