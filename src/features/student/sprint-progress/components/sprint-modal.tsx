@@ -8,6 +8,7 @@ import {
   CheckCircle2Icon,
   CalendarIcon,
   SparklesIcon,
+  AlertTriangleIcon,
 } from "lucide-react";
 import type { Sprint } from "../types/sprint-progress";
 import { Button } from "@/components/ui/button";
@@ -15,6 +16,15 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useCreateSprint, usePatchSprint } from "../hooks/use-project-sprints";
+import { showErrorToast, getApiErrorMessage } from "@/lib/api-error";
+import { getSprintOverlapErrorMessage } from "../lib/sprint-error";
+
+function getLocalDateString(d: Date = new Date()): string {
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
 
 interface SprintModalProps {
   isOpen: boolean;
@@ -37,9 +47,9 @@ export function SprintModal({
 
   const [form, setForm] = useState(() => {
     const today = new Date();
-    const todayStr = today.toISOString().split("T")[0];
+    const todayStr = getLocalDateString(today);
     const twoWeeks = new Date(today.getTime() + 14 * 24 * 60 * 60 * 1000);
-    const defaultEndDateStr = twoWeeks.toISOString().split("T")[0];
+    const defaultEndDateStr = getLocalDateString(twoWeeks);
 
     return {
       name: sprint?.name || "Sprint Mới",
@@ -51,6 +61,7 @@ export function SprintModal({
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successMsg, setSuccessMsg] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
 
   const createSprintMutation = useCreateSprint();
   const patchSprintMutation = usePatchSprint();
@@ -152,7 +163,16 @@ export function SprintModal({
         setSuccessMsg("");
         onClose();
       }, 800);
-    } catch {
+    } catch (err: unknown) {
+      const overlapMsg = getSprintOverlapErrorMessage(err);
+      if (overlapMsg) {
+        setErrorMessage(overlapMsg);
+        showErrorToast(overlapMsg);
+        return;
+      }
+      const generalMsg = getApiErrorMessage(err, "Không thể lưu thông tin Sprint.");
+      setErrorMessage(generalMsg);
+      showErrorToast(generalMsg);
     } finally {
       setIsSubmitting(false);
     }
@@ -185,6 +205,13 @@ export function SprintModal({
         </div>
 
         <form onSubmit={handleSubmit} className="p-5 sm:p-6 space-y-4">
+          {errorMessage && (
+            <div className="p-3.5 rounded-xl bg-destructive/10 border border-destructive/30 text-destructive text-xs font-semibold flex items-start gap-2.5 animate-in fade-in-0">
+              <AlertTriangleIcon className="w-4 h-4 shrink-0 mt-0.5" />
+              <div className="space-y-0.5 leading-relaxed">{errorMessage}</div>
+            </div>
+          )}
+
           {successMsg && (
             <div className="p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 text-xs font-semibold flex items-center gap-2 animate-in fade-in-0">
               <CheckCircle2Icon className="w-4 h-4 shrink-0" />

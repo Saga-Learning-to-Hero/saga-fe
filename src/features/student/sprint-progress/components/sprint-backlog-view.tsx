@@ -427,6 +427,16 @@ export function SprintBacklogView({
                           </Badge>
                         )}
 
+                        {sprint.hasOverlap && (
+                          <span
+                            className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold bg-amber-500/20 text-amber-700 dark:text-amber-300 border border-amber-500/40"
+                            title={`Trùng thời gian với ${sprint.overlapWith?.sprintName || "sprint khác"}${sprint.overlapWith?.siteName ? ` (${sprint.overlapWith.siteName})` : ""}`}
+                          >
+                            <AlertTriangleIcon className="w-3 h-3 text-amber-600 dark:text-amber-400" />
+                            Trùng thời gian
+                          </span>
+                        )}
+
                         <Badge variant="secondary" className="text-xs font-mono font-semibold px-2">
                           {sprintHierarchy.workItems.length} tasks
                         </Badge>

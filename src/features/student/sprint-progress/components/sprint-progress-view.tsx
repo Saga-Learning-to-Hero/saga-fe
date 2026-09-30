@@ -22,7 +22,8 @@ import {
   getTopLevelSprintIssues,
   mergeProjectedAndLocalIssues,
 } from "../lib/issue-collection";
-import { Loader2Icon, AlertCircleIcon } from "lucide-react";
+import { Loader2Icon, AlertCircleIcon, AlertTriangleIcon } from "lucide-react";
+import { getSprintOverlapErrorMessage } from "../lib/sprint-error";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { useUserIdentities } from "@/features/integrations/hooks/useUserIntegrations";
@@ -228,9 +229,15 @@ export function SprintProgressView() {
         status: s.state === "active" ? "ACTIVE" : s.state === "closed" ? "COMPLETED" : "PLANNED",
         totalStoryPoints: totalPoints,
         completedStoryPoints: completedPoints,
+        hasOverlap: Boolean(s.hasOverlap),
+        overlapWith: s.overlapWith || null,
       };
     });
   }, [sourceScopedApiSprints, topLevelIssues]);
+
+  const overlappingSprints = useMemo(() => {
+    return sprints.filter((s) => s.hasOverlap);
+  }, [sprints]);
 
   const epics: Epic[] = useMemo(() => {
     const epicMap = new Map<string, Epic>();
@@ -553,6 +560,35 @@ export function SprintProgressView() {
         </div>
       )}
 
+      {overlappingSprints.length > 0 && (
+        <div className="flex items-start gap-3 p-4 rounded-xl border border-amber-500/40 bg-amber-500/10 text-amber-950 dark:text-amber-100 shadow-2xs">
+          <AlertTriangleIcon className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+          <div className="space-y-1 text-xs">
+            <h4 className="font-bold text-sm text-amber-900 dark:text-amber-200">
+              Cảnh báo: Phát hiện Sprint bị trùng mốc thời gian hoạt động
+            </h4>
+            <p className="leading-relaxed">
+              Hệ thống phát hiện mốc thời gian của một hoặc nhiều Sprint đang bị chồng lấn nhau trên Jira:
+            </p>
+            <ul className="list-disc list-inside space-y-0.5 font-medium">
+              {overlappingSprints.map((s) => (
+                <li key={s.id}>
+                  Sprint <strong>&quot;{s.name}&quot;</strong> bị trùng thời gian với{" "}
+                  <strong>&quot;{s.overlapWith?.sprintName || "một sprint khác"}&quot;</strong>
+                  {s.overlapWith?.siteName ? ` tại workspace "${s.overlapWith.siteName}"` : ""}
+                  {s.overlapWith?.startDate && s.overlapWith?.endDate
+                    ? ` (khoảng ${s.overlapWith.startDate} - ${s.overlapWith.endDate})`
+                    : ""}.
+                </li>
+              ))}
+            </ul>
+            <p className="text-muted-foreground dark:text-amber-300/80 pt-0.5">
+              Vui lòng điều chỉnh lại ngày bắt đầu và kết thúc trên Jira để đảm bảo dữ liệu ghi nhận công sức, Slicing Pie và đánh giá chéo phản ánh chính xác nhất.
+            </p>
+          </div>
+        </div>
+      )}
+
       {!isTasksError && !isSprintsError && activeView === "BOARD" && (
         <SprintBoardView
           issues={boardIssues}
@@ -585,11 +621,20 @@ export function SprintProgressView() {
           onMoveTaskSprint={handleMoveTaskSprint}
           onStartSprint={async (sprintId) => {
             if (projectId) {
-              await patchSprintMutation.mutateAsync({
-                projectId,
-                sprintId,
-                data: { state: "active" },
-              });
+              try {
+                await patchSprintMutation.mutateAsync({
+                  projectId,
+                  sprintId,
+                  data: { state: "active" },
+                });
+              } catch (err: unknown) {
+                const overlapMsg = getSprintOverlapErrorMessage(err);
+                if (overlapMsg) {
+                  showErrorToast(overlapMsg);
+                  return;
+                }
+                showErrorToast(getApiErrorMessage(err, "Không thể bắt đầu Sprint."));
+              }
             }
           }}
           onCompleteSprint={async (sprintId) => {
