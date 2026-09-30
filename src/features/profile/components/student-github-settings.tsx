@@ -16,6 +16,8 @@ import {
   useSetPrimaryGitHubIdentity,
   useDeleteGitHubIdentity,
 } from "@/features/integrations/hooks/useGithubIntegrations";
+import { useIntegrationPopupFlow } from "@/features/integrations/hooks/useIntegrationPopupFlow";
+import { IntegrationWaitingModal } from "@/features/integrations/components/integration-waiting-modal";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -43,17 +45,29 @@ export function StudentGitHubSettings({
   const deleteMutation = useDeleteGitHubIdentity();
   const [disconnectItem, setDisconnectItem] = useState<UserIdentityItem | null>(null);
 
+  const {
+    isWaiting,
+    startFlow,
+    cancelFlow,
+    retryOpenTab,
+    checkNow,
+  } = useIntegrationPopupFlow();
+
   const handleConnectGitHubOAuth = async () => {
     try {
-      showInfoToast("Đang chuyển hướng sang GitHub OAuth...", { id: "github-oauth" });
+      showInfoToast("Đang mở trang GitHub OAuth...", { id: "github-oauth" });
       const defaultPath = "/profile/integrations";
       const currentPath = typeof window !== "undefined"
         ? (window.location.pathname.startsWith("/profile") ? window.location.pathname : defaultPath)
         : defaultPath;
       const result = await startLinkMutation.mutateAsync(currentPath);
 
-      if (result.authorizationUrl && typeof window !== "undefined") {
-        window.open(result.authorizationUrl, "_blank");
+      if (result.authorizationUrl) {
+        startFlow({
+          provider: "github",
+          scope: "personal",
+          authorizationUrl: result.authorizationUrl,
+        });
       }
     } catch {
       showErrorToast("Lỗi khi kết nối với máy chủ GitHub. Vui lòng thử lại sau.", { id: "github-oauth" });
@@ -236,6 +250,15 @@ export function StudentGitHubSettings({
         accountLabel={disconnectItem?.login || disconnectItem?.displayName}
         isPending={deleteMutation.isPending}
         onConfirm={handleConfirmDisconnect}
+      />
+
+      <IntegrationWaitingModal
+        isOpen={isWaiting}
+        provider="github"
+        scope="personal"
+        onClose={cancelFlow}
+        onRetryOpen={retryOpenTab}
+        onCheckNow={checkNow}
       />
     </Card>
   );

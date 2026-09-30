@@ -17,6 +17,8 @@ import { Badge } from "@/components/ui/badge";
 import { useStartJiraLink } from "../hooks/useJiraIntegrations";
 import { useStartGitHubLink } from "../hooks/useGithubIntegrations";
 import { useUserIdentities } from "../hooks/useUserIntegrations";
+import { useIntegrationPopupFlow } from "../hooks/useIntegrationPopupFlow";
+import { IntegrationWaitingModal } from "./integration-waiting-modal";
 import { studentCoursePath } from "@/features/student/courses/hooks/use-student-course-context";
 import { showInfoToast, showErrorToast } from "@/lib/api-error";
 
@@ -50,6 +52,15 @@ export function PersonalIntegrationRequiredModal({
   const startJiraLinkMutation = useStartJiraLink();
   const startGitHubLinkMutation = useStartGitHubLink();
 
+  const {
+    isWaiting,
+    provider: waitingProvider,
+    startFlow,
+    cancelFlow,
+    retryOpenTab,
+    checkNow,
+  } = useIntegrationPopupFlow();
+
   const isJiraConnected = propIsJiraConnected ?? hookIsJiraConnected;
   const isGitHubConnected = propIsGitHubConnected ?? hookIsGitHubConnected;
 
@@ -72,11 +83,15 @@ export function PersonalIntegrationRequiredModal({
 
   const handleConnectJira = async () => {
     try {
-      showInfoToast("Đang chuyển hướng sang Atlassian Jira OAuth...", { id: "jira-oauth" });
+      showInfoToast("Đang mở trang Atlassian Jira OAuth...", { id: "jira-oauth" });
       const currentPath = typeof window !== "undefined" ? window.location.pathname : "/student/sprint-progress";
       const result = await startJiraLinkMutation.mutateAsync(currentPath);
-      if (result.authorizationUrl && typeof window !== "undefined") {
-        window.open(result.authorizationUrl, "_self");
+      if (result.authorizationUrl) {
+        startFlow({
+          provider: "jira",
+          scope: "personal",
+          authorizationUrl: result.authorizationUrl,
+        });
       }
     } catch {
       showErrorToast("Lỗi khi kết nối với máy chủ Atlassian. Vui lòng thử lại sau.", { id: "jira-oauth" });
@@ -85,11 +100,15 @@ export function PersonalIntegrationRequiredModal({
 
   const handleConnectGitHub = async () => {
     try {
-      showInfoToast("Đang chuyển hướng sang GitHub OAuth...", { id: "github-oauth" });
+      showInfoToast("Đang mở trang GitHub OAuth...", { id: "github-oauth" });
       const currentPath = typeof window !== "undefined" ? window.location.pathname : "/student/commits";
       const result = await startGitHubLinkMutation.mutateAsync(currentPath);
-      if (result.authorizationUrl && typeof window !== "undefined") {
-        window.open(result.authorizationUrl, "_self");
+      if (result.authorizationUrl) {
+        startFlow({
+          provider: "github",
+          scope: "personal",
+          authorizationUrl: result.authorizationUrl,
+        });
       }
     } catch {
       showErrorToast("Lỗi khi kết nối với máy chủ GitHub. Vui lòng thử lại sau.", { id: "github-oauth" });
@@ -321,6 +340,15 @@ export function PersonalIntegrationRequiredModal({
           </Button>
         </div>
       </div>
+
+      <IntegrationWaitingModal
+        isOpen={isWaiting}
+        provider={waitingProvider}
+        scope="personal"
+        onClose={cancelFlow}
+        onRetryOpen={retryOpenTab}
+        onCheckNow={checkNow}
+      />
     </div>
   );
 }
