@@ -86,20 +86,57 @@ export function useReplaceTeamLeader(courseId: string) {
   });
 }
 
+export function useAddTeamMember(courseId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      teamId,
+      courseEnrollmentId,
+    }: {
+      teamId: string;
+      courseEnrollmentId: string;
+    }) => LecturerTeamService.addMember(courseId, teamId, courseEnrollmentId),
+    onSuccess: (data) => {
+      queryClient.setQueryData(LECTURER_TEAM_QUERY_KEYS.lecturerTeams(courseId), data);
+      void Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: LECTURER_COURSE_QUERY_KEYS.lecturerRoster(courseId),
+        }),
+        queryClient.invalidateQueries({
+          queryKey: LECTURER_COURSE_QUERY_KEYS.lecturerDashboard(courseId),
+        }),
+      ]);
+      showSuccessToast("Đã thêm sinh viên vào nhóm thành công.");
+    },
+    onError: (error: unknown) => {
+      showErrorToast("Không thể thêm sinh viên vào nhóm.", error);
+    },
+  });
+}
+
 export function useMoveTeamMember(courseId: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: ({
-      teamMemberId,
       targetTeamId,
+      courseEnrollmentId,
     }: {
-      teamMemberId: string;
       targetTeamId: string;
-    }) => LecturerTeamService.moveMember(courseId, teamMemberId, targetTeamId),
-    onSuccess: async () => {
-      await invalidateTeamCoordination(queryClient, courseId);
-      showSuccessToast("Đã chuyển thành viên sang nhóm khác. Dữ liệu nhóm được tải lại từ máy chủ.");
+      courseEnrollmentId: string;
+    }) => LecturerTeamService.moveMember(courseId, targetTeamId, courseEnrollmentId),
+    onSuccess: (data) => {
+      queryClient.setQueryData(LECTURER_TEAM_QUERY_KEYS.lecturerTeams(courseId), data);
+      void Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: LECTURER_COURSE_QUERY_KEYS.lecturerRoster(courseId),
+        }),
+        queryClient.invalidateQueries({
+          queryKey: LECTURER_COURSE_QUERY_KEYS.lecturerDashboard(courseId),
+        }),
+      ]);
+      showSuccessToast("Đã chuyển thành viên sang nhóm mới.");
     },
     onError: (error: unknown) => {
       showErrorToast("Không thể chuyển thành viên sang nhóm khác.", error);

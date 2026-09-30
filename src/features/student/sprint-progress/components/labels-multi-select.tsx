@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect, useMemo, useId } from "react";
-import { TagIcon, XIcon, PlusIcon, CheckIcon } from "lucide-react";
+import { TagIcon, XIcon, CheckIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 export interface LabelsMultiSelectProps {
@@ -15,22 +15,20 @@ export interface LabelsMultiSelectProps {
 
 function getLabelBadgeStyle(label: string): string {
   const lower = label.toLowerCase();
+  if (lower === "saga:code") {
+    return "bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/30 font-mono";
+  }
+  if (lower === "saga:test") {
+    return "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 font-mono";
+  }
+  if (lower === "saga:document" || lower === "saga:doc") {
+    return "bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/30 font-mono";
+  }
+  if (lower === "saga:research") {
+    return "bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/30 font-mono";
+  }
   if (lower.startsWith("saga:")) {
     return "bg-primary/10 text-primary border border-primary/30 font-mono";
-  }
-  if (lower.includes("bug") || lower.includes("fix") || lower.includes("error")) {
-    return "bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/30";
-  }
-  if (
-    lower.includes("front") ||
-    lower.includes("back") ||
-    lower.includes("api") ||
-    lower.includes("db") ||
-    lower.includes("database") ||
-    lower.includes("ui") ||
-    lower.includes("ux")
-  ) {
-    return "bg-sky-500/10 text-sky-600 dark:text-sky-400 border border-sky-500/30";
   }
   return "bg-muted/80 text-foreground border border-border/80";
 }
@@ -39,9 +37,9 @@ export function LabelsMultiSelect({
   id,
   value = [],
   onChange,
-  availableLabels = [],
+  availableLabels = ["saga:code", "saga:test", "saga:document", "saga:research"],
   disabled = false,
-  placeholder = "Thêm nhãn (VD: frontend, bugfix...)",
+  placeholder = "Chọn nhãn (saga:code, saga:test...)",
 }: LabelsMultiSelectProps) {
   const generatedId = useId();
   const inputId = id || generatedId;
@@ -55,17 +53,11 @@ export function LabelsMultiSelect({
   const trimmedInput = inputValue.trim();
 
   const filteredSuggestions = useMemo(() => {
-    const activeSet = new Set(value.map((v) => v.toLowerCase()));
-    const result = availableLabels.filter(
-      (l) => !activeSet.has(l.toLowerCase()) && l.toLowerCase().includes(trimmedInput.toLowerCase())
+    if (!trimmedInput) return availableLabels;
+    return availableLabels.filter((l) =>
+      l.toLowerCase().includes(trimmedInput.toLowerCase())
     );
-    return result;
-  }, [availableLabels, value, trimmedInput]);
-
-  const canAddNew =
-    Boolean(trimmedInput) &&
-    !value.some((v) => v.toLowerCase() === trimmedInput.toLowerCase()) &&
-    !filteredSuggestions.some((s) => s.toLowerCase() === trimmedInput.toLowerCase());
+  }, [availableLabels, trimmedInput]);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -78,13 +70,13 @@ export function LabelsMultiSelect({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const handleAddLabel = (newLabel: string) => {
+  const handleSelectLabel = (newLabel: string) => {
     const clean = newLabel.trim();
     if (!clean) return;
-    if (!value.some((v) => v.toLowerCase() === clean.toLowerCase())) {
-      onChange([...value, clean]);
-    }
+    // Chỉ cho chọn duy nhất 1 label
+    onChange([clean]);
     setInputValue("");
+    setIsOpen(false);
     setHighlightedIndex(-1);
     inputRef.current?.focus();
   };
@@ -98,19 +90,12 @@ export function LabelsMultiSelect({
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (disabled) return;
 
-    if (e.key === "," || e.key === "Enter") {
+    if (e.key === "Enter") {
       e.preventDefault();
-      if (highlightedIndex >= 0) {
-        if (canAddNew && highlightedIndex === 0) {
-          handleAddLabel(trimmedInput);
-        } else {
-          const suggestionIdx = canAddNew ? highlightedIndex - 1 : highlightedIndex;
-          if (filteredSuggestions[suggestionIdx]) {
-            handleAddLabel(filteredSuggestions[suggestionIdx]);
-          }
-        }
-      } else if (trimmedInput) {
-        handleAddLabel(trimmedInput);
+      if (highlightedIndex >= 0 && filteredSuggestions[highlightedIndex]) {
+        handleSelectLabel(filteredSuggestions[highlightedIndex]);
+      } else if (filteredSuggestions.length === 1) {
+        handleSelectLabel(filteredSuggestions[0]);
       }
       return;
     }
@@ -123,20 +108,18 @@ export function LabelsMultiSelect({
 
     if (e.key === "ArrowDown") {
       e.preventDefault();
-      const totalOptions = filteredSuggestions.length + (canAddNew ? 1 : 0);
-      if (totalOptions > 0) {
-        setIsOpen(true);
-        setHighlightedIndex((prev) => (prev + 1 >= totalOptions ? 0 : prev + 1));
+      setIsOpen(true);
+      if (filteredSuggestions.length > 0) {
+        setHighlightedIndex((prev) => (prev + 1 >= filteredSuggestions.length ? 0 : prev + 1));
       }
       return;
     }
 
     if (e.key === "ArrowUp") {
       e.preventDefault();
-      const totalOptions = filteredSuggestions.length + (canAddNew ? 1 : 0);
-      if (totalOptions > 0) {
-        setIsOpen(true);
-        setHighlightedIndex((prev) => (prev <= 0 ? totalOptions - 1 : prev - 1));
+      setIsOpen(true);
+      if (filteredSuggestions.length > 0) {
+        setHighlightedIndex((prev) => (prev <= 0 ? filteredSuggestions.length - 1 : prev - 1));
       }
       return;
     }
@@ -202,54 +185,40 @@ export function LabelsMultiSelect({
           onFocus={() => {
             if (!disabled) setIsOpen(true);
           }}
+          onClick={() => {
+            if (!disabled) setIsOpen(true);
+          }}
           onKeyDown={handleKeyDown}
           placeholder={value.length === 0 ? placeholder : ""}
           className="flex-1 min-w-[120px] bg-transparent text-xs text-foreground placeholder:text-muted-foreground outline-hidden border-none px-1 py-0.5 disabled:cursor-not-allowed"
         />
       </div>
 
-      {isOpen && !disabled && (filteredSuggestions.length > 0 || canAddNew) && (
+      {isOpen && !disabled && filteredSuggestions.length > 0 && (
         <div className="absolute left-0 right-0 top-full mt-1.5 z-50 max-h-52 overflow-y-auto rounded-xl border border-border/80 bg-popover/95 backdrop-blur-xs p-1 shadow-md text-xs space-y-0.5">
-          {canAddNew && (
-            <button
-              type="button"
-              onMouseDown={(e) => {
-                e.preventDefault();
-                handleAddLabel(trimmedInput);
-              }}
-              className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-left text-xs font-semibold cursor-pointer transition-colors ${highlightedIndex === 0
-                  ? "bg-primary text-primary-foreground"
-                  : "text-primary hover:bg-primary/10"
-                }`}
-            >
-              <PlusIcon className="w-3.5 h-3.5 shrink-0" />
-              <span>
-                Tạo nhãn mới: <span className="font-bold underline">{trimmedInput}</span>
-              </span>
-            </button>
-          )}
-
           {filteredSuggestions.map((suggestion, idx) => {
-            const itemIdx = canAddNew ? idx + 1 : idx;
-            const isHighlighted = highlightedIndex === itemIdx;
+            const isHighlighted = highlightedIndex === idx;
+            const isSelected = value.includes(suggestion);
             return (
               <button
                 key={suggestion}
                 type="button"
                 onMouseDown={(e) => {
                   e.preventDefault();
-                  handleAddLabel(suggestion);
+                  handleSelectLabel(suggestion);
                 }}
                 className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-left text-xs cursor-pointer transition-colors ${isHighlighted
                     ? "bg-accent text-accent-foreground font-semibold"
-                    : "text-foreground hover:bg-muted/80"
+                    : isSelected
+                      ? "bg-primary/10 text-primary font-semibold"
+                      : "text-foreground hover:bg-muted/80"
                   }`}
               >
                 <div className="flex items-center gap-2 truncate">
                   <TagIcon className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
                   <span className="truncate">{suggestion}</span>
                 </div>
-                {value.includes(suggestion) && (
+                {isSelected && (
                   <CheckIcon className="w-3.5 h-3.5 text-primary shrink-0" />
                 )}
               </button>

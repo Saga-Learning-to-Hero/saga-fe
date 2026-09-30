@@ -28,6 +28,8 @@ import {
   type CommitTeamMember,
 } from "../lib/commit-mapper";
 import { isGitHubRepoActive } from "../lib/github-commit-connection";
+import { useUserIdentities } from "@/features/integrations/hooks/useUserIntegrations";
+import { PersonalIntegrationRequiredModal } from "@/features/integrations/components/personal-integration-required-modal";
 
 export function CommitsView() {
   const {
@@ -53,6 +55,14 @@ export function CommitsView() {
   const { status: realtimeStatus } = useProjectRealtime(projectId, {
     enabled: Boolean(projectId && integrations?.github?.status === "ACTIVE"),
   });
+
+  const {
+    isJiraConnected: isUserJiraConnected,
+    isGitHubConnected: isUserGitHubConnected,
+    isLoading: isLoadingUserIdentities,
+  } = useUserIdentities();
+
+  const isPersonalIntegrationMissing = !isUserJiraConnected || !isUserGitHubConnected;
 
   const [page, setPage] = useState<number>(1);
   const [pageSize, setPageSize] = useState<number>(50);
@@ -331,6 +341,14 @@ export function CommitsView() {
 
   return (
     <div className="space-y-6 max-w-[1600px] mx-auto pb-12">
+      <PersonalIntegrationRequiredModal
+        isOpen={!isLoadingUserIdentities && isPersonalIntegrationMissing}
+        isJiraConnected={isUserJiraConnected}
+        isGitHubConnected={isUserGitHubConnected}
+        courseId={courseId}
+        moduleName="commit"
+      />
+
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-3.5 bg-card/60 p-4 rounded-xl border border-border/70 backdrop-blur-xs shadow-2xs">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-slate-800 to-slate-700 dark:from-slate-200 dark:to-slate-300 text-white dark:text-slate-900 flex items-center justify-center shrink-0 shadow-sm border border-slate-700/50 dark:border-slate-300/50">

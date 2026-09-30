@@ -707,4 +707,68 @@ describe("LecturerTeamService", () => {
       expect(res.teams[0].members[0].studentProfileId).toBe("eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee");
     }
   );
+
+  fptTest(
+    {
+      id: "UTCID32",
+      type: "N",
+      executedDate: "30/09/2026",
+      description: "POST addMember gui courseEnrollmentId trong body va tra ve teams response moi",
+    },
+    async () => {
+      const mockEnrollmentId = "ffffffff-ffff-ffff-ffff-ffffffffffff";
+      const postSpy = vi.spyOn(apiClient, "post").mockResolvedValueOnce({
+        data: {
+          courseId: mockCourseId,
+          teams: mockTeams,
+          unassignedStudents: [],
+        },
+      });
+
+      const res = await LecturerTeamService.addMember(mockCourseId, mockTeamId, mockEnrollmentId);
+
+      expect(postSpy).toHaveBeenCalledWith(
+        `/api/lecturer/courses/${mockCourseId}/teams/${mockTeamId}/members`,
+        { courseEnrollmentId: mockEnrollmentId }
+      );
+      expect(res.courseId).toBe(mockCourseId);
+      expect(Array.isArray(res.teams)).toBe(true);
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID33",
+      type: "A",
+      executedDate: "30/09/2026",
+      description: "Khong nuot loi khi POST addMember bi BE tu choi",
+    },
+    async () => {
+      vi.spyOn(apiClient, "post").mockRejectedValueOnce(
+        apiError("Sinh viên đã thuộc nhóm khác", "TEAM_MEMBER_ALREADY_ASSIGNED", 400)
+      );
+
+      await expect(
+        LecturerTeamService.addMember(mockCourseId, mockTeamId, "enrollment-1")
+      ).rejects.toMatchObject({ code: "TEAM_MEMBER_ALREADY_ASSIGNED", status: 400 });
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID34",
+      type: "B",
+      executedDate: "30/09/2026",
+      description: "Throw ValidationException khi courseEnrollmentId hoac teamId rong",
+    },
+    async () => {
+      await expect(
+        LecturerTeamService.addMember(mockCourseId, mockTeamId, "   ")
+      ).rejects.toThrow("Throw ValidationException: Course enrollment ID is required");
+
+      await expect(
+        LecturerTeamService.addMember(mockCourseId, "", "enrollment-1")
+      ).rejects.toThrow("Throw ValidationException: Team ID is required");
+    }
+  );
 });

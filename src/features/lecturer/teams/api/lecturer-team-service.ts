@@ -80,6 +80,23 @@ export class LecturerTeamService {
     return parseLecturerTeamsResponse(response.data, cid);
   }
 
+  static async addMember(
+    courseId: string,
+    teamId: string,
+    courseEnrollmentId: string
+  ): Promise<LecturerTeamsResponse> {
+    const cid = requireCourseId(courseId);
+    const tid = requireTeamId(teamId);
+    if (!courseEnrollmentId || !courseEnrollmentId.trim()) {
+      throw new Error("Throw ValidationException: Course enrollment ID is required");
+    }
+    const response = await apiClient.post(
+      `/api/lecturer/courses/${cid}/teams/${tid}/members`,
+      { courseEnrollmentId: courseEnrollmentId.trim() }
+    );
+    return parseLecturerTeamsResponse(response.data, cid);
+  }
+
   static async moveMember(
     courseId: string,
     teamMemberId: string,

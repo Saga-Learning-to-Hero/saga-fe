@@ -25,6 +25,8 @@ import {
 import { Loader2Icon, AlertCircleIcon } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { useUserIdentities } from "@/features/integrations/hooks/useUserIntegrations";
+import { PersonalIntegrationRequiredModal } from "@/features/integrations/components/personal-integration-required-modal";
 import {
   useProjectSprints,
   useAssignTaskToSprint,
@@ -103,6 +105,15 @@ export function SprintProgressView() {
   const currentUserStudentCode = team?.myStudentCode || authUser?.studentCode || "";
   const isLeaderInGroup = effectiveCourse && "myGroup" in effectiveCourse && effectiveCourse.myGroup?.role === "LEADER";
   const isTeamLeader = team?.myRole === "LEADER" || Boolean(isLeaderInGroup);
+
+  const {
+    isJiraConnected: isUserJiraConnected,
+    isGitHubConnected: isUserGitHubConnected,
+    isLoading: isLoadingUserIdentities,
+  } = useUserIdentities();
+
+  const isPersonalIntegrationMissing = !isUserJiraConnected || !isUserGitHubConnected;
+  const canCreateTask = !isPersonalIntegrationMissing;
 
   const [userSelectedSprintId, setUserSelectedSprintId] = useState<string | null>(null);
   const [activeView, setActiveView] = useState<"BOARD" | "BACKLOG" | "TIMELINE" | "ANALYTICS">("BOARD");
@@ -275,30 +286,11 @@ export function SprintProgressView() {
   };
 
   const availableLabels = useMemo(() => {
-    const labelSet = new Set<string>();
-    const defaultLabels = [
-      "saga:code",
-      "saga:test",
-      "saga:doc",
-      "saga:research",
-      "frontend",
-      "backend",
-      "ui/ux",
-      "bugfix",
-      "api",
-      "database",
-      "devops",
-    ];
-    defaultLabels.forEach((l) => labelSet.add(l));
-    for (const t of rawIssues) {
-      if (Array.isArray(t.labels)) {
-        t.labels.forEach((l) => {
-          if (l && l.trim()) labelSet.add(l.trim());
-        });
-      }
+    if (taskOptions?.labels && taskOptions.labels.length > 0) {
+      return taskOptions.labels;
     }
-    return Array.from(labelSet);
-  }, [rawIssues]);
+    return ["saga:code", "saga:test", "saga:document", "saga:research"];
+  }, [taskOptions]);
 
   const filteredIssues = useMemo(() => {
     return scopedIssues.filter((issue) => {
@@ -517,6 +509,14 @@ export function SprintProgressView() {
         </div>
       )}
 
+      <PersonalIntegrationRequiredModal
+        isOpen={!isLoadingUserIdentities && isPersonalIntegrationMissing}
+        isJiraConnected={isUserJiraConnected}
+        isGitHubConnected={isUserGitHubConnected}
+        courseId={courseId}
+        moduleName="task"
+      />
+
       {Boolean(projectId) && !isJiraConnected && (
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-3.5 rounded-xl border border-amber-500/30 bg-amber-500/10 text-xs text-amber-800 dark:text-amber-200 shadow-2xs">
           <div className="flex items-center gap-2.5">
@@ -613,6 +613,7 @@ export function SprintProgressView() {
           teamMembers={teamMembers}
           assignableUsers={taskOptions?.assignableUsers}
           onStatusChange={handleMoveTaskStatus}
+          canCreateTask={canCreateTask}
         />
       )}
 
@@ -682,6 +683,7 @@ export function SprintProgressView() {
           onDelete={handleDeleteIssue}
           isTeamLeader={isTeamLeader}
           currentUserStudentCode={currentUserStudentCode}
+          canCreateTask={canCreateTask}
         />
       )}
 
