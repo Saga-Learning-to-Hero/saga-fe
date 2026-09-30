@@ -29,6 +29,7 @@ interface PeerReviewWorkspaceProps {
     studentProfileId: string;
     fullName: string;
     studentCode?: string | null;
+    avatarUrl?: string | null;
   }>;
   selectedRevieweeId?: string;
   fallbackSprintName?: string;

@@ -126,4 +126,36 @@ describe("commit-mapper", () => {
       expect(result.isMerge).toBe(false);
     }
   );
+
+  fptTest(
+    {
+      id: "UTCID07",
+      type: "N",
+      executedDate: "30/09/2026",
+      description: "Uu tien authorAvatarUrl hon avatar roster",
+    },
+    () => {
+      const result = mapProjectCommitToCommitItem(
+        { ...commit, authorAvatarUrl: "https://cdn.example.com/author.png", authorStudentId: "stu-1" },
+        [{ id: "stu-1", fullName: "An", avatar: "https://cdn.example.com/roster.png" }]
+      );
+      expect(result.author.avatar).toBe("https://cdn.example.com/author.png");
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID08",
+      type: "A",
+      executedDate: "30/09/2026",
+      description: "authorAvatarUrl null fallback roster, khong dung URL gia",
+    },
+    () => {
+      const result = mapProjectCommitToCommitItem(
+        { ...commit, authorAvatarUrl: null, authorStudentId: "stu-1" },
+        [{ id: "stu-1", fullName: "An", avatarUrl: "not-a-url", avatar: "https://cdn.example.com/roster.png" }]
+      );
+      expect(result.author.avatar).toBe("https://cdn.example.com/roster.png");
+    }
+  );
 });

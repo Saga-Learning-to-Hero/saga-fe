@@ -19,7 +19,8 @@ import {
 } from "lucide-react";
 import type { SprintIssue, IssueStatus, IssueType, IssuePriority } from "../types/sprint-progress";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { resolveHttpAvatarUrl } from "@/lib/avatar-url";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { getAssigneeAvatarClass, getAssigneeInitials } from "../lib/assignee-avatar";
@@ -411,6 +412,10 @@ export function SprintBoardView({
                           </Badge>
 
                           <Avatar title={issue.assignee.name} className="w-5 h-5 border shadow-2xs">
+                            <AvatarImage
+                              src={resolveHttpAvatarUrl(issue.assignee.avatar)}
+                              alt={issue.assignee.name}
+                            />
                             <AvatarFallback className={`text-[8px] font-bold ${getAssigneeAvatarClass(issue.assignee.id)}`}>
                               {getAssigneeInitials(issue.assignee.name)}
                             </AvatarFallback>

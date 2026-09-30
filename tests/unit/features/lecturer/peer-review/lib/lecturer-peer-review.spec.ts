@@ -16,6 +16,7 @@ import {
   pickDefaultLecturerPeerReviewSprintId,
   resolveCriteriaColumns,
   resolveMatrixMembers,
+  parseLecturerPeerReviewItem,
   resolvePeerReviewViewState,
   reviewsWithComments,
 } from "@/features/lecturer/peer-review/lib/lecturer-peer-review";
@@ -329,6 +330,56 @@ describe("lecturer-peer-review helpers", () => {
       );
       expect(single[0]?.hasEnoughReviews).toBe(false);
       expect(groupReviewsByReviewee([], single)).toEqual([]);
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID13",
+      type: "N",
+      executedDate: "30/09/2026",
+      description: "parseLecturerPeerReviewItem giu reviewerAvatarUrl va revieweeAvatarUrl",
+    },
+    () => {
+      const parsed = parseLecturerPeerReviewItem({
+        id: "r1",
+        reviewerId: "a",
+        reviewerName: "A",
+        reviewerAvatarUrl: "https://cdn.example.com/a.png",
+        revieweeId: "b",
+        revieweeName: "B",
+        revieweeAvatarUrl: null,
+        starRating: 4,
+        criteriaRatings: [],
+      });
+      expect(parsed?.reviewerAvatarUrl).toBe("https://cdn.example.com/a.png");
+      expect(parsed?.revieweeAvatarUrl).toBeNull();
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID14",
+      type: "B",
+      executedDate: "30/09/2026",
+      description: "buildRevieweeSummaries lay avatarUrl tu member hoac review",
+    },
+    () => {
+      const fromMember = buildRevieweeSummaries(
+        [{ studentProfileId: "b", fullName: "B", avatarUrl: "https://cdn.example.com/b.png" }],
+        reviews
+      );
+      expect(fromMember.find((item) => item.id === "b")?.avatarUrl).toBe("https://cdn.example.com/b.png");
+
+      const fromReview = buildRevieweeSummaries([], [
+        {
+          ...reviews[0],
+          revieweeId: "x",
+          revieweeName: "X",
+          revieweeAvatarUrl: "https://cdn.example.com/x.png",
+        },
+      ]);
+      expect(fromReview[0]?.avatarUrl).toBe("https://cdn.example.com/x.png");
     }
   );
 });

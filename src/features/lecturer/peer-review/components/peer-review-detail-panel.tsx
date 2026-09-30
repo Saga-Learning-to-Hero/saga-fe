@@ -1,7 +1,8 @@
 "use client";
 
 import { CalendarRangeIcon, UserRoundCheckIcon } from "lucide-react";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { resolveHttpAvatarUrl } from "@/lib/avatar-url";
 import { formatScoreOutOfMax } from "../lib/lecturer-peer-review";
 import type {
   LecturerPeerReviewCriterion,
@@ -48,6 +49,10 @@ export function PeerReviewDetailPanel({
         <header className="grid gap-3 border-b border-border/60 bg-linear-to-b from-primary/8 via-primary/3 to-transparent p-4 sm:grid-cols-[minmax(240px,1fr)_auto] sm:items-center">
           <div className="flex min-w-0 items-center gap-3">
             <Avatar className="size-11 border border-primary/20 shadow-xs">
+              <AvatarImage
+                src={resolveHttpAvatarUrl(selectedReviewee.avatarUrl)}
+                alt={selectedReviewee.name}
+              />
               <AvatarFallback className="bg-primary/15 text-sm font-black text-primary">
                 {getInitials(selectedReviewee.name)}
               </AvatarFallback>

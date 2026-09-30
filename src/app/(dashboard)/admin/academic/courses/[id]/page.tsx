@@ -28,6 +28,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { resolveHttpAvatarUrl } from "@/lib/avatar-url";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -515,7 +516,7 @@ export default function AdminCourseDetailPage({ params }: PageProps) {
                 <div className="flex items-start justify-between gap-2.5">
                   <div className="flex items-center gap-3 min-w-0">
                     <Avatar className="w-10 h-10 rounded-xl shrink-0 shadow-2xs border border-border">
-                      <AvatarImage src={sv.avatarUrl || undefined} alt={sv.fullName} />
+                      <AvatarImage src={resolveHttpAvatarUrl(sv.avatarUrl, sv.avatar)} alt={sv.fullName} />
                       <AvatarFallback className="text-xs font-bold bg-primary text-primary-foreground rounded-xl">
                         {getInitials(sv.fullName)}
                       </AvatarFallback>
@@ -607,7 +608,7 @@ export default function AdminCourseDetailPage({ params }: PageProps) {
                     <TableCell className="py-3 px-4">
                       <div className="flex items-center gap-3">
                         <Avatar className="w-8 h-8 rounded-xl shrink-0">
-                          <AvatarImage src={sv.avatarUrl || undefined} alt={sv.fullName} />
+                          <AvatarImage src={resolveHttpAvatarUrl(sv.avatarUrl, sv.avatar)} alt={sv.fullName} />
                           <AvatarFallback className="text-xs font-bold bg-primary text-primary-foreground rounded-xl">
                             {getInitials(sv.fullName)}
                           </AvatarFallback>

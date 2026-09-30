@@ -16,6 +16,7 @@ import { getAssigneeAvatarClass, getAssigneeInitials } from "@/features/student/
 import type { ProjectProgressMemberSummary } from "@/features/student/project/types/student-project";
 import { formatLinkedCommitRatio } from "@/features/progress/lib/progress-format";
 import { cn } from "@/lib/utils";
+import { resolveHttpAvatarUrl } from "@/lib/avatar-url";
 
 interface TeamWorkloadComparisonChartProps {
   members: ProjectProgressMemberSummary[];
@@ -83,13 +84,7 @@ export function TeamWorkloadComparisonChart({
               member.commits.total
             );
 
-            const rawMember = member as unknown as Record<string, unknown>;
-            const avatarUrl =
-              typeof rawMember?.avatarUrl === "string" && rawMember.avatarUrl.trim()
-                ? rawMember.avatarUrl.trim()
-                : typeof rawMember?.avatar === "string" && rawMember.avatar.trim()
-                  ? rawMember.avatar.trim()
-                  : null;
+            const avatarUrl = resolveHttpAvatarUrl(member.avatarUrl);
 
             return (
               <button

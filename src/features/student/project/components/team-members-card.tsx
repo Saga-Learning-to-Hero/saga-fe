@@ -6,7 +6,8 @@ import { sortStudentTeamMembers } from "@/features/student/courses/types/student
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { LeaderBadge, MemberRoleBadge } from "@/components/common/leader-badge";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { resolveHttpAvatarUrl } from "@/lib/avatar-url";
 import { Button } from "@/components/ui/button";
 import { getApiErrorCode, getApiErrorMessage } from "@/lib/api-error";
 
@@ -149,6 +150,10 @@ export function TeamMembersCard({
                 >
                   <div className="flex min-w-0 items-center gap-2.5">
                     <Avatar className="h-8 w-8 shrink-0 border border-background shadow-2xs">
+                      <AvatarImage
+                        src={resolveHttpAvatarUrl(member.avatarUrl, member.avatar)}
+                        alt={member.fullName}
+                      />
                       <AvatarFallback className="bg-primary/10 text-xs font-bold text-primary">
                         {initials}
                       </AvatarFallback>

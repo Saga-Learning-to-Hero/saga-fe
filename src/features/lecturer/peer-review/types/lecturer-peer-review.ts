@@ -22,8 +22,10 @@ export interface LecturerPeerReviewItem {
   sprintName: string | null;
   reviewerId: string;
   reviewerName: string;
+  reviewerAvatarUrl?: string | null;
   revieweeId: string;
   revieweeName: string;
+  revieweeAvatarUrl?: string | null;
   starRating: number | null;
   criteriaRatings: LecturerPeerReviewCriterionRating[];
   comment: string | null;
@@ -81,6 +83,7 @@ export interface RevieweeSummary {
   id: string;
   name: string;
   studentCode: string | null;
+  avatarUrl?: string | null;
   receivedCount: number;
   averageScore: number | null;
   hasEnoughReviews: boolean;

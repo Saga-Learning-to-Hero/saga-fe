@@ -73,6 +73,7 @@ export type ContributionMember = {
   studentProfileId: string;
   fullName: string;
   studentCode: string;
+  avatarUrl?: string | null;
   roleInTeam: ContributionRoleInTeam;
   sliceScore: number | null;
   sliceContributionPercentage: number | null;
@@ -206,6 +207,7 @@ function parseContributionMember(value: unknown): ContributionMember {
     studentProfileId: typeof source.studentProfileId === "string" ? source.studentProfileId : "",
     fullName: typeof source.fullName === "string" ? source.fullName : "",
     studentCode: typeof source.studentCode === "string" ? source.studentCode : "",
+    avatarUrl: typeof source.avatarUrl === "string" && source.avatarUrl.trim() ? source.avatarUrl.trim() : null,
     roleInTeam: typeof source.roleInTeam === "string" ? source.roleInTeam : "MEMBER",
     sliceScore: toNullableNumber(source.sliceScore),
     sliceContributionPercentage: toNullableNumber(source.sliceContributionPercentage),

@@ -2,7 +2,7 @@ import { describe, expect, vi, beforeEach } from "vitest";
 import { LecturerTeamService } from "@/features/lecturer/teams/api/lecturer-team-service";
 import { apiClient } from "@/lib/axios";
 import { fptTest } from "@/testing/fpt-test-helper";
-import { canConfirmTeamImport, summarizeLecturerTeams, teamRoleLabel, type TeamPreviewResponse } from "@/features/lecturer/teams/types/lecturer-team";
+import { canConfirmTeamImport, parseLecturerTeamMember, summarizeLecturerTeams, teamRoleLabel, type TeamPreviewResponse } from "@/features/lecturer/teams/types/lecturer-team";
 
 vi.mock("@/lib/axios");
 
@@ -694,6 +694,7 @@ describe("LecturerTeamService", () => {
                   fullName: "Alpha Leader",
                   email: "alpha@gmail.com",
                   role: "LEADER",
+                  avatarUrl: "https://cdn.example.com/leader.png",
                 },
               ],
             },
@@ -705,6 +706,27 @@ describe("LecturerTeamService", () => {
 
       expect(res.teams[0].members[0].teamMemberId).toBe(mockTeamMemberId);
       expect(res.teams[0].members[0].studentProfileId).toBe("eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee");
+      expect(res.teams[0].members[0].avatarUrl).toBe("https://cdn.example.com/leader.png");
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID32",
+      type: "A",
+      executedDate: "30/09/2026",
+      description: "parseLecturerTeamMember avatarUrl khong http thanh null",
+    },
+    () => {
+      const parsed = parseLecturerTeamMember({
+        teamMemberId: "m1",
+        studentCode: "SE1",
+        fullName: "A",
+        email: "a@x.com",
+        role: "MEMBER",
+        avatarUrl: "javascript:alert(1)",
+      });
+      expect(parsed.avatarUrl).toBeNull();
     }
   );
 

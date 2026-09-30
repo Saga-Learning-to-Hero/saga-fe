@@ -1,3 +1,5 @@
+import { toNullableHttpAvatarUrl } from "@/lib/avatar-url";
+
 export type TeamPreviewRowAction =
   | "READY_CREATE"
   | "READY_ASSIGN"
@@ -19,6 +21,7 @@ export interface LecturerTeamMember {
   avatarUrl?: string;
   email: string;
   role: TeamMemberRole | string;
+  avatarUrl?: string | null;
 }
 
 export interface ReplaceTeamLeaderRequest {
@@ -144,6 +147,7 @@ export function parseLecturerTeamMember(value: unknown): LecturerTeamMember {
     avatarUrl: toOptionalText(source.avatarUrl || source.avatar),
     email: toOptionalText(source.email),
     role: toOptionalText(source.role) || "MEMBER",
+    avatarUrl: toNullableHttpAvatarUrl(typeof source.avatarUrl === "string" ? source.avatarUrl : null),
   };
 }
 

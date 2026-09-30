@@ -2,7 +2,8 @@
 
 import { useState, useMemo } from "react";
 import { Loader2Icon, CheckIcon, UserXIcon } from "lucide-react";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { resolveHttpAvatarUrl } from "@/lib/avatar-url";
 import {
   Popover,
   PopoverContent,
@@ -57,6 +58,7 @@ export function QuickAssigneeEdit({
 
   const renderCurrentAvatar = () => (
     <Avatar title={currentAssignee.name} className="w-5.5 h-5.5 border shrink-0">
+      <AvatarImage src={resolveHttpAvatarUrl(currentAssignee.avatar)} alt={currentAssignee.name} />
       <AvatarFallback
         className={`text-[8px] font-bold ${isUnassigned
           ? "bg-muted text-muted-foreground"
@@ -93,6 +95,7 @@ export function QuickAssigneeEdit({
           subLabel: matched?.studentCode || "Tài khoản Jira",
           studentCode: matched?.studentCode,
           identifier: matched?.studentCode || matched?.id || user.accountId,
+          avatar: resolveHttpAvatarUrl(user.avatarUrl, matched?.avatar),
         };
       });
     }
@@ -103,6 +106,7 @@ export function QuickAssigneeEdit({
       subLabel: member.studentCode || "Thành viên",
       studentCode: member.studentCode,
       identifier: member.studentCode || member.id,
+      avatar: resolveHttpAvatarUrl(member.avatar),
     }));
   }, [assignableUsers, teamMembers]);
 
@@ -204,6 +208,7 @@ export function QuickAssigneeEdit({
               >
                 <div className="flex items-center gap-2 min-w-0">
                   <Avatar className="w-5.5 h-5.5 border shrink-0">
+                    <AvatarImage src={item.avatar} alt={item.displayName} />
                     <AvatarFallback
                       className={`text-[8px] font-bold ${getAssigneeAvatarClass(item.identifier)}`}
                     >

@@ -133,4 +133,57 @@ describe("PeerReviewModal", () => {
       expect(screen.getByRole("button", { name: "Gửi đánh giá" })).toBeDisabled();
     }
   );
+
+  fptTest(
+    {
+      id: "UTCID04",
+      type: "N",
+      executedDate: "30/09/2026",
+      description: "Candidate avatarUrl hop le hien AvatarImage",
+    },
+    () => {
+      render(
+        <PeerReviewModal
+          open
+          teamId="team-1"
+          sprintId="sprint-1"
+          candidate={{ ...candidate, avatarUrl: "https://cdn.example.com/b.png" }}
+          rubric={rubric}
+          reviewerId="stu-1"
+          allowedRevieweeIds={["stu-2"]}
+          sprintWindowOpen
+          onOpenChange={() => undefined}
+        />
+      );
+      expect(screen.getByAltText("Nguyen Van B")).toHaveAttribute(
+        "src",
+        "https://cdn.example.com/b.png"
+      );
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID05",
+      type: "A",
+      executedDate: "30/09/2026",
+      description: "Candidate avatarUrl null khong render src anh",
+    },
+    () => {
+      render(
+        <PeerReviewModal
+          open
+          teamId="team-1"
+          sprintId="sprint-1"
+          candidate={{ ...candidate, avatarUrl: null }}
+          rubric={rubric}
+          reviewerId="stu-1"
+          allowedRevieweeIds={["stu-2"]}
+          sprintWindowOpen
+          onOpenChange={() => undefined}
+        />
+      );
+      expect(screen.queryByAltText("Nguyen Van B")).not.toBeInTheDocument();
+    }
+  );
 });

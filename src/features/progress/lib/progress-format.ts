@@ -287,6 +287,7 @@ export function normalizeMemberSummary(raw: unknown): ProjectProgressMemberSumma
     fullName: asString(item.fullName),
     studentCode: asString(item.studentCode),
     teamRole: asString(item.teamRole || item.role, "MEMBER"),
+    avatarUrl: asNullableString(item.avatarUrl),
     tasks: {
       assigned,
       assignedTotal: assigned,

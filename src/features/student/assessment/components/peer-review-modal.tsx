@@ -17,6 +17,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
+import { resolveHttpAvatarUrl } from "@/lib/avatar-url";
 import { canSubmitPeerReview, previewTotalStars } from "../lib/peer-review-payload";
 import { mapPeerReviewSubmitError, useSubmitPeerReview } from "../hooks/use-peer-review";
 import type { PeerReviewCandidate, PeerReviewRubric } from "../types/peer-review";
@@ -116,7 +117,7 @@ export function PeerReviewModal({
       .toUpperCase()
     : "SV";
 
-  const avatarUrl = candidate?.avatarUrl || undefined;
+  const avatarUrl = resolveHttpAvatarUrl(candidate?.avatarUrl);
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>

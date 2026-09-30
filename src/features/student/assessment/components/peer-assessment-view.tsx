@@ -15,6 +15,7 @@ import {
   UserCheckIcon,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { resolveHttpAvatarUrl } from "@/lib/avatar-url";
 import { Badge } from "@/components/ui/badge";
 import { MemberRoleBadge } from "@/components/common/leader-badge";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -755,7 +756,7 @@ export function PeerAssessmentView() {
                         .map((w) => w[0])
                         .join("")
                         .toUpperCase();
-                      const avatarUrl = candidate.avatarUrl || undefined;
+                      const avatarUrl = resolveHttpAvatarUrl(candidate.avatarUrl);
 
                       return (
                         <div

@@ -94,6 +94,7 @@ export function parsePeerReviewCandidate(raw: unknown): PeerReviewCandidate | nu
     studentId,
     studentCode: asNullableString(item.studentCode),
     fullName: asString(item.fullName, studentId),
+    avatarUrl: asNullableString(item.avatarUrl),
     alreadyReviewed: Boolean(item.alreadyReviewed),
     existingReviewId: asNullableString(item.existingReviewId),
     existingTotalStarRating: asNullableNumber(item.existingTotalStarRating),

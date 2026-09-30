@@ -41,8 +41,8 @@ describe("StudentCourseService", () => {
     myRole: "MEMBER",
     projectId: null,
     members: [
-      { studentCode: "SE111111", fullName: "Alpha Leader", role: "LEADER" },
-      { studentCode: "SE222222", fullName: "Beta Member", role: "MEMBER" },
+      { studentCode: "SE111111", fullName: "Alpha Leader", role: "LEADER", avatarUrl: "https://cdn.example.com/alpha.png" },
+      { studentCode: "SE222222", fullName: "Beta Member", role: "MEMBER", avatarUrl: null },
     ],
   };
 
@@ -83,6 +83,8 @@ describe("StudentCourseService", () => {
       expect(res.myRole).toBe("MEMBER");
       expect(res.members).toHaveLength(2);
       expect(res.members[0]).not.toHaveProperty("email");
+      expect(res.members[0].avatarUrl).toBe("https://cdn.example.com/alpha.png");
+      expect(res.members[1].avatarUrl).toBeNull();
     }
   );
 

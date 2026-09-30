@@ -34,6 +34,7 @@ export interface TimelineCommitItem {
   message: string;
   repositoryFullName?: string | null;
   authorStudentId?: string | null;
+  authorAvatarUrl?: string | null;
   committedAt?: string | null;
   linkedAt: string;
   linkSource?: string | null;
