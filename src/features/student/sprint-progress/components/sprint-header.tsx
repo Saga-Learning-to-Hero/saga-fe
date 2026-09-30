@@ -5,7 +5,6 @@ import {
   ListTodoIcon,
   GanttChartSquareIcon,
   SearchIcon,
-  RefreshCwIcon,
   XIcon,
   CalendarIcon,
   FlameIcon,
@@ -21,7 +20,6 @@ import { Button } from "@/components/ui/button";
 import { CustomSelect } from "@/components/common/custom-select";
 import { ProjectRealtimeBadge } from "@/features/student/project/components/project-realtime-badge";
 import type { SSEConnectionStatus, ProjectRealtimeEvent } from "@/features/student/project/types/project-realtime-types";
-import { formatVietnamDateTime } from "@/lib/utils";
 import { getAssigneeAvatarClass, getAssigneeInitials } from "../lib/assignee-avatar";
 
 interface SprintHeaderProps {
@@ -41,9 +39,6 @@ interface SprintHeaderProps {
   totalTasksCount?: number;
   totalProjectTasksCount?: number;
   productBacklogCount?: number;
-  onSyncJira?: () => void;
-  isSyncingJira?: boolean;
-  lastSyncedAt?: string | null;
   realtimeStatus?: SSEConnectionStatus;
   lastEventTime?: Date | null;
   lastEvent?: ProjectRealtimeEvent | null;
@@ -68,9 +63,6 @@ export function SprintHeader({
   totalTasksCount,
   totalProjectTasksCount,
   productBacklogCount,
-  onSyncJira,
-  isSyncingJira = false,
-  lastSyncedAt,
   realtimeStatus,
   lastEventTime,
   lastEvent,
@@ -189,31 +181,11 @@ export function SprintHeader({
                 variant="default"
                 size="sm"
                 onClick={onCreateTask}
-                className="h-8.5 px-3 text-xs font-bold rounded-xl gap-1.5 shadow-2xs bg-primary text-primary-foreground hover:bg-primary/90"
+                className="h-8.5 px-3 text-xs font-bold rounded-xl gap-1.5 shadow-2xs bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer"
               >
                 <ListTodoIcon className="w-3.5 h-3.5" />
                 <span>Tạo task</span>
               </Button>
-            )}
-            {isTeamLeader && onSyncJira && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={onSyncJira}
-                disabled={isSyncingJira}
-                className="h-8.5 px-3 text-xs font-bold rounded-xl gap-1.5 cursor-pointer shadow-2xs border-blue-500/30 text-blue-600 dark:text-blue-400 bg-blue-500/10 hover:bg-blue-500/20"
-              >
-                <RefreshCwIcon className={`w-3.5 h-3.5 ${isSyncingJira ? "animate-spin text-blue-500" : ""}`} />
-                <span>{isSyncingJira ? "Đang đồng bộ..." : "Đồng bộ Jira & GitHub"}</span>
-              </Button>
-            )}
-            {lastSyncedAt && (
-              <div className="hidden 2xl:flex h-8.5 items-center gap-1.5 rounded-xl border border-border/60 bg-muted/40 px-2.5 text-xs text-muted-foreground whitespace-nowrap">
-                <CalendarIcon className="w-3.5 h-3.5 text-primary" />
-                <span>
-                  Lần cuối: {formatVietnamDateTime(lastSyncedAt)}
-                </span>
-              </div>
             )}
           </div>
         </div>

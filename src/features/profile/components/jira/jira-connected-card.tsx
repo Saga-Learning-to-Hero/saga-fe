@@ -2,7 +2,6 @@
 
 import {
   UserCheckIcon,
-  MailIcon,
   ClockIcon,
   UnlinkIcon,
   StarIcon,
@@ -16,7 +15,6 @@ import { formatVietnamDateTime } from "@/lib/utils";
 interface JiraConnectedCardProps {
   identity?: UserIdentityItem | null;
   fallbackName?: string;
-  fallbackEmail?: string;
   isDeleting?: boolean;
   isSettingPrimary?: boolean;
   onSetPrimary?: () => void;
@@ -26,14 +24,13 @@ interface JiraConnectedCardProps {
 export function JiraConnectedCard({
   identity,
   fallbackName = "Sinh viên",
-  fallbackEmail = "jira.user@saga.edu.vn",
   isDeleting = false,
   isSettingPrimary = false,
   onSetPrimary,
   onDisconnect,
 }: JiraConnectedCardProps) {
   const displayName = identity?.displayName || fallbackName;
-  const jiraEmail = identity?.login || fallbackEmail;
+  const jiraEmail = identity?.login;
   const firstLinked = formatVietnamDateTime(identity?.linkedAt);
   const lastVerified = formatVietnamDateTime(identity?.lastVerifiedAt || identity?.linkedAt);
   const isPrimary = Boolean(identity?.primary);
@@ -55,10 +52,7 @@ export function JiraConnectedCard({
                 </Badge>
               )}
             </div>
-            <div className="flex items-center gap-1.5 text-xs text-muted-foreground mt-0.5">
-              <MailIcon className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400 shrink-0" />
-              <span className="font-mono">{jiraEmail || "Chưa cập nhật email"}</span>
-            </div>
+
           </div>
         </div>
 

@@ -187,7 +187,6 @@ export function StudentGitHubSettings({
                 identity={item}
                 fallbackName={user.fullName || user.name}
                 fallbackUsername={item.login || user.githubIntegration?.username}
-                fallbackEmail={user.email}
                 avatarUrl={user.avatar}
                 isDeleting={deleteMutation.isPending}
                 isSettingPrimary={setPrimaryMutation.isPending}

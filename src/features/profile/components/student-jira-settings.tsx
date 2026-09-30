@@ -186,7 +186,6 @@ export function StudentJiraSettings({
                 key={item.id}
                 identity={item}
                 fallbackName={user.fullName || user.name}
-                fallbackEmail={user.email}
                 isDeleting={deleteMutation.isPending}
                 isSettingPrimary={setPrimaryMutation.isPending}
                 onSetPrimary={() => handleSetPrimary(item.id)}

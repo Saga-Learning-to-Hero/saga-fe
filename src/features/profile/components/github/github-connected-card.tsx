@@ -2,7 +2,6 @@
 
 import Image from "next/image";
 import {
-  MailIcon,
   ClockIcon,
   UnlinkIcon,
   StarIcon,
@@ -17,7 +16,6 @@ interface GitHubConnectedCardProps {
   identity?: UserIdentityItem | null;
   fallbackName?: string;
   fallbackUsername?: string;
-  fallbackEmail?: string;
   avatarUrl?: string;
   isDeleting?: boolean;
   isSettingPrimary?: boolean;
@@ -29,7 +27,6 @@ export function GitHubConnectedCard({
   identity,
   fallbackName = "Thành viên GitHub",
   fallbackUsername = "",
-  fallbackEmail = "",
   avatarUrl,
   isDeleting = false,
   isSettingPrimary = false,
@@ -75,11 +72,6 @@ export function GitHubConnectedCard({
               <span className="font-mono font-semibold text-purple-600 dark:text-purple-400">
                 @{username || "github-user"}
               </span>
-              {fallbackEmail && (
-                <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                  • <MailIcon className="w-3 h-3" /> {fallbackEmail}
-                </span>
-              )}
             </div>
           </div>
         </div>

@@ -62,7 +62,15 @@ export function CustomSelect({
         setIsOpen(false);
       }
     };
-    const handleScrollOrResize = () => setIsOpen(false);
+    const handleScrollOrResize = (event: Event) => {
+      if (event.type === "scroll") {
+        const target = event.target as Node;
+        if (dropdownRef.current && (target === dropdownRef.current || dropdownRef.current.contains(target))) {
+          return;
+        }
+      }
+      setIsOpen(false);
+    };
 
     if (isOpen) {
       document.addEventListener("mousedown", handleClickOutside);

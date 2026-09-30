@@ -1,6 +1,6 @@
 "use client";
 
-import { showSuccessToast, showErrorToast, getApiErrorMessage, getApiErrorStatus } from "@/lib/api-error";
+import { showErrorToast, getApiErrorMessage, getApiErrorStatus } from "@/lib/api-error";
 import { getSprintSourceUserMessage } from "../lib/sprint-query-source";
 import { useState, useMemo, useEffect, useRef } from "react";
 import { useQueryClient } from "@tanstack/react-query";
@@ -33,8 +33,8 @@ import {
 import { useProjectTasksData, useTransitionTask, useTaskOptions } from "../hooks/use-project-tasks";
 import { useProjectJiraSourceSelection } from "@/features/student/project/hooks/use-project-jira-source-selection";
 import { useProjectRealtime } from "@/features/student/project/hooks/use-project-realtime";
-import { useProjectSyncStatus, useSyncProject, PROJECT_PROJECTION_QUERY_KEYS } from "@/features/student/project/hooks/useProjectSync";
-import { canRequestProjectSync, isActivelySyncing } from "@/features/student/project/lib/sync-job-status";
+import { useProjectSyncStatus, PROJECT_PROJECTION_QUERY_KEYS } from "@/features/student/project/hooks/useProjectSync";
+import { isActivelySyncing } from "@/features/student/project/lib/sync-job-status";
 import { useTimedSyncWindow } from "@/features/student/project/hooks/use-timed-sync-window";
 import { JIRA_SPRINT_QUERY_KEYS } from "../hooks/use-sprint-data";
 import { dropMatchedStatusOverrides } from "../lib/task-list-cache";
@@ -141,17 +141,9 @@ export function SprintProgressView() {
     wasActiveSyncRef.current = hasActiveSyncJob;
   }, [hasActiveSyncJob, projectId, queryClient]);
 
-  const lastSyncedAt = useMemo(() => {
-    return syncJobs
-      .map((job) => job.completedAt)
-      .filter((completedAt): completedAt is string => Boolean(completedAt))
-      .sort((left, right) => new Date(right).getTime() - new Date(left).getTime())[0] || null;
-  }, [syncJobs]);
   const transitionTaskMutation = useTransitionTask();
   const assignTaskToSprintMutation = useAssignTaskToSprint();
   const patchSprintMutation = usePatchSprint();
-  const syncProjectMutation = useSyncProject();
-  const isSyncingJira = syncProjectMutation.isPending || (hasActiveSyncJob && !syncWindowTimedOut);
 
   const teamMembers = useMemo(() => {
     const assignable = taskOptions?.assignableUsers || [];
@@ -385,16 +377,6 @@ export function SprintProgressView() {
     }
   };
 
-  const handleSyncJira = async () => {
-    if (!projectId || !canRequestProjectSync(isTeamLeader)) return;
-    try {
-      await syncProjectMutation.mutateAsync(projectId);
-      showSuccessToast("Đã gửi yêu cầu đồng bộ Jira & GitHub. Dữ liệu sẽ tự động cập nhật.");
-    } catch {
-      showErrorToast("Không thể kích hoạt đồng bộ từ Jira.");
-    }
-  };
-
   const handleSaveIssue = (savedIssue: SprintIssue) => {
     const isProjectedTask = projectTasks.some((task) => task.id === savedIssue.id);
     if (isProjectedTask) {
@@ -443,9 +425,6 @@ export function SprintProgressView() {
         totalTasksCount={activeView === "BOARD" ? boardIssues.length : filteredIssues.length}
         totalProjectTasksCount={topLevelIssues.length}
         productBacklogCount={productBacklogCount}
-        onSyncJira={canRequestProjectSync(isTeamLeader) ? handleSyncJira : undefined}
-        isSyncingJira={isSyncingJira}
-        lastSyncedAt={lastSyncedAt}
         realtimeStatus={realtimeStatus}
         lastEventTime={lastEventTime}
         lastEvent={lastEvent}
