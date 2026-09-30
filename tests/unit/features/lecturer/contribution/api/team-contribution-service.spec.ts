@@ -169,4 +169,36 @@ describe("TeamContributionService", () => {
       );
     }
   );
+
+  fptTest(
+    {
+      id: "UTCID13",
+      type: "N",
+      executedDate: "30/09/2026",
+      description: "Parse dung hasSprintOverlap va sprintOverlapWarnings khi BE tra ve canh bao trung sprint",
+    },
+    async () => {
+      vi.spyOn(apiClient, "get").mockResolvedValueOnce({
+        data: {
+          ...evaluation,
+          hasSprintOverlap: true,
+          sprintOverlapWarnings: [
+            {
+              sprintName: "Sprint 2 - Implementation",
+              overlappingSprintName: "Sprint 1 - SRS",
+              siteName: "jira-dev",
+              startDate: "2026-09-10",
+              endDate: "2026-09-24",
+            },
+          ],
+        },
+      });
+
+      const res = await TeamContributionService.getEvaluation(mockTeamId);
+
+      expect(res.hasSprintOverlap).toBe(true);
+      expect(res.sprintOverlapWarnings).toHaveLength(1);
+      expect(res.sprintOverlapWarnings?.[0].overlappingSprintName).toBe("Sprint 1 - SRS");
+    }
+  );
 });

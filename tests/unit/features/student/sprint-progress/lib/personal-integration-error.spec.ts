@@ -1,6 +1,9 @@
 import { describe, expect } from "vitest";
 import { fptTest } from "@/testing/fpt-test-helper";
-import { getPersonalIntegrationErrorMessage } from "@/features/student/sprint-progress/lib/personal-integration-error";
+import {
+  getPersonalIntegrationErrorMessage,
+  getTaskLabelErrorMessage,
+} from "@/features/student/sprint-progress/lib/personal-integration-error";
 
 describe("personal-integration-error helper", () => {
   fptTest(
@@ -137,6 +140,40 @@ describe("personal-integration-error helper", () => {
       };
 
       expect(getPersonalIntegrationErrorMessage(error)).toBeNull();
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID07",
+      type: "N",
+      executedDate: "30/09/2026",
+      description: "getTaskLabelErrorMessage tra ve thong bao chuan khi ma loi la TASK_LABEL_NOT_ALLOWED",
+    },
+    () => {
+      const error = {
+        response: {
+          data: {
+            code: "TASK_LABEL_NOT_ALLOWED",
+            message: "Label không hợp lệ",
+          },
+        },
+      };
+
+      expect(getTaskLabelErrorMessage(error)).toBe("Label không hợp lệ");
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID08",
+      type: "B",
+      executedDate: "30/09/2026",
+      description: "getTaskLabelErrorMessage tra ve null khi error la null hoac khong phai TASK_LABEL_NOT_ALLOWED",
+    },
+    () => {
+      expect(getTaskLabelErrorMessage(null)).toBeNull();
+      expect(getTaskLabelErrorMessage({ code: "OTHER" })).toBeNull();
     }
   );
 });

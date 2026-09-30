@@ -44,3 +44,34 @@ export function getPersonalIntegrationErrorMessage(
 
   return null;
 }
+
+/**
+ * Bóc tách và định dạng thông báo lỗi khi Backend trả về mã lỗi TASK_LABEL_NOT_ALLOWED (HTTP 400).
+ * Đảm bảo thông báo hiển thị rõ ràng 4 nhãn chuẩn của SAGA.
+ */
+export function getTaskLabelErrorMessage(error: unknown): string | null {
+  if (!error) return null;
+
+  const anyErr = error as {
+    response?: {
+      data?: {
+        code?: string;
+        message?: string;
+      };
+    };
+    code?: string;
+    message?: string;
+  };
+
+  const data = anyErr?.response?.data;
+  const errorCode = data?.code || anyErr?.code;
+
+  if (errorCode === "TASK_LABEL_NOT_ALLOWED") {
+    return (
+      data?.message ||
+      "Nhãn task không hợp lệ. Hệ thống SAGA chỉ chấp nhận 4 nhãn quy định: saga:code, saga:test, saga:document, saga:research."
+    );
+  }
+
+  return null;
+}
