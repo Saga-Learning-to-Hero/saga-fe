@@ -13,6 +13,7 @@ import type { GetTaskWorkSessionTimelineParams } from "../types/work-session-tim
 import { getApiErrorCode } from "@/lib/api-error";
 import { JIRA_SPRINT_QUERY_KEYS } from "./use-sprint-data";
 import { upsertProjectTaskInList } from "../lib/task-list-cache";
+import { getPersonalIntegrationErrorMessage } from "../lib/personal-integration-error";
 
 export type TransitionTaskPayload =
   | TransitionProjectTaskRequest
@@ -159,6 +160,11 @@ export function useCreateProjectTask() {
       showSuccessToast(`Đã tạo task [${res.externalKey}] trên Jira thành công.`);
     },
     onError: (error: unknown, variables) => {
+      const personalIntegrationMsg = getPersonalIntegrationErrorMessage(error);
+      if (personalIntegrationMsg) {
+        showErrorToast(personalIntegrationMsg);
+        return;
+      }
       const err = error as { response?: { data?: { code?: string; message?: string } }; message?: string };
       const code = err.response?.data?.code;
       if (code === "JIRA_WRITE_INCOMPLETE") {
@@ -202,6 +208,11 @@ export function usePatchProjectTask() {
       showSuccessToast(`Đã cập nhật task [${res.externalKey}] thành công.`);
     },
     onError: (error: unknown) => {
+      const personalIntegrationMsg = getPersonalIntegrationErrorMessage(error);
+      if (personalIntegrationMsg) {
+        showErrorToast(personalIntegrationMsg);
+        return;
+      }
       const err = error as { response?: { data?: { code?: string; message?: string } }; message?: string };
       const msg =
         err.response?.data?.code === "JIRA_FIELD_INVALID"

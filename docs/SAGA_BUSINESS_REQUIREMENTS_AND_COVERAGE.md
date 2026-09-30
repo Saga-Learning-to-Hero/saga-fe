@@ -526,7 +526,7 @@ Project Type dùng để phân loại hướng dự án, không điều khiển 
 | --- | --- |
 | `/api/lecturer/courses`, `/{id}`, `/roster`, `/progress` | Đã dùng |
 | `/api/lecturer/courses/{courseId}/dashboard` | Đã dùng cho trang Tổng quan lớp; FE chỉ render payload BE |
-| `/api/lecturer/courses/{id}/teams/**` | Đã dùng |
+| `/api/lecturer/courses/{id}/teams/**` | Đã dùng (GET teams & unassignedStudents, POST `/teams/{teamId}/members` để thêm sinh viên unassigned hoặc chuyển nhóm thành viên với courseEnrollmentId, PUT `/leader`, import Excel) |
 | Contribution slice weights/config mode/team weights | Đã dùng |
 | `/api/projects/{projectId}/group-weights` | Đã dùng |
 | `/api/teams/{teamId}/contribution-evaluation` | Đã dùng |

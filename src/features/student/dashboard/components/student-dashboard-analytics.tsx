@@ -438,9 +438,6 @@ export function StudentDashboardAnalytics() {
                     <span className="text-xs text-muted-foreground font-medium">
                       {isCurrentSprint ? "Sprint hiện tại" : "Sprint đang xem"}
                     </span>
-                    <span className="text-[10px] text-muted-foreground/80 font-normal italic truncate">
-                      (chỉ áp dụng cho thẻ này)
-                    </span>
                   </div>
                   <div className="p-1.5 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400 shrink-0">
                     <KanbanIcon className="size-4" />
@@ -522,7 +519,7 @@ export function StudentDashboardAnalytics() {
               title={getSprintSourceUserMessage({ error: progressQuery.error }).title}
               description={
                 getApiErrorStatus(progressQuery.error) === 403 ||
-                getApiErrorCode(progressQuery.error) === "ACCESS_DENIED"
+                  getApiErrorCode(progressQuery.error) === "ACCESS_DENIED"
                   ? "Thành viên nhóm xem tiến độ cá nhân trên bảng điều khiển. Tiến độ toàn nhóm dành cho trưởng nhóm."
                   : getSprintSourceUserMessage({ error: progressQuery.error }).description
               }

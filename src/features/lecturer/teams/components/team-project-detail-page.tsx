@@ -546,10 +546,10 @@ export function TeamProjectDetailPage({ courseId, teamId }: TeamProjectDetailPag
           if (moveMember.isPending && !open) return;
           if (!open) setMovingMember(null);
         }}
-        onConfirm={(targetTeamId) => {
-          if (!movingMember?.teamMemberId) return;
+        onConfirm={(targetTeamId, courseEnrollmentId) => {
+          if (!courseEnrollmentId) return;
           moveMember.mutate(
-            { teamMemberId: movingMember.teamMemberId, targetTeamId },
+            { targetTeamId, courseEnrollmentId },
             { onSuccess: () => setMovingMember(null) }
           );
         }}

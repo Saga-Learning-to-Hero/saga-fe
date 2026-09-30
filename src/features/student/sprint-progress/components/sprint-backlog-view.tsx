@@ -55,6 +55,7 @@ interface SprintBacklogViewProps {
   jiraIntegrationId?: string;
   teamMembers?: AssigneeMemberInfo[];
   assignableUsers?: JiraAssignableUserInfo[];
+  canCreateTask?: boolean;
 }
 
 export function SprintBacklogView({
@@ -76,6 +77,7 @@ export function SprintBacklogView({
   jiraIntegrationId,
   teamMembers,
   assignableUsers,
+  canCreateTask = true,
 }: SprintBacklogViewProps) {
   const [collapsedSprints, setCollapsedSprints] = useState<Record<string, boolean>>({});
   const [expandedSubtaskParents, setExpandedSubtaskParents] = useState<Record<string, boolean>>({});
@@ -534,9 +536,10 @@ export function SprintBacklogView({
                         type="button"
                         variant="outline"
                         size="sm"
+                        disabled={!canCreateTask}
                         onClick={() => onCreateIssueClick(sprint.id)}
-                        title="Tạo với đầy đủ thông tin"
-                        className="h-7.5 text-xs font-semibold rounded-xl gap-1 cursor-pointer hover:bg-primary/10 hover:text-primary hover:border-primary/40 px-2.5"
+                        title={!canCreateTask ? "Vui lòng liên kết tài khoản Jira và GitHub cá nhân để tạo task" : "Tạo với đầy đủ thông tin"}
+                        className="h-7.5 text-xs font-semibold rounded-xl gap-1 cursor-pointer hover:bg-primary/10 hover:text-primary hover:border-primary/40 px-2.5 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         <PlusIcon className="w-3 h-3" />
                         <span>Thêm task</span>
@@ -555,8 +558,10 @@ export function SprintBacklogView({
                         type="button"
                         variant="outline"
                         size="sm"
+                        disabled={!canCreateTask}
                         onClick={() => onCreateIssueClick(sprint.id)}
-                        className="h-7 text-xs font-semibold rounded-lg gap-1 cursor-pointer shrink-0"
+                        title={!canCreateTask ? "Vui lòng liên kết tài khoản Jira và GitHub cá nhân để tạo task" : undefined}
+                        className="h-7 text-xs font-semibold rounded-lg gap-1 cursor-pointer shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         <PlusIcon className="w-3 h-3" />
                         <span>Tạo task mới</span>
@@ -600,7 +605,7 @@ export function SprintBacklogView({
                     sprintId={sprint.id}
                     sprintExternalId={sprint.externalSprintId != null ? String(sprint.externalSprintId) : undefined}
                     sprintName={sprint.name}
-                    canCreate={true}
+                    canCreate={canCreateTask}
                     onOpenFullModal={() => onCreateIssueClick(sprint.id)}
                   />
                 </div>
@@ -663,9 +668,10 @@ export function SprintBacklogView({
                   type="button"
                   variant="outline"
                   size="sm"
+                  disabled={!canCreateTask}
                   onClick={() => onCreateIssueClick("backlog")}
-                  title="Tạo với đầy đủ thông tin"
-                  className="h-7.5 text-xs font-semibold rounded-xl gap-1 cursor-pointer hover:bg-primary/10 hover:text-primary hover:border-primary/40 px-2.5"
+                  title={!canCreateTask ? "Vui lòng liên kết tài khoản Jira và GitHub cá nhân để tạo task" : "Tạo với đầy đủ thông tin"}
+                  className="h-7.5 text-xs font-semibold rounded-xl gap-1 cursor-pointer hover:bg-primary/10 hover:text-primary hover:border-primary/40 px-2.5 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <PlusIcon className="w-3 h-3" />
                   <span>Thêm task vào Backlog</span>
@@ -717,7 +723,7 @@ export function SprintBacklogView({
               jiraIntegrationId={jiraIntegrationId}
               sprintId="backlog"
               sprintName="Backlog"
-              canCreate={true}
+              canCreate={canCreateTask}
               onOpenFullModal={() => onCreateIssueClick("backlog")}
             />
           </div>

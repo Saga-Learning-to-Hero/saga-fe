@@ -223,16 +223,9 @@ export function SprintModal({
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="sprint-start" className="text-xs font-semibold">
-                  Ngày bắt đầu {!isEditing && <span className="text-destructive">*</span>}
-                </Label>
-                {isEditing && sprint?.status === "PLANNED" && (
-                  <span className="text-xs text-muted-foreground italic">
-                    (Áp dụng khi kích hoạt Sprint)
-                  </span>
-                )}
-              </div>
+              <Label htmlFor="sprint-start" className="text-xs font-semibold">
+                Ngày bắt đầu {!isEditing && <span className="text-destructive">*</span>}
+              </Label>
               <div className="relative">
                 <CalendarIcon className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
                 <Input
@@ -244,14 +237,17 @@ export function SprintModal({
                   className="pl-9 h-9 text-xs rounded-xl bg-card font-mono disabled:opacity-60"
                 />
               </div>
+              {isEditing && sprint?.status === "PLANNED" && (
+                <p className="text-[11px] text-muted-foreground italic mt-1 leading-tight">
+                  Sẽ được áp dụng khi kích hoạt Sprint
+                </p>
+              )}
             </div>
 
             <div className="space-y-1.5">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="sprint-end" className="text-xs font-semibold">
-                  Ngày kết thúc {!isEditing && <span className="text-destructive">*</span>}
-                </Label>
-              </div>
+              <Label htmlFor="sprint-end" className="text-xs font-semibold">
+                Ngày kết thúc {!isEditing && <span className="text-destructive">*</span>}
+              </Label>
               <div className="relative">
                 <CalendarIcon className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
                 <Input

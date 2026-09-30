@@ -48,5 +48,4 @@ export interface CommitStats {
   totalDeletions: number | null;
   netLines: number | null;
   activeBranches: number;
-  lastSyncedAt: string;
 }

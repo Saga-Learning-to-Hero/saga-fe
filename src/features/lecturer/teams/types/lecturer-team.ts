@@ -16,6 +16,7 @@ export interface LecturerTeamMember {
   studentProfileId: string;
   studentCode: string;
   fullName: string;
+  avatarUrl?: string;
   email: string;
   role: TeamMemberRole | string;
 }
@@ -36,9 +37,25 @@ export interface LecturerTeamItem {
   members: LecturerTeamMember[];
 }
 
+export interface UnassignedStudent {
+  courseEnrollmentId: string;
+  studentProfileId?: string;
+  studentCode: string;
+  fullName: string;
+  email: string;
+  avatarUrl?: string;
+  classCode?: string;
+  avatar?: string;
+}
+
+export interface AddTeamMemberRequest {
+  courseEnrollmentId: string;
+}
+
 export interface LecturerTeamsResponse {
   courseId: string;
   teams: LecturerTeamItem[];
+  unassignedStudents?: UnassignedStudent[];
 }
 
 export interface TeamPreviewSummary {
@@ -124,14 +141,32 @@ export function parseLecturerTeamMember(value: unknown): LecturerTeamMember {
     studentProfileId: toOptionalText(source.studentProfileId),
     studentCode: toOptionalText(source.studentCode),
     fullName: toOptionalText(source.fullName),
+    avatarUrl: toOptionalText(source.avatarUrl || source.avatar),
     email: toOptionalText(source.email),
     role: toOptionalText(source.role) || "MEMBER",
+  };
+}
+
+export function parseUnassignedStudent(value: unknown): UnassignedStudent {
+  const source = (value ?? {}) as Record<string, unknown>;
+  return {
+    courseEnrollmentId: toOptionalText(source.courseEnrollmentId || source.id).trim(),
+    studentProfileId: toOptionalText(source.studentProfileId),
+    studentCode: toOptionalText(source.studentCode),
+    fullName: toOptionalText(source.fullName || source.name),
+    email: toOptionalText(source.email),
+    avatarUrl: toOptionalText(source.avatarUrl || source.avatar),
+    classCode: toOptionalText(source.classCode),
+    avatar: toOptionalText(source.avatar),
   };
 }
 
 export function parseLecturerTeamsResponse(value: unknown, courseId: string): LecturerTeamsResponse {
   const source = (value ?? {}) as Record<string, unknown>;
   const teams = Array.isArray(source.teams) ? source.teams : [];
+  const unassignedStudents = Array.isArray(source.unassignedStudents)
+    ? source.unassignedStudents.map(parseUnassignedStudent)
+    : [];
 
   return {
     courseId: toOptionalText(source.courseId).trim() || courseId,
@@ -147,6 +182,7 @@ export function parseLecturerTeamsResponse(value: unknown, courseId: string): Le
         members,
       };
     }),
+    unassignedStudents,
   };
 }
 

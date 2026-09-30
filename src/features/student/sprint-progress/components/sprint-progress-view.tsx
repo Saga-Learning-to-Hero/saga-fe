@@ -1,6 +1,6 @@
 "use client";
 
-import { showSuccessToast, showErrorToast, getApiErrorMessage, getApiErrorStatus } from "@/lib/api-error";
+import { showErrorToast, getApiErrorMessage, getApiErrorStatus } from "@/lib/api-error";
 import { getSprintSourceUserMessage } from "../lib/sprint-query-source";
 import { useState, useMemo, useEffect, useRef } from "react";
 import { useQueryClient } from "@tanstack/react-query";
@@ -25,6 +25,8 @@ import {
 import { Loader2Icon, AlertCircleIcon } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { useUserIdentities } from "@/features/integrations/hooks/useUserIntegrations";
+import { PersonalIntegrationRequiredModal } from "@/features/integrations/components/personal-integration-required-modal";
 import {
   useProjectSprints,
   useAssignTaskToSprint,
@@ -33,8 +35,8 @@ import {
 import { useProjectTasksData, useTransitionTask, useTaskOptions } from "../hooks/use-project-tasks";
 import { useProjectJiraSourceSelection } from "@/features/student/project/hooks/use-project-jira-source-selection";
 import { useProjectRealtime } from "@/features/student/project/hooks/use-project-realtime";
-import { useProjectSyncStatus, useSyncProject, PROJECT_PROJECTION_QUERY_KEYS } from "@/features/student/project/hooks/useProjectSync";
-import { canRequestProjectSync, isActivelySyncing } from "@/features/student/project/lib/sync-job-status";
+import { useProjectSyncStatus, PROJECT_PROJECTION_QUERY_KEYS } from "@/features/student/project/hooks/useProjectSync";
+import { isActivelySyncing } from "@/features/student/project/lib/sync-job-status";
 import { useTimedSyncWindow } from "@/features/student/project/hooks/use-timed-sync-window";
 import { JIRA_SPRINT_QUERY_KEYS } from "../hooks/use-sprint-data";
 import { dropMatchedStatusOverrides } from "../lib/task-list-cache";
@@ -104,6 +106,15 @@ export function SprintProgressView() {
   const isLeaderInGroup = effectiveCourse && "myGroup" in effectiveCourse && effectiveCourse.myGroup?.role === "LEADER";
   const isTeamLeader = team?.myRole === "LEADER" || Boolean(isLeaderInGroup);
 
+  const {
+    isJiraConnected: isUserJiraConnected,
+    isGitHubConnected: isUserGitHubConnected,
+    isLoading: isLoadingUserIdentities,
+  } = useUserIdentities();
+
+  const isPersonalIntegrationMissing = !isUserJiraConnected || !isUserGitHubConnected;
+  const canCreateTask = !isPersonalIntegrationMissing;
+
   const [userSelectedSprintId, setUserSelectedSprintId] = useState<string | null>(null);
   const [activeView, setActiveView] = useState<"BOARD" | "BACKLOG" | "TIMELINE" | "ANALYTICS">("BOARD");
   const [searchQuery, setSearchQuery] = useState<string>("");
@@ -141,17 +152,9 @@ export function SprintProgressView() {
     wasActiveSyncRef.current = hasActiveSyncJob;
   }, [hasActiveSyncJob, projectId, queryClient]);
 
-  const lastSyncedAt = useMemo(() => {
-    return syncJobs
-      .map((job) => job.completedAt)
-      .filter((completedAt): completedAt is string => Boolean(completedAt))
-      .sort((left, right) => new Date(right).getTime() - new Date(left).getTime())[0] || null;
-  }, [syncJobs]);
   const transitionTaskMutation = useTransitionTask();
   const assignTaskToSprintMutation = useAssignTaskToSprint();
   const patchSprintMutation = usePatchSprint();
-  const syncProjectMutation = useSyncProject();
-  const isSyncingJira = syncProjectMutation.isPending || (hasActiveSyncJob && !syncWindowTimedOut);
 
   const teamMembers = useMemo(() => {
     const assignable = taskOptions?.assignableUsers || [];
@@ -283,30 +286,11 @@ export function SprintProgressView() {
   };
 
   const availableLabels = useMemo(() => {
-    const labelSet = new Set<string>();
-    const defaultLabels = [
-      "saga:code",
-      "saga:test",
-      "saga:doc",
-      "saga:research",
-      "frontend",
-      "backend",
-      "ui/ux",
-      "bugfix",
-      "api",
-      "database",
-      "devops",
-    ];
-    defaultLabels.forEach((l) => labelSet.add(l));
-    for (const t of rawIssues) {
-      if (Array.isArray(t.labels)) {
-        t.labels.forEach((l) => {
-          if (l && l.trim()) labelSet.add(l.trim());
-        });
-      }
+    if (taskOptions?.labels && taskOptions.labels.length > 0) {
+      return taskOptions.labels;
     }
-    return Array.from(labelSet);
-  }, [rawIssues]);
+    return ["saga:code", "saga:test", "saga:document", "saga:research"];
+  }, [taskOptions]);
 
   const filteredIssues = useMemo(() => {
     return scopedIssues.filter((issue) => {
@@ -385,16 +369,6 @@ export function SprintProgressView() {
     }
   };
 
-  const handleSyncJira = async () => {
-    if (!projectId || !canRequestProjectSync(isTeamLeader)) return;
-    try {
-      await syncProjectMutation.mutateAsync(projectId);
-      showSuccessToast("Đã gửi yêu cầu đồng bộ Jira & GitHub. Dữ liệu sẽ tự động cập nhật.");
-    } catch {
-      showErrorToast("Không thể kích hoạt đồng bộ từ Jira.");
-    }
-  };
-
   const handleSaveIssue = (savedIssue: SprintIssue) => {
     const isProjectedTask = projectTasks.some((task) => task.id === savedIssue.id);
     if (isProjectedTask) {
@@ -443,9 +417,6 @@ export function SprintProgressView() {
         totalTasksCount={activeView === "BOARD" ? boardIssues.length : filteredIssues.length}
         totalProjectTasksCount={topLevelIssues.length}
         productBacklogCount={productBacklogCount}
-        onSyncJira={canRequestProjectSync(isTeamLeader) ? handleSyncJira : undefined}
-        isSyncingJira={isSyncingJira}
-        lastSyncedAt={lastSyncedAt}
         realtimeStatus={realtimeStatus}
         lastEventTime={lastEventTime}
         lastEvent={lastEvent}
@@ -537,6 +508,14 @@ export function SprintProgressView() {
           </div>
         </div>
       )}
+
+      <PersonalIntegrationRequiredModal
+        isOpen={!isLoadingUserIdentities && isPersonalIntegrationMissing}
+        isJiraConnected={isUserJiraConnected}
+        isGitHubConnected={isUserGitHubConnected}
+        courseId={courseId}
+        moduleName="task"
+      />
 
       {Boolean(projectId) && !isJiraConnected && (
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-3.5 rounded-xl border border-amber-500/30 bg-amber-500/10 text-xs text-amber-800 dark:text-amber-200 shadow-2xs">
@@ -634,6 +613,7 @@ export function SprintProgressView() {
           teamMembers={teamMembers}
           assignableUsers={taskOptions?.assignableUsers}
           onStatusChange={handleMoveTaskStatus}
+          canCreateTask={canCreateTask}
         />
       )}
 
@@ -703,6 +683,7 @@ export function SprintProgressView() {
           onDelete={handleDeleteIssue}
           isTeamLeader={isTeamLeader}
           currentUserStudentCode={currentUserStudentCode}
+          canCreateTask={canCreateTask}
         />
       )}
 
