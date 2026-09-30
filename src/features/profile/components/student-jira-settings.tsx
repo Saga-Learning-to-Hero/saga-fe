@@ -47,13 +47,15 @@ export function StudentJiraSettings({
 
   const {
     isWaiting,
+    preparePopup,
     startFlow,
     cancelFlow,
-    retryOpenTab,
+    retryOpenPopup,
     checkNow,
   } = useIntegrationPopupFlow();
 
   const handleConnectJiraOAuth = async () => {
+    if (!preparePopup("jira")) return;
     try {
       showInfoToast("Đang mở trang Atlassian ID OAuth...", { id: "jira-oauth" });
       const defaultPath = "/profile/integrations";
@@ -62,14 +64,14 @@ export function StudentJiraSettings({
         : defaultPath;
       const result = await startLinkMutation.mutateAsync(currentPath);
 
-      if (result.authorizationUrl) {
-        startFlow({
-          provider: "jira",
-          scope: "personal",
-          authorizationUrl: result.authorizationUrl,
-        });
-      }
+      if (!result.authorizationUrl) throw new Error("Missing Jira authorization URL");
+      startFlow({
+        provider: "jira",
+        scope: "personal",
+        authorizationUrl: result.authorizationUrl,
+      });
     } catch {
+      cancelFlow();
       showErrorToast("Lỗi khi kết nối với máy chủ Atlassian. Vui lòng thử lại sau.", { id: "jira-oauth" });
     }
   };
@@ -256,7 +258,7 @@ export function StudentJiraSettings({
         provider="jira"
         scope="personal"
         onClose={cancelFlow}
-        onRetryOpen={retryOpenTab}
+        onRetryOpen={retryOpenPopup}
         onCheckNow={checkNow}
       />
     </Card>

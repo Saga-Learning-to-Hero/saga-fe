@@ -12,11 +12,11 @@ export interface IntegrationBroadcastMessage {
   timestamp?: number;
 }
 
-export const SAGA_INTEGRATION_CHANNEL_NAME = "SAGA_OAUTH_INTEGRATION_CHANNEL";
+export const SAGA_INTEGRATION_CHANNEL_NAME = "personal_integration_channel";
 export const SAGA_STORAGE_FALLBACK_KEY = "saga_oauth_integration_result";
 
 /**
- * Gửi tín hiệu hoàn tất kết quả OAuth từ Tab callback về lại Tab chính SAGA.
+ * Gửi tín hiệu hoàn tất OAuth từ cửa sổ callback về màn hình SAGA chính.
  * Sử dụng 3 kênh đồng thời: BroadcastChannel, window.opener.postMessage và localStorage fallback.
  */
 export function sendIntegrationResult(result: Omit<IntegrationBroadcastMessage, "type" | "timestamp">): void {
@@ -57,7 +57,7 @@ export function sendIntegrationResult(result: Omit<IntegrationBroadcastMessage, 
 }
 
 /**
- * Lắng nghe kết quả xác thực OAuth từ Tab mới.
+ * Lắng nghe kết quả xác thực OAuth từ cửa sổ popup.
  * Trả về hàm hủy đăng ký (unsubscribe) để cleanup.
  */
 export function subscribeIntegrationResult(

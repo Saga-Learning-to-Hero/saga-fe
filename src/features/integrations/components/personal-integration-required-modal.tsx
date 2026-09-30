@@ -55,9 +55,10 @@ export function PersonalIntegrationRequiredModal({
   const {
     isWaiting,
     provider: waitingProvider,
+    preparePopup,
     startFlow,
     cancelFlow,
-    retryOpenTab,
+    retryOpenPopup,
     checkNow,
   } = useIntegrationPopupFlow();
 
@@ -82,35 +83,37 @@ export function PersonalIntegrationRequiredModal({
   if (!isOpen) return null;
 
   const handleConnectJira = async () => {
+    if (!preparePopup("jira")) return;
     try {
       showInfoToast("Đang mở trang Atlassian Jira OAuth...", { id: "jira-oauth" });
       const currentPath = typeof window !== "undefined" ? window.location.pathname : "/student/sprint-progress";
       const result = await startJiraLinkMutation.mutateAsync(currentPath);
-      if (result.authorizationUrl) {
-        startFlow({
-          provider: "jira",
-          scope: "personal",
-          authorizationUrl: result.authorizationUrl,
-        });
-      }
+      if (!result.authorizationUrl) throw new Error("Missing Jira authorization URL");
+      startFlow({
+        provider: "jira",
+        scope: "personal",
+        authorizationUrl: result.authorizationUrl,
+      });
     } catch {
+      cancelFlow();
       showErrorToast("Lỗi khi kết nối với máy chủ Atlassian. Vui lòng thử lại sau.", { id: "jira-oauth" });
     }
   };
 
   const handleConnectGitHub = async () => {
+    if (!preparePopup("github")) return;
     try {
       showInfoToast("Đang mở trang GitHub OAuth...", { id: "github-oauth" });
       const currentPath = typeof window !== "undefined" ? window.location.pathname : "/student/commits";
       const result = await startGitHubLinkMutation.mutateAsync(currentPath);
-      if (result.authorizationUrl) {
-        startFlow({
-          provider: "github",
-          scope: "personal",
-          authorizationUrl: result.authorizationUrl,
-        });
-      }
+      if (!result.authorizationUrl) throw new Error("Missing GitHub authorization URL");
+      startFlow({
+        provider: "github",
+        scope: "personal",
+        authorizationUrl: result.authorizationUrl,
+      });
     } catch {
+      cancelFlow();
       showErrorToast("Lỗi khi kết nối với máy chủ GitHub. Vui lòng thử lại sau.", { id: "github-oauth" });
     }
   };
@@ -346,7 +349,7 @@ export function PersonalIntegrationRequiredModal({
         provider={waitingProvider}
         scope="personal"
         onClose={cancelFlow}
-        onRetryOpen={retryOpenTab}
+        onRetryOpen={retryOpenPopup}
         onCheckNow={checkNow}
       />
     </div>

@@ -118,9 +118,9 @@ function FailureContent() {
   const backHref = returnParam || (user?.role === "STUDENT" ? "/student/courses" : "/profile/integrations");
   const backLabel = isProject ? "Quay lại Thông tin Dự án" : "Quay lại Cài đặt Tích hợp";
 
-  const isPopupTab = useSyncExternalStore(
+  const isPopupWindow = useSyncExternalStore(
     () => () => {},
-    () => Boolean(window.opener) || window.history.length <= 2,
+    () => Boolean(window.opener),
     () => false
   );
 
@@ -230,7 +230,7 @@ function FailureContent() {
           </Link>
         </div>
 
-        {isPopupTab && (
+        {isPopupWindow && (
           <div className="mt-4 text-center">
             <Button
               variant="outline"
@@ -239,7 +239,7 @@ function FailureContent() {
               className="text-xs font-semibold rounded-xl gap-1.5 cursor-pointer"
             >
               <ArrowLeftIcon className="w-3.5 h-3.5" />
-              Đóng tab này và quay lại tab SAGA
+              Đóng cửa sổ và quay lại SAGA
             </Button>
           </div>
         )}

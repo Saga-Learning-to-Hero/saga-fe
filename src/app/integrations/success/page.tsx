@@ -27,11 +27,11 @@ function SuccessContent() {
   const refreshIntegrations = useRefreshUserIntegrations();
   const { isAuthenticated, user } = useAuthStore();
   const [isSyncing, setIsSyncing] = useState<boolean>(true);
-  const [countdown, setCountdown] = useState<number>(2);
+  const [countdown, setCountdown] = useState<number>(1);
 
-  const isPopupTab = useSyncExternalStore(
+  const isPopupWindow = useSyncExternalStore(
     () => () => {},
-    () => Boolean(window.opener) || window.history.length <= 2,
+    () => Boolean(window.opener),
     () => false
   );
 
@@ -56,6 +56,7 @@ function SuccessContent() {
 
   useEffect(() => {
     let isMounted = true;
+    let closeTimer: ReturnType<typeof setTimeout> | null = null;
 
     // Phát tín hiệu broadcast về cho tab SAGA chính
     sendIntegrationResult({
@@ -65,9 +66,8 @@ function SuccessContent() {
       projectId: projectIdParam,
     });
 
-    // Kiểm tra xem trang có đang mở trong popup tab mới không
+    // Callback nằm trong popup thì báo tab chính và tự đóng sau khi đồng bộ.
     const hasOpener = typeof window !== "undefined" && Boolean(window.opener);
-    const isNewWindow = typeof window !== "undefined" && (hasOpener || window.history.length <= 2);
 
     async function syncIntegrationsAndNavigate() {
       try {
@@ -76,15 +76,13 @@ function SuccessContent() {
         if (!isMounted) return;
         setIsSyncing(false);
 
-        // Nếu là tab popup mới: đếm ngược đóng tab
-        if (isNewWindow) {
-          const timer = setTimeout(() => {
+        if (hasOpener) {
+          closeTimer = setTimeout(() => {
             if (typeof window !== "undefined") {
               window.close();
             }
-          }, 1500);
-
-          return () => clearTimeout(timer);
+          }, 1000);
+          return;
         }
 
         // Nếu mở ở cùng tab: điều hướng về trang đích như cũ
@@ -109,6 +107,7 @@ function SuccessContent() {
     return () => {
       isMounted = false;
       clearInterval(interval);
+      if (closeTimer) clearTimeout(closeTimer);
     };
   }, [isGithub, isJira, isProjectScope, projectIdParam, refreshIntegrations, returnParam, router, searchParams, user?.role]);
 
@@ -166,14 +165,14 @@ function SuccessContent() {
           </div>
         </div>
 
-        {isPopupTab ? (
+        {isPopupWindow ? (
           <div className="mt-6 bg-emerald-500/10 border border-emerald-500/30 rounded-xl p-4 text-center space-y-3 text-xs">
             <div className="flex items-center justify-center gap-2 text-emerald-700 dark:text-emerald-300 font-semibold">
               <Loader2Icon className="w-4 h-4 animate-spin text-emerald-600" />
-              <span>Đã đồng bộ xong! Đang tự động đóng tab này trong {countdown}s...</span>
+              <span>Đã đồng bộ xong! Cửa sổ sẽ tự đóng trong {countdown}s...</span>
             </div>
             <p className="text-muted-foreground text-[11px]">
-              Dữ liệu tại tab SAGA cũ đã được tự động cập nhật ngay tại chỗ.
+              Dữ liệu tại màn hình SAGA chính đang được cập nhật tự động.
             </p>
             <Button
               variant="outline"
@@ -182,7 +181,7 @@ function SuccessContent() {
               className="text-xs font-semibold rounded-lg gap-1.5 mt-1 cursor-pointer"
             >
               <XIcon className="w-3.5 h-3.5" />
-              Đóng tab này ngay
+              Đóng cửa sổ ngay
             </Button>
           </div>
         ) : (

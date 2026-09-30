@@ -47,13 +47,15 @@ export function StudentGitHubSettings({
 
   const {
     isWaiting,
+    preparePopup,
     startFlow,
     cancelFlow,
-    retryOpenTab,
+    retryOpenPopup,
     checkNow,
   } = useIntegrationPopupFlow();
 
   const handleConnectGitHubOAuth = async () => {
+    if (!preparePopup("github")) return;
     try {
       showInfoToast("Đang mở trang GitHub OAuth...", { id: "github-oauth" });
       const defaultPath = "/profile/integrations";
@@ -62,14 +64,14 @@ export function StudentGitHubSettings({
         : defaultPath;
       const result = await startLinkMutation.mutateAsync(currentPath);
 
-      if (result.authorizationUrl) {
-        startFlow({
-          provider: "github",
-          scope: "personal",
-          authorizationUrl: result.authorizationUrl,
-        });
-      }
+      if (!result.authorizationUrl) throw new Error("Missing GitHub authorization URL");
+      startFlow({
+        provider: "github",
+        scope: "personal",
+        authorizationUrl: result.authorizationUrl,
+      });
     } catch {
+      cancelFlow();
       showErrorToast("Lỗi khi kết nối với máy chủ GitHub. Vui lòng thử lại sau.", { id: "github-oauth" });
     }
   };
@@ -257,7 +259,7 @@ export function StudentGitHubSettings({
         provider="github"
         scope="personal"
         onClose={cancelFlow}
-        onRetryOpen={retryOpenTab}
+        onRetryOpen={retryOpenPopup}
         onCheckNow={checkNow}
       />
     </Card>

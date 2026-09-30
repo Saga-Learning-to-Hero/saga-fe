@@ -16,6 +16,23 @@ interface UseIntegrationPopupFlowOptions {
   onError?: (message: IntegrationBroadcastMessage) => void;
 }
 
+const POPUP_WIDTH = 620;
+const POPUP_HEIGHT = 760;
+
+function getPopupFeatures(): string {
+  const left = Math.max(0, Math.round(window.screenX + (window.outerWidth - POPUP_WIDTH) / 2));
+  const top = Math.max(0, Math.round(window.screenY + (window.outerHeight - POPUP_HEIGHT) / 2));
+  return [
+    "popup=yes",
+    `width=${POPUP_WIDTH}`,
+    `height=${POPUP_HEIGHT}`,
+    `left=${left}`,
+    `top=${top}`,
+    "resizable=yes",
+    "scrollbars=yes",
+  ].join(",");
+}
+
 export function useIntegrationPopupFlow(options: UseIntegrationPopupFlowOptions = {}) {
   const { onSuccess, onError } = options;
   const queryClient = useQueryClient();
@@ -28,27 +45,53 @@ export function useIntegrationPopupFlow(options: UseIntegrationPopupFlowOptions 
 
   const newWindowRef = useRef<Window | null>(null);
   const pollingTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const lastHandledEventRef = useRef<string>("");
 
-  const stopWaiting = useCallback(() => {
+  const stopWaiting = useCallback((closePopup = false) => {
     setIsWaiting(false);
     setAuthUrl("");
     if (pollingTimerRef.current) {
       clearInterval(pollingTimerRef.current);
       pollingTimerRef.current = null;
     }
+    if (closePopup && newWindowRef.current && !newWindowRef.current.closed) {
+      newWindowRef.current.close();
+    }
+    newWindowRef.current = null;
+  }, []);
+
+  const preparePopup = useCallback((targetProvider: IntegrationProvider): boolean => {
+    if (typeof window === "undefined") return false;
+
+    if (newWindowRef.current && !newWindowRef.current.closed) {
+      newWindowRef.current.close();
+    }
+
+    const popupName = `saga_personal_${targetProvider}_oauth`;
+    const waitingUrl = `/integrations/popup?provider=${encodeURIComponent(targetProvider)}`;
+    const popup = window.open(waitingUrl, popupName, getPopupFeatures());
+    if (!popup) {
+      showErrorToast("Trình duyệt đang chặn cửa sổ xác thực. Vui lòng cho phép popup rồi thử lại.");
+      return false;
+    }
+
+    popup.focus();
+    newWindowRef.current = popup;
+    return true;
   }, []);
 
   const handleSuccessResult = useCallback(
-    (msg: IntegrationBroadcastMessage) => {
-      stopWaiting();
+    async (msg: IntegrationBroadcastMessage) => {
+      stopWaiting(true);
 
       // Cập nhật lại query cache
-      void queryClient.invalidateQueries({ queryKey: USER_INTEGRATIONS_QUERY_KEY });
-      void queryClient.refetchQueries({ queryKey: USER_INTEGRATIONS_QUERY_KEY });
+      await queryClient.invalidateQueries({ queryKey: USER_INTEGRATIONS_QUERY_KEY });
 
       if (msg.projectId) {
-        void queryClient.invalidateQueries({ queryKey: ["project", msg.projectId] });
-        void queryClient.invalidateQueries({ queryKey: ["jira-sources", msg.projectId] });
+        await Promise.all([
+          queryClient.invalidateQueries({ queryKey: ["project", msg.projectId] }),
+          queryClient.invalidateQueries({ queryKey: ["jira-sources", msg.projectId] }),
+        ]);
       }
 
       showSuccessToast(
@@ -64,14 +107,14 @@ export function useIntegrationPopupFlow(options: UseIntegrationPopupFlowOptions 
 
   const handleErrorResult = useCallback(
     (msg: IntegrationBroadcastMessage) => {
-      stopWaiting();
+      stopWaiting(false);
       showErrorToast(msg.message || "Xác thực tài khoản thất bại. Vui lòng thử lại.");
       onError?.(msg);
     },
     [onError, stopWaiting]
   );
 
-  // Mở tab mới và bật popup chờ
+  // Điều hướng popup đã được mở đồng bộ từ thao tác click sang trang OAuth.
   const startFlow = useCallback(
     (params: {
       provider: IntegrationProvider;
@@ -87,13 +130,31 @@ export function useIntegrationPopupFlow(options: UseIntegrationPopupFlowOptions 
       setIsWaiting(true);
 
       if (typeof window !== "undefined") {
-        // Mở trong tab/popup mới
-        const newWin = window.open(params.authorizationUrl, "_blank");
-        newWindowRef.current = newWin;
+        const popup = newWindowRef.current && !newWindowRef.current.closed
+          ? newWindowRef.current
+          : window.open(
+              params.authorizationUrl,
+              `saga_personal_${params.provider}_oauth`,
+              getPopupFeatures()
+            );
+
+        if (!popup) {
+          stopWaiting();
+          showErrorToast("Không thể mở cửa sổ xác thực. Vui lòng cho phép popup rồi thử lại.");
+          return;
+        }
+
+        popup.location.replace(params.authorizationUrl);
+        popup.focus();
+        newWindowRef.current = popup;
 
         // Fallback polling mỗi 2.5s phòng khi browser chặn broadcast hoặc user đóng tab bằng tay
         if (pollingTimerRef.current) clearInterval(pollingTimerRef.current);
         pollingTimerRef.current = setInterval(async () => {
+          if (newWindowRef.current?.closed) {
+            stopWaiting();
+            return;
+          }
           if (targetScope === "personal") {
             try {
               await queryClient.refetchQueries({ queryKey: USER_INTEGRATIONS_QUERY_KEY });
@@ -104,24 +165,32 @@ export function useIntegrationPopupFlow(options: UseIntegrationPopupFlowOptions 
         }, 2500);
       }
     },
-    [queryClient]
+    [queryClient, stopWaiting]
   );
 
-  const retryOpenTab = useCallback(() => {
+  const retryOpenPopup = useCallback(() => {
     if (authUrl && typeof window !== "undefined") {
-      const newWin = window.open(authUrl, "_blank");
-      newWindowRef.current = newWin;
+      const popup = window.open(
+        authUrl,
+        `saga_personal_${provider}_oauth`,
+        getPopupFeatures()
+      );
+      if (!popup) {
+        showErrorToast("Trình duyệt đang chặn cửa sổ xác thực. Vui lòng cho phép popup rồi thử lại.");
+        return;
+      }
+      popup.focus();
+      newWindowRef.current = popup;
     }
-  }, [authUrl]);
+  }, [authUrl, provider]);
 
   const checkNow = useCallback(async () => {
     await queryClient.invalidateQueries({ queryKey: USER_INTEGRATIONS_QUERY_KEY });
-    await queryClient.refetchQueries({ queryKey: USER_INTEGRATIONS_QUERY_KEY });
     if (projectId) {
       await queryClient.invalidateQueries({ queryKey: ["project", projectId] });
       await queryClient.invalidateQueries({ queryKey: ["jira-sources", projectId] });
     }
-    stopWaiting();
+    stopWaiting(true);
     showSuccessToast("Đã làm mới dữ liệu liên kết tích hợp!");
   }, [projectId, queryClient, stopWaiting]);
 
@@ -131,8 +200,11 @@ export function useIntegrationPopupFlow(options: UseIntegrationPopupFlowOptions 
 
     const unsubscribe = subscribeIntegrationResult((msg) => {
       if (msg.provider === provider && msg.scope === scope) {
+        const eventKey = `${msg.provider}:${msg.scope}:${msg.status}:${msg.timestamp || 0}`;
+        if (lastHandledEventRef.current === eventKey) return;
+        lastHandledEventRef.current = eventKey;
         if (msg.status === "success") {
-          handleSuccessResult(msg);
+          void handleSuccessResult(msg);
         } else {
           handleErrorResult(msg);
         }
@@ -150,6 +222,9 @@ export function useIntegrationPopupFlow(options: UseIntegrationPopupFlowOptions 
       if (pollingTimerRef.current) {
         clearInterval(pollingTimerRef.current);
       }
+      if (newWindowRef.current && !newWindowRef.current.closed) {
+        newWindowRef.current.close();
+      }
     };
   }, []);
 
@@ -159,9 +234,10 @@ export function useIntegrationPopupFlow(options: UseIntegrationPopupFlowOptions 
     scope,
     authUrl,
     projectId,
+    preparePopup,
     startFlow,
-    cancelFlow: stopWaiting,
-    retryOpenTab,
+    cancelFlow: () => stopWaiting(true),
+    retryOpenPopup,
     checkNow,
   };
 }

@@ -14,6 +14,15 @@ vi.mock("next/navigation", () => ({
 const mockStartJiraMutateAsync = vi.fn();
 const mockStartGitHubMutateAsync = vi.fn();
 
+function createPopupWindowMock(): Window {
+  return {
+    closed: false,
+    close: vi.fn(),
+    focus: vi.fn(),
+    location: { replace: vi.fn() },
+  } as unknown as Window;
+}
+
 vi.mock("@/features/integrations/hooks/useJiraIntegrations", () => ({
   useStartJiraLink: () => ({
     mutateAsync: mockStartJiraMutateAsync,
@@ -142,7 +151,8 @@ describe("PersonalIntegrationRequiredModal", () => {
     },
     async () => {
       mockStartJiraMutateAsync.mockResolvedValueOnce({ authorizationUrl: "https://jira.atlassian.com/auth" });
-      const windowOpenSpy = vi.spyOn(window, "open").mockImplementation(() => null);
+      const popup = createPopupWindowMock();
+      const windowOpenSpy = vi.spyOn(window, "open").mockReturnValue(popup);
 
       renderWithClient(
         <PersonalIntegrationRequiredModal
@@ -159,7 +169,13 @@ describe("PersonalIntegrationRequiredModal", () => {
 
       await waitFor(() => {
         expect(mockStartJiraMutateAsync).toHaveBeenCalled();
+        expect(popup.location.replace).toHaveBeenCalledWith("https://jira.atlassian.com/auth");
       });
+      expect(windowOpenSpy).toHaveBeenCalledWith(
+        "/integrations/popup?provider=jira",
+        "saga_personal_jira_oauth",
+        expect.stringContaining("popup=yes")
+      );
 
       windowOpenSpy.mockRestore();
     }
@@ -174,7 +190,8 @@ describe("PersonalIntegrationRequiredModal", () => {
     },
     async () => {
       mockStartGitHubMutateAsync.mockResolvedValueOnce({ authorizationUrl: "https://github.com/login/oauth" });
-      const windowOpenSpy = vi.spyOn(window, "open").mockImplementation(() => null);
+      const popup = createPopupWindowMock();
+      const windowOpenSpy = vi.spyOn(window, "open").mockReturnValue(popup);
 
       renderWithClient(
         <PersonalIntegrationRequiredModal
@@ -191,7 +208,13 @@ describe("PersonalIntegrationRequiredModal", () => {
 
       await waitFor(() => {
         expect(mockStartGitHubMutateAsync).toHaveBeenCalled();
+        expect(popup.location.replace).toHaveBeenCalledWith("https://github.com/login/oauth");
       });
+      expect(windowOpenSpy).toHaveBeenCalledWith(
+        "/integrations/popup?provider=github",
+        "saga_personal_github_oauth",
+        expect.stringContaining("popup=yes")
+      );
 
       windowOpenSpy.mockRestore();
     }
@@ -268,6 +291,36 @@ describe("PersonalIntegrationRequiredModal", () => {
       unmount();
 
       expect(document.body.style.overflow).toBe("");
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID09",
+      type: "A",
+      executedDate: "30/09/2026",
+      description: "Khong goi API OAuth khi trinh duyet chan popup",
+    },
+    async () => {
+      const windowOpenSpy = vi.spyOn(window, "open").mockReturnValue(null);
+
+      renderWithClient(
+        <PersonalIntegrationRequiredModal
+          isOpen={true}
+          isJiraConnected={false}
+          isGitHubConnected={true}
+          moduleName="task"
+        />
+      );
+
+      fireEvent.click(screen.getByRole("button", { name: /Liên kết tài khoản Jira ngay/i }));
+
+      await waitFor(() => {
+        expect(windowOpenSpy).toHaveBeenCalled();
+      });
+      expect(mockStartJiraMutateAsync).not.toHaveBeenCalled();
+
+      windowOpenSpy.mockRestore();
     }
   );
 });

@@ -90,16 +90,16 @@ export function IntegrationWaitingModal({
 
           <div className="space-y-2">
             <Badge variant="outline" className="text-[11px] font-semibold px-2.5 py-0.5">
-              Đang chờ thao tác bên tab mới...
+              Đang chờ thao tác trong cửa sổ xác thực...
             </Badge>
             <h4 className="text-base font-bold text-foreground">
               Vui lòng cấp quyền trên {providerLabel}
             </h4>
             <p className="text-xs text-muted-foreground leading-relaxed">
-              Trình duyệt đã mở một tab mới để bạn đăng nhập và bấm <strong className="text-foreground">Cấp quyền (Authorize)</strong>. 
+              Trình duyệt đã mở một cửa sổ riêng để bạn đăng nhập và bấm <strong className="text-foreground">Cấp quyền (Authorize)</strong>.
             </p>
             <p className="text-[11px] text-muted-foreground/80 leading-relaxed bg-muted/40 p-2.5 rounded-xl border border-border/60">
-              💡 Sau khi bạn xác thực xong bên tab mới, tab đó sẽ <strong className="text-foreground">tự động đóng</strong> và màn hình SAGA hiện tại sẽ được cập nhật ngay tại chỗ mà không cần tải lại trang.
+              Sau khi xác thực thành công, cửa sổ này sẽ <strong className="text-foreground">tự động đóng</strong> và màn hình SAGA hiện tại sẽ cập nhật mà không tải lại trang.
             </p>
           </div>
 
@@ -113,7 +113,7 @@ export function IntegrationWaitingModal({
                 className="text-xs text-muted-foreground hover:text-primary gap-1.5 cursor-pointer h-8"
               >
                 <ExternalLinkIcon className="w-3.5 h-3.5" />
-                <span>Không thấy tab mở ra? Mở lại trang xác thực</span>
+                <span>Không thấy cửa sổ xác thực? Mở lại</span>
               </Button>
             </div>
           )}
