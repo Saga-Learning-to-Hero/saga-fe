@@ -124,6 +124,19 @@ export function TaskAiIntelligenceSection({
             <Loader2Icon className="w-3.5 h-3.5 animate-spin" />
             Đang tải dữ liệu đánh giá Task...
           </div>
+        ) : intelligenceQuery.data?.analysis && (intelligenceQuery.data.analysis.status === "QUEUED" || intelligenceQuery.data.analysis.status === "RUNNING") ? (
+          <div className="p-4 text-center text-xs text-muted-foreground flex flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-primary/20 bg-primary/5">
+            <Loader2Icon className="w-5 h-5 animate-spin text-primary" />
+            <div className="space-y-0.5">
+              <p className="font-semibold text-primary">AI đang phân tích task...</p>
+              <p className="text-[11px]">Quá trình này có thể mất vài giây.</p>
+            </div>
+          </div>
+        ) : intelligenceQuery.data?.analysis?.status === "FAILED" ? (
+          <div className="p-4 text-center text-xs text-muted-foreground space-y-2 rounded-xl border border-dashed border-red-500/30 bg-red-500/5">
+            <p className="text-red-600 dark:text-red-400 font-semibold">Lỗi trong quá trình phân tích AI.</p>
+            <p className="text-[11px]">Mã lỗi: {intelligenceQuery.data.analysis.failureCode || "UNKNOWN_ERROR"}</p>
+          </div>
         ) : parsedIntelligence ? (
           <div className="space-y-2.5">
             <div className="flex flex-wrap items-center justify-between gap-2">

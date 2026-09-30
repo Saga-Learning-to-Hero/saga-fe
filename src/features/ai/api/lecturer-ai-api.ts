@@ -14,20 +14,7 @@ import type {
   CourseAiProgressSubmitResult,
 } from "../types";
 
-async function fetchLatestAnalysis(url: string): Promise<AiLatestAnalysisResponse> {
-  try {
-    const response = await apiClient.get<AiAnalysisResponse>(url);
-    if (response.data && response.data.id) {
-      return { status: "FOUND", analysis: response.data };
-    }
-    return { status: "NOT_ANALYZED", analysis: null };
-  } catch (error: unknown) {
-    if (error && typeof error === "object" && "status" in error && (error as { status: number }).status === 404) {
-      return { status: "NOT_ANALYZED", analysis: null };
-    }
-    throw error;
-  }
-}
+
 
 export const CourseAiService = {
   async getProviderCatalog(courseId: string): Promise<AiProviderCatalogResponse> {
@@ -128,9 +115,10 @@ export const CourseAiService = {
   },
 
   async getLatestCourseProgress(courseId: string): Promise<AiLatestAnalysisResponse> {
-    return fetchLatestAnalysis(
+    const response = await apiClient.get<AiLatestAnalysisResponse>(
       `/api/lecturer/courses/${courseId}/ai/progress-analyses/latest`
     );
+    return response.data;
   },
 
   async getCourseAnalysis(courseId: string, analysisId: string): Promise<AiAnalysisResponse> {

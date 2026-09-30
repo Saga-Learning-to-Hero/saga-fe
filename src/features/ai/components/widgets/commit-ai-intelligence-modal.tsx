@@ -120,6 +120,22 @@ export function CommitAiIntelligenceModal({
               <Loader2Icon className="w-4 h-4 animate-spin text-primary" />
               Đang tải kết quả phân tích...
             </div>
+          ) : latestRun && (latestRun.status === "QUEUED" || latestRun.status === "RUNNING") ? (
+            <div className="p-8 text-center text-xs text-muted-foreground flex flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-border bg-muted/10">
+              <Loader2Icon className="w-6 h-6 animate-spin text-primary" />
+              <div className="space-y-1">
+                <p className="font-semibold text-foreground">AI đang phân tích commit...</p>
+                <p>Quá trình này có thể mất vài giây. Vui lòng đợi.</p>
+              </div>
+            </div>
+          ) : latestRun?.status === "FAILED" ? (
+            <div className="p-8 text-center text-xs text-muted-foreground space-y-3 rounded-xl border border-dashed border-red-500/30 bg-red-500/5">
+              <p className="text-red-600 dark:text-red-400 font-semibold">Lỗi trong quá trình phân tích AI.</p>
+              <p>Mã lỗi: {latestRun.failureCode || "UNKNOWN_ERROR"}</p>
+              <Button size="sm" variant="outline" onClick={() => submitCommitMutation.mutate()}>
+                Thử lại
+              </Button>
+            </div>
           ) : !latestRun || !parsedResult ? (
             <div className="p-8 text-center text-xs text-muted-foreground space-y-2 rounded-xl border border-dashed border-border bg-muted/10">
               <p>Chưa có kết quả đánh giá thông minh cho commit này.</p>

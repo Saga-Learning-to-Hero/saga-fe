@@ -39,6 +39,11 @@ export function useLatestTaskIntelligence(projectId: string, taskId: string) {
     queryFn: () => ProjectAiService.getLatestTaskIntelligence(projectId, taskId),
     enabled: Boolean(projectId && taskId),
     staleTime: 1000 * 30,
+    refetchInterval: (query) => {
+      const run = query.state.data?.analysis;
+      if (run?.status === "QUEUED" || run?.status === "RUNNING") return 3000;
+      return false;
+    },
   });
 }
 
@@ -61,6 +66,11 @@ export function useLatestTaskRisk(projectId: string, taskId: string) {
     queryFn: () => ProjectAiService.getLatestTaskRisk(projectId, taskId),
     enabled: Boolean(projectId && taskId),
     staleTime: 1000 * 30,
+    refetchInterval: (query) => {
+      const run = query.state.data?.analysis;
+      if (run?.status === "QUEUED" || run?.status === "RUNNING") return 3000;
+      return false;
+    },
   });
 }
 
@@ -83,6 +93,11 @@ export function useLatestTeamRisk(projectId: string) {
     queryFn: () => ProjectAiService.getLatestTeamRisk(projectId),
     enabled: Boolean(projectId),
     staleTime: 1000 * 30,
+    refetchInterval: (query) => {
+      const run = query.state.data?.analysis;
+      if (run?.status === "QUEUED" || run?.status === "RUNNING") return 3000;
+      return false;
+    },
   });
 }
 
@@ -105,6 +120,11 @@ export function useLatestStudentRisk(projectId: string, studentId: string) {
     queryFn: () => ProjectAiService.getLatestStudentRisk(projectId, studentId),
     enabled: Boolean(projectId && studentId),
     staleTime: 1000 * 30,
+    refetchInterval: (query) => {
+      const run = query.state.data?.analysis;
+      if (run?.status === "QUEUED" || run?.status === "RUNNING") return 3000;
+      return false;
+    },
   });
 }
 
@@ -127,6 +147,11 @@ export function useLatestTeamProgress(projectId: string) {
     queryFn: () => ProjectAiService.getLatestTeamProgress(projectId),
     enabled: Boolean(projectId),
     staleTime: 1000 * 30,
+    refetchInterval: (query) => {
+      const run = query.state.data?.analysis;
+      if (run?.status === "QUEUED" || run?.status === "RUNNING") return 3000;
+      return false;
+    },
   });
 }
 
@@ -149,6 +174,11 @@ export function useLatestStudentProgress(projectId: string, studentId: string) {
     queryFn: () => ProjectAiService.getLatestStudentProgress(projectId, studentId),
     enabled: Boolean(projectId && studentId),
     staleTime: 1000 * 30,
+    refetchInterval: (query) => {
+      const run = query.state.data?.analysis;
+      if (run?.status === "QUEUED" || run?.status === "RUNNING") return 3000;
+      return false;
+    },
   });
 }
 
@@ -177,6 +207,13 @@ export function useCommitAnalysesHistory(
       ProjectAiService.getCommitAnalysesHistory(projectId, gitCommitId, page, size),
     enabled: Boolean(projectId && gitCommitId),
     staleTime: 1000 * 30,
+    refetchInterval: (query) => {
+      const latestRun = query.state.data?.items?.[0];
+      if (latestRun?.status === "QUEUED" || latestRun?.status === "RUNNING") {
+        return 3000;
+      }
+      return false;
+    },
   });
 }
 

@@ -5,20 +5,7 @@ import type {
   AiAdjudicationResponse,
 } from "../types";
 
-async function fetchLatestAnalysis(url: string): Promise<AiLatestAnalysisResponse> {
-  try {
-    const response = await apiClient.get<AiAnalysisResponse>(url);
-    if (response.data && response.data.id) {
-      return { status: "FOUND", analysis: response.data };
-    }
-    return { status: "NOT_ANALYZED", analysis: null };
-  } catch (error: unknown) {
-    if (error && typeof error === "object" && "status" in error && (error as { status: number }).status === 404) {
-      return { status: "NOT_ANALYZED", analysis: null };
-    }
-    throw error;
-  }
-}
+
 
 export const ProjectAiService = {
   async submitCommitAnalysis(
@@ -58,9 +45,10 @@ export const ProjectAiService = {
     projectId: string,
     taskId: string
   ): Promise<AiLatestAnalysisResponse> {
-    return fetchLatestAnalysis(
+    const response = await apiClient.get<AiLatestAnalysisResponse>(
       `/api/projects/${projectId}/ai/tasks/${taskId}/intelligence-analyses/latest`
     );
+    return response.data;
   },
 
   async submitTaskRisk(
@@ -77,9 +65,10 @@ export const ProjectAiService = {
     projectId: string,
     taskId: string
   ): Promise<AiLatestAnalysisResponse> {
-    return fetchLatestAnalysis(
+    const response = await apiClient.get<AiLatestAnalysisResponse>(
       `/api/projects/${projectId}/ai/tasks/${taskId}/risk-analyses/latest`
     );
+    return response.data;
   },
 
   async submitStudentRisk(
@@ -96,9 +85,10 @@ export const ProjectAiService = {
     projectId: string,
     studentId: string
   ): Promise<AiLatestAnalysisResponse> {
-    return fetchLatestAnalysis(
+    const response = await apiClient.get<AiLatestAnalysisResponse>(
       `/api/projects/${projectId}/ai/students/${studentId}/risk-analyses/latest`
     );
+    return response.data;
   },
 
   async submitTeamRisk(projectId: string): Promise<AiAnalysisResponse> {
@@ -109,9 +99,10 @@ export const ProjectAiService = {
   },
 
   async getLatestTeamRisk(projectId: string): Promise<AiLatestAnalysisResponse> {
-    return fetchLatestAnalysis(
+    const response = await apiClient.get<AiLatestAnalysisResponse>(
       `/api/projects/${projectId}/ai/team/risk-analyses/latest`
     );
+    return response.data;
   },
 
   async submitStudentProgress(
@@ -128,9 +119,10 @@ export const ProjectAiService = {
     projectId: string,
     studentId: string
   ): Promise<AiLatestAnalysisResponse> {
-    return fetchLatestAnalysis(
+    const response = await apiClient.get<AiLatestAnalysisResponse>(
       `/api/projects/${projectId}/ai/students/${studentId}/progress-analyses/latest`
     );
+    return response.data;
   },
 
   async submitTeamProgress(projectId: string): Promise<AiAnalysisResponse> {
@@ -141,9 +133,10 @@ export const ProjectAiService = {
   },
 
   async getLatestTeamProgress(projectId: string): Promise<AiLatestAnalysisResponse> {
-    return fetchLatestAnalysis(
+    const response = await apiClient.get<AiLatestAnalysisResponse>(
       `/api/projects/${projectId}/ai/team/progress-analyses/latest`
     );
+    return response.data;
   },
 
   async getAnalysis(

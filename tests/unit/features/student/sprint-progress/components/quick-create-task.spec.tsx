@@ -429,11 +429,10 @@ describe("QuickCreateTask", () => {
       );
 
       await user.click(screen.getByRole("button", { name: /Tạo task nhanh/i }));
-      await user.type(screen.getByPlaceholderText("Cần làm gì? Nhập tên task..."), "Task mới");
 
-      expect(screen.getByRole("button", { name: "Tạo" })).toBeDisabled();
-      expect(screen.getByText(/Thiếu liên kết GitHub/i)).toBeInTheDocument();
-      expect(screen.getByRole("link", { name: "Mở trang tích hợp" })).toHaveAttribute(
+      expect(screen.queryByPlaceholderText("Cần làm gì? Nhập tên task...")).not.toBeInTheDocument();
+      expect(screen.getByText(/Thiếu tích hợp cá nhân/i)).toBeInTheDocument();
+      expect(screen.getByRole("link", { name: "Đi đến Tích hợp" })).toHaveAttribute(
         "href",
         "/profile/integrations"
       );
