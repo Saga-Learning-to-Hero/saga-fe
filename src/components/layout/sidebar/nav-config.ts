@@ -6,6 +6,7 @@ import {
   lecturerCourseGraphPath,
   lecturerCourseContributionPath,
   lecturerCourseTeamsPath,
+  lecturerCourseAiPath,
 } from "@/features/lecturer/courses/lib/course-routes";
 
 export type NavMatchMode = "exact" | "prefix";
@@ -123,6 +124,13 @@ export function getLecturerNavItems(courseId: string): NavItem[] {
       match: "exact",
     },
     {
+      id: "course-ai",
+      title: "SAGA AI",
+      href: lecturerCourseAiPath(courseId),
+      icon: "Sparkles",
+      match: "prefix",
+    },
+    {
       id: "course-weights",
       title: "Cấu hình trọng số",
       href: lecturerCourseContributionPath(courseId),
@@ -140,6 +148,13 @@ export function getStudentNavItems(): NavItem[] {
       href: "/student/dashboard",
       icon: "LayoutDashboard",
       match: "exact",
+    },
+    {
+      id: "student-ai",
+      title: "SAGA AI",
+      href: "/student/ai",
+      icon: "Sparkles",
+      match: "prefix",
     },
     {
       id: "student-project",

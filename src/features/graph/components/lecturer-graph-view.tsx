@@ -976,30 +976,43 @@ export function LecturerGraphView({
 
       {mainMode === "PIPELINE" && (
         <div className="space-y-3 rounded-xl border border-border/80 bg-card/90 p-3.5 shadow-xs">
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2.5">
-            <div className="relative">
-              <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground pointer-events-none" />
-              <Input
-                type="text"
-                value={pipelineFilter.searchQuery || ""}
-                onChange={(e) =>
-                  setPipelineFilter((prev) => ({ ...prev, searchQuery: e.target.value }))
-                }
-                placeholder="Tìm Task key, title..."
-                className="h-10 pl-8 text-xs rounded-xl bg-card border-border/80"
-              />
-              {pipelineFilter.searchQuery && (
-                <button
-                  type="button"
-                  onClick={() => setPipelineFilter((prev) => ({ ...prev, searchQuery: "" }))}
-                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground cursor-pointer"
-                >
-                  <XIcon className="size-3" />
-                </button>
-              )}
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3">
+            <div className="space-y-1.5">
+              <label className="flex items-center gap-1.5 text-xs font-bold text-muted-foreground">
+                <SearchIcon className="size-3.5 text-primary" />
+                Từ khóa
+              </label>
+              <div className="relative">
+                <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground pointer-events-none" />
+                <Input
+                  type="text"
+                  value={pipelineFilter.searchQuery || ""}
+                  onChange={(e) =>
+                    setPipelineFilter((prev) => ({ ...prev, searchQuery: e.target.value }))
+                  }
+                  placeholder="Tìm Task key, title..."
+                  className="h-9 pl-8 text-xs rounded-xl bg-card border-border/80"
+                />
+                {pipelineFilter.searchQuery && (
+                  <button
+                    type="button"
+                    onClick={() => setPipelineFilter((prev) => ({ ...prev, searchQuery: "" }))}
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground cursor-pointer"
+                  >
+                    <XIcon className="size-3" />
+                  </button>
+                )}
+              </div>
             </div>
 
-            <div>
+            <div className="space-y-1.5">
+              <label
+                htmlFor="assignee-filter"
+                className="flex items-center gap-1.5 text-xs font-bold text-muted-foreground"
+              >
+                <UsersIcon className="size-3.5 text-primary" />
+                Thành viên
+              </label>
               <CustomSelect
                 id="assignee-filter"
                 value={pipelineFilter.studentId}
@@ -1008,7 +1021,14 @@ export function LecturerGraphView({
               />
             </div>
 
-            <div>
+            <div className="space-y-1.5">
+              <label
+                htmlFor="sprint-filter"
+                className="flex items-center gap-1.5 text-xs font-bold text-muted-foreground"
+              >
+                <CalendarIcon className="size-3.5 text-primary" />
+                Sprint
+              </label>
               <CustomSelect
                 id="sprint-filter"
                 value={pipelineFilter.sprintId}
@@ -1017,7 +1037,14 @@ export function LecturerGraphView({
               />
             </div>
 
-            <div>
+            <div className="space-y-1.5">
+              <label
+                htmlFor="anomaly-filter"
+                className="flex items-center gap-1.5 text-xs font-bold text-muted-foreground"
+              >
+                <AlertTriangleIcon className="size-3.5 text-primary" />
+                Phân loại Task
+              </label>
               <CustomSelect
                 id="anomaly-filter"
                 value={pipelineFilter.anomalyType || "ALL"}
