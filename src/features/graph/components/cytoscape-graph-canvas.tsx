@@ -22,6 +22,13 @@ import type {
   GraphNode,
   GraphEdge,
 } from "../types/graph";
+import {
+  graphNodeSizeFor,
+  isHasWorkItemEdge,
+  isParentOfEdge,
+  normalizeGraphIssueTypeLevel,
+  taskColumnForIssueTypeLevel,
+} from "../lib/graph-hierarchy";
 
 interface CytoscapeGraphCanvasProps {
   nodes: Array<{ data: CytoscapeNodeData }> | GraphNode[];
@@ -424,10 +431,14 @@ export function CytoscapeGraphCanvas({
         const xProject = -720;
         const xSprint = -480;
         const xStudent = hasSprints || hasProject ? -220 : -260;
-        const xTask = 80;
-        const xCriteria = 380;
-        const xCommit = hasCriteria ? 680 : 440;
-        const xIdentity = hasCommits ? (hasCriteria ? 960 : 740) : (hasCriteria ? 680 : 440);
+        const xTaskAbove = 40;
+        const xTaskEpic = 140;
+        const xTaskStandard = 250;
+        const xTaskSub = 360;
+        const xCriteria = 520;
+        const xCommit = hasCriteria ? 820 : 580;
+        const xIdentity = hasCommits ? (hasCriteria ? 1080 : 860) : (hasCriteria ? 820 : 580);
+        const taskXs = [xTaskAbove, xTaskEpic, xTaskStandard, xTaskSub];
 
         const taskSpacingY = 56;
         const totalTasksHeight = (colTasks.length - 1) * taskSpacingY;
@@ -436,7 +447,12 @@ export function CytoscapeGraphCanvas({
 
         colTasks.forEach((node, i) => {
           const y = startTaskY + i * taskSpacingY;
-          positions[node.id()] = { x: xTask, y };
+          const level = normalizeGraphIssueTypeLevel(
+            (node.data("issueTypeLevel") as string | undefined) ||
+            (node.data("originalData") as CytoscapeNodeData | undefined)?.issueTypeLevel
+          );
+          const column = taskColumnForIssueTypeLevel(level);
+          positions[node.id()] = { x: taskXs[column] ?? xTaskStandard, y };
           taskYMap.set(node.id(), y);
         });
 
@@ -590,7 +606,7 @@ export function CytoscapeGraphCanvas({
           const otherCount = colOther.length;
           const otherSpacingY = 60;
           const otherStartY = -((otherCount - 1) * otherSpacingY) / 2;
-          const xOther = (colIdentities.length > 0 ? xIdentity : (colCommits.length > 0 ? xCommit : xTask)) + 240;
+          const xOther = (colIdentities.length > 0 ? xIdentity : (colCommits.length > 0 ? xCommit : xTaskStandard)) + 240;
           colOther.forEach((node, i) => {
             positions[node.id()] = {
               x: xOther,
@@ -670,8 +686,7 @@ export function CytoscapeGraphCanvas({
           height = 58;
         } else if (n.type === "COMMIT") {
           shape = "round-rectangle";
-          width = 72;
-          height = 36;
+          ({ width, height } = graphNodeSizeFor("COMMIT"));
         } else if (n.type === "CRITERION") {
           shape = "hexagon";
           width = 80;
@@ -682,16 +697,23 @@ export function CytoscapeGraphCanvas({
           height = 56;
         } else if (n.type === "PROJECT" || n.type === "TEAM") {
           shape = "round-rectangle";
-          width = 90;
-          height = 44;
+          ({ width, height } = graphNodeSizeFor(n.type));
         } else if (n.type === "SPRINT") {
           shape = "round-rectangle";
           width = 86;
           height = 42;
+        } else if (n.type === "TASK") {
+          shape = "round-rectangle";
+          ({ width, height } = graphNodeSizeFor("TASK", n.issueTypeLevel));
         }
 
         let displayLabel = n.label;
         let displaySubLabel = n.subLabel;
+        if (n.type === "TASK" && n.parentExternalKey) {
+          displaySubLabel = displaySubLabel
+            ? `${displaySubLabel} · ${n.parentExternalKey}`
+            : n.parentExternalKey;
+        }
         if (n.type === "PROJECT") {
           if (n.label.toUpperCase().includes("SAGA")) {
             displayLabel = "SAGA";
@@ -719,6 +741,10 @@ export function CytoscapeGraphCanvas({
             label: displayLabel,
             subLabel: displaySubLabel,
             nodeType: n.type,
+            issueTypeLevel: n.issueTypeLevel || undefined,
+            parentExternalId: n.parentExternalId || undefined,
+            parentExternalKey: n.parentExternalKey || undefined,
+            parentResolution: n.parentResolution || undefined,
             status: n.status,
             weightType: n.weightType,
             bgColor: isAnomaly ? "#ef4444" : color.bg,
@@ -751,6 +777,16 @@ export function CytoscapeGraphCanvas({
         } else if (e.label === "HAS_SPRINT") {
           lineColor = "#22d3ee";
           arrowColor = "#0891b2";
+        } else if (e.label === "HAS_WORK_ITEM" || isHasWorkItemEdge(e)) {
+          lineColor = "#0d9488";
+          arrowColor = "#0f766e";
+          lineStyle = "solid";
+          edgeWidth = 2.6;
+        } else if (e.label === "PARENT_OF" || isParentOfEdge(e)) {
+          lineColor = "#059669";
+          arrowColor = "#047857";
+          lineStyle = "dashed";
+          edgeWidth = 2.2;
         } else if (e.label === "CONTAINS") {
           lineColor = "#2dd4bf";
           arrowColor = "#0d9488";
@@ -1283,8 +1319,12 @@ export function CytoscapeGraphCanvas({
 
             <div className="pt-2 border-t border-border/60 space-y-1">
               <div className="text-xs text-muted-foreground font-mono flex items-center gap-1.5">
-                <span className="w-2.5 h-0.5 bg-emerald-500 rounded-full" />
-                <span>ASSIGNED_TO</span>
+                <span className="w-2.5 h-0.5 bg-teal-700 rounded-full" />
+                <span>HAS_WORK_ITEM</span>
+              </div>
+              <div className="text-xs text-muted-foreground font-mono flex items-center gap-1.5">
+                <span className="w-2.5 h-0.5 border-t border-dashed border-emerald-600" />
+                <span>PARENT_OF</span>
               </div>
               <div className="text-xs text-muted-foreground font-mono flex items-center gap-1.5">
                 <span className="w-2.5 h-0.5 bg-purple-500 rounded-full" />

@@ -8,6 +8,7 @@ import { TASK_EVIDENCE_QUERY_KEYS } from "@/features/student/sprint-progress/hoo
 import { PROJECT_PROJECTION_QUERY_KEYS } from "@/features/student/project/hooks/useProjectSync";
 import { PROJECT_INTEGRATIONS_QUERY_KEYS } from "@/features/student/project/hooks/useProjectIntegrations";
 import { PROJECT_GRAPH_QUERY_KEY } from "@/features/graph/hooks/use-project-graph";
+import { CONTRIBUTION_QUERY_KEYS } from "@/features/lecturer/contribution/hooks/use-lecturer-contribution";
 import type { GraphType } from "@/features/graph/types/graph";
 import type {
   ProjectRealtimeEvent,
@@ -99,6 +100,11 @@ export function useProjectRealtime(
       const invalidateCommits = () => {
         void queryClient.invalidateQueries({ queryKey: PROJECT_PROJECTION_QUERY_KEYS.commits(pid) });
       };
+      const invalidateParentOptions = () => {
+        void queryClient.invalidateQueries({
+          queryKey: [...JIRA_SPRINT_QUERY_KEYS.all, "parent-task-options", pid],
+        });
+      };
       const invalidateTaskDetails = () => {
         void queryClient.invalidateQueries({ queryKey: [...JIRA_SPRINT_QUERY_KEYS.all, "task", pid] });
       };
@@ -130,6 +136,11 @@ export function useProjectRealtime(
           exact: true,
         });
       };
+      const invalidateContributionEvaluation = () => {
+        void queryClient.invalidateQueries({
+          queryKey: CONTRIBUTION_QUERY_KEYS.evaluations,
+        });
+      };
 
       const scheduleReadyInvalidation = () => {
         if (readyDebounceTimerRef.current) {
@@ -159,12 +170,16 @@ export function useProjectRealtime(
           break;
         case "TASKS_CHANGED":
           invalidateTasks();
+          invalidateTaskDetails();
+          invalidateParentOptions();
           invalidateProgress();
           invalidateMemberProgress();
+          invalidateContributionEvaluation();
           scheduleGraphInvalidation(pid, ["OVERVIEW", "CONTRIBUTION", "ACTIVITY"]);
           break;
         case "SPRINTS_CHANGED":
           invalidateSprints();
+          invalidateTasks();
           invalidateProgress();
           scheduleGraphInvalidation(pid, ["OVERVIEW", "ACTIVITY"]);
           break;
@@ -181,12 +196,15 @@ export function useProjectRealtime(
           invalidateCommits();
           invalidateProgress();
           invalidateMemberProgress();
+          invalidateContributionEvaluation();
           scheduleGraphInvalidation(pid, ["OVERVIEW", "CONTRIBUTION", "ACTIVITY", "ATTRIBUTION"]);
           break;
         case "TASK_EVIDENCE_CHANGED":
+          invalidateTasks();
           invalidateTaskDetails();
           invalidateProgress();
           invalidateMemberProgress();
+          invalidateContributionEvaluation();
           if (entityId) {
             void queryClient.invalidateQueries({ queryKey: TASK_EVIDENCE_QUERY_KEYS.workSessions(entityId) });
             void queryClient.invalidateQueries({ queryKey: TASK_EVIDENCE_QUERY_KEYS.webLinks(entityId) });
@@ -199,6 +217,9 @@ export function useProjectRealtime(
         case "SYNC_STATUS_CHANGED":
           invalidateSyncStatus();
           invalidateProgress();
+          invalidateTasks();
+          invalidateTaskDetails();
+          invalidateParentOptions();
           break;
       }
     },

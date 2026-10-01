@@ -26,6 +26,13 @@ import Link from "next/link";
 import { getAssigneeAvatarClass, getAssigneeInitials } from "../lib/assignee-avatar";
 import { TaskDueDate } from "./task-due-date";
 import { isTaskOwnedByCurrentStudent } from "../lib/task-permissions";
+import { canDragIssueSprint, normalizeIssueTypeLevel } from "../lib/issue-type-rules";
+import { groupSprintIssuesByParent } from "../lib/issue-collection";
+import {
+  formatIssuePointBadge,
+  shouldShowEvidenceWarning,
+  sumPlanningStoryPoints,
+} from "../lib/subtask-allocation";
 
 interface SprintBoardViewProps {
   issues: SprintIssue[];
@@ -161,12 +168,14 @@ export function SprintBoardView({
     );
   }
 
-  const totalSprintSP = issues.reduce((sum, i) => sum + (i.storyPoints || 0), 0);
+  const hierarchy = groupSprintIssuesByParent(issues);
+  const totalSprintSP = sumPlanningStoryPoints(issues);
 
   const handleDragStart = (e: React.DragEvent, issue: SprintIssue) => {
     const canDrag =
-      isTeamLeader ||
-      isTaskOwnedByCurrentStudent(issue, currentUserStudentId, currentUserStudentCode);
+      canDragIssueSprint(normalizeIssueTypeLevel(issue.issueTypeLevel)) &&
+      (isTeamLeader ||
+        isTaskOwnedByCurrentStudent(issue, currentUserStudentId, currentUserStudentCode));
     if (!canDrag) {
       e.preventDefault();
       return;
@@ -261,8 +270,10 @@ export function SprintBoardView({
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {COLUMNS.map((col) => {
-          const colIssues = issues.filter((i) => i.status === col.id);
-          const colSP = colIssues.reduce((sum, i) => sum + (i.storyPoints || 0), 0);
+          const colWorkItems = hierarchy.workItems.filter((i) => i.status === col.id);
+          const colOrphans = hierarchy.orphanSubtasks.filter((i) => i.status === col.id);
+          const colIssues = [...colWorkItems, ...colOrphans];
+          const colSP = sumPlanningStoryPoints(colWorkItems);
           const percentSP = totalSprintSP > 0 ? Math.round((colSP / totalSprintSP) * 100) : 0;
 
           return (
@@ -303,60 +314,64 @@ export function SprintBoardView({
                 ) : null}
 
                 {colIssues.map((issue) => {
-                  const canDrag =
-                    isTeamLeader ||
-                    isTaskOwnedByCurrentStudent(issue, currentUserStudentId, currentUserStudentCode);
-                  const isMsrAnomaly = issue.status === "DONE" && (issue.githubCommitCount ?? 0) === 0;
+                  const nestedSubtasks = hierarchy.subtasksByParentId.get(issue.id) || [];
 
-                  return (
+                  const renderCard = (card: typeof issue, nested: boolean) => {
+                    const nestedCanDrag =
+                      canDragIssueSprint(normalizeIssueTypeLevel(card.issueTypeLevel)) &&
+                      (isTeamLeader ||
+                        isTaskOwnedByCurrentStudent(card, currentUserStudentId, currentUserStudentCode));
+                    const nestedWarning = shouldShowEvidenceWarning(card.evidenceCheck);
+                    const level = normalizeIssueTypeLevel(card.issueTypeLevel);
+                    return (
                     <div
-                      key={issue.id}
-                      draggable={canDrag}
-                      onDragStart={(e) => handleDragStart(e, issue)}
-                      onClick={() => onIssueClick(issue)}
-                      className={`p-3 rounded-xl bg-card border shadow-2xs hover:shadow-sm transition-all duration-150 space-y-2 group ${isMsrAnomaly
+                      key={card.id}
+                      draggable={nestedCanDrag}
+                      onDragStart={(e) => handleDragStart(e, card)}
+                      onClick={() => onIssueClick(card)}
+                      className={`p-3 rounded-xl bg-card border shadow-2xs hover:shadow-sm transition-all duration-150 space-y-2 group ${nestedWarning
                         ? "border-amber-500/50 bg-amber-500/5 dark:border-amber-500/40 hover:border-amber-500"
                         : "border-border/70 hover:border-primary/60"
-                        } ${canDrag
+                        } ${nestedCanDrag
                           ? "cursor-grab active:cursor-grabbing hover:-translate-y-0.5"
                           : "cursor-pointer opacity-90 border-dashed"
-                        }`}
+                        } ${nested ? "ml-4 border-cyan-500/30 bg-cyan-500/[0.035]" : ""}`}
                     >
                       <div className="flex items-center justify-between gap-2">
                         <div className="flex items-center gap-1.5 min-w-0">
-                          {renderTypeIcon(issue.type)}
+                          {renderTypeIcon(card.type)}
                           <span className="text-xs font-mono font-bold text-muted-foreground group-hover:text-primary transition-colors truncate">
-                            {issue.key}
+                            {card.key}
                           </span>
-                          {issue.superseded && (
+                          {card.superseded && (
                             <Badge variant="outline" className="border-rose-500/40 bg-rose-500/10 text-rose-600 dark:text-rose-400 text-[9px] font-bold px-1 py-0 shrink-0">
                               Lịch sử
                             </Badge>
                           )}
-                          {!canDrag && (
+                          {!nestedCanDrag && (
                             <span title="Chỉ đọc (Task của thành viên khác)">
                               <LockIcon className="w-3 h-3 text-muted-foreground/70 shrink-0" />
                             </span>
                           )}
                         </div>
 
-                        {issue.epic && (
+                        {card.epic && (
                           <Badge
-                            style={{ backgroundColor: `${issue.epic.color}15`, color: issue.epic.color }}
+                            style={{ backgroundColor: `${card.epic.color}15`, color: card.epic.color }}
                             className="border-0 text-xs font-bold px-1.5 py-0.2 truncate max-w-[110px]"
                           >
-                            {issue.epic.name}
+                            {card.epic.name}
                           </Badge>
                         )}
                       </div>
 
                       <p className="text-xs font-semibold text-foreground line-clamp-2 leading-snug">
-                        {issue.summary}
+                        {card.summary}
                       </p>
 
-                      {issue.labels && issue.labels.length > 0 && (
+                      {card.labels && card.labels.length > 0 && (
                         <div className="flex flex-wrap items-center gap-1">
-                          {issue.labels.map((lbl, idx) => (
+                          {card.labels.map((lbl, idx) => (
                             <Badge
                               key={idx}
                               variant="secondary"
@@ -370,31 +385,35 @@ export function SprintBoardView({
 
                       <div className="flex items-center justify-between pt-1 border-t border-border/40 text-xs text-muted-foreground">
                         <div className="flex items-center gap-2">
-                          {renderPriorityIcon(issue.priority)}
+                          {renderPriorityIcon(card.priority)}
 
-                          {issue.githubCommitCount && issue.githubCommitCount > 0 ? (
+                          {card.githubCommitCount && card.githubCommitCount > 0 ? (
                             <span
-                              title={`Có ${issue.githubCommitCount} commit liên kết từ GitHub`}
+                              title={`Có ${card.githubCommitCount} commit liên kết từ GitHub`}
                               className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-mono text-xs font-semibold"
                             >
                               <GitCommitIcon className="w-3 h-3" />
-                              {issue.githubCommitCount}
+                              {card.githubCommitCount}
                             </span>
-                          ) : isMsrAnomaly ? (
+                          ) : nestedWarning ? (
                             <span
-                              title="Cảnh báo MSR Anomaly: Task Done nhưng chưa có commit liên kết"
+                              title={
+                                card.evidenceCheck?.requiresDocument
+                                  ? "Thiếu minh chứng tài liệu trên Subtask"
+                                  : "Thiếu minh chứng commit trên task"
+                              }
                               className="flex items-center gap-1 text-amber-600 dark:text-amber-400 font-mono text-xs font-semibold"
                             >
                               <AlertTriangleIcon className="w-3 h-3" />
-                              0 commit
+                              Thiếu minh chứng
                             </span>
                           ) : null}
 
                           <Link
                             href={
                               courseId
-                                ? `/student/graph?courseId=${encodeURIComponent(courseId)}&taskId=${encodeURIComponent(issue.key)}`
-                                : `/student/graph?taskId=${encodeURIComponent(issue.key)}`
+                                ? `/student/graph?courseId=${encodeURIComponent(courseId)}&taskId=${encodeURIComponent(card.key)}`
+                                : `/student/graph?taskId=${encodeURIComponent(card.key)}`
                             }
                             onClick={(e) => e.stopPropagation()}
                             title="Xem minh chứng trên Đồ thị Neo4j"
@@ -403,25 +422,33 @@ export function SprintBoardView({
                             <NetworkIcon className="w-3 h-3" />
                           </Link>
 
-                          <TaskDueDate dueDate={issue.dueDate} status={issue.status} />
+                          <TaskDueDate dueDate={card.dueDate} status={card.status} />
                         </div>
 
                         <div className="flex items-center gap-2">
                           <Badge variant="outline" className="font-mono text-xs px-1.5 py-0">
-                            {issue.storyPoints > 0 ? `${issue.storyPoints} SP` : "0 SP"}
+                            {formatIssuePointBadge(level, card.storyPoints)}
                           </Badge>
 
-                          <Avatar title={issue.assignee.name} className="w-5 h-5 border shadow-2xs">
+                          <Avatar title={card.assignee.name} className="w-5 h-5 border shadow-2xs">
                             <AvatarImage
-                              src={resolveHttpAvatarUrl(issue.assignee.avatar)}
-                              alt={issue.assignee.name}
+                              src={resolveHttpAvatarUrl(card.assignee.avatar)}
+                              alt={card.assignee.name}
                             />
-                            <AvatarFallback className={`text-[8px] font-bold ${getAssigneeAvatarClass(issue.assignee.id)}`}>
-                              {getAssigneeInitials(issue.assignee.name)}
+                            <AvatarFallback className={`text-[8px] font-bold ${getAssigneeAvatarClass(card.assignee.id)}`}>
+                              {getAssigneeInitials(card.assignee.name)}
                             </AvatarFallback>
                           </Avatar>
                         </div>
                       </div>
+                    </div>
+                    );
+                  };
+
+                  return (
+                    <div key={issue.id} className="space-y-2">
+                      {renderCard(issue, false)}
+                      {nestedSubtasks.map((subtask) => renderCard(subtask, true))}
                     </div>
                   );
                 })}

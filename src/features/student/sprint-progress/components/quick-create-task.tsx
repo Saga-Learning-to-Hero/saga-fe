@@ -5,8 +5,9 @@ import { useState, useRef, useEffect } from "react";
 import { PlusIcon, Loader2Icon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useCreateProjectTask } from "../hooks/use-project-tasks";
+import { useCreateProjectTask, useTaskOptions } from "../hooks/use-project-tasks";
 import { RequirePersonalIntegrationModal } from "@/features/integrations/components/require-personal-integration-modal";
+import { pickStandardIssueType } from "../lib/issue-type-rules";
 
 import {
   getPersonalIntegrationErrorMessage,
@@ -47,6 +48,12 @@ export function QuickCreateTask({
   const containerRef = useRef<HTMLDivElement>(null);
 
   const createTaskMutation = useCreateProjectTask();
+  const { data: taskOptions } = useTaskOptions(projectId, {
+    enabled: Boolean(projectId && canCreate),
+    jiraIntegrationId,
+  });
+  const standardIssueType = pickStandardIssueType(taskOptions?.issueTypes);
+  const canQuickCreate = Boolean(standardIssueType?.id);
 
   useEffect(() => {
     if (isOpen) {
@@ -124,6 +131,14 @@ export function QuickCreateTask({
       return;
     }
 
+    if (!standardIssueType?.id) {
+      const msg =
+        "Không có loại thẻ STANDARD hợp lệ. Hãy dùng form đầy đủ sau khi đồng bộ Jira.";
+      setErrorMessage(msg);
+      showErrorToast(msg);
+      return;
+    }
+
     const isSprint = Boolean(sprintId && sprintId !== "backlog");
     let targetExternalSprintId: string | undefined;
 
@@ -142,6 +157,7 @@ export function QuickCreateTask({
         projectId,
         data: {
           summary: trimmed,
+          issueTypeId: standardIssueType.id,
           jiraIntegrationId,
           sprintExternalId: targetExternalSprintId,
         },
@@ -255,7 +271,8 @@ export function QuickCreateTask({
               createTaskMutation.isPending ||
               isLoadingPersonalIntegrations ||
               !summary.trim() ||
-              !isPersonalIntegrationReady
+              !isPersonalIntegrationReady ||
+              !canQuickCreate
             }
             className="h-8.5 px-3.5 text-xs font-bold rounded-xl gap-1.5 bg-primary hover:bg-primary/90 text-primary-foreground shrink-0 cursor-pointer shadow-2xs"
           >
@@ -282,6 +299,11 @@ export function QuickCreateTask({
 
         {errorMessage && (
           <p className="text-xs font-medium text-destructive">{errorMessage}</p>
+        )}
+        {!canQuickCreate && (
+          <p className="text-xs text-muted-foreground">
+            Không có loại thẻ STANDARD hợp lệ. Hãy dùng form đầy đủ sau khi đồng bộ Jira.
+          </p>
         )}
 
 

@@ -141,7 +141,7 @@ Response headers: `ETag`, `X-Graph-Revision`. Cùng revision **và cùng query**
 | `focusNodeId` | không | — | `task:{id}`, `student:{id}`, … đúng prefix mục 5.1. Phải nằm **trong** graph đã scoped (project + `sprintId` nếu có). Sai scope → `400 REQUEST_INVALID`. |
 | `depth` | không | `1` | Neighborhood vô hướng từ `focusNodeId` (hoặc từ anomaly). Chỉ `1`–`3`. **Chỉ có `depth` thì bị bỏ qua** — phải kèm focus / type / paging. |
 | `nodeTypes` | không | Overview/Activity: không COMMIT. Graph khác: mọi type | CSV enum canonical: `STUDENT,TEAM,PROJECT,SPRINT,TASK,COMMIT,CRITERION,IDENTITY`. Sai enum → 400. |
-| `edgeTypes` | không | mọi label | CSV: `MEMBER_OF,OWNS,HAS_SPRINT,CONTAINS,ASSIGNED_TO,EVIDENCED_BY,CLASSIFIED_AS,AUTHORED_BY,MAPS_TO,REVIEWED`. |
+| `edgeTypes` | không | mọi label | CSV: `MEMBER_OF,OWNS,HAS_SPRINT,CONTAINS,HAS_WORK_ITEM,PARENT_OF,ASSIGNED_TO,EVIDENCED_BY,CLASSIFIED_AS,AUTHORED_BY,MAPS_TO,REVIEWED`. |
 | `anomaliesOnly` | không | `false` | `true` = anomaly **kèm neighborhood** (không trả node cô lập nếu chúng còn cạnh). |
 | `maxNodes` | không | — | `1`–`2000`. Cắt theo thứ tự ổn định trong cùng revision. |
 | `cursor` | không | — | Token `revision:lastNodeId` từ `meta.nextCursor`. Alias: `continuationToken`. Sai revision → 400. |
@@ -258,6 +258,14 @@ interface CytoscapeNodeData {
   avatar?: string;      // STUDENT: URL ảnh. Không phải avatarUrl (đó là field /auth/me)
   role?: string;        // STUDENT: LEADER | MEMBER | …
   storyPoint?: number;  // TASK
+  issueTypeId?: string | null;
+  issueTypeName?: string | null;
+  issueTypeLevel?: "EPIC" | "STANDARD" | "SUBTASK" | "ABOVE_EPIC" | "UNKNOWN";
+  jiraHierarchyLevel?: number | null;
+  parentExternalId?: string | null;
+  parentExternalKey?: string | null;
+  parentResolution?: "RESOLVED" | "UNRESOLVED" | null;
+  parentResolutionReason?: "PARENT_NOT_SYNCED" | "PARENT_SOURCE_REVOKED" | null;
 }
 
 interface CytoscapeEdgeData {
@@ -269,6 +277,8 @@ interface CytoscapeEdgeData {
     | "OWNS"
     | "HAS_SPRINT"
     | "CONTAINS"
+    | "HAS_WORK_ITEM"
+    | "PARENT_OF"
     | "ASSIGNED_TO"
     | "EVIDENCED_BY"
     | "CLASSIFIED_AS"
@@ -311,6 +321,8 @@ Label hiển thị: TASK = Jira key; COMMIT = SHA 7 ký tự; CRITERION = `CODE`
 | `OWNS` | Team → Project | 1 |
 | `HAS_SPRINT` | Project → Sprint | 1 |
 | `CONTAINS` | Sprint → Task | 1, 3 |
+| `HAS_WORK_ITEM` | Project → root Task | 1, 3 |
+| `PARENT_OF` | Task cha → Task con | 1, 3 |
 | `ASSIGNED_TO` | Student → Task | 1–4 |
 | `EVIDENCED_BY` | **Task → Commit** | 1–4 |
 | `CLASSIFIED_AS` | Task → Criterion | 2, 3 |

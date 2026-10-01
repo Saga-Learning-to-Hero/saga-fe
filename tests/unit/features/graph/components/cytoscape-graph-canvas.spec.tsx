@@ -65,6 +65,9 @@ describe("CytoscapeGraphCanvas", () => {
           type: "TASK",
           status: "BLOCKED",
           weightType: "DOCUMENT",
+          issueTypeLevel: "STANDARD",
+          parentExternalId: "10020",
+          parentExternalKey: "SAGA-10",
         },
       },
       { data: { id: "n-commit", label: "abc1234", type: "COMMIT" } },
@@ -97,6 +100,8 @@ describe("CytoscapeGraphCanvas", () => {
     expect(taskElement?.data.status).toBe("BLOCKED");
     expect(taskElement?.data.weightType).toBe("DOCUMENT");
     expect(taskElement?.data.isAnomaly).toBe(false);
+    expect(taskElement?.data.parentExternalId).toBe("10020");
+    expect(taskElement?.data.parentExternalKey).toBe("SAGA-10");
   });
 
   it("UTCID02 - [N] Normal: Element co isAnomaly === true duoc danh dau mau do bat thuong", () => {
@@ -209,7 +214,7 @@ describe("CytoscapeGraphCanvas", () => {
     const nodes: Array<{ data: CytoscapeNodeData }> = [
       { data: { id: "spr-1", label: "Sprint 4", type: "SPRINT" } },
       { data: { id: "stu-1", label: "Student A", type: "STUDENT" } },
-      { data: { id: "task-1", label: "SAGA-71", type: "TASK" } },
+      { data: { id: "task-1", label: "SAGA-71", type: "TASK", issueTypeLevel: "STANDARD" } },
       { data: { id: "crit-1", label: "CODE", type: "CRITERION" } },
       { data: { id: "com-1", label: "ce2b3e2", type: "COMMIT" } },
     ];
@@ -225,9 +230,9 @@ describe("CytoscapeGraphCanvas", () => {
     expect(lastLayoutConfig.name).toBe("preset");
     expect(lastLayoutConfig.positions["spr-1"].x).toBe(-480);
     expect(lastLayoutConfig.positions["stu-1"].x).toBe(-220);
-    expect(lastLayoutConfig.positions["task-1"].x).toBe(80);
-    expect(lastLayoutConfig.positions["crit-1"].x).toBe(380);
-    expect(lastLayoutConfig.positions["com-1"].x).toBe(680);
+    expect(lastLayoutConfig.positions["task-1"].x).toBe(250);
+    expect(lastLayoutConfig.positions["crit-1"].x).toBe(520);
+    expect(lastLayoutConfig.positions["com-1"].x).toBe(820);
   });
 
   it("UTCID09 - [B] Boundary: Chong de toa do Y giua cac node Identity va Commit dam bao khoang cach toi thieu", () => {
@@ -267,6 +272,6 @@ describe("CytoscapeGraphCanvas", () => {
 
     const diffIdY = Math.abs(lastLayoutConfig.positions["id-1"].y - lastLayoutConfig.positions["id-2"].y);
     expect(diffIdY).toBeGreaterThanOrEqual(68);
-    expect(lastLayoutConfig.positions["id-1"].x).toBe(740);
+    expect(lastLayoutConfig.positions["id-1"].x).toBe(860);
   });
 });

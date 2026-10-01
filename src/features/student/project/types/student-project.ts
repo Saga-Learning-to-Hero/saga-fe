@@ -209,10 +209,16 @@ export interface ProjectTaskItem {
   externalKey: string;
   title: string;
   status: string;
+  issueTypeId?: string | null;
   issueTypeName: string;
+  issueTypeLevel: "EPIC" | "STANDARD" | "SUBTASK" | "ABOVE_EPIC" | "UNKNOWN";
+  jiraHierarchyLevel?: number | null;
   parent?: {
-    externalId?: string | null;
-    externalKey?: string | null;
+    externalId: string;
+    externalKey: string;
+    taskId: string | null;
+    resolution: "RESOLVED" | "UNRESOLVED";
+    resolutionReason: "PARENT_NOT_SYNCED" | "PARENT_SOURCE_REVOKED" | null;
   } | null;
   assigneeExternalId: string | null;
   assigneeStudentId: string | null;

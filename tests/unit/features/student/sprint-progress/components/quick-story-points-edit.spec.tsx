@@ -34,6 +34,7 @@ describe("QuickStoryPointsEdit", () => {
         issueId={issueId}
         issueKey={issueKey}
         storyPoints={5}
+        issueTypeLevel="STANDARD"
         projectId={projectId}
         isTeamLeader={true}
         {...props}
@@ -119,5 +120,22 @@ describe("QuickStoryPointsEdit", () => {
     await waitFor(() => {
       expect(apiClient.patch).toHaveBeenCalled();
     });
+  });
+
+  it("UTCID07 - [B] Boundary: EPIC khong co Quick Edit diem dong gop", () => {
+    renderComponent({ isTeamLeader: true, issueTypeLevel: "EPIC", storyPoints: 8 });
+    expect(screen.getByText("8 SP")).toBeInTheDocument();
+    expect(screen.queryByTitle(/Nhấn để đổi Story Points/)).not.toBeInTheDocument();
+  });
+
+  it("UTCID08 - [N] Normal: Subtask hien thi phan tram thay vi SP", () => {
+    renderComponent({
+      isTeamLeader: true,
+      issueTypeLevel: "SUBTASK",
+      storyPoints: 6,
+      parentTaskId: "parent-1",
+    });
+    expect(screen.getByText("60%")).toBeInTheDocument();
+    expect(screen.queryByText("6 SP")).not.toBeInTheDocument();
   });
 });

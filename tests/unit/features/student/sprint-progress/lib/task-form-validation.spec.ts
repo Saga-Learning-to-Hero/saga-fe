@@ -29,6 +29,8 @@ function validInput() {
     isSprintAssignmentChanged: false,
     requireOwnJiraAccount: false,
     ownJiraAccountId: "account-1",
+    issueTypeId: "10001",
+    issueTypeLevel: "STANDARD" as const,
   };
 }
 
@@ -111,6 +113,127 @@ describe("validateTaskForm", () => {
         missingPersonalIntegrations: ["JIRA", "GITHUB"],
       });
       expect(result.errors.assigneeAccountId).toContain("Jira và GitHub");
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID06",
+      type: "A",
+      executedDate: "02/10/2026",
+      description: "Subtask bat buoc parent; UNKNOWN khoa submit",
+    },
+    () => {
+      const subtask = validateTaskForm({
+        ...validInput(),
+        issueTypeLevel: "SUBTASK",
+        parentTaskId: "",
+      });
+      expect(subtask.errors.parent).toBeDefined();
+
+      const unknown = validateTaskForm({
+        ...validInput(),
+        issueTypeLevel: "UNKNOWN",
+      });
+      expect(unknown.errors.issueTypeId).toContain("Chưa xác định cấp");
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID07",
+      type: "N",
+      executedDate: "02/10/2026",
+      description: "Subtask chap nhan ty trong 1 va 10 khi con du phan tram",
+    },
+    () => {
+      expect(
+        validateTaskForm({
+          ...validInput(),
+          issueTypeLevel: "SUBTASK",
+          parentTaskId: "parent-1",
+          storyPoints: "1",
+          siblingUsedPoints: 0,
+        }).errors.storyPoints
+      ).toBeUndefined();
+      expect(
+        validateTaskForm({
+          ...validInput(),
+          issueTypeLevel: "SUBTASK",
+          parentTaskId: "parent-1",
+          storyPoints: "10",
+          siblingUsedPoints: 0,
+        }).errors.storyPoints
+      ).toBeUndefined();
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID08",
+      type: "A",
+      executedDate: "02/10/2026",
+      description: "Chan Subtask 0, so thap phan, vuot 10 va vuot phan con lai",
+    },
+    () => {
+      expect(
+        validateTaskForm({
+          ...validInput(),
+          issueTypeLevel: "SUBTASK",
+          parentTaskId: "parent-1",
+          storyPoints: "0",
+          siblingUsedPoints: 0,
+        }).errors.storyPoints
+      ).toBeDefined();
+      expect(
+        validateTaskForm({
+          ...validInput(),
+          issueTypeLevel: "SUBTASK",
+          parentTaskId: "parent-1",
+          storyPoints: "6.5",
+          siblingUsedPoints: 0,
+        }).errors.storyPoints
+      ).toBeDefined();
+      expect(
+        validateTaskForm({
+          ...validInput(),
+          issueTypeLevel: "SUBTASK",
+          parentTaskId: "parent-1",
+          storyPoints: "5",
+          siblingUsedPoints: 6,
+        }).errors.storyPoints
+      ).toContain("tối đa là 4");
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID09",
+      type: "B",
+      executedDate: "02/10/2026",
+      description: "Tong 80% van luu duoc; 100% khoa them Subtask; STANDARD van 0-100",
+    },
+    () => {
+      expect(
+        validateTaskForm({
+          ...validInput(),
+          issueTypeLevel: "SUBTASK",
+          parentTaskId: "parent-1",
+          storyPoints: "2",
+          siblingUsedPoints: 8,
+        }).errors.storyPoints
+      ).toBeUndefined();
+      expect(
+        validateTaskForm({
+          ...validInput(),
+          issueTypeLevel: "SUBTASK",
+          parentTaskId: "parent-1",
+          storyPoints: "1",
+          siblingUsedPoints: 10,
+        }).errors.storyPoints
+      ).toContain("phân bổ hết 100%");
+      expect(validateTaskForm({ ...validInput(), storyPoints: "0" }).errors.storyPoints).toBeUndefined();
+      expect(validateTaskForm({ ...validInput(), storyPoints: "101" }).errors.storyPoints).toBeDefined();
     }
   );
 });

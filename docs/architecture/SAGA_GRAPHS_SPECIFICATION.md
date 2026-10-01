@@ -28,7 +28,9 @@
 | **`[:MEMBER_OF]`** | `(Student) ➔ (Team)` | Sinh viên là thành viên nhóm (kèm `role`: `LEADER` hoặc `MEMBER`) |
 | **`[:OWNS]`** | `(Team) ➔ (Project)` | Nhóm sở hữu dự án kỹ thuật |
 | **`[:HAS_SPRINT]`** | `(Project) ➔ (Sprint)` | Dự án được tổ chức thành các Sprint |
-| **`[:CONTAINS]`** | `(Sprint) ➔ (Task)` | Sprint chứa các Task |
+| **`[:CONTAINS]`** | `(Sprint) ➔ (Task)` | Sprint chứa các Task (BE có thể vẫn trả) |
+| **`[:HAS_WORK_ITEM]`** | `(Project) ➔ (Task root)` | Dự án chứa work item gốc (nét liền). FE không bịa cạnh này. |
+| **`[:PARENT_OF]`** | `(Task cha) ➔ (Task con)` | Hierarchy Jira Epic/Standard/Subtask (nét đứt). Cha chỉ suy từ `edge.type === "PARENT_OF" && edge.target === child.id`. Không `PARENT_OF` nếu parent chưa sync. |
 | **`[:ASSIGNED_TO]`** | `(Student) ➔ (Task)` | Phân công công việc Jira cho sinh viên |
 | **`[:CLASSIFIED_AS]`** | `(Task) ➔ (Criterion)` | Phân loại đầu việc vào tiêu chí đánh giá |
 | **`[:EVIDENCED_BY]`** / **`[:IMPLEMENTS]`** | `(Task) ➔ (Commit)` hoặc `(Commit) ➔ (Task)` | Dấu vết mã nguồn chứng minh thực thi Task |
@@ -51,6 +53,8 @@
      |                                  |
      v                                  v
     Task <--------- CONTAINS --------- Sprint
+     ^
+     | PARENT_OF / HAS_WORK_ITEM (Project → root)
      |
    EVIDENCED_BY
      |

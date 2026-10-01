@@ -643,4 +643,89 @@ describe("useProjectRealtime Hook", () => {
       vi.useRealTimers();
     }
   );
+
+  fptTest(
+    {
+      id: "UTCID17",
+      type: "N",
+      executedDate: "02/10/2026",
+      description: "TASKS_CHANGED invalidate parent-options va task detail",
+    },
+    () => {
+      const invalidateSpy = vi.spyOn(queryClient, "invalidateQueries");
+      const wrapper = createWrapper();
+      renderHook(() => useProjectRealtime("project-parent"), { wrapper });
+
+      const es = MockEventSource.instances[0];
+      act(() => {
+        es.emitOpen();
+        es.emitEvent("TASKS_CHANGED", {
+          type: "TASKS_CHANGED",
+          projectId: "project-parent",
+        });
+      });
+
+      expect(invalidateSpy).toHaveBeenCalledWith({
+        queryKey: [...JIRA_SPRINT_QUERY_KEYS.all, "parent-task-options", "project-parent"],
+      });
+      expect(invalidateSpy).toHaveBeenCalledWith({
+        queryKey: [...JIRA_SPRINT_QUERY_KEYS.all, "task", "project-parent"],
+      });
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID19",
+      type: "N",
+      executedDate: "02/10/2026",
+      description: "TASKS_CHANGED invalidate contributionEvaluation, khong them CONTRIBUTION_CHANGED",
+    },
+    () => {
+      const invalidateSpy = vi.spyOn(queryClient, "invalidateQueries");
+      const wrapper = createWrapper();
+      renderHook(() => useProjectRealtime("project-share"), { wrapper });
+
+      const es = MockEventSource.instances[0];
+      act(() => {
+        es.emitOpen();
+        es.emitEvent("TASKS_CHANGED", {
+          type: "TASKS_CHANGED",
+          projectId: "project-share",
+        });
+      });
+
+      expect(invalidateSpy).toHaveBeenCalledWith({
+        queryKey: ["contributionEvaluation"],
+      });
+      expect(es.listeners["CONTRIBUTION_CHANGED"]).toBeUndefined();
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID18",
+      type: "N",
+      executedDate: "02/10/2026",
+      description: "SYNC_STATUS_CHANGED invalidate task queries de cap nhat UNKNOWN",
+    },
+    () => {
+      const invalidateSpy = vi.spyOn(queryClient, "invalidateQueries");
+      const wrapper = createWrapper();
+      renderHook(() => useProjectRealtime("project-sync-tasks"), { wrapper });
+
+      const es = MockEventSource.instances[0];
+      act(() => {
+        es.emitOpen();
+        es.emitEvent("SYNC_STATUS_CHANGED", {
+          type: "SYNC_STATUS_CHANGED",
+          projectId: "project-sync-tasks",
+        });
+      });
+
+      expect(invalidateSpy).toHaveBeenCalledWith({
+        queryKey: JIRA_SPRINT_QUERY_KEYS.tasks("project-sync-tasks"),
+      });
+    }
+  );
 });

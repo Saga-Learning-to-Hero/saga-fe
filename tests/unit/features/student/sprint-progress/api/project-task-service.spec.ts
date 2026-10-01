@@ -22,7 +22,21 @@ describe("ProjectTaskService", () => {
     status: "TODO" as const,
     jiraStatusId: "1",
     jiraStatusName: "To Do",
+    issueTypeId: "10001",
     issueTypeName: "Story",
+    issueTypeLevel: "STANDARD" as const,
+    jiraHierarchyLevel: 0,
+    parent: null,
+    subtasks: [
+      {
+        id: "subtask-1",
+        title: "Implement OAuth callback",
+        status: "TODO",
+        externalKey: "SAGA-16",
+        issueTypeName: "Subtask",
+        issueTypeLevel: "SUBTASK" as const,
+      },
+    ],
     assigneeExternalId: "acc-user-1",
     assigneeDisplayName: "Le Hoang Hai",
     assigneeStudentId: "stu-1",
@@ -85,6 +99,13 @@ describe("ProjectTaskService", () => {
 
       expect(res.id).toBe(mockTaskId);
       expect(res.storyPoint).toBe(5);
+      expect(res.issueTypeLevel).toBe("STANDARD");
+      expect(res.parent).toBeNull();
+      expect(res.subtasks?.[0]).toMatchObject({
+        externalKey: "SAGA-16",
+        issueTypeName: "Subtask",
+        issueTypeLevel: "SUBTASK",
+      });
     }
   );
 
@@ -349,7 +370,7 @@ describe("ProjectTaskService", () => {
             title: "Parent Feature Task",
             status: "IN_PROGRESS",
             externalKey: "SAGA-10",
-            parentTaskId: null,
+            level: "EPIC",
           },
         ],
         page: 0,
@@ -359,6 +380,8 @@ describe("ProjectTaskService", () => {
       vi.spyOn(apiClient, "get").mockResolvedValueOnce({ data: mockParentOptions });
 
       const res = await ProjectTaskService.getParentOptions(mockProjectId, {
+        childIssueTypeId: "10004",
+        jiraIntegrationId: "jira-1",
         excludeTaskId: mockTaskId,
       });
 
@@ -368,7 +391,13 @@ describe("ProjectTaskService", () => {
       expect(apiClient.get).toHaveBeenCalledWith(
         `/api/projects/${mockProjectId}/tasks/parent-options`,
         {
-          params: { page: 0, size: 50, excludeTaskId: mockTaskId },
+          params: {
+            page: 0,
+            size: 50,
+            childIssueTypeId: "10004",
+            jiraIntegrationId: "jira-1",
+            excludeTaskId: mockTaskId,
+          },
         }
       );
     }
@@ -382,9 +411,50 @@ describe("ProjectTaskService", () => {
       description: "Nem ValidationException khi projectId rong khi goi getParentOptions",
     },
     async () => {
-      await expect(ProjectTaskService.getParentOptions("   ")).rejects.toThrow(
-        "Throw ValidationException: Project ID is required"
-      );
+      await expect(
+        ProjectTaskService.getParentOptions("   ", {
+          childIssueTypeId: "10004",
+          jiraIntegrationId: "jira-1",
+        })
+      ).rejects.toThrow("Throw ValidationException: Project ID is required");
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID17",
+      type: "A",
+      executedDate: "02/10/2026",
+      description: "Khong goi API parent-options khi thieu childIssueTypeId",
+    },
+    async () => {
+      const getSpy = vi.spyOn(apiClient, "get");
+      await expect(
+        ProjectTaskService.getParentOptions(mockProjectId, {
+          childIssueTypeId: "  ",
+          jiraIntegrationId: "jira-1",
+        })
+      ).rejects.toThrow("Throw ValidationException: childIssueTypeId is required");
+      expect(getSpy).not.toHaveBeenCalled();
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID18",
+      type: "B",
+      executedDate: "02/10/2026",
+      description: "Khong goi API parent-options khi thieu jiraIntegrationId",
+    },
+    async () => {
+      const getSpy = vi.spyOn(apiClient, "get");
+      await expect(
+        ProjectTaskService.getParentOptions(mockProjectId, {
+          childIssueTypeId: "10004",
+          jiraIntegrationId: "",
+        })
+      ).rejects.toThrow("Throw ValidationException: jiraIntegrationId is required");
+      expect(getSpy).not.toHaveBeenCalled();
     }
   );
 
@@ -510,6 +580,32 @@ describe("ProjectTaskService", () => {
         `/api/projects/${mockProjectId}/tasks/${mockTaskId}/work-session-timeline`,
         { params }
       );
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID22",
+      type: "N",
+      executedDate: "02/10/2026",
+      description: "Tao Subtask gui issue type, parent Jira va ty trong storyPoints",
+    },
+    async () => {
+      const postSpy = vi.spyOn(apiClient, "post").mockResolvedValueOnce({ data: mockTask });
+
+      await ProjectTaskService.createTask(mockProjectId, {
+        summary: "  Implement callback  ",
+        issueTypeId: "10002",
+        jiraParentTaskId: "parent-task-1",
+        storyPoints: 6,
+      });
+
+      expect(postSpy).toHaveBeenCalledWith(`/api/projects/${mockProjectId}/tasks`, {
+        summary: "Implement callback",
+        issueTypeId: "10002",
+        jiraParentTaskId: "parent-task-1",
+        storyPoints: 6,
+      });
     }
   );
 });

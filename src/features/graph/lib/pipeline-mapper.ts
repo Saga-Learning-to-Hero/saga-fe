@@ -2,6 +2,7 @@ import type { ProjectProgressMemberSummary } from "@/features/student/project/ty
 import type { TaskLinkedCommitItem } from "@/features/student/project/types/student-project";
 import type { StudentTeamMember } from "@/features/student/courses/types/student-course";
 import type { ProjectTaskResponse } from "@/features/student/sprint-progress/types/jira-task-types";
+import { mapTaskEvidenceCheck } from "@/features/student/sprint-progress/lib/subtask-allocation";
 import {
   BACKLOG_SPRINT_ID,
   UNASSIGNED_LANE_ID,
@@ -90,7 +91,7 @@ export function mapPipelineTasks(tasks: ProjectTaskResponse[]): PipelineTask[] {
       labels: task.labels || [],
       evidenceCount: task.evidenceCount,
       hasEvidence: task.hasEvidence,
-      evidenceCheck: task.evidenceCheck || null,
+      evidenceCheck: mapTaskEvidenceCheck(task.evidenceCheck),
     };
   });
 }

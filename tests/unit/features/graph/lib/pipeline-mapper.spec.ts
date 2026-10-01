@@ -28,6 +28,7 @@ function task(partial: Partial<ProjectTaskResponse> & Pick<ProjectTaskResponse, 
     externalId: partial.id,
     externalKey: partial.externalKey || partial.id,
     issueTypeName: "Task",
+    issueTypeLevel: "STANDARD",
     linkedCommitCount: 0,
     createdAt: "2026-09-14T00:00:00Z",
     updatedAt: "2026-09-14T00:00:00Z",
@@ -269,6 +270,8 @@ describe("pipeline-mapper", () => {
           sprint: { id: "sp-1", name: "Sprint 3", state: "active" },
           evidenceCheck: {
             status: "MISSING_COMMIT",
+            requiresCommit: true,
+            requiresDocument: false,
           },
         }),
         task({

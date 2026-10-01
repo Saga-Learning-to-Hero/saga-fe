@@ -12,6 +12,7 @@ const baseTask: ProjectTaskResponse = {
   jiraStatusId: "10002",
   jiraStatusName: "In Review",
   issueTypeName: "Task",
+  issueTypeLevel: "UNKNOWN",
   linkedCommitCount: 0,
   createdAt: "2026-09-13T09:00:00Z",
   updatedAt: "2026-09-13T09:00:01Z",
@@ -102,11 +103,25 @@ describe("task-mapper", () => {
         ...baseTask,
         externalKey: "SAGA-50",
         issueTypeName: "Subtask",
-        parent: { externalId: "10583", externalKey: "SAGA-49" },
+        issueTypeLevel: "SUBTASK",
+        parent: {
+          externalId: "10583",
+          externalKey: "SAGA-49",
+          taskId: "task-parent",
+          resolution: "RESOLVED",
+          resolutionReason: null,
+        },
       });
 
       expect(result.type).toBe("SUBTASK");
-      expect(result.parent).toEqual({ externalId: "10583", externalKey: "SAGA-49" });
+      expect(result.issueTypeLevel).toBe("SUBTASK");
+      expect(result.parent).toEqual({
+        externalId: "10583",
+        externalKey: "SAGA-49",
+        taskId: "task-parent",
+        resolution: "RESOLVED",
+        resolutionReason: null,
+      });
     }
   );
 
@@ -238,6 +253,126 @@ describe("task-mapper", () => {
         assignee: { accountId: "jira-1", displayName: "An", avatarUrl: null },
       });
       expect(result.assignee.avatar).toBe("");
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID12",
+      type: "N",
+      executedDate: "02/10/2026",
+      description: "Map 5 issueTypeLevel tu BE, khong doan cap tu ten Subtask",
+    },
+    () => {
+      const levels = ["EPIC", "STANDARD", "SUBTASK", "ABOVE_EPIC", "UNKNOWN"] as const;
+      for (const level of levels) {
+        const result = mapProjectTaskToSprintIssue({
+          ...baseTask,
+          issueTypeName: "Subtask",
+          issueTypeLevel: level,
+        });
+        expect(result.issueTypeLevel).toBe(level);
+      }
+      const unknown = mapProjectTaskToSprintIssue({
+        ...baseTask,
+        issueTypeName: "Subtask",
+        issueTypeLevel: "UNKNOWN",
+      });
+      expect(unknown.issueTypeLevel).toBe("UNKNOWN");
+      expect(unknown.type).toBe("TASK");
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID13",
+      type: "N",
+      executedDate: "02/10/2026",
+      description: "STANDARD Story/Bug chi anh xa icon, khong doi issueTypeLevel",
+    },
+    () => {
+      const story = mapProjectTaskToSprintIssue({
+        ...baseTask,
+        issueTypeName: "Story",
+        issueTypeLevel: "STANDARD",
+      });
+      const bug = mapProjectTaskToSprintIssue({
+        ...baseTask,
+        issueTypeName: "Bug",
+        issueTypeLevel: "STANDARD",
+      });
+      expect(story.issueTypeLevel).toBe("STANDARD");
+      expect(story.type).toBe("STORY");
+      expect(bug.issueTypeLevel).toBe("STANDARD");
+      expect(bug.type).toBe("BUG");
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID14",
+      type: "A",
+      executedDate: "02/10/2026",
+      description: "Parent UNRESOLVED giu externalKey va taskId null, khong bia RESOLVED",
+    },
+    () => {
+      const result = mapProjectTaskToSprintIssue({
+        ...baseTask,
+        parent: {
+          externalId: "10583",
+          externalKey: "SAGA-49",
+          taskId: null,
+          resolution: "UNRESOLVED",
+          resolutionReason: "PARENT_NOT_SYNCED",
+        },
+      });
+      expect(result.parent?.taskId).toBeNull();
+      expect(result.parent?.resolution).toBe("UNRESOLVED");
+      expect(result.parent?.resolutionReason).toBe("PARENT_NOT_SYNCED");
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID15",
+      type: "B",
+      executedDate: "02/10/2026",
+      description: "Subtask storyPoint null giu null, khong bien thanh 0",
+    },
+    () => {
+      const result = mapProjectTaskToSprintIssue({
+        ...baseTask,
+        issueTypeLevel: "SUBTASK",
+        issueTypeName: "Subtask",
+        storyPoint: null,
+      });
+      expect(result.storyPoints).toBeNull();
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID16",
+      type: "N",
+      executedDate: "02/10/2026",
+      description: "Map evidenceCheck requiresCommit/requiresDocument tu BE, khong suy tu commit count",
+    },
+    () => {
+      const result = mapProjectTaskToSprintIssue({
+        ...baseTask,
+        linkedCommitCount: 0,
+        evidenceCheck: {
+          status: "SATISFIED",
+          requiresCommit: false,
+          requiresDocument: false,
+        },
+      });
+      expect(result.evidenceCheck).toEqual({
+        status: "SATISFIED",
+        requiresCommit: false,
+        requiresDocument: false,
+      });
+      expect(result.githubCommitCount).toBe(0);
     }
   );
 });
