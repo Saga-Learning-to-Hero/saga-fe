@@ -1,4 +1,11 @@
 import { apiClient } from "@/lib/axios";
+import { requireRemovalReason } from "@/lib/removal-reason";
+import {
+  isActiveEnrollment,
+  isPendingInvitation,
+  normalizeRosterEntry,
+  normalizeRosterStatus,
+} from "../lib/roster-status";
 import type {
   RosterItemResponse,
   CourseRosterResponse,
@@ -35,31 +42,43 @@ export class RosterService {
     );
     const data = response.data;
     if (Array.isArray(data)) {
-      const mappedEntries = data.map((item) => ({
-        kind: (item as unknown as { kind?: string }).kind || (item.status === "ENROLLED" ? "ENROLLMENT" : "INVITATION"),
-        id: item.id,
-        enrollmentId: item.id,
-        invitationId: null,
-        studentUserId: item.studentId,
-        studentCode: item.studentCode || "",
-        fullName: item.fullName || "",
-        email: item.email || "",
-        status: item.status || "ENROLLED",
-        enrollmentStatus: item.status === "ENROLLED" ? "ACTIVE" : null,
-        invitationStatus: item.status === "INVITED" ? "PENDING" : null,
-        accountState: "REGISTERED",
-        enrolledAt: item.enrolledAt,
-        avatarUrl: item.avatarUrl ?? item.avatar ?? null,
-        avatar: item.avatar ?? null,
-      }));
+      const mappedEntries = data.map((item) => {
+        const rawEnrollmentStatus = normalizeRosterStatus(
+          (item as unknown as { enrollmentStatus?: string | null }).enrollmentStatus
+        );
+        const enrollmentStatus =
+          rawEnrollmentStatus ||
+          (item.status === "ENROLLED" ? "ACTIVE" : item.status === "DROPPED" ? "WITHDRAWN" : null);
+        return normalizeRosterEntry({
+          kind:
+            (item as unknown as { kind?: string }).kind ||
+            (item.status === "INVITED" ? "INVITATION" : "ENROLLMENT"),
+          id: item.id,
+          enrollmentId: item.id,
+          invitationId: null,
+          studentUserId: item.studentId,
+          studentCode: item.studentCode || "",
+          fullName: item.fullName || "",
+          email: item.email || "",
+          status: item.status,
+          enrollmentStatus,
+          invitationStatus:
+            (item as unknown as { invitationStatus?: string | null }).invitationStatus ||
+            (item.status === "INVITED" ? "PENDING" : null),
+          accountState: "REGISTERED",
+          enrolledAt: item.enrolledAt,
+          avatarUrl: item.avatarUrl ?? item.avatar ?? null,
+          avatar: item.avatar ?? null,
+        });
+      });
 
       return {
         courseId,
         classCode: "",
         semesterCode: "",
         subjectCode: "",
-        enrolledCount: mappedEntries.filter((x) => x.status === "ENROLLED").length,
-        pendingInvitationCount: mappedEntries.filter((x) => x.status === "INVITED").length,
+        enrolledCount: mappedEntries.filter(isActiveEnrollment).length,
+        pendingInvitationCount: mappedEntries.filter(isPendingInvitation).length,
         entries: mappedEntries,
       };
     }
@@ -72,18 +91,21 @@ export class RosterService {
           ? (data as unknown as { content: CourseRosterEntry[] }).content
           : [];
 
+    const normalizedEntries = entries.map((e) =>
+      normalizeRosterEntry({
+        ...e,
+        id: e.id || e.enrollmentId || e.invitationId || `${e.studentCode}-${e.kind}`,
+      })
+    );
+
     return {
       courseId: data?.courseId || courseId,
       classCode: data?.classCode || "",
       semesterCode: data?.semesterCode || "",
       subjectCode: data?.subjectCode || "",
-      enrolledCount: data?.enrolledCount ?? entries.filter((e) => e.kind === "ENROLLMENT" || e.enrollmentStatus === "ACTIVE").length,
-      pendingInvitationCount: data?.pendingInvitationCount ?? entries.filter((e) => e.kind === "INVITATION" || e.invitationStatus === "PENDING").length,
-      entries: entries.map((e) => ({
-        ...e,
-        id: e.id || e.enrollmentId || e.invitationId || `${e.studentCode}-${e.kind}`,
-        status: e.status || (e.kind === "ENROLLMENT" || e.enrollmentStatus === "ACTIVE" ? "ENROLLED" : "INVITED"),
-      })),
+      enrolledCount: normalizedEntries.filter(isActiveEnrollment).length,
+      pendingInvitationCount: normalizedEntries.filter(isPendingInvitation).length,
+      entries: normalizedEntries,
     };
   }
 
@@ -216,7 +238,8 @@ export class RosterService {
 
   static async removeEnrollment(
     courseId: string,
-    enrollmentId: string
+    enrollmentId: string,
+    reason: string
   ): Promise<CourseRosterEntry> {
     if (!courseId || !courseId.trim()) {
       throw new Error("Throw ValidationException: Course ID is required");
@@ -224,9 +247,11 @@ export class RosterService {
     if (!enrollmentId || !enrollmentId.trim()) {
       throw new Error("Throw ValidationException: Enrollment ID is required");
     }
+    const trimmedReason = requireRemovalReason(reason);
 
     const response = await apiClient.delete<CourseRosterEntry>(
-      `/api/admin/courses/${encodeURIComponent(courseId.trim())}/roster/enrollments/${encodeURIComponent(enrollmentId.trim())}`
+      `/api/admin/courses/${encodeURIComponent(courseId.trim())}/roster/enrollments/${encodeURIComponent(enrollmentId.trim())}`,
+      { data: { reason: trimmedReason } }
     );
     return response.data;
   }

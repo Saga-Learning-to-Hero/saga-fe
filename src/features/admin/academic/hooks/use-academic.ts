@@ -1,4 +1,5 @@
 import { showSuccessToast, showErrorToast } from "@/lib/api-error";
+import { getRemovalApiErrorMessage } from "@/lib/removal-reason";
 import { useQuery, useMutation, useQueryClient, type QueryClient } from "@tanstack/react-query";
 import { AcademicService } from "../api/academic-service";
 import { CourseService } from "../api/course-service";
@@ -380,8 +381,11 @@ export function useConfirmRosterImport() {
       courseId: string;
       data: ConfirmRosterImportRequest;
     }) => RosterService.confirmImport(courseId, data),
-    onSuccess: (res, variables) => {
-      queryClient.invalidateQueries({
+    onSuccess: async (res, variables) => {
+      await queryClient.invalidateQueries({
+        queryKey: ACADEMIC_QUERY_KEYS.roster(variables.courseId),
+      });
+      await queryClient.refetchQueries({
         queryKey: ACADEMIC_QUERY_KEYS.roster(variables.courseId),
       });
       queryClient.invalidateQueries({ queryKey: ["academic", "courses"] });
@@ -407,8 +411,11 @@ export function useAddStudentToRoster() {
       courseId: string;
       data: AddStudentToCourseRequest;
     }) => RosterService.addStudent(courseId, data),
-    onSuccess: (newStudent, variables) => {
-      queryClient.invalidateQueries({
+    onSuccess: async (newStudent, variables) => {
+      await queryClient.invalidateQueries({
+        queryKey: ACADEMIC_QUERY_KEYS.roster(variables.courseId),
+      });
+      await queryClient.refetchQueries({
         queryKey: ACADEMIC_QUERY_KEYS.roster(variables.courseId),
       });
       queryClient.invalidateQueries({ queryKey: ["academic", "courses"] });
@@ -484,29 +491,26 @@ export function useRemoveEnrollment() {
     mutationFn: ({
       courseId,
       enrollmentId,
+      reason,
     }: {
       courseId: string;
       enrollmentId: string;
-    }) => RosterService.removeEnrollment(courseId, enrollmentId),
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({
+      reason: string;
+    }) => RosterService.removeEnrollment(courseId, enrollmentId, reason),
+    onSuccess: async (_, variables) => {
+      await queryClient.invalidateQueries({
+        queryKey: ACADEMIC_QUERY_KEYS.roster(variables.courseId),
+      });
+      await queryClient.refetchQueries({
         queryKey: ACADEMIC_QUERY_KEYS.roster(variables.courseId),
       });
       queryClient.invalidateQueries({ queryKey: ["academic", "courses"] });
       showSuccessToast("Đã rút tên sinh viên khỏi lớp học phần (bảo lưu lịch sử đóng góp).");
     },
     onError: (error: unknown) => {
-      const err = error as { response?: { data?: { code?: string; message?: string } }; message?: string };
-      const code = err.response?.data?.code;
-      if (code === "TEAM_LEADER_REMOVAL_REQUIRES_REASSIGNMENT") {
-        showErrorToast("Sinh viên đang là Trưởng nhóm. Vui lòng chuyển quyền Trưởng nhóm cho thành viên khác trước khi xóa.");
-      } else if (code === "ROSTER_STUDENT_ALREADY_REMOVED") {
-        showErrorToast("Sinh viên này đã được rút tên trước đó.");
-      } else if (code === "ROSTER_STUDENT_NOT_FOUND") {
-        showErrorToast("Không tìm thấy thông tin sinh viên trong lớp học phần này.");
-      } else {
-        showErrorToast(err.response?.data?.message || err.message || "Không thể rút tên sinh viên khỏi lớp học phần.");
-      }
+      showErrorToast(
+        getRemovalApiErrorMessage(error, "Không thể rút tên sinh viên khỏi lớp học phần.")
+      );
     },
   });
 }
@@ -522,8 +526,11 @@ export function useCancelInvitation() {
       courseId: string;
       invitationId: string;
     }) => RosterService.cancelInvitation(courseId, invitationId),
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({
+    onSuccess: async (_, variables) => {
+      await queryClient.invalidateQueries({
+        queryKey: ACADEMIC_QUERY_KEYS.roster(variables.courseId),
+      });
+      await queryClient.refetchQueries({
         queryKey: ACADEMIC_QUERY_KEYS.roster(variables.courseId),
       });
       queryClient.invalidateQueries({ queryKey: ["academic", "courses"] });

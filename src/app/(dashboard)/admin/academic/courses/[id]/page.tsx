@@ -56,6 +56,13 @@ import type {
   CourseRosterResponse,
   RosterEnrollmentStatus,
 } from "@/features/admin/academic/types/course-roster-types";
+import {
+  canRemoveRosterEntry,
+  isActiveEnrollment,
+  isPendingInvitation,
+  isWithdrawnEnrollment,
+  toUiRosterStatus,
+} from "@/features/admin/academic/lib/roster-status";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -104,20 +111,7 @@ export default function AdminCourseDetailPage({ params }: PageProps) {
         (s.fullName && s.fullName.toLowerCase().includes(term)) ||
         (s.email && s.email.toLowerCase().includes(term));
 
-      const isEnrolled =
-        s.kind === "ENROLLMENT" || s.status === "ENROLLED" || s.enrollmentStatus === "ACTIVE";
-      const isInvited =
-        s.kind === "INVITATION" || s.status === "INVITED" || s.invitationStatus === "PENDING";
-      const isDropped = s.status === "DROPPED";
-
-      const currentStatus: RosterEnrollmentStatus = isEnrolled
-        ? "ENROLLED"
-        : isInvited
-          ? "INVITED"
-          : isDropped
-            ? "DROPPED"
-            : "ENROLLED";
-
+      const currentStatus: RosterEnrollmentStatus = toUiRosterStatus(s);
       const matchStatus = statusFilter === "ALL" || currentStatus === statusFilter;
       return matchSearch && matchStatus;
     });
@@ -141,9 +135,9 @@ export default function AdminCourseDetailPage({ params }: PageProps) {
   };
 
   const renderStatusBadge = (s: CourseRosterEntry) => {
-    const isEnrolled = s.kind === "ENROLLMENT" || s.status === "ENROLLED" || s.enrollmentStatus === "ACTIVE";
-    const isInvited = s.kind === "INVITATION" || s.status === "INVITED" || s.invitationStatus === "PENDING";
-    const isDropped = s.status === "DROPPED";
+    const isEnrolled = isActiveEnrollment(s);
+    const isInvited = isPendingInvitation(s);
+    const isDropped = isWithdrawnEnrollment(s);
 
     if (isEnrolled) {
       return (
@@ -176,27 +170,20 @@ export default function AdminCourseDetailPage({ params }: PageProps) {
     );
   };
 
-  const enrolledCount = useMemo(() => {
-    if (typeof (rosterData as CourseRosterResponse)?.enrolledCount === "number") {
-      return (rosterData as CourseRosterResponse).enrolledCount;
-    }
-    return studentsList.filter(
-      (s) => s.kind === "ENROLLMENT" || s.status === "ENROLLED" || s.enrollmentStatus === "ACTIVE"
-    ).length;
-  }, [rosterData, studentsList]);
+  const enrolledCount = useMemo(
+    () => studentsList.filter(isActiveEnrollment).length,
+    [studentsList]
+  );
 
-  const invitedCount = useMemo(() => {
-    if (typeof (rosterData as CourseRosterResponse)?.pendingInvitationCount === "number") {
-      return (rosterData as CourseRosterResponse).pendingInvitationCount;
-    }
-    return studentsList.filter(
-      (s) => s.kind === "INVITATION" || s.status === "INVITED" || s.invitationStatus === "PENDING"
-    ).length;
-  }, [rosterData, studentsList]);
+  const invitedCount = useMemo(
+    () => studentsList.filter(isPendingInvitation).length,
+    [studentsList]
+  );
 
-  const droppedCount = useMemo(() => {
-    return studentsList.filter((s) => s.status === "DROPPED").length;
-  }, [studentsList]);
+  const droppedCount = useMemo(
+    () => studentsList.filter(isWithdrawnEnrollment).length,
+    [studentsList]
+  );
 
   if (isCourseLoading && !course) {
     return (
@@ -555,7 +542,7 @@ export default function AdminCourseDetailPage({ params }: PageProps) {
                   <span className="text-xs text-muted-foreground">Trạng thái:</span>
                   <div className="flex items-center gap-1.5">
                     {renderStatusBadge(sv)}
-                    {sv.status !== "DROPPED" && sv.enrollmentStatus !== "WITHDRAWN" && sv.invitationStatus !== "CANCELLED" && (
+                    {canRemoveRosterEntry(sv) && (
                       <Button
                         variant="ghost"
                         size="icon"
@@ -635,7 +622,7 @@ export default function AdminCourseDetailPage({ params }: PageProps) {
                     </TableCell>
 
                     <TableCell className="py-3 px-4 text-right whitespace-nowrap">
-                      {sv.status !== "DROPPED" && sv.enrollmentStatus !== "WITHDRAWN" && sv.invitationStatus !== "CANCELLED" && (
+                      {canRemoveRosterEntry(sv) && (
                         <Button
                           variant="ghost"
                           size="icon"
@@ -668,6 +655,7 @@ export default function AdminCourseDetailPage({ params }: PageProps) {
         courseCode={course?.courseCode}
         isOpen={isAddStudentOpen}
         onClose={() => setIsAddStudentOpen(false)}
+        onSuccess={() => void refetchRoster()}
       />
 
       <RemoveStudentDialog

@@ -1,5 +1,6 @@
 import { apiClient } from "@/lib/axios";
 import { requireCourseId } from "@/lib/api-error";
+import { requireRemovalReason } from "@/lib/removal-reason";
 import type { LecturerCourseDashboardResponse } from "../types/lecturer-course-dashboard";
 import type {
   CoursePagedParams,
@@ -128,5 +129,22 @@ export class LecturerCourseService {
       courseId: data?.courseId || id,
       teams: Array.isArray(data?.teams) ? data.teams : [],
     };
+  }
+
+  static async removeEnrollment(
+    courseId: string,
+    enrollmentId: string,
+    reason: string,
+  ): Promise<void> {
+    const id = requireCourseId(courseId);
+    if (!enrollmentId || !enrollmentId.trim()) {
+      throw new Error("Throw ValidationException: Enrollment ID is required");
+    }
+    const trimmedReason = requireRemovalReason(reason);
+
+    await apiClient.delete(
+      `/api/lecturer/courses/${id}/roster/enrollments/${encodeURIComponent(enrollmentId.trim())}`,
+      { data: { reason: trimmedReason } },
+    );
   }
 }

@@ -793,4 +793,180 @@ describe("LecturerTeamService", () => {
       ).rejects.toThrow("Throw ValidationException: Team ID is required");
     }
   );
+
+  fptTest(
+    {
+      id: "UTCID35",
+      type: "N",
+      executedDate: "01/10/2026",
+      description: "DELETE team-member gui reason va dua sinh vien vao unassignedStudents",
+    },
+    async () => {
+      const deleteSpy = vi.spyOn(apiClient, "delete").mockResolvedValueOnce({
+        data: {
+          courseId: mockCourseId,
+          teams: [
+            {
+              teamId: mockTeamId,
+              teamNo: 1,
+              teamName: "SAGA Team",
+              projectId: null,
+              members: [],
+            },
+          ],
+          unassignedStudents: [
+            {
+              courseEnrollmentId: "dddddddd-dddd-dddd-dddd-dddddddddddd",
+              studentProfileId: "eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee",
+              studentCode: "SE111111",
+              fullName: "Alpha Leader",
+              email: "alpha@gmail.com",
+            },
+          ],
+        },
+      });
+
+      const res = await LecturerTeamService.removeMember(
+        mockCourseId,
+        mockTeamMemberId,
+        "Rút khỏi nhóm do đổi đề"
+      );
+
+      expect(deleteSpy).toHaveBeenCalledWith(
+        `/api/lecturer/courses/${mockCourseId}/team-members/${mockTeamMemberId}`,
+        { data: { reason: "Rút khỏi nhóm do đổi đề" } }
+      );
+      expect(res.courseId).toBe(mockCourseId);
+      expect(res.unassignedStudents).toHaveLength(1);
+      expect(res.unassignedStudents?.[0].studentCode).toBe("SE111111");
+      expect(res.unassignedStudents?.[0].courseEnrollmentId).toBe(
+        "dddddddd-dddd-dddd-dddd-dddddddddddd"
+      );
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID36",
+      type: "A",
+      executedDate: "01/10/2026",
+      description: "Throw ValidationException khi courseId hoac teamMemberId rong luc rut nhom",
+    },
+    async () => {
+      await expect(
+        LecturerTeamService.removeMember("", mockTeamMemberId, "Rút khỏi nhóm")
+      ).rejects.toThrow("Throw ValidationException: Course ID is required");
+
+      await expect(
+        LecturerTeamService.removeMember(mockCourseId, "   ", "Rút khỏi nhóm")
+      ).rejects.toThrow("Throw ValidationException: Team member ID is required");
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID37",
+      type: "A",
+      executedDate: "01/10/2026",
+      description: "Throw ValidationException khi ly do rut nhom rong",
+    },
+    async () => {
+      await expect(
+        LecturerTeamService.removeMember(mockCourseId, mockTeamMemberId, "")
+      ).rejects.toThrow("Throw ValidationException: Reason is required");
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID38",
+      type: "B",
+      executedDate: "01/10/2026",
+      description: "Throw ValidationException khi ly do rut nhom dai hon 500 ky tu",
+    },
+    async () => {
+      await expect(
+        LecturerTeamService.removeMember(mockCourseId, mockTeamMemberId, "x".repeat(501))
+      ).rejects.toThrow("Throw ValidationException: Reason must be at most 500 characters");
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID39",
+      type: "B",
+      executedDate: "01/10/2026",
+      description: "Trim ly do truoc khi DELETE team-member",
+    },
+    async () => {
+      const deleteSpy = vi.spyOn(apiClient, "delete").mockResolvedValueOnce({
+        data: { courseId: mockCourseId, teams: [], unassignedStudents: [] },
+      });
+
+      await LecturerTeamService.removeMember(
+        `  ${mockCourseId}  `,
+        `  ${mockTeamMemberId}  `,
+        "  Rút khỏi nhóm  "
+      );
+
+      expect(deleteSpy).toHaveBeenCalledWith(
+        `/api/lecturer/courses/${mockCourseId}/team-members/${mockTeamMemberId}`,
+        { data: { reason: "Rút khỏi nhóm" } }
+      );
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID40",
+      type: "A",
+      executedDate: "01/10/2026",
+      description: "Khong nuot loi 400 REQUEST_INVALID khi rut nhom",
+    },
+    async () => {
+      vi.spyOn(apiClient, "delete").mockRejectedValueOnce(
+        apiError("Lý do không hợp lệ", "REQUEST_INVALID", 400)
+      );
+
+      await expect(
+        LecturerTeamService.removeMember(mockCourseId, mockTeamMemberId, "abc")
+      ).rejects.toMatchObject({ code: "REQUEST_INVALID", status: 400 });
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID41",
+      type: "A",
+      executedDate: "01/10/2026",
+      description: "Khong nuot loi 403 LECTURER_COURSE_FORBIDDEN khi rut nhom",
+    },
+    async () => {
+      vi.spyOn(apiClient, "delete").mockRejectedValueOnce(
+        apiError("Không có quyền", "LECTURER_COURSE_FORBIDDEN", 403)
+      );
+
+      await expect(
+        LecturerTeamService.removeMember(mockCourseId, mockTeamMemberId, "Rút khỏi nhóm")
+      ).rejects.toMatchObject({ code: "LECTURER_COURSE_FORBIDDEN", status: 403 });
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID42",
+      type: "A",
+      executedDate: "01/10/2026",
+      description: "Khong nuot loi 409 khi rut truong nhom",
+    },
+    async () => {
+      vi.spyOn(apiClient, "delete").mockRejectedValueOnce(
+        apiError("Hãy đổi trưởng nhóm trước", "TEAM_LEADER_INVALID", 409)
+      );
+
+      await expect(
+        LecturerTeamService.removeMember(mockCourseId, mockTeamMemberId, "Rút trưởng nhóm")
+      ).rejects.toMatchObject({ code: "TEAM_LEADER_INVALID", status: 409 });
+    }
+  );
 });

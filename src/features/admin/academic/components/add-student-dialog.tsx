@@ -19,6 +19,7 @@ interface AddStudentDialogProps {
   onClose: () => void;
   courseId: string;
   courseCode?: string;
+  onSuccess?: () => void;
 }
 
 function removeVietnameseTones(str: string) {
@@ -54,6 +55,7 @@ export function AddStudentDialog({
   onClose,
   courseId,
   courseCode,
+  onSuccess,
 }: AddStudentDialogProps) {
   const [formData, setFormData] = useState({
     fullName: "",
@@ -137,6 +139,7 @@ export function AddStudentDialog({
       },
     });
 
+    onSuccess?.();
     handleClose();
   };
 

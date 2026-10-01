@@ -1,4 +1,5 @@
 import { showSuccessToast, showErrorToast, getApiErrorMessage } from "@/lib/api-error";
+import { getRemovalApiErrorMessage } from "@/lib/removal-reason";
 import { useMutation, useQuery, useQueryClient, type QueryClient } from "@tanstack/react-query";
 import { LecturerTeamService } from "../api/lecturer-team-service";
 import { LECTURER_COURSE_QUERY_KEYS } from "@/features/lecturer/courses/hooks/use-lecturer-courses";
@@ -144,6 +145,32 @@ export function useMoveTeamMember(courseId: string) {
   });
 }
 
+export function useRemoveTeamMember(courseId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ teamMemberId, reason }: { teamMemberId: string; reason: string }) =>
+      LecturerTeamService.removeMember(courseId, teamMemberId, reason),
+    onSuccess: (data) => {
+      queryClient.setQueryData(LECTURER_TEAM_QUERY_KEYS.lecturerTeams(courseId), data);
+      void Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: LECTURER_COURSE_QUERY_KEYS.lecturerRoster(courseId),
+        }),
+        queryClient.invalidateQueries({
+          queryKey: LECTURER_COURSE_QUERY_KEYS.lecturerDashboard(courseId),
+        }),
+      ]);
+      showSuccessToast("Đã rút sinh viên khỏi nhóm.");
+    },
+    onError: (error: unknown) => {
+      showErrorToast(
+        getRemovalApiErrorMessage(error, "Không thể rút sinh viên khỏi nhóm.")
+      );
+    },
+  });
+}
+
 export function useConfirmTeamImport() {
   const queryClient = useQueryClient();
 
@@ -200,4 +227,4 @@ export function shouldClearTeamPreview(error: unknown): boolean {
     code === "TEAM_PREVIEW_EXPIRED" ||
     code === "TEAM_PREVIEW_MISMATCH"
   );
-}
+}

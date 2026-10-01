@@ -1,5 +1,6 @@
-import { showErrorToast } from "@/lib/api-error";
-import { keepPreviousData, useQuery, useQueryClient, type QueryClient } from "@tanstack/react-query";
+import { getApiErrorCode, showErrorToast, showSuccessToast } from "@/lib/api-error";
+import { getRemovalApiErrorMessage } from "@/lib/removal-reason";
+import { keepPreviousData, useMutation, useQuery, useQueryClient, type QueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { LecturerCourseService } from "../api/lecturer-course-service";
@@ -7,7 +8,6 @@ import type { CoursePagedParams, LecturerCourseResponse } from "../types/lecture
 import { LecturerTeamService } from "@/features/lecturer/teams/api/lecturer-team-service";
 import { LecturerWeightsService } from "@/features/lecturer/contribution/api/lecturer-weights-service";
 import { CONTRIBUTION_QUERY_KEYS } from "@/features/lecturer/contribution/hooks/use-lecturer-contribution";
-import { getApiErrorCode } from "@/lib/api-error";
 import { lecturerCoursesPath } from "../lib/course-routes";
 
 export const LECTURER_COURSE_QUERY_KEYS = {
@@ -154,5 +154,33 @@ export function useLecturerCourseDashboard(courseId: string, options?: { enabled
     enabled: (options?.enabled ?? true) && Boolean(courseId && courseId.trim()),
     staleTime: 1000 * 30,
     refetchOnWindowFocus: true,
+  });
+}
+
+export function useRemoveLecturerEnrollment(courseId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ enrollmentId, reason }: { enrollmentId: string; reason: string }) =>
+      LecturerCourseService.removeEnrollment(courseId, enrollmentId, reason),
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: LECTURER_COURSE_QUERY_KEYS.lecturerRoster(courseId),
+        }),
+        queryClient.invalidateQueries({
+          queryKey: ["lecturerTeams", courseId] as const,
+        }),
+        queryClient.invalidateQueries({
+          queryKey: LECTURER_COURSE_QUERY_KEYS.lecturerDashboard(courseId),
+        }),
+      ]);
+      showSuccessToast("Đã xóa sinh viên khỏi lớp học phần.");
+    },
+    onError: (error: unknown) => {
+      showErrorToast(
+        getRemovalApiErrorMessage(error, "Không thể xóa sinh viên khỏi lớp học phần.")
+      );
+    },
   });
 }

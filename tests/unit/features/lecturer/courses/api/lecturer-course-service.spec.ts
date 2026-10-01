@@ -1016,4 +1016,159 @@ describe("LecturerCourseService", () => {
       expect(res.items).toHaveLength(1);
     }
   );
+
+  fptTest(
+    {
+      id: "UTCID44",
+      type: "N",
+      executedDate: "01/10/2026",
+      description: "DELETE enrollment gui reason va dung URL lecturer roster",
+    },
+    async () => {
+      const deleteSpy = vi.spyOn(apiClient, "delete").mockResolvedValueOnce({ data: undefined });
+
+      await LecturerCourseService.removeEnrollment(mockCourseId, "enr-1", "Rút do bảo lưu");
+
+      expect(deleteSpy).toHaveBeenCalledWith(
+        `/api/lecturer/courses/${mockCourseId}/roster/enrollments/enr-1`,
+        { data: { reason: "Rút do bảo lưu" } },
+      );
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID45",
+      type: "A",
+      executedDate: "01/10/2026",
+      description: "Throw ValidationException khi courseId rong luc xoa khoi lop",
+    },
+    async () => {
+      await expect(
+        LecturerCourseService.removeEnrollment("", "enr-1", "Rút do bảo lưu"),
+      ).rejects.toThrow("Throw ValidationException: Course ID is required");
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID46",
+      type: "A",
+      executedDate: "01/10/2026",
+      description: "Throw ValidationException khi enrollmentId rong luc xoa khoi lop",
+    },
+    async () => {
+      await expect(
+        LecturerCourseService.removeEnrollment(mockCourseId, "   ", "Rút do bảo lưu"),
+      ).rejects.toThrow("Throw ValidationException: Enrollment ID is required");
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID47",
+      type: "A",
+      executedDate: "01/10/2026",
+      description: "Throw ValidationException khi ly do xoa khoi lop rong",
+    },
+    async () => {
+      await expect(
+        LecturerCourseService.removeEnrollment(mockCourseId, "enr-1", ""),
+      ).rejects.toThrow("Throw ValidationException: Reason is required");
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID48",
+      type: "B",
+      executedDate: "01/10/2026",
+      description: "Throw ValidationException khi ly do dai hon 500 ky tu",
+    },
+    async () => {
+      await expect(
+        LecturerCourseService.removeEnrollment(mockCourseId, "enr-1", "x".repeat(501)),
+      ).rejects.toThrow("Throw ValidationException: Reason must be at most 500 characters");
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID49",
+      type: "B",
+      executedDate: "01/10/2026",
+      description: "Trim enrollmentId va ly do truoc khi DELETE",
+    },
+    async () => {
+      const deleteSpy = vi.spyOn(apiClient, "delete").mockResolvedValueOnce({ data: undefined });
+
+      await LecturerCourseService.removeEnrollment(
+        `  ${mockCourseId}  `,
+        "  enr-99  ",
+        "  Rút do bảo lưu  ",
+      );
+
+      expect(deleteSpy).toHaveBeenCalledWith(
+        `/api/lecturer/courses/${mockCourseId}/roster/enrollments/enr-99`,
+        { data: { reason: "Rút do bảo lưu" } },
+      );
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID50",
+      type: "A",
+      executedDate: "01/10/2026",
+      description: "Khong nuot loi 400 REQUEST_INVALID khi xoa khoi lop",
+    },
+    async () => {
+      vi.spyOn(apiClient, "delete").mockRejectedValueOnce(
+        apiError("Lý do không hợp lệ", "REQUEST_INVALID", 400),
+      );
+
+      await expect(
+        LecturerCourseService.removeEnrollment(mockCourseId, "enr-1", "abc"),
+      ).rejects.toMatchObject({ code: "REQUEST_INVALID", status: 400 });
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID51",
+      type: "A",
+      executedDate: "01/10/2026",
+      description: "Khong nuot loi 403 LECTURER_COURSE_FORBIDDEN khi xoa khoi lop",
+    },
+    async () => {
+      vi.spyOn(apiClient, "delete").mockRejectedValueOnce(
+        apiError("Không có quyền", "LECTURER_COURSE_FORBIDDEN", 403),
+      );
+
+      await expect(
+        LecturerCourseService.removeEnrollment(mockCourseId, "enr-1", "Rút do bảo lưu"),
+      ).rejects.toMatchObject({ code: "LECTURER_COURSE_FORBIDDEN", status: 403 });
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID52",
+      type: "A",
+      executedDate: "01/10/2026",
+      description: "Khong nuot loi 409 khi xoa truong nhom khoi lop",
+    },
+    async () => {
+      vi.spyOn(apiClient, "delete").mockRejectedValueOnce(
+        apiError("Hãy đổi trưởng nhóm trước", "TEAM_LEADER_REMOVAL_REQUIRES_REASSIGNMENT", 409),
+      );
+
+      await expect(
+        LecturerCourseService.removeEnrollment(mockCourseId, "enr-leader", "Rút trưởng nhóm"),
+      ).rejects.toMatchObject({
+        code: "TEAM_LEADER_REMOVAL_REQUIRES_REASSIGNMENT",
+        status: 409,
+      });
+    }
+  );
 });

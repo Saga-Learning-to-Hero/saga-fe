@@ -13,6 +13,7 @@ import {
   GitGraphIcon,
   ListTodoIcon,
   PieChartIcon,
+  UserMinusIcon,
   Users2Icon,
   UsersIcon,
 } from "lucide-react";
@@ -32,9 +33,12 @@ import {
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { LecturerPageShell } from "@/features/lecturer/courses/components/lecturer-page-shell";
 import { useLecturerCourse } from "@/features/lecturer/courses/hooks/use-lecturer-courses";
+import { ReasonConfirmDialog } from "@/components/common/reason-confirm-dialog";
+import { getRemovalApiErrorMessage } from "@/lib/removal-reason";
 import {
   useLecturerTeams,
   useMoveTeamMember,
+  useRemoveTeamMember,
   useReplaceTeamLeader,
 } from "../hooks/use-lecturer-teams";
 import { sortTeamMembers, type LecturerTeamMember } from "../types/lecturer-team";
@@ -89,8 +93,11 @@ export function TeamProjectDetailPage({ courseId, teamId }: TeamProjectDetailPag
   const teamsQuery = useLecturerTeams(courseId);
   const replaceLeader = useReplaceTeamLeader(courseId);
   const moveMember = useMoveTeamMember(courseId);
+  const removeMember = useRemoveTeamMember(courseId);
   const [leaderCandidate, setLeaderCandidate] = useState<LecturerTeamMember | null>(null);
   const [movingMember, setMovingMember] = useState<LecturerTeamMember | null>(null);
+  const [removingMember, setRemovingMember] = useState<LecturerTeamMember | null>(null);
+  const [removeError, setRemoveError] = useState<string | null>(null);
   const [selectedSprintId, setSelectedSprintId] = useState<string | undefined>(undefined);
 
   const teams = teamsQuery.data?.teams ?? [];
@@ -272,6 +279,8 @@ export function TeamProjectDetailPage({ courseId, teamId }: TeamProjectDetailPag
               const isLeader = member.role === "LEADER";
               const canReplaceLeader = Boolean(member.teamMemberId) && !isLeader;
               const canMoveMember = Boolean(member.teamMemberId) && !isLeader && hasOtherTeams;
+              const canRemoveFromTeam = Boolean(member.teamMemberId) && !isLeader;
+              const showMemberActions = Boolean(member.teamMemberId);
               const memberStats = progress?.memberProgress.find(
                 (p) => p.studentId === member.studentProfileId || p.studentCode === member.studentCode
               );
@@ -372,11 +381,11 @@ export function TeamProjectDetailPage({ courseId, teamId }: TeamProjectDetailPag
                       </Tooltip>
                     ) : null}
 
-                    {(canReplaceLeader || canMoveMember) && (
+                    {showMemberActions && (
                       <DropdownMenu>
                         <DropdownMenuTrigger
                           aria-label={`Thao tác với ${member.fullName || "thành viên"}`}
-                          disabled={replaceLeader.isPending || moveMember.isPending}
+                          disabled={replaceLeader.isPending || moveMember.isPending || removeMember.isPending}
                           className="inline-flex size-8 cursor-pointer items-center justify-center rounded-lg border border-transparent text-muted-foreground transition-colors hover:border-border hover:bg-muted hover:text-foreground disabled:pointer-events-none disabled:opacity-50"
                         >
                           <EllipsisIcon className="size-4" />
@@ -402,6 +411,24 @@ export function TeamProjectDetailPage({ courseId, teamId }: TeamProjectDetailPag
                               Chuyển sang nhóm khác
                             </DropdownMenuItem>
                           )}
+                          {(canReplaceLeader || canMoveMember) && <DropdownMenuSeparator />}
+                          <DropdownMenuItem
+                            className="cursor-pointer text-xs font-semibold gap-2 text-destructive focus:text-destructive"
+                            disabled={!canRemoveFromTeam}
+                            onClick={() => {
+                              if (!canRemoveFromTeam) return;
+                              setRemoveError(null);
+                              setRemovingMember(member);
+                            }}
+                          >
+                            <UserMinusIcon className="size-4" />
+                            Rút khỏi nhóm
+                          </DropdownMenuItem>
+                          {isLeader ? (
+                            <p className="px-2 py-1 text-[11px] leading-relaxed text-muted-foreground">
+                              Hãy đổi trưởng nhóm trước
+                            </p>
+                          ) : null}
                         </DropdownMenuContent>
                       </DropdownMenu>
                     )}
@@ -558,6 +585,41 @@ export function TeamProjectDetailPage({ courseId, teamId }: TeamProjectDetailPag
             { onSuccess: () => setMovingMember(null) }
           );
         }}
+      />
+
+      <ReasonConfirmDialog
+        isOpen={removingMember !== null}
+        onClose={() => {
+          if (removeMember.isPending) return;
+          setRemovingMember(null);
+          setRemoveError(null);
+        }}
+        onConfirm={async (reason) => {
+          if (!removingMember?.teamMemberId) return;
+          setRemoveError(null);
+          try {
+            await removeMember.mutateAsync({
+              teamMemberId: removingMember.teamMemberId,
+              reason,
+            });
+            setRemovingMember(null);
+          } catch (mutationError: unknown) {
+            setRemoveError(
+              getRemovalApiErrorMessage(mutationError, "Không thể rút sinh viên khỏi nhóm.")
+            );
+          }
+        }}
+        isLoading={removeMember.isPending}
+        title="Rút sinh viên khỏi nhóm"
+        description={
+          removingMember
+            ? `${removingMember.fullName} (${removingMember.studentCode}) sẽ được rút khỏi nhóm và chuyển về danh sách chưa phân nhóm.`
+            : "Sinh viên sẽ được rút khỏi nhóm."
+        }
+        confirmText="Xác nhận rút khỏi nhóm"
+        loadingText="Đang rút..."
+        errorMessage={removeError}
+        reasonDescription="Bắt buộc. Tối đa 500 ký tự. Hệ thống sẽ gửi thông báo cho sinh viên."
       />
     </LecturerPageShell>
   );

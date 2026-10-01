@@ -9,7 +9,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CourseRoster } from "./course-roster";
 import { TeamList } from "@/features/lecturer/teams/components/team-list";
 import { useLecturerCourse } from "../hooks/use-lecturer-courses";
-import { lecturerCourseTeamsPath, resolveLecturerWorkspaceView } from "../lib/course-routes";
+import {
+  lecturerCourseTeamsPath,
+  resolveLecturerWorkspaceView,
+} from "../lib/course-routes";
 import { formatQueryUpdatedAt } from "../lib/format-query-updated-at";
 import { LecturerPageShell } from "./lecturer-page-shell";
 import { cn } from "@/lib/utils";
@@ -22,18 +25,30 @@ export function CourseWorkspacePage({ courseId }: CourseWorkspacePageProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const view = resolveLecturerWorkspaceView(searchParams.get("view"));
-  const { data: course, isLoading, isError, error, refetch, dataUpdatedAt, isFetching } =
-    useLecturerCourse(courseId);
+  const {
+    data: course,
+    isLoading,
+    isError,
+    error,
+    refetch,
+    dataUpdatedAt,
+    isFetching,
+  } = useLecturerCourse(courseId);
 
   const handleViewChange = useCallback(
     (next: string) => {
       const nextView = next === "teams" ? "teams" : "members";
-      router.replace(`${lecturerCourseTeamsPath(courseId)}?view=${nextView}`, { scroll: false });
+      router.replace(`${lecturerCourseTeamsPath(courseId)}?view=${nextView}`, {
+        scroll: false,
+      });
     },
-    [courseId, router]
+    [courseId, router],
   );
 
-  const updatedAt = useMemo(() => formatQueryUpdatedAt([dataUpdatedAt]), [dataUpdatedAt]);
+  const updatedAt = useMemo(
+    () => formatQueryUpdatedAt([dataUpdatedAt]),
+    [dataUpdatedAt],
+  );
 
   return (
     <LecturerPageShell
@@ -58,7 +73,9 @@ export function CourseWorkspacePage({ courseId }: CourseWorkspacePageProps) {
       actions={
         <>
           {updatedAt ? (
-            <p className="text-xs text-muted-foreground">Cập nhật lúc {updatedAt}</p>
+            <p className="text-xs text-muted-foreground">
+              Cập nhật lúc {updatedAt}
+            </p>
           ) : null}
           <Button
             type="button"
@@ -68,7 +85,9 @@ export function CourseWorkspacePage({ courseId }: CourseWorkspacePageProps) {
             disabled={isFetching}
             onClick={() => void refetch()}
           >
-            <RefreshCwIcon className={cn("size-3.5", isFetching && "animate-spin")} />
+            <RefreshCwIcon
+              className={cn("size-3.5", isFetching && "animate-spin")}
+            />
             Làm mới
           </Button>
         </>
@@ -81,7 +100,7 @@ export function CourseWorkspacePage({ courseId }: CourseWorkspacePageProps) {
       <Tabs value={view} onValueChange={handleViewChange} className="space-y-4">
         <TabsList>
           <TabsTrigger value="members">Sinh viên đang học</TabsTrigger>
-          <TabsTrigger value="teams">Phân nhóm</TabsTrigger>
+          <TabsTrigger value="teams">Nhóm dự án</TabsTrigger>
         </TabsList>
         <TabsContent value="members" keepMounted>
           <CourseRoster

@@ -399,10 +399,14 @@ describe("RosterService", () => {
         enrollmentStatus: "WITHDRAWN",
       };
 
-      vi.spyOn(apiClient, "delete").mockResolvedValueOnce({ data: mockResult });
+      const deleteSpy = vi.spyOn(apiClient, "delete").mockResolvedValueOnce({ data: mockResult });
 
-      const res = await RosterService.removeEnrollment(mockCourseId, "enr-1");
+      const res = await RosterService.removeEnrollment(mockCourseId, "enr-1", "Rút do bảo lưu");
 
+      expect(deleteSpy).toHaveBeenCalledWith(
+        `/api/admin/courses/${mockCourseId}/roster/enrollments/enr-1`,
+        { data: { reason: "Rút do bảo lưu" } }
+      );
       expect(res.enrollmentStatus).toBe("WITHDRAWN");
       expect(res.enrollmentId).toBe("enr-1");
     }
@@ -416,19 +420,19 @@ describe("RosterService", () => {
       description: "Nem ValidationException khi courseId hoac enrollmentId bi rong khi rut ten",
     },
     async () => {
-      await expect(RosterService.removeEnrollment("", "enr-1")).rejects.toThrow(
+      await expect(RosterService.removeEnrollment("", "enr-1", "Rút do bảo lưu")).rejects.toThrow(
         "Throw ValidationException: Course ID is required"
       );
 
-      await expect(RosterService.removeEnrollment("   ", "enr-1")).rejects.toThrow(
+      await expect(RosterService.removeEnrollment("   ", "enr-1", "Rút do bảo lưu")).rejects.toThrow(
         "Throw ValidationException: Course ID is required"
       );
 
-      await expect(RosterService.removeEnrollment(mockCourseId, "")).rejects.toThrow(
+      await expect(RosterService.removeEnrollment(mockCourseId, "", "Rút do bảo lưu")).rejects.toThrow(
         "Throw ValidationException: Enrollment ID is required"
       );
 
-      await expect(RosterService.removeEnrollment(mockCourseId, "   ")).rejects.toThrow(
+      await expect(RosterService.removeEnrollment(mockCourseId, "   ", "Rút do bảo lưu")).rejects.toThrow(
         "Throw ValidationException: Enrollment ID is required"
       );
     }
@@ -446,9 +450,9 @@ describe("RosterService", () => {
         new Error("TEAM_LEADER_REMOVAL_REQUIRES_REASSIGNMENT")
       );
 
-      await expect(RosterService.removeEnrollment(mockCourseId, "enr-leader")).rejects.toThrow(
-        "TEAM_LEADER_REMOVAL_REQUIRES_REASSIGNMENT"
-      );
+      await expect(
+        RosterService.removeEnrollment(mockCourseId, "enr-leader", "Rút trưởng nhóm")
+      ).rejects.toThrow("TEAM_LEADER_REMOVAL_REQUIRES_REASSIGNMENT");
     }
   );
 
@@ -515,15 +519,221 @@ describe("RosterService", () => {
     async () => {
       const deleteSpy = vi.spyOn(apiClient, "delete").mockResolvedValue({ data: {} });
 
-      await RosterService.removeEnrollment(`  ${mockCourseId}  `, "  enr-99  ");
+      await RosterService.removeEnrollment(`  ${mockCourseId}  `, "  enr-99  ", "  Rút do bảo lưu  ");
       expect(deleteSpy).toHaveBeenCalledWith(
-        `/api/admin/courses/${mockCourseId}/roster/enrollments/enr-99`
+        `/api/admin/courses/${mockCourseId}/roster/enrollments/enr-99`,
+        { data: { reason: "Rút do bảo lưu" } }
       );
 
       await RosterService.cancelInvitation(`  ${mockCourseId}  `, "  inv-99  ");
       expect(deleteSpy).toHaveBeenCalledWith(
         `/api/admin/courses/${mockCourseId}/roster/invitations/inv-99`
       );
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID21",
+      type: "A",
+      executedDate: "01/10/2026",
+      description: "Nem ValidationException khi ly do rut ten rong",
+    },
+    async () => {
+      await expect(RosterService.removeEnrollment(mockCourseId, "enr-1", "")).rejects.toThrow(
+        "Throw ValidationException: Reason is required"
+      );
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID22",
+      type: "A",
+      executedDate: "01/10/2026",
+      description: "Nem ValidationException khi ly do chi gom khoang trang",
+    },
+    async () => {
+      await expect(RosterService.removeEnrollment(mockCourseId, "enr-1", "   ")).rejects.toThrow(
+        "Throw ValidationException: Reason is required"
+      );
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID23",
+      type: "B",
+      executedDate: "01/10/2026",
+      description: "Nem ValidationException khi ly do dai hon 500 ky tu",
+    },
+    async () => {
+      const tooLong = "x".repeat(501);
+      await expect(RosterService.removeEnrollment(mockCourseId, "enr-1", tooLong)).rejects.toThrow(
+        "Throw ValidationException: Reason must be at most 500 characters"
+      );
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID24",
+      type: "B",
+      executedDate: "01/10/2026",
+      description: "Chap nhan ly do dung 500 ky tu sau khi trim",
+    },
+    async () => {
+      const exactReason = "x".repeat(500);
+      const deleteSpy = vi.spyOn(apiClient, "delete").mockResolvedValueOnce({ data: {} });
+
+      await RosterService.removeEnrollment(mockCourseId, "enr-1", `  ${exactReason}  `);
+
+      expect(deleteSpy).toHaveBeenCalledWith(
+        `/api/admin/courses/${mockCourseId}/roster/enrollments/enr-1`,
+        { data: { reason: exactReason } }
+      );
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID25",
+      type: "A",
+      executedDate: "01/10/2026",
+      description: "Khong nuot loi khi Backend tra ve REQUEST_INVALID",
+    },
+    async () => {
+      vi.spyOn(apiClient, "delete").mockRejectedValueOnce(new Error("REQUEST_INVALID"));
+
+      await expect(
+        RosterService.removeEnrollment(mockCourseId, "enr-1", "Ly do khong hop le")
+      ).rejects.toThrow("REQUEST_INVALID");
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID26",
+      type: "A",
+      executedDate: "01/10/2026",
+      description: "Khong nuot loi khi Backend tra ve TEAM_LEADER_INVALID",
+    },
+    async () => {
+      vi.spyOn(apiClient, "delete").mockRejectedValueOnce(new Error("TEAM_LEADER_INVALID"));
+
+      await expect(
+        RosterService.removeEnrollment(mockCourseId, "enr-leader", "Rut truong nhom")
+      ).rejects.toThrow("TEAM_LEADER_INVALID");
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID27",
+      type: "N",
+      executedDate: "01/10/2026",
+      description: "Object roster ACTIVE van tinh enrolledCount va status ENROLLED",
+    },
+    async () => {
+      vi.spyOn(apiClient, "get").mockResolvedValueOnce({
+        data: {
+          courseId: mockCourseId,
+          classCode: "SE1705",
+          semesterCode: "FA26",
+          subjectCode: "SWP391",
+          enrolledCount: 99,
+          pendingInvitationCount: 0,
+          entries: [
+            {
+              kind: "ENROLLMENT",
+              enrollmentId: "enr-active",
+              studentCode: "SE170504",
+              fullName: "Le Hoang Hai",
+              email: "hailhse170504@fpt.edu.vn",
+              enrollmentStatus: "ACTIVE",
+            },
+          ],
+        },
+      });
+
+      const res = await RosterService.getRoster(mockCourseId);
+
+      expect(res.entries[0].enrollmentStatus).toBe("ACTIVE");
+      expect(res.entries[0].status).toBe("ENROLLED");
+      expect(res.enrolledCount).toBe(1);
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID28",
+      type: "A",
+      executedDate: "01/10/2026",
+      description: "Object roster WITHDRAWN map DROPPED va khong cong enrolledCount",
+    },
+    async () => {
+      vi.spyOn(apiClient, "get").mockResolvedValueOnce({
+        data: {
+          courseId: mockCourseId,
+          entries: [
+            {
+              kind: "ENROLLMENT",
+              enrollmentId: "enr-out",
+              studentCode: "SE170504",
+              fullName: "Le Hoang Hai",
+              email: "hailhse170504@fpt.edu.vn",
+              enrollmentStatus: "WITHDRAWN",
+            },
+            {
+              kind: "ENROLLMENT",
+              enrollmentId: "enr-in",
+              studentCode: "SE180001",
+              fullName: "Nguyen Van A",
+              email: "anvse180001@fpt.edu.vn",
+              enrollmentStatus: "ACTIVE",
+            },
+          ],
+        },
+      });
+
+      const res = await RosterService.getRoster(mockCourseId);
+
+      expect(res.entries[0].status).toBe("DROPPED");
+      expect(res.entries[0].enrollmentStatus).toBe("WITHDRAWN");
+      expect(res.entries[1].status).toBe("ENROLLED");
+      expect(res.enrolledCount).toBe(1);
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID29",
+      type: "B",
+      executedDate: "01/10/2026",
+      description: "Trim khoang trang enrollmentStatus ACTIVE truoc khi phan loai",
+    },
+    async () => {
+      vi.spyOn(apiClient, "get").mockResolvedValueOnce({
+        data: {
+          courseId: mockCourseId,
+          entries: [
+            {
+              kind: "ENROLLMENT",
+              enrollmentId: "enr-space",
+              studentCode: "SE170504",
+              fullName: "Le Hoang Hai",
+              email: "hailhse170504@fpt.edu.vn",
+              enrollmentStatus: "  ACTIVE  ",
+            },
+          ],
+        },
+      });
+
+      const res = await RosterService.getRoster(mockCourseId);
+
+      expect(res.entries[0].enrollmentStatus).toBe("ACTIVE");
+      expect(res.entries[0].status).toBe("ENROLLED");
+      expect(res.enrolledCount).toBe(1);
     }
   );
 });
