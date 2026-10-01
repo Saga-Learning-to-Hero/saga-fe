@@ -49,14 +49,19 @@ export function CommitFilterBar({
           <CustomSelect
             value={selectedRepoId}
             onChange={onSelectRepo}
-            options={repositories.map((repo) => ({
-              value: repo.id,
-              label:
-                repo.connectionStatus && repo.connectionStatus !== "ACTIVE"
-                  ? `${repo.fullPath} (đã ngắt kết nối)`
-                  : repo.fullPath,
-              icon: <FolderGit2Icon className="w-3.5 h-3.5 text-blue-500" />,
-            }))}
+            options={repositories.map((repo) => {
+              const isDisconnected =
+                repo.connectionStatus && repo.connectionStatus !== "ACTIVE";
+              const fullText = isDisconnected
+                ? `${repo.fullPath} (đã ngắt kết nối)`
+                : repo.fullPath;
+              return {
+                value: repo.id,
+                label: fullText,
+                tooltip: fullText,
+                icon: <FolderGit2Icon className="w-3.5 h-3.5 text-blue-500" />,
+              };
+            })}
           />
         </div>
 

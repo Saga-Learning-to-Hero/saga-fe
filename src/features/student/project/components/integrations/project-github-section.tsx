@@ -169,7 +169,7 @@ export function ProjectGithubSection({
       {github?.accountLogin && (
         <div className="pt-3 border-t border-purple-500/15 flex items-center justify-between text-xs text-muted-foreground flex-wrap gap-2">
           <div className="flex items-center gap-2">
-            <span>Tài khoản GitHub liên kết:</span>
+            <span>Repo GitHub liên kết:</span>
             <Badge variant="secondary" className="font-mono text-xs">
               @{github.accountLogin}
             </Badge>

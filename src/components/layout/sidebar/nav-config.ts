@@ -124,37 +124,30 @@ export function getLecturerNavItems(courseId: string): NavItem[] {
       match: "exact",
     },
     {
-      id: "course-ai",
-      title: "SAGA AI",
-      href: lecturerCourseAiPath(courseId),
-      icon: "Sparkles",
-      match: "prefix",
-    },
-    {
       id: "course-weights",
       title: "Cấu hình trọng số",
       href: lecturerCourseContributionPath(courseId),
       icon: "SlidersHorizontal",
       match: "prefix",
     },
+    {
+      id: "course-ai",
+      title: "SAGA AI",
+      href: lecturerCourseAiPath(courseId),
+      icon: "Sparkles",
+      match: "prefix",
+    },
   ];
 }
 
-export function getStudentNavItems(): NavItem[] {
-  return [
+export function getStudentNavItems(isLeader = false): NavItem[] {
+  const items: NavItem[] = [
     {
       id: "student-dashboard",
       title: "Tổng quan",
       href: "/student/dashboard",
       icon: "LayoutDashboard",
       match: "exact",
-    },
-    {
-      id: "student-ai",
-      title: "SAGA AI",
-      href: "/student/ai",
-      icon: "Sparkles",
-      match: "prefix",
     },
     {
       id: "student-project",
@@ -191,14 +184,27 @@ export function getStudentNavItems(): NavItem[] {
       icon: "UserCheck",
       match: "exact",
     },
-    {
+  ];
+
+  if (isLeader) {
+    items.push({
       id: "student-contribution",
       title: "Đóng góp",
       href: "/student/contribution",
       icon: "PieChart",
       match: "exact",
-    },
-  ];
+    });
+  }
+
+  items.push({
+    id: "student-ai",
+    title: "SAGA AI",
+    href: "/student/ai",
+    icon: "Sparkles",
+    match: "prefix",
+  });
+
+  return items;
 }
 
 export function getNavGroups(
@@ -207,6 +213,7 @@ export function getNavGroups(
   courseCode?: string,
   pathname?: string,
   selectedStudentCourse?: StudentCourse | null,
+  isLeader?: boolean,
 ): NavGroup[] {
   if (role === "ADMIN") {
     return ADMIN_NAV;
@@ -299,7 +306,10 @@ export function getNavGroups(
       id: "student-study",
       label: courseLabel,
       roles: ["STUDENT"],
-      items: getStudentNavItems(),
+      items: getStudentNavItems(
+        isLeader ??
+          ((selectedStudentCourse?.myGroup?.role || "").trim().toUpperCase() === "LEADER")
+      ),
     },
   ];
 }

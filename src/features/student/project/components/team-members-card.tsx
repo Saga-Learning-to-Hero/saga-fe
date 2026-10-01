@@ -10,6 +10,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { resolveHttpAvatarUrl } from "@/lib/avatar-url";
 import { Button } from "@/components/ui/button";
 import { getApiErrorCode, getApiErrorMessage } from "@/lib/api-error";
+import { formatStudentFptEmail } from "@/lib/student-email";
 
 interface TeamMembersCardProps {
   course?: StudentCourse | null;
@@ -171,7 +172,14 @@ export function TeamMembersCard({
                       <div className="flex items-center gap-1.5 font-mono text-xs text-muted-foreground">
                         <span>MSSV: {member.studentCode}</span>
                         <span>•</span>
-                        <span className="truncate">{member.studentCode.toLowerCase()}@fpt.edu.vn</span>
+                        {(() => {
+                          const email = member.email || formatStudentFptEmail(member.fullName, member.studentCode);
+                          return (
+                            <span className="truncate" title={email}>
+                              {email}
+                            </span>
+                          );
+                        })()}
                       </div>
                     </div>
                   </div>

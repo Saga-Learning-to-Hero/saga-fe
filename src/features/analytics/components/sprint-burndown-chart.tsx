@@ -57,7 +57,8 @@ interface CustomTooltipProps {
     color: string;
     payload: {
       date: string;
-      [key: string]: any;
+      doneCount?: number;
+      [key: string]: unknown;
     };
   }>;
   label?: string;
@@ -67,7 +68,9 @@ function CustomBurndownTooltip({ active, payload, label }: CustomTooltipProps) {
   if (!active || !payload || payload.length === 0) return null;
 
   const actual = payload.find((p) => p.dataKey === "actualRemaining")?.value ?? 0;
-  const done = payload[0]?.payload?.doneCount ?? 0;
+  const done =
+    payload.find((p) => p.dataKey === "doneCount")?.value ??
+    (Number(payload[0]?.payload?.doneCount) || 0);
 
   const ideal = payload.find((p) => p.dataKey === "idealRemaining")?.value;
   const rawDate = payload[0]?.payload?.date;
@@ -421,6 +424,16 @@ export function SprintBurndownChart({
                   dot={{ r: 3, fill: "#3B82F6", strokeWidth: 0 }}
                   activeDot={{ r: 5, fill: "#3B82F6", stroke: "#FFFFFF", strokeWidth: 2 }}
                 />
+
+                <Line
+                  type="monotone"
+                  dataKey="doneCount"
+                  name="Đã hoàn thành"
+                  stroke="#10B981"
+                  strokeWidth={2.5}
+                  dot={{ r: 3, fill: "#10B981", strokeWidth: 0 }}
+                  activeDot={{ r: 5, fill: "#10B981", stroke: "#FFFFFF", strokeWidth: 2 }}
+                />
               </ComposedChart>
             </ResponsiveContainer>
           </div>
@@ -430,6 +443,10 @@ export function SprintBurndownChart({
               <div className="flex items-center gap-1.5">
                 <span className="w-3 h-3 rounded-full bg-blue-500" />
                 <span className="font-semibold text-foreground">Còn lại thực tế</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <span className="w-3 h-3 rounded-full bg-emerald-500" />
+                <span className="font-semibold text-foreground">Đã hoàn thành</span>
               </div>
               {chartData.some((pt) => pt.idealRemaining !== undefined) && (
                 <div className="flex items-center gap-1.5">

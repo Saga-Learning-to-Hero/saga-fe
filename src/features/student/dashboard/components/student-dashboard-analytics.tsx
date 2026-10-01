@@ -5,10 +5,13 @@ import Link from "next/link";
 import {
   CheckCircle2Icon,
   CrownIcon,
+  FilterIcon,
   FolderKanbanIcon,
   GitCommitIcon,
   KanbanIcon,
+  LayersIcon,
   RefreshCwIcon,
+  RotateCcwIcon,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -35,6 +38,7 @@ import { normalizeProjectProgress } from "@/features/progress/lib/progress-forma
 import { useStudentDashboard } from "../hooks/use-student-dashboard";
 import { formatStudentNullablePercent } from "../lib/student-dashboard-format";
 import { getSprintSourceUserMessage } from "@/features/student/sprint-progress/lib/sprint-query-source";
+import type { ProjectSprintResponse } from "@/features/student/sprint-progress/types/jira-task-types";
 import { StudentActiveTasksCard } from "./student-active-tasks-card";
 import { StudentAlertsBanner } from "./student-alerts-banner";
 import { StudentRecentCommitsCard } from "./student-recent-commits-card";
@@ -54,6 +58,27 @@ const StudentWeeklyCommitsChart = dynamic(
 );
 import { TeamWorkloadComparisonChart } from "./team-workload-comparison-chart";
 import { StudentDashboardSkeleton } from "./student-dashboard-skeleton";
+
+/**
+ * Tìm sprint mới nhất của một site Jira:
+ * 1. Ưu tiên sprint có trạng thái đang chạy (ACTIVE)
+ * 2. Nếu không có sprint active, sắp xếp theo startDate mới nhất hoặc tên sprint
+ */
+function getLatestSprint(sprints: ProjectSprintResponse[]): ProjectSprintResponse | null {
+  if (!sprints || sprints.length === 0) return null;
+
+  const activeSprint = sprints.find((sp) => sp.state?.toLowerCase() === "active");
+  if (activeSprint) return activeSprint;
+
+  const sorted = [...sprints].sort((a, b) => {
+    const timeA = a.startDate ? new Date(a.startDate).getTime() : 0;
+    const timeB = b.startDate ? new Date(b.startDate).getTime() : 0;
+    if (timeA !== timeB) return timeB - timeA;
+    return b.name.localeCompare(a.name, undefined, { numeric: true });
+  });
+
+  return sorted[0] || sprints[0];
+}
 
 export function StudentDashboardAnalytics() {
   const { course, courseId, isLoading: isCoursesLoading, isInvalidCourse } = useStudentCourseContext();
@@ -103,14 +128,74 @@ export function StudentDashboardAnalytics() {
     setDetailStudentId(studentId);
   };
 
+  // Lọc sprints thuộc Site (effectiveSourceId) đang chọn
+  const siteFilteredProjectSprints = useMemo(() => {
+    if (!projectSprints || projectSprints.length === 0) return [];
+    if (!effectiveSourceId) return projectSprints;
+    return projectSprints.filter((sp) => {
+      const spSourceId = sp.source?.jiraIntegrationId || sp.jiraIntegrationId;
+      return !spSourceId || spSourceId === effectiveSourceId;
+    });
+  }, [projectSprints, effectiveSourceId]);
+
+  const [prevEffectiveSourceId, setPrevEffectiveSourceId] = useState(effectiveSourceId);
+  if (effectiveSourceId !== prevEffectiveSourceId) {
+    setPrevEffectiveSourceId(effectiveSourceId);
+    const newSiteSprints = (projectSprints || []).filter((sp) => {
+      const spSourceId = sp.source?.jiraIntegrationId || sp.jiraIntegrationId;
+      return !spSourceId || spSourceId === effectiveSourceId;
+    });
+    const latest = getLatestSprint(newSiteSprints);
+    setSelectedSprintId(latest ? latest.id : null);
+  }
+
+  const handleSiteChange = useCallback((newSourceId: string) => {
+    jiraSource.selectSource(newSourceId);
+    const newSiteSprints = (projectSprints || []).filter((sp) => {
+      const spSourceId = sp.source?.jiraIntegrationId || sp.jiraIntegrationId;
+      return !spSourceId || spSourceId === newSourceId;
+    });
+    const latest = getLatestSprint(newSiteSprints);
+    setSelectedSprintId(latest ? latest.id : null);
+  }, [jiraSource, projectSprints]);
+
+  const isJiraConnected = Boolean(data?.integrations?.jira?.connected);
+  const jiraProjectKey = data?.integrations?.jira?.projectKey || "JIRA";
+
+  const siteSelectOptions = useMemo(() => {
+    if (!jiraSource.activeSources || jiraSource.activeSources.length === 0) {
+      if (isJiraConnected) {
+        return [
+          {
+            value: "default",
+            label: `${jiraProjectKey} · Kết nối mặc định`,
+            subLabel: "Nguồn tích hợp Jira",
+          },
+        ];
+      }
+      return [
+        {
+          value: "",
+          label: "Chưa kết nối Jira",
+          subLabel: "Không tìm thấy nguồn Jira",
+        },
+      ];
+    }
+    return jiraSource.activeSources.map((source) => ({
+      value: source.integrationId,
+      label: `${source.projectKey || "JIRA"} · ${source.siteName}`,
+      subLabel: source.boardId ? `Board: ${source.boardId}` : "Board mặc định",
+    }));
+  }, [jiraSource.activeSources, isJiraConnected, jiraProjectKey]);
+
   const currentSprint = data?.currentSprint;
   const sprintSelectOptions = useMemo(() => {
     const seen = new Set<string>();
     const options: Array<{ value: string; label: string; subLabel?: string }> = [];
 
-    // 1. Thêm các sprint từ danh sách projectSprints
-    if (projectSprints && projectSprints.length > 0) {
-      for (const sp of projectSprints) {
+    // Chỉ đưa các sprint thuộc site đang chọn vào danh sách lựa chọn
+    if (siteFilteredProjectSprints && siteFilteredProjectSprints.length > 0) {
+      for (const sp of siteFilteredProjectSprints) {
         if (!sp.id || seen.has(sp.id)) continue;
         seen.add(sp.id);
 
@@ -125,62 +210,40 @@ export function StudentDashboardAnalytics() {
         options.push({
           value: sp.id,
           label: sp.name,
-          subLabel: isActive ? `Sprint hiện tại (${stateLabel})` : `Trạng thái: ${stateLabel}`,
+          subLabel: isActive ? `Sprint đang chạy (${stateLabel})` : `Trạng thái: ${stateLabel}`,
         });
       }
     }
 
-    // 2. Nếu currentSprint từ dashboard chưa có trong options thì bổ sung vào đầu
-    if (currentSprint?.id && !seen.has(currentSprint.id)) {
-      seen.add(currentSprint.id);
-      const isActive = currentSprint.state?.toLowerCase() === "active";
-      const stateLabel =
-        isActive
-          ? "Đang diễn ra"
-          : currentSprint.state?.toLowerCase() === "closed"
-            ? "Đã đóng"
-            : currentSprint.state || "Dự kiến";
-
-      options.unshift({
-        value: currentSprint.id,
-        label: currentSprint.name || (isActive ? "Sprint hiện tại" : "Sprint đang xem"),
-        subLabel: isActive ? `Sprint hiện tại (${stateLabel})` : `Trạng thái: ${stateLabel}`,
-      });
-    }
-
-    // 3. Fallback an toàn: nếu selectedSprintId đang chọn mà chưa có trong options
-    if (selectedSprintId && !seen.has(selectedSprintId)) {
-      options.push({
-        value: selectedSprintId,
-        label: currentSprint?.name || "Sprint đã chọn",
-        subLabel: "Đang xem",
-      });
-    }
-
     return options;
-  }, [projectSprints, currentSprint, selectedSprintId]);
+  }, [siteFilteredProjectSprints]);
 
   const selectedSprintValue = useMemo(() => {
-    if (selectedSprintId) return selectedSprintId;
-    const activeSprint = projectSprints?.find((sp) => sp.state?.toLowerCase() === "active");
-    if (activeSprint?.id) return activeSprint.id;
-    if (currentSprint?.id) return currentSprint.id;
-    if (sprintSelectOptions.length > 0) return sprintSelectOptions[0].value;
-    return "";
-  }, [selectedSprintId, projectSprints, currentSprint, sprintSelectOptions]);
-
-  // Một Sprint là 'hiện tại' chỉ khi state === 'active', so khớp bằng id
-  const isCurrentSprint = useMemo(() => {
-    if (currentSprint?.state) {
-      return currentSprint.state.toLowerCase() === "active";
+    if (selectedSprintId && siteFilteredProjectSprints.some((sp) => sp.id === selectedSprintId)) {
+      return selectedSprintId;
     }
-    const matched = projectSprints?.find((sp) => sp.id === selectedSprintValue);
-    return matched?.state?.toLowerCase() === "active";
-  }, [currentSprint, projectSprints, selectedSprintValue]);
+    const latest = getLatestSprint(siteFilteredProjectSprints);
+    if (latest?.id) return latest.id;
+    return "";
+  }, [selectedSprintId, siteFilteredProjectSprints]);
 
   const isSprintLoading =
     Boolean(dashboardQuery.isPlaceholderData) ||
     Boolean(dashboardQuery.isFetching && selectedSprintId);
+
+  const displaySprint = useMemo(() => {
+    const matched = siteFilteredProjectSprints.find((sp) => sp.id === selectedSprintValue);
+    if (matched && currentSprint?.id !== selectedSprintValue) {
+      return {
+        name: matched.name,
+        state: matched.state,
+        completedTasks: currentSprint?.completedTasks ?? 0,
+        totalTasks: currentSprint?.totalTasks ?? 0,
+        completionPercent: currentSprint?.completionPercent ?? null,
+      };
+    }
+    return currentSprint;
+  }, [siteFilteredProjectSprints, selectedSprintValue, currentSprint]);
 
   if (isInvalidCourse) {
     return (
@@ -359,6 +422,71 @@ export function StudentDashboardAnalytics() {
           {/* Actionable Alerts Banner */}
           <StudentAlertsBanner alerts={actionableAlerts} courseId={courseId} />
 
+          {/* Thanh Bộ Lọc Site & Sprint - Riêng 1 Hàng */}
+          <div className="flex flex-col gap-3.5 rounded-xl border border-border/80 bg-card/90 p-4 shadow-xs sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex flex-wrap items-center gap-3">
+              <div className="flex items-center gap-1.5 text-xs font-bold text-foreground">
+                <FilterIcon className="size-3.5 text-primary" />
+                <span>Bộ lọc hiển thị:</span>
+              </div>
+
+              {/* Bộ lọc Site Jira */}
+              <div className="flex items-center gap-1.5 min-w-[210px] sm:min-w-[250px]">
+                <span className="text-xs font-medium text-muted-foreground whitespace-nowrap flex items-center gap-1">
+                  <LayersIcon className="size-3 text-sky-500" />
+                  <span>Site:</span>
+                </span>
+                <div className="flex-1 min-w-0">
+                  <CustomSelect
+                    id="student-dashboard-site-select"
+                    value={effectiveSourceId || siteSelectOptions[0]?.value || ""}
+                    onChange={handleSiteChange}
+                    options={siteSelectOptions}
+                    placeholder="Chọn Site Jira..."
+                    triggerClassName="h-8 text-xs font-semibold px-2.5 rounded-lg border-border/70 bg-muted/20 hover:bg-muted/40"
+                    dropdownClassName="min-w-[260px] max-h-56 overflow-y-auto custom-scrollbar"
+                    disabled={siteSelectOptions.length <= 1}
+                  />
+                </div>
+              </div>
+
+              {/* Bộ lọc Sprint */}
+              <div className="flex items-center gap-1.5 min-w-[240px] sm:min-w-[300px]">
+                <span className="text-xs font-medium text-muted-foreground whitespace-nowrap flex items-center gap-1">
+                  <KanbanIcon className="size-3 text-amber-500" />
+                  <span>Sprint:</span>
+                </span>
+                <div className="flex-1 min-w-0">
+                  <CustomSelect
+                    id="student-dashboard-sprint-select"
+                    value={selectedSprintValue}
+                    onChange={(val) => setSelectedSprintId(val)}
+                    options={sprintSelectOptions}
+                    placeholder={currentSprint?.name || "Chọn Sprint..."}
+                    triggerClassName="h-8 text-xs font-semibold px-2.5 rounded-lg border-border/70 bg-muted/20 hover:bg-muted/40"
+                    dropdownClassName="min-w-[260px] sm:min-w-[340px] max-h-56 sm:max-h-60 overflow-y-auto custom-scrollbar"
+                    disabled={sprintSelectOptions.length === 0}
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 self-end sm:self-center">
+              {selectedSprintId && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setSelectedSprintId(null)}
+                  className="h-7 px-2 text-[11px] text-muted-foreground hover:text-foreground cursor-pointer flex items-center gap-1"
+                >
+                  <RotateCcwIcon className="size-3" />
+                  <span>Về Sprint hiện tại</span>
+                </Button>
+              )}
+              {getSprintStateBadge(displaySprint?.state || currentSprint?.state)}
+            </div>
+          </div>
+
           {/* 3 Thẻ Chỉ Số KPI Cá Nhân Nổi Bật */}
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
             {/* Thẻ 1: Nhiệm vụ phân công */}
@@ -436,25 +564,12 @@ export function StudentDashboardAnalytics() {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-1.5 min-w-0">
                     <span className="text-xs text-muted-foreground font-medium">
-                      {isCurrentSprint ? "Sprint hiện tại" : "Sprint đang xem"}
+                      Sprint đang xem
                     </span>
                   </div>
                   <div className="p-1.5 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400 shrink-0">
                     <KanbanIcon className="size-4" />
                   </div>
-                </div>
-
-                {/* Bộ chọn Sprint đặt trực tiếp trong thẻ */}
-                <div className="pt-0.5">
-                  <CustomSelect
-                    id="student-dashboard-card-sprint-select"
-                    value={selectedSprintValue}
-                    onChange={(val) => setSelectedSprintId(val)}
-                    options={sprintSelectOptions}
-                    placeholder={currentSprint?.name || "Chọn Sprint..."}
-                    triggerClassName="h-7 text-xs font-semibold px-2 rounded-lg border-border/70 bg-muted/20 hover:bg-muted/40"
-                    dropdownClassName="min-w-[240px] sm:min-w-[280px] max-h-56 sm:max-h-60 overflow-y-auto custom-scrollbar"
-                  />
                 </div>
 
                 {isSprintLoading ? (
@@ -464,19 +579,29 @@ export function StudentDashboardAnalytics() {
                   </div>
                 ) : (
                   <>
-                    <div className="flex items-baseline justify-between pt-0.5">
-                      <div className="text-sm font-bold text-foreground truncate max-w-[170px]" title={currentSprint?.name || "Chưa có Sprint"}>
-                        {currentSprint?.name || "Chưa bắt đầu"}
+                    <div className="flex items-baseline justify-between gap-2">
+                      <div
+                        className="font-mono text-xl sm:text-2xl font-black text-foreground break-words leading-tight"
+                        title={displaySprint?.name || currentSprint?.name || "Chưa có Sprint"}
+                      >
+                        {displaySprint?.name || currentSprint?.name || "Chưa bắt đầu"}
                       </div>
-                      {getSprintStateBadge(currentSprint?.state)}
+                      {displaySprint && displaySprint.completionPercent !== null && (
+                        <Badge
+                          variant="outline"
+                          className="font-mono text-xs bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20 shrink-0"
+                        >
+                          {formatStudentNullablePercent(displaySprint.completionPercent)}
+                        </Badge>
+                      )}
                     </div>
 
                     <div className="flex items-center justify-between text-xs text-muted-foreground pt-1 border-t border-border/50">
                       <span>Tiến độ nhóm:</span>
                       <span className="font-mono font-bold text-foreground">
-                        {currentSprint
-                          ? `${currentSprint.completedTasks}/${currentSprint.totalTasks} (${formatStudentNullablePercent(currentSprint.completionPercent)})`
-                          : "N/A"}
+                        {displaySprint
+                          ? `${displaySprint.completedTasks} / ${displaySprint.totalTasks} tasks`
+                          : "Chưa ghi nhận"}
                       </span>
                     </div>
 

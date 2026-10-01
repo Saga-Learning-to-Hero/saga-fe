@@ -2,7 +2,8 @@ import { useCallback } from "react";
 import { keepPreviousData, useQuery, useQueryClient } from "@tanstack/react-query";
 import { StudentCourseService } from "../api/student-course-service";
 import { getApiErrorCode } from "@/lib/api-error";
-import type { CoursePagedParams } from "../types/student-course";
+import type { CoursePagedParams, StudentTeamResponse } from "../types/student-course";
+import { useAuthStore } from "@/features/auth/store/useAuthStore";
 
 export const STUDENT_COURSE_QUERY_KEYS = {
   studentCourses: ["student", "courses"] as const,
@@ -79,5 +80,36 @@ export function useRefreshStudentCourses() {
         queryKey: STUDENT_COURSE_QUERY_KEYS.studentCourses,
       }),
     [queryClient]
+  );
+}
+
+function isLeaderRole(role?: string | null): boolean {
+  return (role || "").trim().toUpperCase() === "LEADER";
+}
+
+export function useIsStudentLeader(courseId?: string | null): boolean {
+  const user = useAuthStore((state) => state.user);
+  const selectedCourse = useAuthStore((state) => state.selectedCourse);
+  const cleanCourseId =
+    courseId?.trim() || selectedCourse?.courseId || selectedCourse?.id || "";
+
+  const queryClient = useQueryClient();
+  const teamQuery = useStudentMyTeam(cleanCourseId, {
+    enabled: user?.role === "STUDENT" && Boolean(cleanCourseId),
+  });
+
+  const cachedTeam = queryClient.getQueryData<StudentTeamResponse>(
+    STUDENT_COURSE_QUERY_KEYS.studentMyTeam(cleanCourseId)
+  );
+
+  const isLeaderInGroup =
+    selectedCourse &&
+    "myGroup" in selectedCourse &&
+    isLeaderRole(selectedCourse.myGroup?.role);
+
+  return (
+    isLeaderRole(teamQuery.data?.myRole) ||
+    isLeaderRole(cachedTeam?.myRole) ||
+    Boolean(isLeaderInGroup)
   );
 }

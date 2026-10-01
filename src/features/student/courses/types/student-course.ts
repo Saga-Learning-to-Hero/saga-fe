@@ -92,6 +92,7 @@ export interface StudentTeamMember {
   role: "LEADER" | "MEMBER" | string;
   avatar?: string | null;
   avatarUrl?: string | null;
+  email?: string | null;
 }
 
 export interface StudentTeamResponse {

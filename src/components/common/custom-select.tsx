@@ -10,6 +10,144 @@ export interface CustomSelectOption {
   label: string;
   subLabel?: string;
   icon?: React.ReactNode;
+  tooltip?: string;
+}
+
+interface CustomSelectOptionItemProps {
+  option: CustomSelectOption;
+  isSelected: boolean;
+  selectedOptionRef?: React.RefObject<HTMLDivElement | null>;
+  onSelect: () => void;
+  onOptionIntent?: (value: string) => void;
+}
+
+function CustomSelectOptionItem({
+  option,
+  isSelected,
+  selectedOptionRef,
+  onSelect,
+  onOptionIntent,
+}: CustomSelectOptionItemProps) {
+  const textRef = useRef<HTMLSpanElement>(null);
+  const [showTooltip, setShowTooltip] = useState(false);
+  const [tooltipPos, setTooltipPos] = useState<{
+    x: number;
+    y: number;
+    placement: "top" | "bottom";
+  } | null>(null);
+
+  const fullText = option.tooltip || option.label;
+
+  const handlePointerEnter = () => {
+    onOptionIntent?.(option.value);
+    if (textRef.current) {
+      const isTruncated =
+        textRef.current.scrollWidth - textRef.current.clientWidth > 1;
+      if (isTruncated) {
+        const rect = textRef.current.getBoundingClientRect();
+        const spaceAbove = rect.top;
+        const placement = spaceAbove > 44 ? "top" : "bottom";
+        setTooltipPos({
+          x: Math.max(12, Math.min(rect.left, window.innerWidth - 320)),
+          y: placement === "top" ? rect.top - 6 : rect.bottom + 6,
+          placement,
+        });
+        setShowTooltip(true);
+      }
+    }
+  };
+
+  const handlePointerLeave = () => {
+    setShowTooltip(false);
+  };
+
+  return (
+    <div
+      ref={isSelected ? selectedOptionRef : undefined}
+      role="option"
+      aria-selected={isSelected}
+      tabIndex={0}
+      onClick={() => {
+        setShowTooltip(false);
+        onSelect();
+      }}
+      onPointerEnter={handlePointerEnter}
+      onPointerLeave={handlePointerLeave}
+      onFocus={() => onOptionIntent?.(option.value)}
+      onKeyDown={(event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          setShowTooltip(false);
+          onSelect();
+        }
+      }}
+      className={cn(
+        "relative flex items-center justify-between gap-2 px-2.5 py-2 rounded-lg text-xs cursor-pointer transition-colors select-none",
+        isSelected
+          ? "bg-primary/15 text-primary font-semibold hover:bg-primary/20"
+          : "text-foreground hover:bg-muted/70"
+      )}
+      title={fullText}
+    >
+      <div className="flex items-center gap-2 truncate min-w-0 flex-1">
+        {option.icon && (
+          <span
+            className={cn(
+              "shrink-0",
+              isSelected ? "text-primary" : "text-muted-foreground"
+            )}
+          >
+            {option.icon}
+          </span>
+        )}
+        <div className="flex flex-col truncate min-w-0 flex-1">
+          <span
+            ref={textRef}
+            className="truncate"
+            onMouseEnter={handlePointerEnter}
+          >
+            {option.label}
+          </span>
+          {option.subLabel && (
+            <span className="text-xs text-muted-foreground/80 truncate font-normal leading-tight">
+              {option.subLabel}
+            </span>
+          )}
+        </div>
+      </div>
+
+      {isSelected && (
+        <CheckIcon className="w-3.5 h-3.5 text-primary shrink-0 ml-2" />
+      )}
+
+      {showTooltip &&
+        tooltipPos &&
+        typeof document !== "undefined" &&
+        createPortal(
+          <div
+            role="tooltip"
+            style={{
+              position: "fixed",
+              left: tooltipPos.x,
+              top: tooltipPos.y,
+              transform:
+                tooltipPos.placement === "top" ? "translateY(-100%)" : "none",
+              zIndex: 10001,
+              pointerEvents: "none",
+            }}
+            className="max-w-xs sm:max-w-md px-2.5 py-1.5 rounded-lg bg-popover text-popover-foreground text-xs font-mono border border-border shadow-xl backdrop-blur-md animate-in fade-in-0 zoom-in-95 duration-100 select-none whitespace-normal break-all flex items-center gap-1.5"
+          >
+            {option.icon && (
+              <span className="shrink-0 text-muted-foreground">
+                {option.icon}
+              </span>
+            )}
+            <span>{fullText}</span>
+          </div>,
+          document.body
+        )}
+    </div>
+  );
 }
 
 interface CustomSelectProps {
@@ -47,6 +185,18 @@ export function CustomSelect({
   const selectedOptionRef = useRef<HTMLDivElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
+  const triggerTextRef = useRef<HTMLSpanElement>(null);
+  const [showTriggerTooltip, setShowTriggerTooltip] = useState(false);
+  const [triggerTooltipPos, setTriggerTooltipPos] = useState<{
+    x: number;
+    y: number;
+    placement: "top" | "bottom";
+  } | null>(null);
+
+  const selectedFullText = selectedOption
+    ? selectedOption.tooltip || selectedOption.label
+    : "";
+
   useEffect(() => {
     if (isOpen && selectedOptionRef.current) {
       selectedOptionRef.current.scrollIntoView?.({ block: "nearest" });
@@ -60,16 +210,21 @@ export function CustomSelect({
       const inDropdown = dropdownRef.current?.contains(target) ?? false;
       if (!inContainer && !inDropdown) {
         setIsOpen(false);
+        setShowTriggerTooltip(false);
       }
     };
     const handleScrollOrResize = (event: Event) => {
       if (event.type === "scroll") {
         const target = event.target as Node;
-        if (dropdownRef.current && (target === dropdownRef.current || dropdownRef.current.contains(target))) {
+        if (
+          dropdownRef.current &&
+          (target === dropdownRef.current || dropdownRef.current.contains(target))
+        ) {
           return;
         }
       }
       setIsOpen(false);
+      setShowTriggerTooltip(false);
     };
 
     if (isOpen) {
@@ -87,10 +242,12 @@ export function CustomSelect({
   const handleSelect = (optionValue: string) => {
     onChange(optionValue);
     setIsOpen(false);
+    setShowTriggerTooltip(false);
   };
 
   const handleToggle = () => {
     if (disabled) return;
+    setShowTriggerTooltip(false);
     if (!isOpen && containerRef.current) {
       const rect = containerRef.current.getBoundingClientRect();
       const dropdownHeight = 240;
@@ -118,6 +275,29 @@ export function CustomSelect({
     setIsOpen(!isOpen);
   };
 
+  const handleTriggerPointerEnter = () => {
+    if (isOpen) return;
+    if (triggerTextRef.current && selectedOption) {
+      const isTruncated =
+        triggerTextRef.current.scrollWidth - triggerTextRef.current.clientWidth > 1;
+      if (isTruncated) {
+        const rect = triggerTextRef.current.getBoundingClientRect();
+        const spaceAbove = rect.top;
+        const placement = spaceAbove > 44 ? "top" : "bottom";
+        setTriggerTooltipPos({
+          x: Math.max(12, Math.min(rect.left, window.innerWidth - 320)),
+          y: placement === "top" ? rect.top - 6 : rect.bottom + 6,
+          placement,
+        });
+        setShowTriggerTooltip(true);
+      }
+    }
+  };
+
+  const handleTriggerPointerLeave = () => {
+    setShowTriggerTooltip(false);
+  };
+
   const optionList =
     options.length === 0 ? (
       <div className="p-2 text-center text-xs text-muted-foreground">
@@ -127,48 +307,14 @@ export function CustomSelect({
       options.map((option) => {
         const isSelected = option.value === value;
         return (
-          <div
+          <CustomSelectOptionItem
             key={option.value}
-            ref={isSelected ? selectedOptionRef : undefined}
-            role="option"
-            aria-selected={isSelected}
-            tabIndex={0}
-            onClick={() => handleSelect(option.value)}
-            onPointerEnter={() => onOptionIntent?.(option.value)}
-            onFocus={() => onOptionIntent?.(option.value)}
-            onKeyDown={(event) => {
-              if (event.key === "Enter" || event.key === " ") {
-                event.preventDefault();
-                handleSelect(option.value);
-              }
-            }}
-            className={cn(
-              "relative flex items-center justify-between gap-2 px-2.5 py-2 rounded-lg text-xs cursor-pointer transition-colors select-none",
-              isSelected
-                ? "bg-primary/15 text-primary font-semibold hover:bg-primary/20"
-                : "text-foreground hover:bg-muted/70"
-            )}
-          >
-            <div className="flex items-center gap-2 truncate min-w-0 flex-1">
-              {option.icon && (
-                <span className={cn("shrink-0", isSelected ? "text-primary" : "text-muted-foreground")}>
-                  {option.icon}
-                </span>
-              )}
-              <div className="flex flex-col truncate min-w-0 flex-1">
-                <span className="truncate">{option.label}</span>
-                {option.subLabel && (
-                  <span className="text-xs text-muted-foreground/80 truncate font-normal leading-tight">
-                    {option.subLabel}
-                  </span>
-                )}
-              </div>
-            </div>
-
-            {isSelected && (
-              <CheckIcon className="w-3.5 h-3.5 text-primary shrink-0 ml-2" />
-            )}
-          </div>
+            option={option}
+            isSelected={isSelected}
+            selectedOptionRef={isSelected ? selectedOptionRef : undefined}
+            onSelect={() => handleSelect(option.value)}
+            onOptionIntent={onOptionIntent}
+          />
         );
       })
     );
@@ -187,20 +333,34 @@ export function CustomSelect({
         type="button"
         disabled={disabled}
         onClick={handleToggle}
+        onPointerEnter={handleTriggerPointerEnter}
+        onPointerLeave={handleTriggerPointerLeave}
         aria-expanded={isOpen}
         aria-haspopup="listbox"
         className={cn(
           "w-full h-9 px-3 text-xs rounded-xl bg-background border border-border text-foreground transition-all duration-150 flex items-center justify-between gap-2 outline-none cursor-pointer select-none",
-          isOpen ? "border-primary ring-2 ring-primary/15 shadow-xs" : "hover:border-border/80",
+          isOpen
+            ? "border-primary ring-2 ring-primary/15 shadow-xs"
+            : "hover:border-border/80",
           disabled && "opacity-50 cursor-not-allowed",
           triggerClassName
         )}
+        title={selectedFullText || undefined}
       >
         <div className="flex items-center gap-2 truncate">
           {selectedOption?.icon && (
-            <span className="shrink-0 text-muted-foreground">{selectedOption.icon}</span>
+            <span className="shrink-0 text-muted-foreground">
+              {selectedOption.icon}
+            </span>
           )}
-          <span className={cn("truncate font-medium", !selectedOption && "text-muted-foreground")}>
+          <span
+            ref={triggerTextRef}
+            className={cn(
+              "truncate font-medium",
+              !selectedOption && "text-muted-foreground"
+            )}
+            onMouseEnter={handleTriggerPointerEnter}
+          >
             {selectedOption ? selectedOption.label : placeholder}
           </span>
         </div>
@@ -211,6 +371,36 @@ export function CustomSelect({
           )}
         />
       </button>
+
+      {!isOpen &&
+        showTriggerTooltip &&
+        triggerTooltipPos &&
+        typeof document !== "undefined" &&
+        createPortal(
+          <div
+            role="tooltip"
+            style={{
+              position: "fixed",
+              left: triggerTooltipPos.x,
+              top: triggerTooltipPos.y,
+              transform:
+                triggerTooltipPos.placement === "top"
+                  ? "translateY(-100%)"
+                  : "none",
+              zIndex: 10001,
+              pointerEvents: "none",
+            }}
+            className="max-w-xs sm:max-w-md px-2.5 py-1.5 rounded-lg bg-popover text-popover-foreground text-xs font-mono border border-border shadow-xl backdrop-blur-md animate-in fade-in-0 zoom-in-95 duration-100 select-none whitespace-normal break-all flex items-center gap-1.5"
+          >
+            {selectedOption?.icon && (
+              <span className="shrink-0 text-muted-foreground">
+                {selectedOption.icon}
+              </span>
+            )}
+            <span>{selectedFullText}</span>
+          </div>,
+          document.body
+        )}
 
       {isOpen &&
         (inlineDropdown ? (

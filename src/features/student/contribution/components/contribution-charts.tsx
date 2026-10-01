@@ -4,8 +4,6 @@ import { useMemo } from "react";
 import {
   PieChart as PieChartIcon,
   BarChart3Icon,
-  CalculatorIcon,
-  InfoIcon,
   CrownIcon,
   SparklesIcon,
 } from "lucide-react";
@@ -21,13 +19,10 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { MemberRoleBadge } from "@/components/common/leader-badge";
 import {
-  formatContributionNumber,
   formatContributionPercent,
 } from "@/features/lecturer/contribution/lib/contribution-utils";
 import {
   cleanMemberName,
-  calculateTotalSliceScore,
-  hasPeerReviewAdjustment,
 } from "../lib/contribution-view-utils";
 import { cn } from "@/lib/utils";
 
@@ -43,9 +38,6 @@ export function ContributionCharts({ members }: ContributionChartsProps) {
       (a, b) => (Number(b.finalContributionPercentage) || 0) - (Number(a.finalContributionPercentage) || 0)
     );
   }, [members]);
-
-  const totalSliceScore = useMemo(() => calculateTotalSliceScore(members), [members]);
-  const hasAdjustment = useMemo(() => hasPeerReviewAdjustment(members), [members]);
 
   const topMember = sortedMembers[0];
   const topMemberName = topMember ? cleanMemberName(topMember.fullName) || topMember.studentCode : "—";

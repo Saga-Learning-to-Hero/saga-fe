@@ -979,7 +979,6 @@ export function IssueDetailsModal({
                     <div className="space-y-1.5 sm:col-span-2">
                       <Label htmlFor="jira-source" className="text-xs font-semibold flex items-center gap-1.5 text-foreground">
                         <span>Nguồn Jira (Workspace)</span>
-                        <span className="text-xs font-normal text-muted-foreground">(Chọn Jira đích)</span>
                       </Label>
                       <CustomSelect
                         id="jira-source"

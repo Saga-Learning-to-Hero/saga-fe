@@ -176,12 +176,12 @@ describe("StudentDashboardAnalytics - Sprint Scope & Card Labels", () => {
       id: "UTCID03",
       type: "N",
       executedDate: "29/09/2026",
-      description: "Hiển thị 'Sprint hiện tại' khi Sprint active và 'Sprint đang xem' khi chọn Sprint đã đóng",
+      description: "Thẻ Sprint hiển thị 'Sprint đang xem' cho cả Sprint active và Sprint đã đóng",
     },
     () => {
       // 1. Khi Sprint là active
       const { rerender } = render(<StudentDashboardAnalytics />);
-      expect(screen.getByText("Sprint hiện tại")).toBeInTheDocument();
+      expect(screen.getByText("Sprint đang xem")).toBeInTheDocument();
 
       // 2. Khi chọn Sprint đã đóng
       const closedSprintData = {
@@ -208,9 +208,8 @@ describe("StudentDashboardAnalytics - Sprint Scope & Card Labels", () => {
 
       rerender(<StudentDashboardAnalytics />);
 
-      // Thẻ ghi "Sprint đang xem" chứ không ghi "Sprint hiện tại"
+      // Thẻ vẫn ghi "Sprint đang xem"
       expect(screen.getByText("Sprint đang xem")).toBeInTheDocument();
-      expect(screen.queryByText("Sprint hiện tại")).not.toBeInTheDocument();
     }
   );
 
@@ -254,8 +253,219 @@ describe("StudentDashboardAnalytics - Sprint Scope & Card Labels", () => {
 
       render(<StudentDashboardAnalytics />);
 
-      // Nhận diện đúng Sprint active của nguồn 2 qua UUID là Sprint hiện tại
-      expect(screen.getByText("Sprint hiện tại")).toBeInTheDocument();
+      // Nhận diện đúng Sprint qua UUID và hiển thị thẻ Sprint đang xem
+      expect(screen.getByText("Sprint đang xem")).toBeInTheDocument();
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID05",
+      type: "N",
+      executedDate: "01/10/2026",
+      description: "Thanh bộ lọc hiển thị riêng 1 hàng với đầy đủ bộ lọc Site Jira và Sprint",
+    },
+    () => {
+      vi.mocked(useStudentDashboard).mockReturnValue({
+        data: mockDashboardData,
+        isLoading: false,
+        isFetching: false,
+        isPlaceholderData: false,
+        isError: false,
+        error: null,
+        refetch: vi.fn(),
+      } as never);
+
+      vi.mocked(useProjectJiraSourceSelection).mockReturnValue({
+        activeSources: [
+          {
+            integrationId: "site-1",
+            siteName: "hcm-cpl-team3",
+            projectKey: "SAGA",
+            boardId: "68",
+            connectionStatus: "ACTIVE",
+          },
+          {
+            integrationId: "site-2",
+            siteName: "hoanghai175",
+            projectKey: "HH",
+            boardId: "69",
+            connectionStatus: "ACTIVE",
+          },
+        ],
+        effectiveSourceId: "site-1",
+        hasMultipleSources: true,
+        isLoading: false,
+        selectSource: vi.fn(),
+      } as never);
+
+      render(<StudentDashboardAnalytics />);
+
+      // Thanh bộ lọc riêng 1 hàng
+      expect(screen.getByText("Bộ lọc hiển thị:")).toBeInTheDocument();
+      expect(screen.getByText("Site:")).toBeInTheDocument();
+      expect(screen.getByText("Sprint:")).toBeInTheDocument();
+
+      // Kiểm tra có nút chọn Site và Sprint
+      expect(screen.getByText("SAGA · hcm-cpl-team3")).toBeInTheDocument();
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID06",
+      type: "N",
+      executedDate: "01/10/2026",
+      description: "Lọc Sprint tương ứng theo Site và cho phép chuyển đổi nguồn Jira",
+    },
+    () => {
+      const selectSourceMock = vi.fn();
+      vi.mocked(useStudentDashboard).mockReturnValue({
+        data: mockDashboardData,
+        isLoading: false,
+        isFetching: false,
+        isPlaceholderData: false,
+        isError: false,
+        error: null,
+        refetch: vi.fn(),
+      } as never);
+
+      vi.mocked(useProjectJiraSourceSelection).mockReturnValue({
+        activeSources: [
+          {
+            integrationId: "site-1",
+            siteName: "hcm-cpl-team3",
+            projectKey: "SAGA",
+            boardId: "68",
+            connectionStatus: "ACTIVE",
+          },
+          {
+            integrationId: "site-2",
+            siteName: "hoanghai175",
+            projectKey: "HH",
+            boardId: "69",
+            connectionStatus: "ACTIVE",
+          },
+        ],
+        effectiveSourceId: "site-1",
+        hasMultipleSources: true,
+        isLoading: false,
+        selectSource: selectSourceMock,
+      } as never);
+
+      // Sprints phân chia theo site
+      vi.mocked(useProjectSprints).mockReturnValue({
+        data: [
+          { id: "sprint-site1", name: "Sprint 1 Site 1", state: "active", jiraIntegrationId: "site-1" },
+          { id: "sprint-site2", name: "Sprint 2 Site 2", state: "active", jiraIntegrationId: "site-2" },
+        ],
+        isLoading: false,
+      } as never);
+
+      render(<StudentDashboardAnalytics />);
+
+      // Chỉ hiển thị sprint của site-1 (effectiveSourceId)
+      expect(screen.getByRole("button", { name: /Sprint 1 Site 1/i })).toBeInTheDocument();
+      expect(screen.queryByRole("button", { name: /Sprint 2 Site 2/i })).not.toBeInTheDocument();
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID07",
+      type: "B",
+      executedDate: "01/10/2026",
+      description: "Khi dự án chỉ có 1 nguồn Jira hoặc chưa kết nối, bộ chọn Site vô hiệu hóa",
+    },
+    () => {
+      vi.mocked(useStudentDashboard).mockReturnValue({
+        data: mockDashboardData,
+        isLoading: false,
+        isFetching: false,
+        isPlaceholderData: false,
+        isError: false,
+        error: null,
+        refetch: vi.fn(),
+      } as never);
+
+      vi.mocked(useProjectJiraSourceSelection).mockReturnValue({
+        activeSources: [
+          {
+            integrationId: "site-only",
+            siteName: "single-site",
+            projectKey: "SAGA",
+            boardId: "1",
+            connectionStatus: "ACTIVE",
+          },
+        ],
+        effectiveSourceId: "site-only",
+        hasMultipleSources: false,
+        isLoading: false,
+        selectSource: vi.fn(),
+      } as never);
+
+      render(<StudentDashboardAnalytics />);
+
+      // Nút chọn site bị disabled khi chỉ có <= 1 site
+      const siteSelectButton = screen.getByRole("button", { name: /single-site/i });
+      expect(siteSelectButton).toBeDisabled();
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID08",
+      type: "N",
+      executedDate: "01/10/2026",
+      description: "Khi đổi Site, bộ lọc sprint tự động cập nhật sang sprint mới nhất của Site đó",
+    },
+    () => {
+      vi.mocked(useStudentDashboard).mockReturnValue({
+        data: mockDashboardData,
+        isLoading: false,
+        isFetching: false,
+        isPlaceholderData: false,
+        isError: false,
+        error: null,
+        refetch: vi.fn(),
+      } as never);
+
+      vi.mocked(useProjectJiraSourceSelection).mockReturnValue({
+        activeSources: [
+          {
+            integrationId: "site-1",
+            siteName: "site-alpha",
+            projectKey: "ALP",
+            boardId: "1",
+            connectionStatus: "ACTIVE",
+          },
+          {
+            integrationId: "site-2",
+            siteName: "site-beta",
+            projectKey: "BET",
+            boardId: "2",
+            connectionStatus: "ACTIVE",
+          },
+        ],
+        effectiveSourceId: "site-2",
+        hasMultipleSources: true,
+        isLoading: false,
+        selectSource: vi.fn(),
+      } as never);
+
+      vi.mocked(useProjectSprints).mockReturnValue({
+        data: [
+          { id: "sprint-alp-old", name: "Sprint Alpha Cu", state: "closed", jiraIntegrationId: "site-1" },
+          { id: "sprint-bet-latest", name: "Sprint Beta Moi Nhat", state: "active", jiraIntegrationId: "site-2" },
+        ],
+        isLoading: false,
+      } as never);
+
+      render(<StudentDashboardAnalytics />);
+
+      // Tự động nhận diện và hiển thị sprint mới nhất của site-2
+      expect(screen.getByRole("button", { name: /Sprint Beta Moi Nhat/i })).toBeInTheDocument();
+      expect(screen.queryByRole("button", { name: /Sprint Alpha Cu/i })).not.toBeInTheDocument();
     }
   );
 });

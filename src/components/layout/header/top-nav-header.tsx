@@ -43,6 +43,7 @@ import { cn } from "@/lib/utils";
 import { CourseContextSwitcher } from "./course-context-switcher";
 import { TopNavTabs } from "./top-nav-tabs";
 import { GlobalCommandSearch } from "./global-command-search";
+import { useIsStudentLeader } from "@/features/student/courses/hooks/use-student-courses";
 import { studentCoursePath } from "@/features/student/courses/hooks/use-student-course-context";
 
 export function TopNavHeader() {
@@ -75,12 +76,14 @@ export function TopNavHeader() {
     setIsDark((v) => !v);
   };
 
+  const courseMatch = pathname.match(/^\/lecturer\/courses\/([^/]+)(?:\/|$)/);
+  const lecturerCourseId = courseMatch ? decodeURIComponent(courseMatch[1]) : null;
+  const studentCourseId = searchParams.get("courseId")?.trim() || "";
+  const isStudentLeader = useIsStudentLeader(studentCourseId);
+
   if (!user) return null;
 
   const displayName = user.fullName || user.name || (user.role === "STUDENT" ? "Sinh viên" : "Giảng viên");
-
-  const courseMatch = pathname.match(/^\/lecturer\/courses\/([^/]+)(?:\/|$)/);
-  const lecturerCourseId = courseMatch ? decodeURIComponent(courseMatch[1]) : null;
 
   let navItems: NavItem[] = [];
   if (user.role === "LECTURER" && lecturerCourseId) {
@@ -90,11 +93,10 @@ export function TopNavHeader() {
     pathname !== "/student/courses" &&
     pathname.startsWith("/student")
   ) {
-    navItems = getStudentNavItems();
+    navItems = getStudentNavItems(isStudentLeader);
   }
 
   const hasSubNav = navItems.length > 0;
-  const studentCourseId = searchParams.get("courseId")?.trim() || "";
 
   const handleLogout = () => {
     logout();

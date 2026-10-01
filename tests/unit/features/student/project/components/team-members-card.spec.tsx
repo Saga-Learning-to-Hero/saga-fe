@@ -56,4 +56,19 @@ describe("TeamMembersCard avatars", () => {
       expect(screen.queryByAltText("Beta Member")).not.toBeInTheDocument();
     }
   );
+
+  fptTest(
+    {
+      id: "UTCID03",
+      type: "N",
+      executedDate: "01/10/2026",
+      description: "Hiển thị đúng email FPT theo công thức tên + chữ cái đầu họ lót + mã số sinh viên",
+    },
+    () => {
+      render(<TeamMembersCard team={team} />);
+      expect(screen.getByText("leaderase111111@fpt.edu.vn")).toBeInTheDocument();
+      expect(screen.getByText("memberbse222222@fpt.edu.vn")).toBeInTheDocument();
+    }
+  );
 });
+

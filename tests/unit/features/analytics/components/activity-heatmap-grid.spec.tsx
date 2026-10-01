@@ -96,10 +96,10 @@ describe("ActivityHeatmapGrid", () => {
       );
 
       expect(
-        screen.getByText(/Phạm vi hoạt động theo khoảng ngày Sprint/i)
+        screen.getByText(/Đang hiển thị dữ liệu theo mốc thời gian của Sprint/i)
       ).toBeInTheDocument();
       expect(
-        screen.getByText(/không phải hoạt động của riêng task trong Sprint/i)
+        screen.getByText(/Lưới hoạt động tổng hợp/i)
       ).toBeInTheDocument();
       expect(useTeamHeatmap).toHaveBeenCalledWith(
         "course-1",

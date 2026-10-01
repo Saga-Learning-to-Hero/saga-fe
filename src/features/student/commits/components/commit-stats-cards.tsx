@@ -39,7 +39,7 @@ export function CommitStatsCards({
           </Badge>
         </div>
         <div className="flex items-center justify-between text-xs text-muted-foreground pt-0.5">
-          <span className="truncate">
+          <span className="truncate" title={selectedRepoName}>
             Repo <strong className="text-foreground font-medium">{selectedRepoName}</strong>
           </span>
           {stats.totalAdditions !== null && stats.totalDeletions !== null && (

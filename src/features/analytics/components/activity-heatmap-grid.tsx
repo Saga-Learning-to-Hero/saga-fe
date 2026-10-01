@@ -441,7 +441,7 @@ export function ActivityHeatmapGrid({
     return [
       {
         value: "ALL",
-        label: "Toàn đội (Tất cả thành viên)",
+        label: "Tất cả thành viên",
         subLabel: `${list.length} thành viên`,
         icon: <Users className="w-3.5 h-3.5 text-primary" />,
       },
@@ -610,7 +610,7 @@ export function ActivityHeatmapGrid({
                   : "text-muted-foreground hover:text-foreground"
               )}
             >
-              Toàn kỳ học
+              Theo học kỳ
             </button>
           </div>
 

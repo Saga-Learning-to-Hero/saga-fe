@@ -37,6 +37,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
 import { getNavGroups, isNavItemActive } from "./nav-config";
 import type { NavItem } from "./nav-config";
+import { useIsStudentLeader } from "@/features/student/courses/hooks/use-student-courses";
 
 const ICON_MAP: Record<string, React.ElementType> = {
   LayoutDashboard: LayoutDashboardIcon,
@@ -158,8 +159,9 @@ export function SidebarNav({ collapsed }: SidebarNavProps) {
   const courseMatch = pathname.match(/^\/lecturer\/courses\/([^/]+)(?:\/|$)/);
   const courseId = courseMatch ? decodeURIComponent(courseMatch[1]) : null;
   const courseCode = courseId ?? undefined;
+  const isStudentLeader = useIsStudentLeader();
 
-  const navGroups = getNavGroups(role, courseId, courseCode, pathname, selectedCourse);
+  const navGroups = getNavGroups(role, courseId, courseCode, pathname, selectedCourse, isStudentLeader);
 
   return (
     <nav className="flex-1 overflow-y-auto py-3 px-3 space-y-2">
