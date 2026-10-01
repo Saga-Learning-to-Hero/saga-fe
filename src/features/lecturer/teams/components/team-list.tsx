@@ -39,11 +39,14 @@ import {
   lecturerCourseTeamPath,
 } from "@/features/lecturer/courses/lib/course-routes";
 import { formatQueryUpdatedAt } from "@/features/lecturer/courses/lib/format-query-updated-at";
+import { ReasonConfirmDialog } from "@/components/common/reason-confirm-dialog";
+import { getRemovalApiErrorMessage } from "@/lib/removal-reason";
 import {
   useAddTeamMember,
   useDownloadTeamTemplate,
   useLecturerTeams,
   useMoveTeamMember,
+  useRemoveTeamMember,
   useReplaceTeamLeader,
 } from "../hooks/use-lecturer-teams";
 import {
@@ -80,11 +83,14 @@ export function TeamList({ courseId, courseCode }: TeamListProps) {
     currentTeam: LecturerTeamItem;
   } | null>(null);
   const [assigningStudent, setAssigningStudent] = useState<UnassignedStudent | null>(null);
+  const [removingMember, setRemovingMember] = useState<LecturerTeamMember | null>(null);
+  const [removeError, setRemoveError] = useState<string | null>(null);
 
   const downloadTemplateMutation = useDownloadTeamTemplate();
   const replaceLeaderMutation = useReplaceTeamLeader(courseId);
   const addTeamMemberMutation = useAddTeamMember(courseId);
   const moveTeamMemberMutation = useMoveTeamMember(courseId);
+  const removeTeamMemberMutation = useRemoveTeamMember(courseId);
 
   const updatedAt = formatQueryUpdatedAt([dataUpdatedAt]);
 
@@ -538,6 +544,24 @@ export function TeamList({ courseId, courseCode }: TeamListProps) {
                                 <ArrowRightLeftIcon className="size-3.5 text-primary" />
                                 Chuyển sang nhóm khác
                               </DropdownMenuItem>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem
+                                className="cursor-pointer text-xs font-semibold gap-2 text-destructive focus:text-destructive"
+                                disabled={isLeader || !member.teamMemberId || removeTeamMemberMutation.isPending}
+                                onClick={() => {
+                                  if (isLeader || !member.teamMemberId) return;
+                                  setRemoveError(null);
+                                  setRemovingMember(member);
+                                }}
+                              >
+                                <UserMinusIcon className="size-3.5" />
+                                Rút khỏi nhóm
+                              </DropdownMenuItem>
+                              {isLeader ? (
+                                <p className="px-2 py-1 text-[11px] leading-relaxed text-muted-foreground">
+                                  Hãy đổi trưởng nhóm trước
+                                </p>
+                              ) : null}
                             </DropdownMenuContent>
                           </DropdownMenu>
                         </div>
@@ -650,6 +674,41 @@ export function TeamList({ courseId, courseCode }: TeamListProps) {
           });
           setAssigningStudent(null);
         }}
+      />
+
+      <ReasonConfirmDialog
+        isOpen={Boolean(removingMember)}
+        onClose={() => {
+          if (removeTeamMemberMutation.isPending) return;
+          setRemovingMember(null);
+          setRemoveError(null);
+        }}
+        onConfirm={async (reason) => {
+          if (!removingMember?.teamMemberId) return;
+          setRemoveError(null);
+          try {
+            await removeTeamMemberMutation.mutateAsync({
+              teamMemberId: removingMember.teamMemberId,
+              reason,
+            });
+            setRemovingMember(null);
+          } catch (mutationError: unknown) {
+            setRemoveError(
+              getRemovalApiErrorMessage(mutationError, "Không thể rút sinh viên khỏi nhóm.")
+            );
+          }
+        }}
+        isLoading={removeTeamMemberMutation.isPending}
+        title="Rút sinh viên khỏi nhóm"
+        description={
+          removingMember
+            ? `${removingMember.fullName} (${removingMember.studentCode}) sẽ được rút khỏi nhóm và chuyển về danh sách chưa phân nhóm.`
+            : "Sinh viên sẽ được rút khỏi nhóm."
+        }
+        confirmText="Xác nhận rút khỏi nhóm"
+        loadingText="Đang rút..."
+        errorMessage={removeError}
+        reasonDescription="Bắt buộc. Tối đa 500 ký tự. Hệ thống sẽ gửi thông báo cho sinh viên."
       />
     </div>
   );

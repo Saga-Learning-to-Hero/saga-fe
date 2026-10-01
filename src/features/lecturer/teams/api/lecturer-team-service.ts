@@ -1,5 +1,6 @@
 import { apiClient } from "@/lib/axios";
 import { requireCourseId, requireTeamId, requireTeamMemberId } from "@/lib/api-error";
+import { requireRemovalReason } from "@/lib/removal-reason";
 import {
   parseLecturerTeamsResponse,
   type ConfirmTeamImportRequest,
@@ -110,6 +111,20 @@ export class LecturerTeamService {
     const targetId = targetTeamId.trim();
     const response = await apiClient.patch(`/api/lecturer/courses/${cid}/team-members/${mid}/team`, {
       targetTeamId: targetId,
+    });
+    return parseLecturerTeamsResponse(response.data, cid);
+  }
+
+  static async removeMember(
+    courseId: string,
+    teamMemberId: string,
+    reason: string
+  ): Promise<LecturerTeamsResponse> {
+    const cid = requireCourseId(courseId);
+    const mid = requireTeamMemberId(teamMemberId);
+    const trimmedReason = requireRemovalReason(reason);
+    const response = await apiClient.delete(`/api/lecturer/courses/${cid}/team-members/${mid}`, {
+      data: { reason: trimmedReason },
     });
     return parseLecturerTeamsResponse(response.data, cid);
   }

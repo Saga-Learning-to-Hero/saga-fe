@@ -367,7 +367,7 @@ Project Type dùng để phân loại hướng dự án, không điều khiển 
 | ADM-004 | Academic Class create/list/detail/update | ✓ | ✓ | ✓ | `DONE` (BE phân trang `page, size, total, items`; FE cố định `size=50`) |
 | ADM-005 | Course create/list/detail/update | ✓ | ✓ | ✓ | `DONE` (BE phân trang `page, size, total, items`; FE cố định `size=50`) |
 | ADM-006 | Lecturer directory | ✓ | ✓ | ✓ | `DONE` (BE hỗ trợ phân trang `/api/admin/lecturers/paged` kèm endpoint dropdown) |
-| ADM-007 | Roster template/list/import preview-confirm/add/remove/cancel invite | ✓ | ✓ | ✓ | `DONE` |
+| ADM-007 | Roster template/list/import preview-confirm/add/remove/cancel invite | ✓ | ✓ | ✓ | `DONE`; `DELETE /api/admin/courses/{courseId}/roster/enrollments/{id}` gửi `{ reason }` bắt buộc (tối đa 500 ký tự); hủy thư mời không gửi lý do; FE không gửi mail/thông báo; `enrollmentStatus` `ACTIVE`/`WITHDRAWN` (trim) quyết định đang học vs đã rút, không suy từ `kind === ENROLLMENT`; sau add/import/remove/cancel refetch roster |
 | ADM-008 | User list/detail/status | ✓ | ✓ | ✓ | `DONE` (GET `/api/admin/users`, GET `/api/admin/users/{userId}`, PATCH `/api/admin/users/{userId}/status`; SSE `ACCOUNT_DISABLED` & HTTP 403 fallback) |
 | ADM-009 | Audit log list/filter | ✓ | ✓ | ✓ | `DONE` (GET `/api/admin/audit-logs`) |
 | ADM-010 | Admin dashboard KPI/chart/recent activity | ✓ | ✓ | ✓ | `DONE`; summary canonical theo semester gồm KPI, weekly timeline, unconnected teams, integration pulse và cache freshness; đổi học kỳ giữ snapshot gần nhất, hủy request lỗi thời, prefetch theo intent và cache FE 5 phút; Recharts được lazy-load; recent audit dùng API riêng; không mock provider health/project health/sprint milestone chưa có contract |
@@ -377,8 +377,8 @@ Project Type dùng để phân loại hướng dự án, không điều khiển 
 
 | ID | Nghiệp vụ | BE | FE data | UI | Trạng thái/Ghi chú |
 | --- | --- | --- | --- | --- | --- |
-| LEC-001 | Course list/detail/roster/progress | ✓ | ✓ | ✓ | `DONE`; trang chọn lớp dùng `GET /api/lecturer/courses/paged` (`page` 0-based default 0, `size` max 200, tùy chọn `semesterId`/`search`, `{ items, page, size, total }`); header/context/composer vẫn dùng `GET /api/lecturer/courses` |
-| LEC-002 | Team list/template/import preview-confirm | ✓ | ✓ | ✓ | `DONE`; list/detail dùng trạng thái nghiệp vụ, không hiển thị UUID nội bộ của project/team |
+| LEC-001 | Course list/detail/roster/progress | ✓ | ✓ | ✓ | `DONE`; trang chọn lớp dùng `GET /api/lecturer/courses/paged` (`page` 0-based default 0, `size` max 200, tùy chọn `semesterId`/`search`, `{ items, page, size, total }`); header/context/composer vẫn dùng `GET /api/lecturer/courses`; `DELETE /api/lecturer/courses/{courseId}/roster/enrollments/{id}` gửi `{ reason }` bắt buộc (tối đa 500 ký tự); FE không gửi mail/thông báo |
+| LEC-002 | Team list/template/import preview-confirm | ✓ | ✓ | ✓ | `DONE`; list/detail dùng trạng thái nghiệp vụ, không hiển thị UUID nội bộ của project/team; `DELETE /api/lecturer/courses/{courseId}/team-members/{teamMemberId}` gửi `{ reason }` bắt buộc (tối đa 500 ký tự), response cập nhật `unassignedStudents`; FE không gửi mail/thông báo |
 | LEC-003 | Đổi Team Leader | ✓ | ✓ | ✓ | `DONE` |
 | LEC-004 | Chuyển member giữa team | ✓ | ✓ | ✓ | `DONE` |
 | LEC-005 | Cấu hình contribution weights theo course | ✓ | ✓ | ✓ | `DONE` |

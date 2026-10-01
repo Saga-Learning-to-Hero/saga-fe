@@ -10,6 +10,7 @@ import {
   MailIcon,
   SearchIcon,
   UserCheck2Icon,
+  UserMinusIcon,
   UsersIcon,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -27,11 +28,14 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useLecturerRoster } from "../hooks/use-lecturer-courses";
+import { ReasonConfirmDialog } from "@/components/common/reason-confirm-dialog";
+import { useLecturerRoster, useRemoveLecturerEnrollment } from "../hooks/use-lecturer-courses";
 import { useLecturerTeams } from "@/features/lecturer/teams/hooks/use-lecturer-teams";
 import { lecturerCourseTeamPath } from "../lib/course-routes";
 import { CourseQueryError } from "./course-query-error";
+import { getRemovalApiErrorMessage } from "@/lib/removal-reason";
 import { cn } from "@/lib/utils";
+import type { LecturerRosterEntry } from "../types/lecturer-course";
 
 interface CourseRosterProps {
   courseId: string;
@@ -50,8 +54,11 @@ function getInitials(name: string) {
 export function CourseRoster({ courseId, onSwitchToTeams }: CourseRosterProps) {
   const { data, isLoading, isError, error, refetch } = useLecturerRoster(courseId);
   const teamsQuery = useLecturerTeams(courseId);
+  const removeEnrollmentMutation = useRemoveLecturerEnrollment(courseId);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("ALL");
+  const [removingEntry, setRemovingEntry] = useState<LecturerRosterEntry | null>(null);
+  const [removeError, setRemoveError] = useState<string | null>(null);
   const deferredQuery = useDeferredValue(searchQuery);
 
   const entries = useMemo(() => data?.entries ?? [], [data?.entries]);
@@ -301,6 +308,7 @@ export function CourseRoster({ courseId, onSwitchToTeams }: CourseRosterProps) {
                 <TableHead className="px-4 text-xs font-bold text-muted-foreground">Email trường</TableHead>
                 <TableHead className="px-4 text-xs font-bold text-muted-foreground">Nhóm dự án</TableHead>
                 <TableHead className="px-4 text-xs font-bold text-muted-foreground">Vai trò</TableHead>
+                <TableHead className="px-4 text-right text-xs font-bold text-muted-foreground">Thao tác</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody className="divide-y divide-border/60">
@@ -365,6 +373,22 @@ export function CourseRoster({ courseId, onSwitchToTeams }: CourseRosterProps) {
                         <span className="text-xs text-muted-foreground/60">—</span>
                       )}
                     </TableCell>
+                    <TableCell className="px-4 text-right">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 gap-1.5 text-xs font-semibold text-destructive hover:bg-destructive/10 hover:text-destructive cursor-pointer"
+                        disabled={!entry.courseEnrollmentId}
+                        onClick={() => {
+                          setRemoveError(null);
+                          setRemovingEntry(entry);
+                        }}
+                      >
+                        <UserMinusIcon className="size-3.5" />
+                        Xóa khỏi lớp
+                      </Button>
+                    </TableCell>
                   </TableRow>
                 );
               })}
@@ -377,6 +401,44 @@ export function CourseRoster({ courseId, onSwitchToTeams }: CourseRosterProps) {
           )}
         </div>
       )}
+
+      <ReasonConfirmDialog
+        isOpen={Boolean(removingEntry)}
+        onClose={() => {
+          if (removeEnrollmentMutation.isPending) return;
+          setRemovingEntry(null);
+          setRemoveError(null);
+        }}
+        onConfirm={async (reason) => {
+          if (!removingEntry?.courseEnrollmentId) return;
+          setRemoveError(null);
+          try {
+            await removeEnrollmentMutation.mutateAsync({
+              enrollmentId: removingEntry.courseEnrollmentId,
+              reason,
+            });
+            setRemovingEntry(null);
+          } catch (mutationError: unknown) {
+            setRemoveError(
+              getRemovalApiErrorMessage(
+                mutationError,
+                "Không thể xóa sinh viên khỏi lớp học phần."
+              )
+            );
+          }
+        }}
+        isLoading={removeEnrollmentMutation.isPending}
+        title="Xóa sinh viên khỏi lớp"
+        description={
+          removingEntry
+            ? `Sinh viên ${removingEntry.fullName} (${removingEntry.studentCode}) sẽ bị rút khỏi lớp học phần.`
+            : "Sinh viên sẽ bị rút khỏi lớp học phần."
+        }
+        confirmText="Xác nhận xóa khỏi lớp"
+        loadingText="Đang xóa..."
+        errorMessage={removeError}
+        reasonDescription="Bắt buộc. Tối đa 500 ký tự. Hệ thống sẽ gửi thông báo cho sinh viên."
+      />
     </div>
   );
 }

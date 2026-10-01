@@ -39,6 +39,10 @@ vi.mock("@/features/lecturer/courses/hooks/use-lecturer-courses", () => ({
     error: null,
     refetch: vi.fn(),
   }),
+  useRemoveLecturerEnrollment: () => ({
+    isPending: false,
+    mutateAsync: vi.fn(),
+  }),
 }));
 
 vi.mock("@/features/lecturer/teams/hooks/use-lecturer-teams", () => ({
