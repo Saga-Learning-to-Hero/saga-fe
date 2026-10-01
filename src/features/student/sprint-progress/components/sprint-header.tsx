@@ -246,104 +246,107 @@ export function SprintHeader({
           </button>
         </div>
 
-        {activeView !== "TIMELINE" && activeView !== "ANALYTICS" && (
-          <div className="flex flex-wrap items-center gap-2.5 flex-1 lg:justify-end">
-            {jiraSourceNode}
-            {activeView === "BOARD" && (
-              <div className="w-full sm:w-64 shrink-0">
-                <CustomSelect
-                  value={selectedSprintId}
-                  onChange={onSelectSprint}
-                  options={[
-                    ...sprints.map((s) => ({
-                      value: s.id,
-                      label: s.name,
-                      subLabel: s.status === "ACTIVE" ? "Đang diễn ra" : s.status === "COMPLETED" ? "Đã xong" : "Kế hoạch",
-                    })),
-                    {
-                      value: "backlog",
-                      label: "Backlog",
-                      subLabel:
-                        typeof productBacklogCount === "number"
-                          ? `${productBacklogCount} tasks tồn đọng`
-                          : "Tasks tồn đọng",
-                    },
-                  ]}
-                />
-              </div>
-            )}
+        <div className="flex flex-wrap items-center gap-2.5 flex-1 lg:justify-end">
+          {jiraSourceNode}
 
-            <div className="relative flex-1 sm:max-w-xs min-w-[180px]">
-              <SearchIcon className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => onSearchChange(e.target.value)}
-                placeholder="Tìm mã task, tiêu đề..."
-                className="pl-8.5 pr-8 h-9 text-xs rounded-xl bg-card border-border/80 font-sans"
-              />
-              {searchQuery && (
+          {activeView !== "TIMELINE" && activeView !== "ANALYTICS" && (
+            <>
+              {activeView === "BOARD" && (
+                <div className="w-full sm:w-64 shrink-0">
+                  <CustomSelect
+                    value={selectedSprintId}
+                    onChange={onSelectSprint}
+                    options={[
+                      ...sprints.map((s) => ({
+                        value: s.id,
+                        label: s.name,
+                        subLabel: s.status === "ACTIVE" ? "Đang diễn ra" : s.status === "COMPLETED" ? "Đã xong" : "Kế hoạch",
+                      })),
+                      {
+                        value: "backlog",
+                        label: "Backlog",
+                        subLabel:
+                          typeof productBacklogCount === "number"
+                            ? `${productBacklogCount} tasks tồn đọng`
+                            : "Tasks tồn đọng",
+                      },
+                    ]}
+                  />
+                </div>
+              )}
+
+              <div className="relative flex-1 sm:max-w-xs min-w-[180px]">
+                <SearchIcon className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => onSearchChange(e.target.value)}
+                  placeholder="Tìm mã task, tiêu đề..."
+                  className="pl-8.5 pr-8 h-9 text-xs rounded-xl bg-card border-border/80 font-sans"
+                />
+                {searchQuery && (
+                  <button
+                    type="button"
+                    onClick={() => onSearchChange("")}
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground cursor-pointer"
+                  >
+                    <XIcon className="w-3.5 h-3.5" />
+                  </button>
+                )}
+              </div>
+
+              <div className="flex items-center gap-1 shrink-0 bg-muted/40 p-1 rounded-xl border border-border/50">
                 <button
                   type="button"
-                  onClick={() => onSearchChange("")}
-                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground cursor-pointer"
+                  onClick={() => onSelectAssignee(null)}
+                  className={`text-xs font-bold px-2.5 py-1 rounded-lg transition-colors cursor-pointer select-none ${selectedAssigneeId === null
+                    ? "bg-card text-foreground shadow-2xs font-extrabold"
+                    : "text-muted-foreground hover:text-foreground"
+                    }`}
+                >
+                  Tất cả
+                </button>
+
+                <div className="flex items-center gap-1.5 px-0.5">
+                  {teamMembers.map((m) => {
+                    const isSelected = selectedAssigneeId === m.id;
+                    return (
+                      <button
+                        key={m.id}
+                        type="button"
+                        onClick={() => onSelectAssignee(isSelected ? null : m.id)}
+                        title={`${m.name} (${m.studentCode})`}
+                        className={`relative flex items-center justify-center rounded-full p-0.5 transition-all cursor-pointer shrink-0 ${isSelected
+                          ? "ring-2 ring-primary bg-primary/15 opacity-100"
+                          : "opacity-75 hover:opacity-100 hover:bg-muted/80"
+                          }`}
+                      >
+                        <Avatar className="w-6.5 h-6.5 border border-border/80">
+                          <AvatarImage src={resolveHttpAvatarUrl(m.avatar)} alt={m.name} />
+                          <AvatarFallback className={`text-[9px] font-bold ${getAssigneeAvatarClass(m.id)}`}>
+                            {getAssigneeInitials(m.name)}
+                          </AvatarFallback>
+                        </Avatar>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {hasActiveFilters && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleClearFilters}
+                  className="h-8 px-2 text-xs text-muted-foreground hover:text-foreground gap-1 cursor-pointer"
                 >
                   <XIcon className="w-3.5 h-3.5" />
-                </button>
+                  <span className="hidden sm:inline">Bỏ lọc</span>
+                </Button>
               )}
-            </div>
-
-            <div className="flex items-center gap-1 shrink-0 bg-muted/40 p-1 rounded-xl border border-border/50">
-              <button
-                type="button"
-                onClick={() => onSelectAssignee(null)}
-                className={`text-xs font-bold px-2.5 py-1 rounded-lg transition-colors cursor-pointer select-none ${selectedAssigneeId === null
-                  ? "bg-card text-foreground shadow-2xs font-extrabold"
-                  : "text-muted-foreground hover:text-foreground"
-                  }`}
-              >
-                Tất cả
-              </button>
-
-              <div className="flex items-center gap-1.5 px-0.5">
-                {teamMembers.map((m) => {
-                  const isSelected = selectedAssigneeId === m.id;
-                  return (
-                    <button
-                      key={m.id}
-                      type="button"
-                      onClick={() => onSelectAssignee(isSelected ? null : m.id)}
-                      title={`${m.name} (${m.studentCode})`}
-                      className={`relative flex items-center justify-center rounded-full p-0.5 transition-all cursor-pointer shrink-0 ${isSelected
-                        ? "ring-2 ring-primary bg-primary/15 opacity-100"
-                        : "opacity-75 hover:opacity-100 hover:bg-muted/80"
-                        }`}
-                    >
-                      <Avatar className="w-6.5 h-6.5 border border-border/80">
-                        <AvatarImage src={resolveHttpAvatarUrl(m.avatar)} alt={m.name} />
-                        <AvatarFallback className={`text-[9px] font-bold ${getAssigneeAvatarClass(m.id)}`}>
-                          {getAssigneeInitials(m.name)}
-                        </AvatarFallback>
-                      </Avatar>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            {hasActiveFilters && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleClearFilters}
-                className="h-8 px-2 text-xs text-muted-foreground hover:text-foreground gap-1 cursor-pointer"
-              >
-                <XIcon className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">Bỏ lọc</span>
-              </Button>
-            )}
-          </div>
-        )}
+            </>
+          )}
+        </div>
       </div>
     </div>
   );
