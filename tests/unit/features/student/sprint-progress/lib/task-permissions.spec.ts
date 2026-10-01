@@ -9,6 +9,7 @@ function issueWithAssignee(studentId: string | null, studentCode: string): Sprin
     key: "SAGA-1",
     summary: "Task",
     type: "TASK",
+    issueTypeLevel: "STANDARD",
     priority: "MEDIUM",
     status: "TODO",
     storyPoints: 0,

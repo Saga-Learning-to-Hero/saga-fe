@@ -13,6 +13,7 @@ function task(overrides: Partial<ProjectTaskResponse> & Pick<ProjectTaskResponse
     externalKey: `SAGA-${overrides.id}`,
     title: "Task",
     issueTypeName: "Task",
+    issueTypeLevel: "STANDARD",
     linkedCommitCount: 0,
     createdAt: "2026-09-29T00:00:00.000Z",
     updatedAt: "2026-09-29T00:00:00.000Z",

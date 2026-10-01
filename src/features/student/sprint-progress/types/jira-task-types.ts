@@ -70,10 +70,26 @@ export interface JiraSprintSummary {
   state: string;
 }
 
-export interface JiraIssueParentSummary {
-  externalId?: string | null;
-  externalKey?: string | null;
+export type IssueTypeLevel =
+  | "EPIC"
+  | "STANDARD"
+  | "SUBTASK"
+  | "ABOVE_EPIC"
+  | "UNKNOWN";
+
+export type JiraParentResolution = "RESOLVED" | "UNRESOLVED";
+export type JiraParentResolutionReason = "PARENT_NOT_SYNCED" | "PARENT_SOURCE_REVOKED";
+
+export interface JiraTaskParent {
+  externalId: string;
+  externalKey: string;
+  taskId: string | null;
+  resolution: JiraParentResolution;
+  resolutionReason: JiraParentResolutionReason | null;
 }
+
+/** @deprecated Dùng JiraTaskParent. Giữ alias để mapper đọc response cũ trong giai đoạn chuyển. */
+export type JiraIssueParentSummary = JiraTaskParent;
 
 export interface TaskJiraSourceProvenance {
   integrationId: string;
@@ -93,6 +109,8 @@ export type EvidenceCheckStatus =
 
 export interface TaskEvidenceCheck {
   status: EvidenceCheckStatus;
+  requiresCommit: boolean;
+  requiresDocument: boolean;
 }
 
 export interface ProjectTaskResponse {
@@ -104,7 +122,10 @@ export interface ProjectTaskResponse {
   status: "TODO" | "IN_PROGRESS" | "IN_REVIEW" | "DONE" | "BLOCKED" | string;
   jiraStatusId?: string | null;
   jiraStatusName?: string | null;
+  issueTypeId?: string | null;
   issueTypeName: string;
+  issueTypeLevel: IssueTypeLevel;
+  jiraHierarchyLevel?: number | null;
   assigneeExternalId?: string | null;
   assigneeDisplayName?: string | null;
   assigneeStudentId?: string | null;
@@ -113,7 +134,7 @@ export interface ProjectTaskResponse {
   priorityDetail?: JiraPriorityDetail | null;
   storyPoint?: number | null;
   sprint?: JiraSprintSummary | null;
-  parent?: JiraIssueParentSummary | null;
+  parent?: JiraTaskParent | null;
   labels?: string[];
   dueDate?: string | null;
   startDate?: string | null;
@@ -124,8 +145,14 @@ export interface ProjectTaskResponse {
   externalUpdatedAt?: string | null;
   createdAt: string;
   updatedAt: string;
-  parentTask?: { id: string; title: string } | null;
-  subtasks?: { id: string; title: string; status: string }[] | null;
+  subtasks?: {
+    id: string;
+    title: string;
+    status: string;
+    externalKey: string;
+    issueTypeName: string;
+    issueTypeLevel: IssueTypeLevel;
+  }[] | null;
   jiraIntegrationId?: string | null;
   source?: TaskJiraSourceProvenance | null;
   superseded?: boolean;
@@ -146,7 +173,7 @@ export interface CreateProjectTaskRequest {
   labels?: string[];
   dueDate?: string | null;
   startDate?: string | null;
-  parentTaskId?: string | null;
+  jiraParentTaskId?: string | null;
   jiraIntegrationId?: string;
 }
 
@@ -165,16 +192,17 @@ export interface PatchProjectTaskRequest {
   clearDueDate?: boolean;
   startDate?: string | null;
   clearStartDate?: boolean;
-  parentTaskId?: string | null;
-  clearParent?: boolean;
+  jiraParentTaskId?: string | null;
+  clearJiraParent?: boolean;
 }
 
 export interface TaskParentOptionItem {
   id: string;
   title: string;
   status: string;
-  parentTaskId?: string | null;
   externalKey?: string | null;
+  level?: IssueTypeLevel;
+  jiraHierarchyLevel?: number | null;
 }
 
 export interface TaskParentOptionsResponse {
@@ -185,6 +213,8 @@ export interface TaskParentOptionsResponse {
 }
 
 export interface GetTaskParentOptionsParams {
+  childIssueTypeId: string;
+  jiraIntegrationId: string;
   q?: string;
   page?: number;
   size?: number;
@@ -195,6 +225,8 @@ export interface ProjectTaskOptionItem {
   id: string;
   name: string;
   description?: string;
+  level: IssueTypeLevel;
+  jiraHierarchyLevel?: number | null;
 }
 
 export interface ProjectAssignableUser {

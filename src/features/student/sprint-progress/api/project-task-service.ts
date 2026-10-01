@@ -166,16 +166,24 @@ export class ProjectTaskService {
 
   static async getParentOptions(
     projectId: string,
-    params?: GetTaskParentOptionsParams
+    params: GetTaskParentOptionsParams
   ): Promise<TaskParentOptionsResponse> {
     if (!projectId || !projectId.trim()) {
       throw new Error("Throw ValidationException: Project ID is required");
+    }
+    if (!params?.childIssueTypeId?.trim()) {
+      throw new Error("Throw ValidationException: childIssueTypeId is required");
+    }
+    if (!params?.jiraIntegrationId?.trim()) {
+      throw new Error("Throw ValidationException: jiraIntegrationId is required");
     }
     const cleanProjectId = projectId.trim();
     const queryParams: GetTaskParentOptionsParams = {
       page: 0,
       size: 50,
       ...params,
+      childIssueTypeId: params.childIssueTypeId.trim(),
+      jiraIntegrationId: params.jiraIntegrationId.trim(),
     };
     const res = await apiClient.get<TaskParentOptionsResponse>(
       `/api/projects/${encodeURIComponent(cleanProjectId)}/tasks/parent-options`,

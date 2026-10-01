@@ -413,7 +413,7 @@ Project Type dùng để phân loại hướng dự án, không điều khiển 
 | TASK-002 | Task create/patch/delete | ✓ | ✓ | ✓ | `DONE`; áp dụng `Leader/Member-own` theo `assigneeStudentId`; Member tạo Task được BE tự gán Jira account của mình và không được bỏ gán/giao người khác; mọi người tạo Task phải có Jira + GitHub cá nhân; quick create chỉ gửi field tối thiểu; form đầy đủ chọn đúng nguồn Jira; xóa có modal xác nhận và BE chặn khi có work session/contribution confirmation/Task con |
 | TASK-003 | Task transition và transition options | ✓ | ✓ | ✓ | `DONE` |
 | TASK-004 | Move task vào/ra sprint | ✓ | ✓ | ✓ | `DONE`; Leader đổi mọi Task, Member chỉ đổi Task của mình; FE chặn đích là Sprint đã hoàn thành |
-| TASK-005 | Task type và Subtask parent | ✓ | ✓ | ✓ | `DONE` (BE & FE đồng bộ `parentTask`, `subtasks`, `parentTaskId`, `clearParent`, endpoint `GET /tasks/parent-options` phân trang và UI chọn Task cha/Subtasks) |
+| TASK-005 | Task type và Parent hierarchy Jira | ✓ | ✓ | ✓ | Epic A: FE đọc `issueTypeLevel` từ BE (`EPIC`/`STANDARD`/`SUBTASK`/`ABOVE_EPIC`/`UNKNOWN`), không suy cấp từ tên Task/Story/Subtask. Parent dùng `parent: JiraTaskParent` (`taskId`, `resolution` RESOLVED/UNRESOLVED). Create/Patch gửi `jiraParentTaskId` / `clearJiraParent` — không còn `parentTask`/`parentTaskId`/`clearParent`. `GET /tasks/parent-options` bắt buộc `childIssueTypeId` + `jiraIntegrationId`. Chỉ STANDARD kéo đổi Sprint; Subtask nhóm theo `parent.taskId`. UNKNOWN hiện cảnh báo đồng bộ lại. Epic B: Subtask `storyPoint` là tỷ trọng 1–10; planning chỉ cộng STANDARD; không `contributionWeight`. |
 | TASK-006 | Start Date/Due Date create-edit-clear-hydrate | ✓ | ✓ | ✓ | `VERIFY`; FE chặn `startDate > dueDate`, cho phép lịch riêng ở Backlog và xác nhận mềm khi lịch Task vượt lịch Sprint; cần xác minh deploy trả đủ hai key kể cả null |
 | TASK-007 | Kanban/Backlog/Timeline | ✓ | ✓ | ✓ | `DONE`; card chỉ cần due date, backlog cảnh báo giống Jira; Task được scope theo Jira source đang chọn ở cả Student và Lecturer Pipeline |
 | SPR-001 | Sprint list/detail/create/update/delete | ✓ | ✓ | ✓ | `PARTIAL`; FE đã scope theo source bằng `jiraIntegrationId` + Sprint options và reset selection khi đổi Site. Student P0: không gọi `/sprints` khi nguồn Jira chưa settle, 0 source hoặc nhiều source chưa chọn (không auto source đầu). 409 không retry. Lecturer tạm dựng source selector từ `task.source` vì integration summary dùng quyền thành viên. BE cần cho Lecturer đọc source summary theo `requireReader`, lọc `GET /projects/{id}/sprints` đúng source và bổ sung `jiraIntegrationId/source` vào Sprint response để bỏ workaround FE |
@@ -431,7 +431,7 @@ Project Type dùng để phân loại hướng dự án, không điều khiển 
 | SYNC-002 | Sync status/last synced time | ✓ | ✓ | ✓ | `DONE` |
 | SYNC-003 | GitHub/Jira webhook ingest | ✓ | N/A | N/A | `INTERNAL`; không cần UI request trực tiếp |
 | RT-001 | Project SSE connection | ✓ | ✓ | ✓ | `DONE/VERIFY` |
-| RT-002 | Event-specific REST invalidation | ✓ | ✓ | ✓ | `VERIFY`; cần integration test reconnect và coalescing |
+| RT-002 | Event-specific REST invalidation | ✓ | ✓ | ✓ | `VERIFY`; `TASKS_CHANGED` invalidate list/detail/parent-options/progress/graph; `SPRINTS_CHANGED` sprint + placement + graph; `GRAPH_CHANGED` graph; `SYNC_STATUS_CHANGED` sync + task queries (cập nhật UNKNOWN). Không lắng nghe `CONTRIBUTION_CHANGED`. Cần integration test reconnect và coalescing |
 | RT-003 | Realtime indicator/fallback | ✓ | ✓ | ✓ | `DONE`; không gọi trạng thái READY là dữ liệu đã đồng bộ |
 
 ### 7.7 Evidence và work session
@@ -454,7 +454,7 @@ Project Type dùng để phân loại hướng dự án, không điều khiển 
 | --- | --- | --- | --- | --- | --- |
 | PROG-001 | Project progress summary | ✓ | ✓ | ✓ | `DONE`; quyền leader/lecturer theo policy. Student P0: Member không prefetch/gọi `GET /progress`; hover tab chỉ prefetch dashboard BFF; 403 ACCESS_DENIED không retry |
 | PROG-002 | Member progress detail | ✓ | ✓ | ✓ | `DONE`; drawer chỉ là inspector, không thay dữ liệu dashboard tổng |
-| GRAPH-001 | Project graph overview | ✓ | ✓ | ✓ | `DONE/VERIFY`; còn E2E dữ liệu lớn và authorization |
+| GRAPH-001 | Project graph overview | ✓ | ✓ | ✓ | `DONE/VERIFY`; cạnh `HAS_WORK_ITEM` (Project→root work item, nét liền) và `PARENT_OF` (cha→con, nét đứt); size/layout theo `issueTypeLevel`; UNRESOLVED vẫn hiện, không bịa PARENT_OF; còn E2E dữ liệu lớn và authorization |
 | GRAPH-002 | Student contribution graph | ✓ | ✓ | ✓ | `DONE/VERIFY`; lazy query theo mode/student/sprint |
 | GRAPH-003 | Sprint activity graph | ✓ | ✓ | ✓ | `DONE/VERIFY`; Lecturer Graph mặc định mở Sprint activity của Sprint `active` (fallback Sprint đầu tiên), đổi nhóm tự reset về Sprint hiện tại; yêu cầu sprint trước khi gọi API |
 | GRAPH-004 | Attribution graph | ✓ | ✓ | ✓ | `DONE/VERIFY`; hỗ trợ anomaly filter và subgraph params |
@@ -462,7 +462,7 @@ Project Type dùng để phân loại hướng dự án, không điều khiển 
 | PEER-001 | Default/team rubric | ✓ | ✓ | ✓ | `DONE`; Student fallback default rubric và Lecturer dùng team rubric |
 | PEER-002 | Sprint review candidates | ✓ | ✓ | ✓ | `DONE`; Student UI khóa theo review window/trạng thái |
 | PEER-003 | Submit/list peer reviews | ✓ | ✓ | ✓ | `DONE/VERIFY`; Student submit một lần; Lecturer workspace hai cột (Tổng quan nhóm / sinh viên), giữ query `teamId`/`sprintId`/`revieweeId`; không đổi API, quyền hay công thức; còn E2E quyền và deadline |
-| CONT-001 | Student contribution dashboard | ✓ | ✓ | ✓ | `DONE`; dùng evaluation data, tên/tooltip phải rõ |
+| CONT-001 | Student contribution dashboard | ✓ | ✓ | ✓ | Evaluation canonical từ `GET /api/teams/{teamId}/contribution-evaluation`. Epic B: FE nhập tỷ trọng Subtask 1–10 và preview; **không** tự nhân Subtask, không cộng cha+con, không tự chia phần chưa Done, không thêm SSE `CONTRIBUTION_CHANGED`. Invalidate evaluation sau task mutation và `TASKS_CHANGED`. Coverage UI tỷ trọng `DONE/VERIFY`; điểm cuối vẫn BE. |
 | CONT-002 | Warning evidence/peer review | ✓ | ✓ | ✓ | `DONE`; diễn đạt là cảnh báo dữ liệu, không kết luận gian lận |
 | PROG-003 | Team & Member Activity Heatmap | ✓ | ✓ | ✓ | `DONE`; `GET /api/courses/{courseId}/teams/{teamId}/heatmap`, hỗ trợ toàn nhóm hoặc từng sinh viên, hiển thị lưới nhịp độ hoạt động GitHub-style |
 | PROG-004 | Sprint Burndown Chart | ✓ | ✓ | ✓ | `DONE`; `GET /api/courses/{courseId}/teams/{teamId}/sprints/{sprintId}/burndown`, mặc định chọn Sprint `active` (fallback Sprint đầu tiên), đối soát đường lý tưởng với thực tế và số lượng task hoàn thành |
@@ -655,7 +655,7 @@ Project Type dùng để phân loại hướng dự án, không điều khiển 
 
 ### 9.2 Edge types
 
-`MEMBER_OF`, `OWNS`, `HAS_SPRINT`, `CONTAINS`, `ASSIGNED_TO`, `EVIDENCED_BY`, `CLASSIFIED_AS`, `AUTHORED_BY`, `MAPS_TO`, `REVIEWED`.
+`MEMBER_OF`, `OWNS`, `HAS_SPRINT`, `CONTAINS`, `HAS_WORK_ITEM`, `PARENT_OF`, `ASSIGNED_TO`, `EVIDENCED_BY`, `CLASSIFIED_AS`, `AUTHORED_BY`, `MAPS_TO`, `REVIEWED`.
 
 Quan hệ attribution đúng là `Task → Commit → Identity → Student` khi identity mapping tồn tại. FE phải:
 
@@ -706,7 +706,7 @@ Hiện mỗi request graph có thể kích hoạt/rebuild projection theo implem
 - [x] Thay Admin Audit Log mock bằng `/api/admin/audit-logs` (tích hợp API thật, hỗ trợ snapshot team/project/class/actor).
 - [ ] Xác minh logout/login tài khoản khác xóa query cache, selected course/project/team và reconnect SSE đúng context mới.
 - [ ] Xác minh Graph SAGA-75 không rò dữ liệu project/student cũ và đúng authorization.
-- [ ] Xác minh production DTO Task luôn có `startDate`, `dueDate`, `parent` với null rõ ràng.
+- [ ] Xác minh production DTO Task luôn có `startDate`, `dueDate`, `parent` với null rõ ràng, `issueTypeLevel` không còn UNKNOWN giả sau Leader sync Jira.
 
 ### P1 — Nghiệp vụ đã có BE nhưng chưa có UI
 
@@ -847,6 +847,13 @@ Thực hiện:
 ```
 
 ---
+
+### SAGA-113/SAGA-115 contract invariants
+
+- Task list/detail và task options luôn cung cấp `issueTypeLevel`; dữ liệu chưa xác định dùng `UNKNOWN`, không dùng `null`.
+- `parent: null` xóa parent cũ khỏi form. Form sửa giữ parent action rõ ràng `UNCHANGED | SET | CLEAR`; đổi giữa các loại STANDARD không tự xóa Epic cha, còn người dùng vẫn có thể chủ động xóa parent `UNRESOLVED`.
+- `subtasks[]` chứa `externalKey`, `issueTypeName`, `issueTypeLevel`. TASK graph node chứa `parentExternalId`, `parentExternalKey`, resolution và reason; graph node không có `parentTaskId`.
+- Label `saga:*` legacy của Subtask được bảo toàn; FE không tạo hoặc chọn label đóng góp riêng mới trên Subtask.
 
 ## 14. Tài liệu và source tham chiếu
 

@@ -225,7 +225,44 @@ export function GraphNodeDetailsModal({
                 </span>
               </div>
             )}
+
+            {nodeData.type === "TASK" && nodeData.issueTypeLevel && (
+              <div className="p-3 rounded-xl bg-muted/30 border border-border/50">
+                <span className="text-xs text-muted-foreground uppercase font-bold block mb-1">
+                  Cấp loại thẻ
+                </span>
+                <span className="font-mono font-bold text-foreground">
+                  {nodeData.issueTypeName || "—"} · {nodeData.issueTypeLevel}
+                </span>
+              </div>
+            )}
+
+            {nodeData.type === "TASK" && nodeData.parentExternalKey && (
+              <div className="p-3 rounded-xl bg-muted/30 border border-border/50">
+                <span className="text-xs text-muted-foreground uppercase font-bold block mb-1">
+                  Công việc cha
+                </span>
+                <span className="font-mono font-bold text-foreground">{nodeData.parentExternalKey}</span>
+              </div>
+            )}
           </div>
+
+          {nodeData.type === "TASK" && nodeData.parentResolution === "UNRESOLVED" && (
+            <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-800 dark:text-amber-300 text-xs space-y-1">
+              <div className="flex items-center gap-2 font-bold text-sm">
+                <AlertTriangleIcon className="w-4 h-4 shrink-0" />
+                <span>Công việc cha chưa đồng bộ</span>
+              </div>
+              <p>
+                {nodeData.parentExternalKey
+                  ? `Jira có parent ${nodeData.parentExternalKey} nhưng SAGA chưa gắn được task cha.`
+                  : "Jira có parent nhưng SAGA chưa đồng bộ được công việc cha."}
+                {nodeData.parentResolutionReason === "PARENT_SOURCE_REVOKED"
+                  ? " Nguồn Jira của parent đã bị thu hồi."
+                  : ""}
+              </p>
+            </div>
+          )}
 
           {nodeData.isAnomaly === true && (
             <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/30 text-red-700 dark:text-red-400 text-xs space-y-1 animate-pulse">

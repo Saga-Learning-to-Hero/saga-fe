@@ -814,6 +814,7 @@ Base: `/api/projects/{projectId}/tasks`. Phân quyền theo mục 15 (đọc: th
 | PATCH  | `/tasks/{taskId}`             | Cập nhật task (một phần)               |
 | DELETE | `/tasks/{taskId}`             | Xoá task (204)                         |
 | GET    | `/tasks/options`              | Dữ liệu dựng form (mục 20)             |
+| GET    | `/tasks/parent-options`       | Parent hợp lệ cho loại thẻ con (bắt buộc `childIssueTypeId` + `jiraIntegrationId`) |
 | GET    | `/tasks/{taskId}/transitions` | Danh sách transition khả dụng (mục 21) |
 | POST   | `/tasks/{taskId}/transition`  | Đổi trạng thái task (mục 21)           |
 | PUT    | `/tasks/{taskId}/sprint`      | Gán/gỡ task khỏi sprint (mục 24)       |
@@ -827,7 +828,8 @@ Base: `/api/projects/{projectId}/tasks`. Phân quyền theo mục 15 (đọc: th
 {
   "summary": "Bắt buộc, tối đa 255 ký tự",
   "description": "tuỳ chọn, tối đa 10000 ký tự",
-  "issueTypeId": "tuỳ chọn — lấy từ /tasks/options",
+  "issueTypeId": "tuỳ chọn — lấy từ /tasks/options; Quick Create gửi một id cấp STANDARD",
+  "jiraParentTaskId": "tuỳ chọn — STANDARD chọn Epic; Subtask bắt buộc STANDARD; EPIC không gửi",
   "assigneeAccountId": "tuỳ chọn — Jira accountId (mục 23)",
   "priorityId": "tuỳ chọn — lấy từ /tasks/options",
   "storyPoints": 5,
@@ -835,6 +837,10 @@ Base: `/api/projects/{projectId}/tasks`. Phân quyền theo mục 15 (đọc: th
   "sprintExternalId": "hoặc dùng field này thay cho sprintId"
 }
 ```
+
+`storyPoints` theo cấp `issueTypeLevel`: STANDARD = story point thực (hoặc trần khi có Subtask); SUBTASK = tỷ trọng nguyên 1–10 (10%–100%); EPIC/ABOVE_EPIC không tham gia contribution. FE **không** tạo `contributionWeight`. Preview `allocatedPoint = (parent.storyPoint ?? 1) × subtask.storyPoint / 10` chỉ để hiển thị; contribution cuối vẫn `GET /api/teams/{teamId}/contribution-evaluation`. Contract đầy đủ: [FRONTEND_SUBTASK_CONTRIBUTION_API.md](../FRONTEND_SUBTASK_CONTRIBUTION_API.md).
+
+Tỷ trọng sibling lấy từ `GET /tasks` (`issueTypeLevel === "SUBTASK"` và `parent.taskId`). Không dùng `subtasks[]` của task detail. Lỗi `TASK_SUBTASK_PERCENT_INVALID`: giữ form, hiện lỗi dưới input, refetch list.
 
 ### Request cập nhật — `PATCH /tasks/{taskId}`
 
@@ -848,11 +854,13 @@ Base: `/api/projects/{projectId}/tasks`. Phân quyền theo mục 15 (đọc: th
   "priorityId": "...",
   "storyPoints": 5,
   "sprintExternalId": "...",
-  "moveToBacklog": false
+  "moveToBacklog": false,
+  "jiraParentTaskId": "...",
+  "clearJiraParent": false
 }
 ```
 
-Mọi field đều tuỳ chọn — chỉ field khác `null` mới được cập nhật vào Jira. **Lưu ý**: DTO này có tồn tại 2 field `transitionId`/`targetStatusId` nhưng **backend không dùng chúng trong PATCH** — đổi trạng thái task **bắt buộc phải dùng endpoint riêng** `POST /tasks/{taskId}/transition` (mục 21), không được PATCH trạng thái trực tiếp.
+Mọi field đều tuỳ chọn — chỉ field khác `null` mới được cập nhật vào Jira. **Không gửi đồng thời `jiraParentTaskId` và `clearJiraParent`.** **Lưu ý**: DTO này có tồn tại 2 field `transitionId`/`targetStatusId` nhưng **backend không dùng chúng trong PATCH** — đổi trạng thái task **bắt buộc phải dùng endpoint riêng** `POST /tasks/{taskId}/transition` (mục 21), không được PATCH trạng thái trực tiếp.
 
 ### Response — `ProjectTaskResponse` (đầy đủ field, đã xác minh từ DTO)
 
@@ -866,7 +874,27 @@ Mọi field đều tuỳ chọn — chỉ field khác `null` mới được cậ
   "status": "TODO | IN_PROGRESS | IN_REVIEW | DONE | BLOCKED",
   "jiraStatusId": "...",
   "jiraStatusName": "To Do",
+  "issueTypeId": "...",
   "issueTypeName": "Story",
+  "issueTypeLevel": "EPIC | STANDARD | SUBTASK | ABOVE_EPIC | UNKNOWN",
+  "jiraHierarchyLevel": 0,
+  "parent": {
+    "externalId": "...",
+    "externalKey": "SAGA-10",
+    "taskId": "uuid-hoặc-null",
+    "resolution": "RESOLVED | UNRESOLVED",
+    "resolutionReason": "PARENT_NOT_SYNCED | PARENT_SOURCE_REVOKED | null"
+  },
+  "subtasks": [
+    {
+      "id": "uuid",
+      "title": "Implement callback",
+      "status": "TODO",
+      "externalKey": "SAGA-124",
+      "issueTypeName": "Subtask",
+      "issueTypeLevel": "SUBTASK"
+    }
+  ],
   "assigneeExternalId": "jira-account-id-hoặc-null",
   "assigneeDisplayName": "Tên hiển thị-hoặc-null",
   "assigneeStudentId": "uuid-hoặc-null",
@@ -874,6 +902,12 @@ Mọi field đều tuỳ chọn — chỉ field khác `null` mới được cậ
   "priority": "High",
   "priorityDetail": { "id": null, "name": "High" },
   "storyPoint": 5,
+  "evidenceCheck": {
+    "status": "SATISFIED | MISSING_COMMIT | MISSING_DOCUMENT | MISSING_COMMIT_AND_DOCUMENT | UNLABELED | NOT_DONE",
+    "requiresCommit": false,
+    "requiresDocument": false
+  },
+
   "sprint": {
     "id": "uuid",
     "externalSprintId": "...",
@@ -890,6 +924,9 @@ Mọi field đều tuỳ chọn — chỉ field khác `null` mới được cậ
 Vài lưu ý chính xác cần nhớ:
 
 - Field tên là **`issueTypeName`**, không phải `issueType`.
+- `issueTypeLevel` luôn có giá trị; dữ liệu chưa xác định trả `UNKNOWN`, không trả `null`.
+- `parent: null` là kết quả canonical: item không có cha. FE phải xóa parent cũ khỏi form khi nhận response này.
+- Khi sửa parent, FE theo dõi riêng `UNCHANGED | SET | CLEAR`. Đổi giữa các loại STANDARD không được tự chuyển parent sang `CLEAR`; người dùng vẫn có thể chủ động `CLEAR` parent `UNRESOLVED`.
 - Field tên là **`storyPoint`** (số ít), không phải `storyPoints` (response khác request).
 - `priorityDetail.id` **luôn là `null`** trong implementation hiện tại — chỉ `priorityDetail.name` có giá trị thật.
 - `assignee` là `null` nếu task chưa gán ai.
@@ -1167,12 +1204,12 @@ SYNC_STATUS_CHANGED
 | Sự kiện nhận được       | FE nên làm                                                                                                                                                                             |
 | ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `READY`                 | Gửi ngay khi vừa kết nối SSE thành công (kể cả sau khi reconnect) — coi như tín hiệu "làm mới toàn bộ dữ liệu project hiện tại", gồm `GET .../progress` và member progress nếu đang mở |
-| `TASKS_CHANGED`         | Refetch danh sách task + project progress + member progress nếu đang mở                                                                                                                |
-| `SPRINTS_CHANGED`       | Refetch danh sách sprint (và task nếu màn hình đang hiển thị theo sprint) + project progress                                                                                           |
+| `TASKS_CHANGED`         | list/detail/parent-options + progress + graph liên quan + `contributionEvaluation` (tỷ trọng sibling / evidence) |
+| `SPRINTS_CHANGED`       | sprint + task placement + graph                                                                                                                                                        |
 | `COMMITS_CHANGED`       | Refetch danh sách commit + project progress + member progress nếu đang mở                                                                                                              |
 | `TASK_LINKS_CHANGED`    | Refetch `linkedCommitCount` / danh sách commit của task đang mở + project progress + member progress nếu đang mở                                                                       |
-| `TASK_EVIDENCE_CHANGED` | Refetch dữ liệu evidence/work-session/contribution của task đang mở + project progress + member progress nếu đang mở                                                                   |
-| `SYNC_STATUS_CHANGED`   | Refetch `GET /sync-status` + project progress                                                                                                                                          |
+| `TASK_EVIDENCE_CHANGED` | Refetch dữ liệu evidence/work-session/contribution của task đang mở + project progress + member progress nếu đang mở + `contributionEvaluation` |
+| `SYNC_STATUS_CHANGED`   | Refetch `GET /sync-status` + project progress + task queries (cập nhật UNKNOWN)                                                                                                        |
 
 Server gửi heartbeat (comment SSE, không phải event có tên) mỗi ~25 giây để giữ kết nối — FE không cần xử lý riêng, `EventSource` tự bỏ qua comment. Nếu `EventSource` tự reconnect (mất mạng tạm thời), sự kiện `READY` sẽ được gửi lại ngay khi kết nối lại thành công — dùng đây làm điểm neo để refetch toàn bộ.
 
@@ -1197,7 +1234,7 @@ Base: `/api/tasks/{taskId}` — **lưu ý path KHÔNG nằm dưới `/api/projec
 
 **Bằng chứng đồng bộ từ Jira là bất biến**: nếu `source === "JIRA"` (field `source` trong response web-link/file), request `DELETE` sẽ bị từ chối với `409 TASK_EVIDENCE_JIRA_IMMUTABLE` — chỉ nội dung do chính SAGA tạo ra (`source === "SAGA"`) mới xoá được.
 
-Không có endpoint tính điểm đóng góp (contribution scoring) trong nhóm API này — việc tính điểm/trọng số thuộc các controller khác (`/api/teams/{teamId}/...`, `/api/lecturer/courses/{courseId}/...`) nằm ngoài phạm vi "evidence" của tài liệu này; **không suy đoán công thức tính điểm** ở đây.
+Không có endpoint tính điểm đóng góp (contribution scoring) trong nhóm API này — việc tính điểm/trọng số thuộc các controller khác (`/api/teams/{teamId}/...`, `/api/lecturer/courses/{courseId}/...`) nằm ngoài phạm vi "evidence" của tài liệu này; **không suy đoán công thức tính điểm** ở đây. Tỷ trọng Subtask nhập qua `storyPoints` 1–10 trên Task API; FE không tự tính evaluation.
 
 ---
 
@@ -1236,6 +1273,7 @@ Mọi lỗi domain (không phải lỗi mạng) trả về đúng 1 khuôn dạn
 | `JIRA_PROJECT_IN_USE`                       | 409                  | Jira Project đã dùng cho SAGA Project khác                     | Chọn Jira Project khác                              |
 | `JIRA_SOURCE_REPLACE_BLOCKED_BY_EVIDENCE`   | 409                  | Không đổi được nguồn Jira vì đã có bằng chứng gắn với nguồn cũ | Không cho đổi, giải thích rõ                        |
 | `TASK_DELETE_BLOCKED_BY_EVIDENCE`           | 409                  | Task đã có Work Session/Contribution Confirmation              | Không cho xoá                                       |
+| `TASK_SUBTASK_PERCENT_INVALID`              | 400/409              | Tổng tỷ trọng Subtask vượt 100% hoặc giá trị ngoài 1–10        | Giữ form, hiện lỗi dưới tỷ trọng, refetch `GET /tasks` |
 | `TASK_EVIDENCE_JIRA_IMMUTABLE`              | 409                  | Link/file đồng bộ từ Jira không thể xoá ở SAGA                 | Ẩn nút xoá cho các mục `source === "JIRA"`          |
 | `PASSWORD_RESET_TOKEN_INVALID`              | 400                  | Link đặt lại mật khẩu sai/đã dùng                              | Yêu cầu gửi lại email quên mật khẩu                 |
 | `PASSWORD_RESET_TOKEN_EXPIRED`              | 400                  | Link đặt lại mật khẩu hết hạn                                  | Yêu cầu gửi lại email                               |
@@ -1274,6 +1312,9 @@ function handleSseEvent(
       queryClient.invalidateQueries({
         queryKey: ["project", projectId, "tasks"],
       });
+      queryClient.invalidateQueries({
+        queryKey: ["project", projectId, "parent-options"],
+      });
       break;
     case "SPRINTS_CHANGED":
       queryClient.invalidateQueries({
@@ -1301,6 +1342,9 @@ function handleSseEvent(
     case "SYNC_STATUS_CHANGED":
       queryClient.invalidateQueries({
         queryKey: ["project", projectId, "sync-status"],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["project", projectId, "tasks"],
       });
       break;
   }

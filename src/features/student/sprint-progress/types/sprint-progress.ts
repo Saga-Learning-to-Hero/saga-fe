@@ -1,7 +1,10 @@
+import type { IssueTypeLevel, JiraTaskParent, TaskEvidenceCheck } from "./jira-task-types";
+
 export type IssueType = "EPIC" | "STORY" | "TASK" | "BUG" | "SUBTASK";
 export type IssuePriority = "HIGHEST" | "HIGH" | "MEDIUM" | "LOW";
 export type IssueStatus = "TODO" | "IN_PROGRESS" | "IN_REVIEW" | "DONE";
 export type SprintStatus = "ACTIVE" | "PLANNED" | "COMPLETED";
+export type { IssueTypeLevel, JiraTaskParent };
 
 export interface SprintIssue {
   id: string;
@@ -9,9 +12,14 @@ export interface SprintIssue {
   summary: string;
   description?: string;
   type: IssueType;
+  issueTypeId?: string | null;
+  issueTypeName?: string | null;
+  issueTypeLevel: IssueTypeLevel;
+  jiraHierarchyLevel?: number | null;
   priority: IssuePriority;
   status: IssueStatus;
-  storyPoints: number;
+  /** STANDARD: story point thực. SUBTASK: tỷ trọng 1–10; null = chưa phân bổ. */
+  storyPoints: number | null;
   assignee: {
     id: string;
     studentId?: string | null;
@@ -20,11 +28,8 @@ export interface SprintIssue {
     studentCode: string;
     accountId?: string | null;
   };
-  /** Jira parent identity. Present for subtasks and, depending on Jira project type, epic children. */
-  parent?: {
-    externalId?: string | null;
-    externalKey?: string | null;
-  };
+  /** Jira parent hierarchy. Cha/con chỉ tin field BE, không suy từ tên loại thẻ. */
+  parent?: JiraTaskParent;
   epic?: {
     id: string;
     name: string;
@@ -37,6 +42,7 @@ export interface SprintIssue {
   githubCommitCount?: number;
   evidenceCount?: number;
   hasEvidence?: boolean;
+  evidenceCheck?: TaskEvidenceCheck | null;
   createdAt: string;
   superseded?: boolean;
   migratedFrom?: { taskId: string; externalKey: string } | null;

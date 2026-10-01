@@ -1,4 +1,7 @@
 import type { Sprint } from "../types/sprint-progress";
+import type { IssueTypeLevel } from "../types/jira-task-types";
+import { getIssueTypeUiRules, normalizeIssueTypeLevel } from "./issue-type-rules";
+import { getRemainingShare, isSubtaskShareValue } from "./subtask-allocation";
 
 export type TaskFormField =
   | "summary"
@@ -8,7 +11,9 @@ export type TaskFormField =
   | "startDate"
   | "dueDate"
   | "jiraIntegrationId"
-  | "assigneeAccountId";
+  | "assigneeAccountId"
+  | "issueTypeId"
+  | "parent";
 
 export type TaskFormErrors = Partial<Record<TaskFormField, string>>;
 
@@ -26,6 +31,12 @@ export interface TaskFormValidationInput {
   requireOwnJiraAccount: boolean;
   ownJiraAccountId?: string;
   missingPersonalIntegrations?: Array<"JIRA" | "GITHUB">;
+  issueTypeId?: string;
+  issueTypeLevel?: IssueTypeLevel | string | null;
+  parentTaskId?: string;
+  isEditing?: boolean;
+  /** Tổng tỷ trọng sibling đã dùng (đã loại chính Subtask khi sửa). */
+  siblingUsedPoints?: number;
 }
 
 export interface TaskFormValidationResult {
@@ -48,6 +59,7 @@ export function validateTaskForm(input: TaskFormValidationInput): TaskFormValida
   const storyPoints = input.storyPoints.trim();
   const startDate = input.startDate.trim();
   const dueDate = input.dueDate.trim();
+  const issueTypeLevel = normalizeIssueTypeLevel(input.issueTypeLevel);
 
   if (!summary) {
     errors.summary = "Vui lòng nhập tên Task.";
@@ -59,7 +71,21 @@ export function validateTaskForm(input: TaskFormValidationInput): TaskFormValida
     errors.description = "Mô tả Task không được vượt quá 10.000 ký tự.";
   }
 
-  if (storyPoints) {
+  if (issueTypeLevel === "SUBTASK") {
+    const remaining = getRemainingShare(input.siblingUsedPoints ?? 0);
+    if (!storyPoints) {
+      errors.storyPoints = "Vui lòng phân bổ tỷ trọng từ 1 đến 10.";
+    } else {
+      const parsed = Number(storyPoints);
+      if (!isSubtaskShareValue(parsed)) {
+        errors.storyPoints = "Tỷ trọng phải là số nguyên từ 1 đến 10.";
+      } else if (remaining <= 0) {
+        errors.storyPoints = "Task cha đã phân bổ hết 100% cho các Subtask.";
+      } else if (parsed > remaining) {
+        errors.storyPoints = `Tỷ trọng còn lại tối đa là ${remaining} (${remaining * 10}%).`;
+      }
+    }
+  } else if (storyPoints) {
     const parsed = Number(storyPoints);
     if (!Number.isInteger(parsed) || parsed < 0 || parsed > 100) {
       errors.storyPoints = "Story Point phải là số nguyên từ 0 đến 100.";
@@ -92,7 +118,18 @@ export function validateTaskForm(input: TaskFormValidationInput): TaskFormValida
     errors.assigneeAccountId = `Vui lòng liên kết ${providerNames.join(" và ")} trước khi tạo Task.`;
   }
 
-  if (input.sprintId !== "backlog") {
+  const rules = getIssueTypeUiRules(issueTypeLevel, Boolean(input.isEditing));
+  if (!rules.canSubmit) {
+    errors.issueTypeId = rules.unknownMessage || "Loại thẻ này không thể tạo hoặc sửa trên SAGA.";
+  } else if (!input.isEditing && !input.issueTypeId?.trim()) {
+    errors.issueTypeId = "Vui lòng chọn loại thẻ từ Jira.";
+  }
+
+  if (rules.parentRequired && !input.parentTaskId?.trim()) {
+    errors.parent = "Subtask bắt buộc chọn công việc cha.";
+  }
+
+  if (rules.showSprint && input.sprintId !== "backlog") {
     if (!input.selectedSprint) {
       errors.sprintId = "Sprint đã chọn không còn khả dụng trong nguồn Jira hiện tại.";
     } else if (input.selectedSprint.status === "COMPLETED" && input.isSprintAssignmentChanged) {

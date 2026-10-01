@@ -10,11 +10,20 @@ export type CanonicalNodeType =
 
 export type NodeType = CanonicalNodeType;
 
+export type IssueTypeLevel =
+  | "EPIC"
+  | "STANDARD"
+  | "SUBTASK"
+  | "ABOVE_EPIC"
+  | "UNKNOWN";
+
 export type CanonicalEdgeLabel =
   | "MEMBER_OF"
   | "OWNS"
   | "HAS_SPRINT"
   | "CONTAINS"
+  | "HAS_WORK_ITEM"
+  | "PARENT_OF"
   | "ASSIGNED_TO"
   | "EVIDENCED_BY"
   | "CLASSIFIED_AS"
@@ -38,6 +47,14 @@ export interface CytoscapeNodeData {
   avatar?: string;
   role?: string;
   storyPoint?: number;
+  issueTypeId?: string | null;
+  issueTypeName?: string | null;
+  issueTypeLevel?: IssueTypeLevel;
+  jiraHierarchyLevel?: number | null;
+  parentExternalId?: string | null;
+  parentExternalKey?: string | null;
+  parentResolution?: "RESOLVED" | "UNRESOLVED" | null;
+  parentResolutionReason?: "PARENT_NOT_SYNCED" | "PARENT_SOURCE_REVOKED" | null;
 }
 
 export type GraphNodeData = CytoscapeNodeData;

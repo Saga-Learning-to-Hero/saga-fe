@@ -10,8 +10,28 @@ export const JIRA_SPRINT_QUERY_KEYS = {
     [...JIRA_SPRINT_QUERY_KEYS.all, "task-options", projectId] as const,
   taskTransitions: (projectId?: string | null, taskId?: string | null) =>
     [...JIRA_SPRINT_QUERY_KEYS.all, "task-transitions", projectId, taskId] as const,
-  parentTaskOptions: (projectId?: string | null, params?: unknown) =>
-    [...JIRA_SPRINT_QUERY_KEYS.all, "parent-task-options", projectId, params] as const,
+  parentTaskOptions: (
+    projectId?: string | null,
+    params?: {
+      childIssueTypeId?: string;
+      jiraIntegrationId?: string;
+      excludeTaskId?: string;
+      q?: string;
+      page?: number;
+      size?: number;
+    }
+  ) =>
+    [
+      ...JIRA_SPRINT_QUERY_KEYS.all,
+      "parent-task-options",
+      projectId,
+      params?.childIssueTypeId ?? "",
+      params?.jiraIntegrationId ?? "",
+      params?.excludeTaskId ?? "",
+      params?.q ?? "",
+      params?.page ?? 0,
+      params?.size ?? 50,
+    ] as const,
   taskEvidence: (projectId?: string | null, taskId?: string | null, params?: unknown) =>
     [...JIRA_SPRINT_QUERY_KEYS.all, "task-evidence", projectId, taskId, params] as const,
   taskTimeline: (projectId?: string | null, taskId?: string | null, params?: unknown) =>

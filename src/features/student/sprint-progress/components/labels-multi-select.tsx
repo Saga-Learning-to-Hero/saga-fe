@@ -19,6 +19,7 @@ export interface LabelsMultiSelectProps {
   disabled?: boolean;
   placeholder?: string;
   allowCustom?: boolean;
+  hideSagaLabels?: boolean;
 }
 
 function getLabelBadgeStyle(label: string): string {
@@ -48,6 +49,7 @@ export function LabelsMultiSelect({
   availableLabels,
   disabled = false,
   placeholder = "Chọn nhãn (saga:code, saga:test...)",
+  hideSagaLabels = false,
 }: LabelsMultiSelectProps) {
   const generatedId = useId();
   const inputId = id || generatedId;
@@ -60,11 +62,11 @@ export function LabelsMultiSelect({
 
   // Đảm bảo luôn luôn có sẵn 4 label chuẩn, không bao giờ bị rỗng
   const effectiveLabels = useMemo(() => {
-    if (availableLabels && availableLabels.length > 0) {
-      return availableLabels;
-    }
-    return DEFAULT_SAGA_LABELS;
-  }, [availableLabels]);
+    const source =
+      availableLabels && availableLabels.length > 0 ? availableLabels : [...DEFAULT_SAGA_LABELS];
+    if (!hideSagaLabels) return source;
+    return source.filter((label) => !label.toLowerCase().startsWith("saga:"));
+  }, [availableLabels, hideSagaLabels]);
 
   const trimmedInput = inputValue.trim();
 
@@ -89,8 +91,12 @@ export function LabelsMultiSelect({
   const handleSelectLabel = (newLabel: string) => {
     const clean = newLabel.trim();
     if (!clean) return;
-    // Chỉ cho chọn duy nhất 1 label (ghi đè nhãn cũ)
-    onChange([clean]);
+    if (hideSagaLabels && clean.toLowerCase().startsWith("saga:")) return;
+    if (hideSagaLabels) {
+      if (!value.includes(clean)) onChange([...value, clean]);
+    } else {
+      onChange([clean]);
+    }
     setInputValue("");
     setIsOpen(false);
     setHighlightedIndex(-1);

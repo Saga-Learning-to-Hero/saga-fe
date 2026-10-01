@@ -36,6 +36,12 @@ import {
 } from "./quick-assignee-edit";
 import type { IssueStatus } from "../types/sprint-progress";
 import { isTaskOwnedByCurrentStudent } from "../lib/task-permissions";
+import { canDragIssueSprint, normalizeIssueTypeLevel } from "../lib/issue-type-rules";
+import {
+  countUnestimatedStandardTasks,
+  shouldShowEvidenceWarning,
+  sumPlanningStoryPoints,
+} from "../lib/subtask-allocation";
 import { useUserIdentities } from "@/features/integrations/hooks/useUserIntegrations";
 
 interface SprintBacklogViewProps {
@@ -101,14 +107,15 @@ export function SprintBacklogView({
     setCollapsedSprints((prev) => ({ ...prev, [sprintId]: !prev[sprintId] }));
   };
 
-  const toggleSubtasks = (parentKey: string) => {
-    setExpandedSubtaskParents((prev) => ({ ...prev, [parentKey]: !prev[parentKey] }));
+  const toggleSubtasks = (parentId: string) => {
+    setExpandedSubtaskParents((prev) => ({ ...prev, [parentId]: !prev[parentId] }));
   };
 
   const handleDragStart = (e: React.DragEvent, issue: SprintIssue) => {
     const canDrag =
-      isTeamLeader ||
-      isTaskOwnedByCurrentStudent(issue, currentUserStudentId, currentUserStudentCode);
+      canDragIssueSprint(normalizeIssueTypeLevel(issue.issueTypeLevel)) &&
+      (isTeamLeader ||
+        isTaskOwnedByCurrentStudent(issue, currentUserStudentId, currentUserStudentCode));
     if (!canDrag) {
       e.preventDefault();
       return;
@@ -139,7 +146,8 @@ export function SprintBacklogView({
   );
   const productBacklogHierarchy = groupSprintIssuesByParent(productBacklogIssues);
   const isBacklogCollapsed = Boolean(collapsedSprints["product-backlog"]);
-  const backlogTotalSP = productBacklogHierarchy.workItems.reduce((sum, i) => sum + i.storyPoints, 0);
+  const backlogTotalSP = sumPlanningStoryPoints(productBacklogHierarchy.workItems);
+  const backlogUnestimated = countUnestimatedStandardTasks(productBacklogHierarchy.workItems);
 
   const renderTaskItem = (
     issue: SprintIssue,
@@ -148,10 +156,11 @@ export function SprintBacklogView({
   ) => {
     const canDrag =
       !isNestedSubtask &&
+      canDragIssueSprint(normalizeIssueTypeLevel(issue.issueTypeLevel)) &&
       (isTeamLeader ||
         isTaskOwnedByCurrentStudent(issue, currentUserStudentId, currentUserStudentCode));
-    const isMsrAnomaly = issue.status === "DONE" && (issue.githubCommitCount ?? 0) === 0;
-    const areSubtasksExpanded = Boolean(expandedSubtaskParents[issue.key]);
+    const isEvidenceWarning = shouldShowEvidenceWarning(issue.evidenceCheck);
+    const areSubtasksExpanded = Boolean(expandedSubtaskParents[issue.id]);
 
     return (
       <div
@@ -160,7 +169,7 @@ export function SprintBacklogView({
         onDragStart={(e) => handleDragStart(e, issue)}
         onClick={() => onIssueClick(issue)}
         className={`px-3.5 py-2.5 hover:bg-muted/50 transition-colors flex items-center justify-between gap-3 group border-b border-border/40 last:border-b-0 ${canDrag ? "cursor-grab active:cursor-grabbing" : "cursor-pointer opacity-90"
-          } ${isMsrAnomaly ? "bg-amber-500/5" : ""} ${isNestedSubtask ? "pl-9 sm:pl-12 bg-cyan-500/[0.035]" : ""}`}
+          } ${isEvidenceWarning ? "bg-amber-500/5" : ""} ${isNestedSubtask ? "pl-9 sm:pl-12 bg-cyan-500/[0.035]" : ""}`}
       >
         <div className="flex items-center gap-2.5 min-w-0 flex-1">
           {isNestedSubtask ? (
@@ -180,7 +189,7 @@ export function SprintBacklogView({
               type="button"
               onClick={(event) => {
                 event.stopPropagation();
-                toggleSubtasks(issue.key);
+                toggleSubtasks(issue.id);
               }}
               aria-expanded={areSubtasksExpanded}
               aria-label={`${areSubtasksExpanded ? "Thu gọn" : "Mở rộng"} ${subtaskCount} subtask của ${issue.key}`}
@@ -272,13 +281,17 @@ export function SprintBacklogView({
               <GitCommitIcon className="w-3 h-3" />
               {issue.githubCommitCount}
             </span>
-          ) : isMsrAnomaly ? (
+          ) : isEvidenceWarning ? (
             <span
-              title="Cảnh báo MSR Anomaly: Task Done nhưng chưa có commit liên kết"
+              title={
+                issue.evidenceCheck?.requiresDocument
+                  ? "Thiếu minh chứng tài liệu"
+                  : "Thiếu minh chứng commit"
+              }
               className="flex items-center gap-1 text-amber-600 dark:text-amber-400 font-mono text-xs font-semibold"
             >
               <AlertTriangleIcon className="w-3 h-3" />
-              0 commit
+              Thiếu minh chứng
             </span>
           ) : null}
 
@@ -312,6 +325,8 @@ export function SprintBacklogView({
               issueId={issue.id}
               issueKey={issue.key}
               storyPoints={issue.storyPoints}
+              issueTypeLevel={issue.issueTypeLevel}
+              parentTaskId={issue.parent?.taskId}
               projectId={projectId}
               isTeamLeader={isTeamLeader}
               isOwner={isTaskOwnedByCurrentStudent(
@@ -391,10 +406,11 @@ export function SprintBacklogView({
           const sprintIssues = issues.filter((i) => i.sprintId === sprint.id);
           const sprintHierarchy = groupSprintIssuesByParent(sprintIssues);
           const isCollapsed = collapsedSprints[sprint.id];
-          const completedSP = sprintHierarchy.workItems
-            .filter((i) => i.status === "DONE")
-            .reduce((sum, i) => sum + i.storyPoints, 0);
-          const totalSP = sprintHierarchy.workItems.reduce((sum, i) => sum + i.storyPoints, 0);
+          const completedSP = sumPlanningStoryPoints(
+            sprintHierarchy.workItems.filter((i) => i.status === "DONE")
+          );
+          const totalSP = sumPlanningStoryPoints(sprintHierarchy.workItems);
+          const unestimatedCount = countUnestimatedStandardTasks(sprintHierarchy.workItems);
 
           return (
             <div
@@ -488,6 +504,11 @@ export function SprintBacklogView({
                         <span className="text-muted-foreground text-xs">Tiến độ SP: </span>
                         <strong className="text-emerald-600 font-bold">{completedSP}</strong>
                         <span className="text-muted-foreground text-xs">/{totalSP} SP</span>
+                        {unestimatedCount > 0 && (
+                          <span className="text-muted-foreground text-[10px] block">
+                            {unestimatedCount} task chưa ước lượng
+                          </span>
+                        )}
                       </div>
                       {totalSP > 0 && (
                         <div className="w-16 h-1.5 rounded-full bg-muted overflow-hidden border border-border/40 hidden sm:block">
@@ -597,11 +618,11 @@ export function SprintBacklogView({
                     </div>
                   ) : (
                     sprintHierarchy.workItems.map((issue) => {
-                      const subtasks = sprintHierarchy.subtasksByParentKey.get(issue.key) || [];
+                      const subtasks = sprintHierarchy.subtasksByParentId.get(issue.id) || [];
                       return (
                         <div key={issue.id}>
                           {renderTaskItem(issue, false, subtasks.length)}
-                          {expandedSubtaskParents[issue.key] && subtasks.map((subtask) =>
+                          {expandedSubtaskParents[issue.id] && subtasks.map((subtask) =>
                             renderTaskItem(subtask, true)
                           )}
                         </div>
@@ -687,6 +708,11 @@ export function SprintBacklogView({
                   <Badge variant="secondary" className="text-xs font-mono px-1.5 py-0">
                     {backlogTotalSP} SP
                   </Badge>
+                  {backlogUnestimated > 0 && (
+                    <Badge variant="outline" className="text-xs font-mono px-1.5 py-0 text-muted-foreground">
+                      {backlogUnestimated} chưa ước lượng
+                    </Badge>
+                  )}
                 </div>
                 <p className="text-xs text-muted-foreground mt-0.5">
                   Các đầu việc chưa gắn vào Sprint. Kéo thả lên Sprint phía trên để đưa vào kế hoạch.
@@ -719,7 +745,7 @@ export function SprintBacklogView({
               </div>
             ) : (
               productBacklogHierarchy.workItems.map((issue) => {
-                const subtasks = productBacklogHierarchy.subtasksByParentKey.get(issue.key) || [];
+                const subtasks = productBacklogHierarchy.subtasksByParentId.get(issue.id) || [];
                 return (
                   <div key={issue.id}>
                     {renderTaskItem(issue, false, subtasks.length)}

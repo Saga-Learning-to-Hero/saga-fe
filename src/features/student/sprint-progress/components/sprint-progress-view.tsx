@@ -22,6 +22,8 @@ import {
   getTopLevelSprintIssues,
   mergeProjectedAndLocalIssues,
 } from "../lib/issue-collection";
+import { canDragIssueSprint, normalizeIssueTypeLevel } from "../lib/issue-type-rules";
+import { sumPlanningStoryPoints } from "../lib/subtask-allocation";
 import { Loader2Icon, AlertCircleIcon, AlertTriangleIcon } from "lucide-react";
 import { getSprintOverlapErrorMessage } from "../lib/sprint-error";
 import Link from "next/link";
@@ -217,8 +219,8 @@ export function SprintProgressView() {
       const sId = String(s.id);
       const sprintIssues = topLevelIssues.filter((i) => i.sprintId === sId);
       const completedIssues = sprintIssues.filter((i) => i.status === "DONE");
-      const totalPoints = sprintIssues.reduce((acc, i) => acc + (i.storyPoints || 0), 0);
-      const completedPoints = completedIssues.reduce((acc, i) => acc + (i.storyPoints || 0), 0);
+      const totalPoints = sumPlanningStoryPoints(sprintIssues);
+      const completedPoints = sumPlanningStoryPoints(completedIssues);
       const overlaps = Array.isArray(s.overlaps) ? s.overlaps : [];
       const hasOverlap = overlaps.length > 0 || Boolean(s.hasOverlap);
       return {
@@ -345,6 +347,11 @@ export function SprintProgressView() {
   };
 
   const handleMoveTaskSprint = async (issueId: string, newSprintId: string) => {
+    const movingIssue = scopedIssues.find((issue) => issue.id === issueId);
+    if (movingIssue && !canDragIssueSprint(normalizeIssueTypeLevel(movingIssue.issueTypeLevel))) {
+      showErrorToast("Chỉ công việc cấp STANDARD được kéo đổi Sprint.");
+      return;
+    }
     const previousOverride = localTaskOverrides[issueId];
     const previousCustomIssues = localCustomIssues;
     setLocalTaskOverrides((prev) => setLocalSprintOverride(prev, issueId, newSprintId));
@@ -596,7 +603,7 @@ export function SprintProgressView() {
 
       {!isTasksError && !isSprintsError && activeView === "BOARD" && (
         <SprintBoardView
-          issues={boardIssues}
+          issues={filteredIssues}
           onIssueClick={handleOpenIssueModal}
           onMoveTaskStatus={handleMoveTaskStatus}
           isTeamLeader={isTeamLeader}

@@ -12,6 +12,12 @@ vi.mock("@/features/student/sprint-progress/hooks/use-project-tasks", () => ({
     mutateAsync: mockMutateAsync,
     isPending: mockIsPending,
   }),
+  useTaskOptions: () => ({
+    data: {
+      issueTypes: [{ id: "10001", name: "Story", level: "STANDARD" }],
+    },
+    isLoading: false,
+  }),
 }));
 
 vi.mock("sonner", () => ({
@@ -148,6 +154,7 @@ describe("QuickCreateTask", () => {
           projectId: "proj-123",
           data: {
             summary: "Thiet ke giao dien moi",
+            issueTypeId: "10001",
             jiraIntegrationId: "jira-source-2",
             sprintExternalId: "239",
           },
@@ -187,6 +194,7 @@ describe("QuickCreateTask", () => {
           projectId: "proj-123",
           data: {
             summary: "Nghiem thu backlog task",
+            issueTypeId: "10001",
             jiraIntegrationId: undefined,
             sprintExternalId: undefined,
           },
@@ -224,6 +232,7 @@ describe("QuickCreateTask", () => {
           projectId: "proj-123",
           data: {
             summary: "Task submit bang Enter",
+            issueTypeId: "10001",
             jiraIntegrationId: undefined,
             sprintExternalId: "239",
           },

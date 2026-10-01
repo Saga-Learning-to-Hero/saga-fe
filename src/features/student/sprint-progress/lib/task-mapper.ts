@@ -1,7 +1,12 @@
 import type { ProjectTaskItem } from "@/features/student/project/types/student-project";
-import type { ProjectTaskResponse } from "../types/jira-task-types";
-import type { SprintIssue, IssueStatus, IssueType, IssuePriority } from "../types/sprint-progress";
+import type { JiraTaskParent, ProjectTaskResponse } from "../types/jira-task-types";
+import type { SprintIssue, IssueStatus, IssuePriority } from "../types/sprint-progress";
 import { resolveHttpAvatarUrl } from "@/lib/avatar-url";
+import {
+  issueTypeIconFromLevelAndName,
+  normalizeIssueTypeLevel,
+} from "./issue-type-rules";
+import { mapTaskEvidenceCheck } from "./subtask-allocation";
 
 export interface SimpleTeamMember {
   id: string;
@@ -19,12 +24,8 @@ export function mapProjectTaskToSprintIssue(
   defaultSprintId?: string
 ): SprintIssue {
   const taskResponse = task as ProjectTaskResponse;
-  const rawType = (task.issueTypeName || "").toUpperCase();
-  let type: IssueType = "TASK";
-  if (rawType.includes("EPIC")) type = "EPIC";
-  else if (rawType.includes("STORY")) type = "STORY";
-  else if (rawType.includes("BUG")) type = "BUG";
-  else if (rawType.includes("SUB")) type = "SUBTASK";
+  const issueTypeLevel = normalizeIssueTypeLevel(taskResponse.issueTypeLevel ?? task.issueTypeLevel);
+  const type = issueTypeIconFromLevelAndName(issueTypeLevel, task.issueTypeName);
 
   const jiraStatus = (taskResponse.jiraStatusName || "").toUpperCase();
   const rawStatus = (task.status || "").toUpperCase();
@@ -108,12 +109,16 @@ export function mapProjectTaskToSprintIssue(
     summary: task.title || "Chưa có tiêu đề Jira",
     description: taskResponse.description || undefined,
     type,
+    issueTypeId: taskResponse.issueTypeId ?? task.issueTypeId ?? null,
+    issueTypeName: task.issueTypeName || null,
+    issueTypeLevel,
+    jiraHierarchyLevel: taskResponse.jiraHierarchyLevel ?? task.jiraHierarchyLevel ?? null,
     priority,
     status,
     storyPoints:
       typeof taskResponse.storyPoint === "number" && !Number.isNaN(taskResponse.storyPoint)
         ? taskResponse.storyPoint
-        : 0,
+        : null,
     assignee: {
       id: member?.id || task.assigneeStudentId || task.assigneeExternalId || "unassigned",
       studentId: task.assigneeStudentId || taskResponse.assignee?.studentId || null,
@@ -124,12 +129,7 @@ export function mapProjectTaskToSprintIssue(
       studentCode: member?.studentCode || "",
       accountId: taskAssigneeAccountId,
     },
-    parent: taskResponse.parent
-      ? {
-        externalId: taskResponse.parent.externalId,
-        externalKey: taskResponse.parent.externalKey,
-      }
-      : undefined,
+    parent: mapJiraTaskParent(taskResponse.parent ?? task.parent),
     labels: Array.isArray(taskResponse.labels)
       ? taskResponse.labels
       : Array.isArray(task.labels)
@@ -141,6 +141,7 @@ export function mapProjectTaskToSprintIssue(
     githubCommitCount: task.linkedCommitCount || 0,
     evidenceCount: task.evidenceCount,
     hasEvidence: task.hasEvidence,
+    evidenceCheck: mapTaskEvidenceCheck(taskResponse.evidenceCheck),
     createdAt: task.createdAt,
     superseded: Boolean(
       taskResponse.migration?.superseded ?? taskResponse.superseded ?? false
@@ -159,5 +160,36 @@ export function mapProjectTaskToSprintIssue(
       : null,
     jiraIntegrationId: taskResponse.source?.integrationId ?? taskResponse.jiraIntegrationId ?? null,
     sourceProjectKey: taskResponse.source?.projectKey ?? null,
+  };
+}
+
+function mapJiraTaskParent(
+  parent?: ProjectTaskResponse["parent"] | ProjectTaskItem["parent"] | null
+): JiraTaskParent | undefined {
+  if (!parent) return undefined;
+  const externalId = parent.externalId?.trim() || "";
+  const externalKey = parent.externalKey?.trim() || "";
+  if (!externalId && !externalKey) return undefined;
+
+  const taskId = "taskId" in parent ? parent.taskId ?? null : null;
+  const resolution =
+    "resolution" in parent && (parent.resolution === "RESOLVED" || parent.resolution === "UNRESOLVED")
+      ? parent.resolution
+      : taskId
+        ? "RESOLVED"
+        : "UNRESOLVED";
+  const resolutionReason =
+    "resolutionReason" in parent
+      ? parent.resolutionReason ?? null
+      : resolution === "UNRESOLVED"
+        ? "PARENT_NOT_SYNCED"
+        : null;
+
+  return {
+    externalId,
+    externalKey,
+    taskId,
+    resolution,
+    resolutionReason,
   };
 }

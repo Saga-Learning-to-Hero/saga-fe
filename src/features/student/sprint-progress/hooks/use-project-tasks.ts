@@ -1,5 +1,5 @@
 import { showSuccessToast, showErrorToast, showWarningToast } from "@/lib/api-error";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient, type QueryClient } from "@tanstack/react-query";
 import { ProjectTaskService } from "../api/project-task-service";
 import type {
   CreateProjectTaskRequest,
@@ -14,33 +14,40 @@ import { getApiErrorCode } from "@/lib/api-error";
 import { JIRA_SPRINT_QUERY_KEYS } from "./use-sprint-data";
 import { upsertProjectTaskInList } from "../lib/task-list-cache";
 import { getPersonalIntegrationErrorMessage } from "../lib/personal-integration-error";
-
-type TaskApiError = {
-  response?: { data?: { code?: string; message?: string } };
-  message?: string;
-};
-
-function getTaskMutationErrorMessage(error: unknown, fallback: string): string {
-  const apiError = error as TaskApiError;
-  switch (apiError.response?.data?.code) {
-    case "TASK_NOT_ASSIGNED_TO_YOU":
-      return "Bạn chỉ có thể thay đổi Task được giao cho mình.";
-    case "NOT_TEAM_LEADER":
-      return "Chỉ Leader được bỏ gán hoặc giao Task cho thành viên khác.";
-    case "PERSONAL_INTEGRATION_REQUIRED":
-      return "Vui lòng liên kết tài khoản Jira và GitHub cá nhân trước khi tạo Task.";
-    case "JIRA_ACCOUNT_NOT_LINKED_TO_CURRENT_USER":
-      return "Vui lòng liên kết tài khoản Jira cá nhân trước khi tạo Task.";
-    case "TASK_DELETE_BLOCKED_BY_EVIDENCE":
-      return "Không thể xóa Task đã có phiên làm việc hoặc xác nhận đóng góp.";
-    default:
-      return apiError.response?.data?.message || apiError.message || fallback;
-  }
-}
+import { getTaskMutationErrorMessage } from "../lib/task-mutation-errors";
+import { PROJECT_GRAPH_QUERY_KEY } from "@/features/graph/hooks/use-project-graph";
+import { CONTRIBUTION_QUERY_KEYS } from "@/features/lecturer/contribution/hooks/use-lecturer-contribution";
 
 export type TransitionTaskPayload =
   | TransitionProjectTaskRequest
   | { targetStatus: string };
+
+function invalidateAfterTaskMutation(
+  queryClient: QueryClient,
+  projectId: string,
+  taskId?: string
+) {
+  void queryClient.invalidateQueries({
+    queryKey: JIRA_SPRINT_QUERY_KEYS.tasks(projectId),
+  });
+  if (taskId) {
+    void queryClient.invalidateQueries({
+      queryKey: JIRA_SPRINT_QUERY_KEYS.taskDetail(projectId, taskId),
+    });
+  }
+  void queryClient.invalidateQueries({
+    queryKey: [...JIRA_SPRINT_QUERY_KEYS.all, "parent-task-options", projectId],
+  });
+  void queryClient.invalidateQueries({
+    queryKey: JIRA_SPRINT_QUERY_KEYS.sprints(projectId),
+  });
+  void queryClient.invalidateQueries({
+    queryKey: [PROJECT_GRAPH_QUERY_KEY, projectId],
+  });
+  void queryClient.invalidateQueries({
+    queryKey: CONTRIBUTION_QUERY_KEYS.evaluations,
+  });
+}
 
 export function useProjectTasksData(projectId?: string | null) {
   return useQuery({
@@ -173,12 +180,7 @@ export function useCreateProjectTask() {
       data: CreateProjectTaskRequest;
     }) => ProjectTaskService.createTask(projectId, data),
     onSuccess: (res, variables) => {
-      queryClient.invalidateQueries({
-        queryKey: JIRA_SPRINT_QUERY_KEYS.tasks(variables.projectId),
-      });
-      queryClient.invalidateQueries({
-        queryKey: JIRA_SPRINT_QUERY_KEYS.sprints(variables.projectId),
-      });
+      invalidateAfterTaskMutation(queryClient, variables.projectId, res.id);
       showSuccessToast(`Đã tạo task [${res.externalKey}] trên Jira thành công.`);
     },
     onError: (error: unknown, variables) => {
@@ -190,12 +192,7 @@ export function useCreateProjectTask() {
       const err = error as { response?: { data?: { code?: string; message?: string } }; message?: string };
       const code = err.response?.data?.code;
       if (code === "JIRA_WRITE_INCOMPLETE") {
-        queryClient.invalidateQueries({
-          queryKey: JIRA_SPRINT_QUERY_KEYS.tasks(variables.projectId),
-        });
-        queryClient.invalidateQueries({
-          queryKey: JIRA_SPRINT_QUERY_KEYS.sprints(variables.projectId),
-        });
+        invalidateAfterTaskMutation(queryClient, variables.projectId);
         showWarningToast(
           err.response?.data?.message ||
           "Task đã được tạo trên Jira nhưng một số thuộc tính phụ chưa được cập nhật đầy đủ."
@@ -221,12 +218,7 @@ export function usePatchProjectTask() {
       data: PatchProjectTaskRequest;
     }) => ProjectTaskService.patchTask(projectId, taskId, data),
     onSuccess: (res, variables) => {
-      queryClient.invalidateQueries({
-        queryKey: JIRA_SPRINT_QUERY_KEYS.tasks(variables.projectId),
-      });
-      queryClient.invalidateQueries({
-        queryKey: JIRA_SPRINT_QUERY_KEYS.taskDetail(variables.projectId, variables.taskId),
-      });
+      invalidateAfterTaskMutation(queryClient, variables.projectId, variables.taskId);
       showSuccessToast(`Đã cập nhật task [${res.externalKey}] thành công.`);
     },
     onError: (error: unknown) => {
@@ -257,12 +249,7 @@ export function useDeleteProjectTask() {
       taskId: string;
     }) => ProjectTaskService.deleteTask(projectId, taskId),
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({
-        queryKey: JIRA_SPRINT_QUERY_KEYS.tasks(variables.projectId),
-      });
-      queryClient.invalidateQueries({
-        queryKey: JIRA_SPRINT_QUERY_KEYS.sprints(variables.projectId),
-      });
+      invalidateAfterTaskMutation(queryClient, variables.projectId, variables.taskId);
       showSuccessToast("Đã xóa task thành công.");
     },
     onError: (error: unknown) => {
@@ -276,10 +263,17 @@ export function useParentTaskOptions(
   params?: GetTaskParentOptionsParams,
   options?: { enabled?: boolean }
 ) {
+  const childIssueTypeId = params?.childIssueTypeId?.trim() || "";
+  const jiraIntegrationId = params?.jiraIntegrationId?.trim() || "";
+  const hasRequiredParams = Boolean(childIssueTypeId && jiraIntegrationId);
+
   return useQuery({
     queryKey: JIRA_SPRINT_QUERY_KEYS.parentTaskOptions(projectId, params),
-    queryFn: () => ProjectTaskService.getParentOptions(projectId!, params),
-    enabled: Boolean(projectId && projectId.trim()) && (options?.enabled ?? true),
+    queryFn: () => ProjectTaskService.getParentOptions(projectId!, params!),
+    enabled:
+      Boolean(projectId && projectId.trim()) &&
+      hasRequiredParams &&
+      (options?.enabled ?? true),
     staleTime: 1000 * 30,
   });
 }
