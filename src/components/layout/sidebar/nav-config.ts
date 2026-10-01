@@ -175,7 +175,6 @@ export function getStudentNavItems(): NavItem[] {
       href: "/student/assessment",
       icon: "UserCheck",
       match: "exact",
-      badge: "Sắp mở",
     },
     {
       id: "student-contribution",

@@ -253,249 +253,132 @@ export function ContributionCharts({ members }: ContributionChartsProps) {
           <CardHeader className="p-4 sm:p-5 pb-3.5 border-b border-border/60 bg-muted/20">
             <div className="flex items-center justify-between gap-3">
               <div className="flex items-center gap-2.5">
-                <div className="size-9 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400 flex items-center justify-center shrink-0">
-                  <CalculatorIcon className="size-4.5" />
+                <div className="size-9 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
+                  <BarChart3Icon className="size-4.5" />
                 </div>
                 <div>
                   <CardTitle className="text-sm sm:text-base font-bold text-foreground">
-                    Cách tính Slicing Pie & Đối soát điều chỉnh
+                    Đóng góp theo loại công sức
                   </CardTitle>
                   <CardDescription className="text-xs text-muted-foreground">
-                    Minh bạch công thức quy đổi từ Slice Score sang tỷ lệ phân chia cuối cùng
+                    Phân rã tỷ lệ đóng góp trong từng tiêu chuẩn: Lập trình, Kiểm thử, Tài liệu
+                    {hasAnyResearch ? " và Nghiên cứu" : ""}
                   </CardDescription>
                 </div>
               </div>
-              <Badge
-                variant="outline"
-                className={cn(
-                  "font-mono text-xs font-bold",
-                  hasAdjustment
-                    ? "border-purple-500/30 bg-purple-500/10 text-purple-700 dark:text-purple-300"
-                    : "border-border/70 text-muted-foreground"
-                )}
-              >
-                {hasAdjustment ? "Đã điều chỉnh Peer Review" : "Chưa áp dụng điều chỉnh"}
-              </Badge>
+              <div className="hidden sm:flex flex-wrap items-center gap-3 text-xs justify-end">
+                <span className="flex items-center gap-1 text-muted-foreground">
+                  <span className="size-2.5 rounded-full bg-blue-500" />
+                  Code
+                </span>
+                <span className="flex items-center gap-1 text-muted-foreground">
+                  <span className="size-2.5 rounded-full bg-emerald-500" />
+                  Test
+                </span>
+                <span className="flex items-center gap-1 text-muted-foreground">
+                  <span className="size-2.5 rounded-full bg-amber-500" />
+                  Doc
+                </span>
+              </div>
             </div>
           </CardHeader>
 
-          <CardContent className="p-4 sm:p-5 flex-1 flex flex-col justify-between gap-4">
-            <div className="grid grid-cols-2 gap-3">
-              <div className="rounded-xl border border-border/60 bg-muted/20 p-3 space-y-1">
-                <span className="text-xs text-muted-foreground font-medium block">
-                  Tổng Slice Score nhóm
-                </span>
-                <span className="font-mono text-xl font-black text-foreground">
-                  {formatContributionNumber(totalSliceScore)}
-                </span>
-                <p className="text-xs text-muted-foreground">
-                  Đơn vị công sức quy đổi từ tất cả đầu việc
-                </p>
-              </div>
+          <CardContent className="p-4 sm:p-5 flex-1 overflow-y-auto max-h-[600px]">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {members.map((member) => {
+                const cleanedName = cleanMemberName(member.fullName) || member.studentCode;
+                const codePct = Number(member.codeContributionPercentage) || 0;
+                const testPct = Number(member.testContributionPercentage) || 0;
+                const docPct = Number(member.documentContributionPercentage) || 0;
+                const researchPct = Number(member.researchContributionPercentage) || 0;
 
-              <div className="rounded-xl border border-border/60 bg-muted/20 p-3 space-y-1">
-                <span className="text-xs text-muted-foreground font-medium block">
-                  Hệ số Đánh giá chéo
-                </span>
-                <span className="font-mono text-xl font-black text-foreground">
-                  {hasAdjustment ? "Đã áp dụng" : "1.00 ×"}
-                </span>
-                <p className="text-xs text-muted-foreground">
-                  Điều chỉnh theo kết quả Peer Review
-                </p>
-              </div>
-            </div>
-
-            <div className="overflow-x-auto rounded-xl border border-border/60">
-              <table className="w-full text-left text-xs">
-                <thead className="bg-muted/50 text-xs font-bold uppercase tracking-wider text-muted-foreground border-b border-border/60">
-                  <tr>
-                    <th className="p-2.5 pl-3">Thành viên</th>
-                    <th className="p-2.5 text-right font-mono">Slice Score</th>
-                    <th className="p-2.5 text-right font-mono">Trước Peer</th>
-                    <th className="p-2.5 text-right font-mono">Hệ số</th>
-                    <th className="p-2.5 text-right font-mono pr-3">Cuối cùng</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border/60 font-medium">
-                  {members.map((member) => {
-                    const cleanedName = cleanMemberName(member.fullName) || member.studentCode;
-                    return (
-                      <tr key={member.studentProfileId || member.studentCode} className="hover:bg-muted/30">
-                        <td className="p-2.5 pl-3">
-                          <div className="font-bold text-foreground truncate max-w-[130px]">
-                            {cleanedName}
-                          </div>
-                          <div className="font-mono text-xs text-muted-foreground">
-                            {member.studentCode}
-                          </div>
-                        </td>
-                        <td className="p-2.5 text-right font-mono font-bold text-foreground">
-                          {formatContributionNumber(member.sliceScore)}
-                        </td>
-                        <td className="p-2.5 text-right font-mono text-muted-foreground">
-                          {formatContributionPercent(member.sliceContributionPercentage)}
-                        </td>
-                        <td className="p-2.5 text-right font-mono text-muted-foreground">
-                          × {formatContributionNumber(member.peerReviewScore)}
-                        </td>
-                        <td className="p-2.5 text-right font-mono font-black text-primary pr-3">
-                          {formatContributionPercent(member.finalContributionPercentage)}
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-
-            <div className="flex items-start gap-2 rounded-xl border border-border/60 bg-muted/20 p-3 text-xs text-muted-foreground">
-              <InfoIcon className="size-4 text-primary shrink-0 mt-0.5" />
-              <p className="text-xs leading-relaxed">
-                {hasAdjustment
-                  ? "Tỷ lệ cuối cùng đã được nhân với hệ số đánh giá chéo (Peer Review Multiplier) của từng thành viên và chuẩn hóa lại theo tổng công sức."
-                  : "Chưa có điều chỉnh peer review được áp dụng. Tỷ lệ hiện tại đang được tính trực tiếp từ tỷ trọng Slice score của từng cá nhân."}
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      <Card className="rounded-xl border border-border/80 shadow-2xs bg-card overflow-hidden">
-        <CardHeader className="p-4 sm:p-5 pb-3.5 border-b border-border/60 bg-muted/20">
-          <div className="flex items-center justify-between gap-3">
-            <div className="flex items-center gap-2.5">
-              <div className="size-9 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
-                <BarChart3Icon className="size-4.5" />
-              </div>
-              <div>
-                <CardTitle className="text-sm sm:text-base font-bold text-foreground">
-                  Đóng góp theo loại công sức
-                </CardTitle>
-                <CardDescription className="text-xs text-muted-foreground">
-                  Phân rã tỷ lệ đóng góp trong từng tiêu chuẩn: Lập trình, Kiểm thử, Tài liệu
-                  {hasAnyResearch ? " và Nghiên cứu" : ""}
-                </CardDescription>
-              </div>
-            </div>
-            <div className="hidden sm:flex items-center gap-3 text-xs">
-              <span className="flex items-center gap-1 text-muted-foreground">
-                <span className="size-2.5 rounded-full bg-blue-500" />
-                Lập trình
-              </span>
-              <span className="flex items-center gap-1 text-muted-foreground">
-                <span className="size-2.5 rounded-full bg-emerald-500" />
-                Kiểm thử
-              </span>
-              <span className="flex items-center gap-1 text-muted-foreground">
-                <span className="size-2.5 rounded-full bg-amber-500" />
-                Tài liệu
-              </span>
-              {hasAnyResearch && (
-                <span className="flex items-center gap-1 text-muted-foreground">
-                  <span className="size-2.5 rounded-full bg-purple-500" />
-                  Nghiên cứu
-                </span>
-              )}
-            </div>
-          </div>
-        </CardHeader>
-
-        <CardContent className="p-4 sm:p-5">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {members.map((member) => {
-              const cleanedName = cleanMemberName(member.fullName) || member.studentCode;
-              const codePct = Number(member.codeContributionPercentage) || 0;
-              const testPct = Number(member.testContributionPercentage) || 0;
-              const docPct = Number(member.documentContributionPercentage) || 0;
-              const researchPct = Number(member.researchContributionPercentage) || 0;
-
-              return (
-                <div
-                  key={member.studentProfileId || member.studentCode}
-                  className="rounded-xl border border-border/70 bg-card p-4 space-y-3 shadow-2xs"
-                >
-                  <div className="flex items-center justify-between gap-2 border-b border-border/50 pb-2.5">
-                    <div className="min-w-0">
-                      <h4 className="text-xs font-bold text-foreground truncate">
-                        {cleanedName}
-                      </h4>
-                      <span className="font-mono text-xs text-muted-foreground">
-                        {member.studentCode}
-                      </span>
-                    </div>
-                    <MemberRoleBadge role={member.roleInTeam} />
-                  </div>
-
-                  <div className="space-y-2 text-xs">
-                    <div className="space-y-1">
-                      <div className="flex justify-between text-xs">
-                        <span className="text-muted-foreground">Lập trình (Code):</span>
-                        <span className="font-mono font-bold text-foreground">
-                          {formatContributionPercent(codePct)}
+                return (
+                  <div
+                    key={member.studentProfileId || member.studentCode}
+                    className="rounded-xl border border-border/70 bg-card p-4 space-y-3 shadow-2xs"
+                  >
+                    <div className="flex items-center justify-between gap-2 border-b border-border/50 pb-2.5">
+                      <div className="min-w-0">
+                        <h4 className="text-xs font-bold text-foreground truncate">
+                          {cleanedName}
+                        </h4>
+                        <span className="font-mono text-xs text-muted-foreground">
+                          {member.studentCode}
                         </span>
                       </div>
-                      <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden">
-                        <div
-                          className="h-full rounded-full bg-blue-500 transition-all duration-300"
-                          style={{ width: `${Math.min(Math.max(codePct, 0), 100)}%` }}
-                        />
-                      </div>
+                      <MemberRoleBadge role={member.roleInTeam} />
                     </div>
 
-                    <div className="space-y-1">
-                      <div className="flex justify-between text-xs">
-                        <span className="text-muted-foreground">Kiểm thử (Testing):</span>
-                        <span className="font-mono font-bold text-foreground">
-                          {formatContributionPercent(testPct)}
-                        </span>
-                      </div>
-                      <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden">
-                        <div
-                          className="h-full rounded-full bg-emerald-500 transition-all duration-300"
-                          style={{ width: `${Math.min(Math.max(testPct, 0), 100)}%` }}
-                        />
-                      </div>
-                    </div>
-
-                    <div className="space-y-1">
-                      <div className="flex justify-between text-xs">
-                        <span className="text-muted-foreground">Tài liệu (Documentation):</span>
-                        <span className="font-mono font-bold text-foreground">
-                          {formatContributionPercent(docPct)}
-                        </span>
-                      </div>
-                      <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden">
-                        <div
-                          className="h-full rounded-full bg-amber-500 transition-all duration-300"
-                          style={{ width: `${Math.min(Math.max(docPct, 0), 100)}%` }}
-                        />
-                      </div>
-                    </div>
-
-                    {hasAnyResearch && (
+                    <div className="space-y-2 text-xs">
                       <div className="space-y-1">
                         <div className="flex justify-between text-xs">
-                          <span className="text-muted-foreground">Nghiên cứu (Research):</span>
+                          <span className="text-muted-foreground">Lập trình:</span>
                           <span className="font-mono font-bold text-foreground">
-                            {formatContributionPercent(researchPct)}
+                            {formatContributionPercent(codePct)}
                           </span>
                         </div>
                         <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden">
                           <div
-                            className="h-full rounded-full bg-purple-500 transition-all duration-300"
-                            style={{ width: `${Math.min(Math.max(researchPct, 0), 100)}%` }}
+                            className="h-full rounded-full bg-blue-500 transition-all duration-300"
+                            style={{ width: `${Math.min(Math.max(codePct, 0), 100)}%` }}
                           />
                         </div>
                       </div>
-                    )}
+
+                      <div className="space-y-1">
+                        <div className="flex justify-between text-xs">
+                          <span className="text-muted-foreground">Kiểm thử:</span>
+                          <span className="font-mono font-bold text-foreground">
+                            {formatContributionPercent(testPct)}
+                          </span>
+                        </div>
+                        <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden">
+                          <div
+                            className="h-full rounded-full bg-emerald-500 transition-all duration-300"
+                            style={{ width: `${Math.min(Math.max(testPct, 0), 100)}%` }}
+                          />
+                        </div>
+                      </div>
+
+                      <div className="space-y-1">
+                        <div className="flex justify-between text-xs">
+                          <span className="text-muted-foreground">Tài liệu:</span>
+                          <span className="font-mono font-bold text-foreground">
+                            {formatContributionPercent(docPct)}
+                          </span>
+                        </div>
+                        <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden">
+                          <div
+                            className="h-full rounded-full bg-amber-500 transition-all duration-300"
+                            style={{ width: `${Math.min(Math.max(docPct, 0), 100)}%` }}
+                          />
+                        </div>
+                      </div>
+
+                      {hasAnyResearch && (
+                        <div className="space-y-1">
+                          <div className="flex justify-between text-xs">
+                            <span className="text-muted-foreground">Nghiên cứu:</span>
+                            <span className="font-mono font-bold text-foreground">
+                              {formatContributionPercent(researchPct)}
+                            </span>
+                          </div>
+                          <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden">
+                            <div
+                              className="h-full rounded-full bg-purple-500 transition-all duration-300"
+                              style={{ width: `${Math.min(Math.max(researchPct, 0), 100)}%` }}
+                            />
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </div>
-              );
-            })}
-          </div>
-        </CardContent>
-      </Card>
+                );
+              })}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }

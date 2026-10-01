@@ -558,11 +558,11 @@ export function ActivityHeatmapGrid({
               <Flame className="w-5 h-5" />
             </span>
             <h3 className="text-base font-bold text-foreground tracking-tight">
-              Lưới hoạt động và nhịp độ đóng góp
+              Nhịp độ hoạt động toàn dự án
             </h3>
           </div>
           <p className="text-xs text-muted-foreground">
-            Theo dõi mật độ làm việc theo từng ngày qua số lượt commit mã nguồn, Task Jira, đánh giá chéo và tài liệu nộp
+            Theo dõi tổng công sức làm việc mỗi ngày qua số lượt đẩy Git Commits, làm Task Jira, đánh giá chéo và nộp tài liệu
           </p>
         </div>
 
@@ -645,10 +645,11 @@ export function ActivityHeatmapGrid({
           <Info className="w-4 h-4 text-primary shrink-0 mt-0.5" />
           <div className="space-y-0.5">
             <span className="font-semibold text-foreground">
-              Phạm vi hoạt động theo khoảng ngày Sprint ({dateRange.startDate} → {dateRange.endDate}):
+              Đang hiển thị dữ liệu theo mốc thời gian của Sprint ({dateRange.startDate} → {dateRange.endDate}):
             </span>
-            <p>
-              Đây là hoạt động của nhóm trong khoảng ngày của Sprint (commit, task, đánh giá chéo, tài liệu), không phải hoạt động của riêng task trong Sprint.
+            <p className="leading-relaxed">
+              Lưới hoạt động tổng hợp <strong className="text-primary font-bold">TOÀN BỘ</strong> công sức làm việc của nhóm diễn ra trong khoảng thời gian này.
+              Dữ liệu bao gồm Git Commits, Tài liệu, Đánh giá chéo và Task Jira (từ <strong className="text-primary font-bold">TẤT CẢ</strong> các Site Jira được kết nối), nhằm phản ánh đầy đủ nhịp độ đóng góp thực tế của toàn dự án.
             </p>
           </div>
         </div>

@@ -429,22 +429,28 @@ export function SprintProgressView() {
           setDefaultSprintIdForModal(selectedSprintId === "backlog" ? undefined : selectedSprintId);
           setIsIssueModalOpen(true);
         }}
+        jiraSourceNode={
+          activeJiraSources.length > 1 ? (
+            <div className="w-full sm:w-64 shrink-0">
+              <JiraSourceSwitcher
+                compact
+                sources={activeJiraSources}
+                value={effectiveSourceId}
+                onChange={(val) => {
+                  jiraSource.selectSource(val);
+                  setUserSelectedSprintId(null);
+                  setActiveIssueForModal(null);
+                  setIsIssueModalOpen(false);
+                  setActiveSprintForModal(null);
+                  setIsSprintModalOpen(false);
+                }}
+              />
+            </div>
+          ) : undefined
+        }
       />
 
-      {activeJiraSources.length > 1 && (
-        <JiraSourceSwitcher
-          sources={activeJiraSources}
-          value={effectiveSourceId}
-          onChange={(val) => {
-            jiraSource.selectSource(val);
-            setUserSelectedSprintId(null);
-            setActiveIssueForModal(null);
-            setIsIssueModalOpen(false);
-            setActiveSprintForModal(null);
-            setIsSprintModalOpen(false);
-          }}
-        />
-      )}
+
 
       {isLoadingTasks && (
         <div className="flex items-center justify-center gap-2 p-6 rounded-xl border border-primary/20 bg-primary/5 text-xs text-primary font-medium">

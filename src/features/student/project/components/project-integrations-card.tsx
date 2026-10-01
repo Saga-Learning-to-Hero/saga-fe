@@ -12,6 +12,9 @@ import {
 } from "../hooks/useProjectIntegrations";
 import { ProjectJiraSection } from "./integrations/project-jira-section";
 import { ProjectGithubSection } from "./integrations/project-github-section";
+import { JiraSourcesService } from "../api/jira-sources-service";
+import { useIntegrationPopupFlow } from "@/features/integrations/hooks/useIntegrationPopupFlow";
+import { PERSONAL_INTEGRATION_SUCCESS_PATH } from "@/features/integrations/lib/integration-popup-context";
 import { ProjectDisconnectDialog } from "./integrations/project-disconnect-dialog";
 import { ProjectAvailableReposDialog } from "./integrations/project-available-repos-dialog";
 import { ProjectJiraConfigDialog } from "./integrations/project-jira-config-dialog";
@@ -49,6 +52,16 @@ export function ProjectIntegrationsCard({ projectId, isLeader }: ProjectIntegrat
   const connectJiraMutation = useConnectProjectJira();
   const setupCallbackMutation = useProjectGitHubSetupCallback();
   const mutateSetupCallback = setupCallbackMutation.mutate;
+
+  const { preparePopup, startFlow } = useIntegrationPopupFlow({
+    onSuccess: (msg) => {
+      if (msg.provider === "jira") {
+        setIsJiraModalOpen(true);
+      } else if (msg.provider === "github") {
+        setIsReposModalOpen(true);
+      }
+    },
+  });
 
   useEffect(() => {
     if (typeof window === "undefined" || !projectId) return;
@@ -88,38 +101,67 @@ export function ProjectIntegrationsCard({ projectId, isLeader }: ProjectIntegrat
     }
   }, [projectId, mutateSetupCallback, refetch]);
 
-  const handleRedirectJiraConnect = async () => {
+  const handleConnectJira = async () => {
+    if (!preparePopup("jira")) return;
     try {
       showInfoToast("Đang chuyển hướng sang Jira Atlassian...", { id: "jira-connect" });
-      const returnPath = typeof window !== "undefined"
-        ? (() => {
-          const url = new URL(window.location.href);
-          url.searchParams.set("jira_setup", "true");
-          return `${url.pathname}${url.search}`;
-        })()
-        : "/student/project-info?jira_setup=true";
-      const result = await connectJiraMutation.mutateAsync({ projectId, returnPath });
-      if (result.authorizationUrl && typeof window !== "undefined") {
-        window.open(result.authorizationUrl, "_blank");
+      const result = await connectJiraMutation.mutateAsync({ projectId, returnPath: PERSONAL_INTEGRATION_SUCCESS_PATH });
+      if (result.authorizationUrl) {
+        startFlow({
+          provider: "jira",
+          scope: "project",
+          projectId,
+          authorizationUrl: result.authorizationUrl,
+        });
       }
     } catch {
       showErrorToast("Lỗi khi kết nối Jira với dự án. Vui lòng thử lại sau.", { id: "jira-connect" });
     }
   };
 
-  const handleConnectJira = () => {
-    void handleRedirectJiraConnect();
+  const handleReconnectJira = async (sourceId: string) => {
+    if (!preparePopup("jira")) return;
+    try {
+      showInfoToast("Đang chuyển hướng sang Jira Atlassian...", { id: "jira-reconnect" });
+      const result = await JiraSourcesService.reconnectJiraSource(
+        projectId,
+        sourceId,
+        PERSONAL_INTEGRATION_SUCCESS_PATH
+      );
+      if (result.authorizationUrl) {
+        startFlow({
+          provider: "jira",
+          scope: "project",
+          projectId,
+          authorizationUrl: result.authorizationUrl,
+        });
+      }
+    } catch {
+      showErrorToast("Lỗi khi kết nối lại Jira. Vui lòng thử lại sau.", { id: "jira-reconnect" });
+    }
   };
 
-  const handleRedirectGitHubConnect = async () => {
+  const handleConnectGitHub = async () => {
+    const isConfigured = Boolean(
+      integrations?.github?.accountLogin ||
+      (integrations?.github?.repositories || []).length > 0
+    );
+    if (isConfigured) {
+      setIsReposModalOpen(true);
+      return;
+    }
+
+    if (!preparePopup("github")) return;
     try {
       showInfoToast("Đang chuyển hướng sang GitHub App...", { id: "github-connect" });
-      const returnPath = typeof window !== "undefined"
-        ? `${window.location.pathname}${window.location.search}`
-        : "/student/project-info";
-      const result = await connectGitHubMutation.mutateAsync({ projectId, returnPath });
-      if (result.authorizationUrl && typeof window !== "undefined") {
-        window.open(result.authorizationUrl, "_blank");
+      const result = await connectGitHubMutation.mutateAsync({ projectId, returnPath: PERSONAL_INTEGRATION_SUCCESS_PATH });
+      if (result.authorizationUrl) {
+        startFlow({
+          provider: "github",
+          scope: "project",
+          projectId,
+          authorizationUrl: result.authorizationUrl,
+        });
       }
     } catch (error: unknown) {
       const err = error as { code?: string; status?: number; data?: { code?: string } };
@@ -133,18 +175,6 @@ export function ProjectIntegrationsCard({ projectId, isLeader }: ProjectIntegrat
         return;
       }
       showErrorToast("Lỗi khi kết nối GitHub với dự án. Vui lòng thử lại sau.", { id: "github-connect" });
-    }
-  };
-
-  const handleConnectGitHub = () => {
-    const isConfigured = Boolean(
-      integrations?.github?.accountLogin ||
-      (integrations?.github?.repositories || []).length > 0
-    );
-    if (isConfigured) {
-      setIsReposModalOpen(true);
-    } else {
-      void handleRedirectGitHubConnect();
     }
   };
 
@@ -219,6 +249,7 @@ export function ProjectIntegrationsCard({ projectId, isLeader }: ProjectIntegrat
               isConnectingJira={connectJiraMutation.isPending}
               isDisconnectingJira={disconnectJiraMutation.isPending}
               onConnectJira={handleConnectJira}
+              onReconnectJira={handleReconnectJira}
               onConfigureJira={() => setIsJiraModalOpen(true)}
               onDisconnectJira={() => setDisconnectModalType("jira")}
             />
@@ -250,7 +281,7 @@ export function ProjectIntegrationsCard({ projectId, isLeader }: ProjectIntegrat
         currentRepositories={integrations?.github?.repositories}
         onConfigureMore={() => {
           setIsReposModalOpen(false);
-          void handleRedirectGitHubConnect();
+          void handleConnectGitHub();
         }}
         isConnecting={connectGitHubMutation.isPending}
       />
@@ -270,7 +301,7 @@ export function ProjectIntegrationsCard({ projectId, isLeader }: ProjectIntegrat
         existingSources={integrations?.jiraSources}
         onAuthorizeNew={() => {
           setIsJiraModalOpen(false);
-          void handleRedirectJiraConnect();
+          void handleConnectJira();
         }}
         isAuthorizing={connectJiraMutation.isPending}
       />

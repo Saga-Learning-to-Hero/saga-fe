@@ -370,6 +370,21 @@ export function TraceabilityGraphView() {
       <Badge variant="outline" className="border-border/80 bg-muted/40 px-2.5 py-1 text-xs font-bold text-foreground">
         {teamLabel}
       </Badge>
+      <div className="w-64">
+        <JiraSourceSwitcher
+          sources={jiraSource.activeSources}
+          value={jiraSource.effectiveSourceId}
+          compact
+          onChange={(integrationId) => {
+            jiraSource.selectSource(integrationId);
+            setSelectedSprintState(null);
+            setSelectedTaskId(null);
+            setFocusedNodeId(null);
+            setFocusedNodeLabel(null);
+            setPipelineFilter((current) => ({ ...current, sprintId: "ALL" }));
+          }}
+        />
+      </div>
     </div>
   );
 
@@ -705,19 +720,6 @@ export function TraceabilityGraphView() {
           </div>
         </div>
       </div>
-
-      <JiraSourceSwitcher
-        sources={jiraSource.activeSources}
-        value={jiraSource.effectiveSourceId}
-        onChange={(integrationId) => {
-          jiraSource.selectSource(integrationId);
-          setSelectedSprintState(null);
-          setSelectedTaskId(null);
-          setFocusedNodeId(null);
-          setFocusedNodeLabel(null);
-          setPipelineFilter((current) => ({ ...current, sprintId: "ALL" }));
-        }}
-      />
 
       <div className="animate-in fade-in-0 space-y-4 duration-200">
         <GraphFilterBar

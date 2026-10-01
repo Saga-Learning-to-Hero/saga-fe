@@ -35,7 +35,6 @@ import {
   useJiraSourceSync,
   useJiraSourceDisconnect,
 } from "../../hooks/use-jira-sources";
-import { JiraSourcesService } from "../../api/jira-sources-service";
 import { JiraFailoverWizardDialog } from "../failover/jira-failover-wizard-dialog";
 import { useProjectSyncStatus } from "../../hooks/useProjectSync";
 import { isActiveSyncJob } from "../../lib/sync-job-status";
@@ -48,6 +47,7 @@ interface ProjectJiraSectionProps {
   isConnectingJira?: boolean;
   isDisconnectingJira?: boolean;
   onConnectJira?: () => void;
+  onReconnectJira?: (sourceId: string) => void;
   onDisconnectJira?: () => void;
   onConfigureJira?: () => void;
 }
@@ -59,11 +59,10 @@ export function ProjectJiraSection({
   isLeader,
   isConnectingJira = false,
   onConnectJira,
+  onReconnectJira,
   onConfigureJira,
 }: ProjectJiraSectionProps) {
   const [failoverSource, setFailoverSource] = useState<JiraSourceSummary | null>(null);
-  const [isAddingSource, setIsAddingSource] = useState(false);
-  const [isReconnectingId, setIsReconnectingId] = useState<string | null>(null);
   const [disconnectSourceId, setDisconnectSourceId] = useState<string | null>(null);
 
   const sourcesQuery = useJiraSources(projectId);
@@ -101,33 +100,8 @@ export function ProjectJiraSection({
     return sources.filter((s) => s.connectionStatus === "ACTIVE").length;
   }, [sources]);
 
-  const handleAddJiraSource = async () => {
-    if (!projectId) {
-      onConnectJira?.();
-      return;
-    }
-
-    try {
-      setIsAddingSource(true);
-      const returnPath = typeof window !== "undefined"
-        ? (() => {
-          const url = new URL(window.location.href);
-          url.searchParams.set("jira_setup", "true");
-          return `${url.pathname}${url.search}`;
-        })()
-        : "/student/project-info?jira_setup=true";
-
-      const res = await JiraSourcesService.connectJiraSource(
-        projectId,
-        returnPath
-      );
-      if (res.authorizationUrl) {
-        window.location.href = res.authorizationUrl;
-      }
-    } catch {
-      setIsAddingSource(false);
-      onConnectJira?.();
-    }
+  const handleAddJiraSource = () => {
+    onConnectJira?.();
   };
 
   const handleReconnectCredentials = async (sourceId: string) => {
@@ -135,28 +109,7 @@ export function ProjectJiraSection({
       onConnectJira?.();
       return;
     }
-
-    try {
-      setIsReconnectingId(sourceId);
-      const returnPath = typeof window !== "undefined"
-        ? (() => {
-          const url = new URL(window.location.href);
-          url.searchParams.set("jira_setup", "true");
-          return `${url.pathname}${url.search}`;
-        })()
-        : "/student/project-info?jira_setup=true";
-
-      const res = await JiraSourcesService.reconnectJiraSource(
-        projectId,
-        sourceId,
-        returnPath
-      );
-      if (res.authorizationUrl) {
-        window.location.href = res.authorizationUrl;
-      }
-    } catch {
-      setIsReconnectingId(null);
-    }
+    onReconnectJira?.(sourceId);
   };
 
   const handleSoftDisconnect = (sourceId: string) => {
@@ -223,10 +176,10 @@ export function ProjectJiraSection({
             type="button"
             size="sm"
             onClick={handleAddJiraSource}
-            disabled={isConnectingJira || isAddingSource}
+            disabled={isConnectingJira}
             className="h-8 px-3 text-xs font-semibold rounded-xl gap-1.5 bg-blue-600 hover:bg-blue-700 text-white cursor-pointer shadow-2xs shrink-0"
           >
-            {isConnectingJira || isAddingSource ? (
+            {isConnectingJira ? (
               <>
                 <LoaderCircleIcon className="w-3.5 h-3.5 animate-spin" />
                 <span>Đang kết nối...</span>
@@ -310,24 +263,26 @@ export function ProjectJiraSection({
                     </div>
 
                     <div className="flex items-center gap-3 text-xs text-muted-foreground flex-wrap pt-0.5">
-                      <span>Bảng Jira: <strong className="font-mono text-foreground">{src.boardId ?? "Mặc định"}</strong></span>
-                      <span>•</span>
-                      {isSyncing ? (
-                        <span className="flex items-center gap-1.5 text-blue-600 dark:text-blue-400 font-medium">
-                          <LoaderCircleIcon className="w-3 h-3 animate-spin" />
-                          Đang đồng bộ dữ liệu...
-                        </span>
-                      ) : (
-                        <span>Đồng bộ thành công: <strong>{formatDateTime(src.lastSuccessfulSyncAt)}</strong></span>
-                      )}
+                      <div className="flex items-center gap-3 flex-wrap">
+                        <span>Bảng Jira: <strong className="font-mono text-foreground">{src.boardId ?? "Mặc định"}</strong></span>
+                        <span>•</span>
+                        {isSyncing ? (
+                          <span className="flex items-center gap-1.5 text-blue-600 dark:text-blue-400 font-medium">
+                            <LoaderCircleIcon className="w-3 h-3 animate-spin" />
+                            Đang đồng bộ dữ liệu...
+                          </span>
+                        ) : (
+                          <span>Đồng bộ thành công: <strong>{formatDateTime(src.lastSuccessfulSyncAt)}</strong></span>
+                        )}
+                      </div>
                       {src.consecutiveFailures !== undefined && src.consecutiveFailures !== null && src.consecutiveFailures > 0 && (
-                        <>
-                          <span>•</span>
-                          <span className="text-danger font-medium flex items-center gap-1">
-                            <ShieldAlertIcon className="w-3 h-3 shrink-0" />
+                        <div className="flex items-center gap-3">
+                          <span className="hidden sm:inline-block">•</span>
+                          <span className="text-red-600 dark:text-red-400 font-medium flex items-center gap-1">
+                            <ShieldAlertIcon className="w-3.5 h-3.5 shrink-0" />
                             Lỗi đồng bộ ({src.consecutiveFailures} lần liên tiếp)
                           </span>
-                        </>
+                        </div>
                       )}
                     </div>
                   </div>
@@ -383,10 +338,10 @@ export function ProjectJiraSection({
                           {!isActive && (
                             <DropdownMenuItem
                               onClick={() => handleReconnectCredentials(src.integrationId)}
-                              disabled={isReconnectingId === src.integrationId}
+                              disabled={isConnectingJira}
                               className="cursor-pointer text-blue-600 dark:text-blue-400 gap-2"
                             >
-                              {isReconnectingId === src.integrationId ? (
+                              {isConnectingJira ? (
                                 <LoaderCircleIcon className="size-3.5 animate-spin" />
                               ) : (
                                 <RefreshCwIcon className="size-3.5" />

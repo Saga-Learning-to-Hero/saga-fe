@@ -9,7 +9,7 @@ import {
   NetworkIcon,
   ShieldAlertIcon,
 } from "lucide-react";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
 import {
@@ -215,6 +215,7 @@ function TableRowGroup({
         <TableCell className="sticky left-0 z-10 bg-card">
           <div className="flex items-center gap-2.5">
             <Avatar size="sm" className="border border-border/60">
+              <AvatarImage src={member.avatarUrl ?? undefined} alt={cleanedName} />
               <AvatarFallback
                 className={cn(
                   "font-mono text-xs font-bold",

@@ -45,6 +45,7 @@ interface SprintHeaderProps {
   lastEvent?: ProjectRealtimeEvent | null;
   onReconnectRealtime?: () => void;
   onCreateTask?: () => void;
+  jiraSourceNode?: React.ReactNode;
 }
 
 export function SprintHeader({
@@ -69,6 +70,7 @@ export function SprintHeader({
   lastEvent,
   onReconnectRealtime,
   onCreateTask,
+  jiraSourceNode,
 }: SprintHeaderProps) {
   const hasActiveFilters = Boolean(searchQuery.trim() || selectedAssigneeId);
 
@@ -246,6 +248,7 @@ export function SprintHeader({
 
         {activeView !== "TIMELINE" && activeView !== "ANALYTICS" && (
           <div className="flex flex-wrap items-center gap-2.5 flex-1 lg:justify-end">
+            {jiraSourceNode}
             {activeView === "BOARD" && (
               <div className="w-full sm:w-64 shrink-0">
                 <CustomSelect

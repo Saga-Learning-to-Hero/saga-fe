@@ -69,7 +69,7 @@ export function TopNavTabs({ items }: TopNavTabsProps) {
   return (
     <nav
       aria-label="Thanh điều hướng phân hệ học phần"
-      className="flex items-center gap-1 overflow-x-auto px-4 sm:px-6 scrollbar-none [scrollbar-width:none] [-ms-overflow-style:none]"
+      className="flex items-center gap-1.5 overflow-x-auto px-4 sm:px-6 scrollbar-none [scrollbar-width:none] [-ms-overflow-style:none] py-2"
     >
       {items.map((item) => {
         const isActive = isNavItemActive(pathname, item);
@@ -176,16 +176,16 @@ function TopNavTabLink({
       prefetch={true}
       onMouseEnter={handleMouseEnter}
       className={cn(
-        "group relative inline-flex items-center gap-2 px-3.5 py-2.5 text-xs font-semibold whitespace-nowrap transition-all duration-150 shrink-0 select-none",
+        "group relative inline-flex items-center gap-2 px-3.5 py-2 text-[13px] font-bold whitespace-nowrap transition-all duration-300 shrink-0 select-none rounded-full border",
         isActive
-          ? "text-primary font-bold"
-          : "text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-t-lg"
+          ? "bg-primary text-primary-foreground border-primary shadow-md"
+          : "bg-transparent border-transparent text-muted-foreground hover:text-foreground hover:bg-muted/60"
       )}
     >
       <Icon
         className={cn(
-          "size-3.5 shrink-0 transition-colors",
-          isActive ? "text-primary" : "text-muted-foreground group-hover:text-foreground"
+          "size-4 shrink-0 transition-colors",
+          isActive ? "text-primary-foreground" : "text-muted-foreground group-hover:text-foreground"
         )}
       />
       <span>{item.title}</span>
@@ -193,16 +193,12 @@ function TopNavTabLink({
       {item.badge && (
         <span
           className={cn(
-            "px-1.5 py-0.2 rounded-full text-xs font-mono leading-none font-bold",
-            isActive ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
+            "px-2 py-0.5 rounded-full text-[10px] font-mono leading-none font-extrabold",
+            isActive ? "bg-primary-foreground/20 text-primary-foreground" : "bg-muted-foreground/20 text-muted-foreground"
           )}
         >
           {item.badge}
         </span>
-      )}
-
-      {isActive && (
-        <span className="absolute inset-x-1 -bottom-[1px] h-[2.5px] rounded-t-full bg-primary shadow-xs" />
       )}
     </Link>
   );

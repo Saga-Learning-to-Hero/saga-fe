@@ -55,6 +55,10 @@ interface CustomTooltipProps {
     name: string;
     dataKey: string;
     color: string;
+    payload: {
+      date: string;
+      [key: string]: any;
+    };
   }>;
   label?: string;
 }
@@ -63,12 +67,13 @@ function CustomBurndownTooltip({ active, payload, label }: CustomTooltipProps) {
   if (!active || !payload || payload.length === 0) return null;
 
   const actual = payload.find((p) => p.dataKey === "actualRemaining")?.value ?? 0;
-  const done = payload.find((p) => p.dataKey === "doneCount")?.value ?? 0;
+  const done = payload[0]?.payload?.doneCount ?? 0;
 
   const ideal = payload.find((p) => p.dataKey === "idealRemaining")?.value;
+  const rawDate = payload[0]?.payload?.date;
 
-  const formattedDate = label
-    ? new Date(`${label}T00:00:00`).toLocaleDateString("vi-VN", {
+  const formattedDate = rawDate
+    ? new Date(`${rawDate}T00:00:00`).toLocaleDateString("vi-VN", {
       weekday: "long",
       day: "2-digit",
       month: "2-digit",
@@ -244,11 +249,11 @@ export function SprintBurndownChart({
               <TrendingDown className="w-5 h-5" />
             </span>
             <h3 className="text-base font-bold text-foreground tracking-tight">
-              Biểu đồ tiến độ hoàn thành Sprint
+              Biểu đồ tiến độ Sprint (Jira Tasks)
             </h3>
           </div>
           <p className="text-xs text-muted-foreground">
-            So sánh số Task còn lại theo kế hoạch với số Task còn lại thực tế trong Sprint.
+            Theo dõi lượng Task còn lại thực tế so với kế hoạch lý tưởng của Sprint thuộc Jira Site đang chọn.
           </p>
         </div>
 

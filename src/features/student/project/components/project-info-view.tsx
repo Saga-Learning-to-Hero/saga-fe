@@ -191,11 +191,11 @@ export function ProjectInfoView() {
                     <PlusIcon className="w-4 h-4" />
                     Tạo dự án mới
                   </Button>
-                  <p className="text-xs text-muted-foreground/80">Dành cho Trưởng nhóm (Team Leader) đăng ký đề tài ban đầu</p>
+                  <p className="text-xs text-muted-foreground/80">Dành cho Trưởng nhóm đăng ký đề tài ban đầu</p>
                 </div>
               ) : (
                 <div className="inline-block px-4 py-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-300 text-xs text-center max-w-md">
-                  <span className="font-semibold">Bạn đang tham gia với vai trò Thành viên (Member). </span>
+                  <span className="font-semibold">Bạn đang tham gia với vai trò Thành viên. </span>
                   <span className="text-muted-foreground">Vui lòng chờ Trưởng nhóm khởi tạo đề tài dự án.</span>
                 </div>
               )}

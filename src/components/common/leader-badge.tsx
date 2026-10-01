@@ -84,7 +84,7 @@ export function MemberRoleBadge({
     );
   }
 
-  const label = showEnglish ? "Thành viên (Member)" : "Thành viên";
+  const label = showEnglish ? "Thành viên" : "Thành viên";
 
   return (
     <Badge

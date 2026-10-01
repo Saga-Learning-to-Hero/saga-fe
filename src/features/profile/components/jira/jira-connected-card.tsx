@@ -52,7 +52,11 @@ export function JiraConnectedCard({
                 </Badge>
               )}
             </div>
-
+            <div className="flex items-center gap-1.5 text-xs text-muted-foreground mt-0.5">
+              <span className="font-mono font-semibold text-blue-600 dark:text-blue-400">
+                {jiraEmail || "jira-user"}
+              </span>
+            </div>
           </div>
         </div>
 

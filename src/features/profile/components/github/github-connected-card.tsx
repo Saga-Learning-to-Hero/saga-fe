@@ -5,6 +5,7 @@ import {
   UnlinkIcon,
   StarIcon,
   Loader2Icon,
+  GitBranchIcon,
 } from "lucide-react";
 import type { UserIdentityItem } from "@/features/integrations/types/user-integrations";
 import { Badge } from "@/components/ui/badge";
@@ -40,6 +41,9 @@ export function GitHubConnectedCard({
     <div className="p-4 sm:p-5 rounded-xl border border-purple-500/30 bg-purple-500/5 space-y-4">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="flex items-center gap-3">
+          <div className="w-12 h-12 rounded-xl bg-purple-600 text-white flex items-center justify-center font-bold text-base shadow-xs shrink-0">
+            <GitBranchIcon className="w-6 h-6" />
+          </div>
           <div>
             <div className="flex items-center gap-2">
               <h4 className="text-sm font-bold text-foreground">{displayName}</h4>
