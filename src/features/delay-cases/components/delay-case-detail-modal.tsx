@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { formatVietnamDateTime, formatDateOnly, getCountdownParts } from "../lib/time-utils";
 import {
   getStatusConfig,
@@ -30,12 +30,18 @@ export function DelayCaseDetailModal({ delayCase, isOpen, onClose }: DelayCaseDe
     return getCountdownParts(new Date(delayCase.explanationDueAt + "+07:00"));
   }, [delayCase.explanationDueAt]);
 
+  const [showExplainForm, setShowExplainForm] = useState(false);
+  const [showLeaderForm, setShowLeaderForm] = useState(false);
+  const [showLecturerForm, setShowLecturerForm] = useState(false);
+
   if (!isOpen) return null;
+
+  // ACTION FORMS AREA
+  const hasActions = delayCase.permissions.canExplain || delayCase.permissions.canLeaderReview || delayCase.permissions.canLecturerReview || delayCase.permissions.canReopen;
 
   return (
     <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
       <div className="bg-card border border-border/80 rounded-2xl w-full max-w-5xl flex flex-col shadow-2xl relative my-auto">
-
         {/* Modal Header */}
         <div className="p-4 sm:p-5 border-b border-border/60 flex items-center justify-between shrink-0 bg-muted/20 rounded-t-2xl sticky top-0 z-10 backdrop-blur-md">
           <div className="flex items-center gap-2 sm:gap-3 flex-wrap pr-10">
@@ -56,7 +62,6 @@ export function DelayCaseDetailModal({ delayCase, isOpen, onClose }: DelayCaseDe
 
         {/* Modal Body */}
         <div className="p-0 flex-1 flex flex-col md:flex-row max-h-[80vh] overflow-y-auto">
-
           {/* Left Column: Context & Signals */}
           <div className="w-full md:w-1/3 bg-muted/10 border-b md:border-b-0 md:border-r border-border/50 p-5 sm:p-6 space-y-6">
             <div>
@@ -149,7 +154,6 @@ export function DelayCaseDetailModal({ delayCase, isOpen, onClose }: DelayCaseDe
 
           {/* Right Column: Timeline & Forms */}
           <div className="w-full md:w-2/3 p-5 sm:p-6 flex flex-col gap-6">
-
             {/* Timeline: Explanation */}
             <div className="space-y-3 relative pl-4 border-l-2 border-muted">
               <div className="absolute w-6 h-6 rounded-full bg-blue-100 dark:bg-blue-900/40 text-blue-600 flex items-center justify-center text-xs font-bold border-2 border-background -left-[13px] top-0">1</div>
@@ -289,61 +293,88 @@ export function DelayCaseDetailModal({ delayCase, isOpen, onClose }: DelayCaseDe
             )}
 
             {/* ACTION FORMS AREA */}
-            <div className="mt-4 pt-4 border-t border-border/60">
-              {delayCase.permissions.canExplain && (
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <h4 className="text-sm font-semibold flex items-center gap-2 text-blue-600 dark:text-blue-400">
-                      Vui lòng nhập giải trình
-                    </h4>
-                    {!isExpired && (
-                      <div className="text-xs font-mono bg-amber-500/10 text-amber-700 px-2 py-1 rounded-md">
-                        Còn lại: {days}d {hours}h {minutes}m
+            {hasActions && (
+              <div className="mt-4 pt-4 border-t border-border/60">
+                {delayCase.permissions.canExplain && (
+                  <div className="space-y-4 mb-4">
+                    {isExpired ? (
+                      <div className="bg-red-500/10 text-red-700 p-3 rounded-lg text-sm flex items-center gap-2">
+                        <AlertCircle className="w-4 h-4" />
+                        Đã hết hạn giải trình.
                       </div>
+                    ) : showExplainForm ? (
+                      <div className="bg-card border border-blue-500/30 rounded-xl p-5 shadow-md shadow-blue-500/10 relative">
+                        <div className="flex items-center justify-between mb-4">
+                          <h4 className="text-sm font-semibold flex items-center gap-2 text-blue-600 dark:text-blue-400">
+                            Vui lòng nhập giải trình
+                          </h4>
+                          <div className="text-xs font-mono bg-amber-500/10 text-amber-700 px-2 py-1 rounded-md">
+                            Còn lại: {days}d {hours}h {minutes}m
+                          </div>
+                        </div>
+                        <DelayCaseExplanationForm delayCase={delayCase} onSuccess={onClose} />
+                        <button onClick={() => setShowExplainForm(false)} className="absolute top-4 right-4 text-muted-foreground hover:text-foreground">
+                          <XIcon className="w-4 h-4" />
+                        </button>
+                      </div>
+                    ) : (
+                      <button onClick={() => setShowExplainForm(true)} className="w-full py-3 rounded-xl border border-dashed border-blue-500/50 text-blue-600 hover:bg-blue-500/5 transition-colors font-medium text-sm flex items-center justify-center gap-2">
+                        <ShieldAlert className="w-4 h-4" />
+                        Viết giải trình cho hồ sơ này
+                      </button>
                     )}
                   </div>
-                  {isExpired ? (
-                    <div className="bg-red-500/10 text-red-700 p-3 rounded-lg text-sm flex items-center gap-2">
-                      <AlertCircle className="w-4 h-4" />
-                      Đã hết hạn giải trình.
-                    </div>
-                  ) : (
-                    <div className="bg-card border border-border/50 rounded-xl p-5 shadow-sm">
-                      <DelayCaseExplanationForm delayCase={delayCase} onSuccess={onClose} />
-                    </div>
-                  )}
-                </div>
-              )}
+                )}
 
-              {delayCase.permissions.canLeaderReview && (
-                <div className="space-y-4">
-                  <h4 className="text-sm font-semibold flex items-center gap-2 text-emerald-600 dark:text-emerald-400">
-                    Xác nhận của Trưởng nhóm
-                  </h4>
-                  <div className="bg-card border border-border/50 rounded-xl p-5 shadow-sm">
-                    <DelayCaseLeaderReviewForm delayCase={delayCase} onSuccess={onClose} />
+                {delayCase.permissions.canLeaderReview && (
+                  <div className="space-y-4 mb-4">
+                    {showLeaderForm ? (
+                      <div className="bg-card border border-emerald-500/30 rounded-xl p-5 shadow-md shadow-emerald-500/10 relative">
+                        <h4 className="text-sm font-semibold flex items-center gap-2 text-emerald-600 dark:text-emerald-400 mb-4">
+                          Xác nhận của Trưởng nhóm
+                        </h4>
+                        <DelayCaseLeaderReviewForm delayCase={delayCase} onSuccess={onClose} />
+                        <button onClick={() => setShowLeaderForm(false)} className="absolute top-4 right-4 text-muted-foreground hover:text-foreground">
+                          <XIcon className="w-4 h-4" />
+                        </button>
+                      </div>
+                    ) : (
+                      <button onClick={() => setShowLeaderForm(true)} className="w-full py-3 rounded-xl border border-dashed border-emerald-500/50 text-emerald-600 hover:bg-emerald-500/5 transition-colors font-medium text-sm flex items-center justify-center gap-2">
+                        <CheckCircle2 className="w-4 h-4" />
+                        Duyệt hồ sơ (Vai trò Trưởng nhóm)
+                      </button>
+                    )}
                   </div>
-                </div>
-              )}
+                )}
 
-              {delayCase.permissions.canLecturerReview && (
-                <div className="space-y-4">
-                  <h4 className="text-sm font-semibold flex items-center gap-2 text-purple-600 dark:text-purple-400">
-                    Phán quyết của Giảng viên
-                  </h4>
-                  <div className="bg-card border border-border/50 rounded-xl p-5 shadow-sm">
-                    <DelayCaseLecturerReviewForm delayCase={delayCase} onSuccess={onClose} />
+                {delayCase.permissions.canLecturerReview && (
+                  <div className="space-y-4 mb-4">
+                    {showLecturerForm ? (
+                      <div className="bg-card border border-purple-500/30 rounded-xl p-5 shadow-md shadow-purple-500/10 relative">
+                        <h4 className="text-sm font-semibold flex items-center gap-2 text-purple-600 dark:text-purple-400 mb-4">
+                          Phán quyết của Giảng viên
+                        </h4>
+                        <DelayCaseLecturerReviewForm delayCase={delayCase} onSuccess={onClose} />
+                        <button onClick={() => setShowLecturerForm(false)} className="absolute top-4 right-4 text-muted-foreground hover:text-foreground">
+                          <XIcon className="w-4 h-4" />
+                        </button>
+                      </div>
+                    ) : (
+                      <button onClick={() => setShowLecturerForm(true)} className="w-full py-3 rounded-xl border border-dashed border-purple-500/50 text-purple-600 hover:bg-purple-500/5 transition-colors font-medium text-sm flex items-center justify-center gap-2">
+                        <Activity className="w-4 h-4" />
+                        Đưa ra phán quyết (Vai trò Giảng viên)
+                      </button>
+                    )}
                   </div>
-                </div>
-              )}
+                )}
 
-              {delayCase.permissions.canReopen && (
-                <div className="flex justify-end bg-card p-4 rounded-xl border border-border/50 mt-4">
-                  <ReopenDelayCaseButton delayCase={delayCase} />
-                </div>
-              )}
-            </div>
-
+                {delayCase.permissions.canReopen && (
+                  <div className="flex justify-end mt-4">
+                    <ReopenDelayCaseButton delayCase={delayCase} />
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </div>

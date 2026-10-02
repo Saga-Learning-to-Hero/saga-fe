@@ -102,13 +102,6 @@ export function getLecturerGlobalNavItems(): NavItem[] {
       icon: "BookOpen",
       match: "exact",
     },
-    {
-      id: "lecturer-delay-cases",
-      title: "Hồ sơ trễ hạn",
-      href: "/lecturer/delay-cases",
-      icon: "AlertCircle",
-      match: "exact",
-    },
   ];
 }
 

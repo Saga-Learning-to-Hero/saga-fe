@@ -10,7 +10,6 @@ import {
   FlameIcon,
   CheckCircle2Icon,
   TrendingDownIcon,
-  AlertCircleIcon,
 } from "lucide-react";
 import type { Sprint } from "../types/sprint-progress";
 import { Badge } from "@/components/ui/badge";
@@ -28,8 +27,8 @@ interface SprintHeaderProps {
   sprints: Sprint[];
   selectedSprintId: string;
   onSelectSprint: (sprintId: string) => void;
-  activeView: "BOARD" | "BACKLOG" | "TIMELINE" | "ANALYTICS" | "DELAY_CASES";
-  onSelectView: (view: "BOARD" | "BACKLOG" | "TIMELINE" | "ANALYTICS" | "DELAY_CASES") => void;
+  activeView: "BOARD" | "BACKLOG" | "TIMELINE" | "ANALYTICS";
+  onSelectView: (view: "BOARD" | "BACKLOG" | "TIMELINE" | "ANALYTICS") => void;
   searchQuery: string;
   onSearchChange: (q: string) => void;
   selectedAssigneeId: string | null;
@@ -246,22 +245,13 @@ export function SprintHeader({
             <span>Heatmap & Burndown</span>
           </button>
 
-          <button
-            onClick={() => onSelectView("DELAY_CASES")}
-            className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer select-none ${activeView === "DELAY_CASES"
-              ? "bg-card text-foreground shadow-xs border border-border/50"
-              : "text-muted-foreground hover:text-foreground"
-              }`}
-          >
-            <AlertCircleIcon className="w-3.5 h-3.5 text-red-500" />
-            <span>Hồ sơ trễ hạn</span>
-          </button>
+
         </div>
 
         <div className="flex flex-wrap items-center gap-2.5 flex-1 lg:justify-end">
           {jiraSourceNode}
 
-          {activeView !== "TIMELINE" && activeView !== "ANALYTICS" && activeView !== "DELAY_CASES" && (
+          {activeView !== "TIMELINE" && activeView !== "ANALYTICS" && (
             <>
               {activeView === "BOARD" && (
                 <div className="w-full sm:w-64 shrink-0">

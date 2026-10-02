@@ -49,7 +49,6 @@ import {
   setLocalSprintOverride,
 } from "../lib/optimistic-sprint-state";
 import { ActivityHeatmapGrid } from "@/features/analytics";
-import { ProjectDelayCasesView } from "@/features/delay-cases/components/project-delay-cases-view";
 import dynamic from "next/dynamic";
 
 const SprintBurndownChart = dynamic(
@@ -120,7 +119,7 @@ export function SprintProgressView() {
   const canCreateTask = !isPersonalIntegrationMissing;
 
   const [userSelectedSprintId, setUserSelectedSprintId] = useState<string | null>(null);
-  const [activeView, setActiveView] = useState<"BOARD" | "BACKLOG" | "TIMELINE" | "ANALYTICS" | "DELAY_CASES">("BOARD");
+  const [activeView, setActiveView] = useState<"BOARD" | "BACKLOG" | "TIMELINE" | "ANALYTICS">("BOARD");
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [selectedAssigneeId, setSelectedAssigneeId] = useState<string | null>(null);
   const [localTaskOverrides, setLocalTaskOverrides] = useState<Record<string, Partial<SprintIssue>>>({});
@@ -726,9 +725,6 @@ export function SprintProgressView() {
         </div>
       )}
 
-      {!isTasksError && !isSprintsError && activeView === "DELAY_CASES" && projectId && (
-        <ProjectDelayCasesView projectId={projectId} />
-      )}
 
       {isIssueModalOpen && (
         <IssueDetailsModal

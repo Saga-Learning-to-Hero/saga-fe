@@ -41,6 +41,7 @@ import { getSprintSourceUserMessage } from "@/features/student/sprint-progress/l
 import type { ProjectSprintResponse } from "@/features/student/sprint-progress/types/jira-task-types";
 import { StudentActiveTasksCard } from "./student-active-tasks-card";
 import { StudentAlertsBanner } from "./student-alerts-banner";
+import { DelayCasesActionWidget } from "@/features/delay-cases/components/delay-cases-action-widget";
 import { StudentRecentCommitsCard } from "./student-recent-commits-card";
 import dynamic from "next/dynamic";
 import { Loader2Icon } from "lucide-react";
@@ -420,7 +421,16 @@ export function StudentDashboardAnalytics() {
       {activeTab === "personal" ? (
         <div className="space-y-6">
           {/* Actionable Alerts Banner */}
-          <StudentAlertsBanner alerts={actionableAlerts} courseId={courseId} />
+          <div className="space-y-4">
+            <StudentAlertsBanner alerts={actionableAlerts} courseId={courseId} />
+            {projectId && (
+              <DelayCasesActionWidget
+                projectId={projectId}
+                mode="student"
+                courseId={courseId}
+              />
+            )}
+          </div>
 
           {/* Thanh Bộ Lọc Site & Sprint - Riêng 1 Hàng */}
           <div className="flex flex-col gap-3.5 rounded-xl border border-border/80 bg-card/90 p-4 shadow-xs sm:flex-row sm:items-center sm:justify-between">

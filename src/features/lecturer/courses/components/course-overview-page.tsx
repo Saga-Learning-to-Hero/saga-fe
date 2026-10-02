@@ -27,6 +27,7 @@ import {
 import { LecturerPageShell } from "./lecturer-page-shell";
 import { CourseDashboardTeamCard } from "./course-dashboard-team-card";
 import { CourseActivityHeatmap } from "./course-activity-heatmap";
+import { DelayCasesActionWidget } from "@/features/delay-cases/components/delay-cases-action-widget";
 import { cn } from "@/lib/utils";
 
 const CourseAnalyticsCharts = dynamic(
@@ -185,6 +186,8 @@ export function CourseOverviewPage({ courseId }: CourseOverviewPageProps) {
               }
             />
           </div>
+
+          <DelayCasesActionWidget mode="lecturer" courseId={courseId} />
 
           <CourseActivityHeatmap
             teams={teams}
