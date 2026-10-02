@@ -427,7 +427,6 @@ export function StudentDashboardAnalytics() {
               <DelayCasesActionWidget
                 projectId={projectId}
                 mode="student"
-                courseId={courseId}
               />
             )}
           </div>

@@ -3,9 +3,8 @@
 import { useMemo, useState } from "react";
 import { ArrowRightIcon, CheckCircle2Icon, ShieldAlertIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Button, buttonVariants } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { cn } from "@/lib/utils";
 import { useDelayCases, useLecturerDelayQueue } from "../hooks/use-delay-cases";
 import { DelayCaseDetailModal } from "./delay-case-detail-modal";
 
@@ -89,7 +88,7 @@ export function DelayCasesActionWidget({ projectId, mode }: DelayCasesActionWidg
                 <div className="space-y-1 min-w-0">
                   <div className="flex flex-wrap items-center gap-2">
                     <span className="font-mono text-xs font-bold text-orange-600 dark:text-orange-400">
-                      {delayCase.taskDetails.taskKey}
+                      {delayCase.task?.externalKey}
                     </span>
                     <Badge
                       variant="outline"
@@ -102,11 +101,11 @@ export function DelayCasesActionWidget({ projectId, mode }: DelayCasesActionWidg
                           : "Chờ giảng viên"}
                     </Badge>
                   </div>
-                  <p className="text-xs text-foreground font-medium truncate" title={delayCase.taskDetails.taskSummary}>
-                    {delayCase.taskDetails.taskSummary}
+                  <p className="text-xs text-foreground font-medium truncate" title={delayCase.task?.title}>
+                    {delayCase.task?.title}
                   </p>
                   <p className="text-[10px] text-muted-foreground">
-                    Từ: <span className="font-semibold">{delayCase.taskDetails.assigneeName}</span> ({delayCase.taskDetails.assigneeStudentCode})
+                    Từ: <span className="font-semibold">{delayCase.student?.fullName}</span> ({delayCase.student?.studentCode})
                   </p>
                 </div>
 
@@ -121,18 +120,10 @@ export function DelayCasesActionWidget({ projectId, mode }: DelayCasesActionWidg
         </CardContent>
       </Card>
 
-      {selectedCaseId && projectId && (
+      {selectedCaseId && (
         <DelayCaseDetailModal
-          projectId={projectId}
-          caseId={selectedCaseId}
-          onClose={() => setSelectedCaseId(null)}
-        />
-      )}
-
-      {selectedCaseId && !projectId && isLecturer && (
-        <DelayCaseDetailModal
-          projectId={delayCases.find(c => c.id === selectedCaseId)?.taskDetails.projectId || ""}
-          caseId={selectedCaseId}
+          delayCase={delayCases.find(c => c.id === selectedCaseId)!}
+          isOpen={true}
           onClose={() => setSelectedCaseId(null)}
         />
       )}
