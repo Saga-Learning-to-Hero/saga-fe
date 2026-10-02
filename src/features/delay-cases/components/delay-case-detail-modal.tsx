@@ -278,7 +278,7 @@ export function DelayCaseDetailModal({ delayCase, isOpen, onClose }: DelayCaseDe
                       <div className="mt-2 text-sm flex items-center gap-2">
                         <span className="text-muted-foreground">Phán quyết:</span>
                         <Badge variant="outline" className={delayCase.lecturerOutcome === "OBJECTIVE" ? "bg-emerald-500/10 text-emerald-700 border-emerald-500/30" : "bg-red-500/10 text-red-700 border-red-500/30"}>
-                          {delayCase.lecturerOutcome === "OBJECTIVE" ? "Châm chước (Lý do khách quan)" : "Từ chối (Lý do chủ quan)"}
+                          {delayCase.lecturerOutcome === "OBJECTIVE" ? "Chấp nhận (Lý do khách quan)" : "Từ chối (Lý do chủ quan)"}
                         </Badge>
                       </div>
                     )}
