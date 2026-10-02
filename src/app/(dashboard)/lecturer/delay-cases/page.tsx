@@ -8,7 +8,7 @@ import { Loader2Icon } from "lucide-react";
 function LecturerDelayCasesRedirect() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  
+
   const caseId = searchParams.get("caseId");
   const projectId = searchParams.get("projectId");
 
