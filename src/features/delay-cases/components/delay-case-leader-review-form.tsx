@@ -21,7 +21,7 @@ import {
 import { ThumbsUp, ThumbsDown } from "lucide-react";
 
 
-export function DelayCaseLeaderReviewForm({ delayCase }: { delayCase: DelayCaseResponse }) {
+export function DelayCaseLeaderReviewForm({ delayCase, onSuccess }: { delayCase: DelayCaseResponse; onSuccess?: () => void }) {
   const [isAlertOpen, setIsAlertOpen] = useState(false);
   const reviewMutation = useLeaderReviewDelayCase();
 
@@ -65,6 +65,7 @@ export function DelayCaseLeaderReviewForm({ delayCase }: { delayCase: DelayCaseR
       onSuccess: () => {
         toast.success("Đã lưu đánh giá của trưởng nhóm");
         setIsAlertOpen(false);
+        if (onSuccess) onSuccess();
       },
       onError: (err: unknown) => {
         const errCode = (err as { response?: { data?: { code?: string, message?: string } } })?.response?.data?.code;

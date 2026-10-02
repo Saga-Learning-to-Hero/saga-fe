@@ -25,7 +25,7 @@ import { useQuery } from "@tanstack/react-query";
 import { apiClient } from "@/lib/axios";
 
 
-export function DelayCaseExplanationForm({ delayCase }: { delayCase: DelayCaseResponse }) {
+export function DelayCaseExplanationForm({ delayCase, onSuccess }: { delayCase: DelayCaseResponse; onSuccess?: () => void }) {
   const [isAlertOpen, setIsAlertOpen] = useState(false);
   const explainMutation = useExplainDelayCase();
 
@@ -113,6 +113,7 @@ export function DelayCaseExplanationForm({ delayCase }: { delayCase: DelayCaseRe
       onSuccess: () => {
         toast.success("Đã gửi giải trình thành công");
         setIsAlertOpen(false);
+        if (onSuccess) onSuccess();
       },
       onError: (err: unknown) => {
         const errCode = (err as { response?: { data?: { code?: string, message?: string } } })?.response?.data?.code;

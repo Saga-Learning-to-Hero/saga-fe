@@ -21,21 +21,26 @@ export function ProjectDelayCasesView({ projectId }: ProjectDelayCasesViewProps)
     if (filter === "AWAITING_LEADER") return c.status === "AWAITING_LEADER";
     if (filter === "AWAITING_LECTURER") return c.status === "AWAITING_LECTURER";
     if (filter === "CLOSED") return c.status === "CLOSED_OBJECTIVE" || c.status === "CLOSED_SUBJECTIVE";
-    if (filter === "MY_REVIEW") return c.permissions.canLeaderReview;
+    if (filter === "CLOSED_OBJECTIVE") return c.status === "CLOSED_OBJECTIVE";
+    if (filter === "CLOSED_SUBJECTIVE") return c.status === "CLOSED_SUBJECTIVE";
+    if (filter === "MY_REVIEW") return c.permissions.canLeaderReview || c.permissions.canLecturerReview;
     return true;
   });
 
   const filterOptions = [
-    { value: "ALL", label: "Tất cả" },
+    { value: "ALL", label: "Tất cả hồ sơ" },
     { value: "AWAITING_EXPLANATION", label: "Chờ giải trình" },
     { value: "AWAITING_LEADER", label: "Chờ trưởng nhóm" },
     { value: "AWAITING_LECTURER", label: "Chờ giảng viên" },
-    { value: "CLOSED", label: "Đã đóng" },
+    { value: "CLOSED_OBJECTIVE", label: "Đã duyệt – Châm chước" },
+    { value: "CLOSED_SUBJECTIVE", label: "Đã duyệt – Từ chối" },
+    { value: "CLOSED", label: "Tất cả hồ sơ đã đóng" },
   ];
 
-  const hasLeaderReviewTask = delayCases?.some(c => c.permissions.canLeaderReview);
-  if (hasLeaderReviewTask) {
-    filterOptions.push({ value: "MY_REVIEW", label: "Chờ tôi xác nhận" });
+  const hasMyReviewTask = delayCases?.some(c => c.permissions.canLeaderReview || c.permissions.canLecturerReview);
+  if (hasMyReviewTask) {
+    // Nếu có hồ sơ cần người này duyệt, đưa "Chờ tôi duyệt" lên đầu
+    filterOptions.unshift({ value: "MY_REVIEW", label: "Chờ tôi duyệt" });
   }
 
   return (

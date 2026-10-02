@@ -21,7 +21,7 @@ import {
 import { Scale, AlertTriangle } from "lucide-react";
 
 
-export function DelayCaseLecturerReviewForm({ delayCase }: { delayCase: DelayCaseResponse }) {
+export function DelayCaseLecturerReviewForm({ delayCase, onSuccess }: { delayCase: DelayCaseResponse; onSuccess?: () => void }) {
   const [isAlertOpen, setIsAlertOpen] = useState(false);
   const reviewMutation = useLecturerReviewDelayCase();
 
@@ -57,6 +57,7 @@ export function DelayCaseLecturerReviewForm({ delayCase }: { delayCase: DelayCas
       onSuccess: () => {
         toast.success("Đã lưu quyết định của giảng viên");
         setIsAlertOpen(false);
+        if (onSuccess) onSuccess();
       },
       onError: (err: unknown) => {
         const errCode = (err as { response?: { data?: { code?: string, message?: string } } })?.response?.data?.code;
