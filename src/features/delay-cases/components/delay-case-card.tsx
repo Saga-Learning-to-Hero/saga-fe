@@ -238,8 +238,8 @@ export function DelayCaseCard({ delayCase }: DelayCaseCardProps) {
 
               {delayCase.lecturerOutcome && (
                 <div className="mt-2">
-                  <Badge variant="outline" className={delayCase.lecturerOutcome === "EXCUSED" ? "bg-emerald-500/10 text-emerald-700 border-emerald-500/30" : "bg-red-500/10 text-red-700 border-red-500/30"}>
-                    Quyết định: {delayCase.lecturerOutcome === "EXCUSED" ? "Châm chước" : "Từ chối"}
+                  <Badge variant="outline" className={delayCase.lecturerOutcome === "OBJECTIVE" ? "bg-emerald-500/10 text-emerald-700 border-emerald-500/30" : "bg-red-500/10 text-red-700 border-red-500/30"}>
+                    Quyết định: {delayCase.lecturerOutcome === "OBJECTIVE" ? "Châm chước" : "Từ chối"}
                   </Badge>
                 </div>
               )}

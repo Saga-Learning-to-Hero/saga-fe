@@ -9,27 +9,27 @@ import { CustomSelect } from "@/components/common/custom-select";
 import { Badge } from "@/components/ui/badge";
 
 export function LecturerDelayQueueView() {
-  const [filter, setFilter] = useState("PENDING_LECTURER_REVIEW");
+  const [filter, setFilter] = useState("AWAITING_LECTURER");
 
   const queryParams = (() => {
     switch (filter) {
-      case "PENDING_LECTURER_REVIEW":
-        return { status: "PENDING_LECTURER_REVIEW" };
+      case "AWAITING_LECTURER":
+        return { status: "AWAITING_LECTURER" };
       case "EXCUSED":
-        return { status: "CLOSED_EXCUSED" };
+        return { status: "CLOSED_OBJECTIVE" };
       case "REJECTED":
-        return { status: "CLOSED_REJECTED" };
+        return { status: "CLOSED_SUBJECTIVE" };
       case "CLOSED_ALL":
-        return { status: ["CLOSED_EXCUSED", "CLOSED_REJECTED"] };
+        return { status: ["CLOSED_OBJECTIVE", "CLOSED_SUBJECTIVE"] };
       default:
-        return { status: "PENDING_LECTURER_REVIEW" };
+        return { status: "AWAITING_LECTURER" };
     }
   })();
 
   const { data: delayCases, isLoading, isError, refetch, isRefetching } = useLecturerDelayQueue(queryParams);
 
   const filterOptions = [
-    { value: "PENDING_LECTURER_REVIEW", label: "Chờ tôi duyệt" },
+    { value: "AWAITING_LECTURER", label: "Chờ tôi duyệt" },
     { value: "EXCUSED", label: "Đã duyệt - Châm chước" },
     { value: "REJECTED", label: "Đã duyệt - Từ chối" },
     { value: "CLOSED_ALL", label: "Tất cả hồ sơ đã đóng" },
@@ -103,7 +103,7 @@ export function LecturerDelayQueueView() {
         ) : delayCases?.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-muted-foreground gap-5 bg-card/40 rounded-2xl border border-dashed border-border/60 min-h-[400px] shadow-sm">
             <div className="p-5 bg-emerald-500/10 rounded-full border border-emerald-500/20">
-              {filter === "PENDING_LECTURER_REVIEW" ? (
+              {filter === "AWAITING_LECTURER" ? (
                 <CheckCircle2 className="w-12 h-12 text-emerald-500" />
               ) : (
                 <Inbox className="w-12 h-12 text-muted-foreground" />
@@ -111,10 +111,10 @@ export function LecturerDelayQueueView() {
             </div>
             <div className="text-center max-w-sm space-y-1.5">
               <h3 className="font-bold text-xl text-foreground">
-                {filter === "PENDING_LECTURER_REVIEW" ? "Tuyệt vời, không có hồ sơ tồn đọng!" : "Trống rỗng"}
+                {filter === "AWAITING_LECTURER" ? "Tuyệt vời, không có hồ sơ tồn đọng!" : "Trống rỗng"}
               </h3>
               <p className="text-muted-foreground text-sm">
-                {filter === "PENDING_LECTURER_REVIEW"
+                {filter === "AWAITING_LECTURER"
                   ? "Tất cả các hồ sơ giải trình đã được xem xét và xử lý xong."
                   : "Không tìm thấy hồ sơ nào khớp với bộ lọc hiện tại của bạn."}
               </p>

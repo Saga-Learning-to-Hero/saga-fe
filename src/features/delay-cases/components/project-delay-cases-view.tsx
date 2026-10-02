@@ -18,9 +18,9 @@ export function ProjectDelayCasesView({ projectId }: ProjectDelayCasesViewProps)
   const filteredCases = delayCases?.filter((c) => {
     if (filter === "ALL") return true;
     if (filter === "AWAITING_EXPLANATION") return c.status === "OPEN";
-    if (filter === "PENDING_LEADER_REVIEW") return c.status === "PENDING_LEADER_REVIEW";
-    if (filter === "PENDING_LECTURER_REVIEW") return c.status === "PENDING_LECTURER_REVIEW";
-    if (filter === "CLOSED") return c.status === "CLOSED_EXCUSED" || c.status === "CLOSED_REJECTED";
+    if (filter === "AWAITING_LEADER") return c.status === "AWAITING_LEADER";
+    if (filter === "AWAITING_LECTURER") return c.status === "AWAITING_LECTURER";
+    if (filter === "CLOSED") return c.status === "CLOSED_OBJECTIVE" || c.status === "CLOSED_SUBJECTIVE";
     if (filter === "MY_REVIEW") return c.permissions.canLeaderReview;
     return true;
   });
@@ -28,8 +28,8 @@ export function ProjectDelayCasesView({ projectId }: ProjectDelayCasesViewProps)
   const filterOptions = [
     { value: "ALL", label: "Tất cả" },
     { value: "AWAITING_EXPLANATION", label: "Chờ giải trình" },
-    { value: "PENDING_LEADER_REVIEW", label: "Chờ trưởng nhóm" },
-    { value: "PENDING_LECTURER_REVIEW", label: "Chờ giảng viên" },
+    { value: "AWAITING_LEADER", label: "Chờ trưởng nhóm" },
+    { value: "AWAITING_LECTURER", label: "Chờ giảng viên" },
     { value: "CLOSED", label: "Đã đóng" },
   ];
 

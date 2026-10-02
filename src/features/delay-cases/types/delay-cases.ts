@@ -1,9 +1,9 @@
 export type DelayCaseStatus =
   | "OPEN"
-  | "PENDING_LEADER_REVIEW"
-  | "PENDING_LECTURER_REVIEW"
-  | "CLOSED_EXCUSED"
-  | "CLOSED_REJECTED"
+  | "AWAITING_LEADER"
+  | "AWAITING_LECTURER"
+  | "CLOSED_OBJECTIVE"
+  | "CLOSED_SUBJECTIVE"
   | (string & {});
 
 export type DelayCauseCategory =
@@ -25,7 +25,7 @@ export type Verification = "CONSISTENT" | "MISMATCH" | "UNVERIFIABLE" | (string 
 
 export type LeaderDecision = "AGREE" | "DISAGREE" | (string & {});
 
-export type LecturerOutcome = "EXCUSED" | "REJECTED" | (string & {});
+export type LecturerOutcome = "OBJECTIVE" | "SUBJECTIVE" | (string & {});
 
 export type CloseReason = "LEADER_CONFIRMED" | "LECTURER_DECIDED" | "EXPLANATION_EXPIRED" | (string & {});
 
