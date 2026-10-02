@@ -36,13 +36,13 @@ export function DelayCaseDetailModal({ delayCase, isOpen, onClose }: DelayCaseDe
 
   if (!isOpen) return null;
 
-  // ACTION FORMS AREA
+
   const hasActions = delayCase.permissions.canExplain || delayCase.permissions.canLeaderReview || delayCase.permissions.canLecturerReview || delayCase.permissions.canReopen;
 
   return (
     <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
       <div className="bg-card border border-border/80 rounded-2xl w-full max-w-5xl flex flex-col shadow-2xl relative my-auto">
-        {/* Modal Header */}
+        
         <div className="p-4 sm:p-5 border-b border-border/60 flex items-center justify-between shrink-0 bg-muted/20 rounded-t-2xl sticky top-0 z-10 backdrop-blur-md">
           <div className="flex items-center gap-2 sm:gap-3 flex-wrap pr-10">
             <Badge variant="secondary" className="font-mono bg-blue-500/10 text-blue-700 hover:bg-blue-500/20 border border-blue-500/20 rounded-md shrink-0">
@@ -60,9 +60,9 @@ export function DelayCaseDetailModal({ delayCase, isOpen, onClose }: DelayCaseDe
           </button>
         </div>
 
-        {/* Modal Body */}
+        
         <div className="p-0 flex-1 flex flex-col md:flex-row max-h-[80vh] overflow-y-auto">
-          {/* Left Column: Context & Signals */}
+          
           <div className="w-full md:w-1/3 bg-muted/10 border-b md:border-b-0 md:border-r border-border/50 p-5 sm:p-6 space-y-6">
             <div>
               <h4 className="text-sm font-semibold text-foreground flex items-center gap-2 mb-3">
@@ -152,9 +152,9 @@ export function DelayCaseDetailModal({ delayCase, isOpen, onClose }: DelayCaseDe
             )}
           </div>
 
-          {/* Right Column: Timeline & Forms */}
+          
           <div className="w-full md:w-2/3 p-5 sm:p-6 flex flex-col gap-6">
-            {/* Timeline: Explanation */}
+            
             <div className="space-y-3 relative pl-4 border-l-2 border-muted">
               <div className="absolute w-6 h-6 rounded-full bg-blue-100 dark:bg-blue-900/40 text-blue-600 flex items-center justify-center text-xs font-bold border-2 border-background -left-[13px] top-0">1</div>
               <h4 className="text-sm font-semibold text-foreground flex items-center gap-2">
@@ -212,7 +212,7 @@ export function DelayCaseDetailModal({ delayCase, isOpen, onClose }: DelayCaseDe
               )}
             </div>
 
-            {/* Timeline: Leader Review */}
+            
             {(delayCase.leaderReviewedAt || delayCase.permissions.canLeaderReview || delayCase.closedAt || delayCase.lecturerReviewedAt || delayCase.permissions.canLecturerReview) && (
               <div className="space-y-3 relative pl-4 border-l-2 border-muted">
                 <div className="absolute w-6 h-6 rounded-full bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600 flex items-center justify-center text-xs font-bold border-2 border-background -left-[13px] top-0">2</div>
@@ -247,7 +247,7 @@ export function DelayCaseDetailModal({ delayCase, isOpen, onClose }: DelayCaseDe
               </div>
             )}
 
-            {/* Timeline: Lecturer Review */}
+            
             {(delayCase.closedAt || delayCase.lecturerReviewedAt || delayCase.permissions.canLecturerReview) && (
               <div className="space-y-3 relative pl-4 border-l-2 border-transparent">
                 <div className="absolute w-6 h-6 rounded-full bg-purple-100 dark:bg-purple-900/40 text-purple-600 flex items-center justify-center text-xs font-bold border-2 border-background -left-[13px] top-0">3</div>
@@ -292,7 +292,7 @@ export function DelayCaseDetailModal({ delayCase, isOpen, onClose }: DelayCaseDe
               </div>
             )}
 
-            {/* ACTION FORMS AREA */}
+            
             {hasActions && (
               <div className="mt-4 pt-4 border-t border-border/60">
                 {delayCase.permissions.canExplain && (

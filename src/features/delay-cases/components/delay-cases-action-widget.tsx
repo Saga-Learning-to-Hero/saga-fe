@@ -19,25 +19,19 @@ export function DelayCasesActionWidget({ projectId, mode }: DelayCasesActionWidg
   const isStudent = mode === "student";
   const isLecturer = mode === "lecturer";
 
-  // If student, we use useDelayCases with projectId
-  const studentQuery = useDelayCases(projectId || "", undefined); // Handle enabled: !!projectId inside hook
-  // If lecturer, we use useLecturerDelayQueue
+  const studentQuery = useDelayCases(projectId || "", undefined);
   const lecturerQuery = useLecturerDelayQueue({ status: "AWAITING_LECTURER" });
 
   const query = isStudent ? studentQuery : lecturerQuery;
   const isLoading = query.isLoading;
   const delayCases = query.data || [];
 
-  // Filter actionable cases for the widget to keep it focused
   const actionableCases = useMemo(() => {
     if (!delayCases) return [];
     if (isLecturer) {
-      // Lecturer only cares about AWAITING_LECTURER here
       return delayCases.filter((c) => c.status === "AWAITING_LECTURER");
     }
-    // Student cares about cases they need to explain, or leader needs to review
     return delayCases.filter((c) => {
-      // My action needed:
       if (c.status === "OPEN" && c.permissions?.canExplain) return true;
       if (c.status === "AWAITING_LEADER" && c.permissions?.canLeaderReview) return true;
       return false;
@@ -127,7 +121,6 @@ export function DelayCasesActionWidget({ projectId, mode }: DelayCasesActionWidg
         </CardContent>
       </Card>
 
-      {/* Reused Detail Modal for actioning */}
       {selectedCaseId && projectId && (
         <DelayCaseDetailModal
           projectId={projectId}
