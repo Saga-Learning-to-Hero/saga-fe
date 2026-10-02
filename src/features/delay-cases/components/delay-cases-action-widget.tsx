@@ -26,16 +26,17 @@ export function DelayCasesActionWidget({ projectId, mode }: DelayCasesActionWidg
   const delayCases = query.data || [];
 
   const actionableCases = useMemo(() => {
-    if (!delayCases) return [];
+    const cases = query.data || [];
+    if (!cases.length) return [];
     if (isLecturer) {
-      return delayCases.filter((c) => c.status === "AWAITING_LECTURER");
+      return cases.filter((c) => c.status === "AWAITING_LECTURER");
     }
-    return delayCases.filter((c) => {
+    return cases.filter((c) => {
       if (c.status === "OPEN" && c.permissions?.canExplain) return true;
       if (c.status === "AWAITING_LEADER" && c.permissions?.canLeaderReview) return true;
       return false;
     });
-  }, [delayCases, isLecturer]);
+  }, [query.data, isLecturer]);
 
   const [selectedCaseId, setSelectedCaseId] = useState<string | null>(null);
 

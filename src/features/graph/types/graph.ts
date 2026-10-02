@@ -28,8 +28,7 @@ export type CanonicalEdgeLabel =
   | "EVIDENCED_BY"
   | "CLASSIFIED_AS"
   | "AUTHORED_BY"
-  | "MAPS_TO"
-  | "REVIEWED";
+  | "MAPS_TO";
 
 export type EdgeType = CanonicalEdgeLabel;
 
@@ -49,6 +48,8 @@ export interface CytoscapeNodeData {
   storyPoint?: number;
   issueTypeId?: string | null;
   issueTypeName?: string | null;
+  issueType?: "EPIC" | "STORY" | "TASK" | "BUG" | "SUBTASK" | "REQUEST" | string;
+  jiraIntegrationId?: string | null;
   issueTypeLevel?: IssueTypeLevel;
   jiraHierarchyLevel?: number | null;
   parentExternalId?: string | null;

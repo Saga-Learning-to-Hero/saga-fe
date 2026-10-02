@@ -12,7 +12,7 @@ export const DELAY_CASE_STATUS_CONFIG: Record<
   OPEN: { label: "Chờ giải trình", colorClass: "bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30" },
   AWAITING_LEADER: { label: "Chờ trưởng nhóm xác nhận", colorClass: "bg-blue-500/15 text-blue-700 dark:text-blue-300 border-blue-500/30" },
   AWAITING_LECTURER: { label: "Chờ giảng viên duyệt", colorClass: "bg-blue-500/15 text-blue-700 dark:text-blue-300 border-blue-500/30" },
-  CLOSED_OBJECTIVE: { label: "Châm chước — Không tính trễ", colorClass: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30" },
+  CLOSED_OBJECTIVE: { label: "Chấp nhận — Không tính trễ", colorClass: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30" },
   CLOSED_SUBJECTIVE: { label: "Từ chối — Tính trễ", colorClass: "bg-red-500/15 text-red-700 dark:text-red-300 border-red-500/30" },
 };
 

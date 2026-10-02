@@ -808,22 +808,13 @@ export function CytoscapeGraphCanvas({
         } else if (e.label === "MAPS_TO") {
           lineColor = "#60a5fa";
           arrowColor = "#2563eb";
-        } else if (e.label === "REVIEWED") {
-          lineColor = "#10b981";
-          arrowColor = "#047857";
-          edgeWidth = e.weight ? Math.min(Math.max(e.weight * 1.2, 2.5), 7) : 3;
         }
-
         if (isAnomaly) {
           lineColor = "#ef4444";
           arrowColor = "#dc2626";
         }
 
-        const displayEdgeLabel =
-          e.label === "REVIEWED" && typeof e.weight === "number" && e.weight > 0
-            ? `${e.weight} ★`
-            : e.label;
-
+        const displayEdgeLabel = e.label;
         return {
           group: "edges" as const,
           data: {
@@ -1100,12 +1091,6 @@ export function CytoscapeGraphCanvas({
           },
         },
         {
-          selector: 'edge.show-label[edgeType = "REVIEWED"]',
-          style: {
-            label: "data(edgeLabel)",
-          },
-        },
-        {
           selector: 'edge[label = "HAS_SPRINT"]',
           style: {
             "curve-style": "unbundled-bezier",
@@ -1114,19 +1099,6 @@ export function CytoscapeGraphCanvas({
             "line-style": "dashed",
             "line-color": "#06b6d4",
             "target-arrow-color": "#0891b2",
-          },
-        },
-        {
-          selector: 'edge[edgeType = "REVIEWED"]',
-          style: {
-            label: "data(edgeLabel)",
-            "font-size": "10px",
-            "font-weight": 700,
-            color: "#047857",
-            "text-background-opacity": 0.95,
-            "text-background-color": "#ecfdf5",
-            "text-background-padding": "2px",
-            "text-background-shape": "roundrectangle",
           },
         },
         {
@@ -1143,12 +1115,6 @@ export function CytoscapeGraphCanvas({
             "text-background-padding": "2.5px",
             "text-background-shape": "roundrectangle",
             "z-index": 99,
-          },
-        },
-        {
-          selector: 'edge.highlighted[edgeType = "REVIEWED"]',
-          style: {
-            label: "data(edgeLabel)",
           },
         },
       ],

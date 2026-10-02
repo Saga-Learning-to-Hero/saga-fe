@@ -28,6 +28,9 @@ vi.mock("@/features/student/dashboard/components/student-recent-commits-card", (
 vi.mock("@/features/student/dashboard/components/student-alerts-banner", () => ({
   StudentAlertsBanner: () => <div data-testid="alerts-banner" />,
 }));
+vi.mock("@/features/delay-cases/components/delay-cases-action-widget", () => ({
+  DelayCasesActionWidget: () => <div data-testid="delay-cases-widget" />,
+}));
 
 const mockDashboardData = {
   student: {

@@ -85,14 +85,13 @@ describe("CytoscapeGraphCanvas", () => {
       { data: { id: "e-7", source: "n-task", target: "n-crit", label: "CLASSIFIED_AS" } },
       { data: { id: "e-8", source: "n-commit", target: "n-id", label: "AUTHORED_BY" } },
       { data: { id: "e-9", source: "n-id", target: "n-stu", label: "MAPS_TO" } },
-      { data: { id: "e-10", source: "n-stu", target: "n-stu", label: "REVIEWED", weight: 3 } },
     ];
 
     render(<CytoscapeGraphCanvas nodes={nodes} edges={edges} />);
 
     expect(cytoscape).toHaveBeenCalledTimes(1);
     const passedConfig = vi.mocked(cytoscape).mock.calls[0][0] as cytoscape.CytoscapeOptions;
-    expect(passedConfig?.elements).toHaveLength(18);
+    expect(passedConfig?.elements).toHaveLength(17);
 
     const taskElement = (passedConfig?.elements as Array<{ data: Record<string, unknown> }>).find(
       (el) => el.data.id === "n-task"

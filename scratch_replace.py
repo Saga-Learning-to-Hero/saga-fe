@@ -17,7 +17,7 @@ replace_in_file('src/features/delay-cases/types/delay-cases.ts', {
 replace_in_file('src/features/delay-cases/lib/delay-case-constants.ts', {
     'CLOSED_OBJECTIVE:': 'CLOSED_EXCUSED:',
     'CLOSED_SUBJECTIVE:': 'CLOSED_REJECTED:',
-    'Khách quan — Không tính trễ': 'Châm chước — Không tính trễ',
+    'Khách quan — Không tính trễ': 'Chấp nhận — Không tính trễ',
     'Chủ quan — Tính trễ': 'Từ chối — Tính trễ'
 })
 
@@ -32,18 +32,18 @@ replace_in_file('src/features/delay-cases/components/lecturer-delay-queue-view.t
     'case "SUBJECTIVE":': 'case "REJECTED":',
     'status: "CLOSED_SUBJECTIVE"': 'status: "CLOSED_REJECTED"',
     '"CLOSED_OBJECTIVE", "CLOSED_SUBJECTIVE"': '"CLOSED_EXCUSED", "CLOSED_REJECTED"',
-    'value: "OBJECTIVE", label: "Đã duyệt - Khách quan"': 'value: "EXCUSED", label: "Đã duyệt - Châm chước"',
+    'value: "OBJECTIVE", label: "Đã duyệt - Khách quan"': 'value: "EXCUSED", label: "Đã duyệt - Chấp nhận"',
     'value: "SUBJECTIVE", label: "Đã duyệt - Chủ quan"': 'value: "REJECTED", label: "Đã duyệt - Từ chối"'
 })
 
 replace_in_file('src/features/delay-cases/components/delay-case-lecturer-review-form.tsx', {
     '"OBJECTIVE"': '"EXCUSED"',
     '"SUBJECTIVE"': '"REJECTED"',
-    'Khách quan': 'Châm chước',
+    'Khách quan': 'Chấp nhận',
     'Chủ quan': 'Từ chối'
 })
 
 replace_in_file('src/features/delay-cases/components/delay-case-card.tsx', {
     'delayCase.lecturerOutcome === "OBJECTIVE"': 'delayCase.lecturerOutcome === "EXCUSED"',
-    '"Khách quan" : "Chủ quan"': '"Châm chước" : "Từ chối"'
+    '"Khách quan" : "Chủ quan"': '"Chấp nhận" : "Từ chối"'
 })
