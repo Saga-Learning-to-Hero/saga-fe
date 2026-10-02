@@ -19,7 +19,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
+  
 } from "@/components/ui/alert-dialog";
 import { useQuery } from "@tanstack/react-query";
 import { apiClient } from "@/lib/axios";
@@ -91,7 +91,7 @@ export function DelayCaseExplanationForm({ delayCase }: { delayCase: DelayCaseRe
   });
 
   const taskOptions = tasks
-    ?.filter((t) => t.id !== delayCase.taskId)
+    ?.filter((t) => t.id !== delayCase.task?.id)
     .map((t) => ({ value: t.id, label: `${t.key} - ${t.summary}` })) || [];
 
   const onSubmit = () => {

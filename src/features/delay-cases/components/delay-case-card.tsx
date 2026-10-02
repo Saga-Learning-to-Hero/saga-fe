@@ -10,7 +10,7 @@ import {
 } from "../lib/delay-case-constants";
 import type { DelayCaseResponse } from "../types/delay-cases";
 import { Badge } from "@/components/ui/badge";
-import { AlertCircle, Clock, ExternalLink, ShieldAlert, CheckCircle2, XCircle } from "lucide-react";
+import { AlertCircle, Clock, ExternalLink, ShieldAlert, CheckCircle2, XCircle, User, Calendar } from "lucide-react";
 import { DelayCaseExplanationForm } from "./delay-case-explanation-form";
 import { DelayCaseLeaderReviewForm } from "./delay-case-leader-review-form";
 import { DelayCaseLecturerReviewForm } from "./delay-case-lecturer-review-form";
@@ -30,20 +30,32 @@ export function DelayCaseCard({ delayCase }: DelayCaseCardProps) {
   }, [delayCase.explanationDueAt]);
 
   return (
-    <div className="bg-card border border-border/60 rounded-xl overflow-hidden flex flex-col shadow-sm">
-      <div className="bg-muted/30 p-4 border-b border-border/60 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-            <span className="font-mono text-sm font-semibold text-muted-foreground">{delayCase.taskKey}</span>
-            <span className="text-sm font-semibold line-clamp-1">{delayCase.taskSummary}</span>
+    <div className="bg-card border border-border/60 rounded-xl overflow-hidden flex flex-col shadow-sm transition-all hover:shadow-md">
+      <div className="bg-muted/40 p-5 border-b border-border/60 flex flex-col lg:flex-row lg:items-start justify-between gap-4">
+        <div className="space-y-2 flex-1">
+          <div className="flex flex-wrap items-center gap-2">
+            <Badge variant="secondary" className="font-mono bg-blue-500/10 text-blue-700 hover:bg-blue-500/20 border border-blue-500/20 rounded-md">
+              {delayCase.task?.externalKey}
+            </Badge>
+            <h3 className="text-base font-bold text-foreground">
+              {delayCase.task?.title}
+            </h3>
           </div>
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <span>Sinh viên: <span className="font-medium text-foreground">{delayCase.studentName}</span></span>
-            <span>•</span>
-            <span>Hạn: <span className="font-medium text-foreground">{formatDateOnly(delayCase.dueDate)}</span></span>
+          <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
+            <div className="flex items-center gap-1.5">
+              <User className="w-4 h-4" />
+              <span className="font-medium text-foreground">{delayCase.student?.fullName}</span>
+              <span className="text-xs">({delayCase.student?.studentCode})</span>
+            </div>
+            <span className="hidden sm:inline">•</span>
+            <div className="flex items-center gap-1.5">
+              <Calendar className="w-4 h-4" />
+              <span>Hạn:</span>
+              <span className="font-medium text-foreground">{formatDateOnly(delayCase.dueDate)}</span>
+            </div>
           </div>
         </div>
-        <Badge variant="outline" className={`shrink-0 ${statusConfig.colorClass}`}>
+        <Badge variant="outline" className={`shrink-0 text-sm px-3 py-1 shadow-sm ${statusConfig.colorClass}`}>
           {statusConfig.label}
         </Badge>
       </div>
@@ -128,10 +140,10 @@ export function DelayCaseCard({ delayCase }: DelayCaseCardProps) {
                     <span className="font-medium">{getCategoryConfig(delayCase.category).label}</span>
                   </div>
                 )}
-                {delayCase.blockingTaskKey && (
+                {delayCase.blockingTask?.externalKey && (
                   <div>
                     <span className="text-muted-foreground block text-xs mb-1">Task chặn</span>
-                    <span className="font-mono font-medium text-blue-600 dark:text-blue-400">{delayCase.blockingTaskKey}</span>
+                    <span className="font-mono font-medium text-blue-600 dark:text-blue-400">{delayCase.blockingTask?.externalKey}</span>
                   </div>
                 )}
               </div>

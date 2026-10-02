@@ -51,14 +51,24 @@ export interface DelayCasePermissions {
   canReopen: boolean;
 }
 
+export interface DelayCaseTask {
+  id: string;
+  externalKey: string;
+  title: string;
+}
+
+export interface DelayCaseStudent {
+  studentProfileId: string;
+  userId: string;
+  fullName: string;
+  studentCode: string;
+}
+
 export interface DelayCaseResponse {
   id: string;
   projectId: string;
-  taskId: string;
-  taskKey: string;
-  taskSummary: string;
-  studentId: string;
-  studentName: string;
+  task: DelayCaseTask;
+  student: DelayCaseStudent;
   dueDate: string; // date-only
   openedAt: string; // no offset
   explanationDueAt: string; // no offset
@@ -68,9 +78,7 @@ export interface DelayCaseResponse {
   category?: DelayCauseCategory | null;
   categoryGroup?: CategoryGroup | null;
   explanationNote?: string | null; // masked based on permission
-  blockingTaskId?: string | null;
-  blockingTaskKey?: string | null;
-  blockingTaskSummary?: string | null;
+  blockingTask?: DelayCaseTask | null;
   evidenceUrl?: string | null; // masked based on permission
   explainedAt?: string | null;
 
