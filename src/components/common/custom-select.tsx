@@ -11,6 +11,7 @@ export interface CustomSelectOption {
   subLabel?: string;
   icon?: React.ReactNode;
   tooltip?: string;
+  disabled?: boolean;
 }
 
 interface CustomSelectOptionItemProps {
@@ -37,6 +38,7 @@ function CustomSelectOptionItem({
   } | null>(null);
 
   const fullText = option.tooltip || option.label;
+  const isDisabled = option.disabled === true;
 
   const handlePointerEnter = () => {
     onOptionIntent?.(option.value);
@@ -66,8 +68,10 @@ function CustomSelectOptionItem({
       ref={isSelected ? selectedOptionRef : undefined}
       role="option"
       aria-selected={isSelected}
-      tabIndex={0}
+      aria-disabled={isDisabled}
+      tabIndex={isDisabled ? -1 : 0}
       onClick={() => {
+        if (isDisabled) return;
         setShowTooltip(false);
         onSelect();
       }}
@@ -75,6 +79,7 @@ function CustomSelectOptionItem({
       onPointerLeave={handlePointerLeave}
       onFocus={() => onOptionIntent?.(option.value)}
       onKeyDown={(event) => {
+        if (isDisabled) return;
         if (event.key === "Enter" || event.key === " ") {
           event.preventDefault();
           setShowTooltip(false);
@@ -82,7 +87,9 @@ function CustomSelectOptionItem({
         }
       }}
       className={cn(
-        "relative flex items-center justify-between gap-2 px-2.5 py-2 rounded-lg text-xs cursor-pointer transition-colors select-none",
+        "relative flex items-center justify-between gap-2 px-2.5 py-2 rounded-lg text-xs transition-colors select-none",
+        isDisabled && "cursor-not-allowed opacity-50",
+        !isDisabled && "cursor-pointer",
         isSelected
           ? "bg-primary/15 text-primary font-semibold hover:bg-primary/20"
           : "text-foreground hover:bg-muted/70"

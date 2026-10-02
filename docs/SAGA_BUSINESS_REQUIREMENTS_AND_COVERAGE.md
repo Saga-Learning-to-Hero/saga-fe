@@ -494,6 +494,18 @@ Project Type dùng để phân loại hướng dự án, không điều khiển 
 | AI-008 | Báo cáo tiến độ nhóm dự án & sinh viên | ✓ | ✓ | ✓ | `DONE`; `/api/projects/{projectId}/ai/team/progress-analyses` và `/students/{studentId}/progress-analyses`, tích hợp trung tâm AI sinh viên tại `/student/ai` |
 | AI-009 | Nhận diện & Cảnh báo rủi ro (Risk Detection) | ✓ | ✓ | ✓ | `DONE`; `/api/projects/{projectId}/ai/team/risk-analyses`, `/students/{studentId}/risk-analyses`, `/tasks/{taskId}/risk-analyses`, hiển thị cấp độ rủi ro, nguyên nhân và đề xuất hành động |
 | AI-010 | Đánh giá thông minh Task (Task Intelligence) | ✓ | ✓ | ✓ | `DONE`; `/api/projects/{projectId}/ai/tasks/{taskId}/intelligence-analyses`, hiển thị độ mạnh minh chứng, cảnh báo làm lệch đề bài `deviationDetected` trong `IssueDetailsModal` |
+| AI-011 | Trợ lý chat theo dự án, riêng từng người dùng | ✓ | ✓ | ✓ | `DONE`; sáu API `/api/projects/{projectId}/assistant/...`, nút chat trong lớp, lịch sử, Markdown, citation điều hướng trang nghiệp vụ và phản hồi hữu ích. Không phải nguồn chấm điểm |
+
+Chat gắn với một dự án và chỉ người gọi xem được cuộc trò chuyện của mình. Câu hỏi nằm trong bốn phạm vi: tiến độ sprint, task trễ hạn và hồ sơ trễ hạn, hoạt động task hoặc commit của thành viên, chi tiết một task. Giao diện dùng cửa sổ chat nổi không khóa trang; khi thu gọn và mở lại trong cùng trang, hệ thống giữ nguyên hội thoại, bản nháp và vị trí đang xem. Chuyển trang, đổi phạm vi dự án hoặc tải lại trang sẽ bắt đầu lại từ danh sách hội thoại.
+
+| Vai trò | Chat |
+| --- | --- |
+| Sinh viên | Hỏi dự án của nhóm trong lớp đã chọn. Backend quyết định dữ liệu được trả về. |
+| Trưởng nhóm | Cùng phạm vi dự án của nhóm. Không có quyền chat riêng ngoài session. |
+| Giảng viên | Hỏi dự án của một nhóm trong lớp được phân công. Trang không xác định nhóm thì phải chọn nhóm đã có dự án. |
+| Admin | Không thấy và không dùng chat. |
+
+Khóa đi theo cấu hình lớp hiện có: khóa lớp, rồi khóa nền tảng nếu giảng viên bật cho phép, rồi tóm tắt do backend dựng khi không có khóa. Chat chỉ đọc: không chấm điểm, không sửa task, không đóng hồ sơ trễ hạn và không phải nguồn điểm.
 
 ---
 
@@ -644,6 +656,11 @@ Project Type dùng để phân loại hướng dự án, không điều khiển 
 | `GET /api/projects/{projectId}/ai/commits/{gitCommitId}/academic-classifications` | Đã dùng (Lịch sử phân loại commit) |
 | `POST /api/projects/{projectId}/ai/academic-classifications/{id}/review` | Đã dùng (Lecturer duyệt CONFIRM/REJECT/CORRECT) |
 | `GET /api/lecturer/courses/{courseId}/ai/academic-classifications` | Đã dùng (Tổng hợp phân loại đề cương toàn khóa học cho Giảng viên, lọc theo artifactType, status, phân trang) |
+| `GET /api/projects/{projectId}/assistant/status` | Đã dùng (Bật/tắt, nguồn khóa COURSE/PLATFORM/UNAVAILABLE và lượt hỏi còn lại) |
+| `GET/POST /api/projects/{projectId}/assistant/conversations` | Đã dùng (Tối đa 20 cuộc trò chuyện riêng của người gọi; tạo cuộc mới) |
+| `GET/POST /api/projects/{projectId}/assistant/conversations/{conversationId}/messages` | Đã dùng (Lịch sử cũ nhất trước; hỏi 1–1000 ký tự, không tự gửi lại khi timeout) |
+| `POST /api/projects/{projectId}/assistant/messages/{messageId}/feedback` | Đã dùng (Hữu ích hoặc chưa, không bắt buộc nhận xét) |
+| `GET /api/projects/{projectId}/delay-cases/{caseId}` | Đã dùng (Màn hồ sơ trễ hạn chỉ đọc khi bấm citation; không giải trình, duyệt, đóng hay mở lại) |
 
 ---
 

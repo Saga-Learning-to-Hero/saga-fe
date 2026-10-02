@@ -2,6 +2,7 @@
 
 import { getApiErrorMessage } from "@/lib/api-error";
 import { useState, useMemo } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
   GitCommitIcon,
   FolderGit2Icon,
@@ -37,8 +38,13 @@ import {
   parseStudentNodeProfileId,
   isStudentProfileUuid,
 } from "@/features/graph/lib/student-profile-id";
+import { replaceWithoutSearchParams } from "@/features/assistant/lib/clear-search-params";
+import { CommitDetailModal } from "./commit-detail-modal";
 
 export function CommitsView() {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const {
     course: effectiveCourse,
     courseId,
@@ -249,6 +255,21 @@ export function CommitsView() {
   const allCommits: CommitItem[] = useMemo(() => {
     return rawCommits.map((c) => mapProjectCommitToCommitItem(c, teamMembers));
   }, [rawCommits, teamMembers]);
+
+  const requestedCommitId = searchParams.get("commitId")?.trim() || "";
+  const requestedCommitHash = searchParams.get("commitHash")?.trim() || "";
+  const hashMatch = !requestedCommitId && requestedCommitHash && !isLoadingCommits
+    ? allCommits.find((commit) => {
+        const hash = requestedCommitHash.toLowerCase();
+        return (
+          commit.hash.toLowerCase() === hash ||
+          commit.shortHash.toLowerCase() === hash ||
+          commit.hash.toLowerCase().startsWith(hash)
+        );
+      })
+    : null;
+  const resolvedCommitId = requestedCommitId || hashMatch?.id || "";
+  const openedCommitHash = hashMatch?.hash || requestedCommitHash || null;
 
   const mergeCommitCount = useMemo(() => {
     return allCommits.filter((c) => c.isMerge).length;
@@ -628,6 +649,15 @@ export function CommitsView() {
           )}
         </>
       )}
+      <CommitDetailModal
+        isOpen={Boolean(resolvedCommitId)}
+        onClose={() => {
+          replaceWithoutSearchParams(router, pathname, searchParams, ["commitId", "commitHash"]);
+        }}
+        projectId={projectId}
+        gitCommitId={resolvedCommitId || null}
+        fallbackShortHash={openedCommitHash?.slice(0, 7)}
+      />
     </div>
   );
 }

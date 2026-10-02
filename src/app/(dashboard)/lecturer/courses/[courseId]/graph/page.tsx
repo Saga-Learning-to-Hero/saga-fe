@@ -12,12 +12,21 @@ export default async function LecturerGraphPage({
   searchParams,
 }: {
   params: Promise<{ courseId: string }>;
-  searchParams?: Promise<{ teamId?: string; studentId?: string }>;
+  searchParams?: Promise<{
+    teamId?: string;
+    studentId?: string;
+    taskId?: string;
+    commitHash?: string;
+    commitId?: string;
+  }>;
 }) {
   const { courseId } = await params;
   const resolvedSearchParams = searchParams ? await searchParams : undefined;
   const initialTeamId = resolvedSearchParams?.teamId;
   const initialStudentId = resolvedSearchParams?.studentId;
+  const initialTaskId = resolvedSearchParams?.taskId;
+  const initialCommitHash = resolvedSearchParams?.commitHash;
+  const initialCommitId = resolvedSearchParams?.commitId;
 
   return (
     <div className="mx-auto w-full max-w-[1600px] space-y-6 pb-12">
@@ -25,6 +34,9 @@ export default async function LecturerGraphPage({
         courseId={courseId}
         initialTeamId={initialTeamId}
         initialStudentId={initialStudentId}
+        initialTaskId={initialTaskId}
+        initialCommitHash={initialCommitHash}
+        initialCommitId={initialCommitId}
       />
     </div>
   );

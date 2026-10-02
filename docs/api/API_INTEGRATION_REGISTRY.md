@@ -248,6 +248,22 @@ Quy ước:
 
 ---
 
+## Trợ lý chat theo dự án
+
+Swagger production `GET /v3/api-docs`. Chat chỉ đọc, không thêm khóa và không thay các màn SAGA AI cũ.
+
+| STT | Method | Endpoint | Mục đích | Service | Trạng thái |
+| --- | --- | --- | --- | --- | --- |
+| PA-1 | `GET` | `/api/projects/{projectId}/assistant/status` | Nguồn khóa và lượt hỏi còn lại | `project-assistant-service.ts` | ✅ ĐÃ TÍCH HỢP |
+| PA-2 | `GET` | `/api/projects/{projectId}/assistant/conversations` | Tối đa 20 cuộc trò chuyện của người gọi | `project-assistant-service.ts` | ✅ ĐÃ TÍCH HỢP |
+| PA-3 | `POST` | `/api/projects/{projectId}/assistant/conversations` | Tạo cuộc trò chuyện mới | `project-assistant-service.ts` | ✅ ĐÃ TÍCH HỢP |
+| PA-4 | `GET` | `/api/projects/{projectId}/assistant/conversations/{conversationId}/messages` | Tin nhắn, cũ nhất trước | `project-assistant-service.ts` | ✅ ĐÃ TÍCH HỢP |
+| PA-5 | `POST` | `/api/projects/{projectId}/assistant/conversations/{conversationId}/messages` | Hỏi 1–1000 ký tự | `project-assistant-service.ts` | ✅ ĐÃ TÍCH HỢP |
+| PA-6 | `POST` | `/api/projects/{projectId}/assistant/messages/{messageId}/feedback` | Đánh dấu hữu ích | `project-assistant-service.ts` | ✅ ĐÃ TÍCH HỢP |
+| DC-1 | `GET` | `/api/projects/{projectId}/delay-cases/{caseId}` | Hồ sơ trễ hạn chỉ đọc từ citation | `delay-case-service.ts` | ✅ ĐÃ TÍCH HỢP |
+
+---
+
 ## Ghi Chú Kỹ Thuật & Cảnh Báo Lỗi Ngoại Lệ (Technical Caveats)
 
 ### ⚠️ Caveat Endpoint (`PUT /api/projects/{id}/integrations/jira`):

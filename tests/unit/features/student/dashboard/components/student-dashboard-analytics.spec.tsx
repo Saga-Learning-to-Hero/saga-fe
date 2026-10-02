@@ -16,6 +16,11 @@ vi.mock("@/features/student/sprint-progress/hooks/use-project-sprints");
 vi.mock("@/features/student/project/hooks/useProjectSync");
 vi.mock("@/features/student/project/hooks/use-project-realtime");
 vi.mock("@/features/student/project/hooks/use-project-jira-source-selection");
+vi.mock("next/navigation", () => ({
+  usePathname: () => "/student/dashboard",
+  useRouter: () => ({ replace: vi.fn(), push: vi.fn() }),
+  useSearchParams: () => new URLSearchParams(),
+}));
 vi.mock("@/features/student/dashboard/components/student-weekly-commits-chart", () => ({
   StudentWeeklyCommitsChart: () => <div data-testid="weekly-commits-chart" />,
 }));

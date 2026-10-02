@@ -47,6 +47,8 @@ import { GraphStatsSummary } from "./graph-stats-summary";
 import { GraphNodeDetailsModal } from "./graph-node-details-modal";
 import { Neo4jTabBar } from "./neo4j-tab-bar";
 import { useProjectGraph } from "../hooks/use-project-graph";
+import { useProjectCommits } from "@/features/student/project/hooks/useProjectSync";
+import { CommitDetailModal } from "@/features/student/commits/components/commit-detail-modal";
 import { usePipelineGraphData } from "../hooks/use-pipeline-graph-data";
 import {
   mapStudentNodesToMemberOptions,
@@ -72,6 +74,9 @@ interface LecturerGraphViewProps {
   courseId?: string;
   initialTeamId?: string;
   initialStudentId?: string;
+  initialTaskId?: string;
+  initialCommitId?: string;
+  initialCommitHash?: string;
   initialViewMode?: "GRAPH" | "PIPELINE";
 }
 
@@ -81,6 +86,9 @@ export function LecturerGraphView({
   courseId,
   initialTeamId,
   initialStudentId,
+  initialTaskId,
+  initialCommitId,
+  initialCommitHash,
   initialViewMode = "GRAPH",
 }: LecturerGraphViewProps = {}) {
   const teamsQuery = useLecturerTeams(courseId || "", {
@@ -113,7 +121,9 @@ export function LecturerGraphView({
 
   const projectId = currentTeam?.projectId || null;
 
-  const [mainMode, setMainMode] = useState<"GRAPH" | "PIPELINE">(initialViewMode);
+  const [mainMode, setMainMode] = useState<"GRAPH" | "PIPELINE">(
+    initialTaskId ? "PIPELINE" : initialViewMode
+  );
   const [neo4jTab, setNeo4jTab] = useState<Neo4jTabMode>("OVERVIEW");
   const [drillDownStudent, setDrillDownStudent] = useState<GraphDrillDownStudent | null>(() =>
     initialStudentId ? resolveDrillDownStudent(initialStudentId) : null
@@ -168,8 +178,11 @@ export function LecturerGraphView({
   }, [drillDownStudent, prevProjectId, projectId, teams]);
 
   const [pipelineSubView, setPipelineSubView] = useState<"FLOW" | "MATRIX">("FLOW");
-  const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
+  const [selectedTaskId, setSelectedTaskId] = useState<string | null>(initialTaskId || null);
   const [isMobileInspectorOpen, setIsMobileInspectorOpen] = useState(false);
+  const [deepLinkCommitId, setDeepLinkCommitId] = useState<string | null>(initialCommitId || null);
+  const [appliedCitationTaskId, setAppliedCitationTaskId] = useState(initialTaskId || "");
+  const [appliedCitationCommitId, setAppliedCitationCommitId] = useState(initialCommitId || "");
 
   const [pipelineFilter, setPipelineFilter] = useState<PipelineFilterState>({
     studentId: initialStudentId || "ALL",
@@ -179,6 +192,38 @@ export function LecturerGraphView({
     repoId: "ALL",
     branchName: "ALL",
   });
+
+  if (initialTaskId && initialTaskId !== appliedCitationTaskId) {
+    setAppliedCitationTaskId(initialTaskId);
+    setSelectedTaskId(initialTaskId);
+    setMainMode("PIPELINE");
+  }
+  if (initialCommitId && initialCommitId !== appliedCitationCommitId) {
+    setAppliedCitationCommitId(initialCommitId);
+    setDeepLinkCommitId(initialCommitId);
+  }
+
+  const commitLookup = useProjectCommits(projectId, {
+    enabled: Boolean(projectId && initialCommitHash && !initialCommitId && !deepLinkCommitId),
+    page: 0,
+    size: 100,
+  });
+  const [mobileCitationApplied, setMobileCitationApplied] = useState(false);
+  if (!mobileCitationApplied && initialTaskId) {
+    setMobileCitationApplied(true);
+    if (typeof window !== "undefined" && window.innerWidth < 1024) {
+      setIsMobileInspectorOpen(true);
+    }
+  }
+  if (!initialCommitId && initialCommitHash && !deepLinkCommitId) {
+    const payload = commitLookup.data;
+    const items = Array.isArray(payload) ? payload : payload?.items ?? [];
+    const hash = initialCommitHash.toLowerCase();
+    const matched = items.find(
+      (commit) => commit.sha?.toLowerCase() === hash || commit.sha?.toLowerCase().startsWith(hash)
+    );
+    if (matched?.id) setDeepLinkCommitId(matched.id);
+  }
 
   const [prevInitialStudentId, setPrevInitialStudentId] = useState(initialStudentId);
   if (initialStudentId !== prevInitialStudentId) {
@@ -1140,6 +1185,14 @@ export function LecturerGraphView({
       )}
 
       {mainMode === "GRAPH" ? renderNeo4jView() : renderPipelineView()}
+
+      <CommitDetailModal
+        isOpen={Boolean(deepLinkCommitId && projectId)}
+        onClose={() => setDeepLinkCommitId(null)}
+        projectId={projectId}
+        gitCommitId={deepLinkCommitId}
+        fallbackShortHash={initialCommitHash?.slice(0, 7)}
+      />
 
       <GraphNodeDetailsModal
         nodeData={selectedGraphNode}
