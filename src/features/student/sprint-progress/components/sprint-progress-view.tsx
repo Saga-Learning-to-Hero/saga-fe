@@ -3,6 +3,7 @@
 import { showErrorToast, getApiErrorMessage, getApiErrorStatus } from "@/lib/api-error";
 import { getSprintSourceUserMessage } from "../lib/sprint-query-source";
 import { useState, useMemo, useEffect, useRef } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import type { SprintIssue, Sprint, IssueStatus, Epic } from "../types/sprint-progress";
 import { SprintHeader } from "./sprint-header";
@@ -67,9 +68,14 @@ import {
   scopeSprintsToJiraSource,
 } from "../lib/jira-source-scope";
 import { JiraSourceSwitcher } from "@/features/student/project/components/jira-source-switcher";
+import { replaceWithoutSearchParams } from "@/features/assistant/lib/clear-search-params";
+import { DelayCaseReadonlySheet } from "@/features/delay-cases/components/delay-case-readonly-sheet";
 
 export function SprintProgressView() {
   const { user: authUser } = useAuthStore();
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const { course: effectiveCourse, courseId, isInvalidCourse } = useStudentCourseContext();
 
   const { data: team } = useStudentMyTeam(courseId, { enabled: Boolean(courseId) });
@@ -295,6 +301,23 @@ export function SprintProgressView() {
     setDefaultSprintIdForModal(undefined);
     setIsIssueModalOpen(true);
   };
+
+  const requestedTaskId = searchParams.get("taskId")?.trim() || "";
+  const requestedDelayCaseId = searchParams.get("delayCaseId")?.trim() || "";
+
+  if (requestedTaskId && !isLoadingTasks) {
+    const issue = rawIssues.find((item) => item.id === requestedTaskId);
+    if (issue && activeIssueForModal?.id !== issue.id) {
+      setActiveIssueForModal(issue);
+      setDefaultSprintIdForModal(undefined);
+      setIsIssueModalOpen(true);
+    }
+  }
+
+  useEffect(() => {
+    if (!requestedTaskId || isLoadingTasks) return;
+    replaceWithoutSearchParams(router, pathname, searchParams, ["taskId"]);
+  }, [isLoadingTasks, pathname, requestedTaskId, router, searchParams]);
 
 
   const filteredIssues = useMemo(() => {
@@ -746,6 +769,15 @@ export function SprintProgressView() {
           canCreateTask={canCreateTask}
         />
       )}
+
+      <DelayCaseReadonlySheet
+        projectId={projectId}
+        caseId={requestedDelayCaseId}
+        open={Boolean(requestedDelayCaseId && projectId)}
+        onOpenChange={(open) => {
+          if (!open) replaceWithoutSearchParams(router, pathname, searchParams, ["delayCaseId"]);
+        }}
+      />
 
       {isSprintModalOpen && (
         <SprintModal

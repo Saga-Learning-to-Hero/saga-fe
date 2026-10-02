@@ -11,8 +11,22 @@ function courseIdOf(course: StudentCourse | null | undefined): string {
 }
 
 export function studentCoursePath(pathname: string, courseId: string): string {
+  return studentCourseLink(pathname, courseId);
+}
+
+export function studentCourseLink(
+  pathname: string,
+  courseId: string,
+  extra?: Record<string, string | null | undefined>
+): string {
   const params = new URLSearchParams();
   params.set("courseId", courseId);
+  if (extra) {
+    for (const [key, value] of Object.entries(extra)) {
+      const trimmed = value?.trim() ?? "";
+      if (trimmed) params.set(key, trimmed);
+    }
+  }
   return `${pathname}?${params.toString()}`;
 }
 

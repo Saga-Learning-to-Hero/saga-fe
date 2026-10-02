@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo, useCallback } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import {
   CheckCircle2Icon,
@@ -19,6 +20,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { LeaderBadge } from "@/components/common/leader-badge";
 import { MemberProgressSheet } from "@/features/progress/components/member-progress-sheet";
+import { replaceWithoutSearchParams } from "@/features/assistant/lib/clear-search-params";
 import {
   ProgressFactNote,
   ProjectProgressSummary,
@@ -82,6 +84,10 @@ function getLatestSprint(sprints: ProjectSprintResponse[]): ProjectSprintRespons
 }
 
 export function StudentDashboardAnalytics() {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const requestedMemberId = searchParams.get("memberId")?.trim() || "";
   const { course, courseId, isLoading: isCoursesLoading, isInvalidCourse } = useStudentCourseContext();
   const [selectedSprintId, setSelectedSprintId] = useState<string | null>(null);
   const [selectedIntegrationId, setSelectedIntegrationId] = useState<string | null>(null);
@@ -89,6 +95,8 @@ export function StudentDashboardAnalytics() {
   // Trưởng nhóm có thể chọn xem tab Cá nhân (Cockpit) hoặc xem Toàn nhóm
   const [activeTab, setActiveTab] = useState<"personal" | "team">("personal");
   const [detailStudentId, setDetailStudentId] = useState<string | null>(null);
+  const effectiveActiveTab = requestedMemberId ? "team" : activeTab;
+  const effectiveDetailStudentId = requestedMemberId || detailStudentId;
   const [isManualRefresh, setIsManualRefresh] = useState(false);
 
   // State lưu projectId nếu có từ course hoặc từ query
@@ -148,7 +156,7 @@ export function StudentDashboardAnalytics() {
     (data?.student?.teamRole || "").toUpperCase() === "LEADER"
   );
   const projectId = discoveredProjectId || currentProjectId;
-  const canLoadProgress = Boolean(isLeader && projectId && activeTab === "team");
+  const canLoadProgress = Boolean(isLeader && projectId && effectiveActiveTab === "team");
 
   // Tiến độ nhóm và SSE project chỉ khi Leader đang xem tab Toàn nhóm
   const progressQuery = useProjectProgress(projectId, { enabled: canLoadProgress });
@@ -419,10 +427,16 @@ export function StudentDashboardAnalytics() {
             <div className="flex items-center rounded-xl border border-border/70 bg-muted/30 p-1">
               <button
                 type="button"
-                onClick={() => setActiveTab("personal")}
+                onClick={() => {
+                  setActiveTab("personal");
+                  setDetailStudentId(null);
+                  if (requestedMemberId) {
+                    replaceWithoutSearchParams(router, pathname, searchParams, ["memberId"]);
+                  }
+                }}
                 className={cn(
                   "rounded-lg px-3 py-1.5 text-xs font-bold transition-all cursor-pointer",
-                  activeTab === "personal"
+                  effectiveActiveTab === "personal"
                     ? "bg-card text-foreground shadow-xs"
                     : "text-muted-foreground hover:text-foreground"
                 )}
@@ -434,7 +448,7 @@ export function StudentDashboardAnalytics() {
                 onClick={() => setActiveTab("team")}
                 className={cn(
                   "rounded-lg px-3 py-1.5 text-xs font-bold transition-all cursor-pointer flex items-center gap-1",
-                  activeTab === "team"
+                  effectiveActiveTab === "team"
                     ? "bg-card text-foreground shadow-xs"
                     : "text-muted-foreground hover:text-foreground"
                 )}
@@ -459,7 +473,7 @@ export function StudentDashboardAnalytics() {
       </div>
 
       {/* 2. Nội dung Tab: Cá nhân (Cockpit) hay Toàn nhóm (Leader) */}
-      {activeTab === "personal" ? (
+      {effectiveActiveTab === "personal" ? (
         <div className="space-y-6">
           {/* Actionable Alerts Banner */}
           <div className="space-y-4">
@@ -706,17 +720,9 @@ export function StudentDashboardAnalytics() {
               <ProgressFactNote />
               <TeamWorkloadComparisonChart
                 members={members}
-                selectedStudentId={detailStudentId}
+                selectedStudentId={effectiveDetailStudentId}
                 onSelectMember={openMemberDetail}
                 currentSprintName={progress.currentSprint?.name}
-              />
-              <MemberProgressSheet
-                projectId={projectId}
-                studentId={detailStudentId}
-                open={Boolean(detailStudentId)}
-                onOpenChange={(open) => {
-                  if (!open) setDetailStudentId(null);
-                }}
               />
             </>
           ) : (
@@ -727,6 +733,21 @@ export function StudentDashboardAnalytics() {
           )}
         </div>
       )}
+      {effectiveDetailStudentId ? (
+        <MemberProgressSheet
+          projectId={projectId}
+          studentId={effectiveDetailStudentId}
+          open
+          onOpenChange={(open) => {
+            if (!open) {
+              setDetailStudentId(null);
+              if (requestedMemberId) {
+                replaceWithoutSearchParams(router, pathname, searchParams, ["memberId"]);
+              }
+            }
+          }}
+        />
+      ) : null}
     </div>
   );
 }

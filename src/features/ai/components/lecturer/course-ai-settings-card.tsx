@@ -609,7 +609,7 @@ function CourseAiMultiProviderForm({
                   Cho phép khóa nền tảng cho một số phân tích thủ công
                 </span>
                 <span className="text-xs text-muted-foreground block leading-relaxed">
-                  Chỉ áp dụng cho các yêu cầu thủ công được hỗ trợ. Phân tích tự động Commit/Task/Risk vẫn sử dụng credential của khóa học.
+                  Khóa của lớp và khóa nền tảng, khi bật lựa chọn này, cũng được trợ lý chat theo dự án dùng theo thứ tự lớp rồi hệ thống. Phân tích tự động Commit/Task/Risk vẫn chỉ dùng khóa của lớp.
                 </span>
               </div>
             </label>

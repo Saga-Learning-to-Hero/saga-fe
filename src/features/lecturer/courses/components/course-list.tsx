@@ -67,7 +67,8 @@ function CourseListCard({
 }) {
   const href = lecturerCourseDashboardPath(course.id);
   const subjectLabel = course.subjectName || course.name;
-  const classLabel = course.classCode || course.className || "Chưa gắn lớp niên khóa";
+  const classLabel =
+    course.classCode || course.className || "Chưa gắn lớp niên khóa";
   const semesterLabel = course.semesterName
     ? `${course.semesterName} (${course.semesterCode || ""})`
     : course.semesterCode || "Học kỳ hiện tại";
@@ -120,7 +121,9 @@ function CourseListCard({
           </div>
           <div className="flex items-center gap-2 text-muted-foreground">
             <UsersIcon className="size-3.5 shrink-0 text-primary" />
-            <span className="truncate font-medium">Lớp sinh viên: {classLabel}</span>
+            <span className="truncate font-medium">
+              Lớp sinh viên: {classLabel}
+            </span>
           </div>
           {course.syllabusVersionLabel && (
             <div className="flex items-center gap-2 text-muted-foreground">
@@ -147,7 +150,8 @@ function CourseListCard({
 
 export function CourseList() {
   const { user } = useAuthStore();
-  const { data: allCourses = [], isLoading: isListLoading } = useLecturerCourses();
+  const { data: allCourses = [], isLoading: isListLoading } =
+    useLecturerCourses();
   const prefetchCourse = usePrefetchLecturerCourse();
   const [selectedSemesterId, setSelectedSemesterId] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
@@ -170,7 +174,7 @@ export function CourseList() {
       semesterId: selectedSemesterId || undefined,
       search: debouncedSearch || undefined,
     }),
-    [page, pageSize, selectedSemesterId, debouncedSearch]
+    [page, pageSize, selectedSemesterId, debouncedSearch],
   );
 
   const {
@@ -195,7 +199,10 @@ export function CourseList() {
   }
 
   const semesters = useMemo(() => {
-    const map = new Map<string, { id: string; code: string; name: string; count: number }>();
+    const map = new Map<
+      string,
+      { id: string; code: string; name: string; count: number }
+    >();
     for (const course of allCourses) {
       const id = course.semesterId?.trim();
       if (!id) continue;
@@ -216,7 +223,9 @@ export function CourseList() {
 
   const semesterCount = useMemo(() => {
     const codes = new Set(
-      allCourses.map((course) => course.semesterCode || course.semesterId).filter(Boolean)
+      allCourses
+        .map((course) => course.semesterCode || course.semesterId)
+        .filter(Boolean),
     );
     return codes.size;
   }, [allCourses]);
@@ -254,7 +263,9 @@ export function CourseList() {
               </span>
             </h1>
             <p className="text-xs leading-relaxed text-muted-foreground sm:text-sm">
-              Chọn lớp học phần phụ trách để theo dõi sức khỏe các nhóm, kiểm tra tiến độ Sprint, đối soát nguồn gốc mã nguồn Git và đánh giá tỷ lệ đóng góp thực tế của sinh viên.
+              Chọn lớp học phần phụ trách để theo dõi các nhóm, kiểm tra tiến độ
+              Sprint, đối soát nguồn gốc mã nguồn Git và đánh giá tỷ lệ đóng góp
+              thực tế của sinh viên.
             </p>
           </div>
 
@@ -289,7 +300,7 @@ export function CourseList() {
                 "cursor-pointer shrink-0 rounded-xl px-4 py-2 text-xs font-bold transition-all",
                 !selectedSemesterId
                   ? "bg-primary text-primary-foreground shadow-xs"
-                  : "bg-muted/70 text-muted-foreground hover:bg-muted hover:text-foreground"
+                  : "bg-muted/70 text-muted-foreground hover:bg-muted hover:text-foreground",
               )}
             >
               Tất cả ({allCourses.length})
@@ -303,7 +314,7 @@ export function CourseList() {
                   "cursor-pointer shrink-0 rounded-xl px-4 py-2 text-xs font-bold transition-all",
                   selectedSemesterId === semester.id
                     ? "bg-primary text-primary-foreground shadow-xs"
-                    : "bg-muted/70 text-muted-foreground hover:bg-muted hover:text-foreground"
+                    : "bg-muted/70 text-muted-foreground hover:bg-muted hover:text-foreground",
                 )}
               >
                 {semester.name} ({semester.count})
@@ -329,7 +340,9 @@ export function CourseList() {
         <CourseListSkeleton />
       ) : isError ? (
         <Card className="rounded-xl border border-dashed border-destructive/30 p-8 text-center">
-          <p className="text-sm font-semibold text-foreground">Không tải được danh sách lớp học phần</p>
+          <p className="text-sm font-semibold text-foreground">
+            Không tải được danh sách lớp học phần
+          </p>
           <p className="mt-1 text-xs text-muted-foreground">
             {getApiErrorMessage(error, "Vui lòng thử lại.")}
           </p>
@@ -346,9 +359,12 @@ export function CourseList() {
         <Card className="grid min-h-60 place-items-center rounded-xl border border-dashed border-border bg-card p-8">
           <div className="text-center">
             <GraduationCapIcon className="mx-auto mb-3 size-10 text-muted-foreground/40" />
-            <p className="text-sm font-semibold text-foreground">Bạn chưa được phân công lớp học phần nào</p>
+            <p className="text-sm font-semibold text-foreground">
+              Bạn chưa được phân công lớp học phần nào
+            </p>
             <p className="mt-1 text-xs text-muted-foreground">
-              Khi quản trị viên phân công lớp giảng dạy, danh sách sẽ hiển thị tại đây.
+              Khi quản trị viên phân công lớp giảng dạy, danh sách sẽ hiển thị
+              tại đây.
             </p>
           </div>
         </Card>
@@ -356,7 +372,9 @@ export function CourseList() {
         <Card className="grid min-h-60 place-items-center rounded-xl border border-dashed border-border bg-card p-8">
           <div className="text-center">
             <SearchIcon className="mx-auto mb-3 size-10 text-muted-foreground/40" />
-            <p className="text-sm font-semibold text-foreground">Không tìm thấy lớp học phần phù hợp</p>
+            <p className="text-sm font-semibold text-foreground">
+              Không tìm thấy lớp học phần phù hợp
+            </p>
             <p className="mt-1 text-xs text-muted-foreground">
               Vui lòng thử tìm kiếm với từ khóa khác hoặc xóa bộ lọc.
             </p>
@@ -376,12 +394,16 @@ export function CourseList() {
         <div
           className={cn(
             "space-y-5 transition-opacity",
-            isPlaceholderData && "pointer-events-none opacity-60"
+            isPlaceholderData && "pointer-events-none opacity-60",
           )}
         >
           <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
             {courses.map((course) => (
-              <CourseListCard key={course.id} course={course} onPrefetch={prefetchCourse} />
+              <CourseListCard
+                key={course.id}
+                course={course}
+                onPrefetch={prefetchCourse}
+              />
             ))}
           </div>
           <TablePagination

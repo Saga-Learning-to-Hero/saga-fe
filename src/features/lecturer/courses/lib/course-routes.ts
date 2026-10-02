@@ -30,12 +30,33 @@ export function lecturerCourseWeightSettingsPath(courseId: string) {
   return lecturerCourseContributionPath(courseId);
 }
 
-export function lecturerCourseGraphPath(courseId: string, teamId?: string | null) {
+export interface LecturerGraphLinkQuery {
+  teamId?: string | null;
+  taskId?: string | null;
+  commitHash?: string | null;
+  commitId?: string | null;
+}
+
+export function lecturerCourseGraphPath(
+  courseId: string,
+  teamIdOrQuery?: string | null | LecturerGraphLinkQuery
+) {
   const base = `/lecturer/courses/${courseId}/graph`;
-  const trimmed = typeof teamId === "string" ? teamId.trim() : "";
-  if (!trimmed) return base;
-  const params = new URLSearchParams({ teamId: trimmed });
-  return `${base}?${params.toString()}`;
+  const query: LecturerGraphLinkQuery =
+    typeof teamIdOrQuery === "string" || teamIdOrQuery == null
+      ? { teamId: teamIdOrQuery }
+      : teamIdOrQuery;
+  const params = new URLSearchParams();
+  const teamId = query.teamId?.trim() ?? "";
+  const taskId = query.taskId?.trim() ?? "";
+  const commitHash = query.commitHash?.trim() ?? "";
+  const commitId = query.commitId?.trim() ?? "";
+  if (teamId) params.set("teamId", teamId);
+  if (taskId) params.set("taskId", taskId);
+  if (commitHash) params.set("commitHash", commitHash);
+  if (commitId) params.set("commitId", commitId);
+  const serialized = params.toString();
+  return serialized ? `${base}?${serialized}` : base;
 }
 
 export function lecturerCoursePeerReviewsPath(
@@ -68,8 +89,15 @@ export function resolveLecturerWorkspaceView(raw: string | null | undefined): Le
   return raw === "teams" ? "teams" : "members";
 }
 
-export function lecturerCourseTeamPath(courseId: string, teamId: string) {
-  return `/lecturer/courses/${courseId}/teams/${teamId}`;
+export function lecturerCourseTeamPath(
+  courseId: string,
+  teamId: string,
+  query?: { delayCaseId?: string | null }
+) {
+  const base = `/lecturer/courses/${courseId}/teams/${teamId}`;
+  const delayCaseId = query?.delayCaseId?.trim() ?? "";
+  if (!delayCaseId) return base;
+  return `${base}?delayCaseId=${encodeURIComponent(delayCaseId)}`;
 }
 
 export function lecturerCourseTeamEvaluationPath(courseId: string, teamId: string) {
