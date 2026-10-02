@@ -466,6 +466,17 @@ describe("StudentDashboardAnalytics - Sprint Scope & Card Labels", () => {
       // Tự động nhận diện và hiển thị sprint mới nhất của site-2
       expect(screen.getByRole("button", { name: /Sprint Beta Moi Nhat/i })).toBeInTheDocument();
       expect(screen.queryByRole("button", { name: /Sprint Alpha Cu/i })).not.toBeInTheDocument();
+
+      // useStudentDashboard được gọi với đúng sprintId và jiraIntegrationId của site-2
+      expect(useStudentDashboard).toHaveBeenCalledWith(
+        "course-1",
+        "sprint-bet-latest",
+        "site-2",
+        expect.anything()
+      );
+
+      // Thẻ 3 hiển thị badge Jira theo site đang chọn (BET) thay vì site cũ
+      expect(screen.getByText("Jira: BET")).toBeInTheDocument();
     }
   );
 });

@@ -11,15 +11,20 @@ export class StudentDashboardService {
    */
   static async getDashboard(
     courseId: string,
-    sprintId?: string | null
+    sprintId?: string | null,
+    jiraIntegrationId?: string | null
   ): Promise<StudentDashboardResponse> {
     const cleanCourseId = requireCourseId(courseId);
     const cleanSprintId = sprintId?.trim();
+    const cleanIntegrationId = jiraIntegrationId?.trim();
     const url = `/api/student/courses/${encodeURIComponent(cleanCourseId)}/dashboard`;
-    const response = cleanSprintId
-      ? await apiClient.get<StudentDashboardResponse>(url, {
-          params: { sprintId: cleanSprintId },
-        })
+
+    const params: Record<string, string> = {};
+    if (cleanSprintId) params.sprintId = cleanSprintId;
+    if (cleanIntegrationId) params.jiraIntegrationId = cleanIntegrationId;
+
+    const response = Object.keys(params).length > 0
+      ? await apiClient.get<StudentDashboardResponse>(url, { params })
       : await apiClient.get<StudentDashboardResponse>(url);
     return response.data;
   }

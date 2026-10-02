@@ -83,27 +83,71 @@ function getLatestSprint(sprints: ProjectSprintResponse[]): ProjectSprintRespons
 export function StudentDashboardAnalytics() {
   const { course, courseId, isLoading: isCoursesLoading, isInvalidCourse } = useStudentCourseContext();
   const [selectedSprintId, setSelectedSprintId] = useState<string | null>(null);
-  const dashboardQuery = useStudentDashboard(courseId, selectedSprintId, { enabled: Boolean(courseId) });
-  const data = dashboardQuery.data;
+  const [selectedIntegrationId, setSelectedIntegrationId] = useState<string | null>(null);
 
   // Trưởng nhóm có thể chọn xem tab Cá nhân (Cockpit) hoặc xem Toàn nhóm
   const [activeTab, setActiveTab] = useState<"personal" | "team">("personal");
   const [detailStudentId, setDetailStudentId] = useState<string | null>(null);
+  const [isManualRefresh, setIsManualRefresh] = useState(false);
+
+  // State lưu projectId nếu có từ course hoặc từ query
+  const [discoveredProjectId, setDiscoveredProjectId] = useState<string | null>(course?.projectId || null);
+
+  // Lấy effectiveSourceId giống SprintProgressView để useProjectSprints resolve đúng nguồn Jira
+  const jiraSource = useProjectJiraSourceSelection(discoveredProjectId);
+  const effectiveSourceId = selectedIntegrationId || jiraSource.effectiveSourceId;
+
+  const selectedJiraSource = useMemo(() => {
+    const sources = jiraSource.activeSources || [];
+    return sources.find(
+      (source) => source.integrationId === effectiveSourceId
+    );
+  }, [jiraSource.activeSources, effectiveSourceId]);
+
+  // Danh sách sprint: truyền effectiveSourceId để tránh trạng thái "needs_selection" khi có nhiều nguồn
+  const { data: projectSprints } = useProjectSprints(discoveredProjectId, effectiveSourceId, { enabled: Boolean(discoveredProjectId) });
+
+  // Lọc sprints thuộc Site (effectiveSourceId) đang chọn
+  const siteFilteredProjectSprints = useMemo(() => {
+    if (!projectSprints || projectSprints.length === 0) return [];
+    if (!effectiveSourceId) return projectSprints;
+    return projectSprints.filter((sp) => {
+      const spSourceId = sp.source?.jiraIntegrationId || sp.jiraIntegrationId;
+      return !spSourceId || spSourceId === effectiveSourceId;
+    });
+  }, [projectSprints, effectiveSourceId]);
+
+  // Sprint được xác định hiệu lực: nếu sprint chọn thủ công thuộc site đang chọn thì giữ lại, ngược lại lấy sprint mới nhất của site đó
+  const effectiveSelectedSprintId = useMemo(() => {
+    if (selectedSprintId && siteFilteredProjectSprints.some((sp) => sp.id === selectedSprintId)) {
+      return selectedSprintId;
+    }
+    const latest = getLatestSprint(siteFilteredProjectSprints);
+    return latest ? latest.id : null;
+  }, [selectedSprintId, siteFilteredProjectSprints]);
+
+  const selectedSprintValue = effectiveSelectedSprintId || "";
+
+  // Gọi dashboard với sprint và site cụ thể
+  const dashboardQuery = useStudentDashboard(
+    courseId,
+    effectiveSelectedSprintId,
+    effectiveSourceId,
+    { enabled: Boolean(courseId) }
+  );
+  const data = dashboardQuery.data;
+
+  // Cập nhật discoveredProjectId khi data trả về
+  const currentProjectId = data?.team?.projectId || course?.projectId || null;
+  if (currentProjectId && currentProjectId !== discoveredProjectId) {
+    setDiscoveredProjectId(currentProjectId);
+  }
 
   const isLeader = Boolean(
     (data?.student?.teamRole || "").toUpperCase() === "LEADER"
   );
-
-  const projectId = data?.team?.projectId || null;
+  const projectId = discoveredProjectId || currentProjectId;
   const canLoadProgress = Boolean(isLeader && projectId && activeTab === "team");
-  const [isManualRefresh, setIsManualRefresh] = useState(false);
-
-  // Lấy effectiveSourceId giống SprintProgressView để useProjectSprints resolve đúng nguồn Jira
-  const jiraSource = useProjectJiraSourceSelection(projectId);
-  const effectiveSourceId = jiraSource.effectiveSourceId;
-
-  // Danh sách sprint: truyền effectiveSourceId để tránh trạng thái "needs_selection" khi có nhiều nguồn
-  const { data: projectSprints } = useProjectSprints(projectId, effectiveSourceId, { enabled: Boolean(projectId) });
 
   // Tiến độ nhóm và SSE project chỉ khi Leader đang xem tab Toàn nhóm
   const progressQuery = useProjectProgress(projectId, { enabled: canLoadProgress });
@@ -128,39 +172,14 @@ export function StudentDashboardAnalytics() {
     setDetailStudentId(studentId);
   };
 
-  // Lọc sprints thuộc Site (effectiveSourceId) đang chọn
-  const siteFilteredProjectSprints = useMemo(() => {
-    if (!projectSprints || projectSprints.length === 0) return [];
-    if (!effectiveSourceId) return projectSprints;
-    return projectSprints.filter((sp) => {
-      const spSourceId = sp.source?.jiraIntegrationId || sp.jiraIntegrationId;
-      return !spSourceId || spSourceId === effectiveSourceId;
-    });
-  }, [projectSprints, effectiveSourceId]);
-
-  const [prevEffectiveSourceId, setPrevEffectiveSourceId] = useState(effectiveSourceId);
-  if (effectiveSourceId !== prevEffectiveSourceId) {
-    setPrevEffectiveSourceId(effectiveSourceId);
-    const newSiteSprints = (projectSprints || []).filter((sp) => {
-      const spSourceId = sp.source?.jiraIntegrationId || sp.jiraIntegrationId;
-      return !spSourceId || spSourceId === effectiveSourceId;
-    });
-    const latest = getLatestSprint(newSiteSprints);
-    setSelectedSprintId(latest ? latest.id : null);
-  }
-
   const handleSiteChange = useCallback((newSourceId: string) => {
     jiraSource.selectSource(newSourceId);
-    const newSiteSprints = (projectSprints || []).filter((sp) => {
-      const spSourceId = sp.source?.jiraIntegrationId || sp.jiraIntegrationId;
-      return !spSourceId || spSourceId === newSourceId;
-    });
-    const latest = getLatestSprint(newSiteSprints);
-    setSelectedSprintId(latest ? latest.id : null);
-  }, [jiraSource, projectSprints]);
+    setSelectedIntegrationId(newSourceId);
+    setSelectedSprintId(null);
+  }, [jiraSource]);
 
-  const isJiraConnected = Boolean(data?.integrations?.jira?.connected);
-  const jiraProjectKey = data?.integrations?.jira?.projectKey || "JIRA";
+  const isJiraConnected = Boolean(data?.integrations?.jira?.connected || jiraSource.activeSources.length > 0);
+  const currentJiraProjectKey = selectedJiraSource?.projectKey || data?.integrations?.jira?.projectKey || "JIRA";
 
   const siteSelectOptions = useMemo(() => {
     if (!jiraSource.activeSources || jiraSource.activeSources.length === 0) {
@@ -168,7 +187,7 @@ export function StudentDashboardAnalytics() {
         return [
           {
             value: "default",
-            label: `${jiraProjectKey} · Kết nối mặc định`,
+            label: `${currentJiraProjectKey} · Kết nối mặc định`,
             subLabel: "Nguồn tích hợp Jira",
           },
         ];
@@ -186,7 +205,7 @@ export function StudentDashboardAnalytics() {
       label: `${source.projectKey || "JIRA"} · ${source.siteName}`,
       subLabel: source.boardId ? `Board: ${source.boardId}` : "Board mặc định",
     }));
-  }, [jiraSource.activeSources, isJiraConnected, jiraProjectKey]);
+  }, [jiraSource.activeSources, isJiraConnected, currentJiraProjectKey]);
 
   const currentSprint = data?.currentSprint;
   const sprintSelectOptions = useMemo(() => {
@@ -218,15 +237,6 @@ export function StudentDashboardAnalytics() {
     return options;
   }, [siteFilteredProjectSprints]);
 
-  const selectedSprintValue = useMemo(() => {
-    if (selectedSprintId && siteFilteredProjectSprints.some((sp) => sp.id === selectedSprintId)) {
-      return selectedSprintId;
-    }
-    const latest = getLatestSprint(siteFilteredProjectSprints);
-    if (latest?.id) return latest.id;
-    return "";
-  }, [selectedSprintId, siteFilteredProjectSprints]);
-
   const isSprintLoading =
     Boolean(dashboardQuery.isPlaceholderData) ||
     Boolean(dashboardQuery.isFetching && selectedSprintId);
@@ -237,9 +247,9 @@ export function StudentDashboardAnalytics() {
       return {
         name: matched.name,
         state: matched.state,
-        completedTasks: currentSprint?.completedTasks ?? 0,
-        totalTasks: currentSprint?.totalTasks ?? 0,
-        completionPercent: currentSprint?.completionPercent ?? null,
+        completedTasks: 0,
+        totalTasks: 0,
+        completionPercent: null,
       };
     }
     return currentSprint;
@@ -320,6 +330,37 @@ export function StudentDashboardAnalytics() {
   }
 
   const { student, team, myMetrics, myActiveTasks, recentCommits, weeklyCommits, actionableAlerts, integrations } = data;
+
+  // Lọc myActiveTasks theo Site đang chọn để đảm bảo không lẫn task từ site khác
+  const activeSources = jiraSource.activeSources || [];
+  const scopedActiveTasks =
+    !myActiveTasks || myActiveTasks.length === 0
+      ? []
+      : !selectedJiraSource?.projectKey || activeSources.length <= 1
+        ? myActiveTasks
+        : myActiveTasks.filter((task) => {
+            const targetKey = selectedJiraSource.projectKey.toUpperCase();
+            const prefix = task.externalKey?.split("-")[0]?.toUpperCase();
+            return prefix === targetKey;
+          });
+
+  // Lọc actionableAlerts theo Site/Sprint đang chọn
+  const siteSprintIds = new Set(siteFilteredProjectSprints.map((sp) => sp.id));
+  const scopedAlerts =
+    !actionableAlerts || actionableAlerts.length === 0
+      ? []
+      : !siteFilteredProjectSprints || siteFilteredProjectSprints.length === 0
+        ? actionableAlerts
+        : actionableAlerts.filter((alert) => {
+            const alertSprintId = alert.targetIds?.sprintId;
+            return !alertSprintId || siteSprintIds.has(alertSprintId);
+          });
+
+  // Metrics của sprint đang xem cho biểu đồ
+  const sprintTasksForChart =
+    currentSprint?.id === effectiveSelectedSprintId && data.sprintMetrics?.tasks
+      ? data.sprintMetrics.tasks
+      : myMetrics.tasks;
 
   const formattedLastCommit = myMetrics.commits.lastCommittedAt
     ? new Date(myMetrics.commits.lastCommittedAt).toLocaleString("vi-VN", {
@@ -420,7 +461,7 @@ export function StudentDashboardAnalytics() {
       {activeTab === "personal" ? (
         <div className="space-y-6">
           {/* Actionable Alerts Banner */}
-          <StudentAlertsBanner alerts={actionableAlerts} courseId={courseId} />
+          <StudentAlertsBanner alerts={scopedAlerts} courseId={courseId} />
 
           {/* Thanh Bộ Lọc Site & Sprint - Riêng 1 Hàng */}
           <div className="flex flex-col gap-3.5 rounded-xl border border-border/80 bg-card/90 p-4 shadow-xs sm:flex-row sm:items-center sm:justify-between">
@@ -609,7 +650,7 @@ export function StudentDashboardAnalytics() {
                       <div className="flex items-center gap-1.5 pt-0.5">
                         {integrations?.jira?.connected && (
                           <Badge variant="outline" className="text-[9px] px-1.5 py-0 border-sky-500/30 text-sky-700 dark:text-sky-300">
-                            Jira: {integrations.jira.projectKey || "Đã kết nối"}
+                            Jira: {currentJiraProjectKey}
                           </Badge>
                         )}
                         {integrations?.github?.connected && (
@@ -626,11 +667,11 @@ export function StudentDashboardAnalytics() {
           </div>
 
           {/* Biểu đồ Commit theo tuần & Phân bố Task của tôi */}
-          <StudentWeeklyCommitsChart weeklyCommits={weeklyCommits} tasks={data.sprintMetrics?.tasks ?? myMetrics.tasks} />
+          <StudentWeeklyCommitsChart weeklyCommits={weeklyCommits} tasks={sprintTasksForChart} />
 
           {/* Grid 2 Cột: Nhiệm vụ đang làm & Nhật ký commit gần đây */}
           <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
-            <StudentActiveTasksCard tasks={myActiveTasks} courseId={courseId} />
+            <StudentActiveTasksCard tasks={scopedActiveTasks} courseId={courseId} />
             <StudentRecentCommitsCard commits={recentCommits} courseId={courseId} />
           </div>
         </div>

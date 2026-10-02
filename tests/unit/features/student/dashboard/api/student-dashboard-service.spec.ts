@@ -320,4 +320,46 @@ describe("StudentDashboardService", () => {
       });
     }
   );
+
+  fptTest(
+    {
+      id: "UTCID10",
+      type: "N",
+      executedDate: "02/10/2026",
+      description: "Truyen day du sprintId va jiraIntegrationId thi gui ca 2 vao query params",
+    },
+    async () => {
+      const getSpy = vi.spyOn(apiClient, "get").mockResolvedValueOnce({ data: mockDashboardResponse });
+      const mockSprintId = "sprint_uuid_101";
+      const mockIntegrationId = "jira_site_202";
+
+      const res = await StudentDashboardService.getDashboard(mockCourseId, mockSprintId, mockIntegrationId);
+
+      expect(getSpy).toHaveBeenCalledWith(
+        `/api/student/courses/${mockCourseId}/dashboard`,
+        { params: { sprintId: mockSprintId, jiraIntegrationId: mockIntegrationId } }
+      );
+      expect(res.student.studentCode).toBe("HE170504");
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID11",
+      type: "B",
+      executedDate: "02/10/2026",
+      description: "Truyen jiraIntegrationId nhung sprintId rong thi chi gui query param jiraIntegrationId",
+    },
+    async () => {
+      const getSpy = vi.spyOn(apiClient, "get").mockResolvedValueOnce({ data: mockDashboardResponse });
+      const mockIntegrationId = "jira_site_303";
+
+      await StudentDashboardService.getDashboard(mockCourseId, null, mockIntegrationId);
+
+      expect(getSpy).toHaveBeenCalledWith(
+        `/api/student/courses/${mockCourseId}/dashboard`,
+        { params: { jiraIntegrationId: mockIntegrationId } }
+      );
+    }
+  );
 });
