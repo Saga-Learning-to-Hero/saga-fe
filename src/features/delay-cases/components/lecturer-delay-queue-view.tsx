@@ -8,29 +8,29 @@ import { Button } from "@/components/ui/button";
 import { CustomSelect } from "@/components/common/custom-select";
 
 export function LecturerDelayQueueView() {
-  const [filter, setFilter] = useState("AWAITING_LECTURER");
+  const [filter, setFilter] = useState("PENDING_LECTURER_REVIEW");
 
   const queryParams = (() => {
     switch (filter) {
-      case "AWAITING_LECTURER":
-        return { status: "AWAITING_LECTURER" };
-      case "OBJECTIVE":
-        return { status: "CLOSED_OBJECTIVE" };
-      case "SUBJECTIVE":
-        return { status: "CLOSED_SUBJECTIVE" };
+      case "PENDING_LECTURER_REVIEW":
+        return { status: "PENDING_LECTURER_REVIEW" };
+      case "EXCUSED":
+        return { status: "CLOSED_EXCUSED" };
+      case "REJECTED":
+        return { status: "CLOSED_REJECTED" };
       case "CLOSED_ALL":
-        return { status: ["CLOSED_OBJECTIVE", "CLOSED_SUBJECTIVE"] };
+        return { status: ["CLOSED_EXCUSED", "CLOSED_REJECTED"] };
       default:
-        return { status: "AWAITING_LECTURER" };
+        return { status: "PENDING_LECTURER_REVIEW" };
     }
   })();
 
   const { data: delayCases, isLoading, isError, refetch, isRefetching } = useLecturerDelayQueue(queryParams);
 
   const filterOptions = [
-    { value: "AWAITING_LECTURER", label: "Chờ tôi duyệt" },
-    { value: "OBJECTIVE", label: "Đã duyệt - Khách quan" },
-    { value: "SUBJECTIVE", label: "Đã duyệt - Chủ quan" },
+    { value: "PENDING_LECTURER_REVIEW", label: "Chờ tôi duyệt" },
+    { value: "EXCUSED", label: "Đã duyệt - Châm chước" },
+    { value: "REJECTED", label: "Đã duyệt - Từ chối" },
     { value: "CLOSED_ALL", label: "Tất cả hồ sơ đã đóng" },
   ];
 

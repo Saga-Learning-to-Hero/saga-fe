@@ -85,21 +85,21 @@ export function DelayCaseLecturerReviewForm({ delayCase }: { delayCase: DelayCas
       <div className="flex flex-col sm:flex-row gap-3">
         <Button
           type="button"
-          variant={watchOutcome === "OBJECTIVE" ? "default" : "outline"}
-          className={watchOutcome === "OBJECTIVE" ? "bg-emerald-600 hover:bg-emerald-700" : ""}
-          onClick={() => form.setValue("outcome", "OBJECTIVE", { shouldValidate: true })}
+          variant={watchOutcome === "EXCUSED" ? "default" : "outline"}
+          className={watchOutcome === "EXCUSED" ? "bg-emerald-600 hover:bg-emerald-700" : ""}
+          onClick={() => form.setValue("outcome", "EXCUSED", { shouldValidate: true })}
         >
           <Scale className="w-4 h-4 mr-2" />
-          Khách quan
+          Châm chước
         </Button>
         <Button
           type="button"
-          variant={watchOutcome === "SUBJECTIVE" ? "default" : "outline"}
-          className={watchOutcome === "SUBJECTIVE" ? "bg-red-600 hover:bg-red-700" : ""}
-          onClick={() => form.setValue("outcome", "SUBJECTIVE", { shouldValidate: true })}
+          variant={watchOutcome === "REJECTED" ? "default" : "outline"}
+          className={watchOutcome === "REJECTED" ? "bg-red-600 hover:bg-red-700" : ""}
+          onClick={() => form.setValue("outcome", "REJECTED", { shouldValidate: true })}
         >
           <AlertTriangle className="w-4 h-4 mr-2" />
-          Chủ quan
+          Từ chối
         </Button>
       </div>
       {form.formState.errors.outcome && (
@@ -129,7 +129,7 @@ export function DelayCaseLecturerReviewForm({ delayCase }: { delayCase: DelayCas
           <AlertDialogHeader>
             <AlertDialogTitle>Xác nhận quyết định</AlertDialogTitle>
             <AlertDialogDescription>
-              Bạn đang quyết định hồ sơ này là <b>{watchOutcome === "OBJECTIVE" ? "Khách quan" : "Chủ quan"}</b>.
+              Bạn đang quyết định hồ sơ này là <b>{watchOutcome === "EXCUSED" ? "Châm chước" : "Từ chối"}</b>.
               Sau khi xác nhận, quyết định không thể thay đổi.
             </AlertDialogDescription>
           </AlertDialogHeader>

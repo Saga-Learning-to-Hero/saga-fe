@@ -19,6 +19,7 @@ import {
   UserCogIcon,
   Link2Icon,
   SparklesIcon,
+  AlertCircleIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { isNavItemActive } from "@/components/layout/sidebar/nav-config";
@@ -52,6 +53,7 @@ const ICON_MAP: Record<string, React.ElementType> = {
   UserCog: UserCogIcon,
   Link2: Link2Icon,
   Sparkles: SparklesIcon,
+  AlertCircle: AlertCircleIcon,
 };
 
 interface TopNavTabsProps {

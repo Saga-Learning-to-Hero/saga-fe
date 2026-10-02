@@ -22,7 +22,7 @@ interface DelayCaseCardProps {
 
 export function DelayCaseCard({ delayCase }: DelayCaseCardProps) {
   const statusConfig = getStatusConfig(delayCase.status);
-  
+
   const { isExpired, days, hours, minutes } = useMemo(() => {
     if (!delayCase.explanationDueAt) return { isExpired: true, days: 0, hours: 0, minutes: 0 };
     // parseVietnamDateTime is used directly in countdown 
@@ -93,7 +93,7 @@ export function DelayCaseCard({ delayCase }: DelayCaseCardProps) {
               </div>
             )}
           </div>
-          
+
           {/* Signal flags */}
           <div className="flex flex-wrap gap-2 pt-2">
             {delayCase.signals.currentlyBlocked && (
@@ -122,7 +122,7 @@ export function DelayCaseCard({ delayCase }: DelayCaseCardProps) {
         {/* Explanation Section */}
         <div className="space-y-3">
           <h4 className="text-sm font-semibold text-foreground border-b border-border/50 pb-2">Giải trình của sinh viên</h4>
-          
+
           {delayCase.explainedAt === null ? (
             <div className="text-sm text-muted-foreground italic flex items-center gap-2">
               <Clock className="w-4 h-4" /> Chưa gửi giải trình
@@ -147,7 +147,7 @@ export function DelayCaseCard({ delayCase }: DelayCaseCardProps) {
                   </div>
                 )}
               </div>
-              
+
               <div>
                 <span className="text-muted-foreground block text-xs mb-1">Nội dung giải trình</span>
                 {delayCase.explanationNote === null ? (
@@ -158,7 +158,7 @@ export function DelayCaseCard({ delayCase }: DelayCaseCardProps) {
                   </div>
                 )}
               </div>
-              
+
               {delayCase.evidenceUrl !== undefined && (
                 <div>
                   <span className="text-muted-foreground block text-xs mb-1">Minh chứng</span>
@@ -208,7 +208,7 @@ export function DelayCaseCard({ delayCase }: DelayCaseCardProps) {
                 <span className="text-muted-foreground mx-1">•</span>
                 <span className="font-mono text-xs text-muted-foreground">{formatVietnamDateTime(delayCase.leaderReviewedAt)}</span>
               </div>
-              
+
               {delayCase.leaderComment === null ? (
                 <p className="italic text-muted-foreground text-sm">Nhận xét được giới hạn theo quyền truy cập.</p>
               ) : delayCase.leaderComment ? (
@@ -235,11 +235,11 @@ export function DelayCaseCard({ delayCase }: DelayCaseCardProps) {
                   </div>
                 </div>
               )}
-              
+
               {delayCase.lecturerOutcome && (
                 <div className="mt-2">
-                  <Badge variant="outline" className={delayCase.lecturerOutcome === "OBJECTIVE" ? "bg-emerald-500/10 text-emerald-700 border-emerald-500/30" : "bg-red-500/10 text-red-700 border-red-500/30"}>
-                    Quyết định: {delayCase.lecturerOutcome === "OBJECTIVE" ? "Khách quan" : "Chủ quan"}
+                  <Badge variant="outline" className={delayCase.lecturerOutcome === "EXCUSED" ? "bg-emerald-500/10 text-emerald-700 border-emerald-500/30" : "bg-red-500/10 text-red-700 border-red-500/30"}>
+                    Quyết định: {delayCase.lecturerOutcome === "EXCUSED" ? "Châm chước" : "Từ chối"}
                   </Badge>
                 </div>
               )}
@@ -288,7 +288,7 @@ export function DelayCaseCard({ delayCase }: DelayCaseCardProps) {
             <DelayCaseLecturerReviewForm delayCase={delayCase} />
           </div>
         )}
-        
+
         {delayCase.permissions.canReopen && (
           <div className="pt-4 border-t border-border/50 flex justify-end">
             <ReopenDelayCaseButton delayCase={delayCase} />

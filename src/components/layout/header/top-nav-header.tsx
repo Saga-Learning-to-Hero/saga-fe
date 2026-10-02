@@ -34,6 +34,7 @@ import {
   ROLE_LABELS,
   getInitials,
   getLecturerNavItems,
+  getLecturerGlobalNavItems,
   getStudentNavItems,
   isNavItemActive,
 } from "@/components/layout/sidebar/nav-config";
@@ -86,8 +87,12 @@ export function TopNavHeader() {
   const displayName = user.fullName || user.name || (user.role === "STUDENT" ? "Sinh viên" : "Giảng viên");
 
   let navItems: NavItem[] = [];
-  if (user.role === "LECTURER" && lecturerCourseId) {
-    navItems = getLecturerNavItems(lecturerCourseId);
+  if (user.role === "LECTURER") {
+    if (lecturerCourseId) {
+      navItems = getLecturerNavItems(lecturerCourseId);
+    } else {
+      navItems = getLecturerGlobalNavItems();
+    }
   } else if (
     user.role === "STUDENT" &&
     pathname !== "/student/courses" &&
