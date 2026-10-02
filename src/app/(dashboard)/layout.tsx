@@ -16,6 +16,7 @@ import { AdminTopHeader } from "@/components/layout/header/admin-top-header";
 import { ProfileModal } from "@/features/profile/components/profile-modal";
 import { UserRealtimeProvider } from "@/features/notification/providers/user-realtime-provider";
 import { UrlDelayCaseOpener } from "@/features/delay-cases/components/url-delay-case-opener";
+import { ProjectAssistantLauncher } from "@/features/assistant/components/project-assistant-launcher";
 
 export default function DashboardLayout({
   children,
@@ -120,6 +121,7 @@ export default function DashboardLayout({
           <ProfileModal />
           <Suspense fallback={null}>
             <UrlDelayCaseOpener />
+            <ProjectAssistantLauncher />
           </Suspense>
         </div>
       ) : (

@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   ArrowRightLeftIcon,
   CheckCircle2Icon,
@@ -47,8 +48,10 @@ import {
   lecturerCourseGraphPath,
   lecturerCoursePeerReviewsPath,
   lecturerCourseTeamMemberPath,
+  lecturerCourseTeamPath,
   lecturerCourseTeamsPath,
 } from "@/features/lecturer/courses/lib/course-routes";
+import { DelayCaseReadonlySheet } from "@/features/delay-cases/components/delay-case-readonly-sheet";
 import { ReplaceTeamLeaderDialog } from "./replace-team-leader-dialog";
 import { MoveTeamMemberDialog } from "./move-team-member-dialog";
 import { ActivityHeatmapGrid } from "@/features/analytics";
@@ -79,6 +82,7 @@ import { cn } from "@/lib/utils";
 interface TeamProjectDetailPageProps {
   courseId: string;
   teamId: string;
+  delayCaseId?: string;
 }
 
 function getInitials(name: string) {
@@ -88,8 +92,11 @@ function getInitials(name: string) {
   return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
 }
 
-export function TeamProjectDetailPage({ courseId, teamId }: TeamProjectDetailPageProps) {
+export function TeamProjectDetailPage({ courseId, teamId, delayCaseId }: TeamProjectDetailPageProps) {
+  const router = useRouter();
   const courseQuery = useLecturerCourse(courseId);
+  const [dismissedDelayCaseId, setDismissedDelayCaseId] = useState<string | null>(null);
+  const delayCaseOpen = Boolean(delayCaseId?.trim()) && dismissedDelayCaseId !== delayCaseId;
   const teamsQuery = useLecturerTeams(courseId);
   const replaceLeader = useReplaceTeamLeader(courseId);
   const moveMember = useMoveTeamMember(courseId);
@@ -620,6 +627,17 @@ export function TeamProjectDetailPage({ courseId, teamId }: TeamProjectDetailPag
         loadingText="Đang rút..."
         errorMessage={removeError}
         reasonDescription="Bắt buộc. Tối đa 500 ký tự. Hệ thống sẽ gửi thông báo cho sinh viên."
+      />
+      <DelayCaseReadonlySheet
+        projectId={projectId}
+        caseId={delayCaseId}
+        open={delayCaseOpen && Boolean(projectId && delayCaseId)}
+        onOpenChange={(open) => {
+          if (!open) {
+            setDismissedDelayCaseId(delayCaseId ?? null);
+            router.replace(lecturerCourseTeamPath(courseId, teamId));
+          }
+        }}
       />
     </LecturerPageShell>
   );
