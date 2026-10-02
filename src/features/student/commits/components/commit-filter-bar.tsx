@@ -8,10 +8,16 @@ import {
   GitCommitIcon,
   GitMergeIcon,
   GitPullRequestIcon,
+  UsersIcon,
 } from "lucide-react";
 import type { Repository, Branch } from "../types/commits";
+import type { CommitTeamMember } from "../lib/commit-mapper";
 import { Input } from "@/components/ui/input";
 import { CustomSelect } from "@/components/common/custom-select";
+import { isStudentProfileUuid } from "@/features/graph/lib/student-profile-id";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { resolveHttpAvatarUrl } from "@/lib/avatar-url";
+import { getAssigneeAvatarClass, getAssigneeInitials } from "@/features/student/sprint-progress/lib/assignee-avatar";
 
 export type CommitMergeFilter = "all" | "exclude_merge" | "only_merge";
 
@@ -22,6 +28,9 @@ interface CommitFilterBarProps {
   branches: Branch[];
   selectedBranchName: string;
   onSelectBranch: (branchName: string) => void;
+  members?: CommitTeamMember[];
+  selectedAuthorId?: string;
+  onSelectAuthor?: (authorId: string) => void;
   mergeFilter?: CommitMergeFilter;
   onMergeFilterChange?: (filter: CommitMergeFilter) => void;
   mergeCount?: number;
@@ -36,6 +45,9 @@ export function CommitFilterBar({
   branches,
   selectedBranchName,
   onSelectBranch,
+  members = [],
+  selectedAuthorId = "all",
+  onSelectAuthor,
   mergeFilter = "all",
   onMergeFilterChange,
   mergeCount = 0,
@@ -85,6 +97,61 @@ export function CommitFilterBar({
             ]}
           />
         </div>
+
+        {onSelectAuthor && (
+          <div className="relative z-40 w-full md:w-56">
+            <CustomSelect
+              id="commits-author-filter"
+              value={selectedAuthorId || "all"}
+              onChange={onSelectAuthor}
+              options={[
+                {
+                  value: "all",
+                  label: "Tất cả thành viên",
+                  subLabel: members && members.length > 0 ? `(${members.length} người)` : undefined,
+                  icon: <UsersIcon className="w-3.5 h-3.5 text-blue-500" />,
+                },
+                ...members.map((m) => {
+                  const displayName = m.fullName || m.name || m.studentCode || "Thành viên";
+                  const code = m.studentCode ? ` (${m.studentCode})` : "";
+                  const memberValue =
+                    (m.studentProfileId && isStudentProfileUuid(m.studentProfileId)
+                      ? m.studentProfileId
+                      : null) ||
+                    (m.id && isStudentProfileUuid(m.id) ? m.id : null) ||
+                    `unlinked:${m.studentCode || displayName}`;
+                  const avatarSrc = resolveHttpAvatarUrl(m.avatarUrl, m.avatar);
+                  const initials = getAssigneeInitials(displayName);
+                  const avatarColorClass = getAssigneeAvatarClass(
+                    m.studentProfileId || m.studentCode || m.id
+                  );
+
+                  return {
+                    value: memberValue,
+                    label: `${displayName}${code}`,
+                    subLabel: m.studentCode ? `MSSV: ${m.studentCode}` : undefined,
+                    icon: (
+                      <Avatar className="w-4.5 h-4.5 border border-border/80 shrink-0">
+                        {avatarSrc && (
+                          <AvatarImage
+                            src={avatarSrc}
+                            alt={displayName}
+                            className="object-cover"
+                          />
+                        )}
+                        <AvatarFallback
+                          className={`text-[8px] font-bold ${avatarColorClass}`}
+                        >
+                          {initials}
+                        </AvatarFallback>
+                      </Avatar>
+                    ),
+                  };
+                }),
+              ]}
+            />
+          </div>
+        )}
 
         {onMergeFilterChange && (
           <div className="relative z-40 w-full md:w-56">

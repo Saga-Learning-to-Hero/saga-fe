@@ -30,6 +30,13 @@ import {
 import { isGitHubRepoActive } from "../lib/github-commit-connection";
 import { useUserIdentities } from "@/features/integrations/hooks/useUserIntegrations";
 import { PersonalIntegrationRequiredModal } from "@/features/integrations/components/personal-integration-required-modal";
+import { useProjectGraph } from "@/features/graph/hooks/use-project-graph";
+import type { CytoscapeNodeData } from "@/features/graph/types/graph";
+import {
+  STUDENT_ROSTER_SUBGRAPH_PARAMS,
+  parseStudentNodeProfileId,
+  isStudentProfileUuid,
+} from "@/features/graph/lib/student-profile-id";
 
 export function CommitsView() {
   const {
@@ -56,6 +63,14 @@ export function CommitsView() {
     enabled: Boolean(projectId && integrations?.github?.status === "ACTIVE"),
   });
 
+  const studentRosterQuery = useProjectGraph({
+    projectId: projectId || "",
+    graphType: "OVERVIEW",
+    sprintId: null,
+    subgraphParams: STUDENT_ROSTER_SUBGRAPH_PARAMS,
+    enabled: Boolean(projectId),
+  });
+
   const {
     isJiraConnected: isUserJiraConnected,
     isGitHubConnected: isUserGitHubConnected,
@@ -64,9 +79,157 @@ export function CommitsView() {
 
   const isPersonalIntegrationMissing = !isUserJiraConnected || !isUserGitHubConnected;
 
+  const teamMembers = useMemo(() => {
+    const progressMembers = projectProgress?.memberProgress || [];
+    const teamMems = team?.members || [];
+    const graphNodes = studentRosterQuery.data?.nodes || [];
+
+    const memberMap = new Map<string, CommitTeamMember>();
+
+    // 1. Nạp từ team.members
+    teamMems.forEach((m) => {
+      const code = m.studentCode?.trim().toLowerCase();
+      let profileId =
+        (m.studentProfileId || m.studentId || m.id || undefined) ?? undefined;
+      if (!profileId && team?.myStudentCode && code === team.myStudentCode.trim().toLowerCase()) {
+        if (team.myStudentId && isStudentProfileUuid(team.myStudentId)) {
+          profileId = team.myStudentId;
+        }
+      }
+      if (code) {
+        memberMap.set(code, {
+          id: profileId && isStudentProfileUuid(profileId) ? profileId : m.studentCode,
+          studentProfileId: profileId && isStudentProfileUuid(profileId) ? profileId : undefined,
+          studentCode: m.studentCode,
+          fullName: m.fullName,
+          name: m.fullName,
+          avatar: m.avatar || m.avatarUrl || "",
+          avatarUrl: m.avatarUrl ?? null,
+        });
+      }
+    });
+
+    // 2. Nạp/bổ sung từ Graph Neo4j nodes (nguồn chuẩn xác nhất chứa studentProfileId UUID)
+    graphNodes.forEach((rawNode) => {
+      const node = (
+        "data" in rawNode && rawNode.data ? rawNode.data : rawNode
+      ) as CytoscapeNodeData;
+      if (node.type !== "STUDENT") return;
+      const profileId = parseStudentNodeProfileId(node);
+      if (!profileId) return;
+
+      const subLabelCode = (node.subLabel || "").trim().toLowerCase();
+      const labelCode = (node.label || "").trim().toLowerCase();
+
+      let existingKey: string | undefined;
+      if (subLabelCode && memberMap.has(subLabelCode)) {
+        existingKey = subLabelCode;
+      } else if (labelCode && memberMap.has(labelCode)) {
+        existingKey = labelCode;
+      } else {
+        for (const [key, mem] of memberMap.entries()) {
+          const memName = (mem.fullName || mem.name || "").trim().toLowerCase();
+          if (
+            (node.label && memName === node.label.trim().toLowerCase()) ||
+            (subLabelCode && mem.studentCode?.trim().toLowerCase() === subLabelCode)
+          ) {
+            existingKey = key;
+            break;
+          }
+        }
+      }
+
+      if (existingKey) {
+        const existing = memberMap.get(existingKey)!;
+        existing.studentProfileId = profileId;
+        existing.id = profileId;
+        if (!existing.avatar && node.avatar) {
+          existing.avatar = node.avatar;
+          existing.avatarUrl = node.avatar;
+        }
+      } else {
+        const studentCode = node.subLabel || "";
+        const key = (studentCode || profileId).toLowerCase();
+        memberMap.set(key, {
+          id: profileId,
+          studentProfileId: profileId,
+          studentCode: studentCode,
+          fullName: node.label || studentCode,
+          name: node.label || studentCode,
+          avatar: node.avatar || "",
+          avatarUrl: node.avatar || null,
+        });
+      }
+    });
+
+    // 3. Nạp bổ sung từ memberProgress nếu có
+    progressMembers.forEach((pm) => {
+      const studentCodeKey = pm.studentCode?.trim().toLowerCase();
+      const existing = studentCodeKey ? memberMap.get(studentCodeKey) : undefined;
+      const profileId =
+        (pm.studentId && isStudentProfileUuid(pm.studentId) ? pm.studentId : undefined) ||
+        existing?.studentProfileId;
+      const fullItem: CommitTeamMember = {
+        id: profileId || existing?.id || pm.studentId || pm.studentCode,
+        studentProfileId: profileId,
+        studentCode: pm.studentCode || existing?.studentCode,
+        fullName: pm.fullName || existing?.fullName,
+        name: pm.fullName || existing?.name,
+        avatar: existing?.avatar || "",
+        avatarUrl: existing?.avatarUrl || pm.avatarUrl || null,
+      };
+      if (studentCodeKey) {
+        memberMap.set(studentCodeKey, fullItem);
+      }
+    });
+
+    return Array.from(memberMap.values());
+  }, [
+    team,
+    projectProgress?.memberProgress,
+    studentRosterQuery.data?.nodes,
+  ]);
+
+  const uniqueTeamMembers = useMemo(() => {
+    const seen = new Set<string>();
+    const list: CommitTeamMember[] = [];
+    for (const m of teamMembers) {
+      const key = (m.studentCode || m.studentProfileId || m.id || m.fullName || "").toLowerCase();
+      if (!key || seen.has(key)) continue;
+      seen.add(key);
+      list.push(m);
+    }
+    return list;
+  }, [teamMembers]);
+
   const [page, setPage] = useState<number>(1);
   const [pageSize, setPageSize] = useState<number>(50);
+  const [selectedAuthorId, setSelectedAuthorId] = useState<string>("all");
   const [mergeFilter, setMergeFilter] = useState<CommitMergeFilter>("all");
+
+  const effectiveAuthorStudentId = useMemo(() => {
+    if (!selectedAuthorId || selectedAuthorId === "all") return undefined;
+    const target = uniqueTeamMembers.find(
+      (m) =>
+        (m.studentProfileId && m.studentProfileId.toLowerCase() === selectedAuthorId.toLowerCase()) ||
+        (m.id && m.id.toLowerCase() === selectedAuthorId.toLowerCase()) ||
+        (m.studentCode && m.studentCode.toLowerCase() === selectedAuthorId.toLowerCase()) ||
+        `unlinked:${(m.studentCode || m.fullName || "").toLowerCase()}` === selectedAuthorId.toLowerCase()
+    );
+    const candidate =
+      (target?.studentProfileId && isStudentProfileUuid(target.studentProfileId)
+        ? target.studentProfileId
+        : null) ||
+      (target?.id && isStudentProfileUuid(target.id) ? target.id : null) ||
+      (isStudentProfileUuid(selectedAuthorId) ? selectedAuthorId : null);
+
+    if (candidate) {
+      return candidate;
+    }
+    // Nếu thành viên được chọn chưa có tài khoản GitHub liên kết (không có UUID),
+    // trả về Nil UUID RFC 4122 để Backend lọc ra 0 commits một cách an toàn, không bị lỗi 400!
+    return "00000000-0000-0000-0000-000000000000";
+  }, [selectedAuthorId, uniqueTeamMembers]);
 
   const {
     data: commitsPage,
@@ -77,56 +240,11 @@ export function CommitsView() {
   } = useProjectCommits(projectId, {
     page: page - 1,
     size: pageSize,
+    authorStudentId: effectiveAuthorStudentId,
     enabled: Boolean(projectId),
   });
 
   const rawCommits = useMemo(() => commitsPage?.items ?? [], [commitsPage?.items]);
-
-
-
-
-
-  const teamMembers = useMemo(() => {
-    const progressMembers = projectProgress?.memberProgress || [];
-    const teamMems = team?.members || [];
-
-    const memberMap = new Map<string, CommitTeamMember>();
-
-    teamMems.forEach((m) => {
-      const code = m.studentCode?.trim().toLowerCase();
-      if (code) {
-        memberMap.set(code, {
-          id: m.studentCode,
-          studentCode: m.studentCode,
-          fullName: m.fullName,
-          name: m.fullName,
-          avatar: m.avatar || m.avatarUrl || "",
-          avatarUrl: m.avatarUrl ?? null,
-        });
-      }
-    });
-
-    progressMembers.forEach((pm) => {
-      const studentCodeKey = pm.studentCode?.trim().toLowerCase();
-      const existing = studentCodeKey ? memberMap.get(studentCodeKey) : undefined;
-      const fullItem: CommitTeamMember = {
-        id: pm.studentId,
-        studentCode: pm.studentCode,
-        fullName: pm.fullName,
-        name: pm.fullName,
-        avatar: existing?.avatar || "",
-        avatarUrl: existing?.avatarUrl || pm.avatarUrl || null,
-      };
-      if (pm.studentId) {
-        memberMap.set(pm.studentId.trim().toLowerCase(), fullItem);
-      }
-      if (studentCodeKey) {
-        memberMap.set(studentCodeKey, fullItem);
-      }
-    });
-
-    return Array.from(memberMap.values());
-  }, [team?.members, projectProgress?.memberProgress]);
 
   const allCommits: CommitItem[] = useMemo(() => {
     return rawCommits.map((c) => mapProjectCommitToCommitItem(c, teamMembers));
@@ -237,6 +355,11 @@ export function CommitsView() {
   const handleSelectRepo = (repoId: string) => {
     setSelectedRepoId(repoId);
     setSelectedBranchName("all");
+    setPage(1);
+  };
+
+  const handleSelectAuthor = (authorId: string) => {
+    setSelectedAuthorId(authorId);
     setPage(1);
   };
 
@@ -463,6 +586,9 @@ export function CommitsView() {
               setSelectedBranchName(branch);
               setPage(1);
             }}
+            members={uniqueTeamMembers}
+            selectedAuthorId={selectedAuthorId}
+            onSelectAuthor={handleSelectAuthor}
             mergeFilter={mergeFilter}
             onMergeFilterChange={(filter) => {
               setMergeFilter(filter);

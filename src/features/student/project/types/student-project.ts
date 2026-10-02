@@ -276,6 +276,7 @@ export type ProjectCommitItem = TaskLinkedCommitItem;
 export interface GetProjectCommitsParams {
   page?: number;
   size?: number;
+  authorStudentId?: string;
 }
 
 export interface ProjectCommitPageResponse {

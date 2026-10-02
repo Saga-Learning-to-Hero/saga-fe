@@ -168,7 +168,7 @@ describe("ProjectProjectionService", () => {
       id: "UTCID10",
       type: "N",
       executedDate: "12/09/2026",
-      description: "getProjectCommits goi GET voi projectId hop le",
+      description: "getProjectCommits goi GET voi projectId hop le va kem authorStudentId neu co",
     },
     async () => {
       const mockPageResponse = { items: [{ id: "c1", sha: "sha-1" }], page: 0, size: 50, total: 1 };
@@ -181,6 +181,31 @@ describe("ProjectProjectionService", () => {
         { params: { page: 0, size: 50 } }
       );
       expect(result).toEqual(mockPageResponse);
+
+      const validStudentUuid = "80ffd344-5190-4373-a2fb-10e74d64e55d";
+      vi.mocked(apiClient.get).mockResolvedValueOnce({ data: mockPageResponse });
+      await ProjectProjectionService.getProjectCommits(mockProjectId, {
+        authorStudentId: validStudentUuid,
+        page: 0,
+        size: 50,
+      });
+
+      expect(apiClient.get).toHaveBeenCalledWith(
+        "/api/projects/proj-123/commits",
+        { params: { page: 0, size: 50, authorStudentId: validStudentUuid } }
+      );
+
+      vi.mocked(apiClient.get).mockResolvedValueOnce({ data: mockPageResponse });
+      await ProjectProjectionService.getProjectCommits(mockProjectId, {
+        authorStudentId: "non-uuid-student-code",
+        page: 0,
+        size: 50,
+      });
+
+      expect(apiClient.get).toHaveBeenCalledWith(
+        "/api/projects/proj-123/commits",
+        { params: { page: 0, size: 50, authorStudentId: "00000000-0000-0000-0000-000000000000" } }
+      );
     }
   );
 
