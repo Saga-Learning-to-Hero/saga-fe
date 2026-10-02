@@ -1,17 +1,20 @@
 "use client";
+import type React from 'react';
 
 import { useState, useMemo } from "react";
-import { AlertTriangleIcon, CheckSquareIcon, GitCommitIcon, PaperclipIcon, ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
+import { AlertTriangleIcon, CheckSquareIcon, GitCommitIcon, ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { isMissingCommit, isMissingDocument } from "../lib/pipeline-mapper";
 import type { PipelineCommit, PipelineTask } from "../types/pipeline";
+import type { PipelineHierarchy } from "../lib/pipeline-hierarchy";
 
 interface PipelineMatrixTableProps {
   tasks: PipelineTask[];
   selectedTaskId: string | null;
   onSelectTask: (taskId: string) => void;
+  hierarchy?: PipelineHierarchy;
   selectedCommits?: PipelineCommit[];
   isLoadingTaskCommits?: boolean;
 }
@@ -34,6 +37,7 @@ export function PipelineMatrixTable({
   tasks,
   selectedTaskId,
   onSelectTask,
+  hierarchy,
 }: PipelineMatrixTableProps) {
   const [currentPage, setCurrentPage] = useState(1);
   const PAGE_SIZE = 15;
@@ -44,12 +48,24 @@ export function PipelineMatrixTable({
     setPrevTasksLength(tasks.length);
   }
 
-  const { paginatedTasks, totalPages } = useMemo(() => {
-    const total = Math.ceil(tasks.length / PAGE_SIZE);
+  const { paginatedUnits, totalPages, taskSet } = useMemo(() => {
+    const taskSet = new Set(tasks.map(t => t.id));
+
+    // A task is a "display root" if it has no parent OR its parent is not in the filtered tasks list
+    const displayRoots = tasks.filter(task => {
+      if (!task.parent?.taskId) return true;
+      return !taskSet.has(task.parent.taskId);
+    });
+
+    const total = Math.ceil(displayRoots.length / PAGE_SIZE);
     const start = (currentPage - 1) * PAGE_SIZE;
+    const paginated = displayRoots.slice(start, start + PAGE_SIZE);
+
     return {
-      paginatedTasks: tasks.slice(start, start + PAGE_SIZE),
+      displayUnits: displayRoots,
+      paginatedUnits: paginated,
       totalPages: total,
+      taskSet,
     };
   }, [tasks, currentPage]);
 
@@ -85,115 +101,112 @@ export function PipelineMatrixTable({
                 </tr>
               </thead>
               <tbody className="divide-y divide-border/50">
-                {paginatedTasks.map((task) => {
-                  const selected = task.id === selectedTaskId;
-                  const hasEvidence = (task.evidenceCount ?? 0) > 0 || task.hasEvidence === true;
-                  const missingCommit = isMissingCommit(task);
-                  const missingDoc = isMissingDocument(task);
-                  const warning = missingCommit || missingDoc;
+                {paginatedUnits.map((rootTask) => {
 
-                  return (
-                    <tr
-                      key={task.id}
-                      onClick={() => onSelectTask(task.id)}
-                      className={`cursor-pointer transition-colors ${selected
-                        ? "bg-primary/10 font-medium text-foreground hover:bg-primary/15"
-                        : "hover:bg-muted/30"
-                        }`}
-                    >
-                      <td className="p-3.5 pl-4 whitespace-nowrap">
-                        <div className="flex items-center gap-1.5">
-                          <CheckSquareIcon className="size-3.5 text-emerald-500 shrink-0" />
-                          <span className="font-mono font-black text-primary">{task.key}</span>
-                        </div>
-                      </td>
-                      <td className="p-3.5 max-w-xs">
-                        <p className="line-clamp-2 font-semibold text-foreground">{task.title}</p>
-                      </td>
-                      <td className="p-3.5">
-                        <div className="flex flex-wrap items-center gap-1.5">
-                          <Badge className={`text-xs font-bold ${statusClass(task.status)}`}>
-                            {task.status}
-                          </Badge>
+                  const renderTaskRow = (task: PipelineTask, isChild: boolean, parentBreadcrumb?: string) => {
+                    const selected = task.id === selectedTaskId;
+                    const hasEvidence = (task.evidenceCount ?? 0) > 0 || task.hasEvidence === true;
+                    const missingCommit = isMissingCommit(task);
+                    const missingDoc = isMissingDocument(task);
+                    const warning = missingCommit || missingDoc;
 
-                          {task.evidenceCheck?.status === "MISSING_COMMIT" && (
-                            <Badge
-                              variant="outline"
-                              className="border-destructive/40 bg-destructive/10 text-xs font-bold text-destructive"
-                            >
-                              <AlertTriangleIcon className="mr-1 size-3" />
-                              Thiếu Commit
-                            </Badge>
+                    return (
+                      <tr
+                        key={task.id}
+                        onClick={() => onSelectTask(task.id)}
+                        className={`cursor-pointer transition-colors ${selected
+                          ? "bg-primary/10 font-medium text-foreground hover:bg-primary/15"
+                          : warning
+                            ? "bg-destructive/5 hover:bg-destructive/10 text-destructive/90"
+                            : hasEvidence && task.linkedCommitCount === 0
+                              ? "bg-purple-500/5 hover:bg-purple-500/10"
+                              : "hover:bg-muted/30"
+                          }`}
+                      >
+                        <td className="p-3.5 pl-4 align-top w-[140px]">
+                          <div className={`flex items-center gap-1.5 ${isChild ? "ml-4 relative" : ""}`}>
+                            {isChild && <div className="absolute -left-3 top-1/2 -mt-px w-2 border-t border-dashed border-border/70" />}
+                            <CheckSquareIcon className={`size-3.5 ${isChild ? "text-muted-foreground/70" : "text-emerald-500"}`} />
+                            <span className="font-mono font-bold text-primary">{task.key}</span>
+                          </div>
+                          {parentBreadcrumb && !isChild && (
+                            <div className="mt-1 text-[10px] text-muted-foreground font-mono truncate max-w-[120px]">
+                              Thuộc: {parentBreadcrumb}
+                            </div>
                           )}
-                          {task.evidenceCheck?.status === "MISSING_DOCUMENT" && (
-                            <Badge
-                              variant="outline"
-                              className="border-amber-500/40 bg-amber-500/10 text-xs font-bold text-amber-600 dark:text-amber-400"
-                            >
-                              <AlertTriangleIcon className="mr-1 size-3" />
-                              Thiếu tài liệu
+                        </td>
+                        <td className="p-3.5 align-top">
+                          <p className="line-clamp-2 max-w-[320px] font-semibold text-foreground leading-snug">
+                            {task.title}
+                          </p>
+                          <div className="mt-1 flex items-center gap-2">
+                            <Badge variant="outline" className="px-1.5 py-0 text-[10px] uppercase text-muted-foreground">
+                              {task.issueTypeName}
                             </Badge>
-                          )}
-                          {task.evidenceCheck?.status === "MISSING_COMMIT_AND_DOCUMENT" && (
-                            <Badge
-                              variant="outline"
-                              className="border-destructive/40 bg-destructive/10 text-xs font-bold text-destructive"
-                            >
-                              <AlertTriangleIcon className="mr-1 size-3" />
-                              Thiếu Commit và tài liệu
-                            </Badge>
-                          )}
-                          {task.evidenceCheck?.status === "UNLABELED" && (
-                            <Badge
-                              variant="outline"
-                              className="border-muted-foreground/40 bg-muted/10 text-xs font-bold text-muted-foreground"
-                            >
-                              <AlertTriangleIcon className="mr-1 size-3" />
-                              Chưa gắn nhãn SAGA
-                            </Badge>
-                          )}
-                          {(task.evidenceCheck?.status === "SATISFIED" || task.evidenceCheck?.status === "NOT_DONE" || (!task.evidenceCheck && hasEvidence)) && (
-                            hasEvidence ? (
-                              <Badge
-                                variant="outline"
-                                className="border-purple-500/40 bg-purple-500/10 text-xs font-bold text-purple-600 dark:text-purple-400"
-                              >
-                                <PaperclipIcon className="mr-1 size-3" />
-                                Đã có minh chứng
+                            {task.issueTypeLevel && (
+                              <Badge variant="outline" className="px-1.5 py-0 text-[10px] uppercase text-muted-foreground border-dashed">
+                                {task.issueTypeLevel}
                               </Badge>
-                            ) : null
-                          )}
-                        </div>
-                      </td>
-                      <td className="p-3.5 text-muted-foreground whitespace-nowrap">
-                        {task.sprintName || "Chưa vào Sprint"}
-                      </td>
-                      <td className="p-3.5 text-foreground whitespace-nowrap">
-                        {task.assigneeDisplayName || "Chưa phân công"}
-                      </td>
-                      <td className="p-3.5 pr-4 text-right whitespace-nowrap">
-                        {task.linkedCommitCount > 0 ? (
-                          <span className="inline-flex items-center gap-1 font-mono font-bold text-foreground">
-                            <GitCommitIcon className="size-3 text-primary" />
-                            {task.linkedCommitCount}
-                          </span>
-                        ) : hasEvidence ? (
-                          <Badge
-                            variant="outline"
-                            className="border-purple-500/40 bg-purple-500/10 text-xs font-bold text-purple-600 dark:text-purple-400"
-                          >
-                            <PaperclipIcon className="mr-1 size-3" />
-                            {task.evidenceCount ? `${task.evidenceCount} tệp` : "Đã có minh chứng"}
-                          </Badge>
-                        ) : (
-                          <span className={`inline-flex items-center gap-1 font-mono font-bold ${warning ? "text-destructive" : "text-muted-foreground"}`}>
-                            <GitCommitIcon className="size-3 text-muted-foreground" />
-                            0
-                          </span>
-                        )}
-                      </td>
-                    </tr>
-                  );
+                            )}
+                          </div>
+                        </td>
+                        <td className="p-3.5 align-top w-[120px]">
+                          <Badge className={`text-xs font-bold ${statusClass(task.status)}`}>{task.status}</Badge>
+                        </td>
+                        <td className="p-3.5 align-top text-muted-foreground min-w-[100px]">
+                          <span className="line-clamp-2">{task.sprintName}</span>
+                        </td>
+                        <td className="p-3.5 align-top text-muted-foreground min-w-[120px]">
+                          {task.assigneeDisplayName || "Chưa phân công"}
+                        </td>
+                        <td className="p-3.5 pr-4 align-top text-right w-[160px]">
+                          <div className="flex flex-col items-end gap-1.5">
+                            <span className="inline-flex items-center gap-1 font-mono font-bold">
+                              <GitCommitIcon className="size-3.5 text-primary" />
+                              {task.linkedCommitCount}
+                            </span>
+                            {warning && (
+                              <span className="inline-flex items-center gap-1 font-semibold text-destructive text-[10px]">
+                                <AlertTriangleIcon className="size-3" />
+                                {missingCommit ? "Thiếu Commit" : "Thiếu tài liệu"}
+                              </span>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  };
+
+                  const elements: React.ReactNode[] = [];
+
+                  const parentBreadcrumb = (rootTask.parent?.taskId && !taskSet.has(rootTask.parent.taskId))
+                    ? (rootTask.parent.externalKey || rootTask.parent.externalId || undefined)
+                    : undefined;
+
+                  elements.push(renderTaskRow(rootTask, false, parentBreadcrumb));
+
+                  const getDescendants = (nodeId: string): PipelineTask[] => {
+                    const result: PipelineTask[] = [];
+                    const children = hierarchy?.childrenMap.get(nodeId) || [];
+                    for (const c of children) {
+                      if (taskSet.has(c.id)) {
+                        result.push(c);
+                        result.push(...getDescendants(c.id));
+                      } else {
+                        result.push(...getDescendants(c.id));
+                      }
+                    }
+                    return result;
+                  };
+
+                  const descendants = getDescendants(rootTask.id);
+                  if (descendants.length > 0) {
+                    descendants.forEach(desc => {
+                      elements.push(renderTaskRow(desc, true));
+                    });
+                  }
+
+                  return elements;
                 })}
               </tbody>
             </table>

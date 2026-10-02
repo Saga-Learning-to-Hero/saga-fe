@@ -1,4 +1,5 @@
 "use client";
+import type React from 'react';
 
 import { useState } from "react";
 import {
@@ -14,7 +15,8 @@ import { Badge } from "@/components/ui/badge";
 import { teamRoleLabel } from "@/features/progress/lib/progress-format";
 import { UNASSIGNED_LANE_ID } from "../types/pipeline";
 import { isMissingCommit, isMissingDocument } from "../lib/pipeline-mapper";
-import type { PipelineCommit, PipelineLane, PipelineTask } from "../types/pipeline";
+import type { PipelineCommit, PipelineLane, PipelineTask  } from "../types/pipeline";
+import type { PipelineHierarchy } from "../lib/pipeline-hierarchy";
 
 interface PipelineFlowViewProps {
   lanes: PipelineLane[];
@@ -24,6 +26,7 @@ interface PipelineFlowViewProps {
   isLoadingTaskCommits?: boolean;
   taskCommitsErrorMessage?: string | null;
   onRetryTaskCommits?: () => void;
+  hierarchy?: PipelineHierarchy;
 }
 
 function statusClass(status: string): string {
@@ -44,10 +47,14 @@ function TaskCard({
   task,
   selected,
   onSelect,
+  subtaskCount = 0,
+  subtaskCommitCount = 0,
 }: {
   task: PipelineTask;
   selected: boolean;
   onSelect: () => void;
+  subtaskCount?: number;
+  subtaskCommitCount?: number;
 }) {
   const hasEvidence = (task.evidenceCount ?? 0) > 0 || task.hasEvidence === true;
   const missingCommit = isMissingCommit(task);
@@ -87,6 +94,15 @@ function TaskCard({
           <GitCommitIcon className="size-3" />
           {task.linkedCommitCount}
         </span>
+        {subtaskCount > 0 && (
+          <>
+            <span>·</span>
+            <span className="inline-flex items-center gap-1 font-mono text-purple-600 dark:text-purple-400">
+              <CheckSquareIcon className="size-3" />
+              {subtaskCount} subtask ({subtaskCommitCount} commit)
+            </span>
+          </>
+        )}
 
         {task.evidenceCheck?.status === "MISSING_COMMIT" && (
           <span className="inline-flex items-center gap-1 font-semibold text-destructive">
@@ -129,6 +145,7 @@ export function PipelineFlowView({
   lanes,
   selectedTaskId,
   onSelectTask,
+  hierarchy,
 }: PipelineFlowViewProps) {
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
 
@@ -201,14 +218,72 @@ export function PipelineFlowView({
                     Thành viên này chưa được phân công Task trong bộ lọc.
                   </p>
                 ) : (
-                  lane.tasks.map((task) => (
-                    <TaskCard
-                      key={task.id}
-                      task={task}
-                      selected={task.id === selectedTaskId}
-                      onSelect={() => onSelectTask(task.id)}
-                    />
-                  ))
+                  (() => {
+                    const renderGrouped = () => {
+                      if (!hierarchy) return lane.tasks.map((task) => (
+                        <TaskCard
+                          key={task.id}
+                          task={task}
+                          selected={task.id === selectedTaskId}
+                          onSelect={() => onSelectTask(task.id)}
+                        />
+                      ));
+
+                      const taskSet = new Set(lane.tasks.map(t => t.id));
+                      const renderedIds = new Set<string>();
+                      const elements: React.ReactNode[] = [];
+
+                      lane.tasks.forEach(task => {
+                        if (renderedIds.has(task.id)) return;
+
+                        if (task.parent?.taskId && taskSet.has(task.parent.taskId)) {
+                          return;
+                        }
+
+                        const descendants = hierarchy.childrenMap.get(task.id)?.filter((c: PipelineTask) => taskSet.has(c.id)) || [];
+                        const descendantCommitCount = descendants.reduce((sum: number, c: PipelineTask) => sum + (c.linkedCommitCount || 0), 0);
+
+                        elements.push(
+                          <TaskCard
+                            key={task.id}
+                            task={task}
+                            selected={task.id === selectedTaskId}
+                            onSelect={() => onSelectTask(task.id)}
+                            subtaskCount={descendants.length}
+                            subtaskCommitCount={descendantCommitCount}
+                          />
+                        );
+                        renderedIds.add(task.id);
+
+                        if (descendants.length > 0) {
+                          elements.push(
+                            <div key={`group-${task.id}`} className="ml-6 pl-4 border-l-2 border-border/50 space-y-3 relative mt-3">
+                              <div className="absolute -left-2 top-0 bottom-0 border-l border-dashed border-border/60" />
+                              <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1 pt-1 flex items-center gap-1.5">
+                                <AlertTriangleIcon className="size-3 hidden" />
+                                <span>Thuộc ngữ cảnh: {task.key}</span>
+                              </div>
+                              {descendants.map((desc: PipelineTask) => {
+                                renderedIds.add(desc.id);
+                                return (
+                                  <TaskCard
+                                    key={desc.id}
+                                    task={desc}
+                                    selected={desc.id === selectedTaskId}
+                                    onSelect={() => onSelectTask(desc.id)}
+                                  />
+                                );
+                              })}
+                            </div>
+                          );
+                        }
+                      });
+
+                      return elements;
+                    };
+
+                    return renderGrouped();
+                  })()
                 )}
               </div>
             ) : null}

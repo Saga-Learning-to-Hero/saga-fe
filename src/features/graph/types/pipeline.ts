@@ -17,7 +17,15 @@ export interface PipelineTask {
   title: string;
   status: string;
   issueTypeName: string;
-  parent?: { externalId?: string | null; externalKey?: string | null } | null;
+  issueTypeLevel?: "EPIC" | "STANDARD" | "SUBTASK" | "ABOVE_EPIC" | "UNKNOWN" | null;
+  jiraHierarchyLevel?: number | null;
+  parent?: {
+    taskId?: string | null;
+    externalId?: string | null;
+    externalKey?: string | null;
+    resolution?: string | null;
+    resolutionReason?: string | null;
+  } | null;
   assigneeStudentId: string | null;
   assigneeDisplayName: string | null;
   assigneeExternalId: string | null;
@@ -43,6 +51,21 @@ export interface PipelineCommit {
   committedAt: string;
   repositoryFullName: string;
   headRef?: string | null;
+}
+
+export interface PipelineCommitGroup {
+  taskId: string;
+  taskKey: string;
+  taskTitle: string;
+  issueTypeLevel: "EPIC" | "STANDARD" | "SUBTASK" | "ABOVE_EPIC" | "UNKNOWN" | null;
+  assigneeDisplayName: string | null;
+  commits: PipelineCommit[];
+}
+
+export interface PipelineInspectorCommitData {
+  directCommits: PipelineCommit[];
+  descendantGroups: PipelineCommitGroup[];
+  uniqueDescendantCommitCount: number;
 }
 
 export interface PipelineLane {

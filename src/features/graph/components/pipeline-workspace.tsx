@@ -7,7 +7,8 @@ import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { PipelineFlowView } from "./pipeline-flow-view";
 import { PipelineMatrixTable } from "./pipeline-matrix-table";
 import { PipelineTaskInspector } from "./pipeline-task-inspector";
-import type { PipelineCommit, PipelineLane, PipelineTask } from "../types/pipeline";
+import type { PipelineCommit, PipelineLane, PipelineTask, PipelineInspectorCommitData  } from "../types/pipeline";
+import type { PipelineHierarchy } from "../lib/pipeline-hierarchy";
 
 export interface PipelineWorkspaceProps {
   lanes: PipelineLane[];
@@ -19,6 +20,8 @@ export interface PipelineWorkspaceProps {
   errorMessage?: string | null;
   onRetryCommits: () => void;
   projectId?: string | null;
+  hierarchy: PipelineHierarchy;
+  inspectorCommitData: PipelineInspectorCommitData | null;
 }
 
 export function PipelineWorkspace({
@@ -31,6 +34,8 @@ export function PipelineWorkspace({
   errorMessage,
   onRetryCommits,
   projectId,
+  hierarchy,
+  inspectorCommitData,
 }: PipelineWorkspaceProps) {
   const [pipelineSubView, setPipelineSubView] = useState<"FLOW" | "MATRIX">("FLOW");
   const [isMobileInspectorOpen, setIsMobileInspectorOpen] = useState(false);
@@ -96,12 +101,14 @@ export function PipelineWorkspace({
               lanes={lanes}
               selectedTaskId={selectedTaskId}
               onSelectTask={handleTaskClick}
+              hierarchy={hierarchy}
             />
           ) : (
             <PipelineMatrixTable
               tasks={filteredTasks}
               selectedTaskId={selectedTaskId}
               onSelectTask={handleTaskClick}
+              hierarchy={hierarchy}
             />
           )}
         </div>
@@ -115,6 +122,7 @@ export function PipelineWorkspace({
             onRetry={onRetryCommits}
             onClearSelection={() => onSelectTask(null)}
             projectId={projectId}
+            inspectorCommitData={inspectorCommitData}
           />
         </aside>
       </div>
@@ -129,6 +137,7 @@ export function PipelineWorkspace({
               errorMessage={errorMessage ?? null}
               onRetry={onRetryCommits}
               projectId={projectId}
+              inspectorCommitData={inspectorCommitData}
               onClearSelection={() => {
                 onSelectTask(null);
                 setIsMobileInspectorOpen(false);

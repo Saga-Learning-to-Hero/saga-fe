@@ -696,6 +696,8 @@ export function TraceabilityGraphView() {
           errorMessage={pipeline.taskCommitsErrorMessage}
           onRetryCommits={() => void pipeline.refetchTaskCommits()}
           projectId={projectId}
+          hierarchy={pipeline.hierarchy!}
+          inspectorCommitData={pipeline.inspectorCommitData}
         />
       </>
     );

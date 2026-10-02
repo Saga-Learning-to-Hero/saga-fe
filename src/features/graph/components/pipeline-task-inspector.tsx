@@ -24,7 +24,7 @@ import { QueryClient, QueryClientContext, QueryClientProvider } from "@tanstack/
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import type { PipelineCommit, PipelineTask } from "../types/pipeline";
+import type { PipelineCommit, PipelineTask, PipelineInspectorCommitData } from "../types/pipeline";
 import { CommitDetailModal } from "@/features/student/commits/components/commit-detail-modal";
 import { TaskWorkSessionTimelineDialog } from "@/features/student/sprint-progress/components/task-work-session-timeline-dialog";
 import {
@@ -43,6 +43,7 @@ interface PipelineTaskInspectorProps {
   onClearSelection: () => void;
   className?: string;
   projectId?: string | null;
+  inspectorCommitData?: PipelineInspectorCommitData | null;
 }
 
 function statusClass(status: string): string {
@@ -97,6 +98,7 @@ function PipelineTaskInspectorInternal({
   onClearSelection,
   className,
   projectId,
+  inspectorCommitData,
 }: PipelineTaskInspectorProps) {
   const [activeTab, setActiveTab] = useState<"COMMITS" | "DOCUMENTS">("COMMITS");
   const [showAllForTaskId, setShowAllForTaskId] = useState<string | null>(null);
@@ -252,7 +254,7 @@ function PipelineTaskInspectorInternal({
               }`}
           >
             <GitCommitIcon className="size-3.5 text-primary" />
-            <span>Commit ({commits.length})</span>
+            <span>Commit ({(inspectorCommitData ? inspectorCommitData.directCommits.length + inspectorCommitData.uniqueDescendantCommitCount : commits.length)})</span>
           </button>
           <button
             type="button"
@@ -289,89 +291,178 @@ function PipelineTaskInspectorInternal({
                   </Button>
                 )}
               </div>
-            ) : commits.length === 0 ? (
+            ) : (commits.length === 0 && (!inspectorCommitData || (inspectorCommitData.directCommits.length === 0 && inspectorCommitData.descendantGroups.length === 0))) ? (
               <div className="rounded-xl border border-dashed border-border/80 p-5 text-center text-xs text-muted-foreground shrink-0">
                 <p>Chưa có commit được liên kết với task này.</p>
               </div>
             ) : (
-              <div className="flex-1 min-h-0 space-y-2 overflow-y-auto pr-1">
-                {displayedCommits.map((commit) => (
-                  <div
-                    key={commit.id}
-                    className="group rounded-xl border border-border/70 bg-card/90 p-3 shadow-2xs transition-colors hover:border-border hover:bg-muted/30"
-                  >
-                    <div className="flex items-center justify-between gap-2">
-                      <div className="flex items-center gap-1.5 min-w-0 flex-1">
-                        <span className="font-mono text-xs font-bold text-primary shrink-0">
-                          {commit.shortHash}
-                        </span>
-                        {commit.headRef && (
-                          <Badge
+              <div className="flex-1 min-h-0 space-y-4 overflow-y-auto pr-1 pb-2">
+                {(!inspectorCommitData || inspectorCommitData.directCommits.length > 0) && (
+                  <div className="space-y-2">
+                    {inspectorCommitData && inspectorCommitData.descendantGroups.length > 0 && (
+                       <h5 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">Commit liên kết trực tiếp</h5>
+                    )}
+                    {(inspectorCommitData ? inspectorCommitData.directCommits : displayedCommits).map((commit) => (
+                      <div
+                        key={commit.id}
+                        className="group rounded-xl border border-border/70 bg-card/90 p-3 shadow-2xs transition-colors hover:border-border hover:bg-muted/30"
+                      >
+                        <div className="flex items-center justify-between gap-2">
+                          <div className="flex items-center gap-1.5 min-w-0 flex-1">
+                            <span className="font-mono text-xs font-bold text-primary shrink-0">
+                              {commit.shortHash}
+                            </span>
+                            {commit.headRef && (
+                              <Badge
+                                variant="outline"
+                                className="flex items-center gap-1 px-1.5 py-0 text-xs font-mono text-muted-foreground truncate max-w-[130px] shrink-0"
+                                title={commit.headRef}
+                              >
+                                <GitBranchIcon className="size-2.5 shrink-0 text-muted-foreground/70" />
+                                <span className="truncate">{commit.headRef}</span>
+                              </Badge>
+                            )}
+                          </div>
+                          <Button
+                            type="button"
                             variant="outline"
-                            className="flex items-center gap-1 px-1.5 py-0 text-xs font-mono text-muted-foreground truncate max-w-[130px] shrink-0"
-                            title={commit.headRef}
+                            size="sm"
+                            onClick={() => setSelectedCommit(commit)}
+                            className="h-6 px-2 text-xs font-bold text-purple-600 dark:text-purple-400 bg-purple-500/10 border-purple-500/25 hover:bg-purple-500/20 hover:border-purple-500/40 cursor-pointer gap-1 shrink-0 rounded-lg shadow-2xs transition-colors"
+                            title="Xem chi tiết thay đổi code diff"
                           >
-                            <GitBranchIcon className="size-2.5 shrink-0 text-muted-foreground/70" />
-                            <span className="truncate">{commit.headRef}</span>
-                          </Badge>
+                            <FileCodeIcon className="size-3" />
+                            <span>Diff</span>
+                          </Button>
+                        </div>
+
+                        {commit.repositoryFullName && (
+                          <div className="mt-1 flex items-center gap-1 text-xs text-muted-foreground min-w-0">
+                            <FolderGit2Icon className="size-2.5 shrink-0 opacity-70" />
+                            <span className="truncate font-mono" title={commit.repositoryFullName}>
+                              {commit.repositoryFullName}
+                            </span>
+                          </div>
                         )}
+
+                        <p className="mt-1.5 line-clamp-2 text-xs font-semibold text-foreground leading-snug">
+                          {commit.message}
+                        </p>
+
+                        <div className="mt-2 flex items-center justify-between text-xs text-muted-foreground pt-1.5 border-t border-border/40">
+                          <span className="truncate font-medium max-w-[180px]" title={commit.authorLabel}>
+                            {commit.authorLabel}
+                          </span>
+                          {commit.committedAt && (
+                            <span className="text-xs font-mono shrink-0 ml-2">
+                              {formatCommitDate(commit.committedAt)}
+                            </span>
+                          )}
+                        </div>
                       </div>
+                    ))}
+                    {!inspectorCommitData && hasMoreCommits && (
                       <Button
                         type="button"
-                        variant="outline"
+                        variant="ghost"
                         size="sm"
-                        onClick={() => setSelectedCommit(commit)}
-                        className="h-6 px-2 text-xs font-bold text-purple-600 dark:text-purple-400 bg-purple-500/10 border-purple-500/25 hover:bg-purple-500/20 hover:border-purple-500/40 cursor-pointer gap-1 shrink-0 rounded-lg shadow-2xs transition-colors"
-                        title="Xem chi tiết thay đổi code diff"
+                        onClick={() =>
+                          setShowAllForTaskId((curr) =>
+                            curr === selectedTask.id ? null : selectedTask.id
+                          )
+                        }
+                        className="w-full mt-2 text-xs font-semibold text-primary hover:bg-primary/10 cursor-pointer"
                       >
-                        <FileCodeIcon className="size-3" />
-                        <span>Diff</span>
+                        {showAllCommits
+                          ? "Thu gọn danh sách"
+                          : `Xem thêm (còn ${commits.length - INITIAL_COMMITS_LIMIT} commit)`}
                       </Button>
-                    </div>
-
-                    {commit.repositoryFullName && (
-                      <div className="mt-1 flex items-center gap-1 text-xs text-muted-foreground min-w-0">
-                        <FolderGit2Icon className="size-2.5 shrink-0 opacity-70" />
-                        <span className="truncate font-mono" title={commit.repositoryFullName}>
-                          {commit.repositoryFullName}
-                        </span>
-                      </div>
                     )}
-
-                    <p className="mt-1.5 line-clamp-2 text-xs font-semibold text-foreground leading-snug">
-                      {commit.message}
-                    </p>
-
-                    <div className="mt-2 flex items-center justify-between text-xs text-muted-foreground pt-1.5 border-t border-border/40">
-                      <span className="truncate font-medium max-w-[180px]" title={commit.authorLabel}>
-                        {commit.authorLabel}
-                      </span>
-                      {commit.committedAt && (
-                        <span className="text-xs font-mono shrink-0 ml-2">
-                          {formatCommitDate(commit.committedAt)}
-                        </span>
-                      )}
+                  </div>
+                )}
+                
+                {inspectorCommitData && inspectorCommitData.descendantGroups.map((group) => (
+                  <div key={group.taskId} className="space-y-2 mt-4 pt-4 border-t border-border/50">
+                    <div className="flex flex-col gap-1 mb-2">
+                       <div className="flex items-center gap-2">
+                         <CheckSquareIcon className="size-3.5 text-emerald-500 shrink-0" />
+                         <span className="font-mono text-xs font-black text-foreground shrink-0">{group.taskKey}</span>
+                         <span className="text-xs font-semibold text-muted-foreground truncate">{group.taskTitle}</span>
+                       </div>
+                       <div className="flex items-center gap-2 pl-5">
+                         {group.issueTypeLevel && (
+                           <Badge variant="outline" className="px-1 py-0 text-[10px] uppercase text-muted-foreground">
+                             {group.issueTypeLevel}
+                           </Badge>
+                         )}
+                         {group.assigneeDisplayName && (
+                            <span className="text-xs text-muted-foreground">· {group.assigneeDisplayName}</span>
+                         )}
+                       </div>
                     </div>
+                    {group.commits.map((commit) => (
+                      <div
+                        key={`${group.taskId}-${commit.id}`}
+                        className="group rounded-xl border border-border/70 bg-card/90 p-3 shadow-2xs transition-colors hover:border-border hover:bg-muted/30 ml-5 relative"
+                      >
+                        <div className="absolute -left-[13px] top-1/2 -mt-[1px] w-3 border-t border-border/70 border-dashed" />
+                        <div className="absolute -left-5 top-0 bottom-1/2 border-l border-border/70 border-dashed" />
+                        <div className="flex items-center justify-between gap-2">
+                          <div className="flex items-center gap-1.5 min-w-0 flex-1">
+                            <span className="font-mono text-xs font-bold text-primary shrink-0">
+                              {commit.shortHash}
+                            </span>
+                            {commit.headRef && (
+                              <Badge
+                                variant="outline"
+                                className="flex items-center gap-1 px-1.5 py-0 text-xs font-mono text-muted-foreground truncate max-w-[130px] shrink-0"
+                                title={commit.headRef}
+                              >
+                                <GitBranchIcon className="size-2.5 shrink-0 text-muted-foreground/70" />
+                                <span className="truncate">{commit.headRef}</span>
+                              </Badge>
+                            )}
+                          </div>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setSelectedCommit(commit)}
+                            className="h-6 px-2 text-xs font-bold text-purple-600 dark:text-purple-400 bg-purple-500/10 border-purple-500/25 hover:bg-purple-500/20 hover:border-purple-500/40 cursor-pointer gap-1 shrink-0 rounded-lg shadow-2xs transition-colors"
+                            title="Xem chi tiết thay đổi code diff"
+                          >
+                            <FileCodeIcon className="size-3" />
+                            <span>Diff</span>
+                          </Button>
+                        </div>
+
+                        {commit.repositoryFullName && (
+                          <div className="mt-1 flex items-center gap-1 text-xs text-muted-foreground min-w-0">
+                            <FolderGit2Icon className="size-2.5 shrink-0 opacity-70" />
+                            <span className="truncate font-mono" title={commit.repositoryFullName}>
+                              {commit.repositoryFullName}
+                            </span>
+                          </div>
+                        )}
+
+                        <p className="mt-1.5 line-clamp-2 text-xs font-semibold text-foreground leading-snug">
+                          {commit.message}
+                        </p>
+
+                        <div className="mt-2 flex items-center justify-between text-xs text-muted-foreground pt-1.5 border-t border-border/40">
+                          <span className="truncate font-medium max-w-[180px]" title={commit.authorLabel}>
+                            {commit.authorLabel}
+                          </span>
+                          {commit.committedAt && (
+                            <span className="text-xs font-mono shrink-0 ml-2">
+                              {formatCommitDate(commit.committedAt)}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 ))}
-
-                {hasMoreCommits && (
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() =>
-                      setShowAllForTaskId((curr) =>
-                        curr === selectedTask.id ? null : selectedTask.id
-                      )
-                    }
-                    className="w-full mt-2 text-xs font-semibold text-primary hover:bg-primary/10 cursor-pointer"
-                  >
-                    {showAllCommits
-                      ? "Thu gọn danh sách"
-                      : `Xem thêm (còn ${commits.length - INITIAL_COMMITS_LIMIT} commit)`}
-                  </Button>
-                )}
               </div>
             )}
           </>

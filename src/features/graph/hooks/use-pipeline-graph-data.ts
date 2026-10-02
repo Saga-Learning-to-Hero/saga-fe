@@ -26,7 +26,8 @@ import {
   resolvePipelineQueryPlan,
   sanitizePipelineFilter,
 } from "../lib/pipeline-mapper";
-import type { PipelineFilterState } from "../types/pipeline";
+import { buildPipelineHierarchy } from "../lib/pipeline-hierarchy";
+import type { PipelineFilterState, PipelineInspectorCommitData, PipelineCommitGroup, PipelineCommit } from "../types/pipeline";
 
 interface UsePipelineGraphDataOptions {
   enabled: boolean;
@@ -182,27 +183,63 @@ export function usePipelineGraphData({
     return commitsQuery.data.items || [];
   }, [commitsQuery.data]);
 
-  const selectedCommits = useMemo(() => {
-    if (!effectiveTaskId) return [];
+  const hierarchy = useMemo(() => buildPipelineHierarchy(scopedTasks), [scopedTasks]);
+
+  const inspectorCommitData = useMemo((): PipelineInspectorCommitData | null => {
+    if (!effectiveTaskId) return null;
     const commitById = new Map<string, TaskLinkedCommitItem>(
       rawCommits.map((commit) => [commit.id, commit])
     );
-    const commits: TaskLinkedCommitItem[] = (taskCommitLinksQuery.data?.links || [])
-      .filter((link) => link.taskId === effectiveTaskId)
-      .map((link) =>
-        commitById.get(link.commitId) || {
-          id: link.commitId,
-          repoId: link.repoId || "",
-          repositoryFullName: link.repositoryFullName || "Repository không xác định",
-          sha: link.sha,
-          message: link.message,
-          headRef: link.headRef,
-          committedAt: link.linkedAt,
-          createdAt: link.linkedAt,
+
+    const getPipelineCommits = (taskId: string): PipelineCommit[] => {
+      const commits = (taskCommitLinksQuery.data?.links || [])
+        .filter((link) => link.taskId === taskId)
+        .map((link) =>
+          commitById.get(link.commitId) || {
+            id: link.commitId,
+            repoId: link.repoId || "",
+            repositoryFullName: link.repositoryFullName || "Repository không xác định",
+            sha: link.sha,
+            message: link.message,
+            headRef: link.headRef,
+            committedAt: link.linkedAt,
+            createdAt: link.linkedAt,
+          }
+        );
+      return mapPipelineCommits(commits, members);
+    };
+
+    const directCommits = getPipelineCommits(effectiveTaskId);
+    const descendantGroups: PipelineCommitGroup[] = [];
+    const uniqueDescendants = new Set<string>();
+
+    const collectDescendants = (nodeId: string) => {
+      const children = hierarchy.childrenMap.get(nodeId) || [];
+      for (const child of children) {
+        const childCommits = getPipelineCommits(child.id);
+        if (childCommits.length > 0) {
+          descendantGroups.push({
+            taskId: child.id,
+            taskKey: child.key,
+            taskTitle: child.title,
+            issueTypeLevel: child.issueTypeLevel || null,
+            assigneeDisplayName: child.assigneeDisplayName,
+            commits: childCommits,
+          });
+          for (const c of childCommits) uniqueDescendants.add(c.id);
         }
-      );
-    return mapPipelineCommits(commits, members);
-  }, [effectiveTaskId, members, rawCommits, taskCommitLinksQuery.data]);
+        collectDescendants(child.id);
+      }
+    };
+
+    collectDescendants(effectiveTaskId);
+
+    return {
+      directCommits,
+      descendantGroups,
+      uniqueDescendantCommitCount: uniqueDescendants.size,
+    };
+  }, [effectiveTaskId, rawCommits, taskCommitLinksQuery.data, hierarchy, members]);
   const stats = useMemo(
     () =>
       computePipelineStats(
@@ -253,7 +290,9 @@ export function usePipelineGraphData({
     sanitizedFilter,
     effectiveTaskId,
     stats,
-    selectedCommits,
+    hierarchy,
+    inspectorCommitData,
+    selectedCommits: inspectorCommitData?.directCommits || [],
     isLoadingMain:
       plan.pipelineReady &&
       (tasksQuery.isLoading ||

@@ -79,6 +79,8 @@ export function mapPipelineTasks(tasks: ProjectTaskResponse[]): PipelineTask[] {
       title: task.title,
       status: task.status,
       issueTypeName: task.issueTypeName,
+      issueTypeLevel: task.issueTypeLevel || null,
+      jiraHierarchyLevel: task.jiraHierarchyLevel || null,
       parent: task.parent || null,
       assigneeStudentId: task.assigneeStudentId || task.assignee?.studentId || null,
       assigneeDisplayName: task.assigneeDisplayName || task.assignee?.displayName || null,
