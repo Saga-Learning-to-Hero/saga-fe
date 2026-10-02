@@ -93,6 +93,9 @@ export interface StudentTeamMember {
   avatar?: string | null;
   avatarUrl?: string | null;
   email?: string | null;
+  studentId?: string | null;
+  studentProfileId?: string | null;
+  id?: string | null;
 }
 
 export interface StudentTeamResponse {

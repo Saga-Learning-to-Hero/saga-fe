@@ -1,4 +1,5 @@
 import { apiClient } from "@/lib/axios";
+import { isStudentProfileUuid } from "@/features/graph/lib/student-profile-id";
 import type {
   ProjectSyncResponse,
   ProjectTaskItem,
@@ -84,11 +85,19 @@ export class ProjectProjectionService {
       throw new Error("Throw ValidationException: Project ID is required");
     }
     const cleanProjectId = projectId.trim();
-    const queryParams: GetProjectCommitsParams = {
+    const queryParams: Record<string, unknown> = {
       page: 0,
       size: 50,
       ...params,
     };
+    if (params?.authorStudentId && params.authorStudentId.trim() && params.authorStudentId !== "all") {
+      const clean = params.authorStudentId.trim();
+      queryParams.authorStudentId = isStudentProfileUuid(clean)
+        ? clean
+        : "00000000-0000-0000-0000-000000000000";
+    } else {
+      delete queryParams.authorStudentId;
+    }
     const res = await apiClient.get<ProjectCommitPageResponse>(
       `/api/projects/${encodeURIComponent(cleanProjectId)}/commits`,
       { params: queryParams }

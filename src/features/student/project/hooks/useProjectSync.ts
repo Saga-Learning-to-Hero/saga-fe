@@ -148,8 +148,13 @@ export function useProjectCommits(
 ) {
   const enabled = optionsOrParams?.enabled ?? true;
   const params: GetProjectCommitsParams | undefined =
-    optionsOrParams && ("page" in optionsOrParams || "size" in optionsOrParams)
-      ? { page: optionsOrParams.page, size: optionsOrParams.size }
+    optionsOrParams &&
+    ("page" in optionsOrParams || "size" in optionsOrParams || "authorStudentId" in optionsOrParams)
+      ? {
+          page: optionsOrParams.page,
+          size: optionsOrParams.size,
+          authorStudentId: optionsOrParams.authorStudentId,
+        }
       : undefined;
 
   return useQuery({

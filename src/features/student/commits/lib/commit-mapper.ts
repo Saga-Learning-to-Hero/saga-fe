@@ -4,6 +4,7 @@ import { resolveHttpAvatarUrl } from "@/lib/avatar-url";
 
 export interface CommitTeamMember {
   id?: string;
+  studentProfileId?: string;
   studentCode?: string;
   fullName?: string;
   name?: string;
