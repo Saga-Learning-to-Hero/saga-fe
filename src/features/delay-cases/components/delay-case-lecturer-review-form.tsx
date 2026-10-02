@@ -130,7 +130,7 @@ export function DelayCaseLecturerReviewForm({ delayCase, onSuccess }: { delayCas
           <AlertDialogHeader>
             <AlertDialogTitle>Xác nhận quyết định</AlertDialogTitle>
             <AlertDialogDescription>
-              Bạn đang quyết định hồ sơ này là <b>{watchOutcome === "EXCUSED" ? "Châm chước" : "Từ chối"}</b>.
+              Bạn đang quyết định hồ sơ này là <b>{watchOutcome === "EXCUSED" ? "Chấp nhận" : "Từ chối"}</b>.
               Sau khi xác nhận, quyết định không thể thay đổi.
             </AlertDialogDescription>
           </AlertDialogHeader>
