@@ -69,6 +69,15 @@ export interface DelayCaseResponse {
   projectId: string;
   task: DelayCaseTask;
   student: DelayCaseStudent;
+  context?: {
+    projectName: string;
+    teamId: string | null;
+    teamNo: string | null;
+    teamName: string | null;
+    courseId: string;
+    courseCode: string;
+    courseName: string;
+  };
   dueDate: string; // date-only
   openedAt: string; // no offset
   explanationDueAt: string; // no offset

@@ -15,6 +15,7 @@ import { TopNavHeader } from "@/components/layout/header/top-nav-header";
 import { AdminTopHeader } from "@/components/layout/header/admin-top-header";
 import { ProfileModal } from "@/features/profile/components/profile-modal";
 import { UserRealtimeProvider } from "@/features/notification/providers/user-realtime-provider";
+import { UrlDelayCaseOpener } from "@/features/delay-cases/components/url-delay-case-opener";
 
 export default function DashboardLayout({
   children,
@@ -117,6 +118,9 @@ export default function DashboardLayout({
           </main>
 
           <ProfileModal />
+          <Suspense fallback={null}>
+            <UrlDelayCaseOpener />
+          </Suspense>
         </div>
       ) : (
         <div className="flex h-screen overflow-hidden bg-background">
@@ -139,6 +143,9 @@ export default function DashboardLayout({
           </div>
 
           <ProfileModal />
+          <Suspense fallback={null}>
+            <UrlDelayCaseOpener />
+          </Suspense>
         </div>
       )}
     </UserRealtimeProvider>

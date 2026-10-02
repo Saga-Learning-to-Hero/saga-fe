@@ -104,6 +104,11 @@ export function DelayCasesActionWidget({ projectId, mode }: DelayCasesActionWidg
                   <p className="text-xs text-foreground font-medium truncate" title={delayCase.task?.title}>
                     {delayCase.task?.title}
                   </p>
+                  {isLecturer && delayCase.context && (
+                    <p className="text-[10px] text-muted-foreground truncate">
+                      {delayCase.context.courseCode} • {delayCase.context.teamName || delayCase.context.projectName}
+                    </p>
+                  )}
                   <p className="text-[10px] text-muted-foreground">
                     Từ: <span className="font-semibold">{delayCase.student?.fullName}</span> ({delayCase.student?.studentCode})
                   </p>
