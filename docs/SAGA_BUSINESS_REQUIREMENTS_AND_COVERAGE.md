@@ -888,3 +888,12 @@ Thực hiện:
 - Không xóa gap chỉ vì UI đã được thiết kế; chỉ đóng khi có data path và test.
 - Không sao chép response nhạy cảm hoặc secret/token vào tài liệu.
 - Nếu BE deploy khác source local, đánh dấu `DEPLOYMENT_DRIFT` cho đến khi source/OpenAPI được đồng bộ.
+
+
+### 7.11 Hồ sơ trễ hạn và Tỷ lệ đúng hạn (DONE)
+- [x] Sinh viên: Nộp giải trình Task trễ hạn với nguyên nhân và minh chứng đính kèm.
+- [x] Trưởng nhóm: Xem xét duyệt (Approve/Reject) giải trình trễ hạn của thành viên.
+- [x] Giảng viên: Duyệt cuối (Excused/Penalized) các hồ sơ đã được trưởng nhóm duyệt.
+- [x] Giảng viên: Xem danh sách hàng chờ duyệt hồ sơ trễ hạn ở cấp toàn cục.
+- [x] Quản lý On-Time Rate độc lập với Contribution, hiển thị trong Project Analytics.
+- [x] Hỗ trợ mở lại (Reopen) hồ sơ trễ hạn nếu cần điều chỉnh trạng thái.

@@ -233,6 +233,13 @@ export function getNavGroups(
               icon: "BookOpen",
               match: "exact",
             },
+            {
+              id: "lecturer-delay-cases",
+              title: "Hồ sơ trễ hạn",
+              href: "/lecturer/delay-cases",
+              icon: "AlertCircle",
+              match: "exact",
+            },
           ],
         },
       ];
@@ -251,6 +258,13 @@ export function getNavGroups(
             title: "Đổi lớp học phần",
             href: "/lecturer/courses",
             icon: "ArrowLeft",
+            match: "exact",
+          },
+          {
+            id: "lecturer-delay-cases-global",
+            title: "Hồ sơ trễ hạn toàn cục",
+            href: "/lecturer/delay-cases",
+            icon: "AlertCircle",
             match: "exact",
           },
         ],
@@ -308,7 +322,7 @@ export function getNavGroups(
       roles: ["STUDENT"],
       items: getStudentNavItems(
         isLeader ??
-          ((selectedStudentCourse?.myGroup?.role || "").trim().toUpperCase() === "LEADER")
+        ((selectedStudentCourse?.myGroup?.role || "").trim().toUpperCase() === "LEADER")
       ),
     },
   ];
