@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { toast } from "sonner";
@@ -46,7 +46,7 @@ export function DelayCaseLeaderReviewForm({ delayCase, onSuccess }: { delayCase:
     },
   });
 
-  const watchDecision = form.watch("decision");
+  const watchDecision = useWatch({ control: form.control, name: "decision" });
 
   const onSubmit = () => {
     setIsAlertOpen(true);

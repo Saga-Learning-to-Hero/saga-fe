@@ -232,7 +232,7 @@ export function GraphNodeDetailsModal({
                   Cấp loại thẻ
                 </span>
                 <span className="font-mono font-bold text-foreground">
-                  {nodeData.issueTypeName || "—"} · {nodeData.issueTypeLevel}
+                  {nodeData.issueTypeName || nodeData.issueType || "—"} · {nodeData.issueTypeLevel}
                 </span>
               </div>
             )}

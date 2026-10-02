@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { toast } from "sonner";
@@ -19,7 +19,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  
+
 } from "@/components/ui/alert-dialog";
 import { useQuery } from "@tanstack/react-query";
 import { apiClient } from "@/lib/axios";
@@ -78,8 +78,9 @@ export function DelayCaseExplanationForm({ delayCase, onSuccess }: { delayCase: 
     groupLabel: config.group,
   }));
 
-  const watchCategory = form.watch("category");
+  const watchCategory = useWatch({ control: form.control, name: "category" });
   const isBlockedCategory = watchCategory === "BLOCKED_BY_TASK";
+  const watchBlockingTaskId = useWatch({ control: form.control, name: "blockingTaskId" });
 
   const { data: tasks } = useQuery({
     queryKey: ["tasks", delayCase.projectId],
@@ -159,7 +160,7 @@ export function DelayCaseExplanationForm({ delayCase, onSuccess }: { delayCase: 
             <label className="text-sm font-medium mb-1 block">Task chặn <span className="text-red-500">*</span></label>
             <CustomSelect
               id="delay-blocking-task"
-              value={form.watch("blockingTaskId") || ""}
+              value={watchBlockingTaskId || ""}
               onChange={(val) => form.setValue("blockingTaskId", val, { shouldValidate: true })}
               options={taskOptions}
               placeholder="Chọn Task..."

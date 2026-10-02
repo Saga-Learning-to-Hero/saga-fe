@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { toast } from "sonner";
@@ -38,7 +38,7 @@ export function DelayCaseLecturerReviewForm({ delayCase, onSuccess }: { delayCas
     },
   });
 
-  const watchOutcome = form.watch("outcome");
+  const watchOutcome = useWatch({ control: form.control, name: "outcome" });
 
   const onSubmit = () => {
     setIsAlertOpen(true);
@@ -91,7 +91,7 @@ export function DelayCaseLecturerReviewForm({ delayCase, onSuccess }: { delayCas
           onClick={() => form.setValue("outcome", "EXCUSED", { shouldValidate: true })}
         >
           <Scale className="w-4 h-4 mr-2" />
-          Châm chước
+          Chấp nhận
         </Button>
         <Button
           type="button"
