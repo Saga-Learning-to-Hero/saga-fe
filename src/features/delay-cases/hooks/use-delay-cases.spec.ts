@@ -104,7 +104,7 @@ describe("use-delay-cases hooks", () => {
       const { result } = renderHook(() => useLecturerReviewDelayCase(), { wrapper: createWrapper() });
       vi.mocked(delayCasesApi.lecturerReview).mockResolvedValueOnce({} as never);
 
-      result.current.mutate({ projectId: "proj1", caseId: "1", payload: { outcome: "EXCUSED" } });
+      result.current.mutate({ projectId: "proj1", caseId: "1", payload: { outcome: "OBJECTIVE" } });
       await waitFor(() => expect(result.current.isSuccess).toBe(true));
     });
 

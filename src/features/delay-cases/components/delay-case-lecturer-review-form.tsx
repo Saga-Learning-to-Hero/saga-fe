@@ -86,18 +86,18 @@ export function DelayCaseLecturerReviewForm({ delayCase, onSuccess }: { delayCas
       <div className="flex flex-col sm:flex-row gap-3">
         <Button
           type="button"
-          variant={watchOutcome === "EXCUSED" ? "default" : "outline"}
-          className={watchOutcome === "EXCUSED" ? "bg-emerald-600 hover:bg-emerald-700" : ""}
-          onClick={() => form.setValue("outcome", "EXCUSED", { shouldValidate: true })}
+          variant={watchOutcome === "OBJECTIVE" ? "default" : "outline"}
+          className={watchOutcome === "OBJECTIVE" ? "bg-emerald-600 hover:bg-emerald-700" : ""}
+          onClick={() => form.setValue("outcome", "OBJECTIVE", { shouldValidate: true })}
         >
           <Scale className="w-4 h-4 mr-2" />
           Chấp nhận
         </Button>
         <Button
           type="button"
-          variant={watchOutcome === "REJECTED" ? "default" : "outline"}
-          className={watchOutcome === "REJECTED" ? "bg-red-600 hover:bg-red-700" : ""}
-          onClick={() => form.setValue("outcome", "REJECTED", { shouldValidate: true })}
+          variant={watchOutcome === "SUBJECTIVE" ? "default" : "outline"}
+          className={watchOutcome === "SUBJECTIVE" ? "bg-red-600 hover:bg-red-700" : ""}
+          onClick={() => form.setValue("outcome", "SUBJECTIVE", { shouldValidate: true })}
         >
           <AlertTriangle className="w-4 h-4 mr-2" />
           Từ chối
@@ -130,7 +130,7 @@ export function DelayCaseLecturerReviewForm({ delayCase, onSuccess }: { delayCas
           <AlertDialogHeader>
             <AlertDialogTitle>Xác nhận quyết định</AlertDialogTitle>
             <AlertDialogDescription>
-              Bạn đang quyết định hồ sơ này là <b>{watchOutcome === "EXCUSED" ? "Chấp nhận" : "Từ chối"}</b>.
+              Bạn đang quyết định hồ sơ này là <b>{watchOutcome === "OBJECTIVE" ? "Chấp nhận" : "Từ chối"}</b>.
               Sau khi xác nhận, quyết định không thể thay đổi.
             </AlertDialogDescription>
           </AlertDialogHeader>
