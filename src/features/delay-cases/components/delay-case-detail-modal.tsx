@@ -239,9 +239,13 @@ export function DelayCaseDetailModal({ delayCase, isOpen, onClose }: DelayCaseDe
                       <div className="bg-muted/30 p-3 rounded-lg text-sm whitespace-pre-wrap">{delayCase.leaderComment}</div>
                     ) : null}
                   </div>
-                ) : (
+                ) : delayCase.status === "OPEN" || delayCase.status === "AWAITING_LEADER" ? (
                   <div className="text-sm text-muted-foreground italic flex items-center gap-2 p-3 bg-muted/20 rounded-lg">
                     <Clock className="w-4 h-4" /> Đang chờ duyệt
+                  </div>
+                ) : (
+                  <div className="text-sm text-emerald-600 dark:text-emerald-400 italic flex items-center gap-2 p-3 bg-emerald-50 dark:bg-emerald-950/20 rounded-lg border border-emerald-100 dark:border-emerald-900/30">
+                    <CheckCircle2 className="w-4 h-4" /> Không yêu cầu duyệt (Do Assignee là Trưởng nhóm)
                   </div>
                 )}
               </div>

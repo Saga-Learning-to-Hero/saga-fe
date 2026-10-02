@@ -101,7 +101,7 @@ export function TopNavHeader() {
     navItems = getStudentNavItems(isStudentLeader);
   }
 
-  const hasSubNav = navItems.length > 0;
+  const hasSubNav = navItems.length > 1;
 
   const handleLogout = () => {
     logout();
