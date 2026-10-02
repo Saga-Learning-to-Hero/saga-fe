@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useDelayCases } from "@/features/delay-cases/hooks/use-delay-cases";
+import { TaskDelayCasesSection } from "@/features/delay-cases/components/task-delay-cases-section";
 import {
   XIcon,
   SaveIcon,
@@ -17,6 +19,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { TaskAiIntelligenceSection } from "@/features/ai";
+import { AlertCircleIcon } from "lucide-react";
 import type {
   SprintIssue,
   IssueStatus,
@@ -184,6 +187,7 @@ export function IssueDetailsModal({
     enabled: Boolean(isOpen && projectId && issue?.id),
   });
   const { data: projectTasks } = useProjectTasksData(projectId);
+  const { data: delayCases } = useDelayCases(projectId || "", { taskId: issue?.id });
 
   const isSuperseded = Boolean(issue?.superseded || taskDetail?.superseded);
   const canEdit = isSuperseded ? false : (isEditing ? (isTeamLeader || isOwner) : true);
@@ -853,14 +857,14 @@ export function IssueDetailsModal({
         parent: parentActionType === "UNCHANGED" && jiraParent
           ? jiraParent
           : form.parentTaskId
-          ? {
-            externalId: jiraParent?.externalId || form.parentTaskId,
-            externalKey: jiraParent?.externalKey || form.parentTaskId,
-            taskId: form.parentTaskId,
-            resolution: "RESOLVED" as const,
-            resolutionReason: null,
-          }
-          : undefined,
+            ? {
+              externalId: jiraParent?.externalId || form.parentTaskId,
+              externalKey: jiraParent?.externalKey || form.parentTaskId,
+              taskId: form.parentTaskId,
+              resolution: "RESOLVED" as const,
+              resolutionReason: null,
+            }
+            : undefined,
         priority: form.priority as IssuePriority,
         status: form.status as IssueStatus,
         storyPoints: form.storyPoints.trim() ? Number(form.storyPoints) : null,
@@ -1298,41 +1302,41 @@ export function IssueDetailsModal({
                   </div>
 
                   {issueTypeRules.showSprint ? (
-                  <div className="space-y-1.5">
-                    <Label htmlFor="issue-sprint" className="text-xs font-semibold flex items-center gap-1.5 text-foreground">
-                      <span>Sprint</span>
-                      <span className="text-xs font-normal text-muted-foreground">(Tùy chọn)</span>
-                    </Label>
-                    <CustomSelect
-                      id="issue-sprint"
-                      disabled={!canEdit}
-                      value={form.sprintId}
-                      onChange={(val) => {
-                        setForm((f) => ({ ...f, sprintId: val }));
-                        setFormErrors((errors) => ({ ...errors, sprintId: undefined }));
-                      }}
-                      options={[
-                        {
-                          value: "backlog",
-                          label: "Backlog (Chưa gán vào Sprint)",
-                          subLabel: "Product Backlog",
-                        },
-                        ...sourceSprints.map((s) => ({
-                          value: s.id,
-                          label: s.name,
-                          subLabel: s.startDate && s.endDate
-                            ? `${s.startDate} – ${s.endDate} · ${s.status}`
-                            : `Chưa thiết lập lịch · ${s.status}`,
-                        })),
-                      ]}
-                    />
-                    {sourceSprintsQuery.isLoading && !isEditing && (
-                      <p className="text-[11px] text-muted-foreground">Đang tải Sprint của nguồn Jira...</p>
-                    )}
-                    {formErrors.sprintId && (
-                      <p className="text-xs font-medium text-destructive">{formErrors.sprintId}</p>
-                    )}
-                  </div>
+                    <div className="space-y-1.5">
+                      <Label htmlFor="issue-sprint" className="text-xs font-semibold flex items-center gap-1.5 text-foreground">
+                        <span>Sprint</span>
+                        <span className="text-xs font-normal text-muted-foreground">(Tùy chọn)</span>
+                      </Label>
+                      <CustomSelect
+                        id="issue-sprint"
+                        disabled={!canEdit}
+                        value={form.sprintId}
+                        onChange={(val) => {
+                          setForm((f) => ({ ...f, sprintId: val }));
+                          setFormErrors((errors) => ({ ...errors, sprintId: undefined }));
+                        }}
+                        options={[
+                          {
+                            value: "backlog",
+                            label: "Backlog (Chưa gán vào Sprint)",
+                            subLabel: "Product Backlog",
+                          },
+                          ...sourceSprints.map((s) => ({
+                            value: s.id,
+                            label: s.name,
+                            subLabel: s.startDate && s.endDate
+                              ? `${s.startDate} – ${s.endDate} · ${s.status}`
+                              : `Chưa thiết lập lịch · ${s.status}`,
+                          })),
+                        ]}
+                      />
+                      {sourceSprintsQuery.isLoading && !isEditing && (
+                        <p className="text-[11px] text-muted-foreground">Đang tải Sprint của nguồn Jira...</p>
+                      )}
+                      {formErrors.sprintId && (
+                        <p className="text-xs font-medium text-destructive">{formErrors.sprintId}</p>
+                      )}
+                    </div>
                   ) : selectedIssueTypeLevel === "SUBTASK" && jiraParent?.externalKey ? (
                     <div className="space-y-1.5">
                       <Label className="text-xs font-semibold text-foreground">Sprint</Label>
@@ -1425,7 +1429,7 @@ export function IssueDetailsModal({
                         Điểm của Subtask chỉ được ghi nhận khi cả task cha và Subtask đều hoàn thành.
                         {isSubtaskShareValue(parsedShare) && parentStoryPoint !== null && (
                           <> Preview: {formatIssuePointBadge("SUBTASK", parsedShare)} · dự kiến{" "}
-                          {getAllocatedPoint(parentStoryPoint, parsedShare)}/{parentStoryPoint} SP.</>
+                            {getAllocatedPoint(parentStoryPoint, parsedShare)}/{parentStoryPoint} SP.</>
                         )}
                       </p>
                     )}
@@ -1501,40 +1505,40 @@ export function IssueDetailsModal({
                   </div>
 
                   {issueTypeRules.showParent ? (
-                  <div className="space-y-1.5">
-                    <Label htmlFor="issue-parent-task" className="text-xs font-semibold flex items-center gap-1.5 text-foreground">
-                      <span>{issueTypeRules.parentLabel}</span>
-                      <span className="text-xs font-normal text-muted-foreground">
-                        {issueTypeRules.parentOptionalHint}
-                      </span>
-                    </Label>
-                    <CustomSelect
-                      id="issue-parent-task"
-                      disabled={!canEdit || !issueTypeRules.canSelectParent}
-                      value={form.parentTaskId}
-                      onChange={(val) => {
-                        setForm((f) => ({ ...f, parentTaskId: val }));
-                        setParentActionType(
-                          parentActionTypeForSelection({
-                            isEditing,
-                            selectedParentTaskId: val,
-                            originalParentTaskId,
-                          })
-                        );
-                        setFormErrors((errors) => ({ ...errors, parent: undefined }));
-                      }}
-                      placeholder={`Chọn ${issueTypeRules.parentLabel.toLowerCase()}...`}
-                      options={parentOptions}
-                    />
-                    {jiraParent?.resolution === "UNRESOLVED" && (
-                      <p className="text-xs text-amber-700 dark:text-amber-400">
-                        {jiraParent.externalKey}: {parentResolutionLabel(jiraParent.resolutionReason)}
-                      </p>
-                    )}
-                    {formErrors.parent && (
-                      <p className="text-xs font-medium text-destructive">{formErrors.parent}</p>
-                    )}
-                  </div>
+                    <div className="space-y-1.5">
+                      <Label htmlFor="issue-parent-task" className="text-xs font-semibold flex items-center gap-1.5 text-foreground">
+                        <span>{issueTypeRules.parentLabel}</span>
+                        <span className="text-xs font-normal text-muted-foreground">
+                          {issueTypeRules.parentOptionalHint}
+                        </span>
+                      </Label>
+                      <CustomSelect
+                        id="issue-parent-task"
+                        disabled={!canEdit || !issueTypeRules.canSelectParent}
+                        value={form.parentTaskId}
+                        onChange={(val) => {
+                          setForm((f) => ({ ...f, parentTaskId: val }));
+                          setParentActionType(
+                            parentActionTypeForSelection({
+                              isEditing,
+                              selectedParentTaskId: val,
+                              originalParentTaskId,
+                            })
+                          );
+                          setFormErrors((errors) => ({ ...errors, parent: undefined }));
+                        }}
+                        placeholder={`Chọn ${issueTypeRules.parentLabel.toLowerCase()}...`}
+                        options={parentOptions}
+                      />
+                      {jiraParent?.resolution === "UNRESOLVED" && (
+                        <p className="text-xs text-amber-700 dark:text-amber-400">
+                          {jiraParent.externalKey}: {parentResolutionLabel(jiraParent.resolutionReason)}
+                        </p>
+                      )}
+                      {formErrors.parent && (
+                        <p className="text-xs font-medium text-destructive">{formErrors.parent}</p>
+                      )}
+                    </div>
                   ) : null}
 
                   <div className="space-y-1.5 sm:col-span-2">
@@ -1654,6 +1658,12 @@ export function IssueDetailsModal({
                     <SparklesIcon className="w-3.5 h-3.5" />
                     Trí tuệ nhân tạo (AI)
                   </TabsTrigger>
+                  {delayCases && delayCases.length > 0 && (
+                    <TabsTrigger value="delay-cases" className="shrink-0 text-xs font-semibold text-red-500">
+                      <AlertCircleIcon className="w-3.5 h-3.5" />
+                      Hồ sơ trễ hạn ({delayCases.length})
+                    </TabsTrigger>
+                  )}
                 </TabsList>
 
                 <TabsContent value="timeline">
@@ -1693,6 +1703,15 @@ export function IssueDetailsModal({
                     taskId={issue.id}
                   />
                 </TabsContent>
+
+                {delayCases && delayCases.length > 0 && (
+                  <TabsContent value="delay-cases">
+                    <TaskDelayCasesSection
+                      projectId={projectId || ""}
+                      taskId={issue.id}
+                    />
+                  </TabsContent>
+                )}
               </Tabs>
             )}
           </div>
@@ -1740,8 +1759,8 @@ export function IssueDetailsModal({
                     shareIsFull
                       ? "Task cha đã phân bổ hết 100% cho các Subtask"
                       : !isEditing && !canCreateTask
-                      ? "Cần liên kết tài khoản Jira và GitHub cá nhân để tạo task"
-                      : undefined
+                        ? "Cần liên kết tài khoản Jira và GitHub cá nhân để tạo task"
+                        : undefined
                   }
                   className="h-9 text-xs font-bold rounded-xl gap-2 cursor-pointer shadow-xs bg-blue-600 hover:bg-blue-700 text-white px-5 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
@@ -1789,3 +1808,4 @@ export function IssueDetailsModal({
     </>
   );
 }
+
