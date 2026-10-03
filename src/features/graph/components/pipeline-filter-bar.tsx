@@ -157,7 +157,7 @@ export function PipelineFilterBar({
 
       {isFilterOpen && (
         <div className="animate-in fade-in-0 slide-in-from-top-2 rounded-xl border border-primary/20 bg-card p-3 shadow-xs duration-200 sm:p-4">
-          <div className="grid grid-cols-1 items-end gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          <div className="grid grid-cols-1 items-end gap-3 sm:grid-cols-3">
             <div className="space-y-1.5">
               <label
                 htmlFor="pipeline-member-filter"
@@ -205,13 +205,13 @@ export function PipelineFilterBar({
                 options={anomalyOptions}
               />
             </div>
-
-            {repositoryFiltersNode && (
-              <div className="space-y-1.5">
-                {repositoryFiltersNode}
-              </div>
-            )}
           </div>
+
+          {repositoryFiltersNode && (
+            <div className="mt-4 border-t border-border/50 pt-4">
+              {repositoryFiltersNode}
+            </div>
+          )}
         </div>
       )}
 

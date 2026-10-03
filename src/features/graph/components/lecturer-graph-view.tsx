@@ -1043,7 +1043,6 @@ export function LecturerGraphView({
           }
           repositoryFiltersNode={
             <PipelineRepositoryFilters
-              compact
               repositories={pipeline.repositories}
               branches={pipeline.branches}
               selectedRepoId={pipeline.sanitizedFilter.repoId || "ALL"}
