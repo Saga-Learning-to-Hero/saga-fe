@@ -6,11 +6,8 @@ import {
   CheckCircle2Icon,
   FolderKanbanIcon,
   GitGraphIcon,
-  RotateCcwIcon,
-  SearchIcon,
   ShieldAlertIcon,
   UsersIcon,
-  XIcon,
   NetworkIcon,
   CalendarIcon,
   AlertCircleIcon,
@@ -18,7 +15,6 @@ import {
 import { CustomSelect, type CustomSelectOption } from "@/components/common/custom-select";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { useLecturerTeams } from "@/features/lecturer/teams/hooks/use-lecturer-teams";
 import { useProjectSprints } from "@/features/student/sprint-progress/hooks/use-project-sprints";
@@ -58,7 +54,6 @@ import {
 } from "../lib/student-profile-id";
 import {
   UNASSIGNED_LANE_ID,
-  type PipelineAnomalyFilterType,
   type PipelineFilterState,
   type PipelineTask,
 } from "../types/pipeline";
@@ -548,15 +543,6 @@ export function LecturerGraphView({
   const selectedTask = useMemo<PipelineTask | null>(
     () => pipeline.filteredTasks.find((task) => task.id === pipeline.effectiveTaskId) || null,
     [pipeline.effectiveTaskId, pipeline.filteredTasks]
-  );
-
-  const hasActiveFilters = Boolean(
-    pipelineFilter.studentId !== "ALL" ||
-    pipelineFilter.sprintId !== "ALL" ||
-    (pipelineFilter.anomalyType && pipelineFilter.anomalyType !== "ALL") ||
-    pipelineFilter.searchQuery ||
-    (pipelineFilter.repoId && pipelineFilter.repoId !== "ALL") ||
-    (pipelineFilter.branchName && pipelineFilter.branchName !== "ALL")
   );
 
   const handleResetFilters = () => {
