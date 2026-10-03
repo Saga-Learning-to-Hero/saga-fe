@@ -15,7 +15,6 @@ import {
 } from "lucide-react";
 import { SagaLogo } from "@/components/common/saga-logo";
 import { Button } from "@/components/ui/button";
-import { NotificationBell } from "@/features/notification/components/notification-bell";
 import { GlobalCommandSearch } from "./global-command-search";
 
 interface AdminTopHeaderProps {
@@ -135,10 +134,6 @@ export function AdminTopHeader({ onOpenMobileMenu }: AdminTopHeaderProps) {
         <div className="hidden lg:flex items-center gap-1 px-2.5 py-1 rounded-full bg-muted/60 border border-border text-muted-foreground text-xs font-mono">
           <span>Kỳ FA26</span>
         </div>
-
-        <div className="h-4 w-px bg-border/80 hidden sm:block" />
-
-        <NotificationBell />
       </div>
     </header>
   );

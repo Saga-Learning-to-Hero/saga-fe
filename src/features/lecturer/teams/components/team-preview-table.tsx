@@ -10,7 +10,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import type { TeamPreviewResponse, TeamPreviewRowAction } from "../types/lecturer-team";
+import { type TeamPreviewResponse, type TeamPreviewRowAction, teamRoleLabel } from "../types/lecturer-team";
 
 const ACTION_LABELS: Record<string, { label: string; className: string }> = {
   READY_CREATE: {
@@ -119,7 +119,7 @@ export function TeamPreviewTable({ preview }: TeamPreviewTableProps) {
                 </TableCell>
                 <TableCell className="font-mono text-xs">{row.teamNo ?? "—"}</TableCell>
                 <TableCell className="text-xs">{row.teamName ?? "—"}</TableCell>
-                <TableCell className="text-xs">{row.teamRole ?? "—"}</TableCell>
+                <TableCell className="text-xs">{row.teamRole ? teamRoleLabel(row.teamRole.toUpperCase()) : "—"}</TableCell>
                 <TableCell>
                   <ActionBadge action={row.action} />
                 </TableCell>

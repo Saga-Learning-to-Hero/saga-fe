@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import {
   ArrowLeftIcon,
   BellIcon,
@@ -38,6 +38,8 @@ type NotificationTypeFilter = "ALL" | "COURSE" | "TEAM" | "SYSTEM";
 
 export function NotificationCenterView() {
   const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [unreadOnly, setUnreadOnly] = useState(false);
   const [typeFilter, setTypeFilter] = useState<NotificationTypeFilter>("ALL");
   const [searchQuery, setSearchQuery] = useState("");
@@ -82,7 +84,20 @@ export function NotificationCenterView() {
       markRead(item.id);
     }
     if (isValidInternalActionUrl(item.actionUrl)) {
-      router.push(item.actionUrl as string);
+      const url = item.actionUrl as string;
+      if (url.includes("caseId=") || url.includes("delayCaseId=")) {
+        const [, query] = url.split("?");
+        if (query) {
+          const currentQuery = new URLSearchParams(searchParams.toString());
+          const newQuery = new URLSearchParams(query);
+          for (const [key, value] of newQuery.entries()) {
+            currentQuery.set(key, value);
+          }
+          router.push(`${pathname}?${currentQuery.toString()}`, { scroll: false });
+          return;
+        }
+      }
+      router.push(url);
     }
   };
 

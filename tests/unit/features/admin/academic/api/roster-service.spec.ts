@@ -28,10 +28,12 @@ describe("RosterService", () => {
     classCode: "SE1705",
     summary: {
       totalRows: 30,
-      validCount: 29,
-      errorCount: 1,
-      existingAccountsCount: 25,
-      newInvitesCount: 4,
+      validRows: 29,
+      invalidRows: 1,
+      existingAccounts: 25,
+      newInvitations: 4,
+      alreadyEnrolled: 0,
+      alreadyInvited: 0,
     },
     rows: [],
   };
@@ -130,7 +132,7 @@ describe("RosterService", () => {
       const res = await RosterService.previewImport(mockCourseId, fakeFile);
 
       expect(res.previewToken).toBe("opaque-preview-token-xyz");
-      expect(res.summary.validCount).toBe(29);
+      expect(res.summary.validRows).toBe(29);
     }
   );
 
