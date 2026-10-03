@@ -131,15 +131,24 @@ export function StudentActiveTasksCard({ tasks, courseId }: StudentActiveTasksCa
                   )}
                   <div
                     className={cn(
-                      "flex items-center gap-1 text-xs px-2 py-0.5 rounded-md",
+                      "flex items-center gap-1.5 text-xs px-2 py-0.5 rounded-md",
                       task.linkedCommitCount > 0
                         ? "bg-primary/10 text-primary font-bold"
                         : "bg-muted text-muted-foreground"
                     )}
-                    title={`${task.linkedCommitCount} commit đã liên kết`}
+                    title={`${task.linkedCommitCount} commit đã liên kết${
+                      typeof task.evidenceCommitCount === "number" && task.evidenceCommitCount > 0
+                        ? ` (${task.evidenceCommitCount} minh chứng hợp lệ)`
+                        : ""
+                    }`}
                   >
                     <GitCommitIcon className="size-3" />
                     <span>{task.linkedCommitCount}</span>
+                    {typeof task.evidenceCommitCount === "number" && task.evidenceCommitCount > 0 && (
+                      <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold">
+                        ({task.evidenceCommitCount} MC)
+                      </span>
+                    )}
                   </div>
                 </div>
               </div>

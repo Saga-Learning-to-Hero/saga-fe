@@ -452,7 +452,7 @@ Project Type dùng để phân loại hướng dự án, không điều khiển 
 
 | ID | Nghiệp vụ | BE | FE data | UI | Trạng thái/Ghi chú |
 | --- | --- | --- | --- | --- | --- |
-| PROG-001 | Project progress summary | ✓ | ✓ | ✓ | `DONE`; quyền leader/lecturer theo policy. Student P0: Member không prefetch/gọi `GET /progress`; hover tab chỉ prefetch dashboard BFF; 403 ACCESS_DENIED không retry |
+| PROG-001 | Project progress summary | ✓ | ✓ | ✓ | `DONE`; quyền leader/lecturer theo policy. Student P0: Member không prefetch/gọi `GET /progress`; hover tab chỉ prefetch dashboard BFF; 403 ACCESS_DENIED không retry. Student Dashboard BFF (`GET /api/student/courses/{courseId}/dashboard`): Phân định rõ ràng data ownership giữa cá nhân và nhóm: chỉ `currentSprint.totalTasks/completedTasks/completionPercent` là số của cả nhóm trong Sprint; toàn bộ các trường còn lại (`myMetrics`, `myActiveTasks`, `recentCommits`, `weeklyCommits`, `sprintMetrics`) là số cá nhân. Ô Sprint ưu tiên hiển thị tiến độ cá nhân từ `sprintMetrics.tasks` kèm đối soát tiến độ cả nhóm. |
 | PROG-002 | Member progress detail | ✓ | ✓ | ✓ | `DONE`; drawer chỉ là inspector, không thay dữ liệu dashboard tổng |
 | GRAPH-001 | Project graph overview | ✓ | ✓ | ✓ | `DONE/VERIFY`; cạnh `HAS_WORK_ITEM` (Project→root work item, nét liền) và `PARENT_OF` (cha→con, nét đứt); size/layout theo `issueTypeLevel`; UNRESOLVED vẫn hiện, không bịa PARENT_OF; còn E2E dữ liệu lớn và authorization |
 | GRAPH-002 | Student contribution graph | ✓ | ✓ | ✓ | `DONE/VERIFY`; lazy query theo mode/student/sprint |

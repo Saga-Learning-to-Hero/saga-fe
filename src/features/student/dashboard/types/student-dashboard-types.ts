@@ -127,13 +127,19 @@ export interface StudentDashboardActionableAlert {
   remainingPeers?: number | null;
 }
 
+export interface StudentDashboardSprintMetrics extends StudentDashboardMetrics {
+  sprintId?: string | null;
+  startDate?: string | null;
+  endDate?: string | null;
+}
+
 export interface StudentDashboardResponse {
   student: StudentDashboardStudent;
   course: StudentDashboardCourse;
   team: StudentDashboardTeam | null;
   integrations?: StudentDashboardIntegrations | null;
   currentSprint?: StudentDashboardCurrentSprint | null;
-  sprintMetrics?: StudentDashboardMetrics | null;
+  sprintMetrics?: StudentDashboardSprintMetrics | null;
   myMetrics: StudentDashboardMetrics;
   myActiveTasks: StudentDashboardActiveTask[];
   recentCommits: StudentDashboardRecentCommit[];
