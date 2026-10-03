@@ -9,9 +9,14 @@ import {
   GitMergeIcon,
   GitPullRequestIcon,
   UsersIcon,
+  LayersIcon,
+  KanbanIcon,
+  RotateCwIcon,
 } from "lucide-react";
 import type { Repository, Branch } from "../types/commits";
 import type { CommitTeamMember } from "../lib/commit-mapper";
+import type { JiraSourceSummary } from "@/features/student/project/types/jira-sources";
+import type { ProjectSprintResponse } from "@/features/student/sprint-progress/types/jira-task-types";
 import { Input } from "@/components/ui/input";
 import { CustomSelect } from "@/components/common/custom-select";
 import { isStudentProfileUuid } from "@/features/graph/lib/student-profile-id";
@@ -28,6 +33,12 @@ interface CommitFilterBarProps {
   branches: Branch[];
   selectedBranchName: string;
   onSelectBranch: (branchName: string) => void;
+  jiraSources?: JiraSourceSummary[];
+  selectedJiraIntegrationId?: string;
+  onSelectJiraIntegration?: (sourceId: string) => void;
+  sprints?: ProjectSprintResponse[];
+  selectedSprintId?: string;
+  onSelectSprint?: (sprintId: string) => void;
   members?: CommitTeamMember[];
   selectedAuthorId?: string;
   onSelectAuthor?: (authorId: string) => void;
@@ -36,6 +47,7 @@ interface CommitFilterBarProps {
   mergeCount?: number;
   searchQuery: string;
   onSearchChange: (q: string) => void;
+  isLoading?: boolean;
 }
 
 export function CommitFilterBar({
@@ -45,6 +57,12 @@ export function CommitFilterBar({
   branches,
   selectedBranchName,
   onSelectBranch,
+  jiraSources = [],
+  selectedJiraIntegrationId = "all",
+  onSelectJiraIntegration,
+  sprints = [],
+  selectedSprintId = "all",
+  onSelectSprint,
   members = [],
   selectedAuthorId = "all",
   onSelectAuthor,
@@ -53,11 +71,144 @@ export function CommitFilterBar({
   mergeCount = 0,
   searchQuery,
   onSearchChange,
+  isLoading = false,
 }: CommitFilterBarProps) {
+  const hasJiraRow = Boolean(onSelectJiraIntegration || onSelectSprint || onSelectAuthor);
+
   return (
-    <div className="relative z-30 p-3 rounded-xl bg-card/60 border border-border/70 backdrop-blur-xs shadow-2xs space-y-3">
-      <div className="flex flex-col md:flex-row md:items-center gap-3">
-        <div className="relative z-40 w-full md:w-60">
+    <div className="relative z-30 p-3 rounded-xl bg-card/60 border border-border/70 backdrop-blur-xs shadow-2xs space-y-2.5">
+      {/* Hàng 1: Bộ lọc nghiệp vụ Jira & Thành viên (Site, Sprint, Thành viên) */}
+      {hasJiraRow && (
+        <div className="flex flex-col sm:flex-row sm:items-center gap-2.5">
+          {onSelectJiraIntegration && (
+            <div className="relative z-40 w-full sm:w-56 md:w-60">
+              <CustomSelect
+                id="commits-site-filter"
+                value={selectedJiraIntegrationId || "all"}
+                onChange={onSelectJiraIntegration}
+                options={[
+                  {
+                    value: "all",
+                    label: "Tất cả Site Jira",
+                    subLabel:
+                      jiraSources && jiraSources.length > 0
+                        ? `(${jiraSources.length} nguồn)`
+                        : undefined,
+                    icon: <LayersIcon className="w-3.5 h-3.5 text-blue-500" />,
+                  },
+                  ...(jiraSources || []).map((source) => ({
+                    value:
+                      source.integrationId ||
+                      (source as unknown as { jiraIntegrationId?: string }).jiraIntegrationId ||
+                      "",
+                    label: `${source.projectKey || "JIRA"} · ${source.siteName}`,
+                    subLabel: source.boardId ? `Board: ${source.boardId}` : "Board mặc định",
+                    icon: <LayersIcon className="w-3.5 h-3.5 text-blue-500" />,
+                  })),
+                ]}
+              />
+            </div>
+          )}
+
+          {onSelectSprint && (
+            <div className="relative z-40 w-full sm:w-56 md:w-60">
+              <CustomSelect
+                id="commits-sprint-filter"
+                value={selectedSprintId || "all"}
+                onChange={onSelectSprint}
+                options={[
+                  {
+                    value: "all",
+                    label: "Tất cả Sprint",
+                    subLabel:
+                      sprints && sprints.length > 0 ? `(${sprints.length} sprint)` : undefined,
+                    icon: <KanbanIcon className="w-3.5 h-3.5 text-amber-500" />,
+                  },
+                  ...(sprints || []).map((sp) => {
+                    const isActive = sp.state?.toLowerCase() === "active";
+                    const stateLabel = isActive
+                      ? "Đang diễn ra"
+                      : sp.state?.toLowerCase() === "closed"
+                        ? "Đã đóng"
+                        : "Dự kiến";
+                    return {
+                      value: sp.id,
+                      label: sp.name,
+                      subLabel: stateLabel,
+                      icon: (
+                        <KanbanIcon
+                          className={`w-3.5 h-3.5 ${
+                            isActive ? "text-emerald-500" : "text-amber-500"
+                          }`}
+                        />
+                      ),
+                    };
+                  }),
+                ]}
+              />
+            </div>
+          )}
+
+          {onSelectAuthor && (
+            <div className="relative z-40 w-full sm:w-56 md:w-60">
+              <CustomSelect
+                id="commits-author-filter"
+                value={selectedAuthorId || "all"}
+                onChange={onSelectAuthor}
+                options={[
+                  {
+                    value: "all",
+                    label: "Tất cả thành viên",
+                    subLabel: members && members.length > 0 ? `(${members.length} người)` : undefined,
+                    icon: <UsersIcon className="w-3.5 h-3.5 text-blue-500" />,
+                  },
+                  ...members.map((m) => {
+                    const displayName = m.fullName || m.name || m.studentCode || "Thành viên";
+                    const code = m.studentCode ? ` (${m.studentCode})` : "";
+                    const memberValue =
+                      (m.studentProfileId && isStudentProfileUuid(m.studentProfileId)
+                        ? m.studentProfileId
+                        : null) ||
+                      (m.id && isStudentProfileUuid(m.id) ? m.id : null) ||
+                      `unlinked:${m.studentCode || displayName}`;
+                    const avatarSrc = resolveHttpAvatarUrl(m.avatarUrl, m.avatar);
+                    const initials = getAssigneeInitials(displayName);
+                    const avatarColorClass = getAssigneeAvatarClass(
+                      m.studentProfileId || m.studentCode || m.id
+                    );
+
+                    return {
+                      value: memberValue,
+                      label: `${displayName}${code}`,
+                      subLabel: m.studentCode ? `MSSV: ${m.studentCode}` : undefined,
+                      icon: (
+                        <Avatar className="w-4.5 h-4.5 border border-border/80 shrink-0">
+                          {avatarSrc && (
+                            <AvatarImage
+                              src={avatarSrc}
+                              alt={displayName}
+                              className="object-cover"
+                            />
+                          )}
+                          <AvatarFallback
+                            className={`text-[8px] font-bold ${avatarColorClass}`}
+                          >
+                            {initials}
+                          </AvatarFallback>
+                        </Avatar>
+                      ),
+                    };
+                  }),
+                ]}
+              />
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Hàng 2: Bộ lọc kỹ thuật Git (Repo, Nhánh, Merge Filter, Search) */}
+      <div className="flex flex-col md:flex-row md:items-center gap-2.5">
+        <div className="relative z-40 w-full md:w-56">
           <CustomSelect
             value={selectedRepoId}
             onChange={onSelectRepo}
@@ -98,63 +249,8 @@ export function CommitFilterBar({
           />
         </div>
 
-        {onSelectAuthor && (
-          <div className="relative z-40 w-full md:w-56">
-            <CustomSelect
-              id="commits-author-filter"
-              value={selectedAuthorId || "all"}
-              onChange={onSelectAuthor}
-              options={[
-                {
-                  value: "all",
-                  label: "Tất cả thành viên",
-                  subLabel: members && members.length > 0 ? `(${members.length} người)` : undefined,
-                  icon: <UsersIcon className="w-3.5 h-3.5 text-blue-500" />,
-                },
-                ...members.map((m) => {
-                  const displayName = m.fullName || m.name || m.studentCode || "Thành viên";
-                  const code = m.studentCode ? ` (${m.studentCode})` : "";
-                  const memberValue =
-                    (m.studentProfileId && isStudentProfileUuid(m.studentProfileId)
-                      ? m.studentProfileId
-                      : null) ||
-                    (m.id && isStudentProfileUuid(m.id) ? m.id : null) ||
-                    `unlinked:${m.studentCode || displayName}`;
-                  const avatarSrc = resolveHttpAvatarUrl(m.avatarUrl, m.avatar);
-                  const initials = getAssigneeInitials(displayName);
-                  const avatarColorClass = getAssigneeAvatarClass(
-                    m.studentProfileId || m.studentCode || m.id
-                  );
-
-                  return {
-                    value: memberValue,
-                    label: `${displayName}${code}`,
-                    subLabel: m.studentCode ? `MSSV: ${m.studentCode}` : undefined,
-                    icon: (
-                      <Avatar className="w-4.5 h-4.5 border border-border/80 shrink-0">
-                        {avatarSrc && (
-                          <AvatarImage
-                            src={avatarSrc}
-                            alt={displayName}
-                            className="object-cover"
-                          />
-                        )}
-                        <AvatarFallback
-                          className={`text-[8px] font-bold ${avatarColorClass}`}
-                        >
-                          {initials}
-                        </AvatarFallback>
-                      </Avatar>
-                    ),
-                  };
-                }),
-              ]}
-            />
-          </div>
-        )}
-
         {onMergeFilterChange && (
-          <div className="relative z-40 w-full md:w-56">
+          <div className="relative z-40 w-full md:w-48">
             <CustomSelect
               value={mergeFilter}
               onChange={(val) => onMergeFilterChange(val as CommitMergeFilter)}
@@ -201,6 +297,13 @@ export function CommitFilterBar({
             </button>
           )}
         </div>
+
+        {isLoading && (
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-primary/10 border border-primary/20 text-xs font-bold text-primary shrink-0 animate-in fade-in-50 duration-150">
+            <RotateCwIcon className="w-3.5 h-3.5 animate-spin text-primary" />
+            <span>Đang lọc...</span>
+          </div>
+        )}
       </div>
     </div>
   );

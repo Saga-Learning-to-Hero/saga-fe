@@ -5,6 +5,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import {
   CheckCircle2Icon,
+  CalendarIcon,
   CrownIcon,
   FilterIcon,
   FolderKanbanIcon,
@@ -254,8 +255,11 @@ export function StudentDashboardAnalytics() {
     const matched = siteFilteredProjectSprints.find((sp) => sp.id === selectedSprintValue);
     if (matched && currentSprint?.id !== selectedSprintValue) {
       return {
+        id: matched.id,
         name: matched.name,
         state: matched.state,
+        startDate: matched.startDate,
+        endDate: matched.endDate,
         completedTasks: 0,
         totalTasks: 0,
         completionPercent: null,
@@ -263,6 +267,38 @@ export function StudentDashboardAnalytics() {
     }
     return currentSprint;
   }, [siteFilteredProjectSprints, selectedSprintValue, currentSprint]);
+
+  const sprintDates = useMemo(() => {
+    const rawStart =
+      data?.sprintMetrics?.startDate ||
+      displaySprint?.startDate ||
+      currentSprint?.startDate;
+    const rawEnd =
+      data?.sprintMetrics?.endDate ||
+      displaySprint?.endDate ||
+      currentSprint?.endDate;
+
+    if (!rawStart && !rawEnd) return null;
+
+    const formatDate = (val?: string | null) => {
+      if (!val) return "";
+      try {
+        const d = new Date(val);
+        if (isNaN(d.getTime())) return val;
+        return `${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}/${d.getFullYear()}`;
+      } catch {
+        return val;
+      }
+    };
+
+    const startStr = formatDate(rawStart);
+    const endStr = formatDate(rawEnd);
+
+    if (startStr && endStr) {
+      return `${startStr} – ${endStr}`;
+    }
+    return startStr || endStr;
+  }, [data?.sprintMetrics, displaySprint, currentSprint]);
 
   if (isInvalidCourse) {
     return (
@@ -366,10 +402,7 @@ export function StudentDashboardAnalytics() {
           });
 
   // Metrics của sprint đang xem cho biểu đồ
-  const sprintTasksForChart =
-    currentSprint?.id === effectiveSelectedSprintId && data.sprintMetrics?.tasks
-      ? data.sprintMetrics.tasks
-      : myMetrics.tasks;
+  const sprintTasksForChart = data.sprintMetrics?.tasks || myMetrics.tasks;
 
   const formattedLastCommit = myMetrics.commits.lastCommittedAt
     ? new Date(myMetrics.commits.lastCommittedAt).toLocaleString("vi-VN", {
@@ -584,6 +617,26 @@ export function StudentDashboardAnalytics() {
                     {myMetrics.tasks.completedStoryPoints || 0} / {myMetrics.tasks.totalStoryPoints || 0} SP
                   </span>
                 </div>
+
+                {(myMetrics.tasks.inProgress > 0 || myMetrics.tasks.inReview > 0 || myMetrics.tasks.blocked > 0) && (
+                  <div className="flex flex-wrap items-center gap-1.5 pt-0.5 text-[10px] text-muted-foreground font-mono">
+                    {myMetrics.tasks.inProgress > 0 && (
+                      <Badge variant="outline" className="px-1.5 py-0 border-sky-500/30 text-sky-700 dark:text-sky-300">
+                        {myMetrics.tasks.inProgress} đang làm
+                      </Badge>
+                    )}
+                    {myMetrics.tasks.inReview > 0 && (
+                      <Badge variant="outline" className="px-1.5 py-0 border-purple-500/30 text-purple-700 dark:text-purple-300">
+                        {myMetrics.tasks.inReview} chờ review
+                      </Badge>
+                    )}
+                    {myMetrics.tasks.blocked > 0 && (
+                      <Badge variant="outline" className="px-1.5 py-0 border-red-500/30 text-red-700 dark:text-red-300">
+                        {myMetrics.tasks.blocked} bị chặn
+                      </Badge>
+                    )}
+                  </div>
+                )}
               </CardContent>
             </Card>
 
@@ -643,41 +696,118 @@ export function StudentDashboardAnalytics() {
                   </div>
                 ) : (
                   <>
-                    <div className="flex items-baseline justify-between gap-2">
-                      <div
-                        className="font-mono text-xl sm:text-2xl font-black text-foreground break-words leading-tight"
-                        title={displaySprint?.name || currentSprint?.name || "Chưa có Sprint"}
-                      >
-                        {displaySprint?.name || currentSprint?.name || "Chưa bắt đầu"}
-                      </div>
-                      {displaySprint && displaySprint.completionPercent !== null && (
-                        <Badge
-                          variant="outline"
-                          className="font-mono text-xs bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20 shrink-0"
+                    <div className="space-y-0.5">
+                      <div className="flex items-baseline justify-between gap-2">
+                        <div
+                          className="font-mono text-xl sm:text-2xl font-black text-foreground break-words leading-tight"
+                          title={displaySprint?.name || currentSprint?.name || "Chưa có Sprint"}
                         >
-                          {formatStudentNullablePercent(displaySprint.completionPercent)}
-                        </Badge>
+                          {displaySprint?.name || currentSprint?.name || "Chưa bắt đầu"}
+                        </div>
+                        {data.sprintMetrics?.tasks?.completionPercent !== null && data.sprintMetrics?.tasks?.completionPercent !== undefined ? (
+                          <Badge
+                            variant="outline"
+                            className="font-mono text-xs bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20 shrink-0"
+                            title="Tiến độ cá nhân trong Sprint"
+                          >
+                            {formatStudentNullablePercent(data.sprintMetrics.tasks.completionPercent)}
+                          </Badge>
+                        ) : displaySprint && displaySprint.completionPercent !== null ? (
+                          <Badge
+                            variant="outline"
+                            className="font-mono text-xs bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20 shrink-0"
+                            title="Tiến độ cả nhóm trong Sprint"
+                          >
+                            {formatStudentNullablePercent(displaySprint.completionPercent)}
+                          </Badge>
+                        ) : null}
+                      </div>
+                      {sprintDates && (
+                        <div className="flex items-center gap-1 text-[11px] font-mono text-muted-foreground">
+                          <CalendarIcon className="size-3 text-amber-500 shrink-0" />
+                          <span>{sprintDates}</span>
+                        </div>
                       )}
                     </div>
 
-                    <div className="flex items-center justify-between text-xs text-muted-foreground pt-1 border-t border-border/50">
-                      <span>Tiến độ nhóm:</span>
-                      <span className="font-mono font-bold text-foreground">
-                        {displaySprint
-                          ? `${displaySprint.completedTasks} / ${displaySprint.totalTasks} tasks`
-                          : "Chưa ghi nhận"}
-                      </span>
-                    </div>
+                    {data.sprintMetrics ? (
+                      <div className="space-y-1.5 pt-1 border-t border-border/50 text-xs">
+                        <div className="flex items-center justify-between text-muted-foreground">
+                          <span>Tiến độ cá nhân:</span>
+                          <span className="font-mono font-bold text-foreground">
+                            {data.sprintMetrics.tasks.done} / {data.sprintMetrics.tasks.totalAssigned} tasks
+                            <span className="font-normal text-muted-foreground ml-1">
+                              ({data.sprintMetrics.tasks.completedStoryPoints || 0}/{data.sprintMetrics.tasks.totalStoryPoints || 0} SP)
+                            </span>
+                          </span>
+                        </div>
+
+                        {(data.sprintMetrics.tasks.inProgress > 0 || data.sprintMetrics.tasks.inReview > 0 || data.sprintMetrics.tasks.blocked > 0) && (
+                          <div className="flex flex-wrap items-center gap-1.5 pt-0.5 text-[10px] text-muted-foreground font-mono">
+                            {data.sprintMetrics.tasks.inProgress > 0 && (
+                              <Badge variant="outline" className="px-1.5 py-0 border-sky-500/30 text-sky-700 dark:text-sky-300">
+                                {data.sprintMetrics.tasks.inProgress} đang làm
+                              </Badge>
+                            )}
+                            {data.sprintMetrics.tasks.inReview > 0 && (
+                              <Badge variant="outline" className="px-1.5 py-0 border-purple-500/30 text-purple-700 dark:text-purple-300">
+                                {data.sprintMetrics.tasks.inReview} chờ review
+                              </Badge>
+                            )}
+                            {data.sprintMetrics.tasks.blocked > 0 && (
+                              <Badge variant="outline" className="px-1.5 py-0 border-red-500/30 text-red-700 dark:text-red-300">
+                                {data.sprintMetrics.tasks.blocked} bị chặn
+                              </Badge>
+                            )}
+                          </div>
+                        )}
+
+                        {data.sprintMetrics.commits && (
+                          <div className="flex items-center justify-between text-muted-foreground">
+                            <span>Commits cá nhân Sprint:</span>
+                            <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">
+                              {data.sprintMetrics.commits.totalCommits} commits ({Math.round(data.sprintMetrics.commits.traceabilityPercent || 0)}% hợp lệ)
+                            </span>
+                          </div>
+                        )}
+
+                        <div className="flex items-center justify-between text-[11px] text-muted-foreground/80 pt-1 border-t border-border/40">
+                          <span>Tiến độ cả nhóm:</span>
+                          <span className="font-mono font-medium text-foreground/80">
+                            {displaySprint
+                              ? `${displaySprint.completedTasks} / ${displaySprint.totalTasks} tasks (${formatStudentNullablePercent(displaySprint.completionPercent)})`
+                              : "Chưa ghi nhận"}
+                          </span>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex items-center justify-between text-xs text-muted-foreground pt-1 border-t border-border/50">
+                        <span>Tiến độ nhóm:</span>
+                        <span className="font-mono font-bold text-foreground">
+                          {displaySprint
+                            ? `${displaySprint.completedTasks} / ${displaySprint.totalTasks} tasks`
+                            : "Chưa ghi nhận"}
+                        </span>
+                      </div>
+                    )}
 
                     {(integrations?.jira?.connected || integrations?.github?.connected) && (
-                      <div className="flex items-center gap-1.5 pt-0.5">
+                      <div className="flex flex-wrap items-center gap-1.5 pt-1 border-t border-border/50 text-[10px] text-muted-foreground font-mono">
                         {integrations?.jira?.connected && (
-                          <Badge variant="outline" className="text-[9px] px-1.5 py-0 border-sky-500/30 text-sky-700 dark:text-sky-300">
-                            Jira: {currentJiraProjectKey}
+                          <Badge
+                            variant="outline"
+                            className="text-[9px] px-1.5 py-0 border-sky-500/30 text-sky-700 dark:text-sky-300"
+                            title={integrations.jira.lastSyncedAt ? `Lần đồng bộ Jira gần nhất: ${new Date(integrations.jira.lastSyncedAt).toLocaleString("vi-VN")}` : undefined}
+                          >
+                            Jira: {currentJiraProjectKey || "SAGA"}
                           </Badge>
                         )}
                         {integrations?.github?.connected && (
-                          <Badge variant="outline" className="text-[9px] px-1.5 py-0 border-emerald-500/30 text-emerald-700 dark:text-emerald-300">
+                          <Badge
+                            variant="outline"
+                            className="text-[9px] px-1.5 py-0 border-emerald-500/30 text-emerald-700 dark:text-emerald-300"
+                            title={integrations.github.lastSyncedAt ? `Lần đồng bộ GitHub gần nhất: ${new Date(integrations.github.lastSyncedAt).toLocaleString("vi-VN")}` : undefined}
+                          >
                             GitHub: {integrations.github.repositoryCount ?? 0} repos
                           </Badge>
                         )}
@@ -694,7 +824,11 @@ export function StudentDashboardAnalytics() {
 
           {/* Grid 2 Cột: Nhiệm vụ đang làm & Nhật ký commit gần đây */}
           <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
-            <StudentActiveTasksCard tasks={scopedActiveTasks} courseId={courseId} />
+            <StudentActiveTasksCard
+              tasks={scopedActiveTasks}
+              courseId={courseId}
+              projectId={projectId}
+            />
             <StudentRecentCommitsCard commits={recentCommits} courseId={courseId} />
           </div>
         </div>

@@ -16,6 +16,7 @@ import {
   CalendarIcon,
   HistoryIcon,
   SparklesIcon,
+  GitCommitIcon,
 } from "lucide-react";
 import Link from "next/link";
 import { TaskAiIntelligenceSection } from "@/features/ai";
@@ -38,6 +39,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TaskEvidencePanel } from "./task-evidence-panel";
 import { TaskWorkSessionControl } from "./task-work-session-control";
 import { TaskWorkSessionTimeline } from "./task-work-session-timeline";
+import { TaskCommitsTab } from "./task-commits-tab";
 import { DEFAULT_SAGA_LABELS, LabelsMultiSelect } from "./labels-multi-select";
 import {
   findParentStoryPoint,
@@ -1646,6 +1648,10 @@ export function IssueDetailsModal({
                     <HistoryIcon className="w-3.5 h-3.5" />
                     Dòng thời gian & Minh chứng
                   </TabsTrigger>
+                  <TabsTrigger value="commits" className="shrink-0 text-xs font-semibold">
+                    <GitCommitIcon className="w-3.5 h-3.5" />
+                    Git Commits {issue.githubCommitCount ? `(${issue.githubCommitCount})` : ""}
+                  </TabsTrigger>
                   <TabsTrigger value="documents" className="shrink-0 text-xs font-semibold">
                     <PaperclipIcon className="w-3.5 h-3.5" />
                     Tài liệu
@@ -1675,6 +1681,15 @@ export function IssueDetailsModal({
                     onContinueToConfirmation={() => setActiveEvidenceTab("contribution")}
                     selectedShas={selectedShasList}
                     canSelectCommit={canEdit}
+                  />
+                </TabsContent>
+
+                <TabsContent value="commits">
+                  <TaskCommitsTab
+                    projectId={projectId}
+                    taskId={issue.id}
+                    issueKey={issue.key}
+                    linkedCommitCount={issue.githubCommitCount}
                   />
                 </TabsContent>
 
