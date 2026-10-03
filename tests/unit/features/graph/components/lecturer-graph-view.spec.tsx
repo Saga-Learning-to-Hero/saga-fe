@@ -410,8 +410,8 @@ describe("LecturerGraphView", () => {
       const taskCard = screen.getByText("SAGA-101");
       fireEvent.click(taskCard);
 
-      const matrixBtn = screen.getByText(/Audit Matrix/i);
-      fireEvent.click(matrixBtn);
+      const matrixButtons = screen.getAllByText(/Ma trận đối soát/i);
+      fireEvent.click(matrixButtons[matrixButtons.length - 1]);
 
       expect(screen.getByText(/Bảng đối soát/i)).toBeTruthy();
       expect(screen.getAllByText("SAGA-101").length).toBeGreaterThan(1);
@@ -487,6 +487,8 @@ describe("LecturerGraphView", () => {
       );
 
       renderView({ courseId: "course-123", initialTeamId: "team-with-project" });
+      const filterBtn = screen.getByRole("button", { name: /Bộ lọc/i });
+      fireEvent.click(filterBtn);
       expect(screen.getByText("Repository")).toBeTruthy();
       expect(screen.getByText("Branch")).toBeTruthy();
     }

@@ -579,7 +579,7 @@ Khóa đi theo cấu hình lớp hiện có: khóa lớp, rồi khóa nền tả
 | Task sprint move/transition/options | Đã dùng |
 | Task commits | Đã dùng |
 | Sprint list/detail/create/patch/delete | Đã dùng (GET sprints hỗ trợ jiraIntegrationId filtering canonical và provenance source) |
-| Project commits | Đã dùng |
+| Project commits | Đã dùng (GET `/api/projects/{projectId}/commits` hỗ trợ phân trang `page`/`size`, lọc kết hợp server-side theo `authorStudentId`, `jiraIntegrationId` và `sprintId`; dropdown sprint phụ thuộc site; commit chỉ hiển thị khi liên kết với task thuộc site/sprint được chọn) |
 | Canonical `/task-commit-links` | Đã dùng |
 | `/repos/{repoId}/branches` | Đã dùng |
 | `/sync`, `/sync-status` | Đã dùng; Student Tasks: không poll `/sync-status` khi SSE OPEN và idle; POST `/sync` chỉ Leader; READY debounce, không invalidate prefix `projects/{id}`. Trang Commits đọc `connectionStatus` (ACTIVE/REVOKED/NOT_CONNECTED) trên dòng GITHUB; REVOKED không hiện “Đã đồng bộ” và không gọi `/repos/{id}/branches` |

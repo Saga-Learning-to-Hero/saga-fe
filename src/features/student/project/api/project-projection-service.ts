@@ -98,6 +98,16 @@ export class ProjectProjectionService {
     } else {
       delete queryParams.authorStudentId;
     }
+    if (params?.jiraIntegrationId && params.jiraIntegrationId.trim() && params.jiraIntegrationId !== "all") {
+      queryParams.jiraIntegrationId = params.jiraIntegrationId.trim();
+    } else {
+      delete queryParams.jiraIntegrationId;
+    }
+    if (params?.sprintId && params.sprintId.trim() && params.sprintId !== "all") {
+      queryParams.sprintId = params.sprintId.trim();
+    } else {
+      delete queryParams.sprintId;
+    }
     const res = await apiClient.get<ProjectCommitPageResponse>(
       `/api/projects/${encodeURIComponent(cleanProjectId)}/commits`,
       { params: queryParams }

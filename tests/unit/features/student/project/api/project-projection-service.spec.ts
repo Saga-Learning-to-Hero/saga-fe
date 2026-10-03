@@ -206,6 +206,45 @@ describe("ProjectProjectionService", () => {
         "/api/projects/proj-123/commits",
         { params: { page: 0, size: 50, authorStudentId: "00000000-0000-0000-0000-000000000000" } }
       );
+
+      // Kiem thu ket hop bo loc jiraIntegrationId va sprintId
+      const validJiraSiteId = "daa9c8a2-78f4-4cd8-82cc-25c32d593dbd";
+      const validSprintId = "a0bdec83-ac61-4143-811b-83504b0b1661";
+      vi.mocked(apiClient.get).mockResolvedValueOnce({ data: mockPageResponse });
+      await ProjectProjectionService.getProjectCommits(mockProjectId, {
+        authorStudentId: validStudentUuid,
+        jiraIntegrationId: validJiraSiteId,
+        sprintId: validSprintId,
+        page: 0,
+        size: 50,
+      });
+
+      expect(apiClient.get).toHaveBeenCalledWith(
+        "/api/projects/proj-123/commits",
+        {
+          params: {
+            page: 0,
+            size: 50,
+            authorStudentId: validStudentUuid,
+            jiraIntegrationId: validJiraSiteId,
+            sprintId: validSprintId,
+          },
+        }
+      );
+
+      // Khi jiraIntegrationId hoac sprintId la 'all' hoac rong thi loai bo khoi params
+      vi.mocked(apiClient.get).mockResolvedValueOnce({ data: mockPageResponse });
+      await ProjectProjectionService.getProjectCommits(mockProjectId, {
+        jiraIntegrationId: "all",
+        sprintId: "   ",
+        page: 0,
+        size: 50,
+      });
+
+      expect(apiClient.get).toHaveBeenCalledWith(
+        "/api/projects/proj-123/commits",
+        { params: { page: 0, size: 50 } }
+      );
     }
   );
 
