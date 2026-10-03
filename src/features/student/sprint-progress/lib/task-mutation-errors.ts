@@ -63,13 +63,13 @@ export function getTaskMutationErrorMessage(error: unknown, fallback: string): s
     case "TASK_ISSUE_TYPE_INVALID":
       return "Loại thẻ không hợp lệ với nguồn Jira hiện tại.";
     case "TASK_SUBTASK_PARENT_REQUIRED":
-      return "Subtask bắt buộc chọn công việc cha cấp STANDARD.";
+      return "Subtask bắt buộc chọn task cha cấp STANDARD.";
     case "TASK_PARENT_TYPE_INVALID":
-      return "Công việc cha không đúng cấp cho loại thẻ đang chọn.";
+      return "Task cha không đúng cấp cho loại thẻ đang chọn.";
     case "JIRA_PARENT_SOURCE_MISMATCH":
-      return "Công việc cha thuộc nguồn Jira khác. Hãy chọn lại parent trong đúng nguồn.";
+      return "Task cha thuộc nguồn Jira khác. Hãy chọn lại parent trong đúng nguồn.";
     case "JIRA_PARENT_TASK_NOT_FOUND":
-      return "Không tìm thấy công việc cha. Danh sách parent đã được làm mới.";
+      return "Không tìm thấy task cha. Danh sách parent đã được làm mới.";
     case "TASK_SUBTASK_PERCENT_INVALID":
       return formatSubtaskPercentInvalidMessage(error);
     case "REQUEST_INVALID":

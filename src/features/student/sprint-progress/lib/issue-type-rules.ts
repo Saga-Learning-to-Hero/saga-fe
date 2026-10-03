@@ -100,8 +100,8 @@ export function getIssueTypeUiRules(
       return {
         showParent: true,
         parentRequired: true,
-        parentLabel: "Công việc cha",
-        parentOptionalHint: isEditing ? "(Theo công việc cha)" : "(Bắt buộc)",
+        parentLabel: "Task cha",
+        parentOptionalHint: isEditing ? "(Theo task cha)" : "(Bắt buộc)",
         canSelectParent: !isEditing,
         showSprint: false,
         canAssignSprint: false,
@@ -260,10 +260,10 @@ export function parentResolutionLabel(
   reason?: "PARENT_NOT_SYNCED" | "PARENT_SOURCE_REVOKED" | null
 ): string {
   if (reason === "PARENT_SOURCE_REVOKED") {
-    return "Nguồn Jira của công việc cha đã bị thu hồi.";
+    return "Nguồn Jira của task cha đã bị thu hồi.";
   }
   if (reason === "PARENT_NOT_SYNCED") {
-    return "Công việc cha chưa được đồng bộ về SAGA.";
+    return "Task cha chưa được đồng bộ về SAGA.";
   }
-  return "Công việc cha chưa gắn được với task SAGA.";
+  return "Task cha chưa gắn được với task SAGA.";
 }

@@ -46,7 +46,7 @@ describe("issue-type-rules", () => {
       const editRules = getIssueTypeUiRules("SUBTASK", true);
       expect(createRules.parentRequired).toBe(true);
       expect(createRules.canSelectParent).toBe(true);
-      expect(createRules.parentLabel).toBe("Công việc cha");
+      expect(createRules.parentLabel).toBe("Task cha");
       expect(createRules.showSprint).toBe(false);
       expect(editRules.canSelectParent).toBe(false);
     }
