@@ -80,6 +80,17 @@ export interface StudentDashboardMetrics {
   commits: StudentDashboardCommitMetrics;
 }
 
+export interface StudentDashboardLinkedCommit {
+  id: string;
+  sha: string;
+  message: string;
+  repositoryFullName: string;
+  committedAt: string;
+  authorStudentId: string | null;
+  authorExternalId: string | null;
+  isMerge: boolean;
+}
+
 export interface StudentDashboardActiveTask {
   id: string;
   externalKey: string;
@@ -91,6 +102,7 @@ export interface StudentDashboardActiveTask {
   linkedCommitCount: number;
   evidenceCommitCount?: number;
   hasAnomaly?: boolean;
+  linkedCommits?: StudentDashboardLinkedCommit[];
 }
 
 export interface StudentDashboardRecentCommit {

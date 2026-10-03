@@ -824,7 +824,11 @@ export function StudentDashboardAnalytics() {
 
           {/* Grid 2 Cột: Nhiệm vụ đang làm & Nhật ký commit gần đây */}
           <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
-            <StudentActiveTasksCard tasks={scopedActiveTasks} courseId={courseId} />
+            <StudentActiveTasksCard
+              tasks={scopedActiveTasks}
+              courseId={courseId}
+              projectId={projectId}
+            />
             <StudentRecentCommitsCard commits={recentCommits} courseId={courseId} />
           </div>
         </div>

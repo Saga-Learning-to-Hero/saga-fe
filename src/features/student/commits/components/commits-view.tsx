@@ -300,6 +300,7 @@ export function CommitsView() {
   const {
     data: commitsPage,
     isLoading: isLoadingCommits,
+    isFetching: isFetchingCommits,
     isError: isCommitsError,
     error: commitsError,
     refetch: refetchCommits,
@@ -311,6 +312,8 @@ export function CommitsView() {
     sprintId: effectiveSprintId,
     enabled: Boolean(projectId),
   });
+
+  const isCommitsLoading = isLoadingCommits || isFetchingCommits;
 
   const rawCommits = useMemo(() => commitsPage?.items ?? [], [commitsPage?.items]);
 
@@ -689,6 +692,7 @@ export function CommitsView() {
               setSearchQuery(query);
               setPage(1);
             }}
+            isLoading={isFetchingCommits}
           />
 
           <CommitListTimeline
@@ -697,6 +701,7 @@ export function CommitsView() {
             selectedBranchName={effectiveSelectedBranchName}
             courseId={courseId}
             projectId={projectId}
+            isLoading={isCommitsLoading}
           />
 
           {commitsPage && commitsPage.total > 0 && (

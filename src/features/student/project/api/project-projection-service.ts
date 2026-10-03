@@ -65,11 +65,16 @@ export class ProjectProjectionService {
     }
     const cleanProjectId = projectId.trim();
     const cleanTaskId = taskId.trim();
-    const queryParams: GetProjectCommitsParams = {
+    const queryParams: Record<string, unknown> = {
       page: 0,
       size: 50,
       ...params,
     };
+    if (params?.includeMerges !== undefined) {
+      queryParams.includeMerges = params.includeMerges;
+    } else {
+      delete queryParams.includeMerges;
+    }
     const res = await apiClient.get<ProjectCommitPageResponse>(
       `/api/projects/${encodeURIComponent(cleanProjectId)}/tasks/${encodeURIComponent(cleanTaskId)}/commits`,
       { params: queryParams }

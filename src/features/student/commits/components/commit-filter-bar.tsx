@@ -11,6 +11,7 @@ import {
   UsersIcon,
   LayersIcon,
   KanbanIcon,
+  RotateCwIcon,
 } from "lucide-react";
 import type { Repository, Branch } from "../types/commits";
 import type { CommitTeamMember } from "../lib/commit-mapper";
@@ -46,6 +47,7 @@ interface CommitFilterBarProps {
   mergeCount?: number;
   searchQuery: string;
   onSearchChange: (q: string) => void;
+  isLoading?: boolean;
 }
 
 export function CommitFilterBar({
@@ -69,6 +71,7 @@ export function CommitFilterBar({
   mergeCount = 0,
   searchQuery,
   onSearchChange,
+  isLoading = false,
 }: CommitFilterBarProps) {
   const hasJiraRow = Boolean(onSelectJiraIntegration || onSelectSprint || onSelectAuthor);
 
@@ -294,6 +297,13 @@ export function CommitFilterBar({
             </button>
           )}
         </div>
+
+        {isLoading && (
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-primary/10 border border-primary/20 text-xs font-bold text-primary shrink-0 animate-in fade-in-50 duration-150">
+            <RotateCwIcon className="w-3.5 h-3.5 animate-spin text-primary" />
+            <span>Đang lọc...</span>
+          </div>
+        )}
       </div>
     </div>
   );

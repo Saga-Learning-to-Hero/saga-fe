@@ -279,6 +279,7 @@ export interface GetProjectCommitsParams {
   authorStudentId?: string;
   jiraIntegrationId?: string;
   sprintId?: string;
+  includeMerges?: boolean;
 }
 
 export interface ProjectCommitPageResponse {

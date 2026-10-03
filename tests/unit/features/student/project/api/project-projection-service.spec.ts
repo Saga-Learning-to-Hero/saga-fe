@@ -146,6 +146,17 @@ describe("ProjectProjectionService", () => {
         { params: { page: 0, size: 50 } }
       );
       expect(result).toEqual(mockPageResponse);
+
+      // Test with includeMerges: true
+      vi.mocked(apiClient.get).mockResolvedValueOnce({ data: mockPageResponse });
+      await ProjectProjectionService.getTaskCommits(mockProjectId, mockTaskId, {
+        includeMerges: true,
+      });
+
+      expect(apiClient.get).toHaveBeenCalledWith(
+        "/api/projects/proj-123/tasks/task-456/commits",
+        { params: { page: 0, size: 50, includeMerges: true } }
+      );
     }
   );
 
