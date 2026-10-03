@@ -69,6 +69,7 @@ import { PipelineMatrixTable } from "./pipeline-matrix-table";
 import { PipelineRepositoryFilters } from "./pipeline-repository-filters";
 import { PipelineStatsBar } from "./pipeline-stats-bar";
 import { PipelineTaskInspector } from "./pipeline-task-inspector";
+import { PipelineFilterBar } from "./pipeline-filter-bar";
 
 interface LecturerGraphViewProps {
   courseId?: string;
@@ -526,9 +527,10 @@ export function LecturerGraphView({
   const anomalySelectOptions = useMemo(
     () => [
       { value: "ALL", label: "Tất cả Task" },
-      { value: "DONE_NO_COMMIT", label: "Hoàn thành chưa có Commit (MSR Anomaly)" },
+      { value: "MISSING_COMMIT", label: "Hoàn thành thiếu Commit (MSR Anomaly)" },
+      { value: "MISSING_DOCUMENT", label: "Hoàn thành thiếu Tài liệu" },
+      { value: "UNLABELED", label: "Hoàn thành thiếu Nhãn đối soát (UNLABELED)" },
       { value: "UNASSIGNED", label: "Chưa phân công người làm" },
-      { value: "MISSING_COMMITS", label: "Chưa có bất kỳ Commit nào liên kết" },
     ],
     []
   );
@@ -1020,147 +1022,49 @@ export function LecturerGraphView({
       </div>
 
       {mainMode === "PIPELINE" && (
-        <div className="space-y-3 rounded-xl border border-border/80 bg-card/90 p-3.5 shadow-xs">
-          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3">
-            <div className="space-y-1.5">
-              <label className="flex items-center gap-1.5 text-xs font-bold text-muted-foreground">
-                <SearchIcon className="size-3.5 text-primary" />
-                Từ khóa
-              </label>
-              <div className="relative">
-                <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground pointer-events-none" />
-                <Input
-                  type="text"
-                  value={pipelineFilter.searchQuery || ""}
-                  onChange={(e) =>
-                    setPipelineFilter((prev) => ({ ...prev, searchQuery: e.target.value }))
-                  }
-                  placeholder="Tìm Task key, title..."
-                  className="h-9 pl-8 text-xs rounded-xl bg-card border-border/80"
-                />
-                {pipelineFilter.searchQuery && (
-                  <button
-                    type="button"
-                    onClick={() => setPipelineFilter((prev) => ({ ...prev, searchQuery: "" }))}
-                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground cursor-pointer"
-                  >
-                    <XIcon className="size-3" />
-                  </button>
-                )}
-              </div>
-            </div>
-
-            <div className="space-y-1.5">
-              <label
-                htmlFor="assignee-filter"
-                className="flex items-center gap-1.5 text-xs font-bold text-muted-foreground"
-              >
-                <UsersIcon className="size-3.5 text-primary" />
-                Thành viên
-              </label>
-              <CustomSelect
-                id="assignee-filter"
-                value={pipelineFilter.studentId}
-                onChange={(val) => setPipelineFilter((prev) => ({ ...prev, studentId: val }))}
-                options={memberSelectOptions}
-              />
-            </div>
-
-            <div className="space-y-1.5">
-              <label
-                htmlFor="sprint-filter"
-                className="flex items-center gap-1.5 text-xs font-bold text-muted-foreground"
-              >
-                <CalendarIcon className="size-3.5 text-primary" />
-                Sprint
-              </label>
-              <CustomSelect
-                id="sprint-filter"
-                value={pipelineFilter.sprintId}
-                onChange={(val) => setPipelineFilter((prev) => ({ ...prev, sprintId: val }))}
-                options={pipelineSprintSelectOptions}
-              />
-            </div>
-
-            <div className="space-y-1.5">
-              <label
-                htmlFor="anomaly-filter"
-                className="flex items-center gap-1.5 text-xs font-bold text-muted-foreground"
-              >
-                <AlertTriangleIcon className="size-3.5 text-primary" />
-                Phân loại Task
-              </label>
-              <CustomSelect
-                id="anomaly-filter"
-                value={pipelineFilter.anomalyType || "ALL"}
-                onChange={(val) =>
-                  setPipelineFilter((prev) => ({
-                    ...prev,
-                    anomalyType: val as PipelineAnomalyFilterType,
-                  }))
-                }
-                options={anomalySelectOptions}
-              />
-            </div>
-          </div>
-
-          <div className="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-border/50 text-xs">
-            <div className="flex flex-wrap items-center gap-2">
-              <div className="flex items-center gap-1 p-0.5 bg-muted/60 rounded-lg border border-border/60">
-                <button
-                  type="button"
-                  onClick={() => setPipelineSubView("FLOW")}
-                  className={`px-2.5 py-1 rounded-md font-bold cursor-pointer transition-colors ${pipelineSubView === "FLOW" ? "bg-card text-foreground shadow-2xs" : "text-muted-foreground"
-                    }`}
-                >
-                  Flow
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setPipelineSubView("MATRIX")}
-                  className={`px-2.5 py-1 rounded-md font-bold cursor-pointer transition-colors ${pipelineSubView === "MATRIX" ? "bg-card text-foreground shadow-2xs" : "text-muted-foreground"
-                    }`}
-                >
-                  Audit Matrix
-                </button>
-              </div>
-
-              <PipelineRepositoryFilters
-                compact
-                repositories={pipeline.repositories}
-                branches={pipeline.branches}
-                selectedRepoId={pipeline.sanitizedFilter.repoId || "ALL"}
-                selectedBranchName={pipeline.sanitizedFilter.branchName || "ALL"}
-                onSelectRepository={(repoId) => {
-                  setSelectedTaskId(null);
-                  setPipelineFilter((current) => ({
-                    ...current,
-                    repoId,
-                    branchName: "ALL",
-                  }));
-                }}
-                onSelectBranch={(branchName) => {
-                  setSelectedTaskId(null);
-                  setPipelineFilter((current) => ({ ...current, branchName }));
-                }}
-                isLoadingBranches={pipeline.isLoadingBranches}
-                canonicalFilter={pipeline.taskCommitLinksFilter}
-              />
-              {hasActiveFilters && (
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleResetFilters}
-                  className="h-8 gap-1 text-xs text-muted-foreground hover:text-foreground cursor-pointer"
-                >
-                  <RotateCcwIcon className="size-3" />
-                  Đặt lại bộ lọc
-                </Button>
-              )}
-            </div>
-          </div>
-        </div>
+        <PipelineFilterBar
+          searchQuery={pipelineFilter.searchQuery || ""}
+          onSearchQueryChange={(query) => setPipelineFilter((prev) => ({ ...prev, searchQuery: query }))}
+          selectedStudentId={pipelineFilter.studentId}
+          onSelectStudent={(val) => setPipelineFilter((prev) => ({ ...prev, studentId: val }))}
+          selectedSprint={pipelineFilter.sprintId}
+          onSelectSprint={(val) => setPipelineFilter((prev) => ({ ...prev, sprintId: val }))}
+          anomalyType={pipelineFilter.anomalyType || "ALL"}
+          onSelectAnomalyType={(val) => setPipelineFilter((prev) => ({ ...prev, anomalyType: val }))}
+          onReset={handleResetFilters}
+          memberOptions={memberSelectOptions}
+          sprintOptions={pipelineSprintSelectOptions}
+          anomalyOptions={anomalySelectOptions}
+          viewMode={pipelineSubView}
+          onSelectViewMode={setPipelineSubView}
+          activeRepositoryFiltersCount={
+            (pipeline.sanitizedFilter.repoId !== "ALL" ? 1 : 0) +
+            (pipeline.sanitizedFilter.branchName !== "ALL" ? 1 : 0)
+          }
+          repositoryFiltersNode={
+            <PipelineRepositoryFilters
+              compact
+              repositories={pipeline.repositories}
+              branches={pipeline.branches}
+              selectedRepoId={pipeline.sanitizedFilter.repoId || "ALL"}
+              selectedBranchName={pipeline.sanitizedFilter.branchName || "ALL"}
+              onSelectRepository={(repoId) => {
+                setSelectedTaskId(null);
+                setPipelineFilter((current) => ({
+                  ...current,
+                  repoId,
+                  branchName: "ALL",
+                }));
+              }}
+              onSelectBranch={(branchName) => {
+                setSelectedTaskId(null);
+                setPipelineFilter((current) => ({ ...current, branchName }));
+              }}
+              isLoadingBranches={pipeline.isLoadingBranches}
+              canonicalFilter={pipeline.taskCommitLinksFilter}
+            />
+          }
+        />
       )}
 
       {mainMode === "GRAPH" && (

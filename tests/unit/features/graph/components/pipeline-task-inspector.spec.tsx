@@ -23,6 +23,7 @@ const mockTask: PipelineTask = {
   assigneeExternalId: null,
   sprintId: "sp-1",
   sprintName: "Sprint 1",
+  sprints: [],
   storyPoint: 5,
   priority: "High",
   linkedCommitCount: 0,

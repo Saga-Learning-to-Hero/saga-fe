@@ -31,6 +31,7 @@ export interface PipelineTask {
   assigneeExternalId: string | null;
   sprintId: string;
   sprintName: string;
+  sprints: { id: string; name: string; state?: string }[];
   storyPoint: number | null;
   priority: string | null;
   linkedCommitCount: number;
@@ -89,7 +90,7 @@ export interface PipelineStats {
   missingDocumentTasks: number;
 }
 
-export type PipelineAnomalyFilterType = "ALL" | "DONE_NO_COMMIT" | "UNASSIGNED" | "MISSING_COMMITS";
+export type PipelineAnomalyFilterType = "ALL" | "MISSING_COMMIT" | "UNASSIGNED" | "UNLABELED" | "MISSING_DOCUMENT";
 
 export interface PipelineFilterState {
   studentId: string;

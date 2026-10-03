@@ -72,7 +72,25 @@ export function mapMembersFromTeam(members: StudentTeamMember[]): PipelineMember
 
 export function mapPipelineTasks(tasks: ProjectTaskResponse[]): PipelineTask[] {
   return tasks.map((task) => {
-    const sprintId = task.sprint?.id || task.sprint?.externalSprintId || BACKLOG_SPRINT_ID;
+    // If backend provides `sprints` array, find active/future sprint or fallback to the last one.
+    // Otherwise fallback to `task.sprint`.
+    const activeSprint =
+      task.sprints?.find((s) => s.state?.toLowerCase() === "active") ||
+      task.sprints?.find((s) => s.state?.toLowerCase() === "future") ||
+      task.sprints?.[task.sprints.length - 1] ||
+      task.sprint;
+    const sprintId = activeSprint?.id || activeSprint?.externalSprintId || BACKLOG_SPRINT_ID;
+    const sprintName = activeSprint?.name || "Backlog";
+
+    // Map all sprints for filtering
+    const taskSprints = (task.sprints || (task.sprint ? [task.sprint] : [])).map(s => ({
+      id: String(s.id || s.externalSprintId || BACKLOG_SPRINT_ID),
+      name: s.name || "Backlog",
+      state: s.state,
+    }));
+    if (taskSprints.length === 0) {
+      taskSprints.push({ id: BACKLOG_SPRINT_ID, name: "Backlog", state: "backlog" });
+    }
     return {
       id: task.id,
       key: task.externalKey || task.id,
@@ -86,7 +104,8 @@ export function mapPipelineTasks(tasks: ProjectTaskResponse[]): PipelineTask[] {
       assigneeDisplayName: task.assigneeDisplayName || task.assignee?.displayName || null,
       assigneeExternalId: task.assigneeExternalId || task.assignee?.accountId || null,
       sprintId: String(sprintId),
-      sprintName: task.sprint?.name || "Backlog",
+      sprintName,
+      sprints: taskSprints,
       storyPoint: typeof task.storyPoint === "number" ? task.storyPoint : null,
       priority: task.priority || task.priorityDetail?.name || null,
       linkedCommitCount: task.linkedCommitCount || 0,
@@ -208,12 +227,13 @@ export function filterPipelineTasks(
         return false;
       }
     }
-    if (filter.sprintId !== "ALL" && task.sprintId !== filter.sprintId) return false;
+    if (filter.sprintId !== "ALL" && !task.sprints.some(s => s.id === filter.sprintId)) return false;
 
     if (filter.anomalyType && filter.anomalyType !== "ALL") {
-      if (filter.anomalyType === "DONE_NO_COMMIT" && !isMissingCommit(task)) return false;
+      if (filter.anomalyType === "MISSING_COMMIT" && !isMissingCommit(task)) return false;
       if (filter.anomalyType === "UNASSIGNED" && (task.assigneeStudentId || task.assigneeDisplayName)) return false;
-      if (filter.anomalyType === "MISSING_COMMITS" && task.linkedCommitCount > 0) return false;
+      if (filter.anomalyType === "UNLABELED" && task.evidenceCheck?.status !== "UNLABELED") return false;
+      if (filter.anomalyType === "MISSING_DOCUMENT" && !isMissingDocument(task)) return false;
     } else if (filter.anomaliesOnly && !isMissingCommit(task)) {
       return false;
     }
