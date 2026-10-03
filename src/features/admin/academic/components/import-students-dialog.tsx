@@ -110,9 +110,9 @@ export function ImportStudentsDialog({
   if (!isOpen) return null;
 
   const summary = previewData?.summary;
-  const validCount = summary ? (summary.validRows ?? summary.validCount ?? 0) : 0;
-  const existingCount = summary ? (summary.existingAccounts ?? summary.existingAccountsCount ?? 0) : 0;
-  const invitesCount = summary ? (summary.newInvitations ?? summary.newInvitesCount ?? 0) : 0;
+  const validCount = summary ? summary.validRows : 0;
+  const existingCount = summary ? summary.existingAccounts : 0;
+  const invitesCount = summary ? summary.newInvitations : 0;
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
@@ -234,18 +234,18 @@ export function ImportStudentsDialog({
                         </TableCell>
                         <TableCell className="text-xs font-mono text-muted-foreground py-2 px-3">
                           <div>{r.email}</div>
-                          {(r.errorMessage || (r.errors && r.errors.length > 0)) && (
+                          {r.errors && r.errors.length > 0 && (
                             <p className="text-xs text-destructive font-sans font-medium mt-0.5">
-                              {r.errorMessage || r.errors?.join(", ")}
+                              {r.errors.join(", ")}
                             </p>
                           )}
                         </TableCell>
                         <TableCell className="text-center py-2 px-3">
-                          {r.action === "READY_ENROLL" || (r.valid && r.accountExists) ? (
+                          {r.action === "READY_ENROLL" ? (
                             <Badge className="bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 text-xs px-1.5 py-0 inline-flex items-center gap-1">
                               <UserCheckIcon className="w-3 h-3" /> Ghi danh
                             </Badge>
-                          ) : r.action === "READY_INVITE" || (r.valid && !r.accountExists) ? (
+                          ) : r.action === "READY_INVITE" ? (
                             <Badge className="bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30 text-xs px-1.5 py-0 inline-flex items-center gap-1">
                               <MailIcon className="w-3 h-3" /> Gửi thư mời
                             </Badge>
@@ -261,7 +261,7 @@ export function ImportStudentsDialog({
                             <Badge
                               variant="destructive"
                               className="text-xs px-1.5 py-0 inline-flex items-center gap-1"
-                              title={r.errorMessage || r.errors?.join(", ") || "Dữ liệu không hợp lệ"}
+                              title={r.errors?.join(", ") || "Dữ liệu không hợp lệ"}
                             >
                               <AlertCircleIcon className="w-3 h-3" /> Lỗi
                             </Badge>

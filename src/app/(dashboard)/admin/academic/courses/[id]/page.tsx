@@ -159,7 +159,7 @@ export default function AdminCourseDetailPage({ params }: PageProps) {
       return (
         <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-danger-muted text-danger whitespace-nowrap">
           <UserXIcon className="w-3 h-3" />
-          Đã rút / Đã khóa
+          Đã rút
         </span>
       );
     }

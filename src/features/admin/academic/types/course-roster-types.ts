@@ -131,26 +131,19 @@ export interface RosterPreviewRow {
   email: string;
   fullName: string;
   memberCode?: string | null;
-  action?: RosterPreviewRowAction;
-  errors?: string[];
-  warnings?: string[];
-  valid?: boolean;
-  errorMessage?: string | null;
-  accountExists?: boolean;
+  action: RosterPreviewRowAction;
+  errors: string[];
+  warnings: string[];
 }
 
 export interface RosterPreviewSummary {
   totalRows: number;
-  validRows?: number;
-  validCount?: number;
-  invalidRows?: number;
-  errorCount?: number;
-  existingAccounts?: number;
-  existingAccountsCount?: number;
-  newInvitations?: number;
-  newInvitesCount?: number;
-  alreadyEnrolled?: number;
-  alreadyInvited?: number;
+  validRows: number;
+  invalidRows: number;
+  existingAccounts: number;
+  newInvitations: number;
+  alreadyEnrolled: number;
+  alreadyInvited: number;
 }
 
 export interface RosterPreviewResponse {

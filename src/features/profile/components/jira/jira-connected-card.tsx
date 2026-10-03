@@ -88,22 +88,9 @@ export function JiraConnectedCard({
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-3 border-t border-border/60 text-xs">
-        <div className="p-3 rounded-xl bg-background border border-border/60 space-y-1">
-          <span className="text-muted-foreground text-xs block">Tài khoản liên kết:</span>
-          <span className="font-mono font-bold text-foreground text-xs block truncate" title={jiraEmail || displayName}>
-            {jiraEmail || displayName}
-          </span>
-        </div>
-        <div className="p-3 rounded-xl bg-background border border-border/60 space-y-1">
-          <span className="text-muted-foreground text-xs block">Mã định danh (Subject ID):</span>
-          <span className="font-mono font-medium text-foreground text-xs block truncate" title={identity?.providerSubject || ""}>
-            {identity?.providerSubject || "N/A"}
-          </span>
-        </div>
-      </div>
 
-      <div className="pt-2 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+
+      <div className="pt-3 border-t border-border/60 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
         <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground font-mono">
           <div className="flex items-center gap-1.5">
             <ClockIcon className="w-3.5 h-3.5 text-blue-500 shrink-0" />

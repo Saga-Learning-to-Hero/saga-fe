@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import {
   AlertTriangleIcon,
+  ArrowRightLeftIcon,
   CheckCircle2Icon,
   InfoIcon,
   LayersIcon,
@@ -73,7 +74,9 @@ export function ContributionConfigurationPage({
   const serverMode = sliceQuery.data?.mode ?? "COURSE";
   const activeTab = uiMode ?? serverMode;
   const teamQuery = useContributionTeamWeights(courseId, {
-    enabled: activeTab === "PROJECT_GROUP",
+    enabled:
+      sliceQuery.isSuccess &&
+      (activeTab === "PROJECT_GROUP" || serverMode === "COURSE"),
   });
   const updateMode = useUpdateContributionConfigMode(courseId);
   const updateWeights = useUpdateContributionSliceWeights(courseId);
@@ -97,6 +100,28 @@ export function ContributionConfigurationPage({
   const canApplyProjectGroup =
     canApplyProjectGroupMode(teamQuery.data?.teams ?? []) &&
     serverMode !== "PROJECT_GROUP";
+  const targetMode: ContributionConfigMode =
+    serverMode === "COURSE" ? "PROJECT_GROUP" : "COURSE";
+  const isCheckingProjectGroupReadiness =
+    targetMode === "PROJECT_GROUP" && teamQuery.isLoading;
+  const cannotApplyProjectGroup =
+    targetMode === "PROJECT_GROUP" &&
+    (!teamQuery.isSuccess || !canApplyProjectGroup);
+  const modeChangeDisabled =
+    updateMode.isPending ||
+    isCheckingProjectGroupReadiness ||
+    cannotApplyProjectGroup;
+  const modeChangeHint = updateMode.isPending
+    ? "Hệ thống đang chuyển chế độ cấu hình trọng số."
+    : isCheckingProjectGroupReadiness
+      ? "Đang kiểm tra cấu hình trọng số của các nhóm dự án."
+      : targetMode === "PROJECT_GROUP" && teamQuery.isError
+        ? "Không kiểm tra được điều kiện chuyển chế độ. Hãy mở tab áp dụng riêng từng nhóm và thử tải lại."
+        : targetMode === "PROJECT_GROUP" && !canApplyProjectGroup
+          ? "Cần lưu trọng số riêng cho tất cả nhóm đã có dự án trước khi chuyển chế độ."
+          : targetMode === "PROJECT_GROUP"
+            ? "Chuyển lớp sang áp dụng trọng số riêng theo từng nhóm dự án."
+            : "Chuyển lớp về áp dụng một bộ trọng số chung.";
   const pageError = sliceQuery.isError ? sliceQuery.error : undefined;
   const errorTitle = "Không tải được trọng số lớp học phần";
 
@@ -157,22 +182,43 @@ export function ContributionConfigurationPage({
             </TabsTrigger>
           </TabsList>
 
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() => setModeInfoOpen(true)}
-            className="h-9 cursor-pointer gap-2 rounded-xl border-border/80 bg-card px-3 text-xs font-bold shadow-xs hover:bg-muted/50 w-full sm:w-fit justify-between sm:justify-start"
-          >
-            <div className="flex items-center gap-2">
-              <SlidersHorizontalIcon className="size-3.5 text-primary" />
-              <span className="text-muted-foreground">Chế độ hiện tại:</span>
-              <span className="rounded-md bg-primary/10 px-1.5 py-0.5 font-mono text-xs font-extrabold text-primary">
-                {serverMode === "COURSE" ? "Chung toàn lớp" : "Riêng theo nhóm"}
-              </span>
-            </div>
-            <InfoIcon className="size-3.5 text-muted-foreground" />
-          </Button>
+          <div className="flex w-full flex-col gap-2 sm:w-fit sm:flex-row sm:items-center">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setModeInfoOpen(true)}
+              className="h-9 w-full cursor-pointer justify-between gap-2 rounded-xl border-border/80 bg-card px-3 text-xs font-bold shadow-xs hover:bg-muted/50 sm:w-fit sm:justify-start"
+            >
+              <div className="flex items-center gap-2">
+                <SlidersHorizontalIcon className="size-3.5 text-primary" />
+                <span className="text-muted-foreground">Chế độ hiện tại:</span>
+                <span className="rounded-md bg-primary/10 px-1.5 py-0.5 font-mono text-xs font-extrabold text-primary">
+                  {serverMode === "COURSE" ? "Chung toàn lớp" : "Riêng theo nhóm"}
+                </span>
+              </div>
+              <InfoIcon className="size-3.5 text-muted-foreground" />
+            </Button>
+
+            <span className="inline-flex w-full sm:w-auto" title={modeChangeHint}>
+              <Button
+                type="button"
+                variant={targetMode === "PROJECT_GROUP" ? "default" : "outline"}
+                size="sm"
+                className="h-9 w-full cursor-pointer gap-2 rounded-xl px-3 text-xs font-bold shadow-xs sm:w-auto"
+                disabled={modeChangeDisabled}
+                aria-label={modeChangeHint}
+                onClick={() => setPendingMode(targetMode)}
+              >
+                <ArrowRightLeftIcon className="size-3.5" />
+                {updateMode.isPending
+                  ? "Đang chuyển chế độ..."
+                  : targetMode === "PROJECT_GROUP"
+                    ? "Chuyển sang riêng theo nhóm"
+                    : "Chuyển sang chung toàn lớp"}
+              </Button>
+            </span>
+          </div>
         </div>
 
         <TabsContent value="COURSE" keepMounted className="space-y-4">
@@ -202,29 +248,6 @@ export function ContributionConfigurationPage({
             }}
           />
 
-          {serverMode === "PROJECT_GROUP" && (
-            <Card className="rounded-xl border border-border/80 bg-card p-5 shadow-xs">
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <div className="space-y-1">
-                  <h4 className="text-sm font-bold text-foreground">
-                    Đổi về chế độ Dùng chung cho cả lớp
-                  </h4>
-                  <p className="text-xs text-muted-foreground">
-                    Khi chuyển đổi, tất cả các nhóm sẽ tính điểm theo một bộ trọng số duy nhất này.
-                  </p>
-                </div>
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="h-9 shrink-0 cursor-pointer text-xs font-bold shadow-xs"
-                  disabled={updateMode.isPending}
-                  onClick={() => setPendingMode("COURSE")}
-                >
-                  Áp dụng lại cấu hình chung
-                </Button>
-              </div>
-            </Card>
-          )}
         </TabsContent>
 
         <TabsContent value="PROJECT_GROUP" keepMounted className="space-y-4">
@@ -295,18 +318,11 @@ export function ContributionConfigurationPage({
                   )}
                 </div>
 
-                <Button
-                  type="button"
-                  className="h-10 shrink-0 cursor-pointer text-xs font-bold shadow-xs"
-                  disabled={
-                    !canApplyProjectGroup ||
-                    updateMode.isPending ||
-                    teamQuery.isLoading
-                  }
-                  onClick={() => setPendingMode("PROJECT_GROUP")}
-                >
-                  Kích hoạt cấu hình riêng
-                </Button>
+                <p className="max-w-sm text-xs font-medium text-muted-foreground sm:text-right">
+                  {canApplyProjectGroup
+                    ? "Đã đủ điều kiện. Dùng nút Chuyển sang riêng theo nhóm ở đầu trang để kích hoạt."
+                    : "Hoàn tất cấu hình bên dưới; nút chuyển chế độ ở đầu trang sẽ được mở khi đủ điều kiện."}
+                </p>
               </div>
             </Card>
           ) : !teamQuery.isError ? (

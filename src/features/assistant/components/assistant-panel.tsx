@@ -197,7 +197,6 @@ function AssistantPanelBody({
             value={project.selectedTeamId}
             onChange={(teamId) => {
               project.setSelectedTeamId(teamId);
-              onMinimize?.();
             }}
             placeholder="Chọn nhóm"
             options={project.teams.map((team) => ({
@@ -262,34 +261,34 @@ function AssistantPanelBody({
               {startError}
             </p>
           ) : null}
-        <AssistantConversationList
-          conversations={visibleConversations}
-          isLoading={conversationsQuery.isLoading}
-          isError={conversationsQuery.isError}
-          error={conversationsQuery.error}
-          canStart={enabled && !composerLocked}
-          starting={startConversation.isPending}
-          onRetry={() => void conversationsQuery.refetch()}
-          onStart={() => {
-            setStartError(null);
-            void startConversation.mutateAsync().then((conversation) => {
-              if (!conversation.id) return;
-              setConversationId(conversation.id);
+          <AssistantConversationList
+            conversations={visibleConversations}
+            isLoading={conversationsQuery.isLoading}
+            isError={conversationsQuery.isError}
+            error={conversationsQuery.error}
+            canStart={enabled && !composerLocked}
+            starting={startConversation.isPending}
+            onRetry={() => void conversationsQuery.refetch()}
+            onStart={() => {
+              setStartError(null);
+              void startConversation.mutateAsync().then((conversation) => {
+                if (!conversation.id) return;
+                setConversationId(conversation.id);
+                setScreen("thread");
+                setInlineError(null);
+                setReloadBanner(null);
+              }).catch((error: unknown) => {
+                setStartError(getApiErrorMessage(error, "Không tạo được cuộc trò chuyện."));
+              });
+            }}
+            onOpen={(id) => {
+              setConversationId(id);
               setScreen("thread");
               setInlineError(null);
               setReloadBanner(null);
-            }).catch((error: unknown) => {
-              setStartError(getApiErrorMessage(error, "Không tạo được cuộc trò chuyện."));
-            });
-          }}
-          onOpen={(id) => {
-            setConversationId(id);
-            setScreen("thread");
-            setInlineError(null);
-            setReloadBanner(null);
-            setStartError(null);
-          }}
-        />
+              setStartError(null);
+            }}
+          />
         </>
       ) : (
         <>

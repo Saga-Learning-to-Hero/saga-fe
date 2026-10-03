@@ -440,8 +440,8 @@ export function IssueDetailsModal({
     const list = parentOptionsData?.items || [];
     const noneLabel =
       selectedIssueTypeLevel === "SUBTASK"
-        ? "Chọn công việc cha"
-        : "Không có Epic cha";
+        ? "Chọn task cha"
+        : "Không có epic";
     return [
       { value: "", label: noneLabel },
       ...list.map((item) => ({
@@ -1352,7 +1352,7 @@ export function IssueDetailsModal({
                     {selectedIssueTypeLevel === "SUBTASK" ? (
                       <>
                         <Label htmlFor="issue-sp" className="text-xs font-semibold flex items-center gap-1.5 text-foreground">
-                          <span>Tỷ trọng trong công việc cha</span>
+                          <span>Tỷ trọng trong task cha</span>
                           <span className="text-xs font-normal text-muted-foreground">(1–10)</span>
                         </Label>
                         {isEditing && !isSubtaskShareValue(issue?.storyPoints) && (

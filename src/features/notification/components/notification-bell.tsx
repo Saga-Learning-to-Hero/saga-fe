@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import {
   BellIcon,
   BellOffIcon,
@@ -38,6 +38,8 @@ interface NotificationBellProps {
 
 export function NotificationBell({ className }: NotificationBellProps) {
   const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [popoverOpen, setPopoverOpen] = useState(false);
 
   const { data: unreadData } = useUnreadNotificationCount();
@@ -62,7 +64,20 @@ export function NotificationBell({ className }: NotificationBellProps) {
     }
     setPopoverOpen(false);
     if (isValidInternalActionUrl(item.actionUrl)) {
-      router.push(item.actionUrl as string);
+      const url = item.actionUrl as string;
+      if (url.includes("caseId=") || url.includes("delayCaseId=")) {
+        const [, query] = url.split("?");
+        if (query) {
+          const currentQuery = new URLSearchParams(searchParams.toString());
+          const newQuery = new URLSearchParams(query);
+          for (const [key, value] of newQuery.entries()) {
+            currentQuery.set(key, value);
+          }
+          router.push(`${pathname}?${currentQuery.toString()}`, { scroll: false });
+          return;
+        }
+      }
+      router.push(url);
     }
   };
 

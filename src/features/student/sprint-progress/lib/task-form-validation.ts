@@ -126,7 +126,7 @@ export function validateTaskForm(input: TaskFormValidationInput): TaskFormValida
   }
 
   if (rules.parentRequired && !input.parentTaskId?.trim()) {
-    errors.parent = "Subtask bắt buộc chọn công việc cha.";
+    errors.parent = "Subtask bắt buộc chọn task cha.";
   }
 
   if (rules.showSprint && input.sprintId !== "backlog") {
