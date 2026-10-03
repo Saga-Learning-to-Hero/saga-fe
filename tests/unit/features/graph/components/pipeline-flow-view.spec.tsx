@@ -21,6 +21,7 @@ const task: PipelineTask = {
   assigneeExternalId: null,
   sprintId: "sp-1",
   sprintName: "Sprint 3",
+  sprints: [],
   storyPoint: 3,
   priority: "High",
   linkedCommitCount: 0,

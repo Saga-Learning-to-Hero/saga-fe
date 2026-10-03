@@ -134,6 +134,7 @@ export interface ProjectTaskResponse {
   priorityDetail?: JiraPriorityDetail | null;
   storyPoint?: number | null;
   sprint?: JiraSprintSummary | null;
+  sprints?: JiraSprintSummary[] | null;
   parent?: JiraTaskParent | null;
   labels?: string[];
   dueDate?: string | null;
