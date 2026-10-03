@@ -234,7 +234,7 @@ export function filterPipelineTasks(
       if (filter.anomalyType === "UNASSIGNED" && (task.assigneeStudentId || task.assigneeDisplayName)) return false;
       if (filter.anomalyType === "UNLABELED" && task.evidenceCheck?.status !== "UNLABELED") return false;
       if (filter.anomalyType === "MISSING_DOCUMENT" && !isMissingDocument(task)) return false;
-    } else if (filter.anomaliesOnly && !isMissingCommit(task)) {
+    } else if (filter.anomaliesOnly && !(isMissingCommit(task) || isMissingDocument(task))) {
       return false;
     }
 

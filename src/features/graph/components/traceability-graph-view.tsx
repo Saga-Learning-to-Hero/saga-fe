@@ -677,11 +677,12 @@ export function TraceabilityGraphView() {
         <PipelineStatsBar
           stats={pipeline.stats}
           isLoadingCommits={pipeline.isLoadingCommits}
-          isAnomaliesActive={pipeline.sanitizedFilter.anomaliesOnly}
-          onFilterAnomalies={() => {
+          activeAnomalyType={pipeline.sanitizedFilter.anomalyType}
+          onSelectAnomalyType={(type) => {
             setPipelineFilter((prev) => ({
               ...prev,
-              anomaliesOnly: !prev.anomaliesOnly,
+              anomalyType: type,
+              anomaliesOnly: type !== "ALL" ? true : prev.anomaliesOnly,
             }));
           }}
         />
@@ -749,14 +750,18 @@ export function TraceabilityGraphView() {
           }}
           filterType={
             pipelineOpen
-              ? pipeline.sanitizedFilter.anomaliesOnly
+              ? (pipeline.sanitizedFilter.anomaliesOnly || (pipeline.sanitizedFilter.anomalyType && pipeline.sanitizedFilter.anomalyType !== "ALL"))
                 ? "ANOMALIES_ONLY"
                 : "ALL"
               : neo4jFilterType
           }
           onSelectFilterType={(type) => {
             if (pipelineOpen) {
-              setPipelineFilter((prev) => ({ ...prev, anomaliesOnly: type === "ANOMALIES_ONLY" }));
+              setPipelineFilter((prev) => ({
+                ...prev,
+                anomaliesOnly: type === "ANOMALIES_ONLY",
+                anomalyType: "ALL",
+              }));
               return;
             }
             setNeo4jFilterType(type);

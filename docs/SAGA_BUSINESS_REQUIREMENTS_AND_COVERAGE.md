@@ -382,7 +382,7 @@ Project Type dùng để phân loại hướng dự án, không điều khiển 
 | LEC-003 | Đổi Team Leader | ✓ | ✓ | ✓ | `DONE` |
 | LEC-004 | Chuyển member giữa team | ✓ | ✓ | ✓ | `DONE` |
 | LEC-005 | Cấu hình contribution weights theo course | ✓ | ✓ | ✓ | `DONE` |
-| LEC-006 | Chọn mode `COURSE`/`PROJECT_GROUP` | ✓ | ✓ | ✓ | `DONE` |
+| LEC-006 | Chọn mode `COURSE`/`PROJECT_GROUP` | ✓ | ✓ | ✓ | `DONE`; thao tác đổi mode đặt cạnh trạng thái chế độ hiện tại ở đầu trang cấu hình, vẫn xác nhận bằng modal; chỉ cho chuyển sang `PROJECT_GROUP` khi các nhóm có dự án đã lưu trọng số riêng |
 | LEC-007 | Xem/sửa project group weights | ✓ | ✓ | ✓ | `DONE` |
 | LEC-008 | Xem contribution evaluation | ✓ | ✓ | ✓ | `DONE` |
 | LEC-009 | Contribution evaluation read-only | ✓ | ✓ | ✓ | `DONE`; Lecturer xem tỷ lệ canonical, minh chứng và warning; FE không cho ghi đè tỷ lệ cuối |
