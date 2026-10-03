@@ -406,12 +406,12 @@ describe("LecturerGraphView", () => {
       description: "Chuyen che do Flow sang Matrix giu nguyen selected task",
     },
     () => {
-      renderView({ courseId: "course-123", initialTeamId: "team-with-project" });
+      renderView({ courseId: "course-123", initialTeamId: "team-with-project", initialViewMode: "PIPELINE" });
       const taskCard = screen.getByText("SAGA-101");
       fireEvent.click(taskCard);
 
-      const matrixBtn = screen.getByText(/Audit Matrix/i);
-      fireEvent.click(matrixBtn);
+      const matrixBtns = screen.getAllByText(/Ma trận đối soát/i);
+      fireEvent.click(matrixBtns[matrixBtns.length - 1]);
 
       expect(screen.getByText(/Bảng đối soát/i)).toBeTruthy();
       expect(screen.getAllByText("SAGA-101").length).toBeGreaterThan(1);
@@ -486,7 +486,11 @@ describe("LecturerGraphView", () => {
         })
       );
 
-      renderView({ courseId: "course-123", initialTeamId: "team-with-project" });
+      renderView({ courseId: "course-123", initialTeamId: "team-with-project", initialViewMode: "PIPELINE" });
+
+      const filterBtn = screen.getByText(/Bộ lọc/i);
+      fireEvent.click(filterBtn);
+
       expect(screen.getByText("Repository")).toBeTruthy();
       expect(screen.getByText("Branch")).toBeTruthy();
     }
