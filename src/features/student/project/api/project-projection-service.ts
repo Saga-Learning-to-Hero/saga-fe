@@ -65,11 +65,16 @@ export class ProjectProjectionService {
     }
     const cleanProjectId = projectId.trim();
     const cleanTaskId = taskId.trim();
-    const queryParams: GetProjectCommitsParams = {
+    const queryParams: Record<string, unknown> = {
       page: 0,
       size: 50,
       ...params,
     };
+    if (params?.includeMerges !== undefined) {
+      queryParams.includeMerges = params.includeMerges;
+    } else {
+      delete queryParams.includeMerges;
+    }
     const res = await apiClient.get<ProjectCommitPageResponse>(
       `/api/projects/${encodeURIComponent(cleanProjectId)}/tasks/${encodeURIComponent(cleanTaskId)}/commits`,
       { params: queryParams }
@@ -97,6 +102,16 @@ export class ProjectProjectionService {
         : "00000000-0000-0000-0000-000000000000";
     } else {
       delete queryParams.authorStudentId;
+    }
+    if (params?.jiraIntegrationId && params.jiraIntegrationId.trim() && params.jiraIntegrationId !== "all") {
+      queryParams.jiraIntegrationId = params.jiraIntegrationId.trim();
+    } else {
+      delete queryParams.jiraIntegrationId;
+    }
+    if (params?.sprintId && params.sprintId.trim() && params.sprintId !== "all") {
+      queryParams.sprintId = params.sprintId.trim();
+    } else {
+      delete queryParams.sprintId;
     }
     const res = await apiClient.get<ProjectCommitPageResponse>(
       `/api/projects/${encodeURIComponent(cleanProjectId)}/commits`,

@@ -216,4 +216,203 @@ describe("CommitFilterBar - Team Member Filter", () => {
       expect(screen.getByText("HT")).toBeInTheDocument();
     }
   );
+
+  const mockJiraSources = [
+    {
+      integrationId: "jira-site-1",
+      cloudId: "cloud-1",
+      jiraProjectId: "jp-1",
+      siteName: "hcm-cpl-react-04-team3",
+      projectKey: "SAGA",
+      boardId: "68",
+      connectionStatus: "ACTIVE",
+    },
+    {
+      integrationId: "jira-site-2",
+      cloudId: "cloud-2",
+      jiraProjectId: "jp-2",
+      siteName: "hoanghai175",
+      projectKey: "SG",
+      boardId: "42",
+      connectionStatus: "ACTIVE",
+    },
+  ];
+
+  const mockSprints = [
+    {
+      id: "sprint-1",
+      name: "SAGA Sprint 5",
+      state: "active",
+      source: {
+        jiraIntegrationId: "jira-site-1",
+        siteName: "hcm-cpl-react-04-team3",
+      },
+    },
+    {
+      id: "sprint-2",
+      name: "SG Sprint 1",
+      state: "closed",
+      source: {
+        jiraIntegrationId: "jira-site-2",
+        siteName: "hoanghai175",
+      },
+    },
+  ];
+
+  fptTest(
+    {
+      id: "UTCID06",
+      type: "N",
+      executedDate: "03/10/2026",
+      description: "Hien thi bo loc Site Jira va kich hoat onSelectJiraIntegration khi nguoi dung chon site",
+    },
+    () => {
+      const onSelectJiraIntegrationMock = vi.fn();
+      render(
+        <CommitFilterBar
+          repositories={mockRepositories}
+          selectedRepoId="repo-1"
+          onSelectRepo={vi.fn()}
+          branches={mockBranches}
+          selectedBranchName="all"
+          onSelectBranch={vi.fn()}
+          members={mockMembers}
+          selectedAuthorId="all"
+          onSelectAuthor={vi.fn()}
+          jiraSources={mockJiraSources}
+          selectedJiraIntegrationId="all"
+          onSelectJiraIntegration={onSelectJiraIntegrationMock}
+          sprints={mockSprints}
+          selectedSprintId="all"
+          onSelectSprint={vi.fn()}
+          searchQuery=""
+          onSearchChange={vi.fn()}
+        />
+      );
+
+      const siteButton = screen.getByRole("button", { name: /Tất cả Site Jira/i });
+      expect(siteButton).toBeInTheDocument();
+      fireEvent.click(siteButton);
+
+      const siteOption = screen.getByText(/hcm-cpl-react-04-team3/i);
+      expect(siteOption).toBeInTheDocument();
+      fireEvent.click(siteOption);
+
+      expect(onSelectJiraIntegrationMock).toHaveBeenCalledWith("jira-site-1");
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID07",
+      type: "N",
+      executedDate: "03/10/2026",
+      description: "Hien thi bo loc Sprint va kich hoat onSelectSprint khi nguoi dung chon sprint",
+    },
+    () => {
+      const onSelectSprintMock = vi.fn();
+      render(
+        <CommitFilterBar
+          repositories={mockRepositories}
+          selectedRepoId="repo-1"
+          onSelectRepo={vi.fn()}
+          branches={mockBranches}
+          selectedBranchName="all"
+          onSelectBranch={vi.fn()}
+          members={mockMembers}
+          selectedAuthorId="all"
+          onSelectAuthor={vi.fn()}
+          jiraSources={mockJiraSources}
+          selectedJiraIntegrationId="jira-site-1"
+          onSelectJiraIntegration={vi.fn()}
+          sprints={mockSprints}
+          selectedSprintId="all"
+          onSelectSprint={onSelectSprintMock}
+          searchQuery=""
+          onSearchChange={vi.fn()}
+        />
+      );
+
+      const sprintButton = screen.getByRole("button", { name: /Tất cả Sprint/i });
+      expect(sprintButton).toBeInTheDocument();
+      fireEvent.click(sprintButton);
+
+      const sprintOption = screen.getByText(/SAGA Sprint 5/i);
+      expect(sprintOption).toBeInTheDocument();
+      fireEvent.click(sprintOption);
+
+      expect(onSelectSprintMock).toHaveBeenCalledWith("sprint-1");
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID08",
+      type: "B",
+      executedDate: "03/10/2026",
+      description: "Xu ly bien khi danh sach jiraSources hoac sprints bi rong, dropdown van render an toan",
+    },
+    () => {
+      render(
+        <CommitFilterBar
+          repositories={mockRepositories}
+          selectedRepoId="repo-1"
+          onSelectRepo={vi.fn()}
+          branches={mockBranches}
+          selectedBranchName="all"
+          onSelectBranch={vi.fn()}
+          members={mockMembers}
+          selectedAuthorId="all"
+          onSelectAuthor={vi.fn()}
+          jiraSources={[]}
+          selectedJiraIntegrationId="all"
+          onSelectJiraIntegration={vi.fn()}
+          sprints={[]}
+          selectedSprintId="all"
+          onSelectSprint={vi.fn()}
+          searchQuery=""
+          onSearchChange={vi.fn()}
+        />
+      );
+
+      expect(screen.getByRole("button", { name: /Tất cả Site Jira/i })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /Tất cả Sprint/i })).toBeInTheDocument();
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID09",
+      type: "N",
+      executedDate: "03/10/2026",
+      description: "Hien thi dung ten Site Jira va ten Sprint da chon tren dropdown label",
+    },
+    () => {
+      render(
+        <CommitFilterBar
+          repositories={mockRepositories}
+          selectedRepoId="repo-1"
+          onSelectRepo={vi.fn()}
+          branches={mockBranches}
+          selectedBranchName="all"
+          onSelectBranch={vi.fn()}
+          members={mockMembers}
+          selectedAuthorId="all"
+          onSelectAuthor={vi.fn()}
+          jiraSources={mockJiraSources}
+          selectedJiraIntegrationId="jira-site-2"
+          onSelectJiraIntegration={vi.fn()}
+          sprints={mockSprints}
+          selectedSprintId="sprint-2"
+          onSelectSprint={vi.fn()}
+          searchQuery=""
+          onSearchChange={vi.fn()}
+        />
+      );
+
+      expect(screen.getByRole("button", { name: /hoanghai175/i })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /SG Sprint 1/i })).toBeInTheDocument();
+    }
+  );
 });
+

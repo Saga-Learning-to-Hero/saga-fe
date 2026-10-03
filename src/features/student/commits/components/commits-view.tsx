@@ -23,6 +23,8 @@ import { ProjectRealtimeBadge } from "@/features/student/project/components/proj
 import { useProjectCommits, useProjectRepositoryBranches, useProjectProgress } from "@/features/student/project/hooks/useProjectSync";
 import { useProjectIntegrations } from "@/features/student/project/hooks/useProjectIntegrations";
 import { useProjectRealtime } from "@/features/student/project/hooks/use-project-realtime";
+import { useProjectJiraSourceSelection } from "@/features/student/project/hooks/use-project-jira-source-selection";
+import { useProjectSprints } from "@/features/student/sprint-progress/hooks/use-project-sprints";
 import {
   mapProjectCommitToCommitItem,
   extractReposAndBranches,
@@ -211,7 +213,55 @@ export function CommitsView() {
   const [page, setPage] = useState<number>(1);
   const [pageSize, setPageSize] = useState<number>(50);
   const [selectedAuthorId, setSelectedAuthorId] = useState<string>("all");
+  const [selectedJiraIntegrationId, setSelectedJiraIntegrationId] = useState<string>("all");
+  const [selectedSprintId, setSelectedSprintId] = useState<string>("all");
   const [mergeFilter, setMergeFilter] = useState<CommitMergeFilter>("all");
+
+  const jiraSource = useProjectJiraSourceSelection(projectId);
+  const activeJiraSources = jiraSource.activeSources || [];
+
+  // Nạp danh sách sprints của dự án
+  const effectiveSourceForSprints =
+    selectedJiraIntegrationId !== "all" ? selectedJiraIntegrationId : undefined;
+
+  const { data: allProjectSprints = [] } = useProjectSprints(
+    projectId,
+    effectiveSourceForSprints,
+    { enabled: Boolean(projectId) }
+  );
+
+  // Dropdown sprint phụ thuộc site như màn Sprint:
+  const siteFilteredSprints = useMemo(() => {
+    if (!allProjectSprints || allProjectSprints.length === 0) return [];
+    if (!selectedJiraIntegrationId || selectedJiraIntegrationId === "all") {
+      return allProjectSprints;
+    }
+    return allProjectSprints.filter((sp) => {
+      const spSourceId = sp.source?.jiraIntegrationId || sp.jiraIntegrationId;
+      return !spSourceId || spSourceId === selectedJiraIntegrationId;
+    });
+  }, [allProjectSprints, selectedJiraIntegrationId]);
+
+  const handleSelectJiraIntegration = (sourceId: string) => {
+    setSelectedJiraIntegrationId(sourceId);
+    if (selectedSprintId !== "all") {
+      const stillValid = allProjectSprints.some((sp) => {
+        if (sp.id !== selectedSprintId) return false;
+        if (sourceId === "all") return true;
+        const spSourceId = sp.source?.jiraIntegrationId || sp.jiraIntegrationId;
+        return !spSourceId || spSourceId === sourceId;
+      });
+      if (!stillValid) {
+        setSelectedSprintId("all");
+      }
+    }
+    setPage(1);
+  };
+
+  const handleSelectSprint = (sprintId: string) => {
+    setSelectedSprintId(sprintId);
+    setPage(1);
+  };
 
   const effectiveAuthorStudentId = useMemo(() => {
     if (!selectedAuthorId || selectedAuthorId === "all") return undefined;
@@ -237,9 +287,20 @@ export function CommitsView() {
     return "00000000-0000-0000-0000-000000000000";
   }, [selectedAuthorId, uniqueTeamMembers]);
 
+  const effectiveJiraIntegrationId =
+    selectedJiraIntegrationId && selectedJiraIntegrationId !== "all"
+      ? selectedJiraIntegrationId
+      : undefined;
+
+  const effectiveSprintId =
+    selectedSprintId && selectedSprintId !== "all"
+      ? selectedSprintId
+      : undefined;
+
   const {
     data: commitsPage,
     isLoading: isLoadingCommits,
+    isFetching: isFetchingCommits,
     isError: isCommitsError,
     error: commitsError,
     refetch: refetchCommits,
@@ -247,8 +308,12 @@ export function CommitsView() {
     page: page - 1,
     size: pageSize,
     authorStudentId: effectiveAuthorStudentId,
+    jiraIntegrationId: effectiveJiraIntegrationId,
+    sprintId: effectiveSprintId,
     enabled: Boolean(projectId),
   });
+
+  const isCommitsLoading = isLoadingCommits || isFetchingCommits;
 
   const rawCommits = useMemo(() => commitsPage?.items ?? [], [commitsPage?.items]);
 
@@ -607,6 +672,12 @@ export function CommitsView() {
               setSelectedBranchName(branch);
               setPage(1);
             }}
+            jiraSources={activeJiraSources}
+            selectedJiraIntegrationId={selectedJiraIntegrationId}
+            onSelectJiraIntegration={handleSelectJiraIntegration}
+            sprints={siteFilteredSprints}
+            selectedSprintId={selectedSprintId}
+            onSelectSprint={handleSelectSprint}
             members={uniqueTeamMembers}
             selectedAuthorId={selectedAuthorId}
             onSelectAuthor={handleSelectAuthor}
@@ -621,6 +692,7 @@ export function CommitsView() {
               setSearchQuery(query);
               setPage(1);
             }}
+            isLoading={isFetchingCommits}
           />
 
           <CommitListTimeline
@@ -629,6 +701,7 @@ export function CommitsView() {
             selectedBranchName={effectiveSelectedBranchName}
             courseId={courseId}
             projectId={projectId}
+            isLoading={isCommitsLoading}
           />
 
           {commitsPage && commitsPage.total > 0 && (

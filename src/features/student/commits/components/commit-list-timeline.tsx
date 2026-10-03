@@ -24,6 +24,52 @@ interface CommitListTimelineProps {
   selectedBranchName: string;
   courseId: string;
   projectId?: string | null;
+  isLoading?: boolean;
+}
+
+export function CommitTimelineSkeleton() {
+  return (
+    <div className="space-y-6 animate-pulse" data-testid="commit-timeline-skeleton">
+      <div className="space-y-3">
+        {/* Date header skeleton */}
+        <div className="flex items-center gap-2 pb-1 border-b border-border/50">
+          <div className="w-3.5 h-3.5 rounded bg-muted/60" />
+          <div className="w-28 h-4 rounded bg-muted/70" />
+          <div className="w-8 h-4 rounded-full bg-muted/50" />
+        </div>
+
+        {/* Card skeleton container */}
+        <div className="rounded-xl border border-border/70 bg-card/60 divide-y divide-border/50 overflow-hidden shadow-2xs">
+          {[1, 2, 3, 4, 5].map((i) => (
+            <div
+              key={i}
+              className="p-3.5 sm:px-4.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+            >
+              <div className="flex items-start gap-2.5 flex-1 min-w-0">
+                <div className="w-7 h-7 rounded-xl bg-primary/10 shrink-0 mt-0.5" />
+                <div className="space-y-2 flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <div className="w-16 h-5 rounded-md bg-muted/80 shrink-0" />
+                    <div className="h-4 rounded bg-muted/70 flex-1 max-w-md" />
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="w-4.5 h-4.5 rounded-full bg-muted/60 shrink-0" />
+                    <div className="w-24 h-3 rounded bg-muted/60" />
+                    <div className="w-16 h-3 rounded bg-muted/40 hidden sm:block" />
+                    <div className="w-20 h-3 rounded bg-muted/40 hidden md:block" />
+                  </div>
+                </div>
+              </div>
+              <div className="flex items-center gap-2.5 shrink-0 self-end sm:self-center">
+                <div className="w-16 h-4 rounded bg-muted/60" />
+                <div className="w-16 h-7 rounded-xl bg-muted/60" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
 }
 
 export function CommitListTimeline({
@@ -32,6 +78,7 @@ export function CommitListTimeline({
   selectedBranchName,
   courseId,
   projectId,
+  isLoading = false,
 }: CommitListTimelineProps) {
   const [copiedHash, setCopiedHash] = useState<string | null>(null);
   const [activeCommit, setActiveCommit] = useState<CommitItem | null>(null);
@@ -41,6 +88,10 @@ export function CommitListTimeline({
     setCopiedHash(shortHash);
     setTimeout(() => setCopiedHash(null), 1500);
   };
+
+  if (isLoading) {
+    return <CommitTimelineSkeleton />;
+  }
 
   if (commits.length === 0) {
     return (

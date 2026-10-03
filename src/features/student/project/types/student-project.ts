@@ -277,6 +277,9 @@ export interface GetProjectCommitsParams {
   page?: number;
   size?: number;
   authorStudentId?: string;
+  jiraIntegrationId?: string;
+  sprintId?: string;
+  includeMerges?: boolean;
 }
 
 export interface ProjectCommitPageResponse {
