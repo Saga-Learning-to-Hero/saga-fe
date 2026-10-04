@@ -1,5 +1,6 @@
 "use client";
 
+import { TeamAiKeyCard } from "../commit-review/team-ai-key-card";
 import { useState } from "react";
 import {
   SparklesIcon,
@@ -222,6 +223,8 @@ export function StudentAiHubPage({ projectId }: StudentAiHubPageProps) {
           </div>
         </div>
       </div>
+
+      <TeamAiKeyCard projectId={projectId} />
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <Card className="rounded-xl border border-border/80 bg-card p-4 shadow-xs">

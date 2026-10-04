@@ -799,7 +799,7 @@ export function StudentDashboardAnalytics() {
                             className="text-[9px] px-1.5 py-0 border-sky-500/30 text-sky-700 dark:text-sky-300"
                             title={integrations.jira.lastSyncedAt ? `Lần đồng bộ Jira gần nhất: ${new Date(integrations.jira.lastSyncedAt).toLocaleString("vi-VN")}` : undefined}
                           >
-                            Jira: {integrations.jira.status === "ACTIVE" ? "Đã kết nối" : "Chưa kết nối"}
+                            Jira: {currentJiraProjectKey}
                           </Badge>
                         )}
                         {integrations?.github?.connected && (

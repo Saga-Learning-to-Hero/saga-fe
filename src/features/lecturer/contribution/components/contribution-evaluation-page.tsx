@@ -13,6 +13,7 @@ import {
   FlaskConicalIcon,
   NetworkIcon,
   ShieldAlertIcon,
+  SlidersHorizontalIcon,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { resolveHttpAvatarUrl } from "@/lib/avatar-url";
@@ -58,6 +59,7 @@ import {
 } from "../lib/contribution-utils";
 import { getApiErrorCode } from "@/lib/api-error";
 import { cn } from "@/lib/utils";
+import { OverrideContributionModal } from "./override-contribution-modal";
 
 interface ContributionEvaluationPageProps {
   courseId: string;
@@ -130,6 +132,7 @@ export function ContributionEvaluationPage({ courseId }: ContributionEvaluationP
       canFetchContributionEvaluation(teamsQuery.isSuccess, requestedTeamId, teams),
   });
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [overrideMember, setOverrideMember] = useState<ContributionMember | null>(null);
 
   useEffect(() => {
     if (!teamsQuery.isSuccess || requestedTeamId || !defaultTeamId) return;
@@ -528,6 +531,7 @@ export function ContributionEvaluationPage({ courseId }: ContributionEvaluationP
                       onToggle={() =>
                         setExpandedId(expanded ? null : member.studentProfileId || member.studentCode)
                       }
+                      onOverride={() => setOverrideMember(member)}
                     />
                   );
                 })}
@@ -536,6 +540,13 @@ export function ContributionEvaluationPage({ courseId }: ContributionEvaluationP
           </div>
         )}
       </Card>
+
+      <OverrideContributionModal
+        isOpen={Boolean(overrideMember)}
+        onClose={() => setOverrideMember(null)}
+        teamId={requestedTeamId}
+        member={overrideMember}
+      />
     </LecturerPageShell>
   );
 }
@@ -546,12 +557,14 @@ function MemberRows({
   courseId,
   teamId,
   onToggle,
+  onOverride,
 }: {
   member: ContributionMember;
   expanded: boolean;
   courseId: string;
   teamId: string;
   onToggle: () => void;
+  onOverride: () => void;
 }) {
   const isLeader = member.roleInTeam === "LEADER";
   const finalPercentage = Number(member.finalContributionPercentage) || 0;
@@ -644,6 +657,17 @@ function MemberRows({
         </TableCell>
         <TableCell className="text-right">
           <div className="flex items-center justify-end gap-1">
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              className="h-8 gap-1 rounded-lg border-border/80 bg-card px-2 text-xs font-semibold hover:bg-primary/10 hover:text-primary hover:border-primary/30 cursor-pointer"
+              onClick={onOverride}
+              title="Điều chỉnh tỷ lệ đóng góp của thành viên"
+            >
+              <SlidersHorizontalIcon className="size-3.5 text-primary" />
+              <span className="hidden sm:inline">Điều chỉnh</span>
+            </Button>
             <Link
               href={`${lecturerCourseGraphPath(courseId)}?teamId=${teamId}&studentId=${member.studentProfileId}`}
               prefetch={true}
@@ -751,6 +775,14 @@ function MemberRows({
                               {formatContributionPercent(sprint.sliceContributionPercentage)}
                             </span>
                           </div>
+                          {sprint.peerReviewScore != null && (
+                            <div className="flex justify-between">
+                              <span>Hệ số Peer:</span>
+                              <span className="font-mono font-bold text-foreground">
+                                × {formatContributionNumber(sprint.peerReviewScore)}
+                              </span>
+                            </div>
+                          )}
                         </div>
                       </div>
                     ))}

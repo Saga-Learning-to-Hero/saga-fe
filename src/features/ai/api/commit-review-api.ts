@@ -1,5 +1,6 @@
 import { apiClient } from "@/lib/axios";
 import type {
+  CourseAiTeamAccessResponse,
   CommitAiBackfillResult,
   CommitAiReviewDetail,
   SaveTeamAiKeyRequest,
@@ -60,6 +61,21 @@ export const CommitReviewService = {
 
   async removeTeamKey(projectId: string): Promise<TeamAiKeyStatus> {
     const response = await apiClient.delete<TeamAiKeyStatus>(`${base(projectId)}/ai-team-key`);
+    return response.data;
+  },
+
+  async getTeamAccess(courseId: string): Promise<CourseAiTeamAccessResponse> {
+    const response = await apiClient.get<CourseAiTeamAccessResponse>(
+      `/api/lecturer/courses/${encodeURIComponent(courseId)}/ai/team-access`
+    );
+    return response.data;
+  },
+
+  async setTeamAccess(courseId: string, projectId: string, allowed: boolean): Promise<CourseAiTeamAccessResponse> {
+    const response = await apiClient.put<CourseAiTeamAccessResponse>(
+      `/api/lecturer/courses/${encodeURIComponent(courseId)}/ai/team-access/${encodeURIComponent(projectId)}`,
+      { allowed }
+    );
     return response.data;
   },
 };

@@ -46,6 +46,8 @@ export function useProjectRealtime(
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
   const readyDebounceTimerRef = useRef<NodeJS.Timeout | null>(null);
   const pendingGraphTypesRef = useRef<Set<GraphType | "ALL">>(new Set());
+  /** SSE reconnects resend READY. Catch up once per subscription, not on every reconnect. */
+  const readyCaughtUpRef = useRef(false);
 
   useEffect(() => {
     optionsRef.current = options;
@@ -160,6 +162,8 @@ export function useProjectRealtime(
 
       switch (type) {
         case "READY":
+          if (readyCaughtUpRef.current) break;
+          readyCaughtUpRef.current = true;
           scheduleReadyInvalidation();
           break;
         case "GRAPH_CHANGED":
@@ -238,6 +242,7 @@ export function useProjectRealtime(
       eventSourceRef.current.close();
       eventSourceRef.current = null;
     }
+    readyCaughtUpRef.current = false;
 
     const streamUrl = `${API_BASE_URL}/api/projects/${encodeURIComponent(cleanProjectId)}/events`;
 

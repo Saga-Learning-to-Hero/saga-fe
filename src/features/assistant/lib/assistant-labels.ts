@@ -1,6 +1,7 @@
 import type { AssistantKeySource } from "../types/project-assistant";
 
 export function assistantKeySourceLabel(source: AssistantKeySource): string | null {
+  if (source === "TEAM") return "Dùng key AI của nhóm";
   if (source === "COURSE") return "Dùng cấu hình AI của lớp";
   if (source === "PLATFORM") return "Dùng AI của hệ thống";
   if (source === "UNAVAILABLE") return "Tóm tắt tự động";

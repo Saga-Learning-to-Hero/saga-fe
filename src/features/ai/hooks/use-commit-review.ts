@@ -2,12 +2,13 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { CommitReviewService } from "../api/commit-review-api";
-import type { CommitAiReviewDetail, SaveTeamAiKeyRequest, TeamAiKeyStatus } from "../types";
+import type { CommitAiReviewDetail, CourseAiTeamAccessResponse, SaveTeamAiKeyRequest, TeamAiKeyStatus } from "../types";
 
 export const COMMIT_REVIEW_QUERY_KEYS = {
   review: (projectId?: string | null, commitId?: string | null) =>
     ["projects", projectId, "commits", commitId, "ai-review"] as const,
   teamKey: (projectId?: string | null) => ["projects", projectId, "ai-team-key"] as const,
+  teamAccess: (courseId?: string | null) => ["lecturer", "courses", courseId, "ai", "team-access"] as const,
 };
 
 /** Commit lists carry the review badge: refresh them after a review, a link or a key change. */
@@ -96,5 +97,26 @@ export function useRemoveTeamAiKey(projectId?: string | null) {
   return useMutation({
     mutationFn: () => CommitReviewService.removeTeamKey(projectId as string),
     onSuccess: store,
+  });
+}
+
+/** Lecturer: teams of the course, their own key and whether they may use the course key. */
+export function useCourseAiTeamAccess(courseId?: string | null) {
+  return useQuery<CourseAiTeamAccessResponse>({
+    queryKey: COMMIT_REVIEW_QUERY_KEYS.teamAccess(courseId),
+    queryFn: () => CommitReviewService.getTeamAccess(courseId as string),
+    enabled: Boolean(courseId),
+    staleTime: 1000 * 30,
+  });
+}
+
+export function useSetCourseAiTeamAccess(courseId?: string | null) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ projectId, allowed }: { projectId: string; allowed: boolean }) =>
+      CommitReviewService.setTeamAccess(courseId as string, projectId, allowed),
+    onSuccess: (data) => {
+      queryClient.setQueryData(COMMIT_REVIEW_QUERY_KEYS.teamAccess(courseId), data);
+    },
   });
 }

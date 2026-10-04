@@ -1,4 +1,4 @@
-export type AssistantKeySource = "COURSE" | "PLATFORM" | "UNAVAILABLE" | "UNKNOWN";
+export type AssistantKeySource = "TEAM" | "COURSE" | "PLATFORM" | "UNAVAILABLE" | "UNKNOWN";
 export type AssistantAnswerSource = "AI" | "FALLBACK" | "UNKNOWN";
 export type AssistantMessageRole = "USER" | "ASSISTANT" | "UNKNOWN";
 export type AssistantCitationKind = "TASK" | "COMMIT" | "MEMBER" | "DELAY_CASE" | "UNKNOWN";
@@ -56,7 +56,7 @@ export interface AssistantAskResult {
   answer: AssistantMessage;
 }
 
-const KEY_SOURCES = new Set<AssistantKeySource>(["COURSE", "PLATFORM", "UNAVAILABLE"]);
+const KEY_SOURCES = new Set<AssistantKeySource>(["TEAM", "COURSE", "PLATFORM", "UNAVAILABLE"]);
 const ANSWER_SOURCES = new Set<AssistantAnswerSource>(["AI", "FALLBACK"]);
 const MESSAGE_ROLES = new Set<AssistantMessageRole>(["USER", "ASSISTANT"]);
 const CITATION_KINDS = new Set<AssistantCitationKind>(["TASK", "COMMIT", "MEMBER", "DELAY_CASE"]);

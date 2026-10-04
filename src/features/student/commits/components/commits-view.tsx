@@ -301,7 +301,6 @@ export function CommitsView() {
   const {
     data: commitsPage,
     isLoading: isLoadingCommits,
-    isFetching: isFetchingCommits,
     isError: isCommitsError,
     error: commitsError,
     refetch: refetchCommits,
@@ -314,7 +313,8 @@ export function CommitsView() {
     enabled: Boolean(projectId),
   });
 
-  const isCommitsLoading = isLoadingCommits || isFetchingCommits;
+  // Background refetch (SSE, or a review still PENDING) must keep the list on screen.
+  const isCommitsLoading = isLoadingCommits && !commitsPage;
 
   const rawCommits = useMemo(() => commitsPage?.items ?? [], [commitsPage?.items]);
 
@@ -695,7 +695,7 @@ export function CommitsView() {
               setSearchQuery(query);
               setPage(1);
             }}
-            isLoading={isFetchingCommits}
+            isLoading={isCommitsLoading}
           />
 
           <CommitListTimeline

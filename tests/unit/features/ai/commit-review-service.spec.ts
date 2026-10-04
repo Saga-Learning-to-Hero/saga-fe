@@ -83,4 +83,17 @@ describe("CommitReviewService", () => {
       await expect(CommitReviewService.requestReview(projectId, commitId)).rejects.toThrow();
     }
   );
+
+  fptTest(
+    { id: "UTCID07", type: "N", executedDate: "04/10/2026", description: "Giang vien doc va chon nhom duoc dung key cua lop" },
+    async () => {
+      vi.mocked(apiClient.get).mockResolvedValueOnce({ data: { courseKeyConfigured: true, automationEnabled: true, teams: [] } });
+      vi.mocked(apiClient.put).mockResolvedValueOnce({ data: { courseKeyConfigured: true, automationEnabled: true, teams: [] } });
+      const courseId = "course-1";
+      await CommitReviewService.getTeamAccess(courseId);
+      await CommitReviewService.setTeamAccess(courseId, projectId, true);
+      expect(apiClient.get).toHaveBeenCalledWith(`/api/lecturer/courses/${courseId}/ai/team-access`);
+      expect(apiClient.put).toHaveBeenCalledWith(`/api/lecturer/courses/${courseId}/ai/team-access/${projectId}`, { allowed: true });
+    }
+  );
 });

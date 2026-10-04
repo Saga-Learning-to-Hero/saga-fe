@@ -216,4 +216,180 @@ describe("TeamContributionService", () => {
       expect(res.members[0].avatarUrl).toBe("https://cdn.example.com/alpha.png");
     }
   );
+
+  fptTest(
+    {
+      id: "UTCID15",
+      type: "N",
+      executedDate: "04/10/2026",
+      description: "overrideContribution thanh cong khi gui du lieu hop le",
+    },
+    async () => {
+      const mockResponse = {
+        id: "override-123",
+        studentProfileId: mockStudentProfileId,
+        oldValue: 42,
+        newValue: 45,
+        reason: "Dieu chinh sau bao ve",
+      };
+      const postSpy = vi.spyOn(apiClient, "post").mockResolvedValueOnce({ data: mockResponse });
+
+      const res = await TeamContributionService.overrideContribution(mockTeamId, {
+        studentProfileId: mockStudentProfileId,
+        percentage: 45,
+        reason: "Dieu chinh sau bao ve",
+      });
+
+      expect(postSpy).toHaveBeenCalledWith(`/api/teams/${mockTeamId}/contribution-override`, {
+        studentProfileId: mockStudentProfileId,
+        percentage: 45,
+        reason: "Dieu chinh sau bao ve",
+      });
+      expect(res.newValue).toBe(45);
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID16",
+      type: "A",
+      executedDate: "04/10/2026",
+      description: "overrideContribution throw error khi teamId rong",
+    },
+    async () => {
+      await expect(
+        TeamContributionService.overrideContribution("", {
+          studentProfileId: mockStudentProfileId,
+          percentage: 40,
+          reason: "Ly do",
+        })
+      ).rejects.toThrow("Throw ValidationException: Team ID is required");
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID17",
+      type: "A",
+      executedDate: "04/10/2026",
+      description: "overrideContribution throw error khi studentProfileId rong",
+    },
+    async () => {
+      await expect(
+        TeamContributionService.overrideContribution(mockTeamId, {
+          studentProfileId: "  ",
+          percentage: 40,
+          reason: "Ly do",
+        })
+      ).rejects.toThrow("Mã hồ sơ sinh viên không được để trống.");
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID18",
+      type: "A",
+      executedDate: "04/10/2026",
+      description: "overrideContribution throw error khi percentage ngoai khoang 0 - 100",
+    },
+    async () => {
+      await expect(
+        TeamContributionService.overrideContribution(mockTeamId, {
+          studentProfileId: mockStudentProfileId,
+          percentage: 105,
+          reason: "Ly do",
+        })
+      ).rejects.toThrow("Tỷ lệ phần trăm đóng góp phải nằm trong khoảng từ 0% đến 100%.");
+
+      await expect(
+        TeamContributionService.overrideContribution(mockTeamId, {
+          studentProfileId: mockStudentProfileId,
+          percentage: -5,
+          reason: "Ly do",
+        })
+      ).rejects.toThrow("Tỷ lệ phần trăm đóng góp phải nằm trong khoảng từ 0% đến 100%.");
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID19",
+      type: "A",
+      executedDate: "04/10/2026",
+      description: "overrideContribution throw error khi reason rong",
+    },
+    async () => {
+      await expect(
+        TeamContributionService.overrideContribution(mockTeamId, {
+          studentProfileId: mockStudentProfileId,
+          percentage: 40,
+          reason: "   ",
+        })
+      ).rejects.toThrow("Vui lòng cung cấp lý do điều chỉnh tỷ lệ đóng góp.");
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID20",
+      type: "B",
+      executedDate: "04/10/2026",
+      description: "overrideContribution chap nhan gia tri bien 0% va 100%",
+    },
+    async () => {
+      const postSpy = vi.spyOn(apiClient, "post").mockResolvedValue({
+        data: { id: "1", studentProfileId: mockStudentProfileId, oldValue: 50, newValue: 0, reason: "Gia tri bien" },
+      });
+
+      const res0 = await TeamContributionService.overrideContribution(mockTeamId, {
+        studentProfileId: mockStudentProfileId,
+        percentage: 0,
+        reason: "Gia tri bien",
+      });
+      expect(res0.newValue).toBe(0);
+
+      const res100 = await TeamContributionService.overrideContribution(mockTeamId, {
+        studentProfileId: mockStudentProfileId,
+        percentage: 100,
+        reason: "Gia tri bien",
+      });
+      expect(postSpy).toHaveBeenCalledTimes(2);
+      expect(res100).toBeDefined();
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID21",
+      type: "N",
+      executedDate: "04/10/2026",
+      description: "Parse dung peerReviewScore trong sprintBreakdowns tu BE",
+    },
+    async () => {
+      vi.spyOn(apiClient, "get").mockResolvedValueOnce({
+        data: {
+          ...evaluation,
+          members: [
+            {
+              ...evaluation.members[0],
+              sprintBreakdowns: [
+                {
+                  sprintId: "sp-1",
+                  sprintName: "Sprint 1",
+                  sliceScore: 10,
+                  sliceContributionPercentage: 50,
+                  contributionPercentage: 50,
+                  peerReviewScore: 0.95,
+                },
+              ],
+            },
+          ],
+        },
+      });
+
+      const res = await TeamContributionService.getEvaluation(mockTeamId);
+      expect(res.members[0].sprintBreakdowns[0].peerReviewScore).toBe(0.95);
+    }
+  );
 });
+

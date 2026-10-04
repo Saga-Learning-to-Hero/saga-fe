@@ -592,7 +592,7 @@ function CourseAiMultiProviderForm({
                   Tự động phân tích khi có dữ liệu mới
                 </span>
                 <span className="text-xs text-muted-foreground block leading-relaxed">
-                  Tự động kích hoạt đánh giá thông minh khi sinh viên đẩy commit hoặc cập nhật task Jira.
+                  Với các nhóm được chọn dùng key của lớp (bảng bên dưới): tự động đánh giá khi sinh viên đẩy commit hoặc cập nhật task Jira. Nhóm có key riêng luôn được đánh giá tự động bằng key của nhóm.
                 </span>
               </div>
             </label>
@@ -609,7 +609,7 @@ function CourseAiMultiProviderForm({
                   Cho phép khóa nền tảng cho một số phân tích thủ công
                 </span>
                 <span className="text-xs text-muted-foreground block leading-relaxed">
-                  Khóa của lớp và khóa nền tảng, khi bật lựa chọn này, cũng được trợ lý chat theo dự án dùng theo thứ tự lớp rồi hệ thống. Phân tích tự động Commit/Task/Risk vẫn chỉ dùng khóa của lớp.
+                  Chỉ áp dụng cho các nhóm được chọn dùng key của lớp. Giảng viên luôn hỏi trợ lý chat bằng key hệ thống; nhóm không có key riêng và không được chọn thì không dùng được AI.
                 </span>
               </div>
             </label>

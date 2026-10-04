@@ -67,7 +67,23 @@ export type ContributionSprintBreakdown = {
   sliceScore: number | null;
   sliceContributionPercentage: number | null;
   contributionPercentage: number | null;
+  peerReviewScore: number | null;
 };
+
+export type ContributionOverrideRequest = {
+  studentProfileId: string;
+  percentage: number;
+  reason: string;
+};
+
+export type ContributionOverrideResponse = {
+  id: string;
+  studentProfileId: string;
+  oldValue: number | null;
+  newValue: number;
+  reason: string;
+};
+
 
 export type ContributionMember = {
   studentProfileId: string;
@@ -191,6 +207,7 @@ function parseSprintBreakdown(value: unknown): ContributionSprintBreakdown {
     sliceScore: toNullableNumber(source.sliceScore),
     sliceContributionPercentage: toNullableNumber(source.sliceContributionPercentage),
     contributionPercentage: toNullableNumber(source.contributionPercentage),
+    peerReviewScore: toNullableNumber(source.peerReviewScore),
   };
 }
 
