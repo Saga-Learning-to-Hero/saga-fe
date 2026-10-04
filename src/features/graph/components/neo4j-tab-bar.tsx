@@ -27,6 +27,8 @@ export interface Neo4jTabBarProps {
   selectId?: string;
   scopeMode?: "COMPACT" | "FULL";
   onScopeModeChange?: (mode: "COMPACT" | "FULL") => void;
+  usedCriteriaOnly?: boolean;
+  onUsedCriteriaOnlyChange?: (value: boolean) => void;
   memberOptions?: CustomSelectOption[];
   selectedStudentId?: string | null;
   onStudentChange?: (studentId: string) => void;
@@ -43,6 +45,8 @@ export function Neo4jTabBar({
   selectId = "neo4j-tab-sprint-select",
   scopeMode = "COMPACT",
   onScopeModeChange,
+  usedCriteriaOnly = false,
+  onUsedCriteriaOnlyChange,
   memberOptions,
   selectedStudentId,
   onStudentChange,
@@ -95,7 +99,18 @@ export function Neo4jTabBar({
               </div>
             </div>
 
-            <div className="flex items-center gap-2 min-w-[220px]">
+            <div className="flex flex-wrap items-center gap-2 min-w-[220px]">
+              {onUsedCriteriaOnlyChange && (
+                <Button
+                  type="button"
+                  variant={usedCriteriaOnly ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => onUsedCriteriaOnlyChange(!usedCriteriaOnly)}
+                  className="h-8.5 rounded-xl text-xs font-bold cursor-pointer"
+                >
+                  Chỉ tiêu chí đã dùng
+                </Button>
+              )}
               <span className="text-xs font-bold text-muted-foreground whitespace-nowrap flex items-center gap-1">
                 <CalendarIcon className="size-3.5 text-primary" />
                 Sprint:
@@ -187,7 +202,7 @@ export function Neo4jTabBar({
               </div>
             </div>
 
-            {onScopeModeChange && (tab === "OVERVIEW" || tab === "ACTIVITY" || tab === "ATTRIBUTION") && (
+            {onScopeModeChange && (tab === "OVERVIEW" || tab === "ACTIVITY") && (
               <div className="flex items-center gap-1 rounded-xl border border-border/60 bg-muted/60 p-1 text-xs font-bold">
                 <button
                   type="button"
@@ -196,9 +211,9 @@ export function Neo4jTabBar({
                     ? "bg-card text-foreground shadow-2xs"
                     : "text-muted-foreground hover:text-foreground"
                     }`}
-                  title="Chỉ hiển thị Task và Nhóm (loại bỏ Commit dày đặc)"
+                  title="Ẩn commit, tệp và liên kết web"
                 >
-                  Gọn (Task & Nhóm)
+                  Gọn
                 </button>
                 <button
                   type="button"
@@ -207,9 +222,9 @@ export function Neo4jTabBar({
                     ? "bg-card text-foreground shadow-2xs"
                     : "text-muted-foreground hover:text-foreground"
                     }`}
-                  title="Hiển thị đầy đủ cả Commit và bằng chứng"
+                  title="Hiện commit, tệp và liên kết web"
                 >
-                  Chi tiết (+ Commit)
+                  Chi tiết
                 </button>
               </div>
             )}

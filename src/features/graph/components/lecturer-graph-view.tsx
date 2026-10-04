@@ -42,7 +42,9 @@ const CytoscapeGraphCanvas = dynamic(
 import { GraphStatsSummary } from "./graph-stats-summary";
 import { GraphNodeDetailsModal } from "./graph-node-details-modal";
 import { Neo4jTabBar } from "./neo4j-tab-bar";
-import { useProjectGraph } from "../hooks/use-project-graph";
+import { useAccumulatedProjectGraph, useProjectGraph } from "../hooks/use-project-graph";
+import { buildGraphScopeParams } from "../lib/graph-scope";
+import { describeGraphLoadError } from "../lib/graph-error";
 import { useProjectCommits } from "@/features/student/project/hooks/useProjectSync";
 import { CommitDetailModal } from "@/features/student/commits/components/commit-detail-modal";
 import { usePipelineGraphData } from "../hooks/use-pipeline-graph-data";
@@ -57,7 +59,7 @@ import {
   type PipelineFilterState,
   type PipelineTask,
 } from "../types/pipeline";
-import type { CytoscapeNodeData, GraphSubgraphFilterParams, GraphType } from "../types/graph";
+import type { CytoscapeNodeData, GraphType } from "../types/graph";
 import { PipelineEmptyState } from "./pipeline-empty-state";
 import { PipelineFlowView } from "./pipeline-flow-view";
 import { PipelineMatrixTable } from "./pipeline-matrix-table";
@@ -129,6 +131,7 @@ export function LecturerGraphView({
   const [selectedGraphNode, setSelectedGraphNode] = useState<CytoscapeNodeData | null>(null);
 
   const [scopeMode, setScopeMode] = useState<"COMPACT" | "FULL">("COMPACT");
+  const [usedCriteriaOnly, setUsedCriteriaOnly] = useState(false);
   const [focusedNodeId, setFocusedNodeId] = useState<string | null>(null);
   const [focusedNodeLabel, setFocusedNodeLabel] = useState<string | null>(null);
 
@@ -337,43 +340,21 @@ export function LecturerGraphView({
 
   const activeGraphType: GraphType = activeDrillDownStudent ? "CONTRIBUTION" : neo4jTab;
 
-  const subgraphParams = useMemo<GraphSubgraphFilterParams | null>(() => {
-    const params: GraphSubgraphFilterParams = {};
-    let hasFilter = false;
-
-    if (activeFocusedNodeId) {
-      params.focusNodeId = activeFocusedNodeId;
-      params.depth = 1;
-      params.includeCommits = true;
-      params.nodeTypes = ["TASK", "COMMIT", "STUDENT"];
-      params.edgeTypes = ["ASSIGNED_TO", "EVIDENCED_BY"];
-      hasFilter = true;
-    } else {
-      if (scopeMode === "FULL") {
-        params.includeCommits = true;
-        hasFilter = true;
-      } else if (
-        scopeMode === "COMPACT" &&
-        !activeDrillDownStudent &&
-        (neo4jTab === "OVERVIEW" || neo4jTab === "ACTIVITY" || neo4jTab === "ATTRIBUTION")
-      ) {
-        params.includeCommits = false;
-        params.nodeTypes = ["STUDENT", "TEAM", "PROJECT", "SPRINT", "TASK"];
-        hasFilter = true;
-      }
-    }
-
-    if (neo4jFilterType === "ANOMALIES_ONLY") {
-      params.anomaliesOnly = true;
-      hasFilter = true;
-    }
-
-    return hasFilter ? params : null;
-  }, [activeFocusedNodeId, scopeMode, activeDrillDownStudent, neo4jTab, neo4jFilterType]);
+  const subgraphParams = useMemo(
+    () =>
+      buildGraphScopeParams({
+        graphType: activeGraphType,
+        scopeMode,
+        focusNodeId: activeFocusedNodeId,
+        anomaliesOnly: neo4jFilterType === "ANOMALIES_ONLY",
+        usedCriteriaOnly,
+      }),
+    [activeGraphType, scopeMode, activeFocusedNodeId, neo4jFilterType, usedCriteriaOnly]
+  );
 
   const isWaitingDefaultSprint = selectedSprintState === null && sprintsQuery.isLoading;
 
-  const graphQuery = useProjectGraph({
+  const graphQuery = useAccumulatedProjectGraph({
     projectId: projectId || "",
     graphType: activeGraphType,
     sprintId: effectiveNeo4jSprintId,
@@ -715,8 +696,16 @@ export function LecturerGraphView({
       );
     }
 
+    if (
+      graphQuery.isError &&
+      getApiErrorCode(graphQuery.error) === "PROJECT_NOT_FOUND" &&
+      selectedSprintState &&
+      selectedSprintState !== "ALL"
+    ) {
+      setSelectedSprintState("ALL");
+    }
+
     if (graphQuery.isError) {
-      const err = graphQuery.error as { status?: number; code?: string; message?: string };
       return (
         <div className="flex flex-col items-center justify-center p-12 text-center rounded-xl border border-destructive/20 bg-destructive/5 space-y-3">
           <div className="w-12 h-12 rounded-xl bg-destructive/10 text-destructive flex items-center justify-center">
@@ -724,11 +713,7 @@ export function LecturerGraphView({
           </div>
           <h3 className="text-base font-bold text-foreground">Không tải được dữ liệu đồ thị</h3>
           <p className="text-xs text-muted-foreground max-w-md">
-            {err?.status === 403
-              ? "Bạn không có quyền xem dữ liệu đồ thị của nhóm dự án này."
-              : err?.status === 404
-                ? "Dữ liệu liên kết của nhóm không còn khả dụng trên hệ thống."
-                : err?.message || "Đã xảy ra lỗi khi kết nối máy chủ đồ thị Neo4j."}
+            {describeGraphLoadError(graphQuery.error)}
           </p>
           <Button
             variant="outline"
@@ -788,13 +773,16 @@ export function LecturerGraphView({
           edges={displayGraphData.edges}
           onSelectNode={(node) => setSelectedGraphNode(node)}
           layoutName="breadthfirst"
-          isUpdating={graphQuery.isFetching && !graphQuery.isLoading}
+          isUpdating={(graphQuery.isFetching && !graphQuery.isLoading) || graphQuery.isLoadingMore}
         />
         <GraphStatsSummary
           totalNodes={structuralStats.totalNodes}
           totalEdges={structuralStats.totalEdges}
           anomalyCount={structuralStats.anomalyCount}
           meta={structuralStats.meta}
+          canLoadMore={graphQuery.canLoadMore}
+          isLoadingMore={graphQuery.isLoadingMore}
+          onLoadMore={graphQuery.loadMore}
         />
       </div>
     );
@@ -1067,6 +1055,8 @@ export function LecturerGraphView({
           selectId="lecturer-neo4j-sprint"
           scopeMode={scopeMode}
           onScopeModeChange={setScopeMode}
+          usedCriteriaOnly={usedCriteriaOnly}
+          onUsedCriteriaOnlyChange={setUsedCriteriaOnly}
           memberOptions={neo4jMemberSelectOptions}
           selectedStudentId={activeDrillDownStudent?.studentProfileId || "ALL"}
           onStudentChange={handleSelectDrillDownStudent}

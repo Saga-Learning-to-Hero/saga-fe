@@ -51,7 +51,7 @@ describe("useProjectGraph", () => {
     expect(ProjectGraphService.getProjectOverviewGraph).toHaveBeenCalledWith(
       "p-1",
       "sp-1",
-      expect.any(AbortSignal)
+      expect.objectContaining({ signal: expect.any(AbortSignal) })
     );
     expect(result.current.data).toEqual(mockData);
   });
@@ -106,7 +106,7 @@ describe("useProjectGraph", () => {
       "p-1",
       "80ffd344-5190-4373-a2fb-10e74d64e55d",
       "sp-1",
-      expect.any(AbortSignal)
+      expect.objectContaining({ signal: expect.any(AbortSignal) })
     );
   });
 
@@ -175,7 +175,7 @@ describe("useProjectGraph", () => {
         anomaliesOnly: true,
         sprintId: "sp-1",
       },
-      expect.any(AbortSignal)
+      expect.objectContaining({ signal: expect.any(AbortSignal) })
     );
     expect(result.current.data?.meta?.truncated).toBe(true);
 
@@ -205,7 +205,7 @@ describe("useProjectGraph", () => {
         anomaliesOnly: true,
         sprintId: "sp-2",
       },
-      expect.any(AbortSignal)
+      expect.objectContaining({ signal: expect.any(AbortSignal) })
     );
   });
 
@@ -237,7 +237,7 @@ describe("useProjectGraph", () => {
         depth: 1,
         sprintId: "sp-1",
       },
-      expect.any(AbortSignal)
+      expect.objectContaining({ signal: expect.any(AbortSignal) })
     );
   });
 

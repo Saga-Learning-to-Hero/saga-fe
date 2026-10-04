@@ -9,6 +9,9 @@ interface GraphStatsSummaryProps {
   totalEdges: number;
   anomalyCount: number;
   meta?: GraphMeta;
+  canLoadMore?: boolean;
+  isLoadingMore?: boolean;
+  onLoadMore?: () => void;
 }
 
 export function GraphStatsSummary({
@@ -16,6 +19,9 @@ export function GraphStatsSummary({
   totalEdges,
   anomalyCount,
   meta,
+  canLoadMore = false,
+  isLoadingMore = false,
+  onLoadMore,
 }: GraphStatsSummaryProps) {
   const isTruncated = meta?.truncated || (meta && meta.returnedNodes < meta.totalNodes);
 
@@ -108,6 +114,16 @@ export function GraphStatsSummary({
               <span className="text-xs font-medium text-muted-foreground">
                 Tối ưu tải mạng lưới lớn
               </span>
+              {canLoadMore && onLoadMore && (
+                <button
+                  type="button"
+                  onClick={onLoadMore}
+                  disabled={isLoadingMore}
+                  className="mt-1 rounded-lg border border-border bg-background px-2 py-1 text-xs font-bold text-foreground cursor-pointer disabled:opacity-60"
+                >
+                  {isLoadingMore ? "Đang tải..." : "Tải thêm"}
+                </button>
+              )}
             </div>
           </div>
         </>

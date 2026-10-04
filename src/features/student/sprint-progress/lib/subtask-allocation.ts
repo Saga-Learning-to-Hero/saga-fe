@@ -11,6 +11,25 @@ export const SAGA_CONTRIBUTION_LABELS = [
   "saga:research",
 ] as const;
 
+export type SagaContributionLabel = (typeof SAGA_CONTRIBUTION_LABELS)[number];
+
+export type SprintDisplayRef = {
+  id?: string | number | null;
+  externalSprintId?: string | number | null;
+  name?: string | null;
+};
+
+export type SprintDisplayTask = {
+  id: string;
+  sprint?: SprintDisplayRef | null;
+};
+
+export type SprintDisplayOption = {
+  id: string | number;
+  externalSprintId?: string | number | null;
+  name: string;
+};
+
 const EVIDENCE_STATUSES: readonly EvidenceCheckStatus[] = [
   "MISSING_COMMIT",
   "MISSING_DOCUMENT",
@@ -140,28 +159,124 @@ export function formatIssuePointBadge(
   return "Chưa ước lượng";
 }
 
-export function isSagaContributionLabel(label: string): boolean {
+export function canonicalSagaContributionLabel(label: string): SagaContributionLabel | null {
   const lower = label.trim().toLowerCase();
+  if (lower === "saga:doc" || lower === "saga:docs") return "saga:document";
+  return SAGA_CONTRIBUTION_LABELS.find((labelValue) => labelValue === lower) ?? null;
+}
+
+export function isSagaContributionLabel(label: string): boolean {
+  return canonicalSagaContributionLabel(label) !== null;
+}
+
+export function splitTaskLabels(labels?: readonly string[] | null): {
+  sagaLabels: SagaContributionLabel[];
+  jiraLabels: string[];
+} {
+  const sagaLabels: SagaContributionLabel[] = [];
+  const jiraLabels: string[] = [];
+
+  for (const rawLabel of labels ?? []) {
+    const canonical = canonicalSagaContributionLabel(rawLabel);
+    if (canonical) {
+      if (!sagaLabels.includes(canonical)) sagaLabels.push(canonical);
+    } else if (rawLabel.trim()) {
+      jiraLabels.push(rawLabel);
+    }
+  }
+
+  return { sagaLabels, jiraLabels };
+}
+
+/** Chỉ nhận marker SAGA canonical và giữ tối đa lựa chọn mới nhất. */
+export function normalizeContributionLabels(labels: readonly string[]): SagaContributionLabel[] {
+  const normalized = labels
+    .map(canonicalSagaContributionLabel)
+    .filter((label): label is SagaContributionLabel => label !== null);
+  return normalized.length > 0 ? [normalized[normalized.length - 1]] : [];
+}
+
+/** Label Jira cũ là chỉ đọc nhưng vẫn phải được gửi lại khi người dùng đổi marker SAGA. */
+export function mergeReadonlyJiraLabelsWithSaga(
+  originalLabels: readonly string[],
+  selectedSagaLabels: readonly string[]
+): string[] {
+  const { jiraLabels } = splitTaskLabels(originalLabels);
+  return [...jiraLabels, ...normalizeContributionLabels(selectedSagaLabels)];
+}
+
+export function areSagaLabelSelectionsEqual(
+  originalLabels: readonly string[],
+  selectedSagaLabels: readonly string[]
+): boolean {
+  const originalSagaLabels = splitTaskLabels(originalLabels).sagaLabels;
+  const selected = selectedSagaLabels
+    .map(canonicalSagaContributionLabel)
+    .filter((label): label is SagaContributionLabel => label !== null);
   return (
-    lower === "saga:code" ||
-    lower === "saga:test" ||
-    lower === "saga:document" ||
-    lower === "saga:doc" ||
-    lower === "saga:research"
+    originalSagaLabels.length === selected.length &&
+    originalSagaLabels.every((label, index) => label === selected[index])
   );
 }
 
-export function getInheritedContributionLabels(parentLabels?: string[] | null): string[] {
-  return (parentLabels ?? []).filter(isSagaContributionLabel);
+function sprintRefMatches(refId: string, sprint: SprintDisplayOption): boolean {
+  return (
+    String(sprint.id) === refId ||
+    (sprint.externalSprintId !== null &&
+      sprint.externalSprintId !== undefined &&
+      String(sprint.externalSprintId) === refId)
+  );
 }
 
-export function mergeSubtaskLabelsForPatch(
-  originalLabels: string[],
-  editedLabels: string[]
-): string[] {
-  const originalSaga = originalLabels.filter(isSagaContributionLabel);
-  const regular = editedLabels.filter((label) => !isSagaContributionLabel(label));
-  return [...regular, ...originalSaga];
+function findSprintDisplayName(
+  ref: SprintDisplayRef | null | undefined,
+  fallbackId: string | null | undefined,
+  sprints: readonly SprintDisplayOption[]
+): string | null {
+  const directName = ref?.name?.trim();
+  if (directName) return directName;
+
+  const ids = [ref?.id, ref?.externalSprintId, fallbackId]
+    .filter((value): value is string | number => value !== null && value !== undefined)
+    .map(String)
+    .filter((value) => value && value !== "backlog");
+  for (const id of ids) {
+    const match = sprints.find((sprint) => sprintRefMatches(id, sprint));
+    if (match?.name.trim()) return match.name.trim();
+  }
+  return null;
+}
+
+export function resolveSubtaskSprintDisplay(input: {
+  detailSprint?: SprintDisplayRef | null;
+  detailLoaded: boolean;
+  issueSprintId?: string | null;
+  parentTaskId?: string | null;
+  projectTasks: readonly SprintDisplayTask[];
+  sprints: readonly SprintDisplayOption[];
+}): string {
+  const directName = findSprintDisplayName(input.detailSprint, null, input.sprints);
+  if (directName) return directName;
+
+  const parentTask = input.parentTaskId
+    ? input.projectTasks.find((task) => task.id === input.parentTaskId)
+    : undefined;
+  const parentName = findSprintDisplayName(parentTask?.sprint, null, input.sprints);
+  if (parentName) return parentName;
+
+  if (input.detailLoaded && input.detailSprint === null) {
+    return "Backlog (Chưa thuộc Sprint)";
+  }
+
+  const issueName = findSprintDisplayName(null, input.issueSprintId, input.sprints);
+  if (issueName) return issueName;
+
+  const isKnownBacklog =
+    Boolean(parentTask && !parentTask.sprint) ||
+    input.issueSprintId === "backlog";
+  return isKnownBacklog
+    ? "Backlog (Chưa thuộc Sprint)"
+    : "Chưa xác định Sprint";
 }
 
 export function mapTaskEvidenceCheck(value?: TaskEvidenceCheck | null): TaskEvidenceCheck | null {

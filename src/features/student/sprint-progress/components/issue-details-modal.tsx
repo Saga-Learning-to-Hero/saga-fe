@@ -40,18 +40,20 @@ import { TaskEvidencePanel } from "./task-evidence-panel";
 import { TaskWorkSessionControl } from "./task-work-session-control";
 import { TaskWorkSessionTimeline } from "./task-work-session-timeline";
 import { TaskCommitsTab } from "./task-commits-tab";
-import { DEFAULT_SAGA_LABELS, LabelsMultiSelect } from "./labels-multi-select";
+import { LabelsMultiSelect } from "./labels-multi-select";
 import {
+  areSagaLabelSelectionsEqual,
   findParentStoryPoint,
   formatIssuePointBadge,
   getAllocatedPoint,
-  getInheritedContributionLabels,
   getRemainingPercent,
   getRemainingShare,
   getSubtaskPercent,
-  isSagaContributionLabel,
   isSubtaskShareValue,
-  mergeSubtaskLabelsForPatch,
+  mergeReadonlyJiraLabelsWithSaga,
+  normalizeContributionLabels,
+  resolveSubtaskSprintDisplay,
+  splitTaskLabels,
   sumSiblingUsedPoints,
 } from "../lib/subtask-allocation";
 import {
@@ -326,7 +328,7 @@ export function IssueDetailsModal({
       storyPoints: typeof issue?.storyPoints === "number" ? String(issue.storyPoints) : "",
       assignee: matchedAssignee,
       assigneeAccountId: initialAssigneeAccountId,
-      labels: Array.isArray(issue?.labels) ? issue.labels : [],
+      labels: splitTaskLabels(issue?.labels).sagaLabels,
       sprintId: initialSprintId,
       startDate: initialStartDate,
       dueDate: issue?.dueDate || taskDetail?.dueDate || "",
@@ -367,7 +369,9 @@ export function IssueDetailsModal({
             : prev.storyPoints,
         sprintId: resolvedSprintId,
         assigneeAccountId: resolvedAccountId || prev.assigneeAccountId,
-        labels: Array.isArray(taskDetail.labels) ? taskDetail.labels : prev.labels,
+        labels: Array.isArray(taskDetail.labels)
+          ? splitTaskLabels(taskDetail.labels).sagaLabels
+          : prev.labels,
         startDate: taskDetail.startDate ?? prev.startDate,
         dueDate: taskDetail.dueDate ?? prev.dueDate,
         parentTaskId: hydratedParentTaskId(taskDetail.parent),
@@ -407,15 +411,26 @@ export function IssueDetailsModal({
   );
   const remainingShare = getRemainingShare(siblingUsedPoints);
   const parentStoryPoint = shareParentId ? findParentStoryPoint(projectTasks ?? [], shareParentId) : null;
-  const parentIssue = shareParentId
-    ? (projectTasks ?? []).find((task) => task.id === shareParentId)
-    : undefined;
-  const inheritedContributionLabels = getInheritedContributionLabels(parentIssue?.labels);
   const parsedShare = Number(form.storyPoints);
   const shareIsFull = selectedIssueTypeLevel === "SUBTASK" && remainingShare <= 0;
   const jiraParent = taskDetail ? taskDetail.parent : issue?.parent;
   const originalParentTaskId = jiraParent?.taskId || "";
   const originalIssueTypeId = taskDetail?.issueTypeId || issue?.issueTypeId || "";
+  const originalTaskLabels = Array.isArray(taskDetail?.labels)
+    ? taskDetail.labels
+    : Array.isArray(issue?.labels)
+      ? issue.labels
+      : [];
+  const { jiraLabels: readonlyJiraLabels } = splitTaskLabels(originalTaskLabels);
+  const hasAmbiguousSagaLabels = form.labels.length > 1;
+  const subtaskSprintDisplay = resolveSubtaskSprintDisplay({
+    detailSprint: taskDetail?.sprint,
+    detailLoaded: Boolean(taskDetail),
+    issueSprintId: issue?.sprintId,
+    parentTaskId: shareParentId,
+    projectTasks: projectTasks ?? [],
+    sprints: sourceSprints,
+  });
 
   const parentQueryParams = {
     childIssueTypeId: form.issueTypeId || selectedIssueTypeOption?.issueTypeId || "",
@@ -742,14 +757,9 @@ export function IssueDetailsModal({
             : Array.isArray(issue.labels)
               ? issue.labels
               : [];
-          const labelsChanged =
-            form.labels.length !== originalLabels.length ||
-            form.labels.some((l, idx) => l !== originalLabels[idx]);
+          const labelsChanged = !areSagaLabelSelectionsEqual(originalLabels, form.labels);
           if (labelsChanged) {
-            patchData.labels =
-              selectedIssueTypeLevel === "SUBTASK"
-                ? mergeSubtaskLabelsForPatch(originalLabels, form.labels)
-                : form.labels;
+            patchData.labels = mergeReadonlyJiraLabelsWithSaga(originalLabels, form.labels);
           }
 
           const parentAction = resolveParentAction({
@@ -802,10 +812,7 @@ export function IssueDetailsModal({
               storyPoints: form.storyPoints.trim() ? Number(form.storyPoints) : undefined,
               sprintExternalId: sprintExtId,
               assigneeAccountId,
-              labels:
-                selectedIssueTypeLevel === "SUBTASK"
-                  ? form.labels.filter((label) => !isSagaContributionLabel(label))
-                  : form.labels,
+              labels: normalizeContributionLabels(form.labels),
               startDate: form.startDate.trim() || undefined,
               dueDate: form.dueDate.trim() || undefined,
               ...parentFieldsForCreate(createParentAction),
@@ -846,6 +853,12 @@ export function IssueDetailsModal({
           accountId: null,
         };
 
+      const finalLabels = isEditing
+        ? areSagaLabelSelectionsEqual(originalTaskLabels, form.labels)
+          ? originalTaskLabels
+          : mergeReadonlyJiraLabelsWithSaga(originalTaskLabels, form.labels)
+        : normalizeContributionLabels(form.labels);
+
       const finalIssue: SprintIssue = {
         id: issue?.id || `issue-${Date.now()}`,
         key: savedKey,
@@ -871,7 +884,7 @@ export function IssueDetailsModal({
         status: form.status as IssueStatus,
         storyPoints: form.storyPoints.trim() ? Number(form.storyPoints) : null,
         assignee: finalAssignee,
-        labels: form.labels,
+        labels: finalLabels,
         sprintId: form.sprintId || "backlog",
         startDate: form.startDate || undefined,
         dueDate: form.dueDate || undefined,
@@ -1339,11 +1352,14 @@ export function IssueDetailsModal({
                         <p className="text-xs font-medium text-destructive">{formErrors.sprintId}</p>
                       )}
                     </div>
-                  ) : selectedIssueTypeLevel === "SUBTASK" && jiraParent?.externalKey ? (
+                  ) : selectedIssueTypeLevel === "SUBTASK" ? (
                     <div className="space-y-1.5">
                       <Label className="text-xs font-semibold text-foreground">Sprint</Label>
-                      <p className="text-xs text-muted-foreground">
-                        Theo sprint của: {jiraParent.externalKey}
+                      <div className="flex h-9 items-center rounded-xl border border-border/80 bg-muted/35 px-3 text-xs font-medium text-foreground">
+                        {subtaskSprintDisplay}
+                      </div>
+                      <p className="text-[11px] text-muted-foreground">
+                        Sprint của Subtask được đồng bộ theo công việc cha và chỉ có thể xem tại đây.
                       </p>
                     </div>
                   ) : null}
@@ -1546,67 +1562,49 @@ export function IssueDetailsModal({
                   <div className="space-y-1.5 sm:col-span-2">
                     <Label htmlFor="issue-labels" className="text-xs font-semibold flex items-center gap-1.5 text-foreground">
                       <TagIcon className="w-3.5 h-3.5 text-blue-500" />
-                      <span>Nhãn phân loại</span>
+                      <span>Nhãn đóng góp SAGA</span>
                       <span className="text-xs font-normal text-muted-foreground">(Tùy chọn)</span>
                     </Label>
-                    {selectedIssueTypeLevel === "SUBTASK" ? (
-                      <div className="space-y-2">
+                    {selectedIssueTypeLevel === "SUBTASK" && (
+                      <p className="text-[11px] text-muted-foreground">
+                        Subtask dùng nhãn đóng góp riêng; nhãn không kế thừa từ công việc cha.
+                      </p>
+                    )}
+                    <LabelsMultiSelect
+                      id="issue-labels"
+                      disabled={!canEdit}
+                      value={form.labels}
+                      onChange={(newLabels) => {
+                        setForm((f) => ({
+                          ...f,
+                          labels: normalizeContributionLabels(newLabels),
+                        }));
+                      }}
+                      availableLabels={taskOptions?.labels}
+                      placeholder="Chọn một nhãn SAGA..."
+                    />
+                    {hasAmbiguousSagaLabels && (
+                      <p className="text-xs font-medium text-amber-700 dark:text-amber-400">
+                        Task đang có nhiều nhãn SAGA. Hãy chọn lại một nhãn để chuẩn hóa; nếu không sửa, các nhãn hiện tại vẫn được giữ nguyên.
+                      </p>
+                    )}
+                    {readonlyJiraLabels.length > 0 && (
+                      <div className="space-y-1.5 rounded-xl border border-border/70 bg-muted/20 p-3">
+                        <p className="text-xs font-semibold text-foreground">Nhãn Jira hiện có (chỉ đọc)</p>
+                        <div className="flex flex-wrap gap-1.5">
+                          {readonlyJiraLabels.map((label) => (
+                            <span
+                              key={label}
+                              className="inline-flex h-6 items-center rounded-lg border border-border bg-muted/60 px-2 font-mono text-xs text-muted-foreground"
+                            >
+                              {label}
+                            </span>
+                          ))}
+                        </div>
                         <p className="text-[11px] text-muted-foreground">
-                          Nhóm đóng góp kế thừa từ task cha. Subtask không chọn nhãn saga:* riêng.
+                          SAGA không cho thêm hoặc chỉnh sửa các nhãn này và sẽ giữ nguyên chúng khi lưu.
                         </p>
-                        {inheritedContributionLabels.length > 0 ? (
-                          <div className="flex flex-wrap gap-1.5">
-                            {inheritedContributionLabels.map((label) => (
-                              <span
-                                key={label}
-                                className="inline-flex h-6 items-center rounded-lg border border-primary/30 bg-primary/10 px-2 text-xs font-mono text-primary"
-                              >
-                                {label}
-                              </span>
-                            ))}
-                          </div>
-                        ) : (
-                          <p className="text-xs text-muted-foreground">Task cha chưa gắn nhãn đóng góp saga:*.</p>
-                        )}
-                        <LabelsMultiSelect
-                          id="issue-labels"
-                          disabled={!canEdit}
-                          hideSagaLabels
-                          value={form.labels.filter((label) => !isSagaContributionLabel(label))}
-                          onChange={(newLabels) => {
-                            setForm((f) => ({
-                              ...f,
-                              labels: newLabels.filter((label) => !isSagaContributionLabel(label)),
-                            }));
-                          }}
-                          availableLabels={(taskOptions?.labels || []).filter(
-                            (label) => !isSagaContributionLabel(label)
-                          )}
-                          allowCustom={false}
-                          placeholder="Nhãn Jira thông thường (không gồm saga:*)"
-                        />
                       </div>
-                    ) : (
-                      <LabelsMultiSelect
-                        id="issue-labels"
-                        disabled={!canEdit}
-                        value={form.labels}
-                        onChange={(newLabels) => {
-                          const regularLabels = newLabels.filter(
-                            (label) => !label.toLowerCase().startsWith("saga:")
-                          );
-                          const sagaLabels = newLabels.filter((label) =>
-                            label.toLowerCase().startsWith("saga:")
-                          );
-                          setForm((f) => ({
-                            ...f,
-                            labels: [...regularLabels, ...sagaLabels.slice(-1)],
-                          }));
-                        }}
-                        availableLabels={taskOptions?.labels || [...DEFAULT_SAGA_LABELS]}
-                        allowCustom={false}
-                        placeholder="Chọn một nhãn SAGA..."
-                      />
                     )}
                   </div>
                 </div>

@@ -5,6 +5,8 @@ export type CanonicalNodeType =
   | "SPRINT"
   | "TASK"
   | "COMMIT"
+  | "FILE"
+  | "WEB_LINK"
   | "CRITERION"
   | "IDENTITY";
 
@@ -83,6 +85,7 @@ export interface CytoscapeGraphResponse {
   nodes: Array<{ data: CytoscapeNodeData }>;
   edges: Array<{ data: CytoscapeEdgeData }>;
   meta?: GraphMeta;
+  etag?: string;
 }
 
 export interface GraphNode {
@@ -104,6 +107,8 @@ export interface GraphEdge {
   isAnomaly?: boolean;
 }
 
+export type GraphEvidenceType = "COMMIT" | "FILE" | "WEB_LINK" | "ALL";
+
 export type GraphType =
   | "OVERVIEW"
   | "CONTRIBUTION"
@@ -121,6 +126,8 @@ export interface GraphSubgraphFilterParams {
   cursor?: string | null;
   continuationToken?: string | null;
   includeCommits?: boolean | null;
+  includeEvidence?: boolean | null;
+  evidenceTypes?: readonly GraphEvidenceType[] | GraphEvidenceType[] | string | null;
   usedCriteriaOnly?: boolean | null;
 }
 

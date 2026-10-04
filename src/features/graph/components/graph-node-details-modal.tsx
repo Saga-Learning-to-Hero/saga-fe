@@ -5,6 +5,8 @@ import {
   UserIcon,
   CheckSquareIcon,
   GitCommitIcon,
+  FileIcon,
+  LinkIcon,
   AlertTriangleIcon,
   LayersIcon,
   FolderGit2Icon,
@@ -46,6 +48,8 @@ const TYPE_CONFIG: Record<
   SPRINT: { label: "Sprint", icon: CalendarIcon, bgClass: "bg-teal-600" },
   TASK: { label: "Task Jira", icon: CheckSquareIcon, bgClass: "bg-emerald-600" },
   COMMIT: { label: "Git Commit", icon: GitCommitIcon, bgClass: "bg-purple-600" },
+  FILE: { label: "Tệp", icon: FileIcon, bgClass: "bg-purple-500" },
+  WEB_LINK: { label: "Liên kết", icon: LinkIcon, bgClass: "bg-violet-700" },
   CRITERION: { label: "Tiêu chí", icon: ShieldCheckIcon, bgClass: "bg-amber-600" },
   IDENTITY: { label: "Danh tính Git", icon: FingerprintIcon, bgClass: "bg-slate-600" },
 };
@@ -182,8 +186,25 @@ export function GraphNodeDetailsModal({
 
           {!isStudent && nodeData.subLabel && (
             <div className="p-3 rounded-xl bg-muted/30 border border-border/50 text-xs text-muted-foreground">
-              <span className="font-semibold text-foreground block mb-0.5">Mô tả / Chi tiết:</span>
-              <p className="font-mono text-foreground break-all">{nodeData.subLabel}</p>
+              <span className="font-semibold text-foreground block mb-0.5">
+                {nodeData.type === "FILE"
+                  ? "Tên tệp / loại nội dung:"
+                  : nodeData.type === "WEB_LINK"
+                    ? "Đường dẫn:"
+                    : "Mô tả / Chi tiết:"}
+              </span>
+              {nodeData.type === "WEB_LINK" && /^https?:\/\//i.test(nodeData.subLabel) ? (
+                <a
+                  href={nodeData.subLabel}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="font-mono text-primary break-all underline"
+                >
+                  {nodeData.subLabel}
+                </a>
+              ) : (
+                <p className="font-mono text-foreground break-all">{nodeData.subLabel}</p>
+              )}
             </div>
           )}
 

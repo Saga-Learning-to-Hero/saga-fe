@@ -382,4 +382,48 @@ describe("GraphNodeDetailsModal", () => {
       expect(resolveGitCommitId("abc")).toBe("abc");
     }
   );
+
+  fptTest(
+    {
+      id: "UTCID13",
+      type: "N",
+      executedDate: "04/10/2026",
+      description: "Node FILE va WEB_LINK hien ten va duong dan subLabel",
+    },
+    () => {
+      const { unmount } = render(
+        <GraphNodeDetailsModal
+          nodeData={{
+            id: "file:1",
+            type: "FILE",
+            label: "bao-cao.pdf",
+            subLabel: "application/pdf",
+          }}
+          onClose={onClose}
+        />
+      );
+      expect(screen.getByText("Tệp")).toBeInTheDocument();
+      expect(screen.getByText("bao-cao.pdf")).toBeInTheDocument();
+      expect(screen.getByText("application/pdf")).toBeInTheDocument();
+      unmount();
+
+      render(
+        <GraphNodeDetailsModal
+          nodeData={{
+            id: "weblink:1",
+            type: "WEB_LINK",
+            label: "Tai lieu thiet ke",
+            subLabel: "https://example.com/design",
+          }}
+          onClose={onClose}
+        />
+      );
+      expect(screen.getByText("Liên kết")).toBeInTheDocument();
+      expect(screen.getByText("Tai lieu thiet ke")).toBeInTheDocument();
+      expect(screen.getByRole("link", { name: "https://example.com/design" })).toHaveAttribute(
+        "href",
+        "https://example.com/design"
+      );
+    }
+  );
 });

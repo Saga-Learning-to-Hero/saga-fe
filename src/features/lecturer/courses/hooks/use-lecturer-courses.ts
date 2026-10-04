@@ -9,6 +9,11 @@ import { LecturerTeamService } from "@/features/lecturer/teams/api/lecturer-team
 import { LecturerWeightsService } from "@/features/lecturer/contribution/api/lecturer-weights-service";
 import { CONTRIBUTION_QUERY_KEYS } from "@/features/lecturer/contribution/hooks/use-lecturer-contribution";
 import { lecturerCoursesPath } from "../lib/course-routes";
+import { dashboardSelectionKey } from "../lib/dashboard-selection";
+import {
+  DEFAULT_DASHBOARD_SELECTION,
+  type LecturerDashboardSelection,
+} from "../types/lecturer-course-dashboard";
 
 export const LECTURER_COURSE_QUERY_KEYS = {
   lecturerCourses: ["lecturerCourses"] as const,
@@ -18,6 +23,10 @@ export const LECTURER_COURSE_QUERY_KEYS = {
   lecturerRoster: (courseId: string) => ["lecturerRoster", courseId] as const,
   lecturerCourseProgress: (courseId: string) => ["lecturerCourseProgress", courseId] as const,
   lecturerDashboard: (courseId: string) => ["lecturerDashboard", courseId] as const,
+  lecturerDashboardView: (
+    courseId: string,
+    selection: LecturerDashboardSelection = DEFAULT_DASHBOARD_SELECTION,
+  ) => ["lecturerDashboard", courseId, dashboardSelectionKey(selection)] as const,
 };
 
 export function prefetchLecturerCourses(queryClient: QueryClient) {
@@ -147,11 +156,16 @@ export function useLecturerCourseProgress(courseId: string, options?: { enabled?
   });
 }
 
-export function useLecturerCourseDashboard(courseId: string, options?: { enabled?: boolean }) {
+export function useLecturerCourseDashboard(
+  courseId: string,
+  selection: LecturerDashboardSelection = DEFAULT_DASHBOARD_SELECTION,
+  options?: { enabled?: boolean },
+) {
   return useQuery({
-    queryKey: LECTURER_COURSE_QUERY_KEYS.lecturerDashboard(courseId),
-    queryFn: () => LecturerCourseService.getCourseDashboard(courseId),
+    queryKey: LECTURER_COURSE_QUERY_KEYS.lecturerDashboardView(courseId, selection),
+    queryFn: () => LecturerCourseService.getCourseDashboard(courseId, selection),
     enabled: (options?.enabled ?? true) && Boolean(courseId && courseId.trim()),
+    placeholderData: keepPreviousData,
     staleTime: 1000 * 30,
     refetchOnWindowFocus: true,
   });

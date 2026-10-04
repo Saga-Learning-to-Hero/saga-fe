@@ -92,18 +92,6 @@ export function sortDashboardTeamsByRisk(
   });
 }
 
-export function filterDashboardTeamsByScope(
-  teams: LecturerDashboardTeam[],
-  teamId: string,
-  sprintId: string
-): LecturerDashboardTeam[] {
-  return teams.filter((team) => {
-    const matchesTeam = teamId === "all" || team.teamId === teamId;
-    const matchesSprint = sprintId === "all" || team.currentSprint?.sprintId === sprintId;
-    return matchesTeam && matchesSprint;
-  });
-}
-
 export function sortDashboardRiskReasons(
   reasons: LecturerDashboardRiskReason[] | undefined
 ): LecturerDashboardRiskReason[] {
