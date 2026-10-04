@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useRef } from "react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ProjectProjectionService } from "../api/project-projection-service";
 import { JIRA_SPRINT_QUERY_KEYS } from "@/features/student/sprint-progress/hooks/use-sprint-data";
 import { ProjectTaskService } from "@/features/student/sprint-progress/api/project-task-service";
@@ -21,6 +21,7 @@ import type {
   ProjectSyncStatusItem,
   ProjectTaskCommitLinkQuery,
   GetProjectCommitsParams,
+  ProjectCommitPageResponse,
 } from "../types/student-project";
 
 export const PROJECT_PROJECTION_QUERY_KEYS = {
@@ -183,6 +184,13 @@ export function useProjectCommits(
     queryFn: () => ProjectProjectionService.getProjectCommits(projectId!, params),
     enabled: enabled && Boolean(projectId && projectId.trim()),
     staleTime: 1000 * 30,
+    placeholderData: keepPreviousData,
+    // Badge stays PENDING only while a review is actually running. Stop once every row is settled.
+    refetchInterval: (query) => {
+      const page = query.state.data as ProjectCommitPageResponse | undefined;
+      const pending = page?.items?.some((item) => item.aiReview?.status === "PENDING") ?? false;
+      return pending ? 4000 : false;
+    },
   });
 }
 
