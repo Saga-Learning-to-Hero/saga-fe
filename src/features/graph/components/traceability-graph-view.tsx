@@ -39,6 +39,7 @@ import { PipelineWorkspace } from "./pipeline-workspace";
 import { usePipelineGraphData } from "../hooks/use-pipeline-graph-data";
 import { useAccumulatedProjectGraph, useProjectGraph } from "../hooks/use-project-graph";
 import { describeGraphLoadError } from "../lib/graph-error";
+import { resolveGraphFileDownloadContext } from "../lib/graph-file-download";
 import { buildGraphScopeParams, retainFileEvidenceGraph, type GraphScopeMode } from "../lib/graph-scope";
 import {
   mapStudentNodesToMemberOptions,
@@ -885,6 +886,7 @@ export function TraceabilityGraphView() {
 
       <GraphNodeDetailsModal
         nodeData={selectedNode}
+        fileDownloadContext={resolveGraphFileDownloadContext(selectedNode, displayGraphData.edges)}
         onClose={() => setSelectedNode(null)}
         onFocusNode={(nodeId, nodeLabel) => {
           setFocusedNodeId(nodeId);
