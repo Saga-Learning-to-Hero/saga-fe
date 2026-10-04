@@ -1656,10 +1656,7 @@ export function IssueDetailsModal({
                     <PaperclipIcon className="w-3.5 h-3.5" />
                     Tài liệu
                   </TabsTrigger>
-                  <TabsTrigger value="contribution" className="shrink-0 text-xs font-semibold">
-                    <ShieldCheckIcon className="w-3.5 h-3.5" />
-                    Đóng góp
-                  </TabsTrigger>
+
                   <TabsTrigger value="ai" className="shrink-0 text-xs font-semibold text-primary">
                     <SparklesIcon className="w-3.5 h-3.5" />
                     Trí tuệ nhân tạo (AI)
@@ -1701,16 +1698,7 @@ export function IssueDetailsModal({
                   />
                 </TabsContent>
 
-                <TabsContent value="contribution">
-                  <TaskEvidencePanel
-                    taskId={issue.id}
-                    section="contribution"
-                    isOwnerOrLeader={canEdit}
-                    externalCommitShas={selectedCommitShas}
-                    onRequestCommitSelection={() => setActiveEvidenceTab("timeline")}
-                    onConfirmationSuccess={() => setSelectedCommitShas("")}
-                  />
-                </TabsContent>
+
 
                 <TabsContent value="ai">
                   <TaskAiIntelligenceSection

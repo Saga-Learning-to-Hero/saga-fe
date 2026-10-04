@@ -354,8 +354,10 @@ export interface ProjectProgressMemberSummary {
 
 export interface ProjectProgressSyncSummary {
   jiraStatus: string | null;
+  jiraSyncStatus: string | null;
   jiraLastSyncedAt: string | null;
   githubStatus: string | null;
+  githubSyncStatus: string | null;
   githubLastSyncedAt: string | null;
 }
 

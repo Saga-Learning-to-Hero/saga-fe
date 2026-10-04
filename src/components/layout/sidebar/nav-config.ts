@@ -4,6 +4,7 @@ import {
   lecturerCourseDashboardPath,
   lecturerCourseGradesPath,
   lecturerCourseGraphPath,
+  lecturerCoursePeerReviewsPath,
   lecturerCourseContributionPath,
   lecturerCourseTeamsPath,
   lecturerCourseAiPath,
@@ -127,6 +128,13 @@ export function getLecturerNavItems(courseId: string): NavItem[] {
       href: lecturerCourseGraphPath(courseId),
       icon: "GitGraph",
       match: "exact",
+    },
+    {
+      id: "course-peer-reviews",
+      title: "Đánh giá chéo",
+      href: lecturerCoursePeerReviewsPath(courseId),
+      icon: "UserCheck",
+      match: "prefix",
     },
     {
       id: "course-grades",
