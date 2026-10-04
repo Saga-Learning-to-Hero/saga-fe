@@ -61,6 +61,9 @@ import { getApiErrorCode } from "@/lib/api-error";
 import { cn } from "@/lib/utils";
 import { OverrideContributionModal } from "./override-contribution-modal";
 
+/** Lecturers do not adjust a member's share by hand for now; the computed share is shown as is. */
+const SHOW_CONTRIBUTION_OVERRIDE = false;
+
 interface ContributionEvaluationPageProps {
   courseId: string;
 }
@@ -657,17 +660,19 @@ function MemberRows({
         </TableCell>
         <TableCell className="text-right">
           <div className="flex items-center justify-end gap-1">
-            <Button
-              type="button"
-              size="sm"
-              variant="outline"
-              className="h-8 gap-1 rounded-lg border-border/80 bg-card px-2 text-xs font-semibold hover:bg-primary/10 hover:text-primary hover:border-primary/30 cursor-pointer"
-              onClick={onOverride}
-              title="Điều chỉnh tỷ lệ đóng góp của thành viên"
-            >
-              <SlidersHorizontalIcon className="size-3.5 text-primary" />
-              <span className="hidden sm:inline">Điều chỉnh</span>
-            </Button>
+            {SHOW_CONTRIBUTION_OVERRIDE && (
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                className="h-8 gap-1 rounded-lg border-border/80 bg-card px-2 text-xs font-semibold hover:bg-primary/10 hover:text-primary hover:border-primary/30 cursor-pointer"
+                onClick={onOverride}
+                title="Điều chỉnh tỷ lệ đóng góp của thành viên"
+              >
+                <SlidersHorizontalIcon className="size-3.5 text-primary" />
+                <span className="hidden sm:inline">Điều chỉnh</span>
+              </Button>
+            )}
             <Link
               href={`${lecturerCourseGraphPath(courseId)}?teamId=${teamId}&studentId=${member.studentProfileId}`}
               prefetch={true}
