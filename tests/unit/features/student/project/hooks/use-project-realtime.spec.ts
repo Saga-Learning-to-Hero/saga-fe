@@ -3,7 +3,7 @@ import { renderHook, act } from "@testing-library/react";
 import React from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { fptTest } from "@/testing/fpt-test-helper";
-import { useProjectRealtime } from "@/features/student/project/hooks/use-project-realtime";
+import { useProjectRealtime, REALTIME_INVALIDATE_BATCH_MS } from "@/features/student/project/hooks/use-project-realtime";
 import { JIRA_SPRINT_QUERY_KEYS } from "@/features/student/sprint-progress/hooks/use-sprint-data";
 import { PROJECT_PROJECTION_QUERY_KEYS } from "@/features/student/project/hooks/useProjectSync";
 import { PROJECT_INTEGRATIONS_QUERY_KEYS } from "@/features/student/project/hooks/useProjectIntegrations";
@@ -70,6 +70,7 @@ describe("useProjectRealtime Hook", () => {
   let originalEventSource: typeof globalThis.EventSource;
 
   beforeEach(() => {
+    vi.useFakeTimers();
     queryClient = new QueryClient({
       defaultOptions: {
         queries: {
@@ -85,7 +86,16 @@ describe("useProjectRealtime Hook", () => {
   afterEach(() => {
     (globalThis as unknown as { EventSource: unknown }).EventSource = originalEventSource;
     vi.clearAllMocks();
+    vi.useRealTimers();
   });
+
+  /** Lets the batching window pass, then lists the filters every invalidation was made with. */
+  const invalidated = (spy: { mock: { calls: unknown[][] } }) => {
+    act(() => {
+      vi.advanceTimersByTime(REALTIME_INVALIDATE_BATCH_MS);
+    });
+    return spy.mock.calls.map((call) => call[0]);
+  };
 
   const createWrapper = () => {
     return function Wrapper({ children }: { children: React.ReactNode }) {
@@ -154,28 +164,25 @@ describe("useProjectRealtime Hook", () => {
       expect(onEventMock).toHaveBeenCalledWith(
         expect.objectContaining({ type: "READY", projectId: "project-456" })
       );
-      expect(invalidateSpy).not.toHaveBeenCalledWith({ queryKey: ["projects", "project-456"] });
-      expect(invalidateSpy).not.toHaveBeenCalledWith({
-        queryKey: JIRA_SPRINT_QUERY_KEYS.tasks("project-456"),
-      });
+      expect(invalidateSpy).not.toHaveBeenCalled();
 
       act(() => {
         vi.advanceTimersByTime(1000);
       });
 
-      expect(invalidateSpy).toHaveBeenCalledWith({
+      expect(invalidated(invalidateSpy)).toContainEqual({
         queryKey: JIRA_SPRINT_QUERY_KEYS.tasks("project-456"),
       });
-      expect(invalidateSpy).toHaveBeenCalledWith({
+      expect(invalidated(invalidateSpy)).toContainEqual({
         queryKey: PROJECT_PROJECTION_QUERY_KEYS.commits("project-456"),
       });
-      expect(invalidateSpy).toHaveBeenCalledWith({
+      expect(invalidated(invalidateSpy)).toContainEqual({
         queryKey: PROJECT_PROJECTION_QUERY_KEYS.syncStatus("project-456"),
       });
-      expect(invalidateSpy).not.toHaveBeenCalledWith({
+      expect(invalidated(invalidateSpy)).not.toContainEqual({
         queryKey: PROJECT_PROJECTION_QUERY_KEYS.progress("project-456"),
       });
-      expect(invalidateSpy).not.toHaveBeenCalledWith({
+      expect(invalidated(invalidateSpy)).not.toContainEqual({
         queryKey: PROJECT_INTEGRATIONS_QUERY_KEYS.projectIntegrations("project-456"),
         exact: true,
       });
@@ -206,10 +213,10 @@ describe("useProjectRealtime Hook", () => {
       });
 
       expect(result.current.lastEvent?.type).toBe("TASKS_CHANGED");
-      expect(invalidateSpy).toHaveBeenCalledWith({
+      expect(invalidated(invalidateSpy)).toContainEqual({
         queryKey: JIRA_SPRINT_QUERY_KEYS.tasks("project-789"),
       });
-      expect(invalidateSpy).not.toHaveBeenCalledWith({
+      expect(invalidated(invalidateSpy)).not.toContainEqual({
         queryKey: PROJECT_PROJECTION_QUERY_KEYS.progress("project-789"),
       });
       act(() => {
@@ -220,7 +227,7 @@ describe("useProjectRealtime Hook", () => {
       });
 
       expect(result.current.lastEvent?.type).toBe("SPRINTS_CHANGED");
-      expect(invalidateSpy).not.toHaveBeenCalledWith({
+      expect(invalidated(invalidateSpy)).not.toContainEqual({
         queryKey: PROJECT_PROJECTION_QUERY_KEYS.progress("project-789"),
       });
     }
@@ -247,10 +254,10 @@ describe("useProjectRealtime Hook", () => {
         });
       });
 
-      expect(invalidateSpy).toHaveBeenCalledWith({
+      expect(invalidated(invalidateSpy)).toContainEqual({
         queryKey: PROJECT_PROJECTION_QUERY_KEYS.commits("project-999"),
       });
-      expect(invalidateSpy).not.toHaveBeenCalledWith({
+      expect(invalidated(invalidateSpy)).not.toContainEqual({
         queryKey: PROJECT_PROJECTION_QUERY_KEYS.progress("project-999"),
       });
 
@@ -261,10 +268,10 @@ describe("useProjectRealtime Hook", () => {
         });
       });
 
-      expect(invalidateSpy).toHaveBeenCalledWith({
+      expect(invalidated(invalidateSpy)).toContainEqual({
         queryKey: PROJECT_PROJECTION_QUERY_KEYS.syncStatus("project-999"),
       });
-      expect(invalidateSpy).not.toHaveBeenCalledWith({
+      expect(invalidated(invalidateSpy)).not.toContainEqual({
         queryKey: PROJECT_PROJECTION_QUERY_KEYS.progress("project-999"),
       });
     }
@@ -291,13 +298,13 @@ describe("useProjectRealtime Hook", () => {
         });
       });
 
-      expect(invalidateSpy).toHaveBeenCalledWith({
+      expect(invalidated(invalidateSpy)).toContainEqual({
         queryKey: JIRA_SPRINT_QUERY_KEYS.tasks("project-111"),
       });
-      expect(invalidateSpy).toHaveBeenCalledWith({
+      expect(invalidated(invalidateSpy)).toContainEqual({
         queryKey: PROJECT_PROJECTION_QUERY_KEYS.commits("project-111"),
       });
-      expect(invalidateSpy).toHaveBeenCalledWith({
+      expect(invalidated(invalidateSpy)).toContainEqual({
         queryKey: [
           ...PROJECT_PROJECTION_QUERY_KEYS.all,
           "task-commit-links",
@@ -313,13 +320,13 @@ describe("useProjectRealtime Hook", () => {
         });
       });
 
-      expect(invalidateSpy).toHaveBeenCalledWith({
+      expect(invalidated(invalidateSpy)).toContainEqual({
         queryKey: TASK_EVIDENCE_QUERY_KEYS.workSessions("task-111"),
       });
-      expect(invalidateSpy).toHaveBeenCalledWith({
+      expect(invalidated(invalidateSpy)).toContainEqual({
         queryKey: TASK_EVIDENCE_QUERY_KEYS.webLinks("task-111"),
       });
-      expect(invalidateSpy).not.toHaveBeenCalledWith({
+      expect(invalidated(invalidateSpy)).not.toContainEqual({
         queryKey: PROJECT_PROJECTION_QUERY_KEYS.progress("project-111"),
       });
     }
@@ -343,7 +350,7 @@ describe("useProjectRealtime Hook", () => {
         es.emitEvent("TASK_LINKS_CHANGED", { type: "TASK_LINKS_CHANGED", projectId: "project-map" });
       });
 
-      expect(invalidateSpy).not.toHaveBeenCalledWith({
+      expect(invalidated(invalidateSpy)).not.toContainEqual({
         queryKey: PROJECT_PROJECTION_QUERY_KEYS.progress("project-map"),
       });
     }
@@ -367,7 +374,7 @@ describe("useProjectRealtime Hook", () => {
         es.emitEvent("SYNC_STATUS_CHANGED", { type: "SYNC_STATUS_CHANGED", projectId: "project-progress" });
       });
 
-      expect(invalidateSpy).toHaveBeenCalledWith({
+      expect(invalidated(invalidateSpy)).toContainEqual({
         queryKey: PROJECT_PROJECTION_QUERY_KEYS.progress("project-progress"),
       });
     }
@@ -396,7 +403,7 @@ describe("useProjectRealtime Hook", () => {
         vi.advanceTimersByTime(1000);
       });
 
-      expect(invalidateSpy).toHaveBeenCalledWith({
+      expect(invalidated(invalidateSpy)).toContainEqual({
         queryKey: PROJECT_INTEGRATIONS_QUERY_KEYS.projectIntegrations("project-int"),
         exact: true,
       });
@@ -475,7 +482,7 @@ describe("useProjectRealtime Hook", () => {
         }
       });
 
-      expect(invalidateSpy).toHaveBeenCalledWith({
+      expect(invalidated(invalidateSpy)).toContainEqual({
         queryKey: JIRA_SPRINT_QUERY_KEYS.tasks("project-fallback"),
       });
     }
@@ -510,8 +517,8 @@ describe("useProjectRealtime Hook", () => {
         vi.advanceTimersByTime(1000);
       });
 
-      expect(invalidateSpy).not.toHaveBeenCalledWith({ queryKey: ["projects", "project-recon"] });
-      expect(invalidateSpy).toHaveBeenCalledWith({
+      expect(invalidated(invalidateSpy)).not.toContainEqual({ queryKey: ["projects", "project-recon"] });
+      expect(invalidated(invalidateSpy)).toContainEqual({
         queryKey: JIRA_SPRINT_QUERY_KEYS.tasks("project-recon"),
       });
       vi.useRealTimers();
@@ -558,7 +565,7 @@ describe("useProjectRealtime Hook", () => {
         es.emitEvent("TASKS_CHANGED", { type: "TASKS_CHANGED", projectId: "project-graph-test" });
       });
 
-      expect(invalidateSpy).not.toHaveBeenCalledWith({
+      expect(invalidated(invalidateSpy)).not.toContainEqual({
         queryKey: ["project-graph", "project-graph-test", "OVERVIEW"],
       });
 
@@ -566,16 +573,16 @@ describe("useProjectRealtime Hook", () => {
         vi.advanceTimersByTime(400);
       });
 
-      expect(invalidateSpy).not.toHaveBeenCalledWith({
+      expect(invalidated(invalidateSpy)).not.toContainEqual({
         queryKey: ["project-graph", "project-graph-test", "OVERVIEW"],
       });
-      expect(invalidateSpy).not.toHaveBeenCalledWith({
+      expect(invalidated(invalidateSpy)).not.toContainEqual({
         queryKey: ["project-graph", "project-graph-test", "CONTRIBUTION"],
       });
-      expect(invalidateSpy).not.toHaveBeenCalledWith({
+      expect(invalidated(invalidateSpy)).not.toContainEqual({
         queryKey: ["project-graph", "project-graph-test", "ACTIVITY"],
       });
-      expect(invalidateSpy).not.toHaveBeenCalledWith({
+      expect(invalidated(invalidateSpy)).not.toContainEqual({
         queryKey: ["project-graph", "project-graph-test"],
       });
       vi.useRealTimers();
@@ -605,7 +612,7 @@ describe("useProjectRealtime Hook", () => {
         vi.advanceTimersByTime(1400);
       });
 
-      expect(invalidateSpy).not.toHaveBeenCalledWith({
+      expect(invalidated(invalidateSpy)).not.toContainEqual({
         queryKey: ["project-graph", "project-graph-ready"],
       });
       vi.useRealTimers();
@@ -640,7 +647,7 @@ describe("useProjectRealtime Hook", () => {
         vi.advanceTimersByTime(400);
       });
 
-      expect(invalidateSpy).toHaveBeenCalledWith({
+      expect(invalidated(invalidateSpy)).toContainEqual({
         queryKey: ["project-graph", "project-graph-changed"],
       });
       vi.useRealTimers();
@@ -668,10 +675,10 @@ describe("useProjectRealtime Hook", () => {
         });
       });
 
-      expect(invalidateSpy).toHaveBeenCalledWith({
+      expect(invalidated(invalidateSpy)).toContainEqual({
         queryKey: [...JIRA_SPRINT_QUERY_KEYS.all, "parent-task-options", "project-parent"],
       });
-      expect(invalidateSpy).toHaveBeenCalledWith({
+      expect(invalidated(invalidateSpy)).toContainEqual({
         queryKey: [...JIRA_SPRINT_QUERY_KEYS.all, "task", "project-parent"],
       });
     }
@@ -698,7 +705,7 @@ describe("useProjectRealtime Hook", () => {
         });
       });
 
-      expect(invalidateSpy).toHaveBeenCalledWith({
+      expect(invalidated(invalidateSpy)).toContainEqual({
         queryKey: ["contributionEvaluation"],
       });
       expect(es.listeners["CONTRIBUTION_CHANGED"]).toBeUndefined();
@@ -726,9 +733,43 @@ describe("useProjectRealtime Hook", () => {
         });
       });
 
-      expect(invalidateSpy).toHaveBeenCalledWith({
+      expect(invalidated(invalidateSpy)).toContainEqual({
         queryKey: JIRA_SPRINT_QUERY_KEYS.tasks("project-sync-tasks"),
       });
+    }
+  );
+  fptTest(
+    {
+      id: "UTCID20",
+      type: "N",
+      executedDate: "05/10/2026",
+      description: "Mot dot su kien dong bo chi tai lai /tasks 1 lan, khong huy request dang chay",
+    },
+    () => {
+      const invalidateSpy = vi.spyOn(queryClient, "invalidateQueries");
+      const wrapper = createWrapper();
+      renderHook(() => useProjectRealtime("project-burst"), { wrapper });
+      const es = MockEventSource.instances[0];
+
+      act(() => {
+        es.emitOpen();
+        for (let i = 0; i < 3; i++) {
+          es.emitEvent("SYNC_STATUS_CHANGED", { type: "SYNC_STATUS_CHANGED", projectId: "project-burst" });
+          es.emitEvent("TASKS_CHANGED", { type: "TASKS_CHANGED", projectId: "project-burst" });
+          es.emitEvent("SPRINTS_CHANGED", { type: "SPRINTS_CHANGED", projectId: "project-burst" });
+          es.emitEvent("TASK_LINKS_CHANGED", { type: "TASK_LINKS_CHANGED", projectId: "project-burst" });
+        }
+      });
+
+      expect(invalidateSpy).not.toHaveBeenCalled();
+      act(() => {
+        vi.advanceTimersByTime(REALTIME_INVALIDATE_BATCH_MS);
+      });
+      const taskReloads = invalidateSpy.mock.calls.filter(
+        ([filters]) => JSON.stringify(filters) === JSON.stringify({ queryKey: JIRA_SPRINT_QUERY_KEYS.tasks("project-burst") })
+      );
+      expect(taskReloads).toHaveLength(1);
+      expect(taskReloads[0][1]).toEqual({ cancelRefetch: false });
     }
   );
 });

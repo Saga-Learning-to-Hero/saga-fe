@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef, useCallback } from "react";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQueryClient, type InvalidateQueryFilters } from "@tanstack/react-query";
 import { API_BASE_URL } from "@/lib/axios";
 import { JIRA_SPRINT_QUERY_KEYS } from "@/features/student/sprint-progress/hooks/use-sprint-data";
 import { TASK_EVIDENCE_QUERY_KEYS } from "@/features/student/sprint-progress/hooks/use-task-evidence";
@@ -31,6 +31,12 @@ const REALTIME_EVENT_NAMES: ProjectRealtimeEventType[] = [
 
 const READY_DEBOUNCE_MS = 1000;
 const READY_CATCH_UP_MIN_INTERVAL_MS = 60_000;
+/**
+ * One sync round sends several events back to back (status, tasks, sprints, links for each Jira
+ * source): every list they touch is reloaded once per window, and a reload already in flight is
+ * not cancelled and restarted.
+ */
+export const REALTIME_INVALIDATE_BATCH_MS = 500;
 
 export function useProjectRealtime(
   projectId?: string | null,
@@ -50,6 +56,8 @@ export function useProjectRealtime(
   /** SSE reconnects resend READY: catch up on what was missed, but at most once a minute so a flaky
    * connection does not reload every list again and again. */
   const lastReadyCatchUpRef = useRef(0);
+  const pendingInvalidationsRef = useRef<Map<string, InvalidateQueryFilters>>(new Map());
+  const invalidateTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     optionsRef.current = options;
@@ -57,6 +65,28 @@ export function useProjectRealtime(
 
   const isEnabled = (options?.enabled ?? true) && Boolean(projectId && projectId.trim());
   const cleanProjectId = projectId?.trim() || "";
+
+  const flushInvalidations = useCallback(() => {
+    if (invalidateTimerRef.current) {
+      clearTimeout(invalidateTimerRef.current);
+      invalidateTimerRef.current = null;
+    }
+    const pending = [...pendingInvalidationsRef.current.values()];
+    pendingInvalidationsRef.current.clear();
+    pending.forEach((filters) => {
+      void queryClient.invalidateQueries(filters, { cancelRefetch: false });
+    });
+  }, [queryClient]);
+
+  const queueInvalidation = useCallback(
+    (filters: InvalidateQueryFilters) => {
+      pendingInvalidationsRef.current.set(JSON.stringify(filters), filters);
+      if (!invalidateTimerRef.current) {
+        invalidateTimerRef.current = setTimeout(flushInvalidations, REALTIME_INVALIDATE_BATCH_MS);
+      }
+    },
+    [flushInvalidations]
+  );
 
   const scheduleGraphInvalidation = useCallback(
     (pid: string, types: (GraphType | "ALL")[]) => {
@@ -95,53 +125,53 @@ export function useProjectRealtime(
       const includeProgress = optionsRef.current?.includeProgress === true;
       const includeIntegrations = optionsRef.current?.includeIntegrations === true;
       const invalidateTasks = () => {
-        void queryClient.invalidateQueries({ queryKey: JIRA_SPRINT_QUERY_KEYS.tasks(pid) });
-        void queryClient.invalidateQueries({ queryKey: PROJECT_PROJECTION_QUERY_KEYS.tasks(pid) });
+        queueInvalidation({ queryKey: JIRA_SPRINT_QUERY_KEYS.tasks(pid) });
+        queueInvalidation({ queryKey: PROJECT_PROJECTION_QUERY_KEYS.tasks(pid) });
       };
       const invalidateSprints = () => {
-        void queryClient.invalidateQueries({ queryKey: JIRA_SPRINT_QUERY_KEYS.sprints(pid) });
+        queueInvalidation({ queryKey: JIRA_SPRINT_QUERY_KEYS.sprints(pid) });
       };
       const invalidateCommits = () => {
-        void queryClient.invalidateQueries({ queryKey: PROJECT_PROJECTION_QUERY_KEYS.commits(pid) });
+        queueInvalidation({ queryKey: PROJECT_PROJECTION_QUERY_KEYS.commits(pid) });
       };
       const invalidateParentOptions = () => {
-        void queryClient.invalidateQueries({
+        queueInvalidation({
           queryKey: [...JIRA_SPRINT_QUERY_KEYS.all, "parent-task-options", pid],
         });
       };
       const invalidateTaskDetails = () => {
-        void queryClient.invalidateQueries({ queryKey: [...JIRA_SPRINT_QUERY_KEYS.all, "task", pid] });
+        queueInvalidation({ queryKey: [...JIRA_SPRINT_QUERY_KEYS.all, "task", pid] });
       };
       const invalidateTaskCommitLinks = () => {
-        void queryClient.invalidateQueries({
+        queueInvalidation({
           queryKey: [...PROJECT_PROJECTION_QUERY_KEYS.all, "task-commits", pid],
         });
-        void queryClient.invalidateQueries({
+        queueInvalidation({
           queryKey: [...PROJECT_PROJECTION_QUERY_KEYS.all, "task-commit-links", pid],
         });
       };
       const invalidateSyncStatus = () => {
-        void queryClient.invalidateQueries({ queryKey: PROJECT_PROJECTION_QUERY_KEYS.syncStatus(pid) });
+        queueInvalidation({ queryKey: PROJECT_PROJECTION_QUERY_KEYS.syncStatus(pid) });
       };
       const invalidateProgress = () => {
         if (!includeProgress) return;
-        void queryClient.invalidateQueries({ queryKey: PROJECT_PROJECTION_QUERY_KEYS.progress(pid) });
+        queueInvalidation({ queryKey: PROJECT_PROJECTION_QUERY_KEYS.progress(pid) });
       };
       const invalidateMemberProgress = () => {
         if (!includeProgress) return;
-        void queryClient.invalidateQueries({
+        queueInvalidation({
           queryKey: [...PROJECT_PROJECTION_QUERY_KEYS.all, "member-progress", pid],
         });
       };
       const invalidateIntegrations = () => {
         if (!includeIntegrations) return;
-        void queryClient.invalidateQueries({
+        queueInvalidation({
           queryKey: PROJECT_INTEGRATIONS_QUERY_KEYS.projectIntegrations(pid),
           exact: true,
         });
       };
       const invalidateContributionEvaluation = () => {
-        void queryClient.invalidateQueries({
+        queueInvalidation({
           queryKey: CONTRIBUTION_QUERY_KEYS.evaluations,
         });
       };
@@ -159,6 +189,7 @@ export function useProjectRealtime(
           invalidateIntegrations();
           invalidateProgress();
           invalidateMemberProgress();
+          flushInvalidations();
         }, READY_DEBOUNCE_MS);
       };
 
@@ -205,11 +236,11 @@ export function useProjectRealtime(
           invalidateMemberProgress();
           invalidateContributionEvaluation();
           if (entityId) {
-            void queryClient.invalidateQueries({ queryKey: TASK_EVIDENCE_QUERY_KEYS.workSessions(entityId) });
-            void queryClient.invalidateQueries({ queryKey: TASK_EVIDENCE_QUERY_KEYS.webLinks(entityId) });
-            void queryClient.invalidateQueries({ queryKey: TASK_EVIDENCE_QUERY_KEYS.files(entityId) });
+            queueInvalidation({ queryKey: TASK_EVIDENCE_QUERY_KEYS.workSessions(entityId) });
+            queueInvalidation({ queryKey: TASK_EVIDENCE_QUERY_KEYS.webLinks(entityId) });
+            queueInvalidation({ queryKey: TASK_EVIDENCE_QUERY_KEYS.files(entityId) });
           } else {
-            void queryClient.invalidateQueries({ queryKey: ["tasks"] });
+            queueInvalidation({ queryKey: ["tasks"] });
           }
           break;
         case "SYNC_STATUS_CHANGED":
@@ -221,7 +252,7 @@ export function useProjectRealtime(
           break;
       }
     },
-    [queryClient, scheduleGraphInvalidation]
+    [queueInvalidation, flushInvalidations, scheduleGraphInvalidation]
   );
 
   useEffect(() => {
@@ -231,6 +262,9 @@ export function useProjectRealtime(
       }
       if (readyDebounceTimerRef.current) {
         clearTimeout(readyDebounceTimerRef.current);
+      }
+      if (invalidateTimerRef.current) {
+        clearTimeout(invalidateTimerRef.current);
       }
     };
   }, []);

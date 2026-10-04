@@ -47,10 +47,10 @@ describe("Commit AI review badge", () => {
     () => {
       render(
         <CommitReviewBadge
-          review={{ status: "NO_KEY", label: "Chưa có key AI", reasons: [{ code: "NO_TASK", label: "Chưa gắn task" }], taskLinked: false }}
+          review={{ status: "NO_KEY", label: "Chưa có key", reasons: [{ code: "NO_TASK", label: "Chưa gắn task" }], taskLinked: false }}
         />
       );
-      expect(screen.getByText("AI · Chưa có key AI")).toBeInTheDocument();
+      expect(screen.getByText("AI · Chưa có key")).toBeInTheDocument();
       expect(screen.getByText("Chưa gắn task")).toBeInTheDocument();
     }
   );
