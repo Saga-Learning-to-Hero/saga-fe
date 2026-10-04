@@ -30,6 +30,10 @@ import type {
   AiProviderBinding,
 } from "../../types";
 
+/** The secondary (cross-check) model is not offered for now: its server switch is off and nothing shows its results yet.
+ * The saved course setting is kept untouched. */
+const SHOW_SECONDARY_BRAIN = false;
+
 interface CourseAiSettingsCardProps {
   courseId: string;
 }
@@ -504,6 +508,7 @@ function CourseAiMultiProviderForm({
           )}
         </div>
 
+        {SHOW_SECONDARY_BRAIN ? (
         <div className="space-y-4 pt-2">
           <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border/40 pb-2">
             <div className="flex items-center gap-2">
@@ -570,12 +575,13 @@ function CourseAiMultiProviderForm({
             </div>
           )}
         </div>
+        ) : null}
 
         <div className="space-y-4 pt-2">
           <div className="flex items-center gap-2 border-b border-border/40 pb-2">
             <LayersIcon className="w-4 h-4 text-emerald-500 shrink-0" />
             <h4 className="text-sm font-semibold text-foreground">
-              4. Chính sách Tự động hóa & Khóa nền tảng
+              {SHOW_SECONDARY_BRAIN ? "4" : "3"}. Chính sách Tự động hóa & Khóa nền tảng
             </h4>
           </div>
 
