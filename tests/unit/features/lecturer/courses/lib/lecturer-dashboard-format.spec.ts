@@ -11,7 +11,6 @@ import {
   buildTaskStatusTotalsFromTeams,
   canOpenDashboardProject,
   filterAttentionTeams,
-  filterDashboardTeamsByScope,
   formatNullablePercent,
   formatRiskPolicyLegend,
   formatRiskReason,
@@ -43,6 +42,9 @@ function team(partial: Partial<LecturerDashboardTeam>): LecturerDashboardTeam {
     previousSprintComparison: null,
     risk: { level: "HEALTHY", reasons: [] },
     reminder: null,
+    sprintSelection: null,
+    jiraSources: [],
+    sprintOptions: [],
     ...partial,
   };
 }
@@ -308,6 +310,7 @@ describe("lecturer-dashboard-format", () => {
             startDate: "2026-09-14",
             endDate: "2026-09-20",
             elapsedPercent: 50,
+            source: null,
           },
           activity: {
             lastActivityAt: null,
@@ -328,6 +331,7 @@ describe("lecturer-dashboard-format", () => {
             startDate: "2026-09-14",
             endDate: "2026-09-20",
             elapsedPercent: 50,
+            source: null,
           },
           activity: {
             lastActivityAt: null,
@@ -456,42 +460,4 @@ describe("lecturer-dashboard-format", () => {
     }
   );
 
-  fptTest(
-    {
-      id: "UTCID18",
-      type: "N",
-      executedDate: "22/09/2026",
-      description: "Filter rieng cua chart loc dung theo team va sprint",
-    },
-    () => {
-      const withSprint = (teamId: string, sprintId: string) => team({
-        teamId,
-        currentSprint: {
-          sprintId,
-          sprintName: sprintId,
-          state: "ACTIVE",
-          startDate: null,
-          endDate: null,
-          elapsedPercent: null,
-        },
-      });
-      const teams = [withSprint("team-1", "sprint-1"), withSprint("team-2", "sprint-2")];
-
-      expect(filterDashboardTeamsByScope(teams, "team-2", "all").map((item) => item.teamId)).toEqual(["team-2"]);
-      expect(filterDashboardTeamsByScope(teams, "all", "sprint-1").map((item) => item.teamId)).toEqual(["team-1"]);
-      expect(filterDashboardTeamsByScope(teams, "team-1", "sprint-1")).toHaveLength(1);
-    }
-  );
-
-  fptTest(
-    {
-      id: "UTCID19",
-      type: "B",
-      executedDate: "22/09/2026",
-      description: "Filter sprint khong ton tai tra danh sach rong thay vi dung nham du lieu chart cu",
-    },
-    () => {
-      expect(filterDashboardTeamsByScope([team({})], "all", "missing-sprint")).toEqual([]);
-    }
-  );
 });

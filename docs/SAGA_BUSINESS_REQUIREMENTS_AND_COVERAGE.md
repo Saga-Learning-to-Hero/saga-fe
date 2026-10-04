@@ -387,7 +387,7 @@ Project Type dùng để phân loại hướng dự án, không điều khiển 
 | LEC-008 | Xem contribution evaluation | ✓ | ✓ | ✓ | `DONE` |
 | LEC-009 | Contribution evaluation read-only | ✓ | ✓ | ✓ | `DONE`; Lecturer xem tỷ lệ canonical, minh chứng và warning; FE không cho ghi đè tỷ lệ cuối |
 | LEC-010 | Lecturer canonical graph | ✓ | ✓ | ✓ | `DONE/VERIFY`; đủ năm mode canonical và unit/component test, còn E2E authorization/latency với dữ liệu lớn |
-| LEC-011 | Lecturer course dashboard CURRENT_SPRINT | ✓ | ✓ | ✓ | `IN_PROGRESS`; Tổng quan lớp dùng một `GET /api/lecturer/courses/{courseId}/dashboard`, render `summary`/`risk`/`taskStatusTotals` đúng contract; toàn bộ chart mặc định dùng Sprint hiện tại mới nhất do API trả về, mỗi chart chỉ có bộ lọc Nhóm độc lập, nhỏ gọn và không làm đổi KPI toàn lớp hoặc chart khác; UI có heatmap, tooltip chi tiết, liên kết trạng thái hover với danh sách nhóm và hàng ưu tiên một cột theo risk/reason; thiếu ngày activity không bị đổi thành 0; FE không tự chấm lại risk, không N+1, không hiện reminder; còn E2E với dữ liệu lớp thật |
+| LEC-011 | Lecturer course dashboard CURRENT_SPRINT | ✓ | ✓ | ✓ | `IN_PROGRESS`; Tổng quan lớp dùng một `GET /api/lecturer/courses/{courseId}/dashboard` cho cả lớp, không N+1; khi không có query, BE chọn sprint đang chạy có nhiều task nhất; thanh Nhóm → Site → Sprint chỉ đổi sprint đại diện của team được chọn (`teamId` + `jiraIntegrationId`, hoặc `teamId` + `sprintId`), team khác giữ sprint mặc định của BE; `sprintSelection` hiển thị `SELECTED`/`DEFAULT` đúng payload; KPI, heatmap, biểu đồ và team card render cùng response; thiếu ngày activity không bị đổi thành 0; FE không tự chấm lại risk, không hiện reminder; còn E2E với dữ liệu lớp thật |
 
 ### 7.4 Student course, project và integration
 
@@ -544,7 +544,7 @@ Khóa đi theo cấu hình lớp hiện có: khóa lớp, rồi khóa nền tả
 | --- | --- |
 | `/api/lecturer/courses`, `/{id}`, `/roster`, `/progress` | Đã dùng; list đầy đủ cho header, command search, composer và xác định course đang chọn |
 | `/api/lecturer/courses/paged` | Đã dùng cho trang chọn lớp (`page` 0-based default 0, `size` max 200, tùy chọn `semesterId`/`search`; `{ items, page, size, total }`) |
-| `/api/lecturer/courses/{courseId}/dashboard` | Đã dùng cho trang Tổng quan lớp; FE chỉ render payload BE |
+| `/api/lecturer/courses/{courseId}/dashboard` | Đã dùng cho trang Tổng quan lớp, một request cho cả lớp; không params thì BE chọn sprint mặc định; `teamId` đi cùng `jiraIntegrationId` hoặc `sprintId` chỉ đổi sprint đại diện của team đó |
 | `/api/lecturer/courses/{id}/teams/**` | Đã dùng (GET teams & unassignedStudents, POST `/teams/{teamId}/members` để thêm sinh viên unassigned hoặc chuyển nhóm thành viên với courseEnrollmentId, PUT `/leader`, import Excel) |
 | Contribution slice weights/config mode/team weights | Đã dùng |
 | `/api/projects/{projectId}/group-weights` | Đã dùng |

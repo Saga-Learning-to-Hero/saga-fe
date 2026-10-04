@@ -1,7 +1,16 @@
 import { apiClient } from "@/lib/axios";
 import { requireCourseId } from "@/lib/api-error";
 import { requireRemovalReason } from "@/lib/removal-reason";
-import type { LecturerCourseDashboardResponse } from "../types/lecturer-course-dashboard";
+import { resolveDashboardSelection } from "../lib/dashboard-selection";
+import type {
+  LecturerCourseDashboardResponse,
+  LecturerDashboardCurrentSprint,
+  LecturerDashboardJiraSource,
+  LecturerDashboardSelection,
+  LecturerDashboardSprintOption,
+  LecturerDashboardSprintSelection,
+  LecturerDashboardTeam,
+} from "../types/lecturer-course-dashboard";
 import type {
   CoursePagedParams,
   LecturerCoursePagedResponse,
@@ -36,6 +45,73 @@ function toPagedQuery(params: CoursePagedParams) {
     size,
     ...(search ? { search } : {}),
     ...(semesterId ? { semesterId } : {}),
+  };
+}
+
+function asText(value: unknown): string {
+  return typeof value === "string" ? value.trim() : "";
+}
+
+function normalizeJiraSource(value: unknown): LecturerDashboardJiraSource | null {
+  if (!value || typeof value !== "object") return null;
+  const source = value as Partial<LecturerDashboardJiraSource>;
+  const jiraIntegrationId = asText(source.jiraIntegrationId);
+  if (!jiraIntegrationId) return null;
+  return {
+    jiraIntegrationId,
+    siteName: asText(source.siteName),
+    projectKey: asText(source.projectKey),
+    connectionStatus: asText(source.connectionStatus),
+  };
+}
+
+function normalizeSprintOption(value: unknown): LecturerDashboardSprintOption | null {
+  if (!value || typeof value !== "object") return null;
+  const option = value as Partial<LecturerDashboardSprintOption>;
+  const id = asText(option.id);
+  if (!id) return null;
+  return {
+    id,
+    name: asText(option.name),
+    state: asText(option.state),
+  };
+}
+
+function normalizeSprintSelection(value: unknown): LecturerDashboardSprintSelection | null {
+  return value === "SELECTED" || value === "DEFAULT" ? value : null;
+}
+
+function normalizeCurrentSprint(value: unknown): LecturerDashboardCurrentSprint | null {
+  if (!value || typeof value !== "object") return null;
+  const sprint = value as LecturerDashboardCurrentSprint;
+  return {
+    sprintId: sprint.sprintId,
+    sprintName: sprint.sprintName,
+    state: sprint.state,
+    startDate: sprint.startDate ?? null,
+    endDate: sprint.endDate ?? null,
+    elapsedPercent: sprint.elapsedPercent ?? null,
+    source: normalizeJiraSource(sprint.source),
+  };
+}
+
+function normalizeDashboardTeam(team: LecturerDashboardTeam): LecturerDashboardTeam {
+  return {
+    ...team,
+    currentSprint: normalizeCurrentSprint(team.currentSprint),
+    sprintSelection: normalizeSprintSelection(team.sprintSelection),
+    jiraSources: Array.isArray(team.jiraSources)
+      ? team.jiraSources.flatMap((item) => {
+          const source = normalizeJiraSource(item);
+          return source ? [source] : [];
+        })
+      : [],
+    sprintOptions: Array.isArray(team.sprintOptions)
+      ? team.sprintOptions.flatMap((item) => {
+          const option = normalizeSprintOption(item);
+          return option ? [option] : [];
+        })
+      : [],
   };
 }
 
@@ -117,17 +193,24 @@ export class LecturerCourseService {
 
   static async getCourseDashboard(
     courseId: string,
+    selection?: LecturerDashboardSelection,
   ): Promise<LecturerCourseDashboardResponse> {
     const id = requireCourseId(courseId);
-    const response = await apiClient.get<LecturerCourseDashboardResponse>(
-      `/api/lecturer/courses/${id}/dashboard`,
-    );
+    const params = resolveDashboardSelection(selection);
+    const response = params
+      ? await apiClient.get<LecturerCourseDashboardResponse>(
+          `/api/lecturer/courses/${id}/dashboard`,
+          { params },
+        )
+      : await apiClient.get<LecturerCourseDashboardResponse>(
+          `/api/lecturer/courses/${id}/dashboard`,
+        );
     const data = response.data;
 
     return {
       ...data,
       courseId: data?.courseId || id,
-      teams: Array.isArray(data?.teams) ? data.teams : [],
+      teams: Array.isArray(data?.teams) ? data.teams.map(normalizeDashboardTeam) : [],
     };
   }
 

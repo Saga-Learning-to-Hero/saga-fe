@@ -24,7 +24,11 @@ function buildTeam(
       startDate: "2026-09-14",
       endDate: "2026-09-20",
       elapsedPercent: 50,
+      source: null,
     },
+    sprintSelection: null,
+    jiraSources: [],
+    sprintOptions: [],
     progress: null,
     activity: {
       lastActivityAt: null,
@@ -102,7 +106,7 @@ describe("CourseActivityHeatmap", () => {
       id: "UTCID03",
       type: "N",
       executedDate: "22/09/2026",
-      description: "Moi chart chi hien bo loc nhom nho gon va dung Sprint hien tai tu API",
+      description: "Heatmap dung teams cua response va khong con bo loc nhom rieng",
     },
     () => {
       render(
@@ -112,8 +116,8 @@ describe("CourseActivityHeatmap", () => {
         />
       );
 
-      expect(screen.getByLabelText("Lọc theo nhóm")).toBeTruthy();
-      expect(screen.queryByLabelText("Lọc theo Sprint")).toBeNull();
+      expect(screen.queryByLabelText("Lọc theo nhóm")).toBeNull();
+      expect(screen.getByRole("button", { name: /Alpha, 14[-/]09: 3 hoạt động/ })).toBeTruthy();
     }
   );
 });
