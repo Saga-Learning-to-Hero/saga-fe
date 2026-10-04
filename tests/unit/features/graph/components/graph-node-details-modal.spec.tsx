@@ -2,6 +2,22 @@ import { describe, expect, vi, beforeEach } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { fptTest } from "@/testing/fpt-test-helper";
+
+const { downloadMutation, showErrorToast } = vi.hoisted(() => ({
+  downloadMutation: {
+    mutate: vi.fn(),
+    isPending: false,
+  },
+  showErrorToast: vi.fn(),
+}));
+
+vi.mock("@/features/student/sprint-progress/hooks/use-task-evidence", () => ({
+  useDownloadTaskFile: () => downloadMutation,
+}));
+
+vi.mock("@/lib/api-error", () => ({
+  showErrorToast,
+}));
 import {
   GraphNodeDetailsModal,
   resolveGitCommitId,
@@ -83,6 +99,8 @@ describe("GraphNodeDetailsModal", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    downloadMutation.isPending = false;
+    downloadMutation.mutate.mockReset();
   });
 
   fptTest(
@@ -380,6 +398,156 @@ describe("GraphNodeDetailsModal", () => {
       expect(resolveGitCommitId("commit:abc")).toBe("abc");
       expect(resolveGitCommitId("commit:")).toBe("");
       expect(resolveGitCommitId("abc")).toBe("abc");
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID14",
+      type: "N",
+      executedDate: "04/10/2026",
+      description: "Node FILE co context hien nut Tai file va goi dung payload",
+    },
+    async () => {
+      const user = userEvent.setup();
+      render(
+        <GraphNodeDetailsModal
+          nodeData={{
+            id: "file:aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee",
+            type: "FILE",
+            label: "pak.drawio.png",
+            subLabel: "image/png",
+          }}
+          fileDownloadContext={{
+            taskId: "11111111-2222-4333-8444-555555555555",
+            fileId: "aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee",
+            filename: "pak.drawio.png",
+          }}
+          onClose={onClose}
+        />
+      );
+
+      const button = screen.getByRole("button", { name: "Tải file" });
+      expect(button).toBeEnabled();
+      await user.click(button);
+      expect(downloadMutation.mutate).toHaveBeenCalledWith(
+        {
+          fileId: "aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee",
+          filename: "pak.drawio.png",
+        },
+        expect.objectContaining({ onError: expect.any(Function) })
+      );
+      expect(onClose).not.toHaveBeenCalled();
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID15",
+      type: "B",
+      executedDate: "04/10/2026",
+      description: "Khi pending nut bi khoa va hien spinner",
+    },
+    () => {
+      downloadMutation.isPending = true;
+      render(
+        <GraphNodeDetailsModal
+          nodeData={{
+            id: "file:aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee",
+            type: "FILE",
+            label: "pak.drawio.png",
+          }}
+          fileDownloadContext={{
+            taskId: "11111111-2222-4333-8444-555555555555",
+            fileId: "aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee",
+            filename: "pak.drawio.png",
+          }}
+          onClose={onClose}
+        />
+      );
+
+      expect(screen.getByRole("button", { name: "Đang tải..." })).toBeDisabled();
+      expect(screen.getByRole("button", { name: "Đóng" })).toBeInTheDocument();
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID16",
+      type: "A",
+      executedDate: "04/10/2026",
+      description: "API loi giu modal mo va hien thong bao",
+    },
+    async () => {
+      const user = userEvent.setup();
+      downloadMutation.mutate.mockImplementation((_payload, options) => {
+        options?.onError?.(new Error("forbidden"));
+      });
+      render(
+        <GraphNodeDetailsModal
+          nodeData={{
+            id: "file:aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee",
+            type: "FILE",
+            label: "pak.drawio.png",
+          }}
+          fileDownloadContext={{
+            taskId: "11111111-2222-4333-8444-555555555555",
+            fileId: "aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee",
+            filename: "pak.drawio.png",
+          }}
+          onClose={onClose}
+        />
+      );
+
+      await user.click(screen.getByRole("button", { name: "Tải file" }));
+      expect(showErrorToast).toHaveBeenCalledWith(
+        "Không thể tải tệp. Vui lòng thử lại.",
+        expect.any(Error)
+      );
+      expect(onClose).not.toHaveBeenCalled();
+      expect(screen.getByRole("button", { name: "Đóng" })).toBeInTheDocument();
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID17",
+      type: "A",
+      executedDate: "04/10/2026",
+      description: "FILE thieu task va node WEB_LINK/COMMIT khong cho tai file",
+    },
+    () => {
+      const { unmount } = render(
+        <GraphNodeDetailsModal
+          nodeData={{
+            id: "file:aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee",
+            type: "FILE",
+            label: "pak.drawio.png",
+          }}
+          fileDownloadContext={null}
+          onClose={onClose}
+        />
+      );
+      expect(screen.getByRole("button", { name: "Tải file" })).toBeDisabled();
+      expect(screen.getByText("Không xác định được công việc liên kết với tệp này.")).toBeInTheDocument();
+      unmount();
+
+      const commitView = render(<GraphNodeDetailsModal nodeData={commitNode} onClose={onClose} />);
+      expect(screen.queryByRole("button", { name: "Tải file" })).not.toBeInTheDocument();
+      commitView.unmount();
+
+      render(
+        <GraphNodeDetailsModal
+          nodeData={{
+            id: "weblink:1",
+            type: "WEB_LINK",
+            label: "Tai lieu",
+            subLabel: "https://example.com",
+          }}
+          onClose={onClose}
+        />
+      );
+      expect(screen.queryByRole("button", { name: "Tải file" })).not.toBeInTheDocument();
     }
   );
 

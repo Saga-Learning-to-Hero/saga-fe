@@ -43,6 +43,7 @@ import { GraphStatsSummary } from "./graph-stats-summary";
 import { GraphNodeDetailsModal } from "./graph-node-details-modal";
 import { Neo4jTabBar } from "./neo4j-tab-bar";
 import { useAccumulatedProjectGraph, useProjectGraph } from "../hooks/use-project-graph";
+import { resolveGraphFileDownloadContext } from "../lib/graph-file-download";
 import { buildGraphScopeParams, retainFileEvidenceGraph, type GraphScopeMode } from "../lib/graph-scope";
 import { describeGraphLoadError } from "../lib/graph-error";
 import { useProjectCommits } from "@/features/student/project/hooks/useProjectSync";
@@ -1082,6 +1083,7 @@ export function LecturerGraphView({
 
       <GraphNodeDetailsModal
         nodeData={selectedGraphNode}
+        fileDownloadContext={resolveGraphFileDownloadContext(selectedGraphNode, displayGraphData.edges)}
         onClose={() => setSelectedGraphNode(null)}
         onFocusNode={(nodeId, nodeLabel) => {
           setFocusedNodeId(nodeId);

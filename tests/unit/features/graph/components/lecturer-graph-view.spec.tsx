@@ -70,6 +70,28 @@ vi.mock("@/features/graph/hooks/use-project-graph", () => ({
   }),
 }));
 
+vi.mock("@/features/graph/components/cytoscape-graph-canvas", () => ({
+  CytoscapeGraphCanvas: ({
+    onSelectNode,
+  }: {
+    onSelectNode?: (node: { id: string; label: string; type: string; subLabel?: string }) => void;
+  }) => (
+    <button
+      type="button"
+      onClick={() =>
+        onSelectNode?.({
+          id: "file:aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee",
+          label: "pak.drawio.png",
+          type: "FILE",
+          subLabel: "image/png",
+        })
+      }
+    >
+      Chọn node tệp
+    </button>
+  ),
+}));
+
 vi.mock("cytoscape", () => {
   return {
     default: vi.fn(() => ({
@@ -289,9 +311,24 @@ describe("LecturerGraphView", () => {
           nodes: [
             { data: { id: "student:80ffd344-5190-4373-a2fb-10e74d64e55d", label: "Nguyen Van A", type: "STUDENT", subLabel: "SE1701" } },
             { data: { id: "task:t1", label: "SAGA-101", type: "TASK" } },
+            {
+              data: {
+                id: "file:aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee",
+                label: "pak.drawio.png",
+                type: "FILE",
+              },
+            },
           ],
           edges: [
             { data: { id: "e1", source: "student:80ffd344-5190-4373-a2fb-10e74d64e55d", target: "task:t1", label: "ASSIGNED_TO" } },
+            {
+              data: {
+                id: "e-file",
+                source: "task:11111111-2222-4333-8444-555555555555",
+                target: "file:aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee",
+                label: "EVIDENCED_BY",
+              },
+            },
           ],
         },
       })
@@ -597,6 +634,26 @@ describe("LecturerGraphView", () => {
       expect(graphQueryMock).not.toHaveBeenCalledWith(
         expect.objectContaining({ studentId: "SE1701" })
       );
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID12",
+      type: "N",
+      executedDate: "04/10/2026",
+      description: "Lecturer graph truyen download context tu canh EVIDENCED_BY vao modal FILE",
+    },
+    async () => {
+      const user = userEvent.setup();
+      renderView({
+        courseId: "course-123",
+        initialTeamId: "team-with-project",
+        initialViewMode: "GRAPH",
+      });
+      await user.click(screen.getByRole("button", { name: "Chọn node tệp" }));
+      expect(screen.getByRole("button", { name: "Tải file" })).toBeEnabled();
+      expect(screen.queryByText("Không xác định được công việc liên kết với tệp này.")).toBeNull();
     }
   );
 });
