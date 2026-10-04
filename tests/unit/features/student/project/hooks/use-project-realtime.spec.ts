@@ -544,7 +544,7 @@ describe("useProjectRealtime Hook", () => {
       id: "UTCID12",
       type: "N",
       executedDate: "15/09/2026",
-      description: "Debounce invalidate graph query khi nhan su kien TASKS_CHANGED",
+      description: "TASKS_CHANGED khong invalidate graph query",
     },
     async () => {
       vi.useFakeTimers();
@@ -566,14 +566,17 @@ describe("useProjectRealtime Hook", () => {
         vi.advanceTimersByTime(400);
       });
 
-      expect(invalidateSpy).toHaveBeenCalledWith({
+      expect(invalidateSpy).not.toHaveBeenCalledWith({
         queryKey: ["project-graph", "project-graph-test", "OVERVIEW"],
       });
-      expect(invalidateSpy).toHaveBeenCalledWith({
+      expect(invalidateSpy).not.toHaveBeenCalledWith({
         queryKey: ["project-graph", "project-graph-test", "CONTRIBUTION"],
       });
-      expect(invalidateSpy).toHaveBeenCalledWith({
+      expect(invalidateSpy).not.toHaveBeenCalledWith({
         queryKey: ["project-graph", "project-graph-test", "ACTIVITY"],
+      });
+      expect(invalidateSpy).not.toHaveBeenCalledWith({
+        queryKey: ["project-graph", "project-graph-test"],
       });
       vi.useRealTimers();
     }
@@ -584,7 +587,7 @@ describe("useProjectRealtime Hook", () => {
       id: "UTCID13",
       type: "N",
       executedDate: "15/09/2026",
-      description: "Invalidate toan bo graph query cua project khi nhan su kien READY",
+      description: "READY khong invalidate graph query",
     },
     async () => {
       vi.useFakeTimers();
@@ -602,7 +605,7 @@ describe("useProjectRealtime Hook", () => {
         vi.advanceTimersByTime(1400);
       });
 
-      expect(invalidateSpy).toHaveBeenCalledWith({
+      expect(invalidateSpy).not.toHaveBeenCalledWith({
         queryKey: ["project-graph", "project-graph-ready"],
       });
       vi.useRealTimers();

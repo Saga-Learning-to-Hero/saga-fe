@@ -44,6 +44,12 @@ vi.mock("@/features/student/project/hooks/use-project-jira-source-selection", ()
 vi.mock("@/features/graph/hooks/use-project-graph", () => ({
   PROJECT_GRAPH_QUERY_KEY: "project-graph",
   useProjectGraph: (...args: unknown[]) => graphQueryMock(...args),
+  useAccumulatedProjectGraph: (...args: unknown[]) => ({
+    ...graphQueryMock(...args),
+    loadMore: vi.fn(),
+    canLoadMore: false,
+    isLoadingMore: false,
+  }),
 }));
 
 vi.mock("@/features/graph/hooks/use-pipeline-graph-data", () => ({

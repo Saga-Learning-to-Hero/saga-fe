@@ -119,7 +119,7 @@ Bảng này là checklist chức năng cấp cao dành cho tài liệu báo cáo
 | SCOPE-09 | Truy xuất Task–Commit | Liên kết canonical tự động và các cơ chế đối soát được hỗ trợ; lọc repository/branch; Flow; Audit Matrix; sticky inspector; cảnh báo Done thiếu evidence; không coi manual-link mutation là đã có nếu chưa tồn tại API/UI xác thực |
 | SCOPE-10 | Minh chứng công việc | Work session server-side; file; web link; commit SHA/PR confirmation; audit; step-up; không mất trạng thái khi reload |
 | SCOPE-11 | Tiến độ và dashboard | Project summary; member detail; task status; sprint progress; Task–Commit activity; freshness; insight thay vì chỉ đếm dữ liệu |
-| SCOPE-12 | Graph truy xuất nguồn gốc | Graph project/student/sprint/attribution/peer-review; node/edge canonical; filter; tooltip; anomaly flag có giải thích và quyền theo role |
+| SCOPE-12 | Graph truy xuất nguồn gốc | Graph project/student/sprint/attribution; bằng chứng COMMIT/FILE/WEB_LINK; node/edge canonical; filter; tooltip; anomaly flag có giải thích và quyền theo role. Không có graph peer review |
 | SCOPE-13 | Peer Review | Rubric; candidates; submit; list/result; giới hạn theo sprint/team; chống tự đánh giá hoặc submit sai đối tượng theo rule BE |
 | SCOPE-14 | Contribution | Bốn nhóm CODE/TEST/DOCUMENT/RESEARCH; mode COURSE/PROJECT_GROUP; evidence eligibility; peer coefficient; normalization; warning; kết quả cuối do Backend tính canonical và Lecturer xem ở chế độ chỉ đọc |
 | SCOPE-15 | Quản trị và kiểm toán | User status; audit log; integration/sync observability; lỗi có mã; dữ liệu mock không xuất hiện trong bản production/report |
@@ -387,7 +387,7 @@ Project Type dùng để phân loại hướng dự án, không điều khiển 
 | LEC-008 | Xem contribution evaluation | ✓ | ✓ | ✓ | `DONE` |
 | LEC-009 | Contribution evaluation read-only | ✓ | ✓ | ✓ | `DONE`; Lecturer xem tỷ lệ canonical, minh chứng và warning; FE không cho ghi đè tỷ lệ cuối |
 | LEC-010 | Lecturer canonical graph | ✓ | ✓ | ✓ | `DONE/VERIFY`; đủ năm mode canonical và unit/component test, còn E2E authorization/latency với dữ liệu lớn |
-| LEC-011 | Lecturer course dashboard CURRENT_SPRINT | ✓ | ✓ | ✓ | `IN_PROGRESS`; Tổng quan lớp dùng một `GET /api/lecturer/courses/{courseId}/dashboard`, render `summary`/`risk`/`taskStatusTotals` đúng contract; toàn bộ chart mặc định dùng Sprint hiện tại mới nhất do API trả về, mỗi chart chỉ có bộ lọc Nhóm độc lập, nhỏ gọn và không làm đổi KPI toàn lớp hoặc chart khác; UI có heatmap, tooltip chi tiết, liên kết trạng thái hover với danh sách nhóm và hàng ưu tiên một cột theo risk/reason; thiếu ngày activity không bị đổi thành 0; FE không tự chấm lại risk, không N+1, không hiện reminder; còn E2E với dữ liệu lớp thật |
+| LEC-011 | Lecturer course dashboard CURRENT_SPRINT | ✓ | ✓ | ✓ | `IN_PROGRESS`; Tổng quan lớp dùng một `GET /api/lecturer/courses/{courseId}/dashboard` cho cả lớp, không N+1; khi không có query, BE chọn sprint đang chạy có nhiều task nhất; thanh Nhóm → Site → Sprint chỉ đổi sprint đại diện của team được chọn (`teamId` + `jiraIntegrationId`, hoặc `teamId` + `sprintId`), team khác giữ sprint mặc định của BE; `sprintSelection` hiển thị `SELECTED`/`DEFAULT` đúng payload; KPI, heatmap, biểu đồ và team card render cùng response; thiếu ngày activity không bị đổi thành 0; FE không tự chấm lại risk, không hiện reminder; còn E2E với dữ liệu lớp thật |
 
 ### 7.4 Student course, project và integration
 
@@ -454,11 +454,11 @@ Project Type dùng để phân loại hướng dự án, không điều khiển 
 | --- | --- | --- | --- | --- | --- |
 | PROG-001 | Project progress summary | ✓ | ✓ | ✓ | `DONE`; quyền leader/lecturer theo policy. Student P0: Member không prefetch/gọi `GET /progress`; hover tab chỉ prefetch dashboard BFF; 403 ACCESS_DENIED không retry. Student Dashboard BFF (`GET /api/student/courses/{courseId}/dashboard`): Phân định rõ ràng data ownership giữa cá nhân và nhóm: chỉ `currentSprint.totalTasks/completedTasks/completionPercent` là số của cả nhóm trong Sprint; toàn bộ các trường còn lại (`myMetrics`, `myActiveTasks`, `recentCommits`, `weeklyCommits`, `sprintMetrics`) là số cá nhân. Ô Sprint ưu tiên hiển thị tiến độ cá nhân từ `sprintMetrics.tasks` kèm đối soát tiến độ cả nhóm. `myActiveTasks[].linkedCommits[]` gồm `id, sha, message, repositoryFullName, committedAt, authorStudentId, authorExternalId, isMerge` (có cả merge, mọi tác giả, mới nhất trước, tối đa 20 commit; `linkedCommitCount` vẫn là tổng đầy đủ), UI hỗ trợ mở rộng xem danh sách và mở `CommitDetailModal` (`GET /api/projects/{projectId}/commits/{id}`). Khi chọn Sprint, `recentCommits`, `weeklyCommits` và `sprintMetrics.commits` được Backend tự động loại bỏ các commit chỉ gắn với task của site khác (commit chưa gắn task nào vẫn hiển thị vì không thuộc site nào; `myMetrics` toàn dự án giữ nguyên). |
 | PROG-002 | Member progress detail | ✓ | ✓ | ✓ | `DONE`; drawer chỉ là inspector, không thay dữ liệu dashboard tổng |
-| GRAPH-001 | Project graph overview | ✓ | ✓ | ✓ | `DONE/VERIFY`; cạnh `HAS_WORK_ITEM` (Project→root work item, nét liền) và `PARENT_OF` (cha→con, nét đứt); size/layout theo `issueTypeLevel`; UNRESOLVED vẫn hiện, không bịa PARENT_OF; còn E2E dữ liệu lớn và authorization |
-| GRAPH-002 | Student contribution graph | ✓ | ✓ | ✓ | `DONE/VERIFY`; lazy query theo mode/student/sprint |
-| GRAPH-003 | Sprint activity graph | ✓ | ✓ | ✓ | `DONE/VERIFY`; Lecturer Graph mặc định mở Sprint activity của Sprint `active` (fallback Sprint đầu tiên), đổi nhóm tự reset về Sprint hiện tại; yêu cầu sprint trước khi gọi API |
-| GRAPH-004 | Attribution graph | ✓ | ✓ | ✓ | `DONE/VERIFY`; hỗ trợ anomaly filter và subgraph params |
-| GRAPH-005 | Sprint peer-review graph | ✓ | ✓ | ✓ | `DONE/VERIFY`; yêu cầu sprint trước khi gọi API |
+| GRAPH-001 | Project graph overview | ✓ | ✓ | ✓ | `DONE/VERIFY`; một request theo filter; chế độ chi tiết gửi `includeEvidence` để hiện COMMIT/FILE/WEB_LINK; refetch graph chỉ sau SSE `GRAPH_CHANGED`; cạnh `HAS_WORK_ITEM` và `PARENT_OF`; còn E2E dữ liệu lớn và authorization |
+| GRAPH-002 | Student contribution graph | ✓ | ✓ | ✓ | `DONE/VERIFY`; không ép ẩn evidence; nút chỉ tiêu chí đã dùng gửi `usedCriteriaOnly`; refetch graph chỉ sau `GRAPH_CHANGED` |
+| GRAPH-003 | Sprint activity graph | ✓ | ✓ | ✓ | `DONE/VERIFY`; chế độ gọn không cắt `CRITERION`; chi tiết dùng `includeEvidence`; Lecturer Graph mặc định Sprint `active`; refetch graph chỉ sau `GRAPH_CHANGED` |
+| GRAPH-004 | Attribution graph | ✓ | ✓ | ✓ | `DONE/VERIFY`; giữ commit mặc định của backend, không gửi compact cắt COMMIT; hỗ trợ anomaly filter; refetch graph chỉ sau `GRAPH_CHANGED` |
+| GRAPH-005 | Sprint peer-review graph | — | — | — | Không còn graph peer review. Đánh giá chéo nằm ở luồng PEER, không có endpoint graph riêng trên canvas |
 | PEER-001 | Default/team rubric | ✓ | ✓ | ✓ | `DONE`; Student fallback default rubric và Lecturer dùng team rubric |
 | PEER-002 | Sprint review candidates | ✓ | ✓ | ✓ | `DONE`; Student UI khóa theo review window/trạng thái |
 | PEER-003 | Submit/list peer reviews | ✓ | ✓ | ✓ | `DONE/VERIFY`; Student submit một lần; Lecturer workspace hai cột (Tổng quan nhóm / sinh viên), giữ query `teamId`/`sprintId`/`revieweeId`; không đổi API, quyền hay công thức; còn E2E quyền và deadline |
@@ -544,7 +544,7 @@ Khóa đi theo cấu hình lớp hiện có: khóa lớp, rồi khóa nền tả
 | --- | --- |
 | `/api/lecturer/courses`, `/{id}`, `/roster`, `/progress` | Đã dùng; list đầy đủ cho header, command search, composer và xác định course đang chọn |
 | `/api/lecturer/courses/paged` | Đã dùng cho trang chọn lớp (`page` 0-based default 0, `size` max 200, tùy chọn `semesterId`/`search`; `{ items, page, size, total }`) |
-| `/api/lecturer/courses/{courseId}/dashboard` | Đã dùng cho trang Tổng quan lớp; FE chỉ render payload BE |
+| `/api/lecturer/courses/{courseId}/dashboard` | Đã dùng cho trang Tổng quan lớp, một request cho cả lớp; không params thì BE chọn sprint mặc định; `teamId` đi cùng `jiraIntegrationId` hoặc `sprintId` chỉ đổi sprint đại diện của team đó |
 | `/api/lecturer/courses/{id}/teams/**` | Đã dùng (GET teams & unassignedStudents, POST `/teams/{teamId}/members` để thêm sinh viên unassigned hoặc chuyển nhóm thành viên với courseEnrollmentId, PUT `/leader`, import Excel) |
 | Contribution slice weights/config mode/team weights | Đã dùng |
 | `/api/projects/{projectId}/group-weights` | Đã dùng |
@@ -600,11 +600,11 @@ Khóa đi theo cấu hình lớp hiện có: khóa lớp, rồi khóa nền tả
 
 | Endpoint | FE hiện tại |
 | --- | --- |
-| `GET /api/projects/{projectId}/graph/overview` | Đã dùng cho Student và Lecturer |
-| `GET /api/projects/{projectId}/students/{studentId}/graph/contribution` | Đã dùng theo student selection/context |
-| `GET /api/projects/{projectId}/sprints/{sprintId}/graph/activity` | Đã dùng và chỉ enable khi có sprint |
-| `GET /api/projects/{projectId}/graph/attribution` | Đã dùng, gồm filter anomaly/subgraph |
-| `GET /api/projects/{projectId}/sprints/{sprintId}/graph/peer-review` | Đã dùng và chỉ enable khi có sprint |
+| `GET /api/projects/{projectId}/graph/overview` | Đã dùng cho Student và Lecturer; chi tiết gửi `includeEvidence`; một request theo filter; refetch khi `GRAPH_CHANGED` |
+| `GET /api/projects/{projectId}/students/{studentId}/graph/contribution` | Đã dùng theo student selection/context; `usedCriteriaOnly` khi giảng viên/sinh viên bật chỉ tiêu chí đã dùng |
+| `GET /api/projects/{projectId}/sprints/{sprintId}/graph/activity` | Đã dùng và chỉ enable khi có sprint; chi tiết gửi `includeEvidence` |
+| `GET /api/projects/{projectId}/graph/attribution` | Đã dùng, gồm filter anomaly/subgraph; không cắt COMMIT ở chế độ gọn |
+| Graph peer review | Không còn. Canvas không gọi endpoint graph peer review |
 
 ### 8.8 Notification và Push Installation
 
@@ -870,7 +870,8 @@ Thực hiện:
 - Task list/detail và task options luôn cung cấp `issueTypeLevel`; dữ liệu chưa xác định dùng `UNKNOWN`, không dùng `null`.
 - `parent: null` xóa parent cũ khỏi form. Form sửa giữ parent action rõ ràng `UNCHANGED | SET | CLEAR`; đổi giữa các loại STANDARD không tự xóa Epic cha, còn người dùng vẫn có thể chủ động xóa parent `UNRESOLVED`.
 - `subtasks[]` chứa `externalKey`, `issueTypeName`, `issueTypeLevel`. TASK graph node chứa `parentExternalId`, `parentExternalKey`, resolution và reason; graph node không có `parentTaskId`.
-- Label `saga:*` legacy của Subtask được bảo toàn; FE không tạo hoặc chọn label đóng góp riêng mới trên Subtask.
+- Subtask có label đóng góp `saga:code` / `saga:test` / `saga:document` / `saga:research` của riêng nó, không kế thừa label từ Task cha. Form tạo/sửa chỉ cho chọn tối đa một label SAGA; label Jira tự do đã có được hiển thị chỉ đọc và bảo toàn khi lưu. Backend dùng label của chính Subtask để xác định contribution criterion và evidence requirement.
+- Task Detail hiển thị tên Sprint canonical từ `task.sprint.name`. Với Subtask, Sprint là trường chỉ đọc theo công việc cha; FE không cho gán hoặc chuyển Sprint riêng và không dùng Jira key của cha thay cho tên Sprint.
 
 ## 14. Tài liệu và source tham chiếu
 

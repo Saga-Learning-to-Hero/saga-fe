@@ -30,7 +30,6 @@ import {
 } from "@/components/ui/popover";
 import {
   buildPeerReviewChartData,
-  buildTaskStatusTotalsFromTeams,
   buildTaskStatusChartData,
   formatNullablePercent,
   formatRiskReason,
@@ -41,9 +40,6 @@ import type {
   LecturerDashboardTaskStatusTotals,
   LecturerDashboardTeam,
 } from "../types/lecturer-course-dashboard";
-import { useDashboardChartFilter } from "../hooks/use-dashboard-chart-filter";
-import { CourseChartTeamFilter } from "./course-chart-filters";
-
 const TASK_BAR_COLORS: Record<string, string> = {
   todo: "var(--chart-1)",
   inProgress: "var(--chart-2)",
@@ -81,40 +77,31 @@ export function CourseAnalyticsCharts({
   teams,
   onHighlightedTeamIdsChange,
 }: CourseAnalyticsChartsProps) {
-  const taskFilter = useDashboardChartFilter(teams);
-  const riskFilter = useDashboardChartFilter(teams);
-  const peerFilter = useDashboardChartFilter(teams);
-  const visibleTaskTotals = useMemo(
-    () => taskFilter.isDefault
-      ? taskStatusTotals
-      : buildTaskStatusTotalsFromTeams(taskFilter.filteredTeams),
-    [taskFilter.filteredTeams, taskFilter.isDefault, taskStatusTotals]
-  );
   const taskData = useMemo(
-    () => buildTaskStatusChartData(visibleTaskTotals),
-    [visibleTaskTotals]
+    () => buildTaskStatusChartData(taskStatusTotals),
+    [taskStatusTotals]
   );
   const riskData = useMemo(() => {
     const counts = new Map<string, number>();
-    riskFilter.filteredTeams.forEach((team) => counts.set(team.risk.level, (counts.get(team.risk.level) ?? 0) + 1));
+    teams.forEach((team) => counts.set(team.risk.level, (counts.get(team.risk.level) ?? 0) + 1));
     return [
       { key: "HEALTHY", name: "Ổn định", value: counts.get("HEALTHY") ?? 0 },
       { key: "WARNING", name: "Cần chú ý", value: counts.get("WARNING") ?? 0 },
       { key: "CRITICAL", name: "Nghiêm trọng", value: counts.get("CRITICAL") ?? 0 },
       { key: "UNKNOWN", name: "Thiếu dữ liệu", value: counts.get("UNKNOWN") ?? 0 },
     ];
-  }, [riskFilter.filteredTeams]);
+  }, [teams]);
   const peerData = useMemo(
-    () => buildPeerReviewChartData(peerFilter.filteredTeams),
-    [peerFilter.filteredTeams]
+    () => buildPeerReviewChartData(teams),
+    [teams]
   );
   const hasAnyPeerData = useMemo(
     () => buildPeerReviewChartData(teams).length > 0,
     [teams]
   );
   const policyLines = useMemo(() => formatRiskPolicyLegend(riskPolicy), [riskPolicy]);
-  const hasTasks = visibleTaskTotals.total > 0;
-  const hasTeams = riskFilter.filteredTeams.length > 0;
+  const hasTasks = taskStatusTotals.total > 0;
+  const hasTeams = teams.length > 0;
   const hasSubmittedPeerReviews = peerData.some((item) => item.submittedReviews > 0);
 
   return (
@@ -134,16 +121,8 @@ export function CourseAnalyticsCharts({
             </p>
           </div>
           <Badge variant="outline" className="font-mono text-xs font-bold">
-            {formatNullablePercent(visibleTaskTotals.completionPercent)}
+            {formatNullablePercent(taskStatusTotals.completionPercent)}
           </Badge>
-        </div>
-        <div className="mt-3">
-          <CourseChartTeamFilter
-            idPrefix="task-status-chart"
-            teamId={taskFilter.selectedTeamId}
-            teamOptions={taskFilter.teamOptions}
-            onTeamChange={taskFilter.setSelectedTeamId}
-          />
         </div>
         {hasTasks ? (
           <div className="mt-3 h-64">
@@ -190,9 +169,9 @@ export function CourseAnalyticsCharts({
         )}
         {hasTasks ? (
           <p className="mt-2 border-t border-border/50 pt-2 text-xs text-muted-foreground">
-            Tổng {visibleTaskTotals.total} công việc
-            {visibleTaskTotals.overdue > 0
-              ? ` · ${visibleTaskTotals.overdue} quá hạn`
+            Tổng {taskStatusTotals.total} công việc
+            {taskStatusTotals.overdue > 0
+              ? ` · ${taskStatusTotals.overdue} quá hạn`
               : " · không có công việc quá hạn"}
           </p>
         ) : null}
@@ -230,14 +209,6 @@ export function CourseAnalyticsCharts({
             </PopoverContent>
           </Popover>
         </div>
-        <div className="mt-3">
-          <CourseChartTeamFilter
-            idPrefix="risk-chart"
-            teamId={riskFilter.selectedTeamId}
-            teamOptions={riskFilter.teamOptions}
-            onTeamChange={riskFilter.setSelectedTeamId}
-          />
-        </div>
         {hasTeams ? (
           <div className="mt-6">
             <TooltipProvider delay={100}>
@@ -248,7 +219,7 @@ export function CourseAnalyticsCharts({
                 {riskData
                   .filter((item) => item.value > 0)
                   .map((item) => {
-                    const matchingTeams = riskFilter.filteredTeams.filter((team) => team.risk.level === item.key);
+                    const matchingTeams = teams.filter((team) => team.risk.level === item.key);
                     const teamIds = matchingTeams.map((team) => team.teamId);
                     return (
                       <Tooltip key={item.key}>
@@ -260,7 +231,7 @@ export function CourseAnalyticsCharts({
                           onBlur={() => onHighlightedTeamIdsChange([])}
                           className="h-full cursor-pointer outline-none transition-opacity hover:opacity-80 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
                           style={{
-                            width: `${(item.value / riskFilter.filteredTeams.length) * 100}%`,
+                            width: `${(item.value / teams.length) * 100}%`,
                             backgroundColor: RISK_BAR_COLORS[item.key] ?? "var(--muted-foreground)",
                           }}
                         />
@@ -322,14 +293,6 @@ export function CourseAnalyticsCharts({
           <p className="mt-0.5 text-xs text-muted-foreground">
             Tỷ lệ thành viên đã hoàn tất đánh giá trong từng nhóm.
           </p>
-        </div>
-        <div className="mt-3">
-          <CourseChartTeamFilter
-            idPrefix="peer-review-chart"
-            teamId={peerFilter.selectedTeamId}
-            teamOptions={peerFilter.teamOptions}
-            onTeamChange={peerFilter.setSelectedTeamId}
-          />
         </div>
         {hasSubmittedPeerReviews ? (
           <div className="mt-3 h-64">

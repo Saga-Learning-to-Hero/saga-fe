@@ -15,12 +15,10 @@ import {
   formatSeriesDate,
   getActivityIntensityLevel,
 } from "../lib/lecturer-dashboard-format";
-import { useDashboardChartFilter } from "../hooks/use-dashboard-chart-filter";
 import type {
   LecturerDashboardActivityPoint,
   LecturerDashboardTeam,
 } from "../types/lecturer-course-dashboard";
-import { CourseChartTeamFilter } from "./course-chart-filters";
 
 const INTENSITY_CLASSES = [
   "border-border bg-muted/55",
@@ -39,10 +37,9 @@ export function CourseActivityHeatmap({
   teams,
   onHighlightedTeamIdsChange,
 }: CourseActivityHeatmapProps) {
-  const filter = useDashboardChartFilter(teams);
   const heatmap = useMemo(
-    () => buildActivityHeatmapData(filter.filteredTeams),
-    [filter.filteredTeams]
+    () => buildActivityHeatmapData(teams),
+    [teams]
   );
 
   return (
@@ -61,12 +58,6 @@ export function CourseActivityHeatmap({
             </p>
           </div>
         </div>
-        <CourseChartTeamFilter
-          idPrefix="activity-heatmap"
-          teamId={filter.selectedTeamId}
-          teamOptions={filter.teamOptions}
-          onTeamChange={filter.setSelectedTeamId}
-        />
       </div>
       <div className="mt-3 flex items-center justify-end gap-1.5 text-xs text-muted-foreground">
           <span>Ít</span>

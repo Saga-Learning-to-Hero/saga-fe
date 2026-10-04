@@ -3,13 +3,12 @@
 import { useState, useRef, useEffect, useMemo, useId } from "react";
 import { TagIcon, XIcon, CheckIcon, ChevronDownIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import {
+  SAGA_CONTRIBUTION_LABELS,
+  canonicalSagaContributionLabel,
+} from "../lib/subtask-allocation";
 
-export const DEFAULT_SAGA_LABELS = [
-  "saga:code",
-  "saga:test",
-  "saga:document",
-  "saga:research",
-] as const;
+export const DEFAULT_SAGA_LABELS = SAGA_CONTRIBUTION_LABELS;
 
 export interface LabelsMultiSelectProps {
   id?: string;
@@ -18,8 +17,6 @@ export interface LabelsMultiSelectProps {
   availableLabels?: string[];
   disabled?: boolean;
   placeholder?: string;
-  allowCustom?: boolean;
-  hideSagaLabels?: boolean;
 }
 
 function getLabelBadgeStyle(label: string): string {
@@ -49,7 +46,6 @@ export function LabelsMultiSelect({
   availableLabels,
   disabled = false,
   placeholder = "Chọn nhãn (saga:code, saga:test...)",
-  hideSagaLabels = false,
 }: LabelsMultiSelectProps) {
   const generatedId = useId();
   const inputId = id || generatedId;
@@ -60,13 +56,15 @@ export function LabelsMultiSelect({
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Đảm bảo luôn luôn có sẵn 4 label chuẩn, không bao giờ bị rỗng
+  // Backend là nguồn option; FE vẫn whitelist để label Jira tự do không lọt vào dropdown.
   const effectiveLabels = useMemo(() => {
-    const source =
-      availableLabels && availableLabels.length > 0 ? availableLabels : [...DEFAULT_SAGA_LABELS];
-    if (!hideSagaLabels) return source;
-    return source.filter((label) => !label.toLowerCase().startsWith("saga:"));
-  }, [availableLabels, hideSagaLabels]);
+    const source = availableLabels?.length ? availableLabels : [...DEFAULT_SAGA_LABELS];
+    const canonical = source
+      .map(canonicalSagaContributionLabel)
+      .filter((label): label is (typeof DEFAULT_SAGA_LABELS)[number] => label !== null);
+    const unique = [...new Set(canonical)];
+    return unique.length > 0 ? unique : [...DEFAULT_SAGA_LABELS];
+  }, [availableLabels]);
 
   const trimmedInput = inputValue.trim();
 
@@ -89,18 +87,12 @@ export function LabelsMultiSelect({
   }, []);
 
   const handleSelectLabel = (newLabel: string) => {
-    const clean = newLabel.trim();
+    const clean = canonicalSagaContributionLabel(newLabel);
     if (!clean) return;
-    if (hideSagaLabels && clean.toLowerCase().startsWith("saga:")) return;
-    if (hideSagaLabels) {
-      if (!value.includes(clean)) onChange([...value, clean]);
-    } else {
-      onChange([clean]);
-    }
+    onChange([clean]);
     setInputValue("");
     setIsOpen(false);
     setHighlightedIndex(-1);
-    inputRef.current?.focus();
   };
 
   const handleRemoveLabel = (labelToRemove: string) => {
@@ -120,6 +112,7 @@ export function LabelsMultiSelect({
       } else if (filteredSuggestions.length > 0) {
         handleSelectLabel(filteredSuggestions[0]);
       }
+      inputRef.current?.focus();
       return;
     }
 
@@ -257,6 +250,7 @@ export function LabelsMultiSelect({
                   onMouseDown={(e) => {
                     e.preventDefault();
                     handleSelectLabel(suggestion);
+                    inputRef.current?.focus();
                   }}
                   className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-left text-xs cursor-pointer transition-colors ${
                     isHighlighted

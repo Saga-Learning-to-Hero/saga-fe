@@ -1171,4 +1171,131 @@ describe("LecturerCourseService", () => {
       });
     }
   );
+
+  fptTest(
+    {
+      id: "UTCID53",
+      type: "N",
+      executedDate: "04/10/2026",
+      description: "Chon Site chi gui teamId va jiraIntegrationId",
+    },
+    async () => {
+      const getSpy = vi.spyOn(apiClient, "get").mockResolvedValueOnce({ data: mockDashboard });
+
+      await LecturerCourseService.getCourseDashboard(mockCourseId, {
+        mode: "site",
+        teamId: "11111111-1111-1111-1111-111111111111",
+        jiraIntegrationId: "jira-site-1",
+      });
+
+      expect(getSpy).toHaveBeenCalledWith(`/api/lecturer/courses/${mockCourseId}/dashboard`, {
+        params: {
+          teamId: "11111111-1111-1111-1111-111111111111",
+          jiraIntegrationId: "jira-site-1",
+        },
+      });
+      expect(getSpy.mock.calls[0][1]?.params).not.toHaveProperty("sprintId");
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID54",
+      type: "N",
+      executedDate: "04/10/2026",
+      description: "Chon Sprint chi gui teamId va sprintId",
+    },
+    async () => {
+      const getSpy = vi.spyOn(apiClient, "get").mockResolvedValueOnce({ data: mockDashboard });
+
+      await LecturerCourseService.getCourseDashboard(mockCourseId, {
+        mode: "sprint",
+        teamId: "11111111-1111-1111-1111-111111111111",
+        sprintId: "33333333-3333-3333-3333-333333333333",
+      });
+
+      expect(getSpy).toHaveBeenCalledWith(`/api/lecturer/courses/${mockCourseId}/dashboard`, {
+        params: {
+          teamId: "11111111-1111-1111-1111-111111111111",
+          sprintId: "33333333-3333-3333-3333-333333333333",
+        },
+      });
+      expect(getSpy.mock.calls[0][1]?.params).not.toHaveProperty("jiraIntegrationId");
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID55",
+      type: "A",
+      executedDate: "04/10/2026",
+      description: "Tu choi selection thieu teamId truoc khi goi API",
+    },
+    async () => {
+      const getSpy = vi.spyOn(apiClient, "get");
+
+      await expect(
+        LecturerCourseService.getCourseDashboard(mockCourseId, {
+          mode: "site",
+          teamId: " ",
+          jiraIntegrationId: "jira-site-1",
+        }),
+      ).rejects.toThrow("Throw ValidationException: Dashboard selection is invalid");
+      expect(getSpy).not.toHaveBeenCalled();
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID56",
+      type: "A",
+      executedDate: "04/10/2026",
+      description: "Tu choi gui dong thoi Site va Sprint",
+    },
+    async () => {
+      const getSpy = vi.spyOn(apiClient, "get");
+
+      await expect(
+        LecturerCourseService.getCourseDashboard(mockCourseId, {
+          mode: "sprint",
+          teamId: "11111111-1111-1111-1111-111111111111",
+          sprintId: "33333333-3333-3333-3333-333333333333",
+          jiraIntegrationId: "jira-site-1",
+        } as never),
+      ).rejects.toThrow("Throw ValidationException: Dashboard selection is invalid");
+      expect(getSpy).not.toHaveBeenCalled();
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID57",
+      type: "B",
+      executedDate: "04/10/2026",
+      description: "Mang Site/Sprint thieu thanh mang rong va currentSprint null giu nguyen",
+    },
+    async () => {
+      vi.spyOn(apiClient, "get").mockResolvedValueOnce({
+        data: {
+          ...mockDashboard,
+          teams: [
+            {
+              ...mockDashboard.teams[0],
+              currentSprint: null,
+              sprintSelection: "UNKNOWN",
+              jiraSources: undefined,
+              sprintOptions: null,
+            },
+          ],
+        },
+      });
+
+      const res = await LecturerCourseService.getCourseDashboard(mockCourseId);
+
+      expect(res.teams[0].currentSprint).toBeNull();
+      expect(res.teams[0].jiraSources).toEqual([]);
+      expect(res.teams[0].sprintOptions).toEqual([]);
+      expect(res.teams[0].sprintSelection).toBeNull();
+    }
+  );
 });

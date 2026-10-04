@@ -33,7 +33,6 @@ export interface IssueTypeUiRules {
   canSubmit: boolean;
   canChangeIssueType: boolean;
   unknownMessage?: string;
-  sprintFollowsParentHint?: string;
 }
 
 /** Chỉ đọc cấp loại thẻ từ BE; không suy từ tên Task/Story/Subtask. */
@@ -107,7 +106,6 @@ export function getIssueTypeUiRules(
         canAssignSprint: false,
         canSubmit: true,
         canChangeIssueType: false,
-        sprintFollowsParentHint: "Theo sprint của",
       };
     case "ABOVE_EPIC":
       return {

@@ -16,6 +16,8 @@ const NODE_SIZE_SCALE: Record<string, number> = {
   STANDARD: 1.0,
   SUBTASK: 0.78,
   COMMIT: 0.72,
+  FILE: 0.68,
+  WEB_LINK: 0.68,
 };
 
 export function normalizeGraphIssueTypeLevel(value?: string | null): IssueTypeLevel {
@@ -38,6 +40,9 @@ export function graphNodeSizeFor(
 ): { width: number; height: number } {
   if (nodeType === "COMMIT") {
     return scaledSize(NODE_SIZE_SCALE.COMMIT);
+  }
+  if (nodeType === "FILE" || nodeType === "WEB_LINK") {
+    return scaledSize(NODE_SIZE_SCALE.FILE);
   }
   if (nodeType === "PROJECT" || nodeType === "TEAM") {
     return scaledSize(NODE_SIZE_SCALE.PROJECT);

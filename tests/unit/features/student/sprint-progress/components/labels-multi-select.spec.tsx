@@ -122,4 +122,29 @@ describe("LabelsMultiSelect", () => {
       expect(onChange).toHaveBeenCalledWith([]);
     }
   );
+
+  fptTest(
+    {
+      id: "UTCID07",
+      type: "A",
+      executedDate: "04/10/2026",
+      description: "Khong hien label Jira tu do trong danh sach chon SAGA",
+    },
+    () => {
+      render(
+        <LabelsMultiSelect
+          value={[]}
+          onChange={vi.fn()}
+          availableLabels={["frontend", "urgent", "saga:test", "saga:docs"]}
+        />
+      );
+
+      fireEvent.click(screen.getByRole("textbox"));
+
+      expect(screen.queryByText("frontend")).not.toBeInTheDocument();
+      expect(screen.queryByText("urgent")).not.toBeInTheDocument();
+      expect(screen.getByText("saga:test")).toBeInTheDocument();
+      expect(screen.getByText("saga:document")).toBeInTheDocument();
+    }
+  );
 });

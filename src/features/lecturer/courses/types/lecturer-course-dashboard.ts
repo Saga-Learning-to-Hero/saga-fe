@@ -61,6 +61,21 @@ export interface LecturerDashboardTaskStatusTotals {
   completionPercent: number | null;
 }
 
+export type LecturerDashboardSprintSelection = "SELECTED" | "DEFAULT";
+
+export interface LecturerDashboardJiraSource {
+  jiraIntegrationId: string;
+  siteName: string;
+  projectKey: string;
+  connectionStatus: string;
+}
+
+export interface LecturerDashboardSprintOption {
+  id: string;
+  name: string;
+  state: string;
+}
+
 export interface LecturerDashboardCurrentSprint {
   sprintId: string;
   sprintName: string;
@@ -68,7 +83,15 @@ export interface LecturerDashboardCurrentSprint {
   startDate: string | null;
   endDate: string | null;
   elapsedPercent: number | null;
+  source: LecturerDashboardJiraSource | null;
 }
+
+export type LecturerDashboardSelection =
+  | { mode: "default" }
+  | { mode: "site"; teamId: string; jiraIntegrationId: string }
+  | { mode: "sprint"; teamId: string; sprintId: string };
+
+export const DEFAULT_DASHBOARD_SELECTION: LecturerDashboardSelection = { mode: "default" };
 
 export interface LecturerDashboardProgress {
   totalTasks: number;
@@ -160,6 +183,9 @@ export interface LecturerDashboardTeam {
   projectName: string | null;
   memberCount: number;
   currentSprint: LecturerDashboardCurrentSprint | null;
+  sprintSelection: LecturerDashboardSprintSelection | null;
+  jiraSources: LecturerDashboardJiraSource[];
+  sprintOptions: LecturerDashboardSprintOption[];
   progress: LecturerDashboardProgress | null;
   activity: LecturerDashboardActivity | null;
   traceability: LecturerDashboardTraceability | null;

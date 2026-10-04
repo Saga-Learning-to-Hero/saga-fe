@@ -62,6 +62,12 @@ vi.mock("@/features/student/sprint-progress/hooks/use-project-sprints", () => ({
 vi.mock("@/features/graph/hooks/use-project-graph", () => ({
   PROJECT_GRAPH_QUERY_KEY: "project-graph",
   useProjectGraph: (...args: unknown[]) => graphQueryMock(...args),
+  useAccumulatedProjectGraph: (...args: unknown[]) => ({
+    ...graphQueryMock(...args),
+    loadMore: vi.fn(),
+    canLoadMore: false,
+    isLoadingMore: false,
+  }),
 }));
 
 vi.mock("cytoscape", () => {

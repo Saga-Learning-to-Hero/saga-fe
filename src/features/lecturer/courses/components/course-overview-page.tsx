@@ -17,6 +17,12 @@ import {
   useLecturerCourseAccess,
   useLecturerCourseDashboard,
 } from "../hooks/use-lecturer-courses";
+import { selectionForTeamChange } from "../lib/dashboard-selection";
+import {
+  DEFAULT_DASHBOARD_SELECTION,
+  type LecturerDashboardSelection,
+} from "../types/lecturer-course-dashboard";
+import { CourseDashboardContextBar } from "./course-dashboard-context-bar";
 import {
   filterAttentionTeams,
   formatDashboardGeneratedAt,
@@ -40,13 +46,25 @@ interface CourseOverviewPageProps {
 }
 
 export function CourseOverviewPage({ courseId }: CourseOverviewPageProps) {
-  const dashboardQuery = useLecturerCourseDashboard(courseId);
+  const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null);
+  const [selection, setSelection] = useState<LecturerDashboardSelection>(DEFAULT_DASHBOARD_SELECTION);
+  const dashboardQuery = useLecturerCourseDashboard(courseId, selection);
   const { isAccessDenied } = useLecturerCourseAccess(dashboardQuery.isError, dashboardQuery.error);
   const [activeTab, setActiveTab] = useState<"attention" | "all">("attention");
   const [highlightedTeamIds, setHighlightedTeamIds] = useState<string[]>([]);
 
   const dashboard = dashboardQuery.data;
   const teams = useMemo(() => dashboard?.teams ?? [], [dashboard?.teams]);
+  const selectedTeamMissing = Boolean(
+    selectedTeamId &&
+      dashboard &&
+      !dashboardQuery.isPlaceholderData &&
+      !teams.some((team) => team.teamId === selectedTeamId),
+  );
+  if (selectedTeamMissing) {
+    setSelectedTeamId(null);
+    if (selection.mode !== "default") setSelection(DEFAULT_DASHBOARD_SELECTION);
+  }
   const attentionTeams = useMemo(
     () => sortDashboardTeamsByRisk(filterAttentionTeams(teams)),
     [teams]
@@ -126,6 +144,24 @@ export function CourseOverviewPage({ courseId }: CourseOverviewPageProps) {
     >
       {dashboard ? (
         <>
+          <CourseDashboardContextBar
+            teams={teams}
+            selectedTeamId={selectedTeamId}
+            selection={selection}
+            controlsLocked={dashboardQuery.isFetching && dashboardQuery.isPlaceholderData}
+            onTeamChange={(teamId) => {
+              setSelectedTeamId(teamId);
+              setSelection((current) => selectionForTeamChange(current, teamId));
+            }}
+            onSiteChange={(jiraIntegrationId) => {
+              if (!selectedTeamId) return;
+              setSelection({ mode: "site", teamId: selectedTeamId, jiraIntegrationId });
+            }}
+            onSprintChange={(sprintId) => {
+              if (!selectedTeamId) return;
+              setSelection({ mode: "sprint", teamId: selectedTeamId, sprintId });
+            }}
+          />
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
             <OverviewStatCard
               icon={<UsersIcon className="size-5" />}
