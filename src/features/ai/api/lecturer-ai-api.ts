@@ -1,4 +1,5 @@
 import { apiClient } from "@/lib/axios";
+import { isOfferedAiProvider } from "../lib/ai-provider-format";
 import type {
   CourseAiSettingsResponse,
   CourseAiSettingsUpdateRequest,
@@ -21,7 +22,8 @@ export const CourseAiService = {
     const response = await apiClient.get<AiProviderCatalogResponse>(
       `/api/lecturer/courses/${courseId}/ai-provider-catalog`
     );
-    return response.data;
+    // OpenRouter is not offered: every provider picker reads this catalog.
+    return { ...response.data, providers: response.data.providers.filter((p) => isOfferedAiProvider(p.provider)) };
   },
 
   async getSettings(courseId: string): Promise<CourseAiSettingsResponse> {

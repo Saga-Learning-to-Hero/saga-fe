@@ -535,4 +535,26 @@ describe("CourseAiService", () => {
       );
     }
   );
+
+  fptTest(
+    { id: "UTCID40", type: "N", executedDate: "05/10/2026", description: "OpenRouter bi an khoi danh sach nha cung cap cua lop" },
+    async () => {
+      vi.mocked(apiClient.get).mockResolvedValueOnce({
+        data: {
+          providers: [
+            { provider: "OPENAI", displayName: "OpenAI", models: [] },
+            { provider: "GEMINI", displayName: "Google Gemini", models: [] },
+            { provider: "OPENROUTER", displayName: "OpenRouter", models: [] },
+            { provider: "COHERE", displayName: "Cohere", models: [] },
+          ],
+          freeTierNotice: "notice",
+        },
+      });
+
+      const result = await CourseAiService.getProviderCatalog(mockCourseId);
+
+      expect(result.providers.map((p) => p.provider)).toEqual(["OPENAI", "GEMINI", "COHERE"]);
+      expect(result.freeTierNotice).toBe("notice");
+    }
+  );
 });

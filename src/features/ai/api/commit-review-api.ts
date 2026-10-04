@@ -1,4 +1,5 @@
 import { apiClient } from "@/lib/axios";
+import { isOfferedAiProvider } from "../lib/ai-provider-format";
 import type {
   CourseAiTeamAccessResponse,
   CommitAiBackfillResult,
@@ -8,6 +9,11 @@ import type {
 } from "../types";
 
 export const REQUEST_REVIEW_TIMEOUT_MS = 60_000;
+
+/** OpenRouter is not offered to teams either: drop its models from the team key form. */
+function offeredModelsOnly(status: TeamAiKeyStatus): TeamAiKeyStatus {
+  return { ...status, models: (status.models ?? []).filter((model) => isOfferedAiProvider(model.provider)) };
+}
 
 const base = (projectId: string) => `/api/projects/${encodeURIComponent(projectId)}`;
 
@@ -57,17 +63,17 @@ export const CommitReviewService = {
 
   async getTeamKey(projectId: string): Promise<TeamAiKeyStatus> {
     const response = await apiClient.get<TeamAiKeyStatus>(`${base(projectId)}/ai-team-key`);
-    return response.data;
+    return offeredModelsOnly(response.data);
   },
 
   async saveTeamKey(projectId: string, request: SaveTeamAiKeyRequest): Promise<TeamAiKeyStatus> {
     const response = await apiClient.put<TeamAiKeyStatus>(`${base(projectId)}/ai-team-key`, request);
-    return response.data;
+    return offeredModelsOnly(response.data);
   },
 
   async removeTeamKey(projectId: string): Promise<TeamAiKeyStatus> {
     const response = await apiClient.delete<TeamAiKeyStatus>(`${base(projectId)}/ai-team-key`);
-    return response.data;
+    return offeredModelsOnly(response.data);
   },
 
   async getTeamAccess(courseId: string): Promise<CourseAiTeamAccessResponse> {

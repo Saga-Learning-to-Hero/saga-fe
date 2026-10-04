@@ -98,4 +98,24 @@ describe("CommitReviewService", () => {
       expect(apiClient.put).toHaveBeenCalledWith(`/api/lecturer/courses/${courseId}/ai/team-access/${projectId}`, { allowed: true });
     }
   );
+
+  fptTest(
+    { id: "UTCID20", type: "N", executedDate: "05/10/2026", description: "Form key nhom khong hien model OpenRouter" },
+    async () => {
+      vi.mocked(apiClient.get).mockResolvedValueOnce({
+        data: {
+          configured: false,
+          models: [
+            { provider: "GEMINI", modelId: "gemini-3.6-flash" },
+            { provider: "OPENROUTER", modelId: "openrouter/free" },
+            { provider: "COHERE", modelId: "command-a-plus-05-2026" },
+          ],
+        },
+      });
+
+      const status = await CommitReviewService.getTeamKey(projectId);
+
+      expect(status.models.map((m) => m.provider)).toEqual(["GEMINI", "COHERE"]);
+    }
+  );
 });
