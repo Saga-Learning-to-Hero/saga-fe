@@ -186,9 +186,7 @@ export function CourseOverviewPage({ courseId }: CourseOverviewPageProps) {
               }
             />
           </div>
-
-          <DelayCasesActionWidget mode="lecturer" />
-
+          <DelayCasesActionWidget mode="lecturer" courseId={courseId} />
           <CourseActivityHeatmap
             teams={teams}
             onHighlightedTeamIdsChange={setHighlightedTeamIds}

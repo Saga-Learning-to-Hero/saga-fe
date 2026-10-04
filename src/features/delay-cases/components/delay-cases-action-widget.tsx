@@ -11,10 +11,11 @@ import { DelayCaseDetailModal } from "./delay-case-detail-modal";
 
 interface DelayCasesActionWidgetProps {
   projectId?: string;
+  courseId?: string;
   mode: "student" | "lecturer";
 }
 
-export function DelayCasesActionWidget({ projectId, mode }: DelayCasesActionWidgetProps) {
+export function DelayCasesActionWidget({ projectId, courseId, mode }: DelayCasesActionWidgetProps) {
   const isStudent = mode === "student";
   const isLecturer = mode === "lecturer";
 
@@ -29,14 +30,17 @@ export function DelayCasesActionWidget({ projectId, mode }: DelayCasesActionWidg
     const cases = query.data || [];
     if (!cases.length) return [];
     if (isLecturer) {
-      return cases.filter((c) => c.status === "AWAITING_LECTURER");
+      return cases.filter((c) =>
+        c.status === "AWAITING_LECTURER" &&
+        (!courseId || c.context?.courseId === courseId)
+      );
     }
     return cases.filter((c) => {
       if (c.status === "OPEN" && c.permissions?.canExplain) return true;
       if (c.status === "AWAITING_LEADER" && c.permissions?.canLeaderReview) return true;
       return false;
     });
-  }, [query.data, isLecturer]);
+  }, [query.data, isLecturer, courseId]);
 
   const [selectedCaseId, setSelectedCaseId] = useState<string | null>(null);
 
