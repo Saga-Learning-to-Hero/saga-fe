@@ -134,8 +134,28 @@ export function TaskAiIntelligenceSection({
           </div>
         ) : intelligenceQuery.data?.analysis?.status === "FAILED" ? (
           <div className="p-4 text-center text-xs text-muted-foreground space-y-2 rounded-xl border border-dashed border-red-500/30 bg-red-500/5">
-            <p className="text-red-600 dark:text-red-400 font-semibold">Lỗi trong quá trình phân tích AI.</p>
-            <p className="text-[11px]">Mã lỗi: {intelligenceQuery.data.analysis.failureCode || "UNKNOWN_ERROR"}</p>
+            {intelligenceQuery.data.analysis.failure ? (
+              <>
+                <p className="text-red-600 dark:text-red-400 font-bold">{intelligenceQuery.data.analysis.failure.title}</p>
+                <p className="text-foreground">{intelligenceQuery.data.analysis.failure.message}</p>
+                {intelligenceQuery.data.analysis.failure.hint && (
+                  <p className="text-[11px] text-muted-foreground">{intelligenceQuery.data.analysis.failure.hint}</p>
+                )}
+                <p className="text-[10px] text-muted-foreground opacity-70 mt-2" title="Chi tiết kỹ thuật">
+                  Mã lỗi: {intelligenceQuery.data.analysis.failure.code}
+                </p>
+                {intelligenceQuery.data.analysis.failure.retryable && (
+                  <Button size="sm" variant="outline" onClick={() => submitIntelligenceMutation.mutate()} className="mt-2 h-7 text-[11px]">
+                    Thử lại
+                  </Button>
+                )}
+              </>
+            ) : (
+              <>
+                <p className="text-red-600 dark:text-red-400 font-semibold">Lỗi trong quá trình phân tích AI.</p>
+                <p className="text-[11px]">Mã lỗi: {intelligenceQuery.data.analysis.failureCode || "UNKNOWN_ERROR"}</p>
+              </>
+            )}
           </div>
         ) : parsedIntelligence ? (
           <div className="space-y-2.5">

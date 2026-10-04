@@ -2,13 +2,10 @@
 
 import { useMemo, useState } from "react";
 import {
-  CheckIcon,
   ClockIcon,
   GitCommitIcon,
   LayersIcon,
   Loader2Icon,
-  PlusIcon,
-  ShieldCheckIcon,
   UserIcon,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -91,11 +88,7 @@ function parseDateMs(dateStr?: string | null): number {
 export function TaskWorkSessionTimeline({
   projectId,
   taskId,
-  onSelectCommit,
-  onSelectAllCommits,
-  onContinueToConfirmation,
   selectedShas = [],
-  canSelectCommit = false,
 }: TaskWorkSessionTimelineProps) {
   const [filter, setFilter] = useState<TimelineFilter>("all");
   const { data, isLoading, isError, refetch } = useTaskWorkSessionTimeline(
@@ -112,13 +105,6 @@ export function TaskWorkSessionTimeline({
   const rawCommitItems = commits?.items;
   const completedSessions = rawCompletedSessions || [];
   const commitItems = rawCommitItems || [];
-
-  const validShas = useMemo(
-    () => (rawCommitItems || []).map((c) => c.sha).filter(Boolean),
-    [rawCommitItems]
-  );
-  const isAllSelected =
-    validShas.length > 0 && validShas.every((sha) => selectedShas.includes(sha));
 
   const unifiedItems: TimelineUnifiedItem[] = useMemo(() => {
     const items: TimelineUnifiedItem[] = [];

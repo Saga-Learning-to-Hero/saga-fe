@@ -417,34 +417,74 @@ export function StudentAiHubPage({ projectId }: StudentAiHubPageProps) {
               </div>
             ) : progressAnalysis.status === "FAILED" ? (
               <div className="p-6 rounded-xl border border-red-500/30 bg-red-500/10 space-y-3.5 shadow-xs">
-                <div className="flex items-center gap-2.5 text-red-600 dark:text-red-400 font-bold text-sm">
-                  <AlertOctagonIcon className="w-5 h-5 shrink-0" />
-                  <span>Phân tích tiến độ thất bại</span>
-                </div>
-                <p className="text-xs text-foreground/90 leading-relaxed">
-                  {getAiErrorMessage(progressAnalysis.failureCode || progressAnalysis.providerDecision?.safeErrorCode)}
-                </p>
-                <div className="flex flex-wrap items-center gap-3 text-xs font-mono text-muted-foreground pt-1">
-                  <span className="px-2 py-0.5 rounded-md bg-red-500/20 text-red-700 dark:text-red-300 font-bold">
-                    Mã lỗi: {progressAnalysis.failureCode || progressAnalysis.providerDecision?.safeErrorCode || "AI_ANALYSIS_FAILED"}
-                  </span>
-                  {progressAnalysis.completedAt && (
-                    <span>Thời điểm: {formatVietnamDateTime(progressAnalysis.completedAt)}</span>
-                  )}
-                </div>
-                <div className="pt-2">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => {
-                      if (scope === "team") submitTeamProgressMutation.mutate();
-                      else submitStudentProgressMutation.mutate();
-                    }}
-                    className="border-red-500/30 text-red-600 hover:bg-red-500/10 text-xs cursor-pointer"
-                  >
-                    Thử phân tích lại
-                  </Button>
-                </div>
+                {progressAnalysis.failure ? (
+                  <>
+                    <div className="flex items-center gap-2.5 text-red-600 dark:text-red-400 font-bold text-sm">
+                      <AlertOctagonIcon className="w-5 h-5 shrink-0" />
+                      <span>{progressAnalysis.failure.title}</span>
+                    </div>
+                    <p className="text-xs text-foreground/90 leading-relaxed">
+                      {progressAnalysis.failure.message}
+                    </p>
+                    {progressAnalysis.failure.hint && (
+                      <p className="text-[11px] text-muted-foreground">{progressAnalysis.failure.hint}</p>
+                    )}
+                    <div className="flex flex-wrap items-center gap-3 text-[10px] font-mono text-muted-foreground opacity-70 pt-1" title="Chi tiết kỹ thuật">
+                      <span className="px-2 py-0.5 rounded-md bg-red-500/10">
+                        Mã lỗi: {progressAnalysis.failure.code}
+                      </span>
+                      {progressAnalysis.completedAt && (
+                        <span>Thời điểm: {formatVietnamDateTime(progressAnalysis.completedAt)}</span>
+                      )}
+                    </div>
+                    {progressAnalysis.failure.retryable && (
+                      <div className="pt-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            if (scope === "team") submitTeamProgressMutation.mutate();
+                            else submitStudentProgressMutation.mutate();
+                          }}
+                          className="border-red-500/30 text-red-600 hover:bg-red-500/10 text-xs cursor-pointer"
+                        >
+                          Thử phân tích lại
+                        </Button>
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <>
+                    <div className="flex items-center gap-2.5 text-red-600 dark:text-red-400 font-bold text-sm">
+                      <AlertOctagonIcon className="w-5 h-5 shrink-0" />
+                      <span>Phân tích tiến độ thất bại</span>
+                    </div>
+                    <p className="text-xs text-foreground/90 leading-relaxed">
+                      {getAiErrorMessage(progressAnalysis.failureCode || progressAnalysis.providerDecision?.safeErrorCode)}
+                    </p>
+                    <div className="flex flex-wrap items-center gap-3 text-xs font-mono text-muted-foreground pt-1">
+                      <span className="px-2 py-0.5 rounded-md bg-red-500/20 text-red-700 dark:text-red-300 font-bold">
+                        Mã lỗi: {progressAnalysis.failureCode || progressAnalysis.providerDecision?.safeErrorCode || "AI_ANALYSIS_FAILED"}
+                      </span>
+                      {progressAnalysis.completedAt && (
+                        <span>Thời điểm: {formatVietnamDateTime(progressAnalysis.completedAt)}</span>
+                      )}
+                    </div>
+                    <div className="pt-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => {
+                          if (scope === "team") submitTeamProgressMutation.mutate();
+                          else submitStudentProgressMutation.mutate();
+                        }}
+                        className="border-red-500/30 text-red-600 hover:bg-red-500/10 text-xs cursor-pointer"
+                      >
+                        Thử phân tích lại
+                      </Button>
+                    </div>
+                  </>
+                )}
               </div>
             ) : parsedNarrative ? (
               <div className="space-y-5">
@@ -585,16 +625,36 @@ export function StudentAiHubPage({ projectId }: StudentAiHubPageProps) {
               </div>
             ) : riskAnalysis.status === "FAILED" ? (
               <div className="p-5 rounded-xl border border-red-500/30 bg-red-500/10 space-y-2.5">
-                <div className="flex items-center gap-2 text-red-600 dark:text-red-400 font-bold text-xs">
-                  <AlertOctagonIcon className="w-4 h-4 shrink-0" />
-                  <span>Quét rủi ro thất bại</span>
-                </div>
-                <p className="text-xs text-foreground/80 leading-relaxed">
-                  {getAiErrorMessage(riskAnalysis.failureCode || riskAnalysis.providerDecision?.safeErrorCode)}
-                </p>
-                <div className="text-xs font-mono text-muted-foreground">
-                  Mã lỗi: {riskAnalysis.failureCode || riskAnalysis.providerDecision?.safeErrorCode || "AI_RISK_FAILED"}
-                </div>
+                {riskAnalysis.failure ? (
+                  <>
+                    <div className="flex items-center gap-2 text-red-600 dark:text-red-400 font-bold text-xs">
+                      <AlertOctagonIcon className="w-4 h-4 shrink-0" />
+                      <span>{riskAnalysis.failure.title}</span>
+                    </div>
+                    <p className="text-xs text-foreground/80 leading-relaxed">
+                      {riskAnalysis.failure.message}
+                    </p>
+                    {riskAnalysis.failure.hint && (
+                      <p className="text-[11px] text-muted-foreground">{riskAnalysis.failure.hint}</p>
+                    )}
+                    <div className="text-[10px] font-mono text-muted-foreground opacity-70" title="Chi tiết kỹ thuật">
+                      Mã lỗi: {riskAnalysis.failure.code}
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="flex items-center gap-2 text-red-600 dark:text-red-400 font-bold text-xs">
+                      <AlertOctagonIcon className="w-4 h-4 shrink-0" />
+                      <span>Quét rủi ro thất bại</span>
+                    </div>
+                    <p className="text-xs text-foreground/80 leading-relaxed">
+                      {getAiErrorMessage(riskAnalysis.failureCode || riskAnalysis.providerDecision?.safeErrorCode)}
+                    </p>
+                    <div className="text-xs font-mono text-muted-foreground">
+                      Mã lỗi: {riskAnalysis.failureCode || riskAnalysis.providerDecision?.safeErrorCode || "AI_RISK_FAILED"}
+                    </div>
+                  </>
+                )}
               </div>
             ) : parsedRisk ? (
               <div className="space-y-4">
