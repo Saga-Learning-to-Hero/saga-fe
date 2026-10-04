@@ -1,6 +1,6 @@
 import type { GraphSubgraphFilterParams, GraphType } from "@/features/graph/types/graph";
 
-export type GraphScopeMode = "COMPACT" | "FULL";
+export type GraphScopeMode = "COMPACT" | "FULL" | "FILE";
 
 const FOCUS_NODE_TYPES = ["TASK", "COMMIT", "FILE", "WEB_LINK", "STUDENT"] as const;
 const FOCUS_EDGE_TYPES = ["ASSIGNED_TO", "EVIDENCED_BY", "PARENT_OF", "HAS_WORK_ITEM"] as const;
@@ -28,6 +28,11 @@ export function buildGraphScopeParams(input: {
     (input.graphType === "OVERVIEW" || input.graphType === "ACTIVITY")
   ) {
     params.includeEvidence = true;
+  } else if (
+    input.scopeMode === "FILE" &&
+    (input.graphType === "OVERVIEW" || input.graphType === "ACTIVITY")
+  ) {
+    params.evidenceTypes = ["FILE"];
   }
 
   if (input.graphType === "CONTRIBUTION" && input.usedCriteriaOnly) {

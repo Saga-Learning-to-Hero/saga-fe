@@ -39,6 +39,24 @@ describe("buildGraphScopeParams", () => {
 
   fptTest(
     {
+      id: "UTCID06",
+      type: "N",
+      executedDate: "04/10/2026",
+      description: "Che do chi tep chi gui evidenceTypes=FILE, khong kem includeEvidence",
+    },
+    () => {
+      const params = buildGraphScopeParams({ graphType: "OVERVIEW", scopeMode: "FILE" });
+      expect(params).toEqual({ evidenceTypes: ["FILE"] });
+      expect(
+        buildGraphScopeParams({ graphType: "ACTIVITY", scopeMode: "FILE" })
+      ).toEqual({ evidenceTypes: ["FILE"] });
+      expect(JSON.stringify(params)).not.toContain("includeEvidence");
+      expect(JSON.stringify(params)).not.toContain("includeCommits");
+    }
+  );
+
+  fptTest(
+    {
       id: "UTCID03",
       type: "N",
       executedDate: "04/10/2026",

@@ -43,7 +43,7 @@ import { GraphStatsSummary } from "./graph-stats-summary";
 import { GraphNodeDetailsModal } from "./graph-node-details-modal";
 import { Neo4jTabBar } from "./neo4j-tab-bar";
 import { useAccumulatedProjectGraph, useProjectGraph } from "../hooks/use-project-graph";
-import { buildGraphScopeParams } from "../lib/graph-scope";
+import { buildGraphScopeParams, type GraphScopeMode } from "../lib/graph-scope";
 import { describeGraphLoadError } from "../lib/graph-error";
 import { useProjectCommits } from "@/features/student/project/hooks/useProjectSync";
 import { CommitDetailModal } from "@/features/student/commits/components/commit-detail-modal";
@@ -130,7 +130,7 @@ export function LecturerGraphView({
   const [neo4jFilterType, setNeo4jFilterType] = useState<"ALL" | "ANOMALIES_ONLY">("ALL");
   const [selectedGraphNode, setSelectedGraphNode] = useState<CytoscapeNodeData | null>(null);
 
-  const [scopeMode, setScopeMode] = useState<"COMPACT" | "FULL">("COMPACT");
+  const [scopeMode, setScopeMode] = useState<GraphScopeMode>("COMPACT");
   const [usedCriteriaOnly, setUsedCriteriaOnly] = useState(false);
   const [focusedNodeId, setFocusedNodeId] = useState<string | null>(null);
   const [focusedNodeLabel, setFocusedNodeLabel] = useState<string | null>(null);

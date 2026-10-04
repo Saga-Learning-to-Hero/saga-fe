@@ -39,7 +39,7 @@ import { PipelineWorkspace } from "./pipeline-workspace";
 import { usePipelineGraphData } from "../hooks/use-pipeline-graph-data";
 import { useAccumulatedProjectGraph, useProjectGraph } from "../hooks/use-project-graph";
 import { describeGraphLoadError } from "../lib/graph-error";
-import { buildGraphScopeParams } from "../lib/graph-scope";
+import { buildGraphScopeParams, type GraphScopeMode } from "../lib/graph-scope";
 import {
   mapStudentNodesToMemberOptions,
   resolveDrillDownStudent,
@@ -85,7 +85,7 @@ export function TraceabilityGraphView() {
   const [selectedNode, setSelectedNode] = useState<CytoscapeNodeData | null>(null);
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
 
-  const [scopeMode, setScopeMode] = useState<"COMPACT" | "FULL">("COMPACT");
+  const [scopeMode, setScopeMode] = useState<GraphScopeMode>("COMPACT");
   const [usedCriteriaOnly, setUsedCriteriaOnly] = useState(false);
   const [focusedNodeId, setFocusedNodeId] = useState<string | null>(null);
   const [focusedNodeLabel, setFocusedNodeLabel] = useState<string | null>(null);

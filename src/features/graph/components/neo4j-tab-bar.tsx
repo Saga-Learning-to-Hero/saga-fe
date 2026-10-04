@@ -12,6 +12,7 @@ import {
 import { CustomSelect, type CustomSelectOption } from "@/components/common/custom-select";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import type { GraphScopeMode } from "../lib/graph-scope";
 import type { GraphDrillDownStudent } from "../lib/student-profile-id";
 
 export type Neo4jTabMode = "OVERVIEW" | "ACTIVITY" | "ATTRIBUTION";
@@ -25,8 +26,8 @@ export interface Neo4jTabBarProps {
   drillDownStudent?: GraphDrillDownStudent | null;
   onBackToOverview?: () => void;
   selectId?: string;
-  scopeMode?: "COMPACT" | "FULL";
-  onScopeModeChange?: (mode: "COMPACT" | "FULL") => void;
+  scopeMode?: GraphScopeMode;
+  onScopeModeChange?: (mode: GraphScopeMode) => void;
   usedCriteriaOnly?: boolean;
   onUsedCriteriaOnlyChange?: (value: boolean) => void;
   memberOptions?: CustomSelectOption[];
@@ -225,6 +226,17 @@ export function Neo4jTabBar({
                   title="Hiện commit, tệp và liên kết web"
                 >
                   Chi tiết
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onScopeModeChange("FILE")}
+                  className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer ${scopeMode === "FILE"
+                    ? "bg-card text-foreground shadow-2xs"
+                    : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  title="Chỉ hiện tệp đính kèm"
+                >
+                  Chỉ tệp
                 </button>
               </div>
             )}
