@@ -34,7 +34,7 @@ describe("Commit AI review badge", () => {
       );
       const badge = screen.getByTestId("commit-review-badge");
       expect(badge).toHaveAttribute("data-status", "WARNING");
-      expect(badge).toHaveTextContent("Cảnh báo");
+      expect(badge).toHaveTextContent("AI · Cảnh báo");
       expect(badge).toHaveTextContent("· 2");
       expect(badge).toHaveAttribute("title", "Cảnh báo: Tên commit chưa rõ, Code có vấn đề");
       await user.click(badge);
@@ -50,7 +50,7 @@ describe("Commit AI review badge", () => {
           review={{ status: "NO_KEY", label: "Chưa có key AI", reasons: [{ code: "NO_TASK", label: "Chưa gắn task" }], taskLinked: false }}
         />
       );
-      expect(screen.getByText("Chưa có key AI")).toBeInTheDocument();
+      expect(screen.getByText("AI · Chưa có key AI")).toBeInTheDocument();
       expect(screen.getByText("Chưa gắn task")).toBeInTheDocument();
     }
   );

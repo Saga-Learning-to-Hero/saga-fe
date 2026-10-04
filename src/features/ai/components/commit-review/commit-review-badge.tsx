@@ -55,7 +55,7 @@ export function CommitReviewBadge({ review, onClick, className }: CommitReviewBa
         )}
       >
         <Icon className={cn("size-3", tone === "pending" && "animate-spin")} />
-        <span>{review.label}</span>
+        <span>AI · {review.label}</span>
         {review.status === "WARNING" && review.reasons.length > 0 && (
           <span className="font-mono opacity-80">· {review.reasons.length}</span>
         )}

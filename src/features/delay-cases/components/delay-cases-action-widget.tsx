@@ -19,8 +19,11 @@ export function DelayCasesActionWidget({ projectId, courseId, mode }: DelayCases
   const isStudent = mode === "student";
   const isLecturer = mode === "lecturer";
 
-  const studentQuery = useDelayCases(projectId || "", undefined);
-  const lecturerQuery = useLecturerDelayQueue({ status: "AWAITING_LECTURER" });
+  const studentQuery = useDelayCases(isStudent ? projectId || "" : "", undefined);
+  const lecturerQuery = useLecturerDelayQueue(
+    { status: "AWAITING_LECTURER" },
+    { enabled: isLecturer }
+  );
 
   const query = isStudent ? studentQuery : lecturerQuery;
   const isLoading = query.isLoading;

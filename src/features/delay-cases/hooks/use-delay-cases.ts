@@ -42,10 +42,14 @@ export function useDelayCaseDetail(projectId: string, caseId: string) {
   });
 }
 
-export function useLecturerDelayQueue(params?: { status?: string | string[] }) {
+export function useLecturerDelayQueue(
+  params?: { status?: string | string[] },
+  options?: { enabled?: boolean }
+) {
   return useQuery({
     queryKey: DELAY_CASES_QUERY_KEYS.lecturerQueue(params),
     queryFn: () => delayCasesApi.getLecturerQueue(params),
+    enabled: options?.enabled ?? true,
     staleTime: 1000 * 30,
     refetchOnWindowFocus: true,
   });

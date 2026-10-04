@@ -427,7 +427,8 @@ function ReviewBody({
             <p className="text-xs font-mono bg-muted/30 border border-border/50 rounded-lg p-2 whitespace-pre-wrap">{review.message}</p>
           )}
           {review.messageReview.summary && <p className="text-xs text-muted-foreground leading-relaxed">{review.messageReview.summary}</p>}
-          {review.messageReview.suggestedMessage && (
+          {review.messageReview.suggestedMessage &&
+            review.messageReview.suggestedMessage.trim().toLowerCase() !== (review.message ?? "").trim().toLowerCase() && (
             <div className="rounded-lg border border-emerald-500/30 bg-emerald-500/5 p-2.5 space-y-1">
               <div className="flex items-center justify-between gap-2">
                 <span className="text-[11px] font-bold text-emerald-700 dark:text-emerald-300">Gợi ý tên commit</span>

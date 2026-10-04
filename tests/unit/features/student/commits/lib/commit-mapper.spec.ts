@@ -1,6 +1,6 @@
 import { describe, expect } from "vitest";
 import { fptTest } from "@/testing/fpt-test-helper";
-import { extractReposAndBranches, mapProjectCommitToCommitItem } from "@/features/student/commits/lib/commit-mapper";
+import { extractReposAndBranches, isMergeCommit, mapProjectCommitToCommitItem } from "@/features/student/commits/lib/commit-mapper";
 
 const commit = {
   id: "commit-1",
@@ -156,6 +156,60 @@ describe("commit-mapper", () => {
         [{ id: "stu-1", fullName: "An", avatarUrl: "not-a-url", avatar: "https://cdn.example.com/roster.png" }]
       );
       expect(result.author.avatar).toBe("https://cdn.example.com/roster.png");
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID09",
+      type: "N",
+      executedDate: "05/10/2026",
+      description: "Badge khoa task lay tu nhanh khi message chi co tag ngan nhu SG-06",
+    },
+    () => {
+      const result = mapProjectCommitToCommitItem({
+        ...commit,
+        message: "feat: [FE][SG-06] refine graph evidence filters",
+        headRef: "feat/SAGA-102-Refine-flows-UI/UX-FE",
+      });
+      expect(result.jiraKey).toBe("SAGA-102");
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID90",
+      type: "N",
+      executedDate: "05/10/2026",
+      description: "isMergeCommit khop quy tac backend: parentCount quyet dinh, chua biet thi xet message merge cua Git/GitHub",
+    },
+    () => {
+      const base = { isMerge: null, aiReview: null };
+      expect(isMergeCommit({ ...base, parentCount: 2, message: "x" })).toBe(true);
+      expect(isMergeCommit({ ...base, parentCount: 1, message: "Merge pull request #5 from a/b" })).toBe(false);
+      expect(isMergeCommit({ ...base, parentCount: null, message: "Merge pull request #70 from Saga/dev" })).toBe(true);
+      expect(isMergeCommit({ ...base, parentCount: null, message: "Merge branch 'main' of https://github.com/x" })).toBe(true);
+      expect(isMergeCommit({ ...base, parentCount: null, message: "merge conflicts resolved in Login" })).toBe(false);
+      expect(isMergeCommit({ ...base, parentCount: null, message: "fix: merge sort bug" })).toBe(false);
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID91",
+      type: "N",
+      executedDate: "05/10/2026",
+      description: "Backend bao SKIPPED_MERGE thi luon la merge, khong hien danh gia AI",
+    },
+    () => {
+      expect(
+        isMergeCommit({
+          isMerge: null,
+          parentCount: null,
+          message: "Sync with upstream",
+          aiReview: { status: "SKIPPED_MERGE", label: "Merge", reasons: [], taskLinked: false },
+        })
+      ).toBe(true);
     }
   );
 });

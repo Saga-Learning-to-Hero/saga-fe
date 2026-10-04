@@ -30,6 +30,7 @@ const REALTIME_EVENT_NAMES: ProjectRealtimeEventType[] = [
 ];
 
 const READY_DEBOUNCE_MS = 1000;
+const READY_CATCH_UP_MIN_INTERVAL_MS = 60_000;
 
 export function useProjectRealtime(
   projectId?: string | null,
@@ -46,8 +47,9 @@ export function useProjectRealtime(
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
   const readyDebounceTimerRef = useRef<NodeJS.Timeout | null>(null);
   const pendingGraphTypesRef = useRef<Set<GraphType | "ALL">>(new Set());
-  /** SSE reconnects resend READY. Catch up once per subscription, not on every reconnect. */
-  const readyCaughtUpRef = useRef(false);
+  /** SSE reconnects resend READY: catch up on what was missed, but at most once a minute so a flaky
+   * connection does not reload every list again and again. */
+  const lastReadyCatchUpRef = useRef(0);
 
   useEffect(() => {
     optionsRef.current = options;
@@ -162,8 +164,8 @@ export function useProjectRealtime(
 
       switch (type) {
         case "READY":
-          if (readyCaughtUpRef.current) break;
-          readyCaughtUpRef.current = true;
+          if (Date.now() - lastReadyCatchUpRef.current < READY_CATCH_UP_MIN_INTERVAL_MS) break;
+          lastReadyCatchUpRef.current = Date.now();
           scheduleReadyInvalidation();
           break;
         case "GRAPH_CHANGED":
@@ -242,7 +244,7 @@ export function useProjectRealtime(
       eventSourceRef.current.close();
       eventSourceRef.current = null;
     }
-    readyCaughtUpRef.current = false;
+    lastReadyCatchUpRef.current = 0;
 
     const streamUrl = `${API_BASE_URL}/api/projects/${encodeURIComponent(cleanProjectId)}/events`;
 

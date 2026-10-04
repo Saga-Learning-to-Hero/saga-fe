@@ -12,6 +12,31 @@ export interface CommitTeamMember {
   avatarUrl?: string | null;
 }
 
+/** Branch first: a tag like [SG-06] in the message is not the linked task when the branch has SAGA-102. */
+function firstJiraKey(...texts: Array<string | null | undefined>): string | undefined {
+  const pattern = /([A-Z][A-Z0-9]+-\d+)/i;
+  for (const text of texts) {
+    const match = text?.match(pattern);
+    if (match) return match[1].toUpperCase();
+  }
+  return undefined;
+}
+
+/** Git's / GitHub's own merge messages (same rule as the backend's AI review). */
+const GIT_MERGE_MESSAGE = /^(Merge pull request #\d+|Merge branch '|Merge remote-tracking branch '|Merge tag '|Merge commit ')/;
+
+/**
+ * A known parent count decides; while it is unknown (a push webhook does not carry it) the merge
+ * message does, and the backend's own SKIPPED_MERGE review status always wins.
+ */
+export function isMergeCommit(
+  commit: Pick<TaskLinkedCommitItem, "isMerge" | "parentCount" | "message" | "aiReview">
+): boolean {
+  if (commit.isMerge === true || commit.aiReview?.status === "SKIPPED_MERGE") return true;
+  if (commit.parentCount !== null && commit.parentCount !== undefined) return commit.parentCount > 1;
+  return Boolean(commit.message && GIT_MERGE_MESSAGE.test(commit.message.trim()));
+}
+
 export function formatRelativeTime(dateStr?: string | null): string {
   if (!dateStr) return "Gần đây";
   try {
@@ -64,8 +89,7 @@ export function mapProjectCommitToCommitItem(
     ? commit.repositoryFullName.split("/").pop() || commit.repositoryFullName
     : "default-repo";
 
-  const jiraMatch = commit.message ? commit.message.match(/\[?([A-Z][A-Z0-9]+-\d+)\]?/i) : null;
-  const jiraKey = jiraMatch ? jiraMatch[1].toUpperCase() : undefined;
+  const jiraKey = firstJiraKey(commit.headRef, commit.message);
 
   const shortHash = commit.sha ? commit.sha.slice(0, 7) : commit.id.slice(0, 7);
 
@@ -93,10 +117,7 @@ export function mapProjectCommitToCommitItem(
       commit.repositoryFullName && commit.sha
         ? `https://github.com/${commit.repositoryFullName}/commit/${commit.sha}`
         : undefined,
-    isMerge:
-      commit.isMerge === true ||
-      (commit.parentCount !== null && commit.parentCount !== undefined && commit.parentCount > 1) ||
-      Boolean(commit.message && /^(merge\s+|merge\b)/i.test(commit.message.trim())),
+    isMerge: isMergeCommit(commit),
     parentCount: commit.parentCount ?? null,
     aiReview: commit.aiReview ?? null,
   };

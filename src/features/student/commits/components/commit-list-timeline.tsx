@@ -205,7 +205,8 @@ export function CommitListTimeline({
                               </Badge>
                             )}
 
-                            {commit.aiReview && commit.aiReview.status !== "SKIPPED_MERGE" && (
+                            {/* Merge commits only join existing work: no AI review, no "no task" warning. */}
+                            {commit.aiReview && !commit.isMerge && commit.aiReview.status !== "SKIPPED_MERGE" && (
                               <CommitReviewBadge
                                 review={commit.aiReview}
                                 onClick={projectId ? () => setReviewCommit(commit) : undefined}
