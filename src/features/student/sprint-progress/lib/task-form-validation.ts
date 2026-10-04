@@ -35,13 +35,15 @@ export interface TaskFormValidationInput {
   issueTypeLevel?: IssueTypeLevel | string | null;
   parentTaskId?: string;
   isEditing?: boolean;
+  originalStartDate?: string;
+  originalDueDate?: string;
   /** Tổng tỷ trọng sibling đã dùng (đã loại chính Subtask khi sửa). */
   siblingUsedPoints?: number;
 }
 
 export interface TaskFormValidationResult {
   errors: TaskFormErrors;
-  dateWarning?: string;
+  dateInfo?: string;
 }
 
 const DATE_ONLY_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
@@ -144,17 +146,25 @@ export function validateTaskForm(input: TaskFormValidationInput): TaskFormValida
     }
   }
 
-  let dateWarning: string | undefined;
+  let dateInfo: string | undefined;
   const sprint = input.sprintId === "backlog" ? undefined : input.selectedSprint;
-  if (
-    !errors.startDate &&
-    !errors.dueDate &&
-    sprint?.startDate &&
-    sprint.endDate &&
-    ((startDate && startDate < sprint.startDate) || (dueDate && dueDate > sprint.endDate))
-  ) {
-    dateWarning = `Lịch Task nằm ngoài ${sprint.name} (${sprint.startDate} – ${sprint.endDate}). Bạn vẫn có thể lưu nếu đây là kế hoạch có chủ đích.`;
+  
+  if (sprint?.startDate && sprint.endDate) {
+    const isStartDateChanged = !input.isEditing || startDate !== (input.originalStartDate || "");
+    const isDueDateChanged = !input.isEditing || dueDate !== (input.originalDueDate || "");
+
+    if (startDate && isStartDateChanged && (startDate < sprint.startDate || startDate > sprint.endDate)) {
+      errors.startDate = `Ngày bắt đầu phải nằm trong ${sprint.name} (${sprint.startDate} – ${sprint.endDate}).`;
+    }
+
+    if (dueDate && isDueDateChanged) {
+      if (dueDate < sprint.startDate) {
+        errors.dueDate = "Hạn hoàn thành không được trước khi Sprint bắt đầu.";
+      } else if (dueDate > sprint.endDate) {
+        dateInfo = `Hạn hoàn thành sau khi ${sprint.name} kết thúc, Task sẽ chuyển sang sprint sau nếu chưa xong.`;
+      }
+    }
   }
 
-  return { errors, dateWarning };
+  return { errors, dateInfo };
 }

@@ -43,7 +43,7 @@ describe("validateTaskForm", () => {
       description: "Chap nhan Task co du lieu hop le nam trong lich Sprint",
     },
     () => {
-      expect(validateTaskForm(validInput())).toEqual({ errors: {}, dateWarning: undefined });
+      expect(validateTaskForm(validInput())).toEqual({ errors: {}, dateInfo: undefined });
     }
   );
 
@@ -76,7 +76,7 @@ describe("validateTaskForm", () => {
     () => {
       const result = validateTaskForm({ ...validInput(), dueDate: "2026-09-20" });
       expect(result.errors).toEqual({});
-      expect(result.dateWarning).toContain("Sprint 1");
+      expect(result.dateInfo).toContain("Sprint 1");
     }
   );
 
@@ -96,7 +96,7 @@ describe("validateTaskForm", () => {
         dueDate: "2026-10-01",
       });
       expect(result.errors).toEqual({});
-      expect(result.dateWarning).toBeUndefined();
+      expect(result.dateInfo).toBeUndefined();
     }
   );
 

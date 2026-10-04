@@ -33,6 +33,33 @@ interface ProjectProgressSummaryProps {
   className?: string;
 }
 
+function formatSyncLabel(
+  isActive: boolean,
+  type: "Jira" | "GitHub",
+  syncStatus: string | null,
+  relativeTime: string | null
+) {
+  if (!isActive) return `Chưa kết nối ${type}`;
+
+  const status = (syncStatus || "").toUpperCase();
+  let statusText = "";
+  if (status === "RUNNING") statusText = "Đang đồng bộ";
+  else if (status === "FAILED") statusText = "Lỗi đồng bộ";
+  else if (status === "SUCCEEDED") statusText = "Thành công";
+
+  const timePart = relativeTime ? `${relativeTime}` : "";
+
+  if (statusText && timePart) {
+    return `Đã kết nối ${type} (${statusText} · ${timePart})`;
+  }
+  
+  if (statusText || timePart) {
+    return `Đã kết nối ${type} (${statusText || timePart})`;
+  }
+
+  return `Đã kết nối ${type}`;
+}
+
 export function ProjectProgressSummary({ progress, className }: ProjectProgressSummaryProps) {
   const tasks = progress.taskSummary;
   const completionLabel = formatCompletionPercent(tasks.completionPercent);
@@ -78,45 +105,42 @@ export function ProjectProgressSummary({ progress, className }: ProjectProgressS
               className={cn(
                 "inline-flex items-center gap-1.5 rounded-md border px-2 py-0.5 font-mono text-xs font-semibold",
                 syncInfo.isJiraActive
-                  ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+                  ? syncInfo.jiraSyncStatus === "FAILED"
+                    ? "border-red-500/30 bg-red-500/10 text-red-600 dark:text-red-400"
+                    : "border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
                   : "border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-300"
               )}
             >
               <span
                 className={cn(
                   "size-1.5 rounded-full",
-                  syncInfo.isJiraActive ? "bg-emerald-500" : "bg-amber-500"
+                  syncInfo.isJiraActive 
+                    ? (syncInfo.jiraSyncStatus === "FAILED" ? "bg-red-500 animate-pulse" : "bg-emerald-500") 
+                    : "bg-amber-500"
                 )}
               />
-              {syncInfo.isJiraActive ? "Đã kết nối Jira" : "Chưa kết nối Jira"}
+              {formatSyncLabel(syncInfo.isJiraActive, "Jira", syncInfo.jiraSyncStatus, syncInfo.jiraRelativeTime)}
             </span>
 
             <span
               className={cn(
                 "inline-flex items-center gap-1.5 rounded-md border px-2 py-0.5 font-mono text-xs font-semibold",
                 syncInfo.isGitHubActive
-                  ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+                  ? syncInfo.githubSyncStatus === "FAILED"
+                    ? "border-red-500/30 bg-red-500/10 text-red-600 dark:text-red-400"
+                    : "border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
                   : "border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-300"
               )}
             >
               <span
                 className={cn(
                   "size-1.5 rounded-full",
-                  syncInfo.isGitHubActive ? "bg-emerald-500" : "bg-amber-500"
+                  syncInfo.isGitHubActive 
+                    ? (syncInfo.githubSyncStatus === "FAILED" ? "bg-red-500 animate-pulse" : "bg-emerald-500") 
+                    : "bg-amber-500"
                 )}
               />
-              {syncInfo.isGitHubActive ? "Đã kết nối GitHub" : "Chưa kết nối GitHub"}
-            </span>
-
-            <span
-              className={cn(
-                "font-mono text-xs",
-                syncInfo.isStaleOrMissing
-                  ? "font-medium text-amber-700 dark:text-amber-300"
-                  : "text-muted-foreground"
-              )}
-            >
-              Cập nhật {syncInfo.relativeTime}
+              {formatSyncLabel(syncInfo.isGitHubActive, "GitHub", syncInfo.githubSyncStatus, syncInfo.githubRelativeTime)}
             </span>
           </div>
         </div>

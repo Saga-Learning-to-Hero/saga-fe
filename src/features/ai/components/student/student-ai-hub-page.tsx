@@ -603,21 +603,25 @@ export function StudentAiHubPage({ projectId }: StudentAiHubPageProps) {
                   <AiRiskBadge level={parsedRisk.riskLevel} />
                 </div>
 
-                {parsedRisk.riskReasons?.length > 0 && (
+                {parsedRisk.riskReasons?.filter(r => r.description?.trim() || r.impact?.trim()).length > 0 && (
                   <div className="space-y-2">
                     <span className="text-xs font-semibold text-foreground block">
                       Các yếu tố nguy cơ nhận diện:
                     </span>
                     <ul className="space-y-2">
-                      {parsedRisk.riskReasons.map((r, i) => (
+                      {parsedRisk.riskReasons
+                        .filter(r => r.description?.trim() || r.impact?.trim())
+                        .map((r, i) => (
                         <li
                           key={i}
                           className="p-3 rounded-xl bg-red-500/5 border border-red-500/20 text-xs text-foreground space-y-1"
                         >
-                          <div className="font-medium text-red-600 dark:text-red-400">
-                            {r.description}
-                          </div>
-                          {r.impact && (
+                          {r.description?.trim() && (
+                            <div className="font-medium text-red-600 dark:text-red-400">
+                              {r.description}
+                            </div>
+                          )}
+                          {r.impact?.trim() && (
                             <div className="text-xs text-muted-foreground">
                               Hệ quả: {r.impact}
                             </div>
