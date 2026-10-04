@@ -44,7 +44,11 @@ import { GraphNodeDetailsModal } from "./graph-node-details-modal";
 import { Neo4jTabBar } from "./neo4j-tab-bar";
 import { useAccumulatedProjectGraph, useProjectGraph } from "../hooks/use-project-graph";
 import { resolveGraphFileDownloadContext } from "../lib/graph-file-download";
-import { buildGraphScopeParams, retainFileEvidenceGraph, type GraphScopeMode } from "../lib/graph-scope";
+import {
+  buildGraphScopeParams,
+  filterGraphEvidenceByScope,
+  type GraphScopeMode,
+} from "../lib/graph-scope";
 import { describeGraphLoadError } from "../lib/graph-error";
 import { useProjectCommits } from "@/features/student/project/hooks/useProjectSync";
 import { CommitDetailModal } from "@/features/student/commits/components/commit-detail-modal";
@@ -371,8 +375,9 @@ export function LecturerGraphView({
   const displayGraphData = useMemo(() => {
     const rawData = graphQuery.data;
     if (!rawData) return { nodes: [], edges: [] };
-    return retainFileEvidenceGraph(rawData, scopeMode);
-  }, [graphQuery.data, scopeMode]);
+    if (activeGraphType !== "OVERVIEW" && activeGraphType !== "ACTIVITY") return rawData;
+    return filterGraphEvidenceByScope(rawData, scopeMode);
+  }, [graphQuery.data, scopeMode, activeGraphType]);
 
   const structuralStats = useMemo(() => {
     const nodes = displayGraphData.nodes;
@@ -383,7 +388,9 @@ export function LecturerGraphView({
       totalEdges: edges.length,
       anomalyCount,
       meta:
-        graphQuery.data?.meta && scopeMode === "FILE"
+        graphQuery.data?.meta &&
+        (scopeMode === "COMMIT" || scopeMode === "FILE_LINK") &&
+        (activeGraphType === "OVERVIEW" || activeGraphType === "ACTIVITY")
           ? {
               ...graphQuery.data.meta,
               returnedNodes: nodes.length,
@@ -391,7 +398,7 @@ export function LecturerGraphView({
             }
           : graphQuery.data?.meta,
     };
-  }, [displayGraphData, graphQuery.data, scopeMode]);
+  }, [displayGraphData, graphQuery.data, scopeMode, activeGraphType]);
 
   const handleSelectTeam = (newTeamId: string) => {
     setSelectedTeamIdState(newTeamId);
