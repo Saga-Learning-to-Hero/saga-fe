@@ -29,7 +29,9 @@ describe("CommitReviewService", () => {
     async () => {
       vi.mocked(apiClient.post).mockResolvedValueOnce({ data: { status: "PENDING" } });
       await CommitReviewService.requestReview(projectId, commitId);
-      expect(apiClient.post).toHaveBeenCalledWith(`/api/projects/${projectId}/commits/${commitId}/ai-review`);
+      expect(apiClient.post).toHaveBeenCalledWith(`/api/projects/${projectId}/commits/${commitId}/ai-review`, undefined, {
+        timeout: 60_000,
+      });
     }
   );
 

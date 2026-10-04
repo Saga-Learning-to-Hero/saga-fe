@@ -7,6 +7,8 @@ import type {
   TeamAiKeyStatus,
 } from "../types";
 
+export const REQUEST_REVIEW_TIMEOUT_MS = 60_000;
+
 const base = (projectId: string) => `/api/projects/${encodeURIComponent(projectId)}`;
 
 /** AI review of commits, the team's own AI key and manual commit-task attachments. */
@@ -19,8 +21,12 @@ export const CommitReviewService = {
   },
 
   async requestReview(projectId: string, commitId: string): Promise<CommitAiReviewDetail> {
+    // The backend reads the commit's diff from GitHub before queueing (a large commit took ~25s);
+    // the default 15s timeout cancelled the request and showed "cannot reach the server".
     const response = await apiClient.post<CommitAiReviewDetail>(
-      `${base(projectId)}/commits/${encodeURIComponent(commitId)}/ai-review`
+      `${base(projectId)}/commits/${encodeURIComponent(commitId)}/ai-review`,
+      undefined,
+      { timeout: REQUEST_REVIEW_TIMEOUT_MS }
     );
     return response.data;
   },
