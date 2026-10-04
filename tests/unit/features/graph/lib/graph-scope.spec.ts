@@ -1,6 +1,6 @@
 import { describe, expect } from "vitest";
 import { fptTest } from "@/testing/fpt-test-helper";
-import { buildGraphScopeParams } from "@/features/graph/lib/graph-scope";
+import { buildGraphScopeParams, retainFileEvidenceGraph } from "@/features/graph/lib/graph-scope";
 
 describe("buildGraphScopeParams", () => {
   fptTest(
@@ -42,16 +42,34 @@ describe("buildGraphScopeParams", () => {
       id: "UTCID06",
       type: "N",
       executedDate: "04/10/2026",
-      description: "Che do chi tep chi gui evidenceTypes=FILE, khong kem includeEvidence",
+      description: "Che do chi tep gui includeEvidence va evidenceTypes=FILE, roi an commit va web link",
     },
     () => {
       const params = buildGraphScopeParams({ graphType: "OVERVIEW", scopeMode: "FILE" });
-      expect(params).toEqual({ evidenceTypes: ["FILE"] });
+      expect(params).toEqual({ includeEvidence: true, evidenceTypes: ["FILE"] });
       expect(
         buildGraphScopeParams({ graphType: "ACTIVITY", scopeMode: "FILE" })
-      ).toEqual({ evidenceTypes: ["FILE"] });
-      expect(JSON.stringify(params)).not.toContain("includeEvidence");
+      ).toEqual({ includeEvidence: true, evidenceTypes: ["FILE"] });
       expect(JSON.stringify(params)).not.toContain("includeCommits");
+
+      const visible = retainFileEvidenceGraph(
+        {
+          nodes: [
+            { data: { id: "task:1", type: "TASK" } },
+            { data: { id: "file:1", type: "FILE" } },
+            { data: { id: "commit:1", type: "COMMIT" } },
+            { data: { id: "link:1", type: "WEB_LINK" } },
+          ],
+          edges: [
+            { data: { source: "task:1", target: "file:1" } },
+            { data: { source: "task:1", target: "commit:1" } },
+            { data: { source: "task:1", target: "link:1" } },
+          ],
+        },
+        "FILE"
+      );
+      expect(visible.nodes.map((node) => node.data.id)).toEqual(["task:1", "file:1"]);
+      expect(visible.edges).toEqual([{ data: { source: "task:1", target: "file:1" } }]);
     }
   );
 

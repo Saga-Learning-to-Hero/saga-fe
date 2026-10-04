@@ -48,7 +48,7 @@ const TYPE_CONFIG: Record<
   SPRINT: { label: "Sprint", icon: CalendarIcon, bgClass: "bg-teal-600" },
   TASK: { label: "Task Jira", icon: CheckSquareIcon, bgClass: "bg-emerald-600" },
   COMMIT: { label: "Git Commit", icon: GitCommitIcon, bgClass: "bg-purple-600" },
-  FILE: { label: "Tệp", icon: FileIcon, bgClass: "bg-purple-500" },
+  FILE: { label: "Tệp", icon: FileIcon, bgClass: "bg-blue-700" },
   WEB_LINK: { label: "Liên kết", icon: LinkIcon, bgClass: "bg-violet-700" },
   CRITERION: { label: "Tiêu chí", icon: ShieldCheckIcon, bgClass: "bg-amber-600" },
   IDENTITY: { label: "Danh tính Git", icon: FingerprintIcon, bgClass: "bg-slate-600" },

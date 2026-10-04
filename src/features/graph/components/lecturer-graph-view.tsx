@@ -43,7 +43,7 @@ import { GraphStatsSummary } from "./graph-stats-summary";
 import { GraphNodeDetailsModal } from "./graph-node-details-modal";
 import { Neo4jTabBar } from "./neo4j-tab-bar";
 import { useAccumulatedProjectGraph, useProjectGraph } from "../hooks/use-project-graph";
-import { buildGraphScopeParams, type GraphScopeMode } from "../lib/graph-scope";
+import { buildGraphScopeParams, retainFileEvidenceGraph, type GraphScopeMode } from "../lib/graph-scope";
 import { describeGraphLoadError } from "../lib/graph-error";
 import { useProjectCommits } from "@/features/student/project/hooks/useProjectSync";
 import { CommitDetailModal } from "@/features/student/commits/components/commit-detail-modal";
@@ -370,20 +370,27 @@ export function LecturerGraphView({
   const displayGraphData = useMemo(() => {
     const rawData = graphQuery.data;
     if (!rawData) return { nodes: [], edges: [] };
-    return rawData;
-  }, [graphQuery.data]);
+    return retainFileEvidenceGraph(rawData, scopeMode);
+  }, [graphQuery.data, scopeMode]);
 
   const structuralStats = useMemo(() => {
-    const nodes = graphQuery.data?.nodes || [];
-    const edges = graphQuery.data?.edges || [];
+    const nodes = displayGraphData.nodes;
+    const edges = displayGraphData.edges;
     const anomalyCount = nodes.filter((n) => n.data.isAnomaly === true).length;
     return {
       totalNodes: nodes.length,
       totalEdges: edges.length,
       anomalyCount,
-      meta: graphQuery.data?.meta,
+      meta:
+        graphQuery.data?.meta && scopeMode === "FILE"
+          ? {
+              ...graphQuery.data.meta,
+              returnedNodes: nodes.length,
+              returnedEdges: edges.length,
+            }
+          : graphQuery.data?.meta,
     };
-  }, [graphQuery.data]);
+  }, [displayGraphData, graphQuery.data, scopeMode]);
 
   const handleSelectTeam = (newTeamId: string) => {
     setSelectedTeamIdState(newTeamId);

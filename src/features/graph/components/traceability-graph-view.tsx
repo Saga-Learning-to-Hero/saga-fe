@@ -39,7 +39,7 @@ import { PipelineWorkspace } from "./pipeline-workspace";
 import { usePipelineGraphData } from "../hooks/use-pipeline-graph-data";
 import { useAccumulatedProjectGraph, useProjectGraph } from "../hooks/use-project-graph";
 import { describeGraphLoadError } from "../lib/graph-error";
-import { buildGraphScopeParams, type GraphScopeMode } from "../lib/graph-scope";
+import { buildGraphScopeParams, retainFileEvidenceGraph, type GraphScopeMode } from "../lib/graph-scope";
 import {
   mapStudentNodesToMemberOptions,
   resolveDrillDownStudent,
@@ -264,11 +264,14 @@ export function TraceabilityGraphView() {
       };
     });
 
-    return {
-      ...rawData,
-      nodes: enrichedNodes,
-    };
-  }, [graphQuery.data, currentUser]);
+    return retainFileEvidenceGraph(
+      {
+        ...rawData,
+        nodes: enrichedNodes,
+      },
+      scopeMode
+    );
+  }, [graphQuery.data, currentUser, scopeMode]);
 
   const focusedTaskDisplay = useMemo(() => {
     if (!activeFocusedNodeId) return null;
@@ -307,16 +310,20 @@ export function TraceabilityGraphView() {
   }, [activeFocusedNodeId, focusedNodeLabel, pipeline.tasks, displayGraphData.nodes]);
 
   const structuralStats = useMemo(() => {
-    const nodes = graphQuery.data?.nodes || [];
-    const edges = graphQuery.data?.edges || [];
+    const nodes = displayGraphData.nodes;
+    const edges = displayGraphData.edges;
     const anomalyCount = nodes.filter((n) => n.data.isAnomaly === true).length;
+    const meta = graphQuery.data?.meta;
     return {
       totalNodes: nodes.length,
       totalEdges: edges.length,
       anomalyCount,
-      meta: graphQuery.data?.meta,
+      meta:
+        meta && scopeMode === "FILE"
+          ? { ...meta, returnedNodes: nodes.length, returnedEdges: edges.length }
+          : meta,
     };
-  }, [graphQuery.data]);
+  }, [displayGraphData, graphQuery.data, scopeMode]);
 
   const pipelineMemberOptions = useMemo(
     () => [
