@@ -41,6 +41,8 @@ describe("graph-hierarchy", () => {
       expect(graphNodeSizeFor("TASK", "STANDARD")).toEqual({ width: 80, height: 40 });
       expect(graphNodeSizeFor("TASK", "SUBTASK")).toEqual({ width: 62, height: 31 });
       expect(graphNodeSizeFor("COMMIT")).toEqual({ width: 58, height: 29 });
+      expect(graphNodeSizeFor("FILE")).toEqual({ width: 54, height: 27 });
+      expect(graphNodeSizeFor("WEB_LINK")).toEqual({ width: 54, height: 27 });
     }
   );
 

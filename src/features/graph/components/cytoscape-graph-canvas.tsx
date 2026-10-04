@@ -46,6 +46,8 @@ const NODE_COLORS: Record<CanonicalNodeType, { bg: string; border: string }> = {
   SPRINT: { bg: "#0d9488", border: "#5eead4" },
   TASK: { bg: "#059669", border: "#6ee7b7" },
   COMMIT: { bg: "#7c3aed", border: "#c4b5fd" },
+  FILE: { bg: "#9333ea", border: "#d8b4fe" },
+  WEB_LINK: { bg: "#6d28d9", border: "#ddd6fe" },
   CRITERION: { bg: "#d97706", border: "#fde68a" },
   IDENTITY: { bg: "#475569", border: "#cbd5e1" },
 };
@@ -158,7 +160,7 @@ export function CytoscapeGraphCanvas({
           colCriteria.push(node);
         } else if (type === "IDENTITY") {
           colIdentities.push(node);
-        } else if (type === "COMMIT") {
+        } else if (type === "COMMIT" || type === "FILE" || type === "WEB_LINK") {
           colCommits.push(node);
         } else {
           colOther.push(node);
@@ -351,7 +353,7 @@ export function CytoscapeGraphCanvas({
           const srcId = edge.source().id();
           const tgtId = edge.target().id();
 
-          if (label === "EVIDENCED_BY" || label === "IMPLEMENTS") {
+          if (label === "EVIDENCED_BY") {
             if (taskIndexMap.has(srcId)) {
               if (!commitTaskMap.has(tgtId) || taskIndexMap.get(srcId)! < commitTaskMap.get(tgtId)!) {
                 commitTaskMap.set(tgtId, taskIndexMap.get(srcId)!);
@@ -684,9 +686,9 @@ export function CytoscapeGraphCanvas({
           shape = "ellipse";
           width = 58;
           height = 58;
-        } else if (n.type === "COMMIT") {
+        } else if (n.type === "COMMIT" || n.type === "FILE" || n.type === "WEB_LINK") {
           shape = "round-rectangle";
-          ({ width, height } = graphNodeSizeFor("COMMIT"));
+          ({ width, height } = graphNodeSizeFor(n.type));
         } else if (n.type === "CRITERION") {
           shape = "hexagon";
           width = 80;
@@ -1272,6 +1274,14 @@ export function CytoscapeGraphCanvas({
               <div className="flex items-center gap-1.5">
                 <span className="w-3 h-3 rounded-xs bg-purple-600 border border-purple-200 shrink-0" />
                 <span className="truncate">Mã nguồn (:Commit)</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <span className="w-3 h-3 rounded-xs bg-purple-500 border border-purple-200 shrink-0" />
+                <span className="truncate">Tệp (:File)</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <span className="w-3 h-3 rounded-xs bg-violet-700 border border-violet-200 shrink-0" />
+                <span className="truncate">Liên kết (:WebLink)</span>
               </div>
               <div className="flex items-center gap-1.5">
                 <span className="w-3 h-3 rotate-45 bg-amber-600 border border-amber-200 shrink-0" />

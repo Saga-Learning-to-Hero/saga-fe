@@ -90,8 +90,9 @@ FE **không** tự áp dụng bảng này vào evaluation. Chỉ hiển thị `G
 
 ## Label và evidence
 
-- `saga:code` / `saga:test` / `saga:document` / `saga:research` đặt trên task cha.
-- Subtask không chọn `saga:*` riêng; không tự xóa label Jira thường; hiện nhóm kế thừa từ cha.
+- Mỗi STANDARD hoặc SUBTASK chọn tối đa một label đóng góp riêng: `saga:code` / `saga:test` / `saga:document` / `saga:research`.
+- Subtask không kế thừa label từ task cha. Form chỉ cho chọn bốn label SAGA; label Jira tự do đã có chỉ hiển thị đọc và được giữ nguyên khi lưu.
+- `saga:doc` / `saga:docs` cũ được đọc như `saga:document`; lần người dùng chọn lại sẽ gửi giá trị canonical.
 - `evidenceCheck` từ BE:
 
 ```ts

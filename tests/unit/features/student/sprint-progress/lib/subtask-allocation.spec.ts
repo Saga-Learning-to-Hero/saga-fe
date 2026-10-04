@@ -6,14 +6,17 @@ import {
   countUnestimatedStandardTasks,
   formatIssuePointBadge,
   getAllocatedPoint,
-  getInheritedContributionLabels,
   getMaxEditableShare,
   getRemainingShare,
   getSubtaskPercent,
+  areSagaLabelSelectionsEqual,
   isSubtaskShareValue,
   mapTaskEvidenceCheck,
-  mergeSubtaskLabelsForPatch,
+  mergeReadonlyJiraLabelsWithSaga,
+  normalizeContributionLabels,
+  resolveSubtaskSprintDisplay,
   shouldShowEvidenceWarning,
+  splitTaskLabels,
   sumPlanningStoryPoints,
   sumSiblingUsedPoints,
 } from "@/features/student/sprint-progress/lib/subtask-allocation";
@@ -216,18 +219,91 @@ describe("subtask-allocation", () => {
     {
       id: "UTCID11",
       type: "N",
-      executedDate: "02/10/2026",
-      description: "Subtask ke thua saga label tu cha va khong tu xoa label Jira thuong",
+      executedDate: "04/10/2026",
+      description: "Subtask chi chon label SAGA canonical va giu lua chon moi nhat",
     },
     () => {
-      expect(getInheritedContributionLabels(["saga:code", "frontend", "saga:test"])).toEqual([
-        "saga:code",
-        "saga:test",
-      ]);
-      expect(mergeSubtaskLabelsForPatch(["saga:code", "frontend"], ["backend"])).toEqual([
-        "backend",
-        "saga:code",
-      ]);
+      expect(normalizeContributionLabels(["frontend", "saga:code", "saga:test"])).toEqual(["saga:test"]);
+      expect(normalizeContributionLabels(["backend", "saga:docs"])).toEqual(["saga:document"]);
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID12",
+      type: "N",
+      executedDate: "04/10/2026",
+      description: "Tach label Jira chi doc va bao toan khi doi label SAGA",
+    },
+    () => {
+      expect(splitTaskLabels(["frontend", "saga:doc", "urgent"])).toEqual({
+        sagaLabels: ["saga:document"],
+        jiraLabels: ["frontend", "urgent"],
+      });
+      expect(
+        mergeReadonlyJiraLabelsWithSaga(
+          ["frontend", "saga:code", "urgent"],
+          ["saga:research"]
+        )
+      ).toEqual(["frontend", "urgent", "saga:research"]);
+      expect(areSagaLabelSelectionsEqual(["frontend", "saga:code"], ["saga:code"])).toBe(true);
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID13",
+      type: "N",
+      executedDate: "04/10/2026",
+      description: "Subtask uu tien ten Sprint tu task detail va fallback sang task cha",
+    },
+    () => {
+      const sprints = [{ id: "sprint-1", name: "Sprint 1" }];
+      expect(
+        resolveSubtaskSprintDisplay({
+          detailSprint: { id: "sprint-2", name: "Sprint 2" },
+          detailLoaded: true,
+          parentTaskId: "parent-1",
+          projectTasks: [{ id: "parent-1", sprint: { id: "sprint-1", name: "Sprint 1" } }],
+          sprints,
+        })
+      ).toBe("Sprint 2");
+      expect(
+        resolveSubtaskSprintDisplay({
+          detailLoaded: false,
+          parentTaskId: "parent-1",
+          projectTasks: [{ id: "parent-1", sprint: { id: "sprint-1" } }],
+          sprints,
+        })
+      ).toBe("Sprint 1");
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID14",
+      type: "B",
+      executedDate: "04/10/2026",
+      description: "Subtask hien Backlog khi da xac dinh khong co Sprint va UNKNOWN khi chua resolve",
+    },
+    () => {
+      expect(
+        resolveSubtaskSprintDisplay({
+          detailSprint: null,
+          detailLoaded: true,
+          issueSprintId: "stale-sprint",
+          projectTasks: [],
+          sprints: [{ id: "stale-sprint", name: "Sprint cũ" }],
+        })
+      ).toBe("Backlog (Chưa thuộc Sprint)");
+      expect(
+        resolveSubtaskSprintDisplay({
+          detailLoaded: false,
+          parentTaskId: "missing-parent",
+          projectTasks: [],
+          sprints: [],
+        })
+      ).toBe("Chưa xác định Sprint");
     }
   );
 });

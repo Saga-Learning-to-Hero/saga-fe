@@ -155,9 +155,6 @@ export function useProjectRealtime(
           invalidateIntegrations();
           invalidateProgress();
           invalidateMemberProgress();
-          if (optionsRef.current?.includeGraph === true) {
-            scheduleGraphInvalidation(pid, ["ALL"]);
-          }
         }, READY_DEBOUNCE_MS);
       };
 
@@ -175,19 +172,16 @@ export function useProjectRealtime(
           invalidateProgress();
           invalidateMemberProgress();
           invalidateContributionEvaluation();
-          scheduleGraphInvalidation(pid, ["OVERVIEW", "CONTRIBUTION", "ACTIVITY"]);
           break;
         case "SPRINTS_CHANGED":
           invalidateSprints();
           invalidateTasks();
           invalidateProgress();
-          scheduleGraphInvalidation(pid, ["OVERVIEW", "ACTIVITY"]);
           break;
         case "COMMITS_CHANGED":
           invalidateCommits();
           invalidateProgress();
           invalidateMemberProgress();
-          scheduleGraphInvalidation(pid, ["OVERVIEW", "CONTRIBUTION", "ACTIVITY", "ATTRIBUTION"]);
           break;
         case "TASK_LINKS_CHANGED":
           invalidateTasks();
@@ -197,7 +191,6 @@ export function useProjectRealtime(
           invalidateProgress();
           invalidateMemberProgress();
           invalidateContributionEvaluation();
-          scheduleGraphInvalidation(pid, ["OVERVIEW", "CONTRIBUTION", "ACTIVITY", "ATTRIBUTION"]);
           break;
         case "TASK_EVIDENCE_CHANGED":
           invalidateTasks();
@@ -212,7 +205,6 @@ export function useProjectRealtime(
           } else {
             void queryClient.invalidateQueries({ queryKey: ["tasks"] });
           }
-          scheduleGraphInvalidation(pid, ["OVERVIEW", "CONTRIBUTION", "ACTIVITY"]);
           break;
         case "SYNC_STATUS_CHANGED":
           invalidateSyncStatus();

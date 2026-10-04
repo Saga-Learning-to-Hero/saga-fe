@@ -261,5 +261,77 @@ describe("ProjectGraphService", () => {
       );
       expect(result).toEqual(mockData);
     });
+
+    it("UTCID20 - [N] Normal: includeEvidence=true la param rieng, khong kem includeCommits", async () => {
+      const mockData = { nodes: [], edges: [] };
+      vi.mocked(apiClient.get).mockResolvedValueOnce({ data: mockData });
+
+      await ProjectGraphService.getProjectOverviewGraph("p-1", {
+        includeEvidence: true,
+      });
+
+      expect(apiClient.get).toHaveBeenCalledWith(
+        "/api/projects/p-1/graph/overview?includeEvidence=true",
+        { signal: undefined }
+      );
+    });
+
+    it("UTCID21 - [N] Normal: evidenceTypes=FILE va COMMIT,WEB_LINK duoc serialize dung", async () => {
+      vi.mocked(apiClient.get).mockResolvedValueOnce({ data: { nodes: [], edges: [] } });
+      await ProjectGraphService.getProjectOverviewGraph("p-1", {
+        evidenceTypes: ["FILE"],
+      });
+      expect(apiClient.get).toHaveBeenCalledWith(
+        "/api/projects/p-1/graph/overview?evidenceTypes=FILE",
+        { signal: undefined }
+      );
+
+      vi.mocked(apiClient.get).mockResolvedValueOnce({ data: { nodes: [], edges: [] } });
+      await ProjectGraphService.getProjectOverviewGraph("p-1", {
+        evidenceTypes: ["COMMIT", "WEB_LINK"],
+      });
+      expect(apiClient.get).toHaveBeenCalledWith(
+        "/api/projects/p-1/graph/overview?evidenceTypes=COMMIT%2CWEB_LINK",
+        { signal: undefined }
+      );
+    });
+
+    it("UTCID22 - [N] Normal: includeCommits=true khong kem includeEvidence", async () => {
+      vi.mocked(apiClient.get).mockResolvedValueOnce({ data: { nodes: [], edges: [] } });
+      await ProjectGraphService.getProjectOverviewGraph("p-1", {
+        includeCommits: true,
+      });
+      const url = vi.mocked(apiClient.get).mock.calls.at(-1)?.[0];
+      expect(url).toBe("/api/projects/p-1/graph/overview?includeCommits=true");
+      expect(String(url)).not.toContain("includeEvidence");
+      expect(String(url)).not.toContain("evidenceTypes");
+    });
+
+    it("UTCID23 - [N] Normal: If-None-Match va 304 tra lai body da cache", async () => {
+      const previous = {
+        nodes: [{ data: { id: "task:1", label: "SAGA-1", type: "TASK" as const } }],
+        edges: [],
+        etag: "graph-p-1-4",
+      };
+      vi.mocked(apiClient.get).mockResolvedValueOnce({
+        status: 304,
+        data: {},
+        headers: { etag: "graph-p-1-4" },
+      });
+
+      const result = await ProjectGraphService.getProjectOverviewGraph("p-1", null, {
+        ifNoneMatch: "graph-p-1-4",
+        previous,
+      });
+
+      expect(apiClient.get).toHaveBeenCalledWith(
+        "/api/projects/p-1/graph/overview",
+        expect.objectContaining({
+          headers: { "If-None-Match": "graph-p-1-4" },
+        })
+      );
+      expect(result.nodes).toEqual(previous.nodes);
+      expect(result.etag).toBe("graph-p-1-4");
+    });
   });
 });
