@@ -32,6 +32,7 @@ export function buildGraphScopeParams(input: {
     input.scopeMode === "FILE" &&
     (input.graphType === "OVERVIEW" || input.graphType === "ACTIVITY")
   ) {
+    params.includeEvidence = true;
     params.evidenceTypes = ["FILE"];
   }
 
@@ -47,4 +48,22 @@ export function buildGraphScopeParams(input: {
   }
 
   return Object.keys(params).length > 0 ? params : null;
+}
+
+const FILE_MODE_HIDDEN_TYPES = new Set(["COMMIT", "WEB_LINK"]);
+
+export function retainFileEvidenceGraph<
+  T extends {
+    nodes: Array<{ data: { id: string; type: string } }>;
+    edges: Array<{ data: { source: string; target: string } }>;
+  },
+>(data: T, scopeMode: GraphScopeMode): T {
+  if (scopeMode !== "FILE") return data;
+  const nodes = data.nodes.filter((node) => !FILE_MODE_HIDDEN_TYPES.has(node.data.type));
+  if (nodes.length === data.nodes.length) return data;
+  const ids = new Set(nodes.map((node) => node.data.id));
+  const edges = data.edges.filter(
+    (edge) => ids.has(edge.data.source) && ids.has(edge.data.target)
+  );
+  return { ...data, nodes, edges };
 }
