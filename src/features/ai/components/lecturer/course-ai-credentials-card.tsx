@@ -40,10 +40,11 @@ function getCredentialStatusDisplay(status?: string | null) {
       };
     case "UNVERIFIED":
       return {
-        label: "Đã cấu hình · Chưa xác minh",
+        // Saved and usable; it becomes "Đang hoạt động" after the first successful AI call.
+        label: "Đã cấu hình",
         badgeClass: "bg-sky-500/10 text-sky-600 dark:text-sky-400 border-sky-500/20",
         textClass: "text-sky-600 dark:text-sky-400",
-        Icon: AlertCircleIcon,
+        Icon: CheckCircle2Icon,
       };
     case "DEGRADED":
       return {
@@ -68,10 +69,11 @@ function getCredentialStatusDisplay(status?: string | null) {
       };
     default:
       return {
-        label: "Đã cấu hình · Chưa xác minh",
+        // Saved and usable; it becomes "Đang hoạt động" after the first successful AI call.
+        label: "Đã cấu hình",
         badgeClass: "bg-sky-500/10 text-sky-600 dark:text-sky-400 border-sky-500/20",
         textClass: "text-sky-600 dark:text-sky-400",
-        Icon: AlertCircleIcon,
+        Icon: CheckCircle2Icon,
       };
   }
 }

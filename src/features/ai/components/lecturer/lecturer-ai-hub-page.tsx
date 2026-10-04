@@ -10,7 +10,6 @@ import {
   BotIcon,
   RefreshCwIcon,
   CheckCircle2Icon,
-  AlertCircleIcon,
   AlertTriangleIcon,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -166,9 +165,13 @@ export function LecturerAiHubPage({ courseId }: LecturerAiHubPageProps) {
                       Đang hoạt động
                     </Badge>
                   ) : (
-                    <Badge variant="outline" className="text-xs gap-1 text-sky-600 dark:text-sky-400 border-sky-500/30 bg-sky-500/10">
-                      <AlertCircleIcon className="size-3" />
-                      Đã lưu · Chưa xác minh
+                    <Badge
+                      variant="outline"
+                      className="text-xs gap-1 text-sky-600 dark:text-sky-400 border-sky-500/30 bg-sky-500/10"
+                      title="Hệ thống xác nhận key ở lần gọi AI đầu tiên"
+                    >
+                      <CheckCircle2Icon className="size-3" />
+                      Đã cấu hình
                     </Badge>
                   )
                 ) : (
