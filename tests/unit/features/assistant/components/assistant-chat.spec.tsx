@@ -125,7 +125,8 @@ describe("assistant chat UI", () => {
     fireEvent.click(screen.getByRole("button", { name: "Gửi câu hỏi" }));
     expect(onSend).toHaveBeenCalledTimes(1);
     rerender(<AssistantComposer value="Tien do?" onChange={vi.fn()} onSend={onSend} pending disabled={false} error={null} />);
-    expect(screen.getByText("Trợ lý đang trả lời…")).toBeInTheDocument();
+    // the "answering" indicator now lives in the thread, under the question just sent
+    expect(screen.queryByText("Trợ lý đang trả lời…")).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Gửi câu hỏi" })).toBeDisabled();
   });
 

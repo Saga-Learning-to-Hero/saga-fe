@@ -60,6 +60,7 @@ function AssistantPanelBody({
   const [screen, setScreen] = useState<"history" | "thread">("history");
   const [conversationId, setConversationId] = useState<string | null>(null);
   const [draft, setDraft] = useState("");
+  const [pendingQuestion, setPendingQuestion] = useState<string | null>(null);
   const [inlineError, setInlineError] = useState<string | null>(null);
   const [startError, setStartError] = useState<string | null>(null);
   const [reloadBanner, setReloadBanner] = useState<string | null>(null);
@@ -127,13 +128,18 @@ function AssistantPanelBody({
     }
     inFlight.current = true;
     setInlineError(null);
+    // Show the question in the thread right away, with the assistant's "typing" bubble under it.
+    setPendingQuestion(parsed.question);
+    setDraft("");
     try {
       await ask.mutateAsync(parsed.question);
-      setDraft("");
       setReloadBanner(null);
     } catch (error) {
+      // Give the question back so it is not lost.
+      setDraft((current) => (current.trim() ? current : parsed.question));
       applyAskError(error);
     } finally {
+      setPendingQuestion(null);
       inFlight.current = false;
     }
   };
@@ -301,6 +307,7 @@ function AssistantPanelBody({
             role={context.role}
             courseId={context.courseId}
             teamId={project.teamId}
+            pendingQuestion={pendingQuestion}
             feedbackPendingId={feedback.isPending ? feedback.variables?.messageId ?? null : null}
             followUpDisabled={ask.isPending || composerLocked}
             reloadBanner={reloadBanner}

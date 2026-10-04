@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { LoaderCircleIcon, SendIcon } from "lucide-react";
+import { SendIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
@@ -44,12 +44,6 @@ export function AssistantComposer({
 
   return (
     <div className="shrink-0 space-y-2 border-t border-border/80 bg-card/85 p-3 backdrop-blur-sm sm:rounded-b-2xl">
-      {pending ? (
-        <p className="flex items-center gap-2 px-1 text-xs text-muted-foreground" role="status">
-          <LoaderCircleIcon className="size-3.5 animate-spin" aria-hidden />
-          Trợ lý đang trả lời…
-        </p>
-      ) : null}
       <div className="rounded-2xl border border-input bg-background p-1.5 shadow-xs transition-colors focus-within:border-ring focus-within:ring-2 focus-within:ring-ring/20">
         <Textarea
           value={value}
