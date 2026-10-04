@@ -218,25 +218,25 @@ export function Neo4jTabBar({
                 </button>
                 <button
                   type="button"
-                  onClick={() => onScopeModeChange("FULL")}
-                  className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer ${scopeMode === "FULL"
+                  onClick={() => onScopeModeChange("COMMIT")}
+                  className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer ${scopeMode === "COMMIT"
                     ? "bg-card text-foreground shadow-2xs"
                     : "text-muted-foreground hover:text-foreground"
                     }`}
-                  title="Hiện commit, tệp và liên kết web"
+                  title="Hiện commit nối từ công việc, ẩn tệp và liên kết"
                 >
-                  Chi tiết
+                  Commit
                 </button>
                 <button
                   type="button"
-                  onClick={() => onScopeModeChange("FILE")}
-                  className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer ${scopeMode === "FILE"
+                  onClick={() => onScopeModeChange("FILE_LINK")}
+                  className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer ${scopeMode === "FILE_LINK"
                     ? "bg-card text-foreground shadow-2xs"
                     : "text-muted-foreground hover:text-foreground"
                     }`}
-                  title="Chỉ hiện tệp đính kèm"
+                  title="Hiện tệp và liên kết, ẩn commit"
                 >
-                  Chỉ tệp
+                  Tệp &amp; liên kết
                 </button>
               </div>
             )}

@@ -8,3 +8,8 @@ export * from "./components/lecturer/lecturer-ai-hub-page";
 export * from "./components/student/student-ai-hub-page";
 export * from "./components/widgets/task-ai-intelligence-section";
 export * from "./components/widgets/commit-ai-intelligence-modal";
+export * from "./components/commit-review/commit-review-badge";
+export * from "./components/commit-review/commit-review-modal";
+export * from "./components/commit-review/team-ai-key-card";
+export * from "./components/commit-review/commit-review-backfill-button";
+export * from "./lib/commit-review-style";

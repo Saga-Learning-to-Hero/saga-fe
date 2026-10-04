@@ -1,6 +1,6 @@
 import type { GraphSubgraphFilterParams, GraphType } from "@/features/graph/types/graph";
 
-export type GraphScopeMode = "COMPACT" | "FULL" | "FILE";
+export type GraphScopeMode = "COMPACT" | "COMMIT" | "FILE_LINK";
 
 const FOCUS_NODE_TYPES = ["TASK", "COMMIT", "FILE", "WEB_LINK", "STUDENT"] as const;
 const FOCUS_EDGE_TYPES = ["ASSIGNED_TO", "EVIDENCED_BY", "PARENT_OF", "HAS_WORK_ITEM"] as const;
@@ -24,16 +24,17 @@ export function buildGraphScopeParams(input: {
     params.nodeTypes = [...FOCUS_NODE_TYPES];
     params.edgeTypes = [...FOCUS_EDGE_TYPES];
   } else if (
-    input.scopeMode === "FULL" &&
+    input.scopeMode === "COMMIT" &&
     (input.graphType === "OVERVIEW" || input.graphType === "ACTIVITY")
   ) {
     params.includeEvidence = true;
+    params.evidenceTypes = ["COMMIT"];
   } else if (
-    input.scopeMode === "FILE" &&
+    input.scopeMode === "FILE_LINK" &&
     (input.graphType === "OVERVIEW" || input.graphType === "ACTIVITY")
   ) {
     params.includeEvidence = true;
-    params.evidenceTypes = ["FILE"];
+    params.evidenceTypes = ["FILE", "WEB_LINK"];
   }
 
   if (input.graphType === "CONTRIBUTION" && input.usedCriteriaOnly) {
@@ -50,16 +51,20 @@ export function buildGraphScopeParams(input: {
   return Object.keys(params).length > 0 ? params : null;
 }
 
-const FILE_MODE_HIDDEN_TYPES = new Set(["COMMIT", "WEB_LINK"]);
+const HIDDEN_EVIDENCE_BY_SCOPE: Partial<Record<GraphScopeMode, ReadonlySet<string>>> = {
+  COMMIT: new Set(["FILE", "WEB_LINK"]),
+  FILE_LINK: new Set(["COMMIT"]),
+};
 
-export function retainFileEvidenceGraph<
+export function filterGraphEvidenceByScope<
   T extends {
     nodes: Array<{ data: { id: string; type: string } }>;
     edges: Array<{ data: { source: string; target: string } }>;
   },
 >(data: T, scopeMode: GraphScopeMode): T {
-  if (scopeMode !== "FILE") return data;
-  const nodes = data.nodes.filter((node) => !FILE_MODE_HIDDEN_TYPES.has(node.data.type));
+  const hiddenTypes = HIDDEN_EVIDENCE_BY_SCOPE[scopeMode];
+  if (!hiddenTypes) return data;
+  const nodes = data.nodes.filter((node) => !hiddenTypes.has(node.data.type));
   if (nodes.length === data.nodes.length) return data;
   const ids = new Set(nodes.map((node) => node.data.id));
   const edges = data.edges.filter(

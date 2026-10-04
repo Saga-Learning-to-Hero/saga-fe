@@ -47,7 +47,7 @@ const NODE_COLORS: Record<CanonicalNodeType, { bg: string; border: string }> = {
   TASK: { bg: "#059669", border: "#6ee7b7" },
   COMMIT: { bg: "#7c3aed", border: "#c4b5fd" },
   FILE: { bg: "#1d4ed8", border: "#bfdbfe" },
-  WEB_LINK: { bg: "#6d28d9", border: "#ddd6fe" },
+  WEB_LINK: { bg: "#1d4ed8", border: "#bfdbfe" },
   CRITERION: { bg: "#d97706", border: "#fde68a" },
   IDENTITY: { bg: "#475569", border: "#cbd5e1" },
 };
@@ -1280,7 +1280,7 @@ export function CytoscapeGraphCanvas({
                 <span className="truncate">Tệp (:File)</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <span className="w-3 h-3 rounded-xs bg-violet-700 border border-violet-200 shrink-0" />
+                <span className="w-3 h-3 rounded-xs bg-blue-700 border border-blue-200 shrink-0" />
                 <span className="truncate">Liên kết (:WebLink)</span>
               </div>
               <div className="flex items-center gap-1.5">

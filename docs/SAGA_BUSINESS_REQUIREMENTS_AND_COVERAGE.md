@@ -422,6 +422,7 @@ Project Type dùng để phân loại hướng dự án, không điều khiển 
 | COM-003 | Canonical batch task–commit links theo repo/branch | ✓ | ✓ | ✓ | `DONE/VERIFY`; filter phải dựa response BE, không parse message |
 | COM-004 | Repository branch list | ✓ | ✓ | ✓ | `DONE` |
 | COM-005 | Sprint activity aggregation Task + Commit | ✓ | — | — | `BE_ONLY`; FE chart tuần hiện tự group commit, chưa dùng endpoint này |
+| COM-006 | Gắn commit vào task thủ công | ✓ | ✓ | ✓ | `DONE`; `POST/DELETE /api/projects/{projectId}/commits/{commitId}/manual-task-links[/{taskId}]`. Chỉ tác giả commit hoặc Trưởng nhóm; không gắn merge commit; task cùng dự án, chưa xoá. Lưu ở bảng riêng `task_commit_manual_link`: **chỉ hiển thị và làm ngữ cảnh cho AI, không tính minh chứng, không vào điểm đóng góp**. UI trong `CommitReviewModal` (phần "Task của commit") |
 
 ### 7.6 Sync và realtime
 
@@ -454,9 +455,9 @@ Project Type dùng để phân loại hướng dự án, không điều khiển 
 | --- | --- | --- | --- | --- | --- |
 | PROG-001 | Project progress summary | ✓ | ✓ | ✓ | `DONE`; quyền leader/lecturer theo policy. Student P0: Member không prefetch/gọi `GET /progress`; hover tab chỉ prefetch dashboard BFF; 403 ACCESS_DENIED không retry. Student Dashboard BFF (`GET /api/student/courses/{courseId}/dashboard`): Phân định rõ ràng data ownership giữa cá nhân và nhóm: chỉ `currentSprint.totalTasks/completedTasks/completionPercent` là số của cả nhóm trong Sprint; toàn bộ các trường còn lại (`myMetrics`, `myActiveTasks`, `recentCommits`, `weeklyCommits`, `sprintMetrics`) là số cá nhân. Ô Sprint ưu tiên hiển thị tiến độ cá nhân từ `sprintMetrics.tasks` kèm đối soát tiến độ cả nhóm. `myActiveTasks[].linkedCommits[]` gồm `id, sha, message, repositoryFullName, committedAt, authorStudentId, authorExternalId, isMerge` (có cả merge, mọi tác giả, mới nhất trước, tối đa 20 commit; `linkedCommitCount` vẫn là tổng đầy đủ), UI hỗ trợ mở rộng xem danh sách và mở `CommitDetailModal` (`GET /api/projects/{projectId}/commits/{id}`). Khi chọn Sprint, `recentCommits`, `weeklyCommits` và `sprintMetrics.commits` được Backend tự động loại bỏ các commit chỉ gắn với task của site khác (commit chưa gắn task nào vẫn hiển thị vì không thuộc site nào; `myMetrics` toàn dự án giữ nguyên). |
 | PROG-002 | Member progress detail | ✓ | ✓ | ✓ | `DONE`; drawer chỉ là inspector, không thay dữ liệu dashboard tổng |
-| GRAPH-001 | Project graph overview | ✓ | ✓ | ✓ | `DONE/VERIFY`; một request theo filter; chế độ chi tiết gửi `includeEvidence` để hiện COMMIT/FILE/WEB_LINK; nút Chỉ tệp gửi `includeEvidence=true` và `evidenceTypes=FILE`; click node FILE tải `GET /api/tasks/{taskId}/files/{fileId}` với `taskId` từ cạnh `EVIDENCED_BY` cho Student và Lecturer; refetch graph chỉ sau SSE `GRAPH_CHANGED`; cạnh `HAS_WORK_ITEM` và `PARENT_OF`; còn E2E dữ liệu lớn và authorization |
+| GRAPH-001 | Project graph overview | ✓ | ✓ | ✓ | `DONE/VERIFY`; một request theo filter; chế độ Commit gửi `includeEvidence=true` và `evidenceTypes=COMMIT`, ẩn FILE/WEB_LINK; nút Tệp & liên kết gửi `includeEvidence=true` và `evidenceTypes=FILE,WEB_LINK`, cả hai node màu xanh dương, ẩn COMMIT; click node FILE tải `GET /api/tasks/{taskId}/files/{fileId}` với `taskId` từ cạnh `EVIDENCED_BY` cho Student và Lecturer; refetch graph chỉ sau SSE `GRAPH_CHANGED`; cạnh `HAS_WORK_ITEM` và `PARENT_OF`; còn E2E dữ liệu lớn và authorization |
 | GRAPH-002 | Student contribution graph | ✓ | ✓ | ✓ | `DONE/VERIFY`; không ép ẩn evidence; nút chỉ tiêu chí đã dùng gửi `usedCriteriaOnly`; refetch graph chỉ sau `GRAPH_CHANGED` |
-| GRAPH-003 | Sprint activity graph | ✓ | ✓ | ✓ | `DONE/VERIFY`; chế độ gọn không cắt `CRITERION`; chi tiết dùng `includeEvidence`; Chỉ tệp gửi `includeEvidence=true` và `evidenceTypes=FILE`; Lecturer Graph mặc định Sprint `active`; refetch graph chỉ sau `GRAPH_CHANGED` |
+| GRAPH-003 | Sprint activity graph | ✓ | ✓ | ✓ | `DONE/VERIFY`; chế độ gọn không cắt `CRITERION`; Commit gửi `includeEvidence=true` và `evidenceTypes=COMMIT`, ẩn tệp và liên kết; Tệp & liên kết gửi `includeEvidence=true` và `evidenceTypes=FILE,WEB_LINK`, cả hai node màu xanh dương; Lecturer Graph mặc định Sprint `active`; refetch graph chỉ sau `GRAPH_CHANGED` |
 | GRAPH-004 | Attribution graph | ✓ | ✓ | ✓ | `DONE/VERIFY`; giữ commit mặc định của backend, không gửi compact cắt COMMIT; hỗ trợ anomaly filter; refetch graph chỉ sau `GRAPH_CHANGED` |
 | GRAPH-005 | Sprint peer-review graph | — | — | — | Không còn graph peer review. Đánh giá chéo nằm ở luồng PEER, không có endpoint graph riêng trên canvas |
 | PEER-001 | Default/team rubric | ✓ | ✓ | ✓ | `DONE`; Student fallback default rubric và Lecturer dùng team rubric |
@@ -494,6 +495,8 @@ Project Type dùng để phân loại hướng dự án, không điều khiển 
 | AI-008 | Báo cáo tiến độ nhóm dự án & sinh viên | ✓ | ✓ | ✓ | `DONE`; `/api/projects/{projectId}/ai/team/progress-analyses` và `/students/{studentId}/progress-analyses`, tích hợp trung tâm AI sinh viên tại `/student/ai` |
 | AI-009 | Nhận diện & Cảnh báo rủi ro (Risk Detection) | ✓ | ✓ | ✓ | `DONE`; `/api/projects/{projectId}/ai/team/risk-analyses`, `/students/{studentId}/risk-analyses`, `/tasks/{taskId}/risk-analyses`, hiển thị cấp độ rủi ro, nguyên nhân và đề xuất hành động |
 | AI-010 | Đánh giá thông minh Task (Task Intelligence) | ✓ | ✓ | ✓ | `DONE`; `/api/projects/{projectId}/ai/tasks/{taskId}/intelligence-analyses`, hiển thị độ mạnh minh chứng, cảnh báo làm lệch đề bài `deviationDetected` trong `IssueDetailsModal` |
+| AI-012 | Tự động đánh giá chất lượng từng commit (Commit AI Review) | ✓ | ✓ | ✓ | `DONE`; commit mới (≤72 giờ, lần đầu thấy) tự gửi AI. AI chấm tên commit, code (trỏ đúng file/hunk), độ khớp task; ngữ cảnh gồm task (tự động + gắn tay), syllabus của môn. BE tự quyết trạng thái theo luật cố định: `PASS`, `WARNING` (lý do `MESSAGE`/`CODE`/`TASK_MISMATCH`/`TASK_PARTIAL`/`NO_TASK`), `PENDING`, `FAILED`, `SKIPPED_MERGE`, `NO_KEY`, `NOT_REVIEWED`, `INSUFFICIENT_DATA`. Merge commit không bao giờ được đánh giá (ẩn nút AI). Badge `aiReview` trong `GET /commits`; chi tiết `GET/POST /commits/{id}/ai-review`; Trưởng nhóm đánh giá hàng loạt 20 commit gần nhất. Commit chưa gắn task: cảnh báo + thông báo cho tác giả và Trưởng nhóm (1 thông báo/lần push). Chỉ hiển thị, không vào điểm |
+| AI-013 | Key AI riêng của nhóm (Trưởng nhóm nhập) | ✓ | ✓ | ✓ | `DONE`; `GET/PUT/DELETE /api/projects/{projectId}/ai-team-key`. Nhà cung cấp Gemini, OpenAI, Cohere (không có OpenRouter). Key mã hoá AES-GCM, chỉ Trưởng nhóm thấy 4 số cuối. Commit được đánh giá bằng key nhóm; nhóm chưa có key thì dùng key lớp chỉ khi giảng viên bật tự động hoá AI của lớp. Key sai/hết hạn mức thì báo Trưởng nhóm. UI `TeamAiKeyCard` ở trang Dự án |
 | AI-011 | Trợ lý chat theo dự án, riêng từng người dùng | ✓ | ✓ | ✓ | `DONE`; sáu API `/api/projects/{projectId}/assistant/...`, nút chat trong lớp, lịch sử, Markdown, citation điều hướng trang nghiệp vụ và phản hồi hữu ích. Không phải nguồn chấm điểm |
 
 Chat gắn với một dự án và chỉ người gọi xem được cuộc trò chuyện của mình. Câu hỏi nằm trong bốn phạm vi: tiến độ sprint, task trễ hạn và hồ sơ trễ hạn, hoạt động task hoặc commit của thành viên, chi tiết một task. Giao diện dùng cửa sổ chat nổi không khóa trang; khi thu gọn và mở lại trong cùng trang, hệ thống giữ nguyên hội thoại, bản nháp và vị trí đang xem. Chuyển trang, đổi phạm vi dự án hoặc tải lại trang sẽ bắt đầu lại từ danh sách hội thoại.
@@ -600,9 +603,9 @@ Khóa đi theo cấu hình lớp hiện có: khóa lớp, rồi khóa nền tả
 
 | Endpoint | FE hiện tại |
 | --- | --- |
-| `GET /api/projects/{projectId}/graph/overview` | Đã dùng cho Student và Lecturer; chi tiết gửi `includeEvidence`; một request theo filter; refetch khi `GRAPH_CHANGED` |
+| `GET /api/projects/{projectId}/graph/overview` | Đã dùng cho Student và Lecturer; Commit gửi `includeEvidence=true` và `evidenceTypes=COMMIT`; Tệp & liên kết gửi `evidenceTypes=FILE,WEB_LINK`; một request theo filter; refetch khi `GRAPH_CHANGED` |
 | `GET /api/projects/{projectId}/students/{studentId}/graph/contribution` | Đã dùng theo student selection/context; `usedCriteriaOnly` khi giảng viên/sinh viên bật chỉ tiêu chí đã dùng |
-| `GET /api/projects/{projectId}/sprints/{sprintId}/graph/activity` | Đã dùng và chỉ enable khi có sprint; chi tiết gửi `includeEvidence` |
+| `GET /api/projects/{projectId}/sprints/{sprintId}/graph/activity` | Đã dùng và chỉ enable khi có sprint; Commit gửi `includeEvidence=true` và `evidenceTypes=COMMIT`; Tệp & liên kết gửi `evidenceTypes=FILE,WEB_LINK` |
 | `GET /api/projects/{projectId}/graph/attribution` | Đã dùng, gồm filter anomaly/subgraph; không cắt COMMIT ở chế độ gọn |
 | Graph peer review | Không còn. Canvas không gọi endpoint graph peer review |
 
@@ -649,7 +652,11 @@ Khóa đi theo cấu hình lớp hiện có: khóa lớp, rồi khóa nền tả
 | `POST /api/projects/{projectId}/ai/students/{studentId}/risk-analyses` & `/latest` | Đã dùng (Đánh giá rủi ro cá nhân sinh viên) |
 | `POST /api/projects/{projectId}/ai/tasks/{taskId}/risk-analyses` & `/latest` | Đã dùng (Đánh giá rủi ro task) |
 | `POST /api/projects/{projectId}/ai/tasks/{taskId}/intelligence-analyses` & `/latest` | Đã dùng (Kiểm tra độ mạnh minh chứng & lệch đề bài) |
-| `POST /api/projects/{projectId}/ai/commits/{gitCommitId}/analyses` & `/history` | Đã dùng (Commit Intelligence chấm điểm 0-100) |
+| `POST /api/projects/{projectId}/ai/commits/{gitCommitId}/analyses` & `/history` | Đã dùng (Commit Intelligence chấm điểm 0-100; nút "Lịch sử" trong `CommitDetailModal`; 422 `AI_COMMIT_MERGE_NOT_REVIEWED` với merge commit) |
+| `GET/POST /api/projects/{projectId}/commits/{commitId}/ai-review` | Đã dùng (`CommitReviewModal`: trạng thái, lý do, nhận xét tên commit + gợi ý tên mới, lỗi code kèm đoạn diff, độ khớp task; POST = đánh giá/đánh giá lại) |
+| `POST /api/projects/{projectId}/commits/ai-review/backfill?limit=` | Đã dùng (Trưởng nhóm: nút "AI đánh giá 20 commit gần nhất" ở trang Commits) |
+| `POST /api/projects/{projectId}/commits/{commitId}/manual-task-links` & `DELETE .../{taskId}` | Đã dùng (Gắn/gỡ task thủ công, không tính điểm) |
+| `GET/PUT/DELETE /api/projects/{projectId}/ai-team-key` | Đã dùng (`TeamAiKeyCard`: key AI của nhóm, chỉ Trưởng nhóm sửa) |
 | `POST /api/projects/{projectId}/ai/tasks/{taskId}/academic-analyses` | Đã dùng (Đề xuất phân loại task vào đề cương) |
 | `POST /api/projects/{projectId}/ai/commits/{gitCommitId}/academic-analyses` | Đã dùng (Đề xuất phân loại commit vào đề cương) |
 | `GET /api/projects/{projectId}/ai/tasks/{taskId}/academic-classifications` | Đã dùng (Lịch sử phân loại task) |
