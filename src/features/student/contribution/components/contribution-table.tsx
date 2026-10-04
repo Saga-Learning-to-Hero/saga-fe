@@ -411,6 +411,14 @@ function TableRowGroup({
                               )}
                             </span>
                           </div>
+                          {sprint.peerReviewScore != null && (
+                            <div className="flex justify-between">
+                              <span>Hệ số Peer:</span>
+                              <span className="font-mono font-bold text-foreground">
+                                × {formatContributionNumber(sprint.peerReviewScore)}
+                              </span>
+                            </div>
+                          )}
                         </div>
                       </div>
                     ))}

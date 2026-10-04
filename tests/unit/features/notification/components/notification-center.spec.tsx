@@ -11,6 +11,8 @@ vi.mock("next/navigation", () => ({
     push: mockPush,
     replace: vi.fn(),
   }),
+  usePathname: () => "/student/dashboard",
+  useSearchParams: () => new URLSearchParams(),
 }));
 
 describe("NotificationBell component", () => {

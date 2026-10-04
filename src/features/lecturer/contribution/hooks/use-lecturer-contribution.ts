@@ -7,6 +7,7 @@ import { TeamContributionService } from "../api/team-contribution-service";
 import { getApiErrorCode, } from "@/lib/api-error";
 import type {
   ContributionConfigModeRequest,
+  ContributionOverrideRequest,
   ContributionSliceWeightsRequest,
   ProjectGroupWeightsRequest,
 } from "../types/contribution";
@@ -154,6 +155,34 @@ export function useUpdateProjectGroupWeights(context: {
     },
     onError: (error: unknown) => {
       showErrorToast("Không thể lưu trọng số dự án nhóm.", error);
+    },
+  });
+}
+
+export function useOverrideContribution(teamId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (payload: ContributionOverrideRequest) =>
+      TeamContributionService.overrideContribution(teamId, payload),
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: CONTRIBUTION_QUERY_KEYS.evaluation(teamId) }),
+        queryClient.invalidateQueries({ queryKey: CONTRIBUTION_QUERY_KEYS.evaluations }),
+      ]);
+      showSuccessToast("Đã điều chỉnh tỷ lệ đóng góp của thành viên thành công.");
+    },
+    onError: (error: unknown) => {
+      const code = getApiErrorCode(error);
+      let msg = "Không thể điều chỉnh tỷ lệ đóng góp.";
+      if (code === "CONTRIBUTION_OVERRIDE_INVALID") {
+        msg = "Dữ liệu điều chỉnh tỷ lệ đóng góp không hợp lệ (phải từ 0% đến 100%).";
+      } else if (code === "CONTRIBUTION_FORBIDDEN" || code === "LECTURER_COURSE_FORBIDDEN") {
+        msg = "Bạn không có quyền điều chỉnh tỷ lệ đóng góp cho lớp học phần này.";
+      } else {
+        msg = getApiErrorMessage(error, msg);
+      }
+      showErrorToast(msg);
     },
   });
 }
