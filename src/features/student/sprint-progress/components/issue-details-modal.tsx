@@ -12,7 +12,6 @@ import {
   TagIcon,
   LockIcon,
   PaperclipIcon,
-  ShieldCheckIcon,
   CalendarIcon,
   SparklesIcon,
   GitCommitIcon,

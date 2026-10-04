@@ -33,6 +33,13 @@ export interface AiAnalysisDecisionResponse {
   aiProvider?: string | null;
   fallbackAttemptsJson?: string | null;
 }
+export interface AiAnalysisFailure {
+  code: string;
+  title: string;
+  message: string;
+  hint: string;
+  retryable: boolean;
+}
 
 export interface AiAnalysisResponse {
   id: string;
@@ -52,6 +59,7 @@ export interface AiAnalysisResponse {
   startedAt: string | null;
   completedAt: string | null;
   failureCode: string | null;
+  failure: AiAnalysisFailure | null;
   createdAt: string;
   evidence: AiAnalysisEvidenceSummaryResponse[];
   providerDecision: AiAnalysisDecisionResponse | null;
