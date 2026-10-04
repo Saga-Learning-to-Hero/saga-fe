@@ -248,6 +248,8 @@ export function useProjectRealtime(
           // an AI review was queued or finished: commit badges and open review panels only
           invalidateCommits();
           queueInvalidation({ queryKey: ["projects", pid, "commits"] });
+          // the reconciliation matrix lists each task's commits with their badges
+          queueInvalidation({ queryKey: [...PROJECT_PROJECTION_QUERY_KEYS.all, "task-commits", pid] });
           break;
         case "SYNC_STATUS_CHANGED":
           invalidateSyncStatus();

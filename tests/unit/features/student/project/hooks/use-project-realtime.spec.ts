@@ -794,6 +794,7 @@ describe("useProjectRealtime Hook", () => {
       const filters = invalidated(invalidateSpy);
       expect(filters).toContainEqual({ queryKey: PROJECT_PROJECTION_QUERY_KEYS.commits("project-review") });
       expect(filters).toContainEqual({ queryKey: ["projects", "project-review", "commits"] });
+      expect(filters).toContainEqual({ queryKey: [...PROJECT_PROJECTION_QUERY_KEYS.all, "task-commits", "project-review"] });
       expect(filters).not.toContainEqual({ queryKey: JIRA_SPRINT_QUERY_KEYS.tasks("project-review") });
     }
   );

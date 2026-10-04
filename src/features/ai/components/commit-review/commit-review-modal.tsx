@@ -415,6 +415,13 @@ function ReviewBody({
         </div>
       )}
 
+      {review.reviewBlockedReason === "NOT_ALLOWED" && (
+        <div className="flex items-start gap-2 text-xs rounded-xl border border-border bg-muted/40 p-3 text-muted-foreground">
+          <InfoIcon className="size-4 shrink-0" />
+          <span>Chỉ nhóm trưởng, hoặc thành viên phụ trách task của commit này, mới được yêu cầu AI đánh giá lại.</span>
+        </div>
+      )}
+
       {review.reviewBlockedReason === "NO_KEY" && (
         <div className="flex items-start gap-2 text-xs rounded-xl border border-amber-500/30 bg-amber-500/5 p-3 text-amber-800 dark:text-amber-200">
           <KeyRoundIcon className="size-4 shrink-0" />

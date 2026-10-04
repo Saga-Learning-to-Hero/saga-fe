@@ -52,6 +52,8 @@ export interface PipelineCommit {
   committedAt: string;
   repositoryFullName: string;
   headRef?: string | null;
+  /** The commit's AI review badge, as the commit lists get it. */
+  aiReview?: import("@/features/ai/types/ai-commit-review").CommitAiReviewSummary | null;
 }
 
 export interface PipelineCommitGroup {

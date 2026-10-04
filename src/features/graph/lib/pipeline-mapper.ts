@@ -142,6 +142,7 @@ export function mapPipelineCommits(
     committedAt: commit.committedAt,
     repositoryFullName: commit.repositoryFullName,
     headRef: commit.headRef || null,
+    aiReview: commit.aiReview ?? null,
   }));
 }
 

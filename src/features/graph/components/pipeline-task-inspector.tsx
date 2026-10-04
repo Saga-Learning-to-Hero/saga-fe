@@ -26,6 +26,9 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { PipelineCommit, PipelineTask, PipelineInspectorCommitData } from "../types/pipeline";
 import { CommitDetailModal } from "@/features/student/commits/components/commit-detail-modal";
+import { CommitReviewBadge } from "@/features/ai/components/commit-review/commit-review-badge";
+import { CommitReviewModal } from "@/features/ai/components/commit-review/commit-review-modal";
+import type { CommitAiReviewSummary } from "@/features/ai/types/ai-commit-review";
 import { TaskWorkSessionTimelineDialog } from "@/features/student/sprint-progress/components/task-work-session-timeline-dialog";
 import {
   useTaskFiles,
@@ -44,6 +47,12 @@ interface PipelineTaskInspectorProps {
   className?: string;
   projectId?: string | null;
   inspectorCommitData?: PipelineInspectorCommitData | null;
+}
+
+/** The reconciliation view shows only finished verdicts: "Đạt" and "Cảnh báo". Failed, pending,
+ * unreviewed or merge commits show no badge here. */
+export function matrixReview(review?: CommitAiReviewSummary | null): CommitAiReviewSummary | null {
+  return review && (review.status === "PASS" || review.status === "WARNING") ? review : null;
 }
 
 function statusClass(status: string): string {
@@ -103,6 +112,7 @@ function PipelineTaskInspectorInternal({
   const [activeTab, setActiveTab] = useState<"COMMITS" | "DOCUMENTS">("COMMITS");
   const [showAllForTaskId, setShowAllForTaskId] = useState<string | null>(null);
   const [selectedCommit, setSelectedCommit] = useState<PipelineCommit | null>(null);
+  const [reviewCommit, setReviewCommit] = useState<PipelineCommit | null>(null);
   const [downloadingFileId, setDownloadingFileId] = useState<string | null>(null);
   const [isTimelineOpen, setIsTimelineOpen] = useState(false);
 
@@ -323,17 +333,22 @@ function PipelineTaskInspectorInternal({
                               </Badge>
                             )}
                           </div>
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={() => setSelectedCommit(commit)}
-                            className="h-6 px-2 text-xs font-bold text-purple-600 dark:text-purple-400 bg-purple-500/10 border-purple-500/25 hover:bg-purple-500/20 hover:border-purple-500/40 cursor-pointer gap-1 shrink-0 rounded-lg shadow-2xs transition-colors"
-                            title="Xem chi tiết thay đổi code diff"
-                          >
-                            <FileCodeIcon className="size-3" />
-                            <span>Diff</span>
-                          </Button>
+                          <div className="flex items-center gap-1.5 shrink-0">
+                            {matrixReview(commit.aiReview) && (
+                              <CommitReviewBadge review={matrixReview(commit.aiReview)} onClick={() => setReviewCommit(commit)} />
+                            )}
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => setSelectedCommit(commit)}
+                              className="h-6 px-2 text-xs font-bold text-purple-600 dark:text-purple-400 bg-purple-500/10 border-purple-500/25 hover:bg-purple-500/20 hover:border-purple-500/40 cursor-pointer gap-1 shrink-0 rounded-lg shadow-2xs transition-colors"
+                              title="Xem chi tiết thay đổi code diff"
+                            >
+                              <FileCodeIcon className="size-3" />
+                              <span>Diff</span>
+                            </Button>
+                          </div>
                         </div>
 
                         {commit.repositoryFullName && (
@@ -423,17 +438,22 @@ function PipelineTaskInspectorInternal({
                               </Badge>
                             )}
                           </div>
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={() => setSelectedCommit(commit)}
-                            className="h-6 px-2 text-xs font-bold text-purple-600 dark:text-purple-400 bg-purple-500/10 border-purple-500/25 hover:bg-purple-500/20 hover:border-purple-500/40 cursor-pointer gap-1 shrink-0 rounded-lg shadow-2xs transition-colors"
-                            title="Xem chi tiết thay đổi code diff"
-                          >
-                            <FileCodeIcon className="size-3" />
-                            <span>Diff</span>
-                          </Button>
+                          <div className="flex items-center gap-1.5 shrink-0">
+                            {matrixReview(commit.aiReview) && (
+                              <CommitReviewBadge review={matrixReview(commit.aiReview)} onClick={() => setReviewCommit(commit)} />
+                            )}
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => setSelectedCommit(commit)}
+                              className="h-6 px-2 text-xs font-bold text-purple-600 dark:text-purple-400 bg-purple-500/10 border-purple-500/25 hover:bg-purple-500/20 hover:border-purple-500/40 cursor-pointer gap-1 shrink-0 rounded-lg shadow-2xs transition-colors"
+                              title="Xem chi tiết thay đổi code diff"
+                            >
+                              <FileCodeIcon className="size-3" />
+                              <span>Diff</span>
+                            </Button>
+                          </div>
                         </div>
 
                         {commit.repositoryFullName && (
@@ -567,6 +587,15 @@ function PipelineTaskInspectorInternal({
         )}
       </div>
 
+      {reviewCommit && projectId && (
+        <CommitReviewModal
+          projectId={projectId}
+          commitId={reviewCommit.id}
+          shortSha={reviewCommit.shortHash}
+          isOpen={Boolean(reviewCommit)}
+          onClose={() => setReviewCommit(null)}
+        />
+      )}
       {selectedCommit && (
         <CommitDetailModal
           isOpen={Boolean(selectedCommit)}

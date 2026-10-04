@@ -98,7 +98,7 @@ export interface CommitAiReviewDetail {
   reasons: CommitAiReviewReason[];
   canRequestReview: boolean;
   /** MERGE (never reviewed: hide the AI button) | NO_KEY | null */
-  reviewBlockedReason: "MERGE" | "NO_KEY" | string | null;
+  reviewBlockedReason: "MERGE" | "READ_ONLY" | "NOT_ALLOWED" | "NO_KEY" | string | null;
   keySource: "TEAM" | "COURSE" | "NONE" | string;
   canManageLinks: boolean;
   analysisId: string | null;
