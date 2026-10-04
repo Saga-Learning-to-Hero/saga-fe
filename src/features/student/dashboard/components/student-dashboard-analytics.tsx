@@ -799,7 +799,7 @@ export function StudentDashboardAnalytics() {
                             className="text-[9px] px-1.5 py-0 border-sky-500/30 text-sky-700 dark:text-sky-300"
                             title={integrations.jira.lastSyncedAt ? `Lần đồng bộ Jira gần nhất: ${new Date(integrations.jira.lastSyncedAt).toLocaleString("vi-VN")}` : undefined}
                           >
-                            Jira: {currentJiraProjectKey || "SAGA"}
+                            Jira: {integrations.jira.status === "ACTIVE" ? "Đã kết nối" : "Chưa kết nối"}
                           </Badge>
                         )}
                         {integrations?.github?.connected && (
@@ -808,7 +808,7 @@ export function StudentDashboardAnalytics() {
                             className="text-[9px] px-1.5 py-0 border-emerald-500/30 text-emerald-700 dark:text-emerald-300"
                             title={integrations.github.lastSyncedAt ? `Lần đồng bộ GitHub gần nhất: ${new Date(integrations.github.lastSyncedAt).toLocaleString("vi-VN")}` : undefined}
                           >
-                            GitHub: {integrations.github.repositoryCount ?? 0} repos
+                            GitHub: {integrations.github.status === "ACTIVE" ? "Đã kết nối" : "Chưa kết nối"}
                           </Badge>
                         )}
                       </div>

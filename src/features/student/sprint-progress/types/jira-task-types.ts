@@ -143,6 +143,10 @@ export interface ProjectTaskResponse {
   evidenceCount?: number;
   hasEvidence?: boolean;
   evidenceCheck?: TaskEvidenceCheck | null;
+  scheduleCheck?: {
+    runsPastSprint?: boolean;
+    issues?: string[];
+  } | null;
   externalUpdatedAt?: string | null;
   createdAt: string;
   updatedAt: string;

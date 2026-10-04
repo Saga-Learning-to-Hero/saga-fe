@@ -8,6 +8,9 @@ type TaskApiErrorData = {
   maxPercent?: number;
   minPoints?: number;
   maxPoints?: number;
+  details?: {
+    issues?: string[];
+  };
 };
 
 type TaskApiError = {
@@ -72,6 +75,9 @@ export function getTaskMutationErrorMessage(error: unknown, fallback: string): s
       return "Không tìm thấy task cha. Danh sách parent đã được làm mới.";
     case "TASK_SUBTASK_PERCENT_INVALID":
       return formatSubtaskPercentInvalidMessage(error);
+    case "TASK_OUTSIDE_SPRINT":
+    case "TASK_DATE_RANGE_INVALID":
+      return apiError.response?.data?.message || apiError.data?.message || "Lịch Task không hợp lệ.";
     case "REQUEST_INVALID":
       return apiError.response?.data?.message || apiError.data?.message || "Yêu cầu không hợp lệ. Vui lòng kiểm tra lại form.";
     default:
@@ -97,6 +103,18 @@ export function getTaskMutationFieldError(
       return { field: "parent", message };
     case "TASK_SUBTASK_PERCENT_INVALID":
       return { field: "storyPoints", message };
+    case "TASK_OUTSIDE_SPRINT":
+    case "TASK_DATE_RANGE_INVALID": {
+      const issues = getTaskApiErrorData(error)?.details?.issues || [];
+      if (issues.includes("START_BEFORE_SPRINT") || issues.includes("START_AFTER_SPRINT")) {
+        return { field: "startDate", message };
+      }
+      if (issues.includes("DUE_BEFORE_SPRINT")) {
+        return { field: "dueDate", message };
+      }
+      // Mặc định fallback vào dueDate nếu là lỗi ngày (vd: START_AFTER_DUE)
+      return { field: "dueDate", message };
+    }
     case "REQUEST_INVALID":
       return { field: "summary", message };
     default:

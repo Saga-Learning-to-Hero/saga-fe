@@ -23,9 +23,13 @@ export interface SprintDueInfo {
 export interface LatestSyncInfo {
   latestSyncAt: string | null;
   relativeTime: string;
+  jiraRelativeTime: string | null;
+  githubRelativeTime: string | null;
   isStaleOrMissing: boolean;
   jiraStatus: string | null;
+  jiraSyncStatus: string | null;
   githubStatus: string | null;
+  githubSyncStatus: string | null;
   isJiraActive: boolean;
   isGitHubActive: boolean;
 }
@@ -151,7 +155,9 @@ export function getLatestSyncInfo(
   const staleHours = options?.staleThresholdHours ?? 24;
 
   const jiraStatus = sync?.jiraStatus ?? null;
+  const jiraSyncStatus = sync?.jiraSyncStatus ?? null;
   const githubStatus = sync?.githubStatus ?? null;
+  const githubSyncStatus = sync?.githubSyncStatus ?? null;
 
   const isJiraActive = (jiraStatus || "").trim().toUpperCase() === "ACTIVE";
   const isGitHubActive = (githubStatus || "").trim().toUpperCase() === "ACTIVE";
@@ -183,15 +189,21 @@ export function getLatestSyncInfo(
   }
 
   const relativeTime = latestSyncAt ? formatRelativeTime(latestSyncAt, reference) : "Chưa có dữ liệu";
+  const jiraRelativeTime = jiraDateStr ? formatRelativeTime(jiraDateStr, reference) : null;
+  const githubRelativeTime = githubDateStr ? formatRelativeTime(githubDateStr, reference) : null;
   const isOld = latestTime > 0 ? (reference.getTime() - latestTime) > staleHours * 60 * 60 * 1000 : true;
   const isStaleOrMissing = !isJiraActive || !isGitHubActive || isOld;
 
   return {
     latestSyncAt,
     relativeTime,
+    jiraRelativeTime,
+    githubRelativeTime,
     isStaleOrMissing,
     jiraStatus,
+    jiraSyncStatus,
     githubStatus,
+    githubSyncStatus,
     isJiraActive,
     isGitHubActive,
   };
@@ -352,8 +364,10 @@ export function normalizeProjectProgress(raw: unknown): ProjectProgressResponse 
     memberProgress: members.map(normalizeMemberSummary),
     sync: {
       jiraStatus: asNullableString(sync.jiraStatus),
+      jiraSyncStatus: asNullableString(sync.jiraSyncStatus),
       jiraLastSyncedAt: asNullableString(sync.jiraLastSyncedAt ?? sync.jiraLastSyncAt),
       githubStatus: asNullableString(sync.githubStatus),
+      githubSyncStatus: asNullableString(sync.githubSyncStatus),
       githubLastSyncedAt: asNullableString(sync.githubLastSyncedAt ?? sync.githubLastSyncAt),
     },
     lastActivityAt: asNullableString(item.lastActivityAt),

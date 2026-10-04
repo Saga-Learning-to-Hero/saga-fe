@@ -415,9 +415,7 @@ export function CommitDetailModal({
         </div>
 
         <div className="p-3.5 sm:p-4 border-t border-border/60 flex items-center justify-between bg-muted/20 shrink-0">
-          <div className="text-xs font-mono text-muted-foreground truncate max-w-sm hidden sm:block">
-            {commit?.sha && `Mã SHA: ${commit.sha}`}
-          </div>
+
           <Button
             variant="outline"
             size="sm"

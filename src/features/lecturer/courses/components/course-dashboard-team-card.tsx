@@ -235,10 +235,22 @@ export function CourseDashboardTeamCard({
 function getSetupNotices(team: LecturerDashboardTeam): string[] {
   const notices: string[] = [];
   if (team.configuration.contributionMode === "PROJECT_GROUP" && !team.configuration.contributionWeightsConfigured) notices.push("Chưa cấu hình trọng số riêng cho nhóm");
-  if (team.sync?.jiraStatus !== undefined && team.sync?.jiraStatus !== "ACTIVE") notices.push(`Jira: ${formatChannelStatus(team.sync?.jiraStatus)}`);
-  else if (team.sync?.jiraSyncStatus === "FAILED") notices.push(`Jira: ${formatSyncJobStatus(team.sync.jiraSyncStatus)}`);
-  if (team.sync?.githubStatus !== undefined && team.sync?.githubStatus !== "ACTIVE") notices.push(`GitHub: ${formatChannelStatus(team.sync?.githubStatus)}`);
-  else if (team.sync?.githubSyncStatus === "FAILED") notices.push(`GitHub: ${formatSyncJobStatus(team.sync.githubSyncStatus)}`);
+  
+  const formatTime = (isoString?: string | null) => 
+    isoString ? new Date(isoString).toLocaleString("vi-VN", { timeZone: "Asia/Ho_Chi_Minh" }) : "chưa có dữ liệu";
+
+  if (team.sync?.jiraStatus !== undefined && team.sync?.jiraStatus !== "ACTIVE") {
+    notices.push(`Jira: ${formatChannelStatus(team.sync?.jiraStatus)}`);
+  } else if (team.sync?.jiraSyncStatus && team.sync.jiraSyncStatus !== "SUCCEEDED") {
+    notices.push(`Jira: ${formatSyncJobStatus(team.sync.jiraSyncStatus)} (Lần cuối: ${formatTime(team.sync.jiraLastSuccessfulSyncAt)})`);
+  }
+
+  if (team.sync?.githubStatus !== undefined && team.sync?.githubStatus !== "ACTIVE") {
+    notices.push(`GitHub: ${formatChannelStatus(team.sync?.githubStatus)}`);
+  } else if (team.sync?.githubSyncStatus && team.sync.githubSyncStatus !== "SUCCEEDED") {
+    notices.push(`GitHub: ${formatSyncJobStatus(team.sync.githubSyncStatus)} (Lần cuối: ${formatTime(team.sync.githubLastSuccessfulSyncAt)})`);
+  }
+  
   return notices;
 }
 

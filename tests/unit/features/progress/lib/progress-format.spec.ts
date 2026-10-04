@@ -330,8 +330,10 @@ describe("progress-format", () => {
       const ref = new Date("2026-09-14T10:00:00Z");
       const activeSync = {
         jiraStatus: "ACTIVE",
+        jiraSyncStatus: "ACTIVE",
         jiraLastSyncedAt: "2026-09-14T09:30:00Z",
         githubStatus: "ACTIVE",
+        githubSyncStatus: "ACTIVE",
         githubLastSyncedAt: "2026-09-14T09:45:00Z",
       };
       const info = getLatestSyncInfo(activeSync, { referenceDate: ref });
@@ -343,8 +345,10 @@ describe("progress-format", () => {
 
       const degradedSync = {
         jiraStatus: "ACTIVE",
+        jiraSyncStatus: "ACTIVE",
         jiraLastSyncedAt: "2026-09-14T09:30:00Z",
         githubStatus: "REVOKED",
+        githubSyncStatus: "REVOKED",
         githubLastSyncedAt: "2026-09-14T09:00:00Z",
       };
       const degradedInfo = getLatestSyncInfo(degradedSync, { referenceDate: ref });
@@ -353,8 +357,10 @@ describe("progress-format", () => {
 
       const oldSync = {
         jiraStatus: "ACTIVE",
+        jiraSyncStatus: "ACTIVE",
         jiraLastSyncedAt: "2026-09-10T09:30:00Z",
         githubStatus: "ACTIVE",
+        githubSyncStatus: "ACTIVE",
         githubLastSyncedAt: "2026-09-10T09:00:00Z",
       };
       const oldInfo = getLatestSyncInfo(oldSync, { referenceDate: ref, staleThresholdHours: 24 });
