@@ -269,6 +269,8 @@ export interface TaskLinkedCommitItem {
   createdAt: string;
   parentCount?: number | null;
   isMerge?: boolean | null;
+  /** AI review badge (PASS / WARNING / SKIPPED_MERGE ...), decided by the backend. */
+  aiReview?: import("@/features/ai/types/ai-commit-review").CommitAiReviewSummary | null;
 }
 
 export type ProjectCommitItem = TaskLinkedCommitItem;

@@ -15,8 +15,11 @@ import {
   RefreshCwIcon,
   FolderGit2Icon,
   SparklesIcon,
+  GitMergeIcon,
+  HistoryIcon,
 } from "lucide-react";
 import { CommitAiIntelligenceModal } from "@/features/ai";
+import { CommitReviewModal } from "@/features/ai/components/commit-review/commit-review-modal";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -117,6 +120,7 @@ export function CommitDetailModal({
 }: CommitDetailModalProps) {
   const [copiedSha, setCopiedSha] = useState(false);
   const [showAiModal, setShowAiModal] = useState(false);
+  const [showReviewModal, setShowReviewModal] = useState(false);
   const mounted = useSyncExternalStore(
     emptySubscribe,
     () => true,
@@ -167,6 +171,8 @@ export function CommitDetailModal({
     fallbackCommit?.commitHash ||
     "";
   const shortSha = sha ? sha.slice(0, 7) : "";
+  // Merge commits only join existing work: SAGA never runs an AI review on them.
+  const isMergeCommit = (commit?.parents?.length ?? 0) > 1;
 
   return createPortal(
     <div
@@ -223,16 +229,39 @@ export function CommitDetailModal({
           </div>
 
           <div className="flex items-center gap-1.5 shrink-0">
-            {projectId && gitCommitId && (
-              <Button
+            {projectId && gitCommitId && commit && isMergeCommit && (
+              <Badge
                 variant="outline"
-                size="sm"
-                onClick={() => setShowAiModal(true)}
-                className="inline-flex items-center gap-1.5 h-8 px-2.5 text-xs font-semibold text-primary border-primary/30 bg-primary/5 hover:bg-primary/10"
+                className="h-8 px-2.5 text-xs font-semibold gap-1.5 text-purple-600 dark:text-purple-400 border-purple-500/30 bg-purple-500/5"
+                title="Merge commit chỉ gộp code đã có nên không cần đánh giá AI"
               >
-                <SparklesIcon className="size-3" />
-                <span>Đánh giá AI</span>
-              </Button>
+                <GitMergeIcon className="size-3" />
+                <span>Merge – không đánh giá AI</span>
+              </Badge>
+            )}
+
+            {projectId && gitCommitId && commit && !isMergeCommit && (
+              <>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowReviewModal(true)}
+                  className="inline-flex items-center gap-1.5 h-8 px-2.5 text-xs font-semibold text-primary border-primary/30 bg-primary/5 hover:bg-primary/10"
+                >
+                  <SparklesIcon className="size-3" />
+                  <span>Đánh giá AI</span>
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowAiModal(true)}
+                  className="inline-flex items-center gap-1.5 h-8 px-2.5 text-xs font-semibold"
+                  title="Lịch sử phân tích và phân loại học thuật"
+                >
+                  <HistoryIcon className="size-3" />
+                  <span className="hidden sm:inline">Lịch sử</span>
+                </Button>
+              </>
             )}
 
             {commit?.htmlUrl && (
@@ -427,7 +456,17 @@ export function CommitDetailModal({
         </div>
       </div>
 
-      {projectId && gitCommitId && (
+      {projectId && gitCommitId && showReviewModal && (
+        <CommitReviewModal
+          projectId={projectId}
+          commitId={gitCommitId}
+          shortSha={shortSha}
+          isOpen={showReviewModal}
+          onClose={() => setShowReviewModal(false)}
+        />
+      )}
+
+      {projectId && gitCommitId && !isMergeCommit && (
         <CommitAiIntelligenceModal
           projectId={projectId}
           gitCommitId={gitCommitId}

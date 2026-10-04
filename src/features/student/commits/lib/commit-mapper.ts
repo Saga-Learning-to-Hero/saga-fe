@@ -98,6 +98,7 @@ export function mapProjectCommitToCommitItem(
       (commit.parentCount !== null && commit.parentCount !== undefined && commit.parentCount > 1) ||
       Boolean(commit.message && /^(merge\s+|merge\b)/i.test(commit.message.trim())),
     parentCount: commit.parentCount ?? null,
+    aiReview: commit.aiReview ?? null,
   };
 }
 

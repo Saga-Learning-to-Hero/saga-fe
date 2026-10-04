@@ -20,6 +20,7 @@ import { ProjectBannerHeader } from "./project-banner-header";
 import { TeamMembersCard } from "./team-members-card";
 import { ProjectDetailsCard } from "./project-details-card";
 import { ProjectIntegrationsCard } from "./project-integrations-card";
+import { TeamAiKeyCard } from "@/features/ai/components/commit-review/team-ai-key-card";
 import { ProjectEditModal } from "./project-edit-modal";
 import { ProjectInfoSkeleton } from "./project-info-skeleton";
 import { useProjectRealtime } from "../hooks/use-project-realtime";
@@ -232,6 +233,9 @@ export function ProjectInfoView() {
                   projectId={projectId || project.projectId || project.id || ""}
                   isLeader={isLeader}
                 />
+                {Boolean(projectId || project.projectId || project.id) && (
+                  <TeamAiKeyCard projectId={projectId || project.projectId || project.id || ""} />
+                )}
               </div>
             </div>
           </div>

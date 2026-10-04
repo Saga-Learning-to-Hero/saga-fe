@@ -40,6 +40,8 @@ export interface CommitItem {
   commitUrl?: string;
   isMerge?: boolean;
   parentCount?: number | null;
+  /** AI review badge from the backend; null when not loaded. */
+  aiReview?: import("@/features/ai/types/ai-commit-review").CommitAiReviewSummary | null;
 }
 
 export interface CommitStats {

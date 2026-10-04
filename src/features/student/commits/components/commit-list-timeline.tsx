@@ -17,6 +17,8 @@ import type { CommitItem } from "../types/commits";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { CommitDetailModal } from "./commit-detail-modal";
+import { CommitReviewBadge } from "@/features/ai/components/commit-review/commit-review-badge";
+import { CommitReviewModal } from "@/features/ai/components/commit-review/commit-review-modal";
 
 interface CommitListTimelineProps {
   commits: CommitItem[];
@@ -82,6 +84,7 @@ export function CommitListTimeline({
 }: CommitListTimelineProps) {
   const [copiedHash, setCopiedHash] = useState<string | null>(null);
   const [activeCommit, setActiveCommit] = useState<CommitItem | null>(null);
+  const [reviewCommit, setReviewCommit] = useState<CommitItem | null>(null);
 
   const handleCopyHash = (shortHash: string) => {
     navigator.clipboard.writeText(shortHash);
@@ -200,6 +203,13 @@ export function CommitListTimeline({
                               <Badge className="bg-purple-500/15 text-purple-600 dark:text-purple-400 border-purple-500/30 text-xs font-mono font-bold shrink-0">
                                 Merge
                               </Badge>
+                            )}
+
+                            {commit.aiReview && commit.aiReview.status !== "SKIPPED_MERGE" && (
+                              <CommitReviewBadge
+                                review={commit.aiReview}
+                                onClick={projectId ? () => setReviewCommit(commit) : undefined}
+                              />
                             )}
 
                             <p
@@ -332,6 +342,16 @@ export function CommitListTimeline({
           </div>
         );
       })}
+
+      {projectId && reviewCommit && (
+        <CommitReviewModal
+          projectId={projectId}
+          commitId={reviewCommit.id}
+          shortSha={reviewCommit.shortHash}
+          isOpen={Boolean(reviewCommit)}
+          onClose={() => setReviewCommit(null)}
+        />
+      )}
 
       <CommitDetailModal
         isOpen={Boolean(activeCommit)}

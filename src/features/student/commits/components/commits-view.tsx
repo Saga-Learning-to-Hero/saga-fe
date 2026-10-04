@@ -42,6 +42,7 @@ import {
 } from "@/features/graph/lib/student-profile-id";
 import { replaceWithoutSearchParams } from "@/features/assistant/lib/clear-search-params";
 import { CommitDetailModal } from "./commit-detail-modal";
+import { CommitReviewBackfillButton } from "@/features/ai/components/commit-review/commit-review-backfill-button";
 
 export function CommitsView() {
   const router = useRouter();
@@ -588,6 +589,8 @@ export function CommitsView() {
               status={realtimeStatus}
             />
           )}
+
+          {isTeamLeader && projectId && <CommitReviewBackfillButton projectId={projectId} />}
 
           {githubRepositoryUrl && (
             <a href={githubRepositoryUrl} target="_blank" rel="noreferrer">
