@@ -130,11 +130,31 @@ export function CommitAiIntelligenceModal({
             </div>
           ) : latestRun?.status === "FAILED" ? (
             <div className="p-8 text-center text-xs text-muted-foreground space-y-3 rounded-xl border border-dashed border-red-500/30 bg-red-500/5">
-              <p className="text-red-600 dark:text-red-400 font-semibold">Lỗi trong quá trình phân tích AI.</p>
-              <p>Mã lỗi: {latestRun.failureCode || "UNKNOWN_ERROR"}</p>
-              <Button size="sm" variant="outline" onClick={() => submitCommitMutation.mutate()}>
-                Thử lại
-              </Button>
+              {latestRun.failure ? (
+                <>
+                  <p className="text-red-600 dark:text-red-400 font-bold">{latestRun.failure.title}</p>
+                  <p className="text-foreground">{latestRun.failure.message}</p>
+                  {latestRun.failure.hint && (
+                    <p className="text-[11px] text-muted-foreground">{latestRun.failure.hint}</p>
+                  )}
+                  <p className="text-[10px] text-muted-foreground opacity-70 mt-2" title="Chi tiết kỹ thuật">
+                    Mã lỗi: {latestRun.failure.code}
+                  </p>
+                  {latestRun.failure.retryable && (
+                    <Button size="sm" variant="outline" onClick={() => submitCommitMutation.mutate()} className="mt-2">
+                      Thử lại
+                    </Button>
+                  )}
+                </>
+              ) : (
+                <>
+                  <p className="text-red-600 dark:text-red-400 font-semibold">Lỗi trong quá trình phân tích AI.</p>
+                  <p>Mã lỗi: {latestRun.failureCode || "UNKNOWN_ERROR"}</p>
+                  <Button size="sm" variant="outline" onClick={() => submitCommitMutation.mutate()}>
+                    Thử lại
+                  </Button>
+                </>
+              )}
             </div>
           ) : !latestRun || !parsedResult ? (
             <div className="p-8 text-center text-xs text-muted-foreground space-y-2 rounded-xl border border-dashed border-border bg-muted/10">
