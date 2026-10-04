@@ -40,7 +40,11 @@ import { usePipelineGraphData } from "../hooks/use-pipeline-graph-data";
 import { useAccumulatedProjectGraph, useProjectGraph } from "../hooks/use-project-graph";
 import { describeGraphLoadError } from "../lib/graph-error";
 import { resolveGraphFileDownloadContext } from "../lib/graph-file-download";
-import { buildGraphScopeParams, retainFileEvidenceGraph, type GraphScopeMode } from "../lib/graph-scope";
+import {
+  buildGraphScopeParams,
+  filterGraphEvidenceByScope,
+  type GraphScopeMode,
+} from "../lib/graph-scope";
 import {
   mapStudentNodesToMemberOptions,
   resolveDrillDownStudent,
@@ -265,14 +269,13 @@ export function TraceabilityGraphView() {
       };
     });
 
-    return retainFileEvidenceGraph(
-      {
-        ...rawData,
-        nodes: enrichedNodes,
-      },
-      scopeMode
-    );
-  }, [graphQuery.data, currentUser, scopeMode]);
+    const enriched = {
+      ...rawData,
+      nodes: enrichedNodes,
+    };
+    if (activeGraphType !== "OVERVIEW" && activeGraphType !== "ACTIVITY") return enriched;
+    return filterGraphEvidenceByScope(enriched, scopeMode);
+  }, [graphQuery.data, currentUser, scopeMode, activeGraphType]);
 
   const focusedTaskDisplay = useMemo(() => {
     if (!activeFocusedNodeId) return null;
@@ -320,11 +323,13 @@ export function TraceabilityGraphView() {
       totalEdges: edges.length,
       anomalyCount,
       meta:
-        meta && scopeMode === "FILE"
+        meta &&
+        (scopeMode === "COMMIT" || scopeMode === "FILE_LINK") &&
+        (activeGraphType === "OVERVIEW" || activeGraphType === "ACTIVITY")
           ? { ...meta, returnedNodes: nodes.length, returnedEdges: edges.length }
           : meta,
     };
-  }, [displayGraphData, graphQuery.data, scopeMode]);
+  }, [displayGraphData, graphQuery.data, scopeMode, activeGraphType]);
 
   const pipelineMemberOptions = useMemo(
     () => [
