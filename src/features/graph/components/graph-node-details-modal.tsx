@@ -6,6 +6,8 @@ import {
   CheckSquareIcon,
   GitCommitIcon,
   FileIcon,
+  DownloadIcon,
+  Loader2Icon,
   LinkIcon,
   AlertTriangleIcon,
   LayersIcon,
@@ -23,7 +25,10 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import type { CytoscapeNodeData, CanonicalNodeType } from "../types/graph";
 import { parseStudentNodeProfileId } from "../lib/student-profile-id";
+import type { GraphFileDownloadContext } from "../lib/graph-file-download";
 import { CommitDetailModal } from "@/features/student/commits/components/commit-detail-modal";
+import { useDownloadTaskFile } from "@/features/student/sprint-progress/hooks/use-task-evidence";
+import { showErrorToast } from "@/lib/api-error";
 
 interface GraphNodeDetailsModalProps {
   nodeData: CytoscapeNodeData | null;
@@ -32,6 +37,7 @@ interface GraphNodeDetailsModalProps {
   onFocusNode?: (nodeId: string, nodeLabel?: string) => void;
   focusedNodeId?: string | null;
   projectId?: string | null;
+  fileDownloadContext?: GraphFileDownloadContext | null;
 }
 
 const TYPE_CONFIG: Record<
@@ -67,6 +73,7 @@ export function GraphNodeDetailsModal({
   onFocusNode,
   focusedNodeId,
   projectId,
+  fileDownloadContext = null,
 }: GraphNodeDetailsModalProps) {
   const mounted = useSyncExternalStore(
     emptySubscribe,
@@ -74,6 +81,20 @@ export function GraphNodeDetailsModal({
     () => false
   );
   const isCommitNode = nodeData?.type === "COMMIT";
+  const isFileNode = nodeData?.type === "FILE";
+  const downloadMutation = useDownloadTaskFile(fileDownloadContext?.taskId ?? "");
+
+  const handleDownloadFile = () => {
+    if (!fileDownloadContext || downloadMutation.isPending) return;
+    downloadMutation.mutate(
+      { fileId: fileDownloadContext.fileId, filename: fileDownloadContext.filename },
+      {
+        onError: (error) => {
+          showErrorToast("Không thể tải tệp. Vui lòng thử lại.", error);
+        },
+      }
+    );
+  };
 
   useEffect(() => {
     if (!nodeData || isCommitNode) return;
@@ -313,6 +334,35 @@ export function GraphNodeDetailsModal({
               >
                 Xem chi tiết đóng góp
               </Button>
+            )}
+            {isFileNode && (
+              <div className="flex flex-col items-start gap-1">
+                {!fileDownloadContext && (
+                  <p className="text-xs text-muted-foreground">
+                    Không xác định được công việc liên kết với tệp này.
+                  </p>
+                )}
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={!fileDownloadContext || downloadMutation.isPending}
+                  onClick={handleDownloadFile}
+                  className="h-9 gap-1.5 text-xs rounded-xl cursor-pointer"
+                >
+                  {downloadMutation.isPending ? (
+                    <>
+                      <Loader2Icon className="size-3.5 animate-spin" />
+                      Đang tải...
+                    </>
+                  ) : (
+                    <>
+                      <DownloadIcon className="size-3.5" />
+                      Tải file
+                    </>
+                  )}
+                </Button>
+              </div>
             )}
             {showTaskFocusButton && (
               <Button

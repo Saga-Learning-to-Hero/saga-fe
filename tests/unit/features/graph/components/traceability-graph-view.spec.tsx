@@ -117,22 +117,37 @@ vi.mock("cytoscape", () => {
 
 vi.mock("@/features/graph/components/cytoscape-graph-canvas", () => ({
   CytoscapeGraphCanvas: ({
-    onSelectNode,
-  }: {
-    onSelectNode?: (node: { id: string; label: string; type: string }) => void;
+  onSelectNode,
+}: {
+    onSelectNode?: (node: { id: string; label: string; type: string; subLabel?: string }) => void;
   }) => (
-    <button
-      type="button"
-      onClick={() =>
-        onSelectNode?.({
-          id: "student:80ffd344-5190-4373-a2fb-10e74d64e55d",
-          label: "Tran Van B",
-          type: "STUDENT",
-        })
-      }
-    >
-      Chọn node sinh viên
-    </button>
+    <>
+      <button
+        type="button"
+        onClick={() =>
+          onSelectNode?.({
+            id: "student:80ffd344-5190-4373-a2fb-10e74d64e55d",
+            label: "Tran Van B",
+            type: "STUDENT",
+          })
+        }
+      >
+        Chọn node sinh viên
+      </button>
+      <button
+        type="button"
+        onClick={() =>
+          onSelectNode?.({
+            id: "file:aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee",
+            label: "pak.drawio.png",
+            type: "FILE",
+            subLabel: "image/png",
+          })
+        }
+      >
+        Chọn node tệp
+      </button>
+    </>
   ),
 }));
 
@@ -442,6 +457,49 @@ describe("TraceabilityGraphView", () => {
       expect(graphQueryMock).not.toHaveBeenCalledWith(
         expect.objectContaining({ graphType: "CONTRIBUTION" })
       );
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID09",
+      type: "N",
+      executedDate: "04/10/2026",
+      description: "Student graph truyen download context tu canh EVIDENCED_BY vao modal FILE",
+    },
+    async () => {
+      const user = userEvent.setup();
+      graphQueryMock.mockReturnValue(
+        idleQuery({
+          isSuccess: true,
+          data: {
+            nodes: [
+              {
+                data: {
+                  id: "file:aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee",
+                  label: "pak.drawio.png",
+                  type: "FILE",
+                  subLabel: "image/png",
+                },
+              },
+            ],
+            edges: [
+              {
+                data: {
+                  id: "e-file",
+                  source: "task:11111111-2222-4333-8444-555555555555",
+                  target: "file:aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee",
+                  label: "EVIDENCED_BY",
+                },
+              },
+            ],
+          },
+        })
+      );
+      renderView();
+      await user.click(screen.getByRole("button", { name: "Chọn node tệp" }));
+      expect(screen.getByRole("button", { name: "Tải file" })).toBeEnabled();
+      expect(screen.queryByText("Không xác định được công việc liên kết với tệp này.")).toBeNull();
     }
   );
 });

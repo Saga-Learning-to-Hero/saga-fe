@@ -444,7 +444,7 @@ CORS: origin FE phải nằm `SAGA_AUTH_FRONTEND_ORIGINS`. Local: `http://localh
 - Không bịa node Criterion từ `weightType` — BE đã trả 4 node trên Graph 2 và 3.
 - Không nối `Commit → Student` tắt Identity.
 - Không đợi node Pull Request.
-- Không bịa node FILE/WEB_LINK từ list evidence REST — BE đã trả cạnh `EVIDENCED_BY`. Click node: `file:{taskFileId}` / `weblink:{taskWebLinkId}` (cùng UUID API evidence).
+- Không bịa node FILE/WEB_LINK từ list evidence REST — BE đã trả cạnh `EVIDENCED_BY`. Click node: `file:{taskFileId}` / `weblink:{taskWebLinkId}` (cùng UUID API evidence). Tải tệp: lấy `fileId` từ id node và `taskId` từ cạnh `TASK ─EVIDENCED_BY→ FILE`, rồi `GET /api/tasks/{taskId}/files/{fileId}`. Không gọi API danh sách file. Thiếu cạnh thì không tải.
 - Không gọi 5 graph song song lúc mount nếu chưa cần.
 - Không tải full graph rồi gom/ẩn trên Cytoscape — dùng `nodeTypes` / `focusNodeId` / `maxNodes`.
 - Không map `data.avatarUrl` trên node graph — field là `data.avatar`. GitHub `provider_avatar_url` không phải ảnh sinh viên.
