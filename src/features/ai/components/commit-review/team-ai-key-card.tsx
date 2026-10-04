@@ -70,7 +70,7 @@ export function TeamAiKeyCard({ projectId }: { projectId: string }) {
           Key AI của nhóm
         </CardTitle>
         <CardDescription className="text-xs">
-          Dùng để AI tự đánh giá chất lượng từng commit (tên commit, code, độ khớp task). Key được mã hoá, không ai xem lại được.
+          Key cho toàn bộ AI của nhóm: đánh giá commit, phân tích task, rủi ro, báo cáo tiến độ và trợ lý chat. Trưởng nhóm nhập key và chọn model; key được mã hoá, không ai xem lại được.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-3">
@@ -105,8 +105,8 @@ export function TeamAiKeyCard({ projectId }: { projectId: string }) {
               <p className="text-xs text-muted-foreground flex items-start gap-1.5">
                 <InfoIcon className="size-3.5 mt-0.5 shrink-0" />
                 {data.courseFallbackAvailable
-                  ? "Nhóm chưa có key: commit vẫn được đánh giá bằng key của lớp vì giảng viên đã cho phép."
-                  : "Nhóm chưa có key và giảng viên chưa cho dùng key của lớp: commit sẽ không được AI đánh giá."}
+                  ? "Nhóm chưa có key: giảng viên đang cho nhóm dùng tạm key của lớp."
+                  : "Nhóm chưa có key và chưa được giảng viên cho dùng key của lớp: trưởng nhóm cần nhập key để dùng AI."}
               </p>
             )}
 

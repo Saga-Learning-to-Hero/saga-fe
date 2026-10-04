@@ -151,3 +151,22 @@ export interface SaveTeamAiKeyRequest {
   modelId: string;
   apiKey: string;
 }
+
+/** Lecturer: which teams may fall back to the course key (`/api/lecturer/courses/{courseId}/ai/team-access`). */
+export interface CourseAiTeamAccess {
+  teamId: string;
+  teamNo: number | null;
+  teamName: string | null;
+  projectId: string | null;
+  projectName: string | null;
+  teamKey: { configured: boolean; provider: string | null; modelId: string | null; status: string | null };
+  courseKeyAllowed: boolean;
+  /** TEAM | COURSE | NONE */
+  effectiveKey: string;
+}
+
+export interface CourseAiTeamAccessResponse {
+  courseKeyConfigured: boolean;
+  automationEnabled: boolean;
+  teams: CourseAiTeamAccess[];
+}

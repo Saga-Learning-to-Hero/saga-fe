@@ -29,6 +29,7 @@ import {
   useAllCourseAiCredentials,
 } from "../../hooks/use-lecturer-ai";
 import { CourseAiSettingsCard } from "./course-ai-settings-card";
+import { CourseAiTeamAccessCard } from "./course-ai-team-access-card";
 import { CourseAiProgressTab } from "./course-ai-progress-tab";
 import { CourseAiAcademicReviewTab } from "./course-ai-academic-review-tab";
 import { cn } from "@/lib/utils";
@@ -330,6 +331,7 @@ export function LecturerAiHubPage({ courseId }: LecturerAiHubPageProps) {
         {activeTab === "credentials" && (
           <div className="space-y-6">
             <CourseAiSettingsCard courseId={courseId} />
+            <CourseAiTeamAccessCard courseId={courseId} />
           </div>
         )}
       </div>
