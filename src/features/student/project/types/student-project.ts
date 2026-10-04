@@ -262,6 +262,8 @@ export interface TaskLinkedCommitItem {
   sha: string;
   message: string;
   authorExternalId?: string | null;
+  /** GitHub login (e.g. "trungne08"); authorExternalId may be the numeric GitHub user id. */
+  authorLogin?: string | null;
   authorStudentId?: string | null;
   authorAvatarUrl?: string | null;
   headRef?: string | null;

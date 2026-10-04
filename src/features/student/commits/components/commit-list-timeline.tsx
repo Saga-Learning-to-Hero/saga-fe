@@ -233,12 +233,24 @@ export function CommitListTimeline({
                               <span className="font-medium text-foreground">
                                 {commit.author.name}
                               </span>
-                              <span className="text-xs font-mono text-muted-foreground">
-                                ({commit.author.studentCode})
-                              </span>
-                              <span className="text-xs font-mono text-muted-foreground/80">
-                                @{commit.author.username}
-                              </span>
+                              {commit.author.studentCode ? (
+                                <span className="text-xs font-mono text-muted-foreground">
+                                  ({commit.author.studentCode})
+                                </span>
+                              ) : null}
+                              {commit.author.username !== commit.author.name ? (
+                                <span className="text-xs font-mono text-muted-foreground/80">
+                                  @{commit.author.username}
+                                </span>
+                              ) : null}
+                              {commit.author.outsideTeam ? (
+                                <span
+                                  className="text-[10px] font-semibold px-1.5 py-0.5 rounded-md border border-border bg-muted text-muted-foreground"
+                                  title="Tài khoản GitHub này không thuộc thành viên nào của nhóm"
+                                >
+                                  Ngoài dự án
+                                </span>
+                              ) : null}
                             </div>
 
                             <span className="text-border">•</span>

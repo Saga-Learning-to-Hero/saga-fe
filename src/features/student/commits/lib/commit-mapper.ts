@@ -79,9 +79,11 @@ export function mapProjectCommitToCommitItem(
     return false;
   });
 
-  const authorName = member?.fullName || member?.name || commit.authorExternalId || "GitHub Committer";
+  // The login reads better than a numeric GitHub user id for authors outside the team.
+  const login = commit.authorLogin?.trim() || null;
+  const authorName = member?.fullName || member?.name || login || commit.authorExternalId || "GitHub Committer";
   const studentCode = member?.studentCode || "";
-  const username = commit.authorExternalId || "author";
+  const username = login || commit.authorExternalId || "author";
   const avatar =
     resolveHttpAvatarUrl(commit.authorAvatarUrl, member?.avatarUrl, member?.avatar) || "";
 
@@ -103,6 +105,7 @@ export function mapProjectCommitToCommitItem(
       studentCode,
       username,
       avatar,
+      outsideTeam: !member,
     },
     repoName,
     branchName: commit.headRef?.trim() || "Không xác định",

@@ -118,13 +118,14 @@ export function mapPipelineTasks(tasks: ProjectTaskResponse[]): PipelineTask[] {
 }
 
 export function resolveCommitAuthorLabel(
-  commit: Pick<TaskLinkedCommitItem, "authorStudentId" | "authorExternalId">,
+  commit: Pick<TaskLinkedCommitItem, "authorStudentId" | "authorExternalId" | "authorLogin">,
   members: PipelineMember[]
 ): string {
   const member = members.find((item) => item.studentId && item.studentId === commit.authorStudentId);
   if (member) return member.fullName;
-  if (commit.authorExternalId) return `${commit.authorExternalId} · Chưa liên kết sinh viên`;
-  return "Chưa liên kết sinh viên";
+  const github = commit.authorLogin?.trim() || commit.authorExternalId;
+  if (github) return `${github} · Ngoài dự án`;
+  return "Không rõ tác giả · Ngoài dự án";
 }
 
 export function mapPipelineCommits(

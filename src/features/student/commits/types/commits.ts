@@ -26,6 +26,8 @@ export interface CommitItem {
     studentCode: string;
     username: string; // GitHub username
     avatar: string;
+    /** The GitHub account belongs to no member of this team. */
+    outsideTeam?: boolean;
   };
   repoName: string;
   branchName: string;

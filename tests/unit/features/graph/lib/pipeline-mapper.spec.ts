@@ -98,7 +98,7 @@ describe("pipeline-mapper", () => {
         createdAt: "2026-09-14T01:00:00Z",
       };
       expect(resolveCommitAuthorLabel(commit, members)).toContain("octocat");
-      expect(resolveCommitAuthorLabel(commit, members)).toContain("Chưa liên kết sinh viên");
+      expect(resolveCommitAuthorLabel(commit, members)).toContain("Ngoài dự án");
       expect(mapPipelineCommits([commit], members)[0].authorStudentId).toBeNull();
     }
   );

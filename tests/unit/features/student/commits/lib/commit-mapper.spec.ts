@@ -212,4 +212,22 @@ describe("commit-mapper", () => {
       ).toBe(true);
     }
   );
+
+  fptTest(
+    { id: "UTCID92", type: "N", executedDate: "05/10/2026", description: "Tac gia ngoai nhom hien ten GitHub thay vi ID so va gan nhan ngoai du an" },
+    () => {
+      const outsider = mapProjectCommitToCommitItem({ ...commit, authorStudentId: null, authorExternalId: "139128461", authorLogin: "trungne08" }, []);
+      expect(outsider.author.name).toBe("trungne08");
+      expect(outsider.author.username).toBe("trungne08");
+      expect(outsider.author.outsideTeam).toBe(true);
+      expect(outsider.author.studentCode).toBe("");
+
+      const member = mapProjectCommitToCommitItem(
+        { ...commit, authorStudentId: "sp-1", authorExternalId: "139128461", authorLogin: "trungne08" },
+        [{ id: "sp-1", studentCode: "SE170001", fullName: "Nguyễn Văn A" }]
+      );
+      expect(member.author.name).toBe("Nguyễn Văn A");
+      expect(member.author.outsideTeam).toBe(false);
+    }
+  );
 });
