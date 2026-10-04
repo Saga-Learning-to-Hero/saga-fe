@@ -772,4 +772,29 @@ describe("useProjectRealtime Hook", () => {
       expect(taskReloads[0][1]).toEqual({ cancelRefetch: false });
     }
   );
+
+  fptTest(
+    {
+      id: "UTCID21",
+      type: "N",
+      executedDate: "05/10/2026",
+      description: "COMMIT_REVIEWS_CHANGED chi tai lai danh sach commit va modal danh gia, khong tai lai task",
+    },
+    () => {
+      const invalidateSpy = vi.spyOn(queryClient, "invalidateQueries");
+      const wrapper = createWrapper();
+      renderHook(() => useProjectRealtime("project-review"), { wrapper });
+      const es = MockEventSource.instances[0];
+
+      act(() => {
+        es.emitOpen();
+        es.emitEvent("COMMIT_REVIEWS_CHANGED", { type: "COMMIT_REVIEWS_CHANGED", projectId: "project-review" });
+      });
+
+      const filters = invalidated(invalidateSpy);
+      expect(filters).toContainEqual({ queryKey: PROJECT_PROJECTION_QUERY_KEYS.commits("project-review") });
+      expect(filters).toContainEqual({ queryKey: ["projects", "project-review", "commits"] });
+      expect(filters).not.toContainEqual({ queryKey: JIRA_SPRINT_QUERY_KEYS.tasks("project-review") });
+    }
+  );
 });

@@ -27,6 +27,7 @@ const REALTIME_EVENT_NAMES: ProjectRealtimeEventType[] = [
   "TASK_EVIDENCE_CHANGED",
   "SYNC_STATUS_CHANGED",
   "GRAPH_CHANGED",
+  "COMMIT_REVIEWS_CHANGED",
 ];
 
 const READY_DEBOUNCE_MS = 1000;
@@ -242,6 +243,11 @@ export function useProjectRealtime(
           } else {
             queueInvalidation({ queryKey: ["tasks"] });
           }
+          break;
+        case "COMMIT_REVIEWS_CHANGED":
+          // an AI review was queued or finished: commit badges and open review panels only
+          invalidateCommits();
+          queueInvalidation({ queryKey: ["projects", pid, "commits"] });
           break;
         case "SYNC_STATUS_CHANGED":
           invalidateSyncStatus();
