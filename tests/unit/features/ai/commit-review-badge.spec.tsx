@@ -11,6 +11,7 @@ import {
 } from "@/features/ai/lib/commit-review-style";
 import { mapProjectCommitToCommitItem } from "@/features/student/commits/lib/commit-mapper";
 import { fptTest } from "@/testing/fpt-test-helper";
+import { isStrengthFinding } from "@/features/ai/components/commit-review/commit-review-modal";
 
 describe("Commit AI review badge", () => {
   fptTest(
@@ -114,6 +115,18 @@ describe("Commit AI review badge", () => {
       expect(teamKeyStatusView("INVALID").label).toBe("Key bị từ chối");
       expect(teamKeyStatusView("DEGRADED").label).toBe("Tạm hết hạn mức");
       expect(teamKeyStatusView(null).label).toBe("Chưa có key");
+    }
+  );
+});
+
+describe("Commit review strengths", () => {
+  fptTest(
+    { id: "UTCID20", type: "N", executedDate: "05/10/2026", description: "Nhan xet GOOD_ la diem tot, con lai la van de" },
+    () => {
+      expect(isStrengthFinding({ code: "GOOD_ERROR_HANDLING" })).toBe(true);
+      expect(isStrengthFinding({ code: "good_naming" })).toBe(true);
+      expect(isStrengthFinding({ code: "POSSIBLE_BUG" })).toBe(false);
+      expect(isStrengthFinding({ code: "VAGUE_MESSAGE" })).toBe(false);
     }
   );
 });

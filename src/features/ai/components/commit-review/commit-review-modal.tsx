@@ -86,25 +86,47 @@ function LocationBlock({ location }: { location: CommitAiReviewLocation }) {
   );
 }
 
+/** The AI names what is good in the code with a GOOD_ code (e.g. GOOD_ERROR_HANDLING); everything else is a problem. */
+export function isStrengthFinding(finding: Pick<CommitAiReviewFinding, "code">): boolean {
+  return finding.code?.toUpperCase().startsWith("GOOD_") ?? false;
+}
+
 function FindingList({ findings, empty }: { findings: CommitAiReviewFinding[]; empty: string }) {
   if (!findings.length) {
     return <p className="text-xs text-muted-foreground italic">{empty}</p>;
   }
   return (
     <ol className="space-y-3">
-      {findings.map((finding, idx) => (
-        <li key={`${finding.code}-${idx}`} className="rounded-lg border border-amber-500/30 bg-amber-500/5 p-3 space-y-2">
-          <div className="flex items-start gap-2">
-            <span className="shrink-0 mt-0.5 text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-700 dark:text-amber-300">
-              {finding.code}
-            </span>
-            <p className="text-xs text-foreground leading-relaxed">{finding.message}</p>
-          </div>
-          {finding.locations.map((location, i) => (
-            <LocationBlock key={i} location={location} />
-          ))}
-        </li>
-      ))}
+      {findings.map((finding, idx) => {
+        const strength = isStrengthFinding(finding);
+        return (
+          <li
+            key={`${finding.code}-${idx}`}
+            data-kind={strength ? "strength" : "problem"}
+            className={cn(
+              "rounded-lg border p-3 space-y-2",
+              strength ? "border-emerald-500/30 bg-emerald-500/5" : "border-amber-500/30 bg-amber-500/5"
+            )}
+          >
+            <div className="flex items-start gap-2">
+              <span
+                className={cn(
+                  "shrink-0 mt-0.5 text-[10px] font-mono font-bold px-1.5 py-0.5 rounded",
+                  strength
+                    ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300"
+                    : "bg-amber-500/15 text-amber-700 dark:text-amber-300"
+                )}
+              >
+                {strength ? `Điểm tốt · ${finding.code}` : finding.code}
+              </span>
+              <p className="text-xs text-foreground leading-relaxed">{finding.message}</p>
+            </div>
+            {finding.locations.map((location, i) => (
+              <LocationBlock key={i} location={location} />
+            ))}
+          </li>
+        );
+      })}
     </ol>
   );
 }

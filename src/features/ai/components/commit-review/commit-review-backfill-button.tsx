@@ -31,7 +31,7 @@ export function CommitReviewBackfillButton({ projectId }: { projectId: string })
       onClick={handleClick}
       disabled={!projectId || backfill.isPending}
       className="h-8.5 text-xs font-bold rounded-xl gap-1.5 cursor-pointer shadow-2xs"
-      title={`AI đánh giá ${COMMIT_REVIEW_BACKFILL_LIMIT} commit gần nhất chưa được đánh giá (bỏ qua merge commit)`}
+      title={`AI đánh giá ${COMMIT_REVIEW_BACKFILL_LIMIT} commit gần nhất chưa được đánh giá, bị lỗi hoặc được đánh giá bằng phiên bản AI cũ (bỏ qua merge commit)`}
     >
       {backfill.isPending ? <Loader2Icon className="w-3.5 h-3.5 animate-spin" /> : <SparklesIcon className="w-3.5 h-3.5 text-primary" />}
       <span>AI đánh giá {COMMIT_REVIEW_BACKFILL_LIMIT} commit gần nhất</span>
