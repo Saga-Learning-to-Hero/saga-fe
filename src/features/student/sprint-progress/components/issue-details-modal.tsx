@@ -14,9 +14,10 @@ import {
   PaperclipIcon,
   ShieldCheckIcon,
   CalendarIcon,
-  HistoryIcon,
   SparklesIcon,
   GitCommitIcon,
+  InfoIcon,
+  HistoryIcon,
 } from "lucide-react";
 import Link from "next/link";
 import { TaskAiIntelligenceSection } from "@/features/ai";
@@ -539,7 +540,6 @@ export function IssueDetailsModal({
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formErrors, setFormErrors] = useState<TaskFormErrors>({});
-  const [dateWarning, setDateWarning] = useState<string | null>(null);
   const [isDeleteConfirmationOpen, setIsDeleteConfirmationOpen] = useState(false);
   const [selectedCommitShas, setSelectedCommitShas] = useState("");
   const [activeEvidenceTab, setActiveEvidenceTab] = useState("timeline");
@@ -588,8 +588,7 @@ export function IssueDetailsModal({
   if (!isOpen) return null;
 
   const handleSubmit = async (
-    e?: React.FormEvent,
-    hasConfirmedDateWarning = false
+    e?: React.FormEvent
   ) => {
     if (e) e.preventDefault();
     if (!canEdit) return;
@@ -615,16 +614,13 @@ export function IssueDetailsModal({
       issueTypeId: form.issueTypeId,
       issueTypeLevel: selectedIssueTypeLevel,
       parentTaskId: form.parentTaskId,
+      originalStartDate: taskDetail?.startDate || issue?.startDate || "",
+      originalDueDate: taskDetail?.dueDate || issue?.dueDate || "",
       isEditing,
       siblingUsedPoints,
     });
     setFormErrors(validation.errors);
     if (Object.keys(validation.errors).length > 0) return;
-    if (validation.dateWarning && !hasConfirmedDateWarning) {
-      setDateWarning(validation.dateWarning);
-      return;
-    }
-    setDateWarning(null);
 
     setIsSubmitting(true);
 
@@ -1504,6 +1500,33 @@ export function IssueDetailsModal({
                     {formErrors.dueDate && (
                       <p className="text-xs font-medium text-destructive">{formErrors.dueDate}</p>
                     )}
+                    {!formErrors.dueDate && (() => {
+                      const activeSprint = issueTypeRules.showSprint && form.sprintId !== "backlog"
+                        ? sourceSprints.find((s) => s.id === form.sprintId)
+                        : undefined;
+                      const originalDueDate = taskDetail?.dueDate || issue?.dueDate || "";
+                      const isDueDateChanged = !isEditing || form.dueDate !== originalDueDate;
+                      
+                      if (activeSprint?.endDate && form.dueDate && form.dueDate > activeSprint.endDate && isDueDateChanged) {
+                        return (
+                          <div className="p-2 rounded-lg bg-blue-500/10 border border-blue-500/20 text-blue-700 dark:text-blue-400 text-[11px] font-medium flex items-start gap-1.5 mt-1">
+                            <InfoIcon className="w-3.5 h-3.5 shrink-0 mt-0.5" />
+                            <span>Hạn hoàn thành sau khi {activeSprint.name} kết thúc, Task sẽ chuyển sang sprint sau nếu chưa xong.</span>
+                          </div>
+                        );
+                      }
+                      
+                      if (isEditing && !isDueDateChanged && taskDetail?.scheduleCheck?.runsPastSprint) {
+                        return (
+                          <div className="p-2 rounded-lg bg-blue-500/10 border border-blue-500/20 text-blue-700 dark:text-blue-400 text-[11px] font-medium flex items-center gap-1.5 mt-1">
+                            <InfoIcon className="w-3.5 h-3.5 shrink-0" />
+                            <span>Kéo dài qua sprint sau</span>
+                          </div>
+                        );
+                      }
+                      
+                      return null;
+                    })()}
                   </div>
 
                   {issueTypeRules.showParent ? (
@@ -1784,19 +1807,7 @@ export function IssueDetailsModal({
           </div>
         </div>
       </div>
-      <ConfirmActionDialog
-        isOpen={Boolean(dateWarning)}
-        onClose={() => setDateWarning(null)}
-        onConfirm={() => void handleSubmit(undefined, true)}
-        title="Lịch Task nằm ngoài Sprint"
-        description={dateWarning || undefined}
-        confirmText="Vẫn lưu Task"
-        loadingText="Đang lưu..."
-        confirmVariant="default"
-        isLoading={isSubmitting}
-        icon={<CalendarIcon className="size-5" />}
-        iconClassName="bg-amber-500/10 text-amber-600"
-      />
+
       <ConfirmActionDialog
         isOpen={isDeleteConfirmationOpen}
         onClose={() => setIsDeleteConfirmationOpen(false)}
