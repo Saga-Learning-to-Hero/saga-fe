@@ -9,6 +9,8 @@ import type {
   ContributionConfirmationResponse,
 } from "../types/task-evidence";
 
+export const UPLOAD_TIMEOUT_MS = 120_000;
+
 export class TaskEvidenceService {
   static async getWorkSessions(taskId: string): Promise<TaskWorkSessionsResponse> {
     const cleanTaskId = taskId ? taskId.trim() : "";
@@ -135,7 +137,9 @@ export class TaskEvidenceService {
 
     const response = await apiClient.post<TaskFileItem>(
       `/api/tasks/${encodeURIComponent(cleanTaskId)}/files`,
-      formData
+      formData,
+      // up to 10 MB on a slow connection takes longer than the client's default 15 s
+      { timeout: UPLOAD_TIMEOUT_MS }
     );
     return response.data;
   }

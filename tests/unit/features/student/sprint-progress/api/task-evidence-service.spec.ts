@@ -1,5 +1,5 @@
 import { describe, expect, vi, beforeEach } from "vitest";
-import { TaskEvidenceService } from "@/features/student/sprint-progress/api/task-evidence-service";
+import { TaskEvidenceService, UPLOAD_TIMEOUT_MS } from "@/features/student/sprint-progress/api/task-evidence-service";
 import { apiClient } from "@/lib/axios";
 import { fptTest } from "@/testing/fpt-test-helper";
 
@@ -386,7 +386,8 @@ describe("TaskEvidenceService", () => {
 
       expect(postSpy).toHaveBeenCalledWith(
         `/api/tasks/${mockTaskId}/files`,
-        expect.any(FormData)
+        expect.any(FormData),
+        { timeout: UPLOAD_TIMEOUT_MS }
       );
       expect(res.id).toBe(mockFileId);
       expect(res.filename).toBe("srs.pdf");

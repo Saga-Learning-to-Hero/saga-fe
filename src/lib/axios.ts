@@ -110,9 +110,22 @@ if (typeof window !== "undefined") {
   ensureCsrfToken().catch(() => { });
 }
 
+/**
+ * A file upload must reach the server as multipart/form-data with the browser's boundary. The client's
+ * default "Content-Type: application/json" made axios turn the FormData into a JSON string (the file
+ * was lost and the server answered 415), so it is dropped for FormData bodies.
+ */
+export function allowMultipartBody(config: InternalAxiosRequestConfig): InternalAxiosRequestConfig {
+  if (typeof FormData !== "undefined" && config.data instanceof FormData && config.headers) {
+    config.headers.delete("Content-Type");
+  }
+  return config;
+}
+
 apiClient.interceptors.request.use(
   async (config: InternalAxiosRequestConfig) => {
     config.baseURL = getApiBaseUrl();
+    allowMultipartBody(config);
     const method = config.method?.toUpperCase();
     const isMutatingMethod = method === "POST" || method === "PUT" || method === "PATCH" || method === "DELETE";
 
