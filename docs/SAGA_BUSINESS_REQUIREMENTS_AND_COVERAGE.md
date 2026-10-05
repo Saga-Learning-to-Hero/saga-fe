@@ -174,7 +174,7 @@ UI render dữ liệu canonical mới nhất
 | Course/team/project hiện tại | Student/Lecturer REST endpoints | Dựa hoàn toàn vào localStorage của user trước |
 | Jira Task/Sprint | Project Task/Sprint REST projection | Dùng payload SSE hoặc tự đoán từ UI |
 | Git commit | Project commits REST | Hard-code/mock trong dashboard production |
-| Task ↔ Commit | `/task-commit-links` hoặc `/tasks/{taskId}/commits` | Parse Jira key trong message như canonical |
+| Task ↔ Commit | `/task-commit-links` hoặc `/tasks/{taskId}/commits` | Parse Jira key trong message như canonical. **Một commit chỉ thuộc một task, một task có nhiều commit**: lấy key đầu tiên trong message khớp đúng một task, không có thì key trong tên nhánh; merge commit không gắn task |
 | Branch membership | Snapshot `branchNames`/`REACHABLE_AT_SYNC` từ BE | Chỉ dựa vào `headRef` của merge commit |
 | Work session đang mở | Work-session REST từ server | Tự stop khi đóng drawer hoặc lưu timer canonical ở localStorage |
 | Contribution/evaluation | Evaluation API Backend | FE tự tạo điểm từ số commit |
@@ -422,7 +422,7 @@ Project Type dùng để phân loại hướng dự án, không điều khiển 
 | COM-003 | Canonical batch task–commit links theo repo/branch | ✓ | ✓ | ✓ | `DONE/VERIFY`; filter phải dựa response BE, không parse message |
 | COM-004 | Repository branch list | ✓ | ✓ | ✓ | `DONE` |
 | COM-005 | Sprint activity aggregation Task + Commit | ✓ | — | — | `BE_ONLY`; FE chart tuần hiện tự group commit, chưa dùng endpoint này |
-| COM-006 | Gắn commit vào task thủ công | ✓ | ✓ | ✓ | `DONE`; `POST/DELETE /api/projects/{projectId}/commits/{commitId}/manual-task-links[/{taskId}]`. Chỉ tác giả commit hoặc Trưởng nhóm; không gắn merge commit; task cùng dự án, chưa xoá. Lưu ở bảng riêng `task_commit_manual_link`: **chỉ hiển thị và làm ngữ cảnh cho AI, không tính minh chứng, không vào điểm đóng góp**. UI trong `CommitReviewModal` (phần "Task của commit") |
+| COM-006 | Gắn commit vào task thủ công | ✓ | ✓ | ✓ | `DONE`; `POST/DELETE /api/projects/{projectId}/commits/{commitId}/manual-task-links[/{taskId}]`. Chỉ tác giả commit hoặc Trưởng nhóm; không gắn merge commit; task cùng dự án, chưa xoá. Chỉ gắn được khi commit **chưa có task nào** (mỗi commit một task): commit đã có task thì ẩn form và BE trả `COMMIT_TASK_LINK_INVALID`; khi mã task trong commit về sau khớp một task, liên kết tự động thay cho liên kết gắn tay. Lưu ở bảng riêng `task_commit_manual_link`: **chỉ hiển thị và làm ngữ cảnh cho AI, không tính minh chứng, không vào điểm đóng góp**. UI trong `CommitReviewModal` (phần "Task của commit") |
 
 ### 7.6 Sync và realtime
 

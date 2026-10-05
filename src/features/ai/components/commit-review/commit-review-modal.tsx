@@ -160,6 +160,13 @@ function Section({
   );
 }
 
+/** One commit belongs to one task: the hand-link form is only for a (non-merge) commit that has none yet. */
+export function needsTaskLink(
+  review: { merge: boolean; taskReview: { linkedTasks: readonly unknown[] } } | undefined | null
+): boolean {
+  return Boolean(review && !review.merge && review.taskReview.linkedTasks.length === 0);
+}
+
 export function CommitReviewModal({ projectId, commitId, shortSha, isOpen, onClose }: CommitReviewModalProps) {
   const mounted = useSyncExternalStore(emptySubscribe, () => true, () => false);
   const [copied, setCopied] = useState(false);
@@ -169,7 +176,8 @@ export function CommitReviewModal({ projectId, commitId, shortSha, isOpen, onClo
   const requestReview = useRequestCommitReview(projectId, commitId);
   const linkTask = useLinkCommitTask(projectId, commitId);
   const unlinkTask = useUnlinkCommitTask(projectId, commitId);
-  const tasksQuery = useProjectTasks(projectId, { enabled: isOpen && Boolean(review?.canManageLinks) });
+  const needsTask = needsTaskLink(review);
+  const tasksQuery = useProjectTasks(projectId, { enabled: isOpen && needsTask && Boolean(review?.canManageLinks) });
 
   useEffect(() => {
     if (!isOpen) return;
@@ -324,7 +332,7 @@ export function CommitReviewModal({ projectId, commitId, shortSha, isOpen, onClo
                 </div>
               )}
 
-              {review.canManageLinks && (
+              {review.canManageLinks && needsTask && (
                 <div className="space-y-1.5 pt-1">
                   <div className="flex items-center gap-2">
                     <select
@@ -348,7 +356,7 @@ export function CommitReviewModal({ projectId, commitId, shortSha, isOpen, onClo
                   </div>
                   <p className="text-[11px] text-muted-foreground flex items-start gap-1">
                     <InfoIcon className="size-3 mt-0.5 shrink-0" />
-                    Gắn thủ công chỉ để hiển thị và để AI kiểm tra commit có khớp task. Không được tính làm minh chứng hay vào điểm đóng góp.
+                    Mỗi commit chỉ gắn một task. Gắn thủ công chỉ để hiển thị và để AI kiểm tra commit có khớp task. Không được tính làm minh chứng hay vào điểm đóng góp.
                   </p>
                 </div>
               )}

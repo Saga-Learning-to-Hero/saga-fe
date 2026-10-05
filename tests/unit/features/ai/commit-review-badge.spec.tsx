@@ -11,7 +11,7 @@ import {
 } from "@/features/ai/lib/commit-review-style";
 import { mapProjectCommitToCommitItem } from "@/features/student/commits/lib/commit-mapper";
 import { fptTest } from "@/testing/fpt-test-helper";
-import { isStrengthFinding } from "@/features/ai/components/commit-review/commit-review-modal";
+import { isStrengthFinding, needsTaskLink } from "@/features/ai/components/commit-review/commit-review-modal";
 
 describe("Commit AI review badge", () => {
   fptTest(
@@ -127,6 +127,19 @@ describe("Commit review strengths", () => {
       expect(isStrengthFinding({ code: "good_naming" })).toBe(true);
       expect(isStrengthFinding({ code: "POSSIBLE_BUG" })).toBe(false);
       expect(isStrengthFinding({ code: "VAGUE_MESSAGE" })).toBe(false);
+    }
+  );
+});
+
+describe("Commit review task link form", () => {
+  fptTest(
+    { id: "UTCID21", type: "N", executedDate: "05/10/2026", description: "Mot commit mot task: commit da co task thi an form gan thu cong" },
+    () => {
+      const task = { taskId: "t1", externalKey: "SAGA-116" };
+      expect(needsTaskLink({ merge: false, taskReview: { linkedTasks: [] } })).toBe(true);
+      expect(needsTaskLink({ merge: false, taskReview: { linkedTasks: [task] } })).toBe(false);
+      expect(needsTaskLink({ merge: true, taskReview: { linkedTasks: [] } })).toBe(false);
+      expect(needsTaskLink(undefined)).toBe(false);
     }
   );
 });
