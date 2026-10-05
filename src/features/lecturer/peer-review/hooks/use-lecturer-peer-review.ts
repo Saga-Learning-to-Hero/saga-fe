@@ -4,9 +4,6 @@ import { keepPreviousData, useQuery, useQueryClient } from "@tanstack/react-quer
 import { getApiErrorStatus } from "@/lib/api-error";
 import { LecturerTeamService } from "@/features/lecturer/teams/api/lecturer-team-service";
 import { LECTURER_TEAM_QUERY_KEYS } from "@/features/lecturer/teams/hooks/use-lecturer-teams";
-import type { LecturerTeamsResponse } from "@/features/lecturer/teams/types/lecturer-team";
-import { ProjectSprintService } from "@/features/student/sprint-progress/api/project-sprint-service";
-import { JIRA_SPRINT_QUERY_KEYS } from "@/features/student/sprint-progress/hooks/use-sprint-data";
 import { LecturerPeerReviewService } from "../api/lecturer-peer-review-service";
 
 export const LECTURER_PEER_REVIEW_QUERY_KEYS = {
@@ -54,25 +51,13 @@ export function usePrefetchLecturerPeerReviews() {
   const queryClient = useQueryClient();
   return (courseId: string) => {
     if (!courseId.trim()) return;
-    void queryClient
-      .prefetchQuery({
-        queryKey: LECTURER_TEAM_QUERY_KEYS.lecturerTeams(courseId),
-        queryFn: () => LecturerTeamService.getTeams(courseId),
-        staleTime: 1000 * 60 * 3,
-      })
-      .then(() => {
-        const cached = queryClient.getQueryData<LecturerTeamsResponse>(
-          LECTURER_TEAM_QUERY_KEYS.lecturerTeams(courseId)
-        );
-        const projectId = [...(cached?.teams ?? [])]
-          .sort((a, b) => a.teamNo - b.teamNo)
-          .find((team) => team.projectId)?.projectId;
-        if (!projectId) return;
-        return queryClient.prefetchQuery({
-          queryKey: JIRA_SPRINT_QUERY_KEYS.sprints(projectId),
-          queryFn: () => ProjectSprintService.getSprints(projectId),
-          staleTime: 1000 * 60,
-        });
-      });
+    // Teams only. Sprints are not prefetched: a project with several Jira sites needs the site
+    // (GET /sprints without one is 409 JIRA_SOURCE_REQUIRED), and the page resolves it itself
+    // through useProjectSprints under its own query key.
+    void queryClient.prefetchQuery({
+      queryKey: LECTURER_TEAM_QUERY_KEYS.lecturerTeams(courseId),
+      queryFn: () => LecturerTeamService.getTeams(courseId),
+      staleTime: 1000 * 60 * 3,
+    });
   };
 }
