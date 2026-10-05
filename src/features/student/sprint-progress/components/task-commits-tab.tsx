@@ -54,8 +54,7 @@ export function TaskCommitsTab({
   issueKey,
   linkedCommitCount,
 }: TaskCommitsTabProps) {
-  // Merge commits only join existing work: hidden by default, like the backend.
-  const [includeMerges, setIncludeMerges] = useState(false);
+  // A merge commit only joins existing work and never belongs to a task: no "include merges" option.
   const [currentPage, setCurrentPage] = useState(0);
   const [selectedCommit, setSelectedCommit] = useState<TaskLinkedCommitItem | null>(null);
 
@@ -65,9 +64,6 @@ export function TaskCommitsTab({
     {
       page: currentPage,
       size: PAGE_SIZE,
-      // Khi includeMerges = true, gửi lên backend includeMerges=true
-      // Khi includeMerges = false, không gửi param để backend áp dụng mặc định (bỏ merge)
-      includeMerges: includeMerges ? true : undefined,
       enabled: Boolean(projectId && taskId),
     }
   );
@@ -96,21 +92,6 @@ export function TaskCommitsTab({
         </div>
 
         <div className="flex items-center gap-2">
-          {/* Toggle includeMerges */}
-          <Button
-            type="button"
-            variant={includeMerges ? "default" : "outline"}
-            size="sm"
-            onClick={() => {
-              setIncludeMerges((prev) => !prev);
-              setCurrentPage(0);
-            }}
-            className="h-8 text-xs gap-1.5 cursor-pointer"
-          >
-            <GitMergeIcon className="size-3.5" />
-            <span>Bao gồm Merge Commits</span>
-          </Button>
-
           <Button
             type="button"
             variant="ghost"
@@ -158,9 +139,7 @@ export function TaskCommitsTab({
             Chưa có commit nào được liên kết với nhiệm vụ này.
           </p>
           <p className="text-[11px] text-muted-foreground max-w-md mx-auto">
-            {includeMerges
-              ? "Hãy thêm mã nhiệm vụ vào Git commit message (ví dụ: 'feat: [SAGA-xx] ...') để hệ thống tự động liên kết."
-              : "Không tìm thấy commit thông thường. Hãy thử bật 'Bao gồm Merge Commits' để kiểm tra commit merge."}
+            Hãy ghi mã task vào tên commit (ví dụ: &quot;feat: [SAGA-12] ...&quot;) để hệ thống tự gắn commit vào task. Commit merge không gắn vào task.
           </p>
         </div>
       ) : (

@@ -51,7 +51,7 @@ describe("TaskCommitsTab", () => {
       id: "UTCID01",
       type: "N",
       executedDate: "03/10/2026",
-      description: "Hien thi danh sach commits va chuyen doi trang thai Bao gom Merge Commits",
+      description: "Hien thi danh sach commits, khong con nut Bao gom Merge Commits, khong xin merge",
     },
     async () => {
       vi.mocked(useTaskCommits).mockReturnValue({
@@ -83,26 +83,9 @@ describe("TaskCommitsTab", () => {
       expect(screen.getByText("Merge")).toBeInTheDocument();
       expect(screen.getByText("Merge branch 'dev' into main")).toBeInTheDocument();
 
-      // merge commits are hidden by default: the backend default applies
-      expect(useTaskCommits).toHaveBeenLastCalledWith(
-        "proj-1",
-        "task-1",
-        expect.objectContaining({
-          includeMerges: undefined,
-        })
-      );
-
-      // Click toggle Bao gom Merge Commits: only then are merges asked for
-      const toggleMergeBtn = screen.getByRole("button", { name: /Bao gồm Merge Commits/i });
-      fireEvent.click(toggleMergeBtn);
-
-      expect(useTaskCommits).toHaveBeenLastCalledWith(
-        "proj-1",
-        "task-1",
-        expect.objectContaining({
-          includeMerges: true,
-        })
-      );
+      // a merge commit never belongs to a task: no option to ask for merges
+      expect(screen.queryByRole("button", { name: /Bao gồm Merge Commits/i })).not.toBeInTheDocument();
+      expect(vi.mocked(useTaskCommits).mock.lastCall?.[2]).not.toHaveProperty("includeMerges");
     }
   );
 
