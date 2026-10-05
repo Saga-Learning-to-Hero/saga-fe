@@ -184,6 +184,7 @@ export function CommitReviewModal({ projectId, commitId, shortSha, isOpen, onClo
 
   const handleRequest = () =>
     requestReview.mutate(undefined, {
+      onSuccess: () => showSuccessToast("Đã gửi yêu cầu. AI đang đánh giá, kết quả tự hiện khi xong."),
       onError: (error) => showErrorToast("Không gửi được yêu cầu đánh giá AI.", error),
     });
 

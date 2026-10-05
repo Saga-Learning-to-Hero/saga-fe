@@ -83,7 +83,16 @@ describe("TaskCommitsTab", () => {
       expect(screen.getByText("Merge")).toBeInTheDocument();
       expect(screen.getByText("Merge branch 'dev' into main")).toBeInTheDocument();
 
-      // Click toggle Bao gom Merge Commits
+      // merge commits are hidden by default: the backend default applies
+      expect(useTaskCommits).toHaveBeenLastCalledWith(
+        "proj-1",
+        "task-1",
+        expect.objectContaining({
+          includeMerges: undefined,
+        })
+      );
+
+      // Click toggle Bao gom Merge Commits: only then are merges asked for
       const toggleMergeBtn = screen.getByRole("button", { name: /Bao gồm Merge Commits/i });
       fireEvent.click(toggleMergeBtn);
 
@@ -91,7 +100,7 @@ describe("TaskCommitsTab", () => {
         "proj-1",
         "task-1",
         expect.objectContaining({
-          includeMerges: undefined,
+          includeMerges: true,
         })
       );
     }

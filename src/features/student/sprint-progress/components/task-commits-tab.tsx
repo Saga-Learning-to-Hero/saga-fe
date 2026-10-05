@@ -54,7 +54,8 @@ export function TaskCommitsTab({
   issueKey,
   linkedCommitCount,
 }: TaskCommitsTabProps) {
-  const [includeMerges, setIncludeMerges] = useState(true);
+  // Merge commits only join existing work: hidden by default, like the backend.
+  const [includeMerges, setIncludeMerges] = useState(false);
   const [currentPage, setCurrentPage] = useState(0);
   const [selectedCommit, setSelectedCommit] = useState<TaskLinkedCommitItem | null>(null);
 
