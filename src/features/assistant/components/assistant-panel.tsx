@@ -1,6 +1,7 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { announceAssistantAnswer, isAwayFromAssistant } from "../lib/assistant-events";
 import { ArrowLeftIcon, BotIcon, MinusIcon } from "lucide-react";
 import { CustomSelect } from "@/components/common/custom-select";
 import { Badge } from "@/components/ui/badge";
@@ -26,11 +27,13 @@ import { AssistantMessageThread } from "./assistant-message-thread";
 interface AssistantPanelProps {
   context: AssistantRouteContext;
   active: boolean;
+  /** The panel is on screen (not minimised). */
+  visible?: boolean;
   titleId?: string;
   onMinimize?: () => void;
 }
 
-export function AssistantPanel({ context, active, titleId, onMinimize }: AssistantPanelProps) {
+export function AssistantPanel({ context, active, visible = true, titleId, onMinimize }: AssistantPanelProps) {
   const project = useAssistantProject(context);
   return (
     <AssistantPanelBody
@@ -38,6 +41,7 @@ export function AssistantPanel({ context, active, titleId, onMinimize }: Assista
       context={context}
       project={project}
       active={active}
+      visible={visible}
       titleId={titleId}
       onMinimize={onMinimize}
     />
@@ -48,15 +52,29 @@ function AssistantPanelBody({
   context,
   project,
   active,
+  visible,
   titleId,
   onMinimize,
 }: {
   context: AssistantRouteContext;
   project: ReturnType<typeof useAssistantProject>;
   active: boolean;
+  visible: boolean;
   titleId?: string;
   onMinimize?: () => void;
 }) {
+  // An answer can arrive after the person minimised the chat, switched tab or moved to another page.
+  const visibleRef = useRef(visible);
+  const mountedRef = useRef(true);
+  useEffect(() => {
+    visibleRef.current = visible;
+  }, [visible]);
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
   const [screen, setScreen] = useState<"history" | "thread">("history");
   const [conversationId, setConversationId] = useState<string | null>(null);
   const [draft, setDraft] = useState("");
@@ -133,6 +151,7 @@ function AssistantPanelBody({
     setDraft("");
     try {
       await ask.mutateAsync(parsed.question);
+      if (isAwayFromAssistant(visibleRef.current, mountedRef.current)) announceAssistantAnswer();
       setReloadBanner(null);
     } catch (error) {
       // Give the question back so it is not lost.

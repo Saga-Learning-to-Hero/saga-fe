@@ -1,6 +1,7 @@
 "use client";
 
-import { useId, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
+import { ASSISTANT_ANSWERED_EVENT, ASSISTANT_OPEN_EVENT } from "../lib/assistant-events";
 import { usePathname, useSearchParams } from "next/navigation";
 import { BotIcon, ChevronDownIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -35,11 +36,37 @@ function ProjectAssistantWidget({ context }: { context: AssistantRouteContext })
   const panelId = useId();
   const titleId = `${panelId}-title`;
 
+  const [hasUnread, setHasUnread] = useState(false);
+  const openRef = useRef(open);
+  useEffect(() => {
+    openRef.current = open;
+  }, [open]);
+
   const openAssistant = () => {
     setHasOpened(true);
     setOpen(true);
+    setHasUnread(false);
     requestAnimationFrame(() => panelRef.current?.focus({ preventScroll: true }));
   };
+
+  // A toast's "Xem" opens the assistant, and an answer that arrived unseen marks the button.
+  useEffect(() => {
+    const onOpen = () => {
+      setHasOpened(true);
+      setOpen(true);
+      setHasUnread(false);
+      requestAnimationFrame(() => panelRef.current?.focus({ preventScroll: true }));
+    };
+    const onAnswered = () => {
+      if (!openRef.current) setHasUnread(true);
+    };
+    window.addEventListener(ASSISTANT_OPEN_EVENT, onOpen);
+    window.addEventListener(ASSISTANT_ANSWERED_EVENT, onAnswered);
+    return () => {
+      window.removeEventListener(ASSISTANT_OPEN_EVENT, onOpen);
+      window.removeEventListener(ASSISTANT_ANSWERED_EVENT, onAnswered);
+    };
+  }, []);
 
   const minimizeAssistant = () => {
     setOpen(false);
@@ -74,6 +101,7 @@ function ProjectAssistantWidget({ context }: { context: AssistantRouteContext })
           <AssistantPanel
             context={context}
             active={hasOpened}
+            visible={open}
             titleId={titleId}
             onMinimize={minimizeAssistant}
           />
@@ -95,6 +123,12 @@ function ProjectAssistantWidget({ context }: { context: AssistantRouteContext })
         onClick={toggleAssistant}
       >
         {open ? <ChevronDownIcon className="size-5" aria-hidden /> : <BotIcon className="size-5" aria-hidden />}
+        {hasUnread && !open ? (
+          <span
+            className="absolute -top-0.5 -right-0.5 size-3 rounded-full bg-destructive ring-2 ring-background"
+            aria-label="Trợ lý có câu trả lời mới"
+          />
+        ) : null}
         <span className="sr-only">{open ? "Thu gọn trợ lý AI dự án" : "Mở trợ lý AI dự án"}</span>
       </Button>
     </>
