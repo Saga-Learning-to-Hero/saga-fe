@@ -13,6 +13,8 @@ import {
 interface TaskWorkSessionControlProps {
   taskId: string;
   isOwnerOrLeader?: boolean;
+  /** Task is DONE: nothing left to time, so no new session (an open one can still be stopped). */
+  isDone?: boolean;
 }
 
 export function formatWorkSessionDuration(totalSeconds: number): string {
@@ -28,6 +30,7 @@ export function formatWorkSessionDuration(totalSeconds: number): string {
 export function TaskWorkSessionControl({
   taskId,
   isOwnerOrLeader = true,
+  isDone = false,
 }: TaskWorkSessionControlProps) {
   const [clientNow, setClientNow] = useState(() => Date.now());
   const workSessionsQuery = useTaskWorkSessions(taskId);
@@ -82,6 +85,8 @@ export function TaskWorkSessionControl({
       showErrorToast(error instanceof Error ? error.message : "Không thể dừng phiên làm việc.");
     }
   };
+
+  if (isDone && !isSessionRunning) return null;
 
   return (
     <div className="hidden items-center gap-1.5 sm:flex">

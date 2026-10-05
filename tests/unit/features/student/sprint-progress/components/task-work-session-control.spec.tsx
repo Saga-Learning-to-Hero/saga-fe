@@ -20,7 +20,7 @@ describe("TaskWorkSessionControl", () => {
     vi.clearAllMocks();
   });
 
-  function renderControl() {
+  function renderControl(isDone = false) {
     const queryClient = new QueryClient({
       defaultOptions: {
         queries: { retry: false },
@@ -32,7 +32,7 @@ describe("TaskWorkSessionControl", () => {
       return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;
     }
 
-    return render(<TaskWorkSessionControl taskId={taskId} />, { wrapper: Wrapper });
+    return render(<TaskWorkSessionControl taskId={taskId} isDone={isDone} />, { wrapper: Wrapper });
   }
 
   const openSession = {
@@ -153,6 +153,45 @@ describe("TaskWorkSessionControl", () => {
       expect(formatWorkSessionDuration(0)).toBe("00:00:00");
       expect(formatWorkSessionDuration(3661)).toBe("01:01:01");
       expect(formatWorkSessionDuration(-10)).toBe("00:00:00");
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID06",
+      type: "N",
+      executedDate: "05/10/2026",
+      description: "Task DONE khong con phien dang chay thi an dong ho va nut Bat dau",
+    },
+    async () => {
+      const getSpy = vi.spyOn(apiClient, "get").mockResolvedValueOnce({
+        data: { taskId, activeSession: null, sessions: [] },
+      });
+
+      const { container } = renderControl(true);
+
+      await waitFor(() => expect(getSpy).toHaveBeenCalled());
+      await waitFor(() => expect(container).toBeEmptyDOMElement());
+      expect(screen.queryByRole("button", { name: "Bắt đầu" })).not.toBeInTheDocument();
+    }
+  );
+
+  fptTest(
+    {
+      id: "UTCID07",
+      type: "B",
+      executedDate: "05/10/2026",
+      description: "Task DONE nhung con phien quen dung thi van hien nut Dung",
+    },
+    async () => {
+      vi.spyOn(apiClient, "get").mockResolvedValueOnce({
+        data: { taskId, activeSession: openSession, sessions: [openSession] },
+      });
+
+      renderControl(true);
+
+      expect(await screen.findByRole("button", { name: "Dừng" })).toBeInTheDocument();
+      expect(screen.queryByRole("button", { name: "Bắt đầu" })).not.toBeInTheDocument();
     }
   );
 });

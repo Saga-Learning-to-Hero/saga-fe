@@ -254,6 +254,7 @@ Payload SSE không phải dữ liệu để render trực tiếp. FE phải ch�
 2. Đóng drawer, chuyển tab hoặc reload **không** gọi stop.
 3. Khi mở lại task, FE lấy work sessions từ server, tìm session `OPEN` của current user và tính timer từ `startedAt`/server time.
 4. Chỉ bấm Dừng/Hoàn thành làm việc mới gọi endpoint stop với `sessionId`.
+4a. Task `DONE` không có phiên làm việc mới: FE ẩn đồng hồ và nút Bắt đầu; Backend trả `409 TASK_WORK_SESSION_TASK_DONE` nếu vẫn gọi start. Phiên còn mở từ trước khi DONE vẫn hiện nút Dừng để đóng.
 5. Tài liệu có thể là web link hoặc file; upload/download/delete đều do Backend kiểm tra quyền.
 6. Contribution confirmation có thể chứa commit SHA và pull-request URL làm bằng chứng.
 

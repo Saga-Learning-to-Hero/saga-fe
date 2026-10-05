@@ -995,7 +995,11 @@ export function IssueDetailsModal({
 
             <div className="flex items-center gap-2">
               {isEditing && issue && (
-                <TaskWorkSessionControl taskId={issue.id} isOwnerOrLeader={canEdit} />
+                <TaskWorkSessionControl
+                  taskId={issue.id}
+                  isOwnerOrLeader={canEdit}
+                  isDone={parseIssueStatus(issue.status) === "DONE"}
+                />
               )}
               <button
                 type="button"
